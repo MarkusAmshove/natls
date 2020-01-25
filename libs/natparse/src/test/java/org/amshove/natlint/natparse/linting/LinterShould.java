@@ -11,7 +11,7 @@ public class LinterShould
 	@Test
 	void lintWhitespaceTokens()
 	{
-		assertTokens(" ", token(SyntaxKind.WHITESPACE, " "));
+		assertTokens(" ", token(SyntaxKind.NEW_LINE, " "));
 	}
 
 	private ExpectedSyntaxToken token(SyntaxKind expectedKind, String expectedSource)
