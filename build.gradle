@@ -1,28 +1,41 @@
 plugins {
-    id 'java-library'
+	id 'java-library'
 	id "com.diffplug.gradle.spotless" version "3.27.1"
 }
 
-repositories {
-    jcenter()
+ext {
+	libraries = [
+		// Test
+		junit_jupiter : 'org.junit.jupiter:junit-jupiter:5.6.0',
+		assertJ : 'org.assertj:assertj-core:3.11.1'
+	]
 }
 
-dependencies {
-	testImplementation 'org.junit.jupiter:junit-jupiter:5.6.0'
-	testImplementation 'org.assertj:assertj-core:3.11.1'
-}
+subprojects {
+	apply plugin: 'java-library'
+	apply plugin: 'com.diffplug.gradle.spotless'
 
-test {
-	useJUnitPlatform()
-	testLogging {
-		events "passed", "skipped", "failed"
+	repositories {
+		jcenter()
 	}
-}
 
-spotless {
-	java {
-		removeUnusedImports()
-		trimTrailingWhitespace()
-		eclipse().configFile 'EclipseFormatter.xml'
+	dependencies {
+		testImplementation libraries.junit_jupiter
+		testImplementation libraries.assertJ
+	}
+
+	test {
+		useJUnitPlatform()
+		testLogging {
+			events "passed", "skipped", "failed"
+		}
+	}
+
+	spotless {
+		java {
+			removeUnusedImports()
+			trimTrailingWhitespace()
+			eclipse().configFile "${rootProject.projectDir}/EclipseFormatter.xml"
+		}
 	}
 }
