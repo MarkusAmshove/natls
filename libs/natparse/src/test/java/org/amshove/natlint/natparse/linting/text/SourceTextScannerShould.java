@@ -30,7 +30,7 @@ public class SourceTextScannerShould
 		assertThat(scanner.position()).isEqualTo(2);
 	}
 
-	@ParameterizedTest(name = "{index} {0} advanced by {1} should be {2}")
+	@ParameterizedTest(name = "\"{0}\" advanced by {1} should be \"{2}\"")
 	@CsvSource(
 	{ "test,2,s", "SOURCE,0,S", "Advance,6,e" })
 	void peekTheCharacterAtCurrentOffset(String source, int advanceBy, char expectedCharacter)
@@ -48,7 +48,7 @@ public class SourceTextScannerShould
 		assertThat(scanner.peek()).isEqualTo(SourceTextScanner.END_CHARACTER);
 	}
 
-	@ParameterizedTest(name = "{index} {0} peeking offset {1} should be {2}")
+	@ParameterizedTest(name = "\"{0}\" peeking offset {1} should be \"{2}\"")
 	@CsvSource(
 	{ "test,2,s", "SOURCE,0,S", "Advance,6,e" })
 	void peekACharacterByAGivenOffset(String source, int peekOffset, char expectedCharacter)
@@ -64,7 +64,7 @@ public class SourceTextScannerShould
 		assertThat(scanner.peek(5)).isEqualTo(SourceTextScanner.END_CHARACTER);
 	}
 
-	@ParameterizedTest(name = "{index} '{0}.advanceIf({1}) should result in position {2}")
+	@ParameterizedTest(name = "\"{0}\".advanceIf(\"{1}\") should result in position {2}")
 	@CsvSource(
 	{ "super source code,super source,12", "soUr,so,2", "even 1 with 2 numbers 3 long,even 1 with,11" })
 	void advanceTheCurrentOffsetWhenMatchingAGivenText(String sourceText, String expectedText, int expectedEndPosition)
