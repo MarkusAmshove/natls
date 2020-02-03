@@ -4,5 +4,6 @@ public enum SyntaxKind
 {
 	WHITESPACE,
 	NEW_LINE,
-	TAB
+	TAB,
+	DUMMY;
 }

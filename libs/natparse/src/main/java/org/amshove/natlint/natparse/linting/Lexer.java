@@ -19,12 +19,21 @@ public class Lexer
 		line = 0;
 		currentLineStartOffset = 0;
 
-		while (!scanner.isAtEnd())
+		while (!scanner.isAtEnd() && scanner.peek() != '$')
 		{
 			if (consumeWhitespace() || consumeNewLine())
 			{
 				continue;
 			}
+
+			// Temporary
+			scanner.start();
+			while (scanner.peek() != '!' && scanner.peek() != '$')
+			{
+				scanner.advance();
+			}
+			createAndAdd(SyntaxKind.DUMMY);
+			scanner.advance();
 		}
 		return tokens;
 	}
