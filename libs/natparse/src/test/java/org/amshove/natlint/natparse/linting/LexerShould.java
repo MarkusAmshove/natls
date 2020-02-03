@@ -78,8 +78,7 @@ public class LexerShould
 			if (expectedToken.expectedSource != null)
 			{
 				assertThat(actualToken.source())
-					.as("Expected [%s] but was [%s]", expectedToken.escapedExpectedSource(),
-						actualToken.escapedSource())
+					.as("Expected [%s] but was [%s]", expectedToken.escapedExpectedSource(), actualToken.escapedSource())
 					.isEqualTo(expectedToken.expectedSource);
 			}
 		}

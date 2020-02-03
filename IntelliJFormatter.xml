@@ -1,4 +1,5 @@
-<code_scheme name="Natlint" version="173">
+<code_scheme name="Natlint Formatter" version="173">
+  <option name="RIGHT_MARGIN" value="400" />
   <option name="FORMATTER_TAGS_ENABLED" value="true" />
   <editorconfig>
     <option name="ENABLED" value="false" />
