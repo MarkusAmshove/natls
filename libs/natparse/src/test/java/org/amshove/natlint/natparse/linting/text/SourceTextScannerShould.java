@@ -76,6 +76,23 @@ public class SourceTextScannerShould
 	}
 
 	@Test
+	void advanceIfTheExpectedTextIsEqualToSourceLength()
+	{
+		SourceTextScanner scanner = new SourceTextScanner("ab");
+		assertThat(scanner.advanceIf("ab")).isTrue();
+	}
+
+	@Test
+	void advanceOverWindowsNewLineWhenCurrentIsUnixNewLine()
+	{
+		SourceTextScanner scanner = new SourceTextScanner("\n\r\n\na");
+		scanner.advance();
+		scanner.advanceIf("\r\n");
+		scanner.advance();
+		assertThat(scanner.peek()).isEqualTo('a');
+	}
+
+	@Test
 	void notAdvanceTheCurrentOffsetIfTheGivenTextIsNotMatched()
 	{
 		SourceTextScanner scanner = new SourceTextScanner("super source code");
@@ -89,7 +106,7 @@ public class SourceTextScannerShould
 	{
 		SourceTextScanner scanner = new SourceTextScanner("code");
 		assertThat(scanner.position()).isEqualTo(0);
-		assertThat(scanner.advanceIf("code is cool")).isEqualTo(false);
+		assertThat(scanner.advanceIf("code ")).isEqualTo(false);
 		assertThat(scanner.position()).isEqualTo(0);
 	}
 
@@ -130,5 +147,14 @@ public class SourceTextScannerShould
 		scanner.start();
 		scanner.advance(7);
 		assertThat(scanner.lexemeText()).isEqualTo("Natural");
+	}
+
+	@Test
+	void recognizeWhenAtEnd()
+	{
+		SourceTextScanner scanner = new SourceTextScanner("a");
+		assertThat(scanner.isAtEnd()).isFalse();
+		scanner.advance();
+		assertThat(scanner.isAtEnd()).isTrue();
 	}
 }

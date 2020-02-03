@@ -78,11 +78,6 @@ public class SourceTextScanner
 	{
 		int expectedLength = expectedText.length();
 
-		if (willPassEnd(expectedLength))
-		{
-			return false;
-		}
-
 		for (int i = 0; i < expectedLength; i++)
 		{
 			if (peek(i) != expectedText.charAt(i))
@@ -115,7 +110,7 @@ public class SourceTextScanner
 		currentLexemeStart = 0;
 	}
 
-	private boolean isAtEnd()
+	public boolean isAtEnd()
 	{
 		return currentOffset >= source.length();
 	}

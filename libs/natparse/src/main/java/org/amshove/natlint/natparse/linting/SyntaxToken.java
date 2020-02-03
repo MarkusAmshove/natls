@@ -9,32 +9,37 @@ public class SyntaxToken
 	private final int line;
 	private final String source;
 
-	public SyntaxKind getKind()
+	public SyntaxKind kind()
 	{
 		return kind;
 	}
 
-	public int getOffset()
+	public int offset()
 	{
 		return offset;
 	}
 
-	public int getOffsetInLine()
+	public int offsetInLine()
 	{
 		return offsetInLine;
 	}
 
-	public int getLine()
+	public int line()
 	{
 		return line;
 	}
 
-	public String getSource()
+	public String source()
 	{
 		return source;
 	}
 
-	public int getLength()
+	public String escapedSource()
+	{
+		return escapeSource();
+	}
+
+	public int length()
 	{
 		return source.length();
 	}
@@ -55,7 +60,7 @@ public class SyntaxToken
 			kind,
 			escapeSource(),
 			offset,
-			getLength(),
+			length(),
 			line,
 			offsetInLine);
 	}
