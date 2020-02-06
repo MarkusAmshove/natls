@@ -17,5 +17,13 @@ public enum SyntaxKind
 	BACKSLASH,
 	SEMICOLON,
 	GREATER,
+	GREATER_EQUALS,
+	LESSER_EQUALS,
+	GT,
+	LT,
+	LE,
+	GE,
+	EQ,
+	NE,
 	LESSER
 }

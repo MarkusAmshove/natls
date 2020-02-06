@@ -59,11 +59,101 @@ public class Lexer
 					createAndAddCurrentSingleToken(SyntaxKind.SEMICOLON);
 					continue;
 				case '>':
-					createAndAddCurrentSingleToken(SyntaxKind.GREATER);
+					scanner.start();
+					scanner.advance();
+					if (scanner.peek() == '=')
+					{
+						scanner.advance();
+						createAndAdd(SyntaxKind.GREATER_EQUALS);
+						continue;
+					}
+					createAndAdd(SyntaxKind.GREATER);
 					continue;
 				case '<':
-					createAndAddCurrentSingleToken(SyntaxKind.LESSER);
+					scanner.start();
+					scanner.advance();
+					if (scanner.peek() == '=')
+					{
+						scanner.advance();
+						createAndAdd(SyntaxKind.LESSER_EQUALS);
+						continue;
+					}
+					createAndAdd(SyntaxKind.LESSER);
 					continue;
+
+				case 'G':
+				case 'g':
+				{
+					char next = scanner.peek(1);
+					switch (next)
+					{
+						case 'E':
+						case 'e':
+							scanner.start();
+							scanner.advance(2);
+							createAndAdd(SyntaxKind.GE);
+							continue;
+						case 'T':
+						case 't':
+							scanner.start();
+							scanner.advance(2);
+							createAndAdd(SyntaxKind.GT);
+							continue;
+					}
+					continue;
+				}
+
+				case 'L':
+				case 'l':
+				{
+					char next = scanner.peek(1);
+					switch (next)
+					{
+						case 'E':
+						case 'e':
+							scanner.start();
+							scanner.advance(2);
+							createAndAdd(SyntaxKind.LE);
+							continue;
+						case 'T':
+						case 't':
+							scanner.start();
+							scanner.advance(2);
+							createAndAdd(SyntaxKind.LT);
+							continue;
+					}
+				}
+
+				case 'N':
+				case 'n':
+				{
+					char next = scanner.peek(1);
+					switch (next)
+					{
+						case 'E':
+						case 'e':
+							scanner.start();
+							scanner.advance(2);
+							createAndAdd(SyntaxKind.NE);
+							continue;
+					}
+				}
+
+				case 'E':
+				case 'e':
+				{
+					char next = scanner.peek(1);
+					switch (next)
+					{
+						case 'Q':
+						case 'q':
+							scanner.start();
+							scanner.advance(2);
+							createAndAdd(SyntaxKind.EQ);
+							continue;
+					}
+				}
+
 				default:
 					break;
 			}
