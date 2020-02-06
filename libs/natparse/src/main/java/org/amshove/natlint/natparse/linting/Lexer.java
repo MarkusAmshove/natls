@@ -26,6 +26,48 @@ public class Lexer
 				continue;
 			}
 
+			switch (scanner.peek())
+			{
+				case '(':
+					createAndAddCurrentSingleToken(SyntaxKind.LPAREN);
+					continue;
+				case ')':
+					createAndAddCurrentSingleToken(SyntaxKind.RPAREN);
+					continue;
+				case '=':
+					createAndAddCurrentSingleToken(SyntaxKind.EQUALS);
+					continue;
+				case ':':
+					createAndAddCurrentSingleToken(SyntaxKind.COLON);
+					continue;
+				case '+':
+					createAndAddCurrentSingleToken(SyntaxKind.PLUS);
+					continue;
+				case '-':
+					createAndAddCurrentSingleToken(SyntaxKind.MINUS);
+					continue;
+				case '*':
+					createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
+					continue;
+				case '/':
+					createAndAddCurrentSingleToken(SyntaxKind.SLASH);
+					continue;
+				case '\\':
+					createAndAddCurrentSingleToken(SyntaxKind.BACKSLASH);
+					continue;
+				case ';':
+					createAndAddCurrentSingleToken(SyntaxKind.SEMICOLON);
+					continue;
+				case '>':
+					createAndAddCurrentSingleToken(SyntaxKind.GREATER);
+					continue;
+				case '<':
+					createAndAddCurrentSingleToken(SyntaxKind.LESSER);
+					continue;
+				default:
+					break;
+			}
+
 			// Temporary
 			scanner.start();
 			while (scanner.peek() != '!' && scanner.peek() != '$')
@@ -36,6 +78,13 @@ public class Lexer
 			scanner.advance();
 		}
 		return tokens;
+	}
+
+	private void createAndAddCurrentSingleToken(SyntaxKind kind)
+	{
+		scanner.start();
+		scanner.advance();
+		createAndAdd(kind);
 	}
 
 	private boolean consumeWhitespace()
