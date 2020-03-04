@@ -100,7 +100,6 @@ public class Lexer
 							createAndAdd(SyntaxKind.GT);
 							continue;
 					}
-					continue;
 				}
 
 				case 'L':
@@ -154,11 +153,28 @@ public class Lexer
 					}
 				}
 
+				case '0':
+				case '1':
+				case '2':
+				case '3':
+				case '4':
+				case '5':
+				case '6':
+				case '7':
+				case '8':
+				case '9':
+					consumeNumber();
+					continue;
+
 				default:
 					break;
 			}
 
 			// Temporary
+			if (scanner.peek() == SourceTextScanner.END_CHARACTER)
+			{
+				break;
+			}
 			scanner.start();
 			while (scanner.peek() != '!' && scanner.peek() != '$')
 			{
@@ -175,6 +191,16 @@ public class Lexer
 		scanner.start();
 		scanner.advance();
 		createAndAdd(kind);
+	}
+
+	private void consumeNumber()
+	{
+		scanner.start();
+		while (Character.isDigit(scanner.peek()) || scanner.peek() == ',' || scanner.peek() == '.')
+		{
+			scanner.advance();
+		}
+		createAndAdd(SyntaxKind.NUMBER);
 	}
 
 	private boolean consumeWhitespace()

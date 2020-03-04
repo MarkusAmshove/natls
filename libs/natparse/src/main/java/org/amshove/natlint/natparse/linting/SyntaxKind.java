@@ -25,5 +25,6 @@ public enum SyntaxKind
 	GE,
 	EQ,
 	NE,
-	LESSER
+	LESSER,
+	NUMBER
 }
