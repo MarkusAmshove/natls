@@ -43,7 +43,7 @@ public class SourceTextScanner
 	/**
 	 * Advance the position by the given offset without doing boundary checks.
 	 *
-	 * @param offset
+	 * @param offset the amount of characters to advance over
 	 */
 	public void advance(int offset)
 	{
