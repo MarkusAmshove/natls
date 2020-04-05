@@ -10,6 +10,7 @@ public enum SyntaxKind
 	RPAREN,
 	EQUALS,
 	COLON,
+	COLON_EQUALS,
 	PLUS,
 	MINUS,
 	ASTERISK,

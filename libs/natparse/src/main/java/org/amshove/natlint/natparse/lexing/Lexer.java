@@ -38,7 +38,14 @@ public class Lexer
 					createAndAddCurrentSingleToken(SyntaxKind.EQUALS);
 					continue;
 				case ':':
-					createAndAddCurrentSingleToken(SyntaxKind.COLON);
+					scanner.start();
+					scanner.advance();
+					if(scanner.peek() == '=') {
+						scanner.advance();
+						createAndAdd(SyntaxKind.COLON_EQUALS);
+						continue;
+					}
+					createAndAdd(SyntaxKind.COLON);
 					continue;
 				case '+':
 					createAndAddCurrentSingleToken(SyntaxKind.PLUS);

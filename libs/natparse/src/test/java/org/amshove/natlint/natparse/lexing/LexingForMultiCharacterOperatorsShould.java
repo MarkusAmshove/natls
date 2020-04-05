@@ -11,6 +11,12 @@ import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 public class LexingForMultiCharacterOperatorsShould extends AbstractLexerTest
 {
 	@Test
+	void lexColonEqualsAssign()
+	{
+		assertTokens(":=", token(SyntaxKind.COLON_EQUALS, ":="));
+	}
+
+	@Test
 	void lexGreaterEqualsWithSigns()
 	{
 		assertTokens(">=", token(SyntaxKind.GREATER_EQUALS, ">="));
