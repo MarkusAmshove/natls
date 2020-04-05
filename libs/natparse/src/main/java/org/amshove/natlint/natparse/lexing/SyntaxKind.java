@@ -27,5 +27,6 @@ public enum SyntaxKind
 	EQ,
 	NE,
 	LESSER,
-	NUMBER
+	NUMBER,
+	LESSER_GREATER
 }

@@ -62,7 +62,11 @@ public class Lexer
 					createAndAddWithPotentialFollowup(SyntaxKind.GREATER, '=', SyntaxKind.GREATER_EQUALS);
 					continue;
 				case '<':
-					createAndAddWithPotentialFollowup(SyntaxKind.LESSER, '=', SyntaxKind.LESSER_EQUALS);
+					if (!tryCreateIfFollowedBy('=', SyntaxKind.LESSER_EQUALS)
+						&& !tryCreateIfFollowedBy('>', SyntaxKind.LESSER_GREATER))
+					{
+						createAndAddCurrentSingleToken(SyntaxKind.LESSER);
+					}
 					continue;
 
 				case 'G':
@@ -266,5 +270,17 @@ public class Lexer
 	private boolean isLineEnd()
 	{
 		return scanner.peek() == '\n' || scanner.peek() == '\r' && scanner.peek(1) == '\n';
+	}
+
+	private boolean tryCreateIfFollowedBy(char followup, SyntaxKind kind)
+	{
+		if (scanner.peek(1) == followup)
+		{
+			scanner.start();
+			scanner.advance(2);
+			createAndAdd(kind);
+			return true;
+		}
+		return false;
 	}
 }

@@ -78,6 +78,12 @@ public class LexingForMultiCharacterOperatorsShould extends AbstractLexerTest
 			dynamicTest("Eq", () -> assertTokens("Eq", token(SyntaxKind.EQ, "Eq"))));
 	}
 
+	@Test
+	void lexNotEqualsSigns()
+	{
+		assertTokens("<>", token(SyntaxKind.LESSER_GREATER, "<>"));
+	}
+
 	@TestFactory
 	Iterable<DynamicTest> lexNotEqualsKeywords()
 	{
