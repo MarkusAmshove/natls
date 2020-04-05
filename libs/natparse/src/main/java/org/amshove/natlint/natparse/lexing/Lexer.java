@@ -38,14 +38,7 @@ public class Lexer
 					createAndAddCurrentSingleToken(SyntaxKind.EQUALS);
 					continue;
 				case ':':
-					scanner.start();
-					scanner.advance();
-					if(scanner.peek() == '=') {
-						scanner.advance();
-						createAndAdd(SyntaxKind.COLON_EQUALS);
-						continue;
-					}
-					createAndAdd(SyntaxKind.COLON);
+					createAndAddWithPotentialFollowup(SyntaxKind.COLON, '=', SyntaxKind.COLON_EQUALS);
 					continue;
 				case '+':
 					createAndAddCurrentSingleToken(SyntaxKind.PLUS);
@@ -66,26 +59,10 @@ public class Lexer
 					createAndAddCurrentSingleToken(SyntaxKind.SEMICOLON);
 					continue;
 				case '>':
-					scanner.start();
-					scanner.advance();
-					if (scanner.peek() == '=')
-					{
-						scanner.advance();
-						createAndAdd(SyntaxKind.GREATER_EQUALS);
-						continue;
-					}
-					createAndAdd(SyntaxKind.GREATER);
+					createAndAddWithPotentialFollowup(SyntaxKind.GREATER, '=', SyntaxKind.GREATER_EQUALS);
 					continue;
 				case '<':
-					scanner.start();
-					scanner.advance();
-					if (scanner.peek() == '=')
-					{
-						scanner.advance();
-						createAndAdd(SyntaxKind.LESSER_EQUALS);
-						continue;
-					}
-					createAndAdd(SyntaxKind.LESSER);
+					createAndAddWithPotentialFollowup(SyntaxKind.LESSER, '=', SyntaxKind.LESSER_EQUALS);
 					continue;
 
 				case 'G':
@@ -198,6 +175,21 @@ public class Lexer
 		scanner.start();
 		scanner.advance();
 		createAndAdd(kind);
+	}
+
+	private void createAndAddWithPotentialFollowup(SyntaxKind withoutFollowup, char followUpCharacter, SyntaxKind withFollowup)
+	{
+		scanner.start();
+		scanner.advance();
+		if (scanner.peek() == followUpCharacter)
+		{
+			scanner.advance();
+			createAndAdd(withFollowup);
+		}
+		else
+		{
+			createAndAdd(withoutFollowup);
+		}
 	}
 
 	private void consumeNumber()
