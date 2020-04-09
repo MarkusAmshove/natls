@@ -2,6 +2,7 @@ package org.amshove.natlint.natparse.linting;
 
 import org.amshove.natlint.natparse.linting.text.SourceTextScanner;
 
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +22,7 @@ public class Lexer
 
 		while (!scanner.isAtEnd() && scanner.peek() != '$')
 		{
-			if (consumeWhitespace() || consumeNewLine())
+			if (consumeWhitespace() || consumeNewLine() || consumeComment())
 			{
 				continue;
 			}
@@ -72,10 +73,10 @@ public class Lexer
 
 				case '\'':
 					consumeString('\'');
-					break;
+					continue;
 				case '"':
 					consumeString('"');
-					break;
+					continue;
 
 				case 'e':
 				case 'E':
@@ -88,7 +89,7 @@ public class Lexer
 				{
 					if (tryCreateBooleanOperatorKeyword())
 					{
-						break;
+						continue;
 					}
 				}
 
@@ -123,6 +124,24 @@ public class Lexer
 			scanner.advance();
 		}
 		return tokens;
+	}
+
+	private boolean consumeComment()
+	{
+		boolean isSingleAsteriskComment = scanner.position() - currentLineStartOffset == 0 && scanner.peek() == '*';
+		boolean isInlineComment = scanner.peek() == '/' && scanner.peek(1) == '*';
+
+		if (isSingleAsteriskComment || isInlineComment)
+		{
+			scanner.start();
+			while (!isLineEnd() && !scanner.isAtEnd())
+			{
+				scanner.advance();
+			}
+			createAndAdd(SyntaxKind.COMMENT);
+			return true;
+		}
+		return false;
 	}
 
 	private boolean tryCreateBooleanOperatorKeyword()

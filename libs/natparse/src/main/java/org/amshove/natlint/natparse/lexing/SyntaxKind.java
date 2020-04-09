@@ -29,5 +29,6 @@ public enum SyntaxKind
 	LESSER,
 	NUMBER,
 	LESSER_GREATER,
-	STRING
+	STRING,
+	COMMENT
 }
