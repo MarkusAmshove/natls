@@ -12,6 +12,7 @@ public class SourceTextScanner
 	{
 		this.source = source;
 		currentOffset = 0;
+		reset();
 	}
 
 	/**
@@ -105,9 +106,19 @@ public class SourceTextScanner
 		return source.substring(currentLexemeStart, currentOffset);
 	}
 
+	public void rollbackCurrentLexeme()
+	{
+		if (currentLexemeStart == -1)
+		{
+			throw new UnsupportedOperationException("Can't reset offset if currentLexeme wasn't started");
+		}
+		currentOffset = currentLexemeStart;
+		reset();
+	}
+
 	public void reset()
 	{
-		currentLexemeStart = 0;
+		currentLexemeStart = -1;
 	}
 
 	public boolean isAtEnd()

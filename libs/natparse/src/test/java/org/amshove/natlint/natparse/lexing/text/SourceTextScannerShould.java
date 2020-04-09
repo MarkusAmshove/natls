@@ -5,6 +5,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 public class SourceTextScannerShould
 {
@@ -137,7 +138,36 @@ public class SourceTextScannerShould
 		scanner.advance(3);
 		assertThat(scanner.lexemeStart()).isEqualTo(2);
 		scanner.reset();
-		assertThat(scanner.lexemeStart()).isEqualTo(0);
+		assertThat(scanner.lexemeStart()).isEqualTo(-1);
+	}
+
+	@Test
+	void rollbackTheOffsetToCurrentLexemeStart()
+	{
+		SourceTextScanner scanner = new SourceTextScanner("what is");
+
+		scanner.advance(2);
+		assertThat(scanner.peek()).isEqualTo('a');
+		assertThat(scanner.position()).isEqualTo(2);
+
+		scanner.start();
+		scanner.advance(3);
+		assertThat(scanner.peek()).isEqualTo('i');
+		assertThat(scanner.position()).isEqualTo(5);
+
+		scanner.rollbackCurrentLexeme();
+		assertThat(scanner.position()).isEqualTo(2);
+		assertThat(scanner.lexemeStart()).isEqualTo(-1);
+	}
+
+	@Test
+	void throwAnExceptionIfThereIsNothingToRolLback()
+	{
+		SourceTextScanner scanner = new SourceTextScanner("love");
+
+		assertThatThrownBy(scanner::rollbackCurrentLexeme)
+			.isInstanceOf(UnsupportedOperationException.class)
+			.hasMessage("Can't reset offset if currentLexeme wasn't started");
 	}
 
 	@Test
