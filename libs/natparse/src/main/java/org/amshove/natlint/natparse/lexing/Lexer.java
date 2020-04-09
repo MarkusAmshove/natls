@@ -38,7 +38,7 @@ public class Lexer
 					createAndAddCurrentSingleToken(SyntaxKind.EQUALS);
 					continue;
 				case ':':
-					createAndAddWithPotentialFollowup(SyntaxKind.COLON, '=', SyntaxKind.COLON_EQUALS);
+					createAndAddFollowupEquals(SyntaxKind.COLON, SyntaxKind.COLON_EQUALS);
 					continue;
 				case '+':
 					createAndAddCurrentSingleToken(SyntaxKind.PLUS);
@@ -59,85 +59,29 @@ public class Lexer
 					createAndAddCurrentSingleToken(SyntaxKind.SEMICOLON);
 					continue;
 				case '>':
-					createAndAddWithPotentialFollowup(SyntaxKind.GREATER, '=', SyntaxKind.GREATER_EQUALS);
+					createAndAddFollowupEquals(SyntaxKind.GREATER, SyntaxKind.GREATER_EQUALS);
 					continue;
 				case '<':
-					if (!tryCreateIfFollowedBy('=', SyntaxKind.LESSER_EQUALS)
-						&& !tryCreateIfFollowedBy('>', SyntaxKind.LESSER_GREATER))
+					if (tryCreateIfFollowedBy('=', SyntaxKind.LESSER_EQUALS)
+						|| tryCreateIfFollowedBy('>', SyntaxKind.LESSER_GREATER))
 					{
-						createAndAddCurrentSingleToken(SyntaxKind.LESSER);
+						continue;
 					}
+					createAndAddCurrentSingleToken(SyntaxKind.LESSER);
 					continue;
 
-				case 'G':
-				case 'g':
-				{
-					char next = scanner.peek(1);
-					switch (next)
-					{
-						case 'E':
-						case 'e':
-							scanner.start();
-							scanner.advance(2);
-							createAndAdd(SyntaxKind.GE);
-							continue;
-						case 'T':
-						case 't':
-							scanner.start();
-							scanner.advance(2);
-							createAndAdd(SyntaxKind.GT);
-							continue;
-					}
-				}
-
-				case 'L':
-				case 'l':
-				{
-					char next = scanner.peek(1);
-					switch (next)
-					{
-						case 'E':
-						case 'e':
-							scanner.start();
-							scanner.advance(2);
-							createAndAdd(SyntaxKind.LE);
-							continue;
-						case 'T':
-						case 't':
-							scanner.start();
-							scanner.advance(2);
-							createAndAdd(SyntaxKind.LT);
-							continue;
-					}
-				}
-
-				case 'N':
-				case 'n':
-				{
-					char next = scanner.peek(1);
-					switch (next)
-					{
-						case 'E':
-						case 'e':
-							scanner.start();
-							scanner.advance(2);
-							createAndAdd(SyntaxKind.NE);
-							continue;
-					}
-				}
-
-				case 'E':
 				case 'e':
+				case 'E':
+				case 'g':
+				case 'G':
+				case 'l':
+				case 'L':
+				case 'n':
+				case 'N':
 				{
-					char next = scanner.peek(1);
-					switch (next)
+					if (tryCreateBooleanOperatorKeyword())
 					{
-						case 'Q':
-						case 'q':
-							scanner.start();
-							scanner.advance(2);
-							createAndAdd(SyntaxKind.EQ);
-							continue;
+						break;
 					}
 				}
 
@@ -174,6 +118,54 @@ public class Lexer
 		return tokens;
 	}
 
+	private boolean tryCreateBooleanOperatorKeyword()
+	{
+		char current = scanner.peek();
+		char next = scanner.peek(1);
+		String both = "" + current + next;
+		scanner.start();
+		scanner.advance(2);
+
+		if (both.equalsIgnoreCase("eq"))
+		{
+			createAndAdd(SyntaxKind.EQ);
+			return true;
+		}
+
+		if (both.equalsIgnoreCase("ge"))
+		{
+			createAndAdd(SyntaxKind.GE);
+			return true;
+		}
+
+		if (both.equalsIgnoreCase("gt"))
+		{
+			createAndAdd(SyntaxKind.GT);
+			return true;
+		}
+
+		if (both.equalsIgnoreCase("le"))
+		{
+			createAndAdd(SyntaxKind.LE);
+			return true;
+		}
+
+		if (both.equalsIgnoreCase("lt"))
+		{
+			createAndAdd(SyntaxKind.LT);
+			return true;
+		}
+
+		if (both.equalsIgnoreCase("ne"))
+		{
+			createAndAdd(SyntaxKind.NE);
+			return true;
+		}
+
+		scanner.rollbackCurrentLexeme();
+		return false;
+	}
+
 	private void createAndAddCurrentSingleToken(SyntaxKind kind)
 	{
 		scanner.start();
@@ -181,11 +173,11 @@ public class Lexer
 		createAndAdd(kind);
 	}
 
-	private void createAndAddWithPotentialFollowup(SyntaxKind withoutFollowup, char followUpCharacter, SyntaxKind withFollowup)
+	private void createAndAddFollowupEquals(SyntaxKind withoutFollowup, SyntaxKind withFollowup)
 	{
 		scanner.start();
 		scanner.advance();
-		if (scanner.peek() == followUpCharacter)
+		if (scanner.peek() == '=')
 		{
 			scanner.advance();
 			createAndAdd(withFollowup);
