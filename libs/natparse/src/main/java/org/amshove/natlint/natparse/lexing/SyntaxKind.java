@@ -28,5 +28,6 @@ public enum SyntaxKind
 	NE,
 	LESSER,
 	NUMBER,
-	LESSER_GREATER
+	LESSER_GREATER,
+	STRING
 }

@@ -70,6 +70,13 @@ public class Lexer
 					createAndAddCurrentSingleToken(SyntaxKind.LESSER);
 					continue;
 
+				case '\'':
+					consumeString('\'');
+					break;
+				case '"':
+					consumeString('"');
+					break;
+
 				case 'e':
 				case 'E':
 				case 'g':
@@ -225,6 +232,21 @@ public class Lexer
 			}
 		}
 		return false;
+	}
+
+	private void consumeString(char c)
+	{
+		scanner.start();
+		scanner.advance();
+		while (scanner.peek() != c && !scanner.isAtEnd())
+		{
+			scanner.advance();
+		}
+
+		// The current character is the terminating string literal (' or "), therefore it needs to be consumed
+		// to be included.
+		scanner.advance();
+		createAndAdd(SyntaxKind.STRING);
 	}
 
 	private boolean consumeMultiple(char c, SyntaxKind kind)
