@@ -2,7 +2,6 @@ package org.amshove.natlint.natparse.linting;
 
 import org.amshove.natlint.natparse.linting.text.SourceTextScanner;
 
-import java.nio.file.AtomicMoveNotSupportedException;
 import java.util.ArrayList;
 import java.util.List;
 
