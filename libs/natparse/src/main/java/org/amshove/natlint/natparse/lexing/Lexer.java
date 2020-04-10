@@ -92,6 +92,58 @@ public class Lexer
 					}
 				}
 
+				case 'a':
+				case 'A':
+				case 'b':
+				case 'B':
+				case 'c':
+				case 'C':
+				case 'd':
+				case 'D':
+				case 'f':
+				case 'F':
+				case 'h':
+				case 'H':
+				case 'i':
+				case 'I':
+				case 'j':
+				case 'J':
+				case 'k':
+				case 'K':
+				case 'm':
+				case 'M':
+				case 'o':
+				case 'O':
+				case 'p':
+				case 'P':
+				case 'q':
+				case 'Q':
+				case 'r':
+				case 'R':
+				case 's':
+				case 'S':
+				case 't':
+				case 'T':
+				case 'u':
+				case 'U':
+				case 'v':
+				case 'V':
+				case 'w':
+				case 'W':
+				case 'x':
+				case 'X':
+				case 'y':
+				case 'Y':
+				case 'z':
+				case 'Z':
+					consumeIdentifierOrKeyword();
+					continue;
+
+				case '#':
+					//case '+':
+					consumeIdentifier();
+					continue;
+
 				case '0':
 				case '1':
 				case '2':
@@ -123,6 +175,34 @@ public class Lexer
 			scanner.advance();
 		}
 		return tokens;
+	}
+
+	private void consumeIdentifier()
+	{
+		scanner.start();
+		while (!isLineEnd() && !isNoWhitespace() && !scanner.isAtEnd())
+		{
+			scanner.advance();
+		}
+		createAndAdd(SyntaxKind.IDENTIFIER);
+	}
+
+	private void consumeIdentifierOrKeyword()
+	{
+
+		// NOTE: Could it be an identifier if it contains a dot? If it is a qualified identifier, it might be
+		// 100% not a keyword
+		scanner.start();
+		while (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd())
+		{
+			scanner.advance();
+		}
+		createAndAdd(SyntaxKind.IDENTIFIER_OR_KEYWORD);
+	}
+
+	private boolean isNoWhitespace()
+	{
+		return scanner.peek() != ' ' && scanner.peek() != '\t';
 	}
 
 	private boolean consumeComment()
