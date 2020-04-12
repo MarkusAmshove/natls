@@ -153,19 +153,6 @@ public class Lexer
 				default:
 					break;
 			}
-
-			// Temporary
-			if (scanner.peek() == SourceTextScanner.END_CHARACTER)
-			{
-				break;
-			}
-			scanner.start();
-			while (scanner.peek() != '!' && scanner.peek() != '$')
-			{
-				scanner.advance();
-			}
-			createAndAdd(SyntaxKind.DUMMY);
-			scanner.advance();
 		}
 		return tokens;
 	}
@@ -223,54 +210,6 @@ public class Lexer
 			createAndAdd(SyntaxKind.COMMENT);
 			return true;
 		}
-		return false;
-	}
-
-	private boolean tryCreateBooleanOperatorKeyword()
-	{
-		char current = scanner.peek();
-		char next = scanner.peek(1);
-		String both = "" + current + next;
-		scanner.start();
-		scanner.advance(2);
-
-		if (both.equalsIgnoreCase("eq"))
-		{
-			createAndAdd(SyntaxKind.EQ);
-			return true;
-		}
-
-		if (both.equalsIgnoreCase("ge"))
-		{
-			createAndAdd(SyntaxKind.GE);
-			return true;
-		}
-
-		if (both.equalsIgnoreCase("gt"))
-		{
-			createAndAdd(SyntaxKind.GT);
-			return true;
-		}
-
-		if (both.equalsIgnoreCase("le"))
-		{
-			createAndAdd(SyntaxKind.LE);
-			return true;
-		}
-
-		if (both.equalsIgnoreCase("lt"))
-		{
-			createAndAdd(SyntaxKind.LT);
-			return true;
-		}
-
-		if (both.equalsIgnoreCase("ne"))
-		{
-			createAndAdd(SyntaxKind.NE);
-			return true;
-		}
-
-		scanner.rollbackCurrentLexeme();
 		return false;
 	}
 
