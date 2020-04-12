@@ -77,14 +77,6 @@ public class Lexer
 					consumeString('"');
 					continue;
 
-				case 'e':
-				case 'E':
-				case 'g':
-				case 'G':
-				case 'l':
-				case 'L':
-				case 'n':
-				case 'N':
 				case 'a':
 				case 'A':
 				case 'b':
@@ -93,8 +85,12 @@ public class Lexer
 				case 'C':
 				case 'd':
 				case 'D':
+				case 'e':
+				case 'E':
 				case 'f':
 				case 'F':
+				case 'g':
+				case 'G':
 				case 'h':
 				case 'H':
 				case 'i':
@@ -103,8 +99,12 @@ public class Lexer
 				case 'J':
 				case 'k':
 				case 'K':
+				case 'l':
+				case 'L':
 				case 'm':
 				case 'M':
+				case 'n':
+				case 'N':
 				case 'o':
 				case 'O':
 				case 'p':
