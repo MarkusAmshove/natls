@@ -1,4 +1,4 @@
-package org.amshove.natlint.natparse.linting.text;
+package org.amshove.natlint.natparse.lexing.text;
 
 public class SourceTextScanner
 {

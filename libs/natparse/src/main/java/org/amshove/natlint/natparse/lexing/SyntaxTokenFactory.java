@@ -1,4 +1,4 @@
-package org.amshove.natlint.natparse.linting;
+package org.amshove.natlint.natparse.lexing;
 
 public class SyntaxTokenFactory
 {

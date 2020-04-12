@@ -1,4 +1,4 @@
-package org.amshove.natlint.natparse.linting.text;
+package org.amshove.natlint.natparse.lexing.text;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

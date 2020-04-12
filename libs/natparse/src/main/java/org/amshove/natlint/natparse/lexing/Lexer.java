@@ -1,6 +1,6 @@
-package org.amshove.natlint.natparse.linting;
+package org.amshove.natlint.natparse.lexing;
 
-import org.amshove.natlint.natparse.linting.text.SourceTextScanner;
+import org.amshove.natlint.natparse.lexing.text.SourceTextScanner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,13 +85,6 @@ public class Lexer
 				case 'L':
 				case 'n':
 				case 'N':
-				{
-					if (tryCreateBooleanOperatorKeyword())
-					{
-						continue;
-					}
-				}
-
 				case 'a':
 				case 'A':
 				case 'b':
@@ -197,7 +190,17 @@ public class Lexer
 		{
 			scanner.advance();
 		}
-		createAndAdd(SyntaxKind.IDENTIFIER_OR_KEYWORD);
+
+		String lexeme = scanner.lexemeText();
+		SyntaxKind kind = KeywordTable.getKeyword(lexeme);
+		if (kind != null)
+		{
+			createAndAdd(kind);
+		}
+		else
+		{
+			createAndAdd(SyntaxKind.IDENTIFIER_OR_KEYWORD);
+		}
 	}
 
 	private boolean isNoWhitespace()
