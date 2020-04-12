@@ -12,9 +12,18 @@ public class Lexer
 	private int line;
 	private int currentLineStartOffset;
 
+	// NOTE: Only for debugging purposes.
+	private List<Character> unknownCharacters;
+
+	public List<Character> getUnknownCharacters()
+	{
+		return unknownCharacters;
+	}
+
 	public List<SyntaxToken> lex(String source)
 	{
 		tokens = new ArrayList<>();
+		unknownCharacters = new ArrayList<>();
 		scanner = new SourceTextScanner(source);
 		line = 0;
 		currentLineStartOffset = 0;
@@ -151,7 +160,8 @@ public class Lexer
 					continue;
 
 				default:
-					break;
+					unknownCharacters.add(scanner.peek());
+					scanner.advance();
 			}
 		}
 		return tokens;

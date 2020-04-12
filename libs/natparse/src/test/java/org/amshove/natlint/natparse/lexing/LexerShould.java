@@ -56,4 +56,14 @@ public class LexerShould extends AbstractLexerTest
 		assertThat(lexSingle("abc abc", 2).offsetInLine()).isEqualTo(4);
 	}
 
+	@Test
+	void storeUnknownCharacters()
+	{
+		Lexer lexer = new Lexer();
+		lexer.lex("\u2412\u4123\u1234");
+		List<Character> unknownCharacters = lexer.getUnknownCharacters();
+
+		assertThat(unknownCharacters)
+			.contains('\u2412', '\u4123', '\u1234');
+	}
 }
