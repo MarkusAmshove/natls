@@ -160,7 +160,7 @@ public class Lexer
 	private void consumeIdentifier()
 	{
 		scanner.start();
-		while (!isLineEnd() && !isNoWhitespace() && !scanner.isAtEnd())
+		while (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd())
 		{
 			scanner.advance();
 		}
