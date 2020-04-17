@@ -9,4 +9,10 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 	{
 		assertTokens("#NAME", token(SyntaxKind.IDENTIFIER, "#NAME"));
 	}
+
+	@Test
+	void recognizeAivVariables()
+	{
+		assertTokens("+MY-AIV", token(SyntaxKind.IDENTIFIER, "+MY-AIV"));
+	}
 }

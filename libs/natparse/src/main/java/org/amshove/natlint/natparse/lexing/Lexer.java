@@ -50,7 +50,14 @@ public class Lexer
 					createAndAddFollowupEquals(SyntaxKind.COLON, SyntaxKind.COLON_EQUALS);
 					continue;
 				case '+':
-					createAndAddCurrentSingleToken(SyntaxKind.PLUS);
+					if (Character.isAlphabetic(scanner.peek(1)))
+					{
+						consumeIdentifier();
+					}
+					else
+					{
+						createAndAddCurrentSingleToken(SyntaxKind.PLUS);
+					}
 					continue;
 				case '-':
 					createAndAddCurrentSingleToken(SyntaxKind.MINUS);
@@ -142,7 +149,6 @@ public class Lexer
 					continue;
 
 				case '#':
-					//case '+':
 					consumeIdentifier();
 					continue;
 
