@@ -149,6 +149,7 @@ public class Lexer
 					continue;
 
 				case '#':
+				case '&':
 					consumeIdentifier();
 					continue;
 
@@ -185,16 +186,35 @@ public class Lexer
 
 	private void consumeIdentifierOrKeyword()
 	{
-
-		// NOTE: Could it be an identifier if it contains a dot? If it is a qualified identifier, it might be
-		// 100% not a keyword
+		SyntaxKind kindHint = null;
 		scanner.start();
 		while (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd())
 		{
+
+			// Characters from which we can be sure that we're dealing with an identifier
+			switch (scanner.peek())
+			{
+				case '/':
+				case '@':
+				case '$':
+				case '&':
+				case '#':
+				case '+':
+				case '.': // Qualified Variable
+					kindHint = SyntaxKind.IDENTIFIER;
+			}
+
 			scanner.advance();
 		}
 
 		String lexeme = scanner.lexemeText();
+
+		if (kindHint != null)
+		{
+			createAndAdd(kindHint);
+			return;
+		}
+
 		SyntaxKind kind = KeywordTable.getKeyword(lexeme);
 		if (kind != null)
 		{
@@ -202,7 +222,16 @@ public class Lexer
 		}
 		else
 		{
-			createAndAdd(SyntaxKind.IDENTIFIER_OR_KEYWORD);
+			// WITH_CTE is the only Keyword that contains an underscore, if we're
+			// this far and it contains an underscore, it's an identifier
+			if (lexeme.contains("_"))
+			{
+				createAndAdd(SyntaxKind.IDENTIFIER);
+			}
+			else
+			{
+				createAndAdd(SyntaxKind.IDENTIFIER_OR_KEYWORD);
+			}
 		}
 	}
 
