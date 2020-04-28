@@ -126,8 +126,6 @@ public class KeywordTable
 				return SyntaxKind.END_FIND;
 			case "end-for":
 				return SyntaxKind.END_FOR;
-			case "end-function":
-				return SyntaxKind.END_FUNCTION;
 			case "end-histogram":
 				return SyntaxKind.END_HISTOGRAM;
 			case "endhoc":
@@ -292,8 +290,6 @@ public class KeywordTable
 				return SyntaxKind.RETURN;
 			case "rollback":
 				return SyntaxKind.ROLLBACK;
-			case "rounded":
-				return SyntaxKind.ROUNDED;
 			case "rulevar":
 				return SyntaxKind.RULEVAR;
 			case "run":
