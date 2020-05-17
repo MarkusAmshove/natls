@@ -26,10 +26,10 @@ class FieldParser
 	/*
 	private static final int SUPPRESSION_INDEX = 49;
 	private static final int SUPPRESION_LENGTH = 1;
-
+	
 	private static final int DESCRIPTOR_INDEX = 51;
 	private static final int DESCRIPTOR_LENGTH = 1;
-
+	
 	private static final int REMARK_INDEX = 53;
 	*/
 
