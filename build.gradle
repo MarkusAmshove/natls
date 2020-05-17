@@ -47,6 +47,7 @@ subprojects {
 			removeUnusedImports()
 			trimTrailingWhitespace()
 			eclipse().configFile "${rootProject.projectDir}/EclipseFormatter.xml"
+			paddedCell()
 		}
 	}
 
