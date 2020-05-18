@@ -2,6 +2,7 @@ package org.amshove.natlint.natparse.parsing.ddm;
 
 import org.amshove.natlint.natparse.NaturalParseException;
 import org.amshove.natlint.natparse.natural.DataFormat;
+import org.amshove.natlint.natparse.natural.NullValueSupression;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -101,6 +102,30 @@ class FieldParserShould
 			.withMessage("Can't parse format length \".2;3\"");
 	}
 
+	@ParameterizedTest(name = "parseTheNullValueSuppresion [Supression, ExpectedSupression = {argumentsWithNames}]")
+	@CsvSource(value =
+	{ "N,NULL_SUPRESSION", "F,FIXED_STORAGE", ",NONE" })
+	void parseTheNullValueSuppresion(String source, String expectedSupression)
+	{
+		// CsvSource passes null for empty
+		if (source == null)
+		{
+			source = " ";
+		}
+
+		NullValueSupression typedExpectedSupression = NullValueSupression.valueOf(expectedSupression);
+
+		assertThat(parsedField(fieldBuilder().withSupression(source)).supression()).isEqualTo(typedExpectedSupression);
+	}
+
+	@Test
+	void throwAnExceptionWhenPassingAnInvalidNullSupressionValue()
+	{
+		assertThatExceptionOfType(NaturalParseException.class)
+			.isThrownBy(() -> parsedField(fieldBuilder().withSupression("A")))
+			.withMessage("Can't determine NullValueSupression from \"A\"");
+	}
+
 	private DdmField parsedField(DdmFieldBuilder builder)
 	{
 		return sut.parse(builder.build());
@@ -120,7 +145,7 @@ class FieldParserShould
 		private String format = "A";
 		private String length = "1";
 		private String remark = "";
-		private String suppression = "";
+		private String supression = "";
 		private String descriptor = "";
 
 		DdmFieldBuilder withType(String type)
@@ -159,9 +184,9 @@ class FieldParserShould
 			return this;
 		}
 
-		DdmFieldBuilder withSuppression(String suppression)
+		DdmFieldBuilder withSupression(String supression)
 		{
-			this.suppression = suppression;
+			this.supression = supression;
 			return this;
 		}
 
@@ -187,7 +212,7 @@ class FieldParserShould
 				name,
 				format,
 				length,
-				suppression,
+				supression,
 				descriptor,
 				remark);
 		}

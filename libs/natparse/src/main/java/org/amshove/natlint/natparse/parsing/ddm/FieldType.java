@@ -6,4 +6,5 @@ public enum FieldType
 	MULTIPLE,
 	PERIODIC,
 	NONE
+	// TODO: Add fromSource method
 }
