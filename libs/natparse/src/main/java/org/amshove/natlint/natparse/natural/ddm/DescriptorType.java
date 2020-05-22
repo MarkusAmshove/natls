@@ -1,4 +1,4 @@
-package org.amshove.natlint.natparse.natural;
+package org.amshove.natlint.natparse.natural.ddm;
 
 import org.amshove.natlint.natparse.NaturalParseException;
 

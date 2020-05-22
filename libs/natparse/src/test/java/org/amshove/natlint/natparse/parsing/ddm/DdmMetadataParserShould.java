@@ -98,7 +98,7 @@ class DdmMetadataParserShould
 
 	private static abstract class MetadataField
 	{
-		String value;
+		final String value;
 
 		MetadataField(String value)
 		{

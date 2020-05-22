@@ -2,8 +2,9 @@ package org.amshove.natlint.natparse.parsing.ddm;
 
 import org.amshove.natlint.natparse.NaturalParseException;
 import org.amshove.natlint.natparse.natural.DataFormat;
-import org.amshove.natlint.natparse.natural.DescriptorType;
-import org.amshove.natlint.natparse.natural.NullValueSupression;
+import org.amshove.natlint.natparse.natural.ddm.DescriptorType;
+import org.amshove.natlint.natparse.natural.ddm.FieldType;
+import org.amshove.natlint.natparse.natural.ddm.NullValueSupression;
 
 class FieldParser
 {
@@ -49,25 +50,7 @@ class FieldParser
 
 	private static FieldType parseFieldType(String line)
 	{
-		String type = getField(line, TYPE_INDEX, TYPE_LENGTH);
-		if (type.equals(" "))
-		{
-			return FieldType.NONE;
-		}
-		if (type.equals("M"))
-		{
-			return FieldType.MULTIPLE;
-		}
-		if (type.equals("G"))
-		{
-			return FieldType.GROUP;
-		}
-		if (type.equals("P"))
-		{
-			return FieldType.PERIODIC;
-		}
-
-		throw new NaturalParseException(String.format("Can't determine DDM FieldType from \"%s\"", type));
+		return FieldType.fromSource(getField(line, TYPE_INDEX, TYPE_LENGTH));
 	}
 
 	private static int parseLevel(String line)

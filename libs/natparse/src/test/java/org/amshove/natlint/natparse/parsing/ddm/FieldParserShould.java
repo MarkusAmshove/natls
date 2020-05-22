@@ -2,8 +2,9 @@ package org.amshove.natlint.natparse.parsing.ddm;
 
 import org.amshove.natlint.natparse.NaturalParseException;
 import org.amshove.natlint.natparse.natural.DataFormat;
-import org.amshove.natlint.natparse.natural.DescriptorType;
-import org.amshove.natlint.natparse.natural.NullValueSupression;
+import org.amshove.natlint.natparse.natural.ddm.DescriptorType;
+import org.amshove.natlint.natparse.natural.ddm.FieldType;
+import org.amshove.natlint.natparse.natural.ddm.NullValueSupression;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -43,7 +44,7 @@ class FieldParserShould
 	{
 		assertThatExceptionOfType(NaturalParseException.class)
 			.isThrownBy(() -> parsedField(fieldBuilder().withType("L")))
-			.withMessage("Can't determine DDM FieldType from \"L\"");
+			.withMessage("Can't determine FieldType from \"L\"");
 	}
 
 	@ParameterizedTest(name = "parseTheLevelOfFields [Level = {argumentsWithNames}]")
