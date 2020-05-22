@@ -1,6 +1,7 @@
 package org.amshove.natlint.natparse.parsing.ddm;
 
 import org.amshove.natlint.natparse.natural.DataFormat;
+import org.amshove.natlint.natparse.natural.DescriptorType;
 import org.amshove.natlint.natparse.natural.NullValueSupression;
 
 public class DdmField
@@ -12,8 +13,9 @@ public class DdmField
 	private final DataFormat format;
 	private final double length;
 	private final NullValueSupression supression;
+	private final DescriptorType descriptor;
 
-	DdmField(FieldType fieldType, int level, String shortname, String name, DataFormat format, double length, NullValueSupression supression)
+	DdmField(FieldType fieldType, int level, String shortname, String name, DataFormat format, double length, NullValueSupression supression, DescriptorType descriptorType)
 	{
 		this.fieldType = fieldType;
 		this.level = level;
@@ -22,6 +24,7 @@ public class DdmField
 		this.format = format;
 		this.length = length;
 		this.supression = supression;
+		this.descriptor = descriptorType;
 	}
 
 	public FieldType fieldType()
@@ -57,5 +60,10 @@ public class DdmField
 	public NullValueSupression supression()
 	{
 		return this.supression;
+	}
+
+	public DescriptorType descriptor()
+	{
+		return this.descriptor;
 	}
 }

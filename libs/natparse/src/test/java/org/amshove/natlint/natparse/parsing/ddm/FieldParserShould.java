@@ -2,6 +2,7 @@ package org.amshove.natlint.natparse.parsing.ddm;
 
 import org.amshove.natlint.natparse.NaturalParseException;
 import org.amshove.natlint.natparse.natural.DataFormat;
+import org.amshove.natlint.natparse.natural.DescriptorType;
 import org.amshove.natlint.natparse.natural.NullValueSupression;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -124,6 +125,29 @@ class FieldParserShould
 		assertThatExceptionOfType(NaturalParseException.class)
 			.isThrownBy(() -> parsedField(fieldBuilder().withSupression("A")))
 			.withMessage("Can't determine NullValueSupression from \"A\"");
+	}
+
+	@ParameterizedTest(name = "parseTheDescriptorType [Descriptor, ExpectedType = {argumentsWithNames}]")
+	@CsvSource(value =
+	{ "D,DESCRIPTOR", "S,SUPERDESCRIPTOR", ",NONE" })
+	void parseTheDescriptorType(String descriptorLiteral, String expectedDescriptorType)
+	{
+		if (descriptorLiteral == null)
+		{
+			descriptorLiteral = " ";
+		}
+
+		DescriptorType expectedType = DescriptorType.valueOf(expectedDescriptorType);
+
+		assertThat(parsedField(fieldBuilder().withDescriptor(descriptorLiteral)).descriptor()).isEqualTo(expectedType);
+	}
+
+	@Test
+	void throwAnExceptionWhenPassingAnInvalidDescriptorType()
+	{
+		assertThatExceptionOfType(NaturalParseException.class)
+			.isThrownBy(() -> parsedField(fieldBuilder().withDescriptor("F")))
+			.withMessage("Can't determine DescriptorType from \"F\"");
 	}
 
 	private DdmField parsedField(DdmFieldBuilder builder)

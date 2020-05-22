@@ -2,6 +2,7 @@ package org.amshove.natlint.natparse.parsing.ddm;
 
 import org.amshove.natlint.natparse.NaturalParseException;
 import org.amshove.natlint.natparse.natural.DataFormat;
+import org.amshove.natlint.natparse.natural.DescriptorType;
 import org.amshove.natlint.natparse.natural.NullValueSupression;
 
 class FieldParser
@@ -26,10 +27,11 @@ class FieldParser
 
 	private static final int SUPRESSION_INDEX = 49;
 	private static final int SUPRESSION_LENGTH = 1;
-	/*
+
 	private static final int DESCRIPTOR_INDEX = 51;
 	private static final int DESCRIPTOR_LENGTH = 1;
-	
+
+	/*
 	private static final int REMARK_INDEX = 53;
 	*/
 
@@ -42,7 +44,8 @@ class FieldParser
 			parseName(fieldLine),
 			parseFormat(fieldLine),
 			parseLength(fieldLine),
-			parseSupression(fieldLine));
+			parseSupression(fieldLine),
+			parseDescriptorType(fieldLine));
 	}
 
 	private static FieldType parseFieldType(String line)
@@ -118,5 +121,10 @@ class FieldParser
 	private static String getField(String line, int index, int length)
 	{
 		return line.substring(index, index + length);
+	}
+
+	private static DescriptorType parseDescriptorType(String line)
+	{
+		return DescriptorType.fromSource(getField(line, DESCRIPTOR_INDEX, DESCRIPTOR_LENGTH));
 	}
 }
