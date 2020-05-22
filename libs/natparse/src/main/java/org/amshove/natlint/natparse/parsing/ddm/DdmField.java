@@ -14,8 +14,17 @@ public class DdmField
 	private final double length;
 	private final NullValueSupression supression;
 	private final DescriptorType descriptor;
+	private final String remark;
 
-	DdmField(FieldType fieldType, int level, String shortname, String name, DataFormat format, double length, NullValueSupression supression, DescriptorType descriptorType)
+	DdmField(FieldType fieldType,
+		int level,
+		String shortname,
+		String name,
+		DataFormat format,
+		double length,
+		NullValueSupression supression,
+		DescriptorType descriptorType,
+		String remark)
 	{
 		this.fieldType = fieldType;
 		this.level = level;
@@ -25,6 +34,7 @@ public class DdmField
 		this.length = length;
 		this.supression = supression;
 		this.descriptor = descriptorType;
+		this.remark = remark;
 	}
 
 	public FieldType fieldType()
@@ -65,5 +75,10 @@ public class DdmField
 	public DescriptorType descriptor()
 	{
 		return this.descriptor;
+	}
+
+	public String remark()
+	{
+		return this.remark;
 	}
 }

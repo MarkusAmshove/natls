@@ -150,6 +150,14 @@ class FieldParserShould
 			.withMessage("Can't determine DescriptorType from \"F\"");
 	}
 
+	@ParameterizedTest(name = "parseTheRemark [Remark = {argumentsWithNames}]")
+	@CsvSource(value =
+	{ "Remark", "Long remark", "Super long remark", "Would this remark even fit?" })
+	void parseTheRemark(String remark)
+	{
+		assertThat(parsedField(fieldBuilder().withRemark(remark)).remark()).isEqualTo(remark);
+	}
+
 	private DdmField parsedField(DdmFieldBuilder builder)
 	{
 		return sut.parse(builder.build());

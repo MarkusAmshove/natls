@@ -31,9 +31,7 @@ class FieldParser
 	private static final int DESCRIPTOR_INDEX = 51;
 	private static final int DESCRIPTOR_LENGTH = 1;
 
-	/*
 	private static final int REMARK_INDEX = 53;
-	*/
 
 	public DdmField parse(String fieldLine)
 	{
@@ -45,7 +43,8 @@ class FieldParser
 			parseFormat(fieldLine),
 			parseLength(fieldLine),
 			parseSupression(fieldLine),
-			parseDescriptorType(fieldLine));
+			parseDescriptorType(fieldLine),
+			parseRemark(fieldLine));
 	}
 
 	private static FieldType parseFieldType(String line)
@@ -126,5 +125,10 @@ class FieldParser
 	private static DescriptorType parseDescriptorType(String line)
 	{
 		return DescriptorType.fromSource(getField(line, DESCRIPTOR_INDEX, DESCRIPTOR_LENGTH));
+	}
+
+	private static String parseRemark(String line)
+	{
+		return line.substring(REMARK_INDEX).trim();
 	}
 }
