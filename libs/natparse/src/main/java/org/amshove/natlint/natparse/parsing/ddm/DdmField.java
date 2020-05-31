@@ -3,9 +3,10 @@ package org.amshove.natlint.natparse.parsing.ddm;
 import org.amshove.natlint.natparse.natural.DataFormat;
 import org.amshove.natlint.natparse.natural.ddm.DescriptorType;
 import org.amshove.natlint.natparse.natural.ddm.FieldType;
+import org.amshove.natlint.natparse.natural.ddm.IDdmField;
 import org.amshove.natlint.natparse.natural.ddm.NullValueSupression;
 
-public class DdmField
+public class DdmField implements IDdmField
 {
 	private final FieldType fieldType;
 	private final int level;
@@ -13,7 +14,7 @@ public class DdmField
 	private final String name;
 	private final DataFormat format;
 	private final double length;
-	private final NullValueSupression supression;
+	private final NullValueSupression suppression;
 	private final DescriptorType descriptor;
 	private final String remark;
 
@@ -23,8 +24,8 @@ public class DdmField
 		String name,
 		DataFormat format,
 		double length,
-		NullValueSupression supression,
-		DescriptorType descriptorType,
+		NullValueSupression suppression,
+		DescriptorType descriptor,
 		String remark)
 	{
 		this.fieldType = fieldType;
@@ -33,9 +34,22 @@ public class DdmField
 		this.name = name;
 		this.format = format;
 		this.length = length;
-		this.supression = supression;
-		this.descriptor = descriptorType;
+		this.suppression = suppression;
+		this.descriptor = descriptor;
 		this.remark = remark;
+	}
+
+	DdmField(DdmField field)
+	{
+		this.fieldType = field.fieldType;
+		this.level = field.level;
+		this.shortname = field.shortname;
+		this.name = field.name;
+		this.format = field.format;
+		this.length = field.length;
+		this.suppression = field.suppression;
+		this.descriptor = field.descriptor;
+		this.remark = field.remark;
 	}
 
 	public FieldType fieldType()
@@ -68,9 +82,9 @@ public class DdmField
 		return length;
 	}
 
-	public NullValueSupression supression()
+	public NullValueSupression suppression()
 	{
-		return this.supression;
+		return this.suppression;
 	}
 
 	public DescriptorType descriptor()

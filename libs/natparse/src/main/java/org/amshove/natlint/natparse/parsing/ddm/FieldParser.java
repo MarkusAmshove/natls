@@ -102,6 +102,15 @@ class FieldParser
 
 	private static String getField(String line, int index, int length)
 	{
+		int endIndex = index + length;
+
+		// DDM source was saved without trailing whitespace
+		if (endIndex >= line.length())
+		{
+			return new String(new char[]
+			{ ' ' }, 0, length);
+		}
+
 		return line.substring(index, index + length);
 	}
 
@@ -112,6 +121,11 @@ class FieldParser
 
 	private static String parseRemark(String line)
 	{
+		if (line.length() < REMARK_INDEX)
+		{
+			return "";
+		}
+
 		return line.substring(REMARK_INDEX).trim();
 	}
 }

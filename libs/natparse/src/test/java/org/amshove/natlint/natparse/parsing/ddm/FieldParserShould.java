@@ -117,7 +117,7 @@ class FieldParserShould
 
 		NullValueSupression typedExpectedSupression = NullValueSupression.valueOf(expectedSupression);
 
-		assertThat(parsedField(fieldBuilder().withSupression(source)).supression()).isEqualTo(typedExpectedSupression);
+		assertThat(parsedField(fieldBuilder().withSupression(source)).suppression()).isEqualTo(typedExpectedSupression);
 	}
 
 	@Test
@@ -144,6 +144,14 @@ class FieldParserShould
 	}
 
 	@Test
+	void parseEmptyDescriptors()
+	{
+		// this is the case when the ddm source has no remark and was saved without trailing whitespace
+		DdmField field = sut.parse("  1 AA SOME-NUMBER                       N   12  N");
+		assertThat(field.descriptor()).isEqualTo(DescriptorType.NONE);
+	}
+
+	@Test
 	void throwAnExceptionWhenPassingAnInvalidDescriptorType()
 	{
 		assertThatExceptionOfType(NaturalParseException.class)
@@ -157,6 +165,14 @@ class FieldParserShould
 	void parseTheRemark(String remark)
 	{
 		assertThat(parsedField(fieldBuilder().withRemark(remark)).remark()).isEqualTo(remark);
+	}
+
+	@Test
+	void parseEmptyRemarks()
+	{
+		// this is the case when the ddm source has no remark and was saved without trailing whitespace
+		DdmField field = sut.parse("  1 AD ALPHANUMERIC-DESCRIPTOR           A   18    D");
+		assertThat(field.remark()).isEmpty();
 	}
 
 	private DdmField parsedField(DdmFieldBuilder builder)

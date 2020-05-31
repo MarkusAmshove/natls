@@ -32,7 +32,7 @@ class DdmMetadataParserShould
 	{ "000", "001", "0", "1", "111", "9999" })
 	void parseDbNumbers(String dbNumber)
 	{
-		assertThat(parsedMetadata(new DbNumber(dbNumber)).getDatabaseNumber()).isEqualTo(dbNumber);
+		assertThat(parsedMetadata(new DbNumber(dbNumber)).databaseNumber()).isEqualTo(dbNumber);
 	}
 
 	@ParameterizedTest(name = "parseFileNumers [{argumentsWithNames}]")
@@ -40,7 +40,7 @@ class DdmMetadataParserShould
 	{ "000", "001", "0", "1", "111", "9999" })
 	void parseFileNumbers(String fileNumber)
 	{
-		assertThat(parsedMetadata(new FileNumber(fileNumber)).getFileNumber()).isEqualTo(fileNumber);
+		assertThat(parsedMetadata(new FileNumber(fileNumber)).fileNumber()).isEqualTo(fileNumber);
 	}
 
 	@ParameterizedTest(name = "parseDdmNames [{argumentsWithNames}]")
@@ -48,7 +48,7 @@ class DdmMetadataParserShould
 	{ "NODASH", "SINGLE-DASH", "MULTI-PLE-DASHES", "A-LOT-OF-DASHES-FOR-A-NAME" })
 	void parseAName(String name)
 	{
-		assertThat(parsedMetadata(new DbName(name)).getName()).isEqualTo(name);
+		assertThat(parsedMetadata(new DbName(name)).name()).isEqualTo(name);
 	}
 
 	@ParameterizedTest(name = "parseDefaultSequences [{argumentsWithNames}]")
@@ -56,7 +56,7 @@ class DdmMetadataParserShould
 	{ "AA", "AC", "DC", "XX", "ABCD" })
 	void parseDefaultSequences(String sequence)
 	{
-		assertThat(parsedMetadata(new DefaultSequence(sequence)).getDefaultSequence()).isEqualTo(sequence);
+		assertThat(parsedMetadata(new DefaultSequence(sequence)).defaultSequence()).isEqualTo(sequence);
 	}
 
 	DdmMetadata parsedMetadata(MetadataField field)

@@ -7,7 +7,7 @@ class DdmMetadata
 	private String fileNumber;
 	private String defaultSequence;
 
-	public String getName()
+	public String name()
 	{
 		return name;
 	}
@@ -17,7 +17,7 @@ class DdmMetadata
 		this.name = name;
 	}
 
-	public String getDatabaseNumber()
+	public String databaseNumber()
 	{
 		return databaseNumber;
 	}
@@ -27,7 +27,7 @@ class DdmMetadata
 		this.databaseNumber = databaseNumber;
 	}
 
-	public String getFileNumber()
+	public String fileNumber()
 	{
 		return fileNumber;
 	}
@@ -37,7 +37,7 @@ class DdmMetadata
 		this.fileNumber = fileNumber;
 	}
 
-	public String getDefaultSequence()
+	public String defaultSequence()
 	{
 		return defaultSequence;
 	}
