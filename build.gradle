@@ -6,6 +6,8 @@ plugins {
 
 ext {
 	libraries = [
+		// Implementation
+		guava : 'com.google.guava:guava:29.0-jre',
 		// Test
 		junit_jupiter : 'org.junit.jupiter:junit-jupiter:5.6.0',
 		assertJ : 'org.assertj:assertj-core:3.11.1'
@@ -16,8 +18,8 @@ allprojects {
 	apply plugin: 'java-library'
 	apply plugin: 'jacoco'
 
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+	sourceCompatibility = 1.8
+	targetCompatibility = 1.8
 
 	repositories {
 		jcenter()
@@ -30,6 +32,7 @@ subprojects {
 	apply plugin: 'com.adarshr.test-logger'
 
 	dependencies {
+		implementation libraries.guava
 		testImplementation libraries.junit_jupiter
 		testImplementation libraries.assertJ
 	}
@@ -63,7 +66,7 @@ subprojects {
 	}
 }
 
-task jacocoRootReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
+task jacocoRootReport(type: JacocoReport) {
 	dependsOn = subprojects.test
 
 	additionalSourceDirs.setFrom files(subprojects.sourceSets.main.allSource.srcDirs)
