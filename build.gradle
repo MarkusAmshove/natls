@@ -1,7 +1,8 @@
 plugins {
 	id 'java-library'
-	id "com.diffplug.gradle.spotless" version "3.27.1"
+	id 'com.diffplug.gradle.spotless' version '3.27.1'
 	id 'com.adarshr.test-logger' version '2.0.0'
+	id 'org.sonarqube' version '2.7'
 }
 
 ext {
@@ -76,3 +77,11 @@ task jacocoRootReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
 		csv.enabled = false
 	}
 }
+
+sonarqube {
+    properties {
+        property 'sonar.coverage.jacoco.xmlReportPaths', 'build/reports/jacoco/test/jacocoTestReport.xml'
+    }
+}
+
+project.tasks['sonarqube'].dependsOn subprojects.jacocoTestReport
