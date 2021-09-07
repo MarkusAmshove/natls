@@ -1,6 +1,5 @@
 plugins {
 	id 'java-library'
-	id "com.diffplug.gradle.spotless" version "3.27.1"
 	id 'com.adarshr.test-logger' version '2.0.0'
 }
 
@@ -28,7 +27,6 @@ allprojects {
 
 
 subprojects {
-	apply plugin: 'com.diffplug.gradle.spotless'
 	apply plugin: 'com.adarshr.test-logger'
 
 	dependencies {
@@ -43,15 +41,6 @@ subprojects {
 
 	testlogger {
 		theme 'mocha'
-	}
-
-	spotless {
-		java {
-			removeUnusedImports()
-			trimTrailingWhitespace()
-			eclipse().configFile "${rootProject.projectDir}/EclipseFormatter.xml"
-			paddedCell()
-		}
 	}
 
 	jacocoTestReport {
