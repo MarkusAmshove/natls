@@ -105,10 +105,9 @@ class FieldParser
 		int endIndex = index + length;
 
 		// DDM source was saved without trailing whitespace
-		if (endIndex >= line.length())
+		if (endIndex > line.length())
 		{
-			return new String(new char[]
-			{ ' ' }, 0, length);
+			return new String(new char[] { ' ' }, 0, length);
 		}
 
 		return line.substring(index, index + length);

@@ -2,7 +2,7 @@ package org.amshove.natlint.natparse.natural.ddm;
 
 public interface ISuperdescriptorChild
 {
-	IDdmField field();
+	String name();
 
 	int rangeFrom();
 

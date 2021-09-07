@@ -21,12 +21,6 @@ public class SuperdescriptorChild implements ISuperdescriptorChild
 		return name;
 	}
 
-	@Override
-	public IDdmField field()
-	{
-		return null;
-	}
-
 	public int rangeFrom()
 	{
 		return rangeFrom;

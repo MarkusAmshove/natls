@@ -64,6 +64,8 @@ public class DdmParser
 			if (field.descriptor() == DescriptorType.SUPERDESCRIPTOR)
 			{
 				field = parseSuperdescriptor(scanner, new Superdescriptor(field));
+				ddm.addField(field);
+				continue;
 			}
 
 			ddm.addField(field);
@@ -107,7 +109,7 @@ public class DdmParser
 	private Superdescriptor parseSuperdescriptor(LinewiseTextScanner scanner, DdmField field)
 	{
 		scanner.advance();
-		// SOURCe FIELD(S) comment from predic
+		// SOURCE FIELD(S) comment from predic
 		scanner.advance();
 
 		Superdescriptor superdescriptor = new Superdescriptor(field);
@@ -122,7 +124,7 @@ public class DdmParser
 		return superdescriptor;
 	}
 
-	private static final Pattern SUPERDESCRIPTOR_CHILD_RANGE_PATTERN = Pattern.compile("(\\d+-\\d+)");
+	private static final Pattern SUPERDESCRIPTOR_CHILD_RANGE_PATTERN = Pattern.compile("^.*\\(\\d+-\\d+\\).*$");
 
 	private static boolean containsSuperdescriptorSourceFieldRange(String line)
 	{

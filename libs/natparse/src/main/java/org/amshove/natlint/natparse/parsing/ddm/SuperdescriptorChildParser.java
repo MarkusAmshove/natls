@@ -22,7 +22,7 @@ public class SuperdescriptorChildParser
 
 	private static String getName(Matcher matcher)
 	{
-		return matcher.group("NAME");
+		return matcher.group("NAME").trim();
 	}
 
 	private static int getRangeFrom(Matcher matcher)

@@ -2,14 +2,12 @@ package org.amshove.natlint.natparse.parsing.ddm;
 
 import com.google.common.collect.ImmutableList;
 import org.amshove.natlint.natparse.ResourceHelper;
-import org.amshove.natlint.natparse.natural.ddm.FieldType;
-import org.amshove.natlint.natparse.natural.ddm.IDataDefinitionModule;
-import org.amshove.natlint.natparse.natural.ddm.IDdmField;
-import org.amshove.natlint.natparse.natural.ddm.IGroupField;
+import org.amshove.natlint.natparse.natural.ddm.*;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -64,7 +62,20 @@ public class DdmParserShould
 		assertThat(nestedGroup.level()).isEqualTo(2);
 		assertGroupHasMember(nestedGroup, "TOP-LEVEL-GROUP-GROUP-CHILD");
 
-		assertThat(true).as("Test descriptors").isFalse();
+		ISuperdescriptor aSuperdescriptor = assertIsSuperdescriptor(findField(ddm, "A-SUPERDESCRIPTOR"));
+		assertThat(aSuperdescriptor.fields()).hasSize(2);
+		assertSuperdescriptorHasField(aSuperdescriptor, "ALPHA-FIELD",1,8);
+		assertSuperdescriptorHasField(aSuperdescriptor, "ANOTHER-NUMBER",1,12);
+
+		ISuperdescriptor anotherSuperdescriptor = assertIsSuperdescriptor(findField(ddm, "ANOTHER-SUPERDESCRIPTOR"));
+		assertThat(anotherSuperdescriptor.fields()).hasSize(2);
+		assertSuperdescriptorHasField(anotherSuperdescriptor, "ALPHA-FIELD",1,8);
+		assertSuperdescriptorHasField(anotherSuperdescriptor, "ANOTHER-NUMBER",1,12);
+
+		ISuperdescriptor superdescriptorWithSubrange = assertIsSuperdescriptor(findField(ddm, "SUPERDESCRIPTOR-WITH-SUBRANGE"));
+		assertThat(superdescriptorWithSubrange.fields()).hasSize(2);
+		assertSuperdescriptorHasField(superdescriptorWithSubrange, "SOME-NUMBER",1,5);
+		assertSuperdescriptorHasField(superdescriptorWithSubrange, "ANOTHER-NUMBER-NUMBER",5,12);
 	}
 
 	private IDdmField findField(IDataDefinitionModule ddm, String fieldname)
@@ -103,5 +114,22 @@ public class DdmParserShould
 		List<String> nextLevelGroupMembers = groupField.members().stream().map(IDdmField::name).collect(Collectors.toList());
 		assertThat(nextLevelGroupMembers)
 			.containsAll(Lists.newArrayList(memberNames));
+	}
+
+	private ISuperdescriptor assertIsSuperdescriptor(IDdmField field)
+	{
+		assertThat(field.descriptor()).isEqualTo(DescriptorType.SUPERDESCRIPTOR);
+		assertThat(field).isInstanceOf(ISuperdescriptor.class);
+		return (ISuperdescriptor) field;
+	}
+
+	private void assertSuperdescriptorHasField(ISuperdescriptor superdescriptor, String fieldname, int expectedRangeFrom, int expectedRangeTo)
+	{
+		Optional<ISuperdescriptorChild> foundChild = superdescriptor.fields().stream().filter(f -> f.name().equals(fieldname)).findFirst();
+		assertThat(foundChild).isPresent();
+		ISuperdescriptorChild child = foundChild.get();
+
+		assertThat(child.rangeFrom()).isEqualTo(expectedRangeFrom);
+		assertThat(child.rangeTo()).isEqualTo(expectedRangeTo);
 	}
 }
