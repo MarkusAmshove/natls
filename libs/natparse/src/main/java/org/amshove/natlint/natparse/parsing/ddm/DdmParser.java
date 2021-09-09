@@ -159,6 +159,6 @@ public class DdmParser
 			}
 		}
 
-		return line.startsWith(PREDIT_COMMENT_START);
+		return line.startsWith(PREDIT_COMMENT_START) || line.trim().isEmpty();
 	}
 }

@@ -36,6 +36,13 @@ public class DdmParserShould
 	}
 
 	@Test
+	void parseASqlDdmWithTrailingSpaceInAnEmptyLine()
+	{
+		assertThat(new DdmParser().parseDdm(ResourceHelper.readRelativeResourceFile("SqlEmptyLineWithTrailingSpace.NSD", DdmParserShould.class)))
+			.isNotNull();
+	}
+
+	@Test
 	void parseACompleteDdm()
 	{
 		String source = ResourceHelper.readRelativeResourceFile("CompleteDdm.NSD", DdmParserShould.class);
