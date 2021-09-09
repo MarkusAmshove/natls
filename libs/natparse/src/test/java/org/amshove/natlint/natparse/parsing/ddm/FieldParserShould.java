@@ -4,15 +4,13 @@ import org.amshove.natlint.natparse.NaturalParseException;
 import org.amshove.natlint.natparse.natural.DataFormat;
 import org.amshove.natlint.natparse.natural.ddm.DescriptorType;
 import org.amshove.natlint.natparse.natural.ddm.FieldType;
-import org.amshove.natlint.natparse.natural.ddm.NullValueSupression;
+import org.amshove.natlint.natparse.natural.ddm.NullValueSuppression;
 import org.amshove.natlint.natparse.parsing.ddm.text.LinewiseTextScanner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import javax.sound.sampled.Line;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -118,7 +116,7 @@ class FieldParserShould
 			source = " ";
 		}
 
-		NullValueSupression typedExpectedSupression = NullValueSupression.valueOf(expectedSupression);
+		NullValueSuppression typedExpectedSupression = NullValueSuppression.valueOf(expectedSupression);
 
 		assertThat(parsedField(fieldBuilder().withSupression(source)).suppression()).isEqualTo(typedExpectedSupression);
 	}

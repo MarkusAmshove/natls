@@ -4,7 +4,7 @@ import org.amshove.natlint.natparse.NaturalParseException;
 import org.amshove.natlint.natparse.natural.DataFormat;
 import org.amshove.natlint.natparse.natural.ddm.DescriptorType;
 import org.amshove.natlint.natparse.natural.ddm.FieldType;
-import org.amshove.natlint.natparse.natural.ddm.NullValueSupression;
+import org.amshove.natlint.natparse.natural.ddm.NullValueSuppression;
 import org.amshove.natlint.natparse.parsing.ddm.text.LinewiseTextScanner;
 
 class FieldParser
@@ -27,8 +27,8 @@ class FieldParser
 	private static final int LENGTH_INDEX = 43;
 	private static final int LENGTH_LENGTH = 4;
 
-	private static final int SUPRESSION_INDEX = 49;
-	private static final int SUPRESSION_LENGTH = 1;
+	private static final int SUPPRESSION_INDEX = 49;
+	private static final int SUPPRESSION_LENGTH = 1;
 
 	private static final int DESCRIPTOR_INDEX = 51;
 	private static final int DESCRIPTOR_LENGTH = 1;
@@ -43,7 +43,7 @@ class FieldParser
 		String name = parseName(fieldLine);
 		String shortname = parseShortname(fieldLine);
 		int level = parseLevel(fieldLine);
-		NullValueSupression supression = parseSupression(fieldLine);
+		NullValueSuppression suppression = parseSuppression(fieldLine);
 		DescriptorType descriptorType = parseDescriptorType(fieldLine);
 		String remark = parseRemark(fieldLine);
 
@@ -61,7 +61,7 @@ class FieldParser
 			name,
 			dataFormat,
 			length,
-			supression,
+			suppression,
 			descriptorType,
 			remark);
 	}
@@ -112,10 +112,10 @@ class FieldParser
 		}
 	}
 
-	private static NullValueSupression parseSupression(String line)
+	private static NullValueSuppression parseSuppression(String line)
 	{
-		String supression = getField(line, SUPRESSION_INDEX, SUPRESSION_LENGTH);
-		return NullValueSupression.fromSource(supression);
+		String suppression = getField(line, SUPPRESSION_INDEX, SUPPRESSION_LENGTH);
+		return NullValueSuppression.fromSource(suppression);
 	}
 
 	private static String getField(String line, int index, int length)

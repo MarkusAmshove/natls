@@ -2,19 +2,19 @@ package org.amshove.natlint.natparse.natural.ddm;
 
 import org.amshove.natlint.natparse.NaturalParseException;
 
-public enum NullValueSupression
+public enum NullValueSuppression
 {
 	NONE,
 	NULL_SUPRESSION,
 	FIXED_STORAGE;
 
 	/**
-	 * Constructs the {@link NullValueSupression} from source.
+	 * Constructs the {@link NullValueSuppression} from source.
 	 *
 	 * @param source - 1 character long data format (e.g. F for FIXED_STORAGE)
-	 * @return the typed {@link NullValueSupression}
+	 * @return the typed {@link NullValueSuppression}
 	 */
-	public static NullValueSupression fromSource(String source)
+	public static NullValueSuppression fromSource(String source)
 	{
 		switch (source)
 		{

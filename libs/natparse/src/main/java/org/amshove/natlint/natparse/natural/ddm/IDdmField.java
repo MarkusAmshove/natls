@@ -16,7 +16,7 @@ public interface IDdmField
 
 	double length();
 
-	NullValueSupression suppression();
+	NullValueSuppression suppression();
 
 	DescriptorType descriptor();
 

@@ -4,7 +4,7 @@ import org.amshove.natlint.natparse.natural.DataFormat;
 import org.amshove.natlint.natparse.natural.ddm.DescriptorType;
 import org.amshove.natlint.natparse.natural.ddm.FieldType;
 import org.amshove.natlint.natparse.natural.ddm.IDdmField;
-import org.amshove.natlint.natparse.natural.ddm.NullValueSupression;
+import org.amshove.natlint.natparse.natural.ddm.NullValueSuppression;
 
 public class DdmField implements IDdmField
 {
@@ -14,7 +14,7 @@ public class DdmField implements IDdmField
 	private final String name;
 	private final DataFormat format;
 	private final double length;
-	private final NullValueSupression suppression;
+	private final NullValueSuppression suppression;
 	private final DescriptorType descriptor;
 	private final String remark;
 
@@ -24,7 +24,7 @@ public class DdmField implements IDdmField
 		String name,
 		DataFormat format,
 		double length,
-		NullValueSupression suppression,
+		NullValueSuppression suppression,
 		DescriptorType descriptor,
 		String remark)
 	{
@@ -82,7 +82,7 @@ public class DdmField implements IDdmField
 		return length;
 	}
 
-	public NullValueSupression suppression()
+	public NullValueSuppression suppression()
 	{
 		return this.suppression;
 	}
