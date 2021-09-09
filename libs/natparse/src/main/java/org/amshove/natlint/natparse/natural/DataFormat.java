@@ -14,7 +14,8 @@ public enum DataFormat
 	NUMERIC,
 	PACKED,
 	TIME,
-	UNICODE;
+	UNICODE,
+	NONE;
 
 	/**
 	 * Constructs the DataFormat from source.
@@ -48,6 +49,8 @@ public enum DataFormat
 				return TIME;
 			case "U":
 				return UNICODE;
+			case " ":
+				return NONE;
 			default:
 				throw new NaturalParseException(String.format("Can't determine DataFormat from format \"%s\"", source));
 		}

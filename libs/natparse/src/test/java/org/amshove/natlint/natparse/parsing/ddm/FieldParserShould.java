@@ -87,8 +87,8 @@ class FieldParserShould
 	void throwAnExceptionWhenPassingAnInvalidFieldFormat()
 	{
 		assertThatExceptionOfType(NaturalParseException.class)
-			.isThrownBy(() -> parsedField(fieldBuilder().withFormat(" ")))
-			.withMessage("Can't determine DataFormat from format \" \"");
+			.isThrownBy(() -> parsedField(fieldBuilder().withFormat("X")))
+			.withMessage("Can't determine DataFormat from format \"X\"");
 	}
 
 	@ParameterizedTest(name = "parseTheLengthOfTheFormat [Length, ExpectedLength = {argumentsWithNames}]")
@@ -176,6 +176,26 @@ class FieldParserShould
 		// this is the case when the ddm source has no remark and was saved without trailing whitespace
 		DdmField field = sut.parse(createScanner("  1 AD ALPHANUMERIC-DESCRIPTOR           A   18    D"));
 		assertThat(field.remark()).isEmpty();
+	}
+
+	@Test
+	void parseAPeriodicGroup()
+	{
+		DdmField field = sut.parse(createScanner("P 1 AS PERIODIC-FIELD                                "));
+		assertThat(field.fieldType()).isEqualTo(FieldType.PERIODIC);
+		assertThat(field.name()).isEqualTo("PERIODIC-FIELD");
+		assertThat(field.length()).isEqualTo(0);
+		assertThat(field.format()).isEqualTo(DataFormat.NONE);
+	}
+
+	@Test
+	void parseAGroup()
+	{
+		DdmField field = sut.parse(createScanner("G 1 AS GROUP-FIELD                                   "));
+		assertThat(field.fieldType()).isEqualTo(FieldType.GROUP);
+		assertThat(field.name()).isEqualTo("GROUP-FIELD");
+		assertThat(field.length()).isEqualTo(0);
+		assertThat(field.format()).isEqualTo(DataFormat.NONE);
 	}
 
 	private LinewiseTextScanner createScanner(String text)

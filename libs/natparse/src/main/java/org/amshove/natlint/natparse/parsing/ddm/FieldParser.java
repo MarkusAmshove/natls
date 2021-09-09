@@ -7,8 +7,6 @@ import org.amshove.natlint.natparse.natural.ddm.FieldType;
 import org.amshove.natlint.natparse.natural.ddm.NullValueSupression;
 import org.amshove.natlint.natparse.parsing.ddm.text.LinewiseTextScanner;
 
-import javax.sound.sampled.Line;
-
 class FieldParser
 {
 	private static final int TYPE_INDEX = 0;
@@ -40,16 +38,32 @@ class FieldParser
 	public DdmField parse(LinewiseTextScanner scanner)
 	{
 		String fieldLine = scanner.peek();
+		FieldType fieldType = parseFieldType(fieldLine);
+
+		String name = parseName(fieldLine);
+		String shortname = parseShortname(fieldLine);
+		int level = parseLevel(fieldLine);
+		NullValueSupression supression = parseSupression(fieldLine);
+		DescriptorType descriptorType = parseDescriptorType(fieldLine);
+		String remark = parseRemark(fieldLine);
+
+		double length = fieldType == FieldType.GROUP || fieldType == FieldType.PERIODIC
+			? 0
+			: parseLength(scanner);
+		DataFormat dataFormat = fieldType == FieldType.GROUP || fieldType == FieldType.PERIODIC
+			? DataFormat.NONE
+			: parseFormat(fieldLine);
+
 		return new DdmField(
-			parseFieldType(fieldLine),
-			parseLevel(fieldLine),
-			parseShortname(fieldLine),
-			parseName(fieldLine),
-			parseFormat(fieldLine),
-			parseLength(scanner),
-			parseSupression(fieldLine),
-			parseDescriptorType(fieldLine),
-			parseRemark(fieldLine));
+			fieldType,
+			level,
+			shortname,
+			name,
+			dataFormat,
+			length,
+			supression,
+			descriptorType,
+			remark);
 	}
 
 	private static FieldType parseFieldType(String line)
