@@ -6,7 +6,8 @@ public enum DescriptorType
 {
 	NONE,
 	DESCRIPTOR,
-	SUPERDESCRIPTOR;
+	SUPERDESCRIPTOR,
+	PHONETIC;
 
 	/**
 	 * Constructs the {@link DescriptorType} from source.
@@ -22,6 +23,8 @@ public enum DescriptorType
 				return DESCRIPTOR;
 			case "S":
 				return SUPERDESCRIPTOR;
+			case "P":
+				return PHONETIC;
 			case " ":
 				return NONE;
 			default:
