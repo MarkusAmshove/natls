@@ -59,6 +59,13 @@ class DdmMetadataParserShould
 		assertThat(parsedMetadata(new DefaultSequence(sequence)).defaultSequence()).isEqualTo(sequence);
 	}
 
+	@Test
+	void parseAnEmptyDefaultSequenceWithoutTrailingWhitespace()
+	{
+		assertThat(sut.parseMetadataLine("DB: 255 FILE: 227  - SOME-DDM-HERE                  DEFAULT SEQUENCE:").defaultSequence())
+			.isEmpty();
+	}
+
 	DdmMetadata parsedMetadata(MetadataField field)
 	{
 		String dbNumber = "001";

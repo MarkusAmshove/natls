@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 class DdmMetadataParser
 {
-	private static final Pattern METADATA_PATTERN = Pattern.compile("DB:\\s+(?<DBNR>\\d+).*FILE:\\s+(?<FILENR>\\d+).*-\\s+(?<DBNAME>[^\\s]+).*DEFAULT SEQUENCE:\\s?(?<SEQ>[\\w\\s$]+)");
+	private static final Pattern METADATA_PATTERN = Pattern.compile("DB:\\s+(?<DBNR>\\d+).*FILE:\\s+(?<FILENR>\\d+).*-\\s+(?<DBNAME>[^\\s]+).*DEFAULT SEQUENCE:\\s?(?<SEQ>[\\w\\s$]*)");
 
 	DdmMetadata parseMetadataLine(String line)
 	{
