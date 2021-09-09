@@ -1,6 +1,7 @@
 package org.amshove.natlint.natparse.parsing.ddm;
 
 import com.google.common.collect.ImmutableList;
+import org.amshove.natlint.natparse.natural.ddm.DdmType;
 import org.amshove.natlint.natparse.natural.ddm.IDataDefinitionModule;
 import org.amshove.natlint.natparse.natural.ddm.IDdmField;
 
@@ -13,6 +14,7 @@ public class DataDefinitionModule implements IDataDefinitionModule
 	private final String fileNumber;
 	private final String ddmName;
 	private final String defaultSequence;
+	private DdmType ddmType;
 
 	private final List<IDdmField> fields = new ArrayList<>();
 
@@ -47,6 +49,16 @@ public class DataDefinitionModule implements IDataDefinitionModule
 	void addField(IDdmField field)
 	{
 		fields.add(field);
+	}
+
+	public DdmType type()
+	{
+		return ddmType;
+	}
+
+	void setDdmType(DdmType type)
+	{
+		ddmType = type;
 	}
 
 	void finish()

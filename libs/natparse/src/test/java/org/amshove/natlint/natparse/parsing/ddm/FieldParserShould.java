@@ -5,11 +5,14 @@ import org.amshove.natlint.natparse.natural.DataFormat;
 import org.amshove.natlint.natparse.natural.ddm.DescriptorType;
 import org.amshove.natlint.natparse.natural.ddm.FieldType;
 import org.amshove.natlint.natparse.natural.ddm.NullValueSupression;
+import org.amshove.natlint.natparse.parsing.ddm.text.LinewiseTextScanner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import javax.sound.sampled.Line;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -147,7 +150,7 @@ class FieldParserShould
 	void parseEmptyDescriptors()
 	{
 		// this is the case when the ddm source has no remark and was saved without trailing whitespace
-		DdmField field = sut.parse("  1 AA SOME-NUMBER                       N   12  N");
+		DdmField field = sut.parse(createScanner("  1 AA SOME-NUMBER                       N   12  N"));
 		assertThat(field.descriptor()).isEqualTo(DescriptorType.NONE);
 	}
 
@@ -171,8 +174,13 @@ class FieldParserShould
 	void parseEmptyRemarks()
 	{
 		// this is the case when the ddm source has no remark and was saved without trailing whitespace
-		DdmField field = sut.parse("  1 AD ALPHANUMERIC-DESCRIPTOR           A   18    D");
+		DdmField field = sut.parse(createScanner("  1 AD ALPHANUMERIC-DESCRIPTOR           A   18    D"));
 		assertThat(field.remark()).isEmpty();
+	}
+
+	private LinewiseTextScanner createScanner(String text)
+	{
+		return new LinewiseTextScanner(new String[] { text });
 	}
 
 	private DdmField parsedField(DdmFieldBuilder builder)
@@ -251,9 +259,9 @@ class FieldParserShould
 			return this;
 		}
 
-		String build()
+		LinewiseTextScanner build()
 		{
-			return String.format(
+			return new LinewiseTextScanner(new String[]{ String.format(
 				"%-1s %-1s %-2s %-32s  %-1s %4s  %-1s %-1s %-24s",
 				type,
 				level,
@@ -263,7 +271,7 @@ class FieldParserShould
 				length,
 				supression,
 				descriptor,
-				remark);
+				remark)});
 		}
 	}
 }

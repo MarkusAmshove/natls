@@ -52,6 +52,7 @@ public class DdmParserShould
 		assertThat(ddm.fileNumber()).isEqualTo("100");
 		assertThat(ddm.databaseNumber()).isEqualTo("000");
 		assertThat(ddm.defaultSequence()).isEqualTo("");
+		assertThat(ddm.type()).isEqualTo(DdmType.ADABAS);
 
 		ImmutableList<IDdmField> fields = ddm.fields();
 

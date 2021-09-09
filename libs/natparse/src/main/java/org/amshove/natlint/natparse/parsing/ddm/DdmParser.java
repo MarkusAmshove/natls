@@ -2,6 +2,7 @@ package org.amshove.natlint.natparse.parsing.ddm;
 
 import com.google.common.collect.Lists;
 import org.amshove.natlint.natparse.NaturalParseException;
+import org.amshove.natlint.natparse.natural.ddm.DdmType;
 import org.amshove.natlint.natparse.natural.ddm.DescriptorType;
 import org.amshove.natlint.natparse.natural.ddm.FieldType;
 import org.amshove.natlint.natparse.parsing.ddm.text.LinewiseTextScanner;
@@ -13,9 +14,12 @@ public class DdmParser
 {
 	private static final String PREDIT_COMMENT_START = "*";
 
-	private final DdmMetadataParser metadataParser = new DdmMetadataParser();
-	private final FieldParser fieldParser = new FieldParser();
-	private final SuperdescriptorChildParser superdescriptorChildParser = new SuperdescriptorChildParser();
+	private static final DdmMetadataParser metadataParser = new DdmMetadataParser();
+	private static final FieldParser adabasFieldParser = new FieldParser();
+	private static final SqlFieldParser sqlFieldParser = new SqlFieldParser();
+	private static final SuperdescriptorChildParser superdescriptorChildParser = new SuperdescriptorChildParser();
+
+	private FieldParser fieldParser;
 
 	private static final List<String> linesToSkip = Lists.newArrayList(
 		"DDM OUTPUT TERMINTAED",
@@ -23,7 +27,6 @@ public class DdmParser
 		"- - -- ---------------",
 		"T L DB Name",
 		"Natural Source Header",
-		"TYPE: ",
 		":CP");
 
 	private DataDefinitionModule ddm;
@@ -33,6 +36,7 @@ public class DdmParser
 		resetParser();
 		String[] lines = content.split("[\\r\\n]+");
 		LinewiseTextScanner scanner = new LinewiseTextScanner(lines);
+		fieldParser = adabasFieldParser;
 
 		while (!scanner.isAtEnd())
 		{
@@ -52,7 +56,19 @@ public class DdmParser
 				continue;
 			}
 
-			DdmField field = parseField(line, scanner.currentLineNumber());
+			if (line.startsWith("TYPE:"))
+			{
+				ddm.setDdmType(parseDdmType(line));
+
+				fieldParser = ddm.type() == DdmType.SQL
+					? sqlFieldParser
+					: adabasFieldParser;
+
+				scanner.advance();
+				continue;
+			}
+
+			DdmField field = parseField(scanner);
 			if (field.fieldType() == FieldType.GROUP)
 			{
 				GroupField groupField = new GroupField(field);
@@ -76,15 +92,20 @@ public class DdmParser
 		return ddm;
 	}
 
-	private DdmField parseField(String line, int linenumber)
+	private static DdmType parseDdmType(String line)
+	{
+		return DdmType.valueOf(line.replace("TYPE:", "").trim());
+	}
+
+	private DdmField parseField(LinewiseTextScanner scanner)
 	{
 		try
 		{
-			return fieldParser.parse(line);
+			return adabasFieldParser.parse(scanner);
 		}
 		catch (Exception e)
 		{
-			throw new NaturalParseException(e, linenumber);
+			throw new NaturalParseException(e, scanner.currentLineNumber());
 		}
 	}
 
@@ -97,7 +118,7 @@ public class DdmParser
 				return;
 			}
 
-			DdmField nextField = parseField(scanner.peek(), scanner.currentLineNumber());
+			DdmField nextField = parseField(scanner);
 
 			if (nextField.level() <= currentField.level())
 			{

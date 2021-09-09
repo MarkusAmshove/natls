@@ -12,6 +12,8 @@ public interface IDataDefinitionModule
 
 	String defaultSequence();
 
+	DdmType type();
+
 	/**
 	 * Returns a list of all fields on level 1
 	 *

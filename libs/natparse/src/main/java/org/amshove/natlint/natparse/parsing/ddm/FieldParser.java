@@ -5,6 +5,9 @@ import org.amshove.natlint.natparse.natural.DataFormat;
 import org.amshove.natlint.natparse.natural.ddm.DescriptorType;
 import org.amshove.natlint.natparse.natural.ddm.FieldType;
 import org.amshove.natlint.natparse.natural.ddm.NullValueSupression;
+import org.amshove.natlint.natparse.parsing.ddm.text.LinewiseTextScanner;
+
+import javax.sound.sampled.Line;
 
 class FieldParser
 {
@@ -34,15 +37,16 @@ class FieldParser
 
 	private static final int REMARK_INDEX = 53;
 
-	public DdmField parse(String fieldLine)
+	public DdmField parse(LinewiseTextScanner scanner)
 	{
+		String fieldLine = scanner.peek();
 		return new DdmField(
 			parseFieldType(fieldLine),
 			parseLevel(fieldLine),
 			parseShortname(fieldLine),
 			parseName(fieldLine),
 			parseFormat(fieldLine),
-			parseLength(fieldLine),
+			parseLength(scanner),
 			parseSupression(fieldLine),
 			parseDescriptorType(fieldLine),
 			parseRemark(fieldLine));
@@ -75,9 +79,9 @@ class FieldParser
 		return DataFormat.fromSource(format);
 	}
 
-	private static double parseLength(String line)
+	protected double parseLength(LinewiseTextScanner scanner)
 	{
-		String ddmLength = getField(line, LENGTH_INDEX, LENGTH_LENGTH);
+		String ddmLength = getField(scanner.peek(), LENGTH_INDEX, LENGTH_LENGTH);
 		if (ddmLength.contains(","))
 		{
 			// Using NumberFormat would not throw on invalid Characters
