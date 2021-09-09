@@ -16,7 +16,7 @@ class GroupField extends DdmField implements IGroupField
 		super(field);
 		if (field.fieldType() != FieldType.GROUP)
 		{
-			throw new NaturalParseException(String.format("Can't promote Field of Type %s to GroupField!", field.fieldType()));
+			throw new NaturalParseException(String.format("Cannot promote field of type %s to GroupField", field.fieldType()));
 		}
 	}
 

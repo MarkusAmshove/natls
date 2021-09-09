@@ -3,6 +3,7 @@ package org.amshove.natlint.natparse.parsing.ddm;
 import com.google.common.collect.ImmutableList;
 import org.amshove.natlint.natparse.NaturalParseException;
 import org.amshove.natlint.natparse.ResourceHelper;
+import org.amshove.natlint.natparse.natural.DataFormat;
 import org.amshove.natlint.natparse.natural.ddm.*;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
@@ -31,22 +32,21 @@ public class DdmParserShould
 	void addLineInformationToParseExceptions()
 	{
 		assertThatExceptionOfType(NaturalParseException.class)
-			.isThrownBy(() -> new DdmParser().parseDdm(ResourceHelper.readRelativeResourceFile("InvalidLevel.NSD", DdmParserShould.class)))
+			.isThrownBy(() -> parseFromResource("InvalidLevel.NSD"))
 			.withMessage("Error at line 14: java.lang.NumberFormatException: For input string: \"A\"");
 	}
 
 	@Test
 	void parseASqlDdmWithTrailingSpaceInAnEmptyLine()
 	{
-		assertThat(new DdmParser().parseDdm(ResourceHelper.readRelativeResourceFile("SqlEmptyLineWithTrailingSpace.NSD", DdmParserShould.class)))
+		assertThat(parseFromResource("SqlEmptyLineWithTrailingSpace.NSD"))
 			.isNotNull();
 	}
 
 	@Test
 	void parseACompleteDdm()
 	{
-		String source = ResourceHelper.readRelativeResourceFile("CompleteDdm.NSD", DdmParserShould.class);
-		IDataDefinitionModule ddm = new DdmParser().parseDdm(source);
+		IDataDefinitionModule ddm = parseFromResource("CompleteDdm.NSD");
 
 		assertThat(ddm.name()).isEqualTo("COMPLETE-DDM");
 		assertThat(ddm.fileNumber()).isEqualTo("100");
@@ -94,6 +94,30 @@ public class DdmParserShould
 		assertThat(superdescriptorWithSubrange.fields()).hasSize(2);
 		assertSuperdescriptorHasField(superdescriptorWithSubrange, "SOME-NUMBER",1,5);
 		assertSuperdescriptorHasField(superdescriptorWithSubrange, "ANOTHER-NUMBER-NUMBER",5,12);
+	}
+
+	@Test
+	void parseAComplexSqlDdm()
+	{
+		DataDefinitionModule ddm = parseFromResource("ComplexSqlTypeDdm.NSD");
+
+		assertThat(findField(ddm, "ID").descriptor()).isEqualTo(DescriptorType.DESCRIPTOR);
+
+		assertThat(findField(ddm, "L@LONG-VARCHAR").shortname()).isEqualTo("I_");
+
+		assertThat(findField(ddm, "LONG-VARCHAR").length()).isEqualTo(2500);
+
+		assertThat(findField(ddm, "L@DYNAMIC-CLOB").format()).isEqualTo(DataFormat.INTEGER);
+
+		assertThat(findField(ddm, "DYNAMIC-CLOB").length()).isEqualTo(9999);
+
+		assertThat(findField(ddm, "N@DYNAMIC-CLOB").length()).isEqualTo(2);
+	}
+
+	private DataDefinitionModule parseFromResource(String resourceName)
+	{
+		String resourceSource = ResourceHelper.readRelativeResourceFile(resourceName, DdmParserShould.class);
+		return new DdmParser().parseDdm(resourceSource);
 	}
 
 	private IDdmField findField(IDataDefinitionModule ddm, String fieldname)

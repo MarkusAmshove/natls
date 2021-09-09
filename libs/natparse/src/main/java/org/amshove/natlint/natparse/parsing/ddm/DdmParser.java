@@ -101,7 +101,7 @@ public class DdmParser
 	{
 		try
 		{
-			return adabasFieldParser.parse(scanner);
+			return fieldParser.parse(scanner);
 		}
 		catch (Exception e)
 		{
