@@ -1,6 +1,7 @@
 package org.amshove.natlint.natparse.parsing.ddm;
 
 import com.google.common.collect.ImmutableList;
+import org.amshove.natlint.natparse.NaturalParseException;
 import org.amshove.natlint.natparse.ResourceHelper;
 import org.amshove.natlint.natparse.natural.ddm.*;
 import org.assertj.core.util.Lists;
@@ -11,6 +12,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 
 public class DdmParserShould
 {
@@ -26,6 +28,14 @@ public class DdmParserShould
 	}
 
 	@Test
+	void addLineInformationToParseExceptions()
+	{
+		assertThatExceptionOfType(NaturalParseException.class)
+			.isThrownBy(() -> new DdmParser().parseDdm(ResourceHelper.readRelativeResourceFile("InvalidLevel.NSD", DdmParserShould.class)))
+			.withMessage("Error at line 14: java.lang.NumberFormatException: For input string: \"A\"");
+	}
+
+	@Test
 	void parseACompleteDdm()
 	{
 		String source = ResourceHelper.readRelativeResourceFile("CompleteDdm.NSD", DdmParserShould.class);
@@ -34,7 +44,7 @@ public class DdmParserShould
 		assertThat(ddm.name()).isEqualTo("COMPLETE-DDM");
 		assertThat(ddm.fileNumber()).isEqualTo("100");
 		assertThat(ddm.databaseNumber()).isEqualTo("000");
-		assertThat(ddm.defaultSequence()).isEqualTo(" ");
+		assertThat(ddm.defaultSequence()).isEqualTo("");
 
 		ImmutableList<IDdmField> fields = ddm.fields();
 

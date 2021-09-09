@@ -56,4 +56,9 @@ public class LinewiseTextScanner
 	{
 		return currentIndex >= lines.length;
 	}
+
+	public int currentLineNumber()
+	{
+		return currentIndex + 1;
+	}
 }

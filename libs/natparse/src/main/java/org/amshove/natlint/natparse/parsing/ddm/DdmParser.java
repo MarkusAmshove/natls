@@ -1,6 +1,7 @@
 package org.amshove.natlint.natparse.parsing.ddm;
 
 import com.google.common.collect.Lists;
+import org.amshove.natlint.natparse.NaturalParseException;
 import org.amshove.natlint.natparse.natural.ddm.DescriptorType;
 import org.amshove.natlint.natparse.natural.ddm.FieldType;
 import org.amshove.natlint.natparse.parsing.ddm.text.LinewiseTextScanner;
@@ -51,7 +52,7 @@ public class DdmParser
 				continue;
 			}
 
-			DdmField field = fieldParser.parse(line);
+			DdmField field = parseField(line, scanner.currentLineNumber());
 			if (field.fieldType() == FieldType.GROUP)
 			{
 				GroupField groupField = new GroupField(field);
@@ -75,6 +76,18 @@ public class DdmParser
 		return ddm;
 	}
 
+	private DdmField parseField(String line, int linenumber)
+	{
+		try
+		{
+			return fieldParser.parse(line);
+		}
+		catch (Exception e)
+		{
+			throw new NaturalParseException(e, linenumber);
+		}
+	}
+
 	private void parseGroup(LinewiseTextScanner scanner, GroupField currentField)
 	{
 		while (!scanner.isAtEnd())
@@ -84,7 +97,7 @@ public class DdmParser
 				return;
 			}
 
-			DdmField nextField = fieldParser.parse(scanner.peek());
+			DdmField nextField = parseField(scanner.peek(), scanner.currentLineNumber());
 
 			if (nextField.level() <= currentField.level())
 			{

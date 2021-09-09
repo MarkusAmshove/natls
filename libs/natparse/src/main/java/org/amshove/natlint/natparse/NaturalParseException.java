@@ -6,4 +6,14 @@ public class NaturalParseException extends RuntimeException
 	{
 		super(message);
 	}
+
+	public NaturalParseException(String message, int line)
+	{
+		super(String.format("Error at line %d: %s", line, message));
+	}
+
+	public NaturalParseException(Exception cause, int line)
+	{
+		this(String.format("Error at line %d: %s: %s", line, cause.getClass().getName(), cause.getMessage()));
+	}
 }
