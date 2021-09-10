@@ -1,5 +1,6 @@
 package org.amshove.natlint.natparse.parsing.ddm;
 
+import com.google.common.base.Strings;
 import org.amshove.natlint.natparse.NaturalParseException;
 import org.amshove.natlint.natparse.natural.DataFormat;
 import org.amshove.natlint.natparse.natural.ddm.DescriptorType;
@@ -122,10 +123,16 @@ class FieldParser
 	{
 		int endIndex = index + length;
 
+		if (index > line.length())
+		{
+			return " ";
+		}
+
 		// DDM source was saved without trailing whitespace
 		if (endIndex > line.length())
 		{
-			return new String(new char[] { ' ' }, 0, length);
+			String firstPart = line.substring(index);
+			return firstPart + Strings.repeat(" ", length - firstPart.length());
 		}
 
 		return line.substring(index, index + length);

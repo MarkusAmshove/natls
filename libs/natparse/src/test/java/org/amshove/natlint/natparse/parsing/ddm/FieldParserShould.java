@@ -196,6 +196,13 @@ class FieldParserShould
 		assertThat(field.format()).isEqualTo(DataFormat.NONE);
 	}
 
+	@Test
+	void parseTheNameIfNothingElseIsComingAfter()
+	{
+		assertThat(sut.parse(createScanner("P 1 LF ERROR")).name())
+			.isEqualTo("ERROR");
+	}
+
 	private LinewiseTextScanner createScanner(String text)
 	{
 		return new LinewiseTextScanner(new String[] { text });
