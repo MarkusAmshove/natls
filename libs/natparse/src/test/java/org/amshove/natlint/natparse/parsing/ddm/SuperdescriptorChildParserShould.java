@@ -49,6 +49,12 @@ public class SuperdescriptorChildParserShould
 		assertThatCode(() -> sut.parse(line)).doesNotThrowAnyException();
 	}
 
+	@Test
+	void accountForTrailingWhitespace()
+	{
+		assertThatCode(() -> sut.parse("* TRAILING(1-10)       ")).doesNotThrowAnyException();
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{

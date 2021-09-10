@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 public class SuperdescriptorChildParser
 {
-	private static final Pattern SUPERDESCRIPTOR_CHILD_PATTERN = Pattern.compile("\\*\\s*(?<NAME>[^(]*)\\((?<RANGEFROM>\\d+)-(?<RANGETO>\\d+)\\)");
+	private static final Pattern SUPERDESCRIPTOR_CHILD_PATTERN = Pattern.compile("\\*\\s*(?<NAME>[^(]*)\\((?<RANGEFROM>\\d+)-(?<RANGETO>\\d+)\\)\\s*");
 
 	public SuperdescriptorChild parse(String line)
 	{
