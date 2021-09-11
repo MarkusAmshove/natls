@@ -9,7 +9,7 @@ import java.util.List;
 
 class GroupField extends DdmField implements IGroupField
 {
-	private final List<IDdmField> memberList = new ArrayList<>();
+	private ImmutableList<IDdmField> member;
 
 	GroupField(DdmField field)
 	{
@@ -20,16 +20,15 @@ class GroupField extends DdmField implements IGroupField
 		}
 	}
 
-	void addChildField(IDdmField field)
+	void setChildren(ImmutableList<IDdmField> fields)
 	{
-		memberList.add(field);
+		member = fields;
 	}
 
 	@Override
 	public ImmutableList<IDdmField> members()
 	{
-		// TODO(PERF): Copy once finished
-		return ImmutableList.copyOf(memberList);
+		return member;
 	}
 
 }

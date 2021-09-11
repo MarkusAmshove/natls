@@ -16,7 +16,7 @@ public class DataDefinitionModule implements IDataDefinitionModule
 	private final String defaultSequence;
 	private DdmType ddmType;
 
-	private final List<IDdmField> fields = new ArrayList<>();
+	private ImmutableList<IDdmField> fields;
 
 	DataDefinitionModule(String databaseNumber, String fileNumber, String ddmName, String defaultSequence)
 	{
@@ -46,11 +46,6 @@ public class DataDefinitionModule implements IDataDefinitionModule
 		return defaultSequence;
 	}
 
-	void addField(IDdmField field)
-	{
-		fields.add(field);
-	}
-
 	public DdmType type()
 	{
 		return ddmType;
@@ -61,14 +56,13 @@ public class DataDefinitionModule implements IDataDefinitionModule
 		ddmType = type;
 	}
 
-	void finish()
+	void setFields(ImmutableList<IDdmField> fields)
 	{
-		// TODO: Set references for superdescriptor children, copy lists once to immutable, etc.
+		this.fields = fields;
 	}
 
 	public ImmutableList<IDdmField> fields()
 	{
-		// TODO(PERF):
-		return ImmutableList.copyOf(fields);
+		return fields;
 	}
 }

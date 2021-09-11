@@ -1,5 +1,6 @@
 package org.amshove.natlint.natparse.parsing.ddm;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.amshove.natlint.natparse.NaturalParseException;
 import org.amshove.natlint.natparse.natural.ddm.*;
@@ -38,6 +39,8 @@ public class DdmParser
 		LinewiseTextScanner scanner = new LinewiseTextScanner(lines);
 		fieldParser = adabasFieldParser;
 
+		ImmutableList.Builder<IDdmField> ddmFields = ImmutableList.builder();
+
 		while (!scanner.isAtEnd())
 		{
 			String line = scanner.peek();
@@ -73,21 +76,25 @@ public class DdmParser
 			{
 				GroupField groupField = new GroupField(field);
 				scanner.advance();
-				parseGroup(scanner, groupField);
-				ddm.addField(groupField);
+				ImmutableList.Builder<IDdmField> groupMembers = ImmutableList.builder();
+				parseGroup(scanner, groupField, groupMembers);
+				groupField.setChildren(groupMembers.build());
+				ddmFields.add(groupField);
 				continue;
 			}
 
 			if (field.descriptor() == DescriptorType.SUPERDESCRIPTOR)
 			{
 				field = parseSuperdescriptor(scanner, new Superdescriptor(field));
-				ddm.addField(field);
+				ddmFields.add(field);
 				continue;
 			}
 
-			ddm.addField(field);
+			ddmFields.add(field);
 			scanner.advance();
 		}
+
+		ddm.setFields(ddmFields.build());
 
 		for (SuperdescriptorChild child : childrenToReference)
 		{
@@ -140,7 +147,10 @@ public class DdmParser
 		}
 	}
 
-	private void parseGroup(LinewiseTextScanner scanner, GroupField currentField)
+	private void parseGroup(
+		LinewiseTextScanner scanner,
+		GroupField currentField,
+		ImmutableList.Builder<IDdmField> groupMembers)
 	{
 		while (!scanner.isAtEnd())
 		{
@@ -158,15 +168,17 @@ public class DdmParser
 
 			if (nextField.fieldType() != FieldType.GROUP)
 			{
-				currentField.addChildField(nextField);
+				groupMembers.add(nextField);
 				scanner.advance();
 			}
 			else
 			{
 				GroupField childGroupField = new GroupField(nextField);
+				groupMembers.add(childGroupField);
 				scanner.advance();
-				parseGroup(scanner, childGroupField);
-				currentField.addChildField(childGroupField);
+				ImmutableList.Builder<IDdmField> childGroupMembers = ImmutableList.builder();
+				parseGroup(scanner, childGroupField, childGroupMembers);
+				childGroupField.setChildren(childGroupMembers.build());
 			}
 		}
 	}
@@ -178,14 +190,17 @@ public class DdmParser
 		scanner.advance();
 
 		Superdescriptor superdescriptor = new Superdescriptor(field);
+		ImmutableList.Builder<ISuperdescriptorChild> children = ImmutableList.builder();
 
 		while (!scanner.isAtEnd() && containsSuperdescriptorSourceFieldRange(scanner.peek()))
 		{
 			SuperdescriptorChild child = superdescriptorChildParser.parse(scanner.peek());
-			superdescriptor.addChildField(child);
+			children.add(child);
 			childrenToReference.add(child);
 			scanner.advance();
 		}
+
+		superdescriptor.setChildren(children.build());
 
 		return superdescriptor;
 	}

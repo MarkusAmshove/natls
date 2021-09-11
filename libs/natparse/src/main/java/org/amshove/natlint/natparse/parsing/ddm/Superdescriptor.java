@@ -2,14 +2,13 @@ package org.amshove.natlint.natparse.parsing.ddm;
 
 import com.google.common.collect.ImmutableList;
 import org.amshove.natlint.natparse.NaturalParseException;
-import org.amshove.natlint.natparse.natural.ddm.*;
+import org.amshove.natlint.natparse.natural.ddm.DescriptorType;
+import org.amshove.natlint.natparse.natural.ddm.ISuperdescriptor;
+import org.amshove.natlint.natparse.natural.ddm.ISuperdescriptorChild;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class Superdescriptor extends DdmField implements ISuperdescriptor
+class Superdescriptor extends DdmField implements ISuperdescriptor
 {
-	private final List<SuperdescriptorChild> childfields = new ArrayList<>();
+	private ImmutableList<ISuperdescriptorChild> children;
 
 	Superdescriptor(DdmField field)
 	{
@@ -20,15 +19,14 @@ public class Superdescriptor extends DdmField implements ISuperdescriptor
 		}
 	}
 
-	void addChildField(SuperdescriptorChild child)
-	{
-		childfields.add(child);
-	}
-
 	@Override
 	public ImmutableList<ISuperdescriptorChild> fields()
 	{
-		// TODO(PERF): Copy when finished constructing superdescriptor
-		return ImmutableList.copyOf(childfields);
+		return children;
+	}
+
+	void setChildren(ImmutableList<ISuperdescriptorChild> children)
+	{
+		this.children = children;
 	}
 }
