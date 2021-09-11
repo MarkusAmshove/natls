@@ -8,7 +8,7 @@ import org.amshove.natlint.natparse.natural.ddm.IDdmField;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DataDefinitionModule implements IDataDefinitionModule
+class DataDefinitionModule implements IDataDefinitionModule
 {
 	private final String databaseNumber;
 	private final String fileNumber;

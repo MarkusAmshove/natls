@@ -3,7 +3,7 @@ package org.amshove.natlint.natparse.parsing.ddm;
 import org.amshove.natlint.natparse.natural.ddm.IDdmField;
 import org.amshove.natlint.natparse.natural.ddm.ISuperdescriptorChild;
 
-public class SuperdescriptorChild implements ISuperdescriptorChild
+class SuperdescriptorChild implements ISuperdescriptorChild
 {
 	private IDdmField field;
 	private final String name;

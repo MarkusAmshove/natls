@@ -5,7 +5,7 @@ import org.amshove.natlint.natparse.NaturalParseException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class SuperdescriptorChildParser
+class SuperdescriptorChildParser
 {
 	private static final Pattern SUPERDESCRIPTOR_CHILD_PATTERN = Pattern.compile("\\*\\s*(?<NAME>[^(]*)\\((?<RANGEFROM>\\d+)-(?<RANGETO>\\d+)\\)\\s*");
 

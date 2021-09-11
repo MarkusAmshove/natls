@@ -6,7 +6,7 @@ import org.amshove.natlint.natparse.natural.ddm.FieldType;
 import org.amshove.natlint.natparse.natural.ddm.IDdmField;
 import org.amshove.natlint.natparse.natural.ddm.NullValueSuppression;
 
-public class DdmField implements IDdmField
+class DdmField implements IDdmField
 {
 	private final FieldType fieldType;
 	private final int level;
