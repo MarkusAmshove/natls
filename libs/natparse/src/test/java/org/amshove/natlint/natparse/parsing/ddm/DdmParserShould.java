@@ -20,7 +20,7 @@ public class DdmParserShould
 	@Test
 	void parseTheMetadataLine()
 	{
-		DataDefinitionModule dataDefinitionModule = new DdmParser().parseDdm("DB: 000 FILE: 128 - MY-EXCITING-DDM DEFAULT SEQUENCE: BH");
+		IDataDefinitionModule dataDefinitionModule = new DdmParser().parseDdm("DB: 000 FILE: 128 - MY-EXCITING-DDM DEFAULT SEQUENCE: BH");
 
 		assertThat(dataDefinitionModule.name()).isEqualTo("MY-EXCITING-DDM");
 		assertThat(dataDefinitionModule.fileNumber()).isEqualTo("128");
@@ -99,7 +99,7 @@ public class DdmParserShould
 	@Test
 	void parseAComplexSqlDdm()
 	{
-		DataDefinitionModule ddm = parseFromResource("ComplexSqlTypeDdm.NSD");
+		IDataDefinitionModule ddm = parseFromResource("ComplexSqlTypeDdm.NSD");
 
 		assertThat(findField(ddm, "ID").descriptor()).isEqualTo(DescriptorType.DESCRIPTOR);
 
@@ -117,7 +117,7 @@ public class DdmParserShould
 	@Test
 	void referneceFieldsFromSuperdescriptorChilds()
 	{
-		DataDefinitionModule ddm = parseFromResource("SuperdescriptorChildReference.NSD");
+		IDataDefinitionModule ddm = parseFromResource("SuperdescriptorChildReference.NSD");
 
 		ISuperdescriptor descriptor = assertIsSuperdescriptor(findField(ddm, "A-SUPERDESCRIPTOR"));
 
@@ -139,7 +139,7 @@ public class DdmParserShould
 			.withMessage("Could not find field referenced by superdescriptor child \"ANOTHER-NUMBER\"");
 	}
 
-	private DataDefinitionModule parseFromResource(String resourceName)
+	private IDataDefinitionModule parseFromResource(String resourceName)
 	{
 		String resourceSource = ResourceHelper.readRelativeResourceFile(resourceName, DdmParserShould.class);
 		return new DdmParser().parseDdm(resourceSource);

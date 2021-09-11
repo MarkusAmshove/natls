@@ -32,7 +32,7 @@ public class DdmParser
 	private DataDefinitionModule ddm;
 	private List<SuperdescriptorChild> childrenToReference;
 
-	public DataDefinitionModule parseDdm(String content)
+	public IDataDefinitionModule parseDdm(String content)
 	{
 		resetParser();
 		String[] lines = content.split("[\\r\\n]+");
