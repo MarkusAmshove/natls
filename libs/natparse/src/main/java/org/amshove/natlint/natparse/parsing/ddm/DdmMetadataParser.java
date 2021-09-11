@@ -14,7 +14,7 @@ class DdmMetadataParser
 		Matcher matcher = METADATA_PATTERN.matcher(line);
 		if (!matcher.find())
 		{
-			throw new NaturalParseException(String.format("DDM Metadataline could not be parsed: \"%s\"", line));
+			throw new NaturalParseException(String.format("DDM Metadata line could not be parsed: \"%s\"", line));
 		}
 
 		DdmMetadata metadata = new DdmMetadata();

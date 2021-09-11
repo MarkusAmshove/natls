@@ -24,7 +24,7 @@ class DdmMetadataParserShould
 	{
 		assertThatExceptionOfType(NaturalParseException.class)
 			.isThrownBy(() -> sut.parseMetadataLine("This wouldn't match"))
-			.withMessage("DDM Metadataline could not be parsed: \"This wouldn't match\"");
+			.withMessage("DDM Metadata line could not be parsed: \"This wouldn't match\"");
 	}
 
 	@ParameterizedTest(name = "parseDatabaseNumbers [{argumentsWithNames}]")

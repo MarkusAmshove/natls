@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 
 public class DdmParser
 {
-	private static final String PREDIT_COMMENT_START = "*";
+	private static final String PREDIC_COMMENT_START = "*";
 
 	private static final DdmMetadataParser metadataParser = new DdmMetadataParser();
 	private static final FieldParser adabasFieldParser = new FieldParser();
@@ -21,7 +21,7 @@ public class DdmParser
 	private FieldParser fieldParser;
 
 	private static final List<String> linesToSkip = Lists.newArrayList(
-		"DDM OUTPUT TERMINTAED",
+		"DDM OUTPUT TERMINATED",
 		"SOURCE FIELD(S)",
 		"- - -- ---------------",
 		"T L DB Name",
@@ -29,7 +29,7 @@ public class DdmParser
 		":CP");
 
 	private DataDefinitionModule ddm;
-	private List<SuperdescriptorChild> childsToReference;
+	private List<SuperdescriptorChild> childrenToReference;
 
 	public DataDefinitionModule parseDdm(String content)
 	{
@@ -89,7 +89,7 @@ public class DdmParser
 			scanner.advance();
 		}
 
-		for (SuperdescriptorChild child : childsToReference)
+		for (SuperdescriptorChild child : childrenToReference)
 		{
 			if (!setMatchingReference(child, ddm.fields()))
 			{
@@ -183,7 +183,7 @@ public class DdmParser
 		{
 			SuperdescriptorChild child = superdescriptorChildParser.parse(scanner.peek());
 			superdescriptor.addChildField(child);
-			childsToReference.add(child);
+			childrenToReference.add(child);
 			scanner.advance();
 		}
 
@@ -200,7 +200,7 @@ public class DdmParser
 	private void resetParser()
 	{
 		ddm = null;
-		childsToReference = new ArrayList<>();
+		childrenToReference = new ArrayList<>();
 	}
 
 	private boolean isLineToSkip(String line)
@@ -213,6 +213,6 @@ public class DdmParser
 			}
 		}
 
-		return line.startsWith(PREDIT_COMMENT_START) || line.trim().isEmpty();
+		return line.startsWith(PREDIC_COMMENT_START) || line.trim().isEmpty();
 	}
 }
