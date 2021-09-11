@@ -223,7 +223,7 @@ public class Lexer
 		else
 		{
 			// WITH_CTE is the only Keyword that contains an underscore, if we're
-			// this far and it contains an underscore, it's an identifier
+			// this far, and it contains an underscore, it's an identifier
 			if (lexeme.contains("_"))
 			{
 				createAndAdd(SyntaxKind.IDENTIFIER);

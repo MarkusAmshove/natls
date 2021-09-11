@@ -1,0 +1,10 @@
+DB: 000 FILE: 100  - COMPLETE-DDM                      DEFAULT SEQUENCE: 
+TYPE: ADABAS
+
+T L DB Name                              F Leng  S D Remark
+- - -- --------------------------------  - ----  - - ------------------------
+  1 AC ALPHA-FIELD                       A    8  N
+  1 AG A-SUPERDESCRIPTOR                 A   20  N S
+*      -------- SOURCE FIELD(S) -------
+*      ALPHA-FIELD   (1-8)
+*      ANOTHER-NUMBER(1-12)

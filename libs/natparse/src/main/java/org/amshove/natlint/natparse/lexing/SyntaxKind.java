@@ -5,7 +5,6 @@ public enum SyntaxKind
 	WHITESPACE,
 	NEW_LINE,
 	TAB,
-	DUMMY,
 	LPAREN,
 	RPAREN,
 	EQUALS,

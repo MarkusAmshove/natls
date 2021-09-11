@@ -1,14 +1,14 @@
 plugins {
 	id 'java-library'
-	id 'com.diffplug.gradle.spotless' version '3.27.1'
-	id 'com.adarshr.test-logger' version '2.0.0'
 	id 'org.sonarqube' version '2.7'
 }
 
 ext {
 	libraries = [
+		// Implementation
+		guava : 'com.google.guava:guava:29.0-jre',
 		// Test
-		junit_jupiter : 'org.junit.jupiter:junit-jupiter:5.6.0',
+		junit_jupiter : 'org.junit:junit-bom:5.7.2',
 		assertJ : 'org.assertj:assertj-core:3.11.1'
 	]
 }
@@ -17,38 +17,29 @@ allprojects {
 	apply plugin: 'java-library'
 	apply plugin: 'jacoco'
 
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+	sourceCompatibility = 1.8
+	targetCompatibility = 1.8
 
 	repositories {
-		jcenter()
+        mavenCentral()
 	}
 }
 
 
 subprojects {
-	apply plugin: 'com.diffplug.gradle.spotless'
-	apply plugin: 'com.adarshr.test-logger'
-
 	dependencies {
-		testImplementation libraries.junit_jupiter
+		implementation libraries.guava
+
 		testImplementation libraries.assertJ
+        testImplementation(platform(libraries.junit_jupiter))
+        testImplementation('org.junit.jupiter:junit-jupiter')
 	}
 
 	test {
 		useJUnitPlatform()
-	}
-
-	testlogger {
-		theme 'mocha'
-	}
-
-	spotless {
-		java {
-			removeUnusedImports()
-			trimTrailingWhitespace()
-			eclipse().configFile "${rootProject.projectDir}/EclipseFormatter.xml"
-		}
+        testLogging {
+            events "passed", "skipped", "failed"
+        }
 	}
 
 	jacocoTestReport {
@@ -63,7 +54,7 @@ subprojects {
 	}
 }
 
-task jacocoRootReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
+task jacocoRootReport(type: JacocoReport) {
 	dependsOn = subprojects.test
 
 	additionalSourceDirs.setFrom files(subprojects.sourceSets.main.allSource.srcDirs)

@@ -1,0 +1,5 @@
+DB: 000 FILE: 100  - COMPLETE-DDM                      DEFAULT SEQUENCE: 
+TYPE: SQL
+    
+  1 AA SOME_FIELD                        N 12,0    D
+******DDM OUTPUT TERMINATED******

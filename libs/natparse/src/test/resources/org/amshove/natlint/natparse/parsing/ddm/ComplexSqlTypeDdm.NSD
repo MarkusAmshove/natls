@@ -1,0 +1,15 @@
+DB: 999 FILE: 001  - COMPLEX-SQL-TYPE-DDM             DEFAULT SEQUENCE:
+TYPE: SQL
+
+T L DB Name                              F Leng  S D Remark
+- - -- --------------------------------  - ----  - - ------------------------
+  1 AA ID                                N 19,0    D
+  1 I_ L@LONG-VARCHAR                    I    2
+  1 AB LONG-VARCHAR                      A           VARCHAR2(2500)
+       LE=2500
+  1 I_ L@DYNAMIC-CLOB                    I    4
+  1 AC DYNAMIC-CLOB                      A       N D CLOB(4000)
+       DY
+       SQLTYPE=CLOB
+  1 I_ N@DYNAMIC-CLOB                    I    2
+******DDM OUTPUT TERMINATED******

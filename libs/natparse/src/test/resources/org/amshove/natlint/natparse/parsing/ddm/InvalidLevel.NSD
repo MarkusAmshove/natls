@@ -1,0 +1,16 @@
+DB: 000 FILE: 100  - COMPLETE-DDM                      DEFAULT SEQUENCE: 
+TYPE: ADABAS
+
+T L DB Name                              F Leng  S D Remark
+- - -- --------------------------------  - ----  - - ------------------------
+*      >Natural Source Header 000000
+*      :CP
+*
+*
+*      <Natural Source Header
+*      Generation started
+*      AT 2020-05-31 15:00:00
+*      by user Adabasadmin
+*
+  A AA INVALID-LEVEL                     N   12  N
+******DDM OUTPUT TERMINATED******
