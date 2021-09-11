@@ -5,6 +5,7 @@ import org.amshove.natlint.natparse.natural.ddm.ISuperdescriptorChild;
 
 public class SuperdescriptorChild implements ISuperdescriptorChild
 {
+	private IDdmField field;
 	private final String name;
 	private final int rangeFrom;
 	private final int rangeTo;
@@ -19,6 +20,16 @@ public class SuperdescriptorChild implements ISuperdescriptorChild
 	public String name()
 	{
 		return name;
+	}
+
+	public IDdmField field()
+	{
+		return field;
+	}
+
+	void setField(IDdmField field)
+	{
+		this.field = field;
 	}
 
 	public int rangeFrom()

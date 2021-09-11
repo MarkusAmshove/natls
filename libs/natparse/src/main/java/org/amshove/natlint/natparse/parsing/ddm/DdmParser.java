@@ -2,11 +2,10 @@ package org.amshove.natlint.natparse.parsing.ddm;
 
 import com.google.common.collect.Lists;
 import org.amshove.natlint.natparse.NaturalParseException;
-import org.amshove.natlint.natparse.natural.ddm.DdmType;
-import org.amshove.natlint.natparse.natural.ddm.DescriptorType;
-import org.amshove.natlint.natparse.natural.ddm.FieldType;
+import org.amshove.natlint.natparse.natural.ddm.*;
 import org.amshove.natlint.natparse.parsing.ddm.text.LinewiseTextScanner;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -30,6 +29,7 @@ public class DdmParser
 		":CP");
 
 	private DataDefinitionModule ddm;
+	private List<SuperdescriptorChild> childsToReference;
 
 	public DataDefinitionModule parseDdm(String content)
 	{
@@ -89,7 +89,38 @@ public class DdmParser
 			scanner.advance();
 		}
 
+		for (SuperdescriptorChild child : childsToReference)
+		{
+			if (!setMatchingReference(child, ddm.fields()))
+			{
+				throw new NaturalParseException(String.format(
+					"Could not find field referenced by superdescriptor child \"%s\"",
+					child.name())
+				);
+			}
+		}
+
 		return ddm;
+	}
+
+	private boolean setMatchingReference(SuperdescriptorChild child, List<IDdmField> fields)
+	{
+		for (IDdmField field : fields)
+		{
+			if (field instanceof IGroupField
+				&& setMatchingReference(child, ((IGroupField) field).members()))
+			{
+				return true;
+			}
+
+			if (field.name().equals(child.name()))
+			{
+				child.setField(field);
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private static DdmType parseDdmType(String line)
@@ -152,6 +183,7 @@ public class DdmParser
 		{
 			SuperdescriptorChild child = superdescriptorChildParser.parse(scanner.peek());
 			superdescriptor.addChildField(child);
+			childsToReference.add(child);
 			scanner.advance();
 		}
 
@@ -168,6 +200,7 @@ public class DdmParser
 	private void resetParser()
 	{
 		ddm = null;
+		childsToReference = new ArrayList<>();
 	}
 
 	private boolean isLineToSkip(String line)

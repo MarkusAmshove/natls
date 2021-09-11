@@ -93,7 +93,7 @@ public class DdmParserShould
 		ISuperdescriptor superdescriptorWithSubrange = assertIsSuperdescriptor(findField(ddm, "SUPERDESCRIPTOR-WITH-SUBRANGE"));
 		assertThat(superdescriptorWithSubrange.fields()).hasSize(2);
 		assertSuperdescriptorHasField(superdescriptorWithSubrange, "SOME-NUMBER",1,5);
-		assertSuperdescriptorHasField(superdescriptorWithSubrange, "ANOTHER-NUMBER-NUMBER",5,12);
+		assertSuperdescriptorHasField(superdescriptorWithSubrange, "TOP-LEVEL-GROUP-CHILD",5,12);
 	}
 
 	@Test
@@ -112,6 +112,31 @@ public class DdmParserShould
 		assertThat(findField(ddm, "DYNAMIC-CLOB").length()).isEqualTo(9999);
 
 		assertThat(findField(ddm, "N@DYNAMIC-CLOB").length()).isEqualTo(2);
+	}
+
+	@Test
+	void referneceFieldsFromSuperdescriptorChilds()
+	{
+		DataDefinitionModule ddm = parseFromResource("SuperdescriptorChildReference.NSD");
+
+		ISuperdescriptor descriptor = assertIsSuperdescriptor(findField(ddm, "A-SUPERDESCRIPTOR"));
+
+		IDdmField firstField = findField(ddm, "ALPHA-FIELD");
+		IDdmField secondField = findField(ddm, "ANOTHER-NUMBER");
+
+		ISuperdescriptorChild firstChild = findSuperdescriptorChild(descriptor, "ALPHA-FIELD");
+		ISuperdescriptorChild secondChild = findSuperdescriptorChild(descriptor, "ANOTHER-NUMBER");
+
+		assertThat(firstChild.field()).isEqualTo(firstField);
+		assertThat(secondChild.field()).isEqualTo(secondField);
+	}
+
+	@Test
+	void throwAnExceptionIfNoMatchingFieldToReferenceIsFound()
+	{
+		assertThatExceptionOfType(NaturalParseException.class)
+			.isThrownBy(() -> parseFromResource("SuperdescriptorChildMissingReference.NSD"))
+			.withMessage("Could not find field referenced by superdescriptor child \"ANOTHER-NUMBER\"");
 	}
 
 	private DataDefinitionModule parseFromResource(String resourceName)
@@ -167,11 +192,16 @@ public class DdmParserShould
 
 	private void assertSuperdescriptorHasField(ISuperdescriptor superdescriptor, String fieldname, int expectedRangeFrom, int expectedRangeTo)
 	{
-		Optional<ISuperdescriptorChild> foundChild = superdescriptor.fields().stream().filter(f -> f.name().equals(fieldname)).findFirst();
-		assertThat(foundChild).isPresent();
-		ISuperdescriptorChild child = foundChild.get();
+		ISuperdescriptorChild child = findSuperdescriptorChild(superdescriptor, fieldname);
 
 		assertThat(child.rangeFrom()).isEqualTo(expectedRangeFrom);
 		assertThat(child.rangeTo()).isEqualTo(expectedRangeTo);
+	}
+
+	private ISuperdescriptorChild findSuperdescriptorChild(ISuperdescriptor superdescriptor, String fieldname)
+	{
+		Optional<ISuperdescriptorChild> foundChild = superdescriptor.fields().stream().filter(f -> f.name().equals(fieldname)).findFirst();
+		assertThat(foundChild).isPresent();
+		return foundChild.get();
 	}
 }

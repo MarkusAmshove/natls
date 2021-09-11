@@ -19,7 +19,7 @@ T L DB Name                              F Leng  S D Remark
   1 AE NUMERIC-DESCRIPTOR                N   12  N D
   1 AF NUMERIC-WITH-FLOATING             N 12,7  N
 G 1 GA TOP-LEVEL-GROUP                   N    7  N
-  2 GB TOP-LEVEL-GROUP-CHILD             N    7  N
+  2 GB TOP-LEVEL-GROUP-CHILD             N   12  N
 G 2 GC TOP-LEVEL-GROUP-GROUP             N    5  N
   3 GD TOP-LEVEL-GROUP-GROUP-CHILD       N    5  N
   1 AG A-SUPERDESCRIPTOR                 A   20  N S
@@ -33,5 +33,5 @@ G 2 GC TOP-LEVEL-GROUP-GROUP             N    5  N
   1 AI SUPERDESCRIPTOR-WITH-SUBRANGE     A   12  N S
 *      -------- SOURCE FIELD(S) -------
 *      SOME-NUMBER (1-5)
-*      ANOTHER-NUMBER-NUMBER (5-12)
+*      TOP-LEVEL-GROUP-CHILD (5-12)
 ******DDM OUTPUT TERMINATED******
