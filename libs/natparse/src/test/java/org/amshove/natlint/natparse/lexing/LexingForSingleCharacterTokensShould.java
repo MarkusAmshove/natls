@@ -87,4 +87,16 @@ public class LexingForSingleCharacterTokensShould extends AbstractLexerTest
 	{
 		assertTokens(",", token(SyntaxKind.COMMA, ","));
 	}
+
+	@Test
+	void lexLeftBracket()
+	{
+		assertTokens("[", token(SyntaxKind.LBRACKET, "["));
+	}
+
+	@Test
+	void lexRightBracket()
+	{
+		assertTokens("]", token(SyntaxKind.RBRACKET, "]"));
+	}
 }
