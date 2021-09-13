@@ -10,6 +10,8 @@ public enum SyntaxKind
 	EQUALS,
 	COLON,
 	COLON_EQUALS,
+	DOT,
+	COMMA,
 	PLUS,
 	MINUS,
 	ASTERISK,

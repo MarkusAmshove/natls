@@ -85,6 +85,12 @@ public class Lexer
 					}
 					createAndAddCurrentSingleToken(SyntaxKind.LESSER);
 					continue;
+				case '.':
+					createAndAddCurrentSingleToken(SyntaxKind.DOT);
+					continue;
+				case ',':
+					createAndAddCurrentSingleToken(SyntaxKind.COMMA);
+					continue;
 
 				case '\'':
 					consumeString('\'');
