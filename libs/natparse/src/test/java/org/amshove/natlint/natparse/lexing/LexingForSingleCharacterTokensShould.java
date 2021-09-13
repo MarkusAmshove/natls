@@ -75,4 +75,28 @@ public class LexingForSingleCharacterTokensShould extends AbstractLexerTest
 	{
 		assertTokens("<", token(SyntaxKind.LESSER, "<"));
 	}
+
+	@Test
+	void lexDot()
+	{
+		assertTokens(".", token(SyntaxKind.DOT, "."));
+	}
+
+	@Test
+	void lexComma()
+	{
+		assertTokens(",", token(SyntaxKind.COMMA, ","));
+	}
+
+	@Test
+	void lexLeftBracket()
+	{
+		assertTokens("[", token(SyntaxKind.LBRACKET, "["));
+	}
+
+	@Test
+	void lexRightBracket()
+	{
+		assertTokens("]", token(SyntaxKind.RBRACKET, "]"));
+	}
 }

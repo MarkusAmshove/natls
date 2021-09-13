@@ -43,6 +43,12 @@ public class Lexer
 				case ')':
 					createAndAddCurrentSingleToken(SyntaxKind.RPAREN);
 					continue;
+				case '[':
+					createAndAddCurrentSingleToken(SyntaxKind.LBRACKET);
+					continue;
+				case ']':
+					createAndAddCurrentSingleToken(SyntaxKind.RBRACKET);
+					continue;
 				case '=':
 					createAndAddCurrentSingleToken(SyntaxKind.EQUALS);
 					continue;
@@ -84,6 +90,12 @@ public class Lexer
 						continue;
 					}
 					createAndAddCurrentSingleToken(SyntaxKind.LESSER);
+					continue;
+				case '.':
+					createAndAddCurrentSingleToken(SyntaxKind.DOT);
+					continue;
+				case ',':
+					createAndAddCurrentSingleToken(SyntaxKind.COMMA);
 					continue;
 
 				case '\'':
