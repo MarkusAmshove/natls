@@ -64,11 +64,8 @@ public class AbstractLexerTest
 		}
 	}
 
-	protected static class ExpectedSyntaxToken
+	protected record ExpectedSyntaxToken(SyntaxKind kind, String expectedSource)
 	{
-		private final SyntaxKind kind;
-		private final String expectedSource;
-
 		private String escapedExpectedSource()
 		{
 			if (kind != SyntaxKind.NEW_LINE && kind != SyntaxKind.TAB)
@@ -78,10 +75,5 @@ public class AbstractLexerTest
 			return expectedSource.replace("\r", "\\r").replace("\n", "\\n").replace("\t", "\\t");
 		}
 
-		private ExpectedSyntaxToken(SyntaxKind kind, String expectedSource)
-		{
-			this.kind = kind;
-			this.expectedSource = expectedSource;
-		}
 	}
 }

@@ -17,18 +17,13 @@ public enum DescriptorType
 	 */
 	public static DescriptorType fromSource(String source)
 	{
-		switch (source)
-		{
-			case "D":
-				return DESCRIPTOR;
-			case "S":
-				return SUPERDESCRIPTOR;
-			case "P":
-				return PHONETIC;
-			case " ":
-				return NONE;
-			default:
-				throw new NaturalParseException(String.format("Can't determine DescriptorType from \"%s\"", source));
-		}
+		return switch (source)
+			{
+				case "D" -> DESCRIPTOR;
+				case "S" -> SUPERDESCRIPTOR;
+				case "P" -> PHONETIC;
+				case " " -> NONE;
+				default -> throw new NaturalParseException(String.format("Can't determine DescriptorType from \"%s\"", source));
+			};
 	}
 }

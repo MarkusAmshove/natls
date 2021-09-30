@@ -2,7 +2,6 @@ package org.amshove.natlint.natparse.parsing.ddm;
 
 import org.amshove.natlint.natparse.NaturalParseException;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 class DdmMetadataParser

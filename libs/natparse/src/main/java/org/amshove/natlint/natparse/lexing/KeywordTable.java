@@ -7,372 +7,191 @@ public class KeywordTable
 	public static SyntaxKind getKeyword(String possibleKeyword)
 	{
 		var key = possibleKeyword.toLowerCase(Locale.ENGLISH);
-		switch (key)
-		{
-			// operators
-			case "eq":
-				return SyntaxKind.EQ;
-			case "ne":
-				return SyntaxKind.NE;
-			case "gt":
-				return SyntaxKind.GT;
-			case "ge":
-				return SyntaxKind.GE;
-			case "lt":
-				return SyntaxKind.LT;
-			case "le":
-				return SyntaxKind.LE;
+		return switch (key)
+			{
+				// operators
+				case "eq" -> SyntaxKind.EQ;
+				case "ne" -> SyntaxKind.NE;
+				case "gt" -> SyntaxKind.GT;
+				case "ge" -> SyntaxKind.GE;
+				case "lt" -> SyntaxKind.LT;
+				case "le" -> SyntaxKind.LE;
 
-			// KCheck keywords
-			case "abs":
-				return SyntaxKind.ABS;
-			case "accept":
-				return SyntaxKind.ACCEPT;
-			case "add":
-				return SyntaxKind.ADD;
-			case "all":
-				return SyntaxKind.ALL;
-			case "any":
-				return SyntaxKind.ANY;
-			case "assign":
-				return SyntaxKind.ASSIGN;
-			case "at":
-				return SyntaxKind.AT;
-			case "atn":
-				return SyntaxKind.ATN;
-			case "aver":
-				return SyntaxKind.AVER;
-			case "backout":
-				return SyntaxKind.BACKOUT;
-			case "before":
-				return SyntaxKind.BEFORE;
-			case "break":
-				return SyntaxKind.BREAK;
-			case "browse":
-				return SyntaxKind.BROWSE;
-			case "call":
-				return SyntaxKind.CALL;
-			case "calldbproc":
-				return SyntaxKind.CALLDBPROC;
-			case "callnat":
-				return SyntaxKind.CALLNAT;
-			case "close":
-				return SyntaxKind.CLOSE;
-			case "commit":
-				return SyntaxKind.COMMIT;
-			case "compose":
-				return SyntaxKind.COMPOSE;
-			case "compress":
-				return SyntaxKind.COMPRESS;
-			case "compute":
-				return SyntaxKind.COMPUTE;
-			case "copy":
-				return SyntaxKind.COPY;
-			case "cos":
-				return SyntaxKind.COS;
-			case "count":
-				return SyntaxKind.COUNT;
-			case "create":
-				return SyntaxKind.CREATE;
-			case "decide":
-				return SyntaxKind.DECIDE;
-			case "define":
-				return SyntaxKind.DEFINE;
-			case "delete":
-				return SyntaxKind.DELETE;
-			case "display":
-				return SyntaxKind.DISPLAY;
-			case "divide":
-				return SyntaxKind.DIVIDE;
-			case "dlogoff":
-				return SyntaxKind.DLOGOFF;
-			case "dlogon":
-				return SyntaxKind.DLOGON;
-			case "dnative":
-				return SyntaxKind.DNATIVE;
-			case "do":
-				return SyntaxKind.DO;
-			case "doend":
-				return SyntaxKind.DOEND;
-			case "download":
-				return SyntaxKind.DOWNLOAD;
-			case "eject":
-				return SyntaxKind.EJECT;
-			case "else":
-				return SyntaxKind.ELSE;
-			case "end":
-				return SyntaxKind.END;
-			case "end-all":
-				return SyntaxKind.END_ALL;
-			case "end-before":
-				return SyntaxKind.END_BEFORE;
-			case "end-break":
-				return SyntaxKind.END_BREAK;
-			case "end-browse":
-				return SyntaxKind.END_BROWSE;
-			case "end-decide":
-				return SyntaxKind.END_DECIDE;
-			case "end-enddata":
-				return SyntaxKind.END_ENDDATA;
-			case "end-endfile":
-				return SyntaxKind.END_ENDFILE;
-			case "end-endpage":
-				return SyntaxKind.END_ENDPAGE;
-			case "end-error":
-				return SyntaxKind.END_ERROR;
-			case "end-file":
-				return SyntaxKind.END_FILE;
-			case "end-find":
-				return SyntaxKind.END_FIND;
-			case "end-for":
-				return SyntaxKind.END_FOR;
-			case "end-histogram":
-				return SyntaxKind.END_HISTOGRAM;
-			case "endhoc":
-				return SyntaxKind.ENDHOC;
-			case "end-if":
-				return SyntaxKind.END_IF;
-			case "end-loop":
-				return SyntaxKind.END_LOOP;
-			case "end-norec":
-				return SyntaxKind.END_NOREC;
-			case "end-parse":
-				return SyntaxKind.END_PARSE;
-			case "end-process":
-				return SyntaxKind.END_PROCESS;
-			case "end-read":
-				return SyntaxKind.END_READ;
-			case "end-repeat":
-				return SyntaxKind.END_REPEAT;
-			case "end-result":
-				return SyntaxKind.END_RESULT;
-			case "end-select":
-				return SyntaxKind.END_SELECT;
-			case "end-sort":
-				return SyntaxKind.END_SORT;
-			case "end-start":
-				return SyntaxKind.END_START;
-			case "end-subroutine":
-				return SyntaxKind.END_SUBROUTINE;
-			case "end-toppage":
-				return SyntaxKind.END_TOPPAGE;
-			case "end-work":
-				return SyntaxKind.END_WORK;
-			case "entire":
-				return SyntaxKind.ENTIRE;
-			case "escape":
-				return SyntaxKind.ESCAPE;
-			case "examine":
-				return SyntaxKind.EXAMINE;
-			case "exp":
-				return SyntaxKind.EXP;
-			case "expand":
-				return SyntaxKind.EXPAND;
-			case "export":
-				return SyntaxKind.EXPORT;
-			case "false":
-				return SyntaxKind.FALSE;
-			case "fetch":
-				return SyntaxKind.FETCH;
-			case "find":
-				return SyntaxKind.FIND;
-			case "for":
-				return SyntaxKind.FOR;
-			case "format":
-				return SyntaxKind.FORMAT;
-			case "frac":
-				return SyntaxKind.FRAC;
-			case "get":
-				return SyntaxKind.GET;
-			case "histogram":
-				return SyntaxKind.HISTOGRAM;
-			case "if":
-				return SyntaxKind.IF;
-			case "ignore":
-				return SyntaxKind.IGNORE;
-			case "import":
-				return SyntaxKind.IMPORT;
-			case "inccont":
-				return SyntaxKind.INCCONT;
-			case "incdic":
-				return SyntaxKind.INCDIC;
-			case "incdir":
-				return SyntaxKind.INCDIR;
-			case "include":
-				return SyntaxKind.INCLUDE;
-			case "incmac":
-				return SyntaxKind.INCMAC;
-			case "input":
-				return SyntaxKind.INPUT;
-			case "insert":
-				return SyntaxKind.INSERT;
-			case "int":
-				return SyntaxKind.INT;
-			case "investigate":
-				return SyntaxKind.INVESTIGATE;
-			case "limit":
-				return SyntaxKind.LIMIT;
-			case "log":
-				return SyntaxKind.LOG;
-			case "loop":
-				return SyntaxKind.LOOP;
-			case "map":
-				return SyntaxKind.MAP;
-			case "max":
-				return SyntaxKind.MAX;
-			case "min":
-				return SyntaxKind.MIN;
-			case "move":
-				return SyntaxKind.MOVE;
-			case "multiply":
-				return SyntaxKind.MULTIPLY;
-			case "naver":
-				return SyntaxKind.NAVER;
-			case "ncount":
-				return SyntaxKind.NCOUNT;
-			case "newpage":
-				return SyntaxKind.NEWPAGE;
-			case "nmin":
-				return SyntaxKind.NMIN;
-			case "none":
-				return SyntaxKind.NONE;
-			case "null-handle":
-				return SyntaxKind.NULL_HANDLE;
-			case "obtain":
-				return SyntaxKind.OBTAIN;
-			case "old":
-				return SyntaxKind.OLD;
-			case "on":
-				return SyntaxKind.ON;
-			case "open":
-				return SyntaxKind.OPEN;
-			case "options":
-				return SyntaxKind.OPTIONS;
-			case "parse":
-				return SyntaxKind.PARSE;
-			case "passw":
-				return SyntaxKind.PASSW;
-			case "perform":
-				return SyntaxKind.PERFORM;
-			case "pos":
-				return SyntaxKind.POS;
-			case "print":
-				return SyntaxKind.PRINT;
-			case "process":
-				return SyntaxKind.PROCESS;
-			case "read":
-				return SyntaxKind.READ;
-			case "redefine":
-				return SyntaxKind.REDEFINE;
-			case "reduce":
-				return SyntaxKind.REDUCE;
-			case "reinput":
-				return SyntaxKind.REINPUT;
-			case "reject":
-				return SyntaxKind.REJECT;
-			case "release":
-				return SyntaxKind.RELEASE;
-			case "repeat":
-				return SyntaxKind.REPEAT;
-			case "request":
-				return SyntaxKind.REQUEST;
-			case "reset":
-				return SyntaxKind.RESET;
-			case "resize":
-				return SyntaxKind.RESIZE;
-			case "restore":
-				return SyntaxKind.RESTORE;
-			case "ret":
-				return SyntaxKind.RET;
-			case "retry":
-				return SyntaxKind.RETRY;
-			case "return":
-				return SyntaxKind.RETURN;
-			case "rollback":
-				return SyntaxKind.ROLLBACK;
-			case "rulevar":
-				return SyntaxKind.RULEVAR;
-			case "run":
-				return SyntaxKind.RUN;
-			case "select":
-				return SyntaxKind.SELECT;
-			case "send":
-				return SyntaxKind.SEND;
-			case "separate":
-				return SyntaxKind.SEPARATE;
-			case "set":
-				return SyntaxKind.SET;
-			case "settime":
-				return SyntaxKind.SETTIME;
-			case "sgn":
-				return SyntaxKind.SGN;
-			case "show":
-				return SyntaxKind.SHOW;
-			case "sin":
-				return SyntaxKind.SIN;
-			case "skip":
-				return SyntaxKind.SKIP;
-			case "sort":
-				return SyntaxKind.SORT;
-			case "sortkey":
-				return SyntaxKind.SORTKEY;
-			case "sqrt":
-				return SyntaxKind.SQRT;
-			case "stack":
-				return SyntaxKind.STACK;
-			case "start":
-				return SyntaxKind.START;
-			case "stop":
-				return SyntaxKind.STOP;
-			case "store":
-				return SyntaxKind.STORE;
-			case "substr":
-				return SyntaxKind.SUBSTR;
-			case "substring":
-				return SyntaxKind.SUBSTRING;
-			case "subtract":
-				return SyntaxKind.SUBTRACT;
-			case "sum":
-				return SyntaxKind.SUM;
-			case "suspend":
-				return SyntaxKind.SUSPEND;
-			case "tan":
-				return SyntaxKind.TAN;
-			case "terminate":
-				return SyntaxKind.TERMINATE;
-			case "top":
-				return SyntaxKind.TOP;
-			case "total":
-				return SyntaxKind.TOTAL;
-			case "transfer":
-				return SyntaxKind.TRANSFER;
-			case "true":
-				return SyntaxKind.TRUE;
-			case "until":
-				return SyntaxKind.UNTIL;
-			case "update":
-				return SyntaxKind.UPDATE;
-			case "upload":
-				return SyntaxKind.UPLOAD;
-			case "val":
-				return SyntaxKind.VAL;
-			case "value":
-				return SyntaxKind.VALUE;
-			case "values":
-				return SyntaxKind.VALUES;
-			case "waste":
-				return SyntaxKind.WASTE;
-			case "when":
-				return SyntaxKind.WHEN;
-			case "while":
-				return SyntaxKind.WHILE;
-			case "with_cte":
-				return SyntaxKind.WITH_CTE;
-			case "write":
-				return SyntaxKind.WRITE;
-
-			default:
-				return null;
-		}
+				// KCheck keywords
+				case "abs" -> SyntaxKind.ABS;
+				case "accept" -> SyntaxKind.ACCEPT;
+				case "add" -> SyntaxKind.ADD;
+				case "all" -> SyntaxKind.ALL;
+				case "any" -> SyntaxKind.ANY;
+				case "assign" -> SyntaxKind.ASSIGN;
+				case "at" -> SyntaxKind.AT;
+				case "atn" -> SyntaxKind.ATN;
+				case "aver" -> SyntaxKind.AVER;
+				case "backout" -> SyntaxKind.BACKOUT;
+				case "before" -> SyntaxKind.BEFORE;
+				case "break" -> SyntaxKind.BREAK;
+				case "browse" -> SyntaxKind.BROWSE;
+				case "call" -> SyntaxKind.CALL;
+				case "calldbproc" -> SyntaxKind.CALLDBPROC;
+				case "callnat" -> SyntaxKind.CALLNAT;
+				case "close" -> SyntaxKind.CLOSE;
+				case "commit" -> SyntaxKind.COMMIT;
+				case "compose" -> SyntaxKind.COMPOSE;
+				case "compress" -> SyntaxKind.COMPRESS;
+				case "compute" -> SyntaxKind.COMPUTE;
+				case "copy" -> SyntaxKind.COPY;
+				case "cos" -> SyntaxKind.COS;
+				case "count" -> SyntaxKind.COUNT;
+				case "create" -> SyntaxKind.CREATE;
+				case "decide" -> SyntaxKind.DECIDE;
+				case "define" -> SyntaxKind.DEFINE;
+				case "delete" -> SyntaxKind.DELETE;
+				case "display" -> SyntaxKind.DISPLAY;
+				case "divide" -> SyntaxKind.DIVIDE;
+				case "dlogoff" -> SyntaxKind.DLOGOFF;
+				case "dlogon" -> SyntaxKind.DLOGON;
+				case "dnative" -> SyntaxKind.DNATIVE;
+				case "do" -> SyntaxKind.DO;
+				case "doend" -> SyntaxKind.DOEND;
+				case "download" -> SyntaxKind.DOWNLOAD;
+				case "eject" -> SyntaxKind.EJECT;
+				case "else" -> SyntaxKind.ELSE;
+				case "end" -> SyntaxKind.END;
+				case "end-all" -> SyntaxKind.END_ALL;
+				case "end-before" -> SyntaxKind.END_BEFORE;
+				case "end-break" -> SyntaxKind.END_BREAK;
+				case "end-browse" -> SyntaxKind.END_BROWSE;
+				case "end-decide" -> SyntaxKind.END_DECIDE;
+				case "end-enddata" -> SyntaxKind.END_ENDDATA;
+				case "end-endfile" -> SyntaxKind.END_ENDFILE;
+				case "end-endpage" -> SyntaxKind.END_ENDPAGE;
+				case "end-error" -> SyntaxKind.END_ERROR;
+				case "end-file" -> SyntaxKind.END_FILE;
+				case "end-find" -> SyntaxKind.END_FIND;
+				case "end-for" -> SyntaxKind.END_FOR;
+				case "end-histogram" -> SyntaxKind.END_HISTOGRAM;
+				case "endhoc" -> SyntaxKind.ENDHOC;
+				case "end-if" -> SyntaxKind.END_IF;
+				case "end-loop" -> SyntaxKind.END_LOOP;
+				case "end-norec" -> SyntaxKind.END_NOREC;
+				case "end-parse" -> SyntaxKind.END_PARSE;
+				case "end-process" -> SyntaxKind.END_PROCESS;
+				case "end-read" -> SyntaxKind.END_READ;
+				case "end-repeat" -> SyntaxKind.END_REPEAT;
+				case "end-result" -> SyntaxKind.END_RESULT;
+				case "end-select" -> SyntaxKind.END_SELECT;
+				case "end-sort" -> SyntaxKind.END_SORT;
+				case "end-start" -> SyntaxKind.END_START;
+				case "end-subroutine" -> SyntaxKind.END_SUBROUTINE;
+				case "end-toppage" -> SyntaxKind.END_TOPPAGE;
+				case "end-work" -> SyntaxKind.END_WORK;
+				case "entire" -> SyntaxKind.ENTIRE;
+				case "escape" -> SyntaxKind.ESCAPE;
+				case "examine" -> SyntaxKind.EXAMINE;
+				case "exp" -> SyntaxKind.EXP;
+				case "expand" -> SyntaxKind.EXPAND;
+				case "export" -> SyntaxKind.EXPORT;
+				case "false" -> SyntaxKind.FALSE;
+				case "fetch" -> SyntaxKind.FETCH;
+				case "find" -> SyntaxKind.FIND;
+				case "for" -> SyntaxKind.FOR;
+				case "format" -> SyntaxKind.FORMAT;
+				case "frac" -> SyntaxKind.FRAC;
+				case "get" -> SyntaxKind.GET;
+				case "histogram" -> SyntaxKind.HISTOGRAM;
+				case "if" -> SyntaxKind.IF;
+				case "ignore" -> SyntaxKind.IGNORE;
+				case "import" -> SyntaxKind.IMPORT;
+				case "inccont" -> SyntaxKind.INCCONT;
+				case "incdic" -> SyntaxKind.INCDIC;
+				case "incdir" -> SyntaxKind.INCDIR;
+				case "include" -> SyntaxKind.INCLUDE;
+				case "incmac" -> SyntaxKind.INCMAC;
+				case "input" -> SyntaxKind.INPUT;
+				case "insert" -> SyntaxKind.INSERT;
+				case "int" -> SyntaxKind.INT;
+				case "investigate" -> SyntaxKind.INVESTIGATE;
+				case "limit" -> SyntaxKind.LIMIT;
+				case "log" -> SyntaxKind.LOG;
+				case "loop" -> SyntaxKind.LOOP;
+				case "map" -> SyntaxKind.MAP;
+				case "max" -> SyntaxKind.MAX;
+				case "min" -> SyntaxKind.MIN;
+				case "move" -> SyntaxKind.MOVE;
+				case "multiply" -> SyntaxKind.MULTIPLY;
+				case "naver" -> SyntaxKind.NAVER;
+				case "ncount" -> SyntaxKind.NCOUNT;
+				case "newpage" -> SyntaxKind.NEWPAGE;
+				case "nmin" -> SyntaxKind.NMIN;
+				case "none" -> SyntaxKind.NONE;
+				case "null-handle" -> SyntaxKind.NULL_HANDLE;
+				case "obtain" -> SyntaxKind.OBTAIN;
+				case "old" -> SyntaxKind.OLD;
+				case "on" -> SyntaxKind.ON;
+				case "open" -> SyntaxKind.OPEN;
+				case "options" -> SyntaxKind.OPTIONS;
+				case "parse" -> SyntaxKind.PARSE;
+				case "passw" -> SyntaxKind.PASSW;
+				case "perform" -> SyntaxKind.PERFORM;
+				case "pos" -> SyntaxKind.POS;
+				case "print" -> SyntaxKind.PRINT;
+				case "process" -> SyntaxKind.PROCESS;
+				case "read" -> SyntaxKind.READ;
+				case "redefine" -> SyntaxKind.REDEFINE;
+				case "reduce" -> SyntaxKind.REDUCE;
+				case "reinput" -> SyntaxKind.REINPUT;
+				case "reject" -> SyntaxKind.REJECT;
+				case "release" -> SyntaxKind.RELEASE;
+				case "repeat" -> SyntaxKind.REPEAT;
+				case "request" -> SyntaxKind.REQUEST;
+				case "reset" -> SyntaxKind.RESET;
+				case "resize" -> SyntaxKind.RESIZE;
+				case "restore" -> SyntaxKind.RESTORE;
+				case "ret" -> SyntaxKind.RET;
+				case "retry" -> SyntaxKind.RETRY;
+				case "return" -> SyntaxKind.RETURN;
+				case "rollback" -> SyntaxKind.ROLLBACK;
+				case "rulevar" -> SyntaxKind.RULEVAR;
+				case "run" -> SyntaxKind.RUN;
+				case "select" -> SyntaxKind.SELECT;
+				case "send" -> SyntaxKind.SEND;
+				case "separate" -> SyntaxKind.SEPARATE;
+				case "set" -> SyntaxKind.SET;
+				case "settime" -> SyntaxKind.SETTIME;
+				case "sgn" -> SyntaxKind.SGN;
+				case "show" -> SyntaxKind.SHOW;
+				case "sin" -> SyntaxKind.SIN;
+				case "skip" -> SyntaxKind.SKIP;
+				case "sort" -> SyntaxKind.SORT;
+				case "sortkey" -> SyntaxKind.SORTKEY;
+				case "sqrt" -> SyntaxKind.SQRT;
+				case "stack" -> SyntaxKind.STACK;
+				case "start" -> SyntaxKind.START;
+				case "stop" -> SyntaxKind.STOP;
+				case "store" -> SyntaxKind.STORE;
+				case "substr" -> SyntaxKind.SUBSTR;
+				case "substring" -> SyntaxKind.SUBSTRING;
+				case "subtract" -> SyntaxKind.SUBTRACT;
+				case "sum" -> SyntaxKind.SUM;
+				case "suspend" -> SyntaxKind.SUSPEND;
+				case "tan" -> SyntaxKind.TAN;
+				case "terminate" -> SyntaxKind.TERMINATE;
+				case "top" -> SyntaxKind.TOP;
+				case "total" -> SyntaxKind.TOTAL;
+				case "transfer" -> SyntaxKind.TRANSFER;
+				case "true" -> SyntaxKind.TRUE;
+				case "until" -> SyntaxKind.UNTIL;
+				case "update" -> SyntaxKind.UPDATE;
+				case "upload" -> SyntaxKind.UPLOAD;
+				case "val" -> SyntaxKind.VAL;
+				case "value" -> SyntaxKind.VALUE;
+				case "values" -> SyntaxKind.VALUES;
+				case "waste" -> SyntaxKind.WASTE;
+				case "when" -> SyntaxKind.WHEN;
+				case "while" -> SyntaxKind.WHILE;
+				case "with_cte" -> SyntaxKind.WITH_CTE;
+				case "write" -> SyntaxKind.WRITE;
+				default -> null;
+			};
 	}
 }

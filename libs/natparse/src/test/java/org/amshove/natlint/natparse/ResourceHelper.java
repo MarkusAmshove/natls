@@ -3,7 +3,6 @@ package org.amshove.natlint.natparse;
 import com.google.common.io.Resources;
 
 import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 public class ResourceHelper

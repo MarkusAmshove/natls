@@ -4,9 +4,6 @@ import com.google.common.collect.ImmutableList;
 import org.amshove.natlint.natparse.NaturalParseException;
 import org.amshove.natlint.natparse.natural.ddm.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
 class GroupField extends DdmField implements IGroupField
 {
 	private ImmutableList<IDdmField> member;

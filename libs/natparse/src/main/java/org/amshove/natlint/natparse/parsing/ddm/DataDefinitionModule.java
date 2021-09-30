@@ -5,9 +5,6 @@ import org.amshove.natlint.natparse.natural.ddm.DdmType;
 import org.amshove.natlint.natparse.natural.ddm.IDataDefinitionModule;
 import org.amshove.natlint.natparse.natural.ddm.IDdmField;
 
-import java.util.ArrayList;
-import java.util.List;
-
 class DataDefinitionModule implements IDataDefinitionModule
 {
 	private final String databaseNumber;

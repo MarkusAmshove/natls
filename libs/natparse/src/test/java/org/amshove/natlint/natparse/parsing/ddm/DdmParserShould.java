@@ -1,6 +1,5 @@
 package org.amshove.natlint.natparse.parsing.ddm;
 
-import com.google.common.collect.ImmutableList;
 import org.amshove.natlint.natparse.NaturalParseException;
 import org.amshove.natlint.natparse.ResourceHelper;
 import org.amshove.natlint.natparse.natural.DataFormat;
@@ -8,8 +7,6 @@ import org.amshove.natlint.natparse.natural.ddm.*;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;

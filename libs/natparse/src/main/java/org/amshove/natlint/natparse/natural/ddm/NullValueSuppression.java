@@ -16,16 +16,12 @@ public enum NullValueSuppression
 	 */
 	public static NullValueSuppression fromSource(String source)
 	{
-		switch (source)
-		{
-			case "N":
-				return NULL_SUPRESSION;
-			case "F":
-				return FIXED_STORAGE;
-			case " ":
-				return NONE;
-			default:
-				throw new NaturalParseException(String.format("Can't determine NullValueSupression from \"%s\"", source));
-		}
+		return switch (source)
+			{
+				case "N" -> NULL_SUPRESSION;
+				case "F" -> FIXED_STORAGE;
+				case " " -> NONE;
+				default -> throw new NaturalParseException(String.format("Can't determine NullValueSupression from \"%s\"", source));
+			};
 	}
 }

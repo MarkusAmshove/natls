@@ -1,6 +1,5 @@
 package org.amshove.natlint.natparse.parsing.ddm;
 
-import org.amshove.natlint.natparse.natural.ddm.IDdmField;
 import org.amshove.natlint.natparse.parsing.ddm.text.LinewiseTextScanner;
 import org.junit.jupiter.api.Test;
 
@@ -22,9 +21,10 @@ public class SqlFieldParserShould
 	@Test
 	void parseDynamicSqlLengthForClobs()
 	{
-        var source = "  1 AC DYANMIC-CLOB-FIELD                A       N D CLOB(4000)\n" +
-			"       SQLTYPE=CLOB\n" +
-			"       DY";
+        var source = """
+			1 AC DYANMIC-CLOB-FIELD                A       N D CLOB(4000)
+			     SQLTYPE=CLOB
+			     DY""".indent(2);
 
         var field = parse(source);
 		assertThat(field.length()).isEqualTo(9999);
