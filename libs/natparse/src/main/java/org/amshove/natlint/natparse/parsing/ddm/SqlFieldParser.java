@@ -28,7 +28,7 @@ class SqlFieldParser extends FieldParser
 			scanner.advance();
 		}
 
-		String lengthinformation = scanner.peek();
+        var lengthinformation = scanner.peek();
 		if (lengthinformation.contains("LE="))
 		{
 			return Double.parseDouble(lengthinformation.replace("LE=", "").trim());

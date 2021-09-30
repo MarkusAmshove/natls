@@ -11,10 +11,10 @@ public class SqlFieldParserShould
 	@Test
 	void parseTheLengthWithLengthOnNextLine()
 	{
-		String source = "  1 AC LONG-VARCHAR                      A       N   VARCHAR2(700)"
+        var source = "  1 AC LONG-VARCHAR                      A       N   VARCHAR2(700)"
 			+ "\n		LE=700";
 
-		DdmField field = parse(source);
+        var field = parse(source);
 		assertThat(field.length()).isEqualTo(700);
 		assertThat(field.remark()).isEqualTo("VARCHAR2(700)");
 	}
@@ -22,11 +22,11 @@ public class SqlFieldParserShould
 	@Test
 	void parseDynamicSqlLengthForClobs()
 	{
-		String source = "  1 AC DYANMIC-CLOB-FIELD                A       N D CLOB(4000)\n" +
+        var source = "  1 AC DYANMIC-CLOB-FIELD                A       N D CLOB(4000)\n" +
 			"       SQLTYPE=CLOB\n" +
 			"       DY";
 
-		DdmField field = parse(source);
+        var field = parse(source);
 		assertThat(field.length()).isEqualTo(9999);
 	}
 

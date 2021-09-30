@@ -10,7 +10,7 @@ public class ResourceHelper
 {
 	public static String readResourceFile(String path)
 	{
-		URL resource = Resources.getResource(path);
+        var resource = Resources.getResource(path);
 		try
 		{
 			return Resources.toString(resource, StandardCharsets.UTF_8);
@@ -23,7 +23,7 @@ public class ResourceHelper
 
 	public static String readRelativeResourceFile(String relativePath, Class<?> caller)
 	{
-		String startPath = caller.getPackage().getName().replace(".", "/");
+        var startPath = caller.getPackage().getName().replace(".", "/");
 		return readResourceFile(String.format("%s/%s", startPath, relativePath));
 	}
 }

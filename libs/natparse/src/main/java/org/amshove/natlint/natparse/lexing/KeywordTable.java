@@ -6,7 +6,7 @@ public class KeywordTable
 {
 	public static SyntaxKind getKeyword(String possibleKeyword)
 	{
-		String key = possibleKeyword.toLowerCase(Locale.ENGLISH);
+		var key = possibleKeyword.toLowerCase(Locale.ENGLISH);
 		switch (key)
 		{
 			// operators

@@ -77,9 +77,9 @@ public class SourceTextScanner
 	 */
 	public boolean advanceIf(String expectedText)
 	{
-		int expectedLength = expectedText.length();
+		var expectedLength = expectedText.length();
 
-		for (int i = 0; i < expectedLength; i++)
+		for (var i = 0; i < expectedLength; i++)
 		{
 			if (peek(i) != expectedText.charAt(i))
 			{
