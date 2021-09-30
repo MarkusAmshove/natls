@@ -17,11 +17,14 @@ allprojects {
 	apply plugin: 'java-library'
 	apply plugin: 'jacoco'
 
-	sourceCompatibility = 1.8
-	targetCompatibility = 1.8
+	java {
+		toolchain {
+			languageVersion = JavaLanguageVersion.of(17)
+		}
+	}
 
 	repositories {
-        mavenCentral()
+		mavenCentral()
 	}
 }
 
@@ -31,15 +34,15 @@ subprojects {
 		implementation libraries.guava
 
 		testImplementation libraries.assertJ
-        testImplementation(platform(libraries.junit_jupiter))
-        testImplementation('org.junit.jupiter:junit-jupiter')
+		testImplementation(platform(libraries.junit_jupiter))
+		testImplementation('org.junit.jupiter:junit-jupiter')
 	}
 
 	test {
 		useJUnitPlatform()
-        testLogging {
-            events "passed", "skipped", "failed"
-        }
+		testLogging {
+			events "passed", "skipped", "failed"
+		}
 	}
 
 	jacocoTestReport {
@@ -70,9 +73,9 @@ task jacocoRootReport(type: JacocoReport) {
 }
 
 sonarqube {
-    properties {
-        property 'sonar.coverage.jacoco.xmlReportPaths', 'build/reports/jacoco/test/jacocoTestReport.xml'
-    }
+	properties {
+		property 'sonar.coverage.jacoco.xmlReportPaths', 'build/reports/jacoco/test/jacocoTestReport.xml'
+	}
 }
 
 project.tasks['sonarqube'].dependsOn subprojects.jacocoTestReport
