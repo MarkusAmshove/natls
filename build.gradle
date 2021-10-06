@@ -4,6 +4,7 @@ plugins {
 }
 
 ext {
+    JAVA_VERSION = 17
 	libraries = [
 		// Implementation
 		guava : 'com.google.guava:guava:29.0-jre',
@@ -19,9 +20,13 @@ allprojects {
 
 	java {
 		toolchain {
-			languageVersion = JavaLanguageVersion.of(17)
+			languageVersion = JavaLanguageVersion.of(JAVA_VERSION)
 		}
 	}
+
+	tasks.withType(JavaCompile).configureEach {
+	    options.release.set(JAVA_VERSION)
+    }
 
 	repositories {
 		mavenCentral()
