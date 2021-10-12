@@ -35,15 +35,15 @@ public class DdmParser
 	public IDataDefinitionModule parseDdm(String content)
 	{
 		resetParser();
-		String[] lines = content.split("[\\r\\n]+");
-		LinewiseTextScanner scanner = new LinewiseTextScanner(lines);
+        var lines = content.split("[\\r\\n]+");
+        var scanner = new LinewiseTextScanner(lines);
 		fieldParser = adabasFieldParser;
 
 		ImmutableList.Builder<IDdmField> ddmFields = ImmutableList.builder();
 
 		while (!scanner.isAtEnd())
 		{
-			String line = scanner.peek();
+            var line = scanner.peek();
 
 			if (isLineToSkip(line))
 			{
@@ -53,7 +53,7 @@ public class DdmParser
 
 			if (line.startsWith("DB:"))
 			{
-				DdmMetadata metadata = metadataParser.parseMetadataLine(line);
+                var metadata = metadataParser.parseMetadataLine(line);
 				ddm = new DataDefinitionModule(metadata.databaseNumber(), metadata.fileNumber(), metadata.name(), metadata.defaultSequence());
 				scanner.advance();
 				continue;
@@ -71,10 +71,10 @@ public class DdmParser
 				continue;
 			}
 
-			DdmField field = parseField(scanner);
+            var field = parseField(scanner);
 			if (field.fieldType() == FieldType.GROUP)
 			{
-				GroupField groupField = new GroupField(field);
+                var groupField = new GroupField(field);
 				scanner.advance();
 				ImmutableList.Builder<IDdmField> groupMembers = ImmutableList.builder();
 				parseGroup(scanner, groupField, groupMembers);
@@ -96,7 +96,7 @@ public class DdmParser
 
 		ddm.setFields(ddmFields.build());
 
-		for (SuperdescriptorChild child : childrenToReference)
+		for (var child : childrenToReference)
 		{
 			if (!setMatchingReference(child, ddm.fields()))
 			{
@@ -112,7 +112,7 @@ public class DdmParser
 
 	private boolean setMatchingReference(SuperdescriptorChild child, List<IDdmField> fields)
 	{
-		for (IDdmField field : fields)
+		for (var field : fields)
 		{
 			if (field instanceof IGroupField
 				&& setMatchingReference(child, ((IGroupField) field).members()))
@@ -159,7 +159,7 @@ public class DdmParser
 				return;
 			}
 
-			DdmField nextField = parseField(scanner);
+            var nextField = parseField(scanner);
 
 			if (nextField.level() <= currentField.level())
 			{
@@ -173,7 +173,7 @@ public class DdmParser
 			}
 			else
 			{
-				GroupField childGroupField = new GroupField(nextField);
+                var childGroupField = new GroupField(nextField);
 				groupMembers.add(childGroupField);
 				scanner.advance();
 				ImmutableList.Builder<IDdmField> childGroupMembers = ImmutableList.builder();
@@ -189,12 +189,12 @@ public class DdmParser
 		// SOURCE FIELD(S) comment from predic
 		scanner.advance();
 
-		Superdescriptor superdescriptor = new Superdescriptor(field);
+        var superdescriptor = new Superdescriptor(field);
 		ImmutableList.Builder<ISuperdescriptorChild> children = ImmutableList.builder();
 
 		while (!scanner.isAtEnd() && containsSuperdescriptorSourceFieldRange(scanner.peek()))
 		{
-			SuperdescriptorChild child = superdescriptorChildParser.parse(scanner.peek());
+            var child = superdescriptorChildParser.parse(scanner.peek());
 			children.add(child);
 			childrenToReference.add(child);
 			scanner.advance();
@@ -220,7 +220,7 @@ public class DdmParser
 
 	private boolean isLineToSkip(String line)
 	{
-		for (String toSkip : linesToSkip)
+		for (var toSkip : linesToSkip)
 		{
 			if (line.startsWith(toSkip))
 			{

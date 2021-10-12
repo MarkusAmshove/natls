@@ -25,34 +25,21 @@ public enum DataFormat
 	 */
 	public static DataFormat fromSource(String source)
 	{
-		switch (source)
-		{
-			case "A":
-				return ALPHANUMERIC;
-			case "B":
-				return BINARY;
-			case "C":
-				return CONTROL;
-			case "D":
-				return DATE;
-			case "F":
-				return FLOAT;
-			case "I":
-				return INTEGER;
-			case "L":
-				return LOGIC;
-			case "N":
-				return NUMERIC;
-			case "P":
-				return PACKED;
-			case "T":
-				return TIME;
-			case "U":
-				return UNICODE;
-			case " ":
-				return NONE;
-			default:
-				throw new NaturalParseException(String.format("Can't determine DataFormat from format \"%s\"", source));
-		}
+		return switch (source)
+			{
+				case "A" -> ALPHANUMERIC;
+				case "B" -> BINARY;
+				case "C" -> CONTROL;
+				case "D" -> DATE;
+				case "F" -> FLOAT;
+				case "I" -> INTEGER;
+				case "L" -> LOGIC;
+				case "N" -> NUMERIC;
+				case "P" -> PACKED;
+				case "T" -> TIME;
+				case "U" -> UNICODE;
+				case " " -> NONE;
+				default -> throw new NaturalParseException(String.format("Can't determine DataFormat from format \"%s\"", source));
+			};
 	}
 }

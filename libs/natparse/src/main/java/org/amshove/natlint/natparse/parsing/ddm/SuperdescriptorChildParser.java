@@ -11,7 +11,7 @@ class SuperdescriptorChildParser
 
 	public SuperdescriptorChild parse(String line)
 	{
-		Matcher matcher = SUPERDESCRIPTOR_CHILD_PATTERN.matcher(line);
+        var matcher = SUPERDESCRIPTOR_CHILD_PATTERN.matcher(line);
 		if (!matcher.matches())
 		{
 			throw new NaturalParseException(String.format("Can't parse Superdescriptorchild from \"%s\"", line));

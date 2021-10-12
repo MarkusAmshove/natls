@@ -2,7 +2,6 @@ package org.amshove.natlint.natparse.parsing.ddm;
 
 import org.amshove.natlint.natparse.NaturalParseException;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 class DdmMetadataParser
@@ -11,13 +10,13 @@ class DdmMetadataParser
 
 	DdmMetadata parseMetadataLine(String line)
 	{
-		Matcher matcher = METADATA_PATTERN.matcher(line);
+        var matcher = METADATA_PATTERN.matcher(line);
 		if (!matcher.find())
 		{
 			throw new NaturalParseException(String.format("DDM Metadata line could not be parsed: \"%s\"", line));
 		}
 
-		DdmMetadata metadata = new DdmMetadata();
+        var metadata = new DdmMetadata();
 		metadata.setName(matcher.group("DBNAME"));
 		metadata.setDatabaseNumber(matcher.group("DBNR"));
 		metadata.setFileNumber(matcher.group("FILENR"));

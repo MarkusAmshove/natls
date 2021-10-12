@@ -219,7 +219,7 @@ public class Lexer
 			scanner.advance();
 		}
 
-		String lexeme = scanner.lexemeText();
+		var lexeme = scanner.lexemeText();
 
 		if (kindHint != null)
 		{
@@ -227,7 +227,7 @@ public class Lexer
 			return;
 		}
 
-		SyntaxKind kind = KeywordTable.getKeyword(lexeme);
+		var kind = KeywordTable.getKeyword(lexeme);
 		if (kind != null)
 		{
 			createAndAdd(kind);
@@ -254,8 +254,8 @@ public class Lexer
 
 	private boolean consumeComment()
 	{
-		boolean isSingleAsteriskComment = scanner.position() - currentLineStartOffset == 0 && scanner.peek() == '*';
-		boolean isInlineComment = scanner.peek() == '/' && scanner.peek(1) == '*';
+		var isSingleAsteriskComment = scanner.position() - currentLineStartOffset == 0 && scanner.peek() == '*';
+		var isInlineComment = scanner.peek() == '/' && scanner.peek(1) == '*';
 
 		if (isSingleAsteriskComment || isInlineComment)
 		{
@@ -364,7 +364,7 @@ public class Lexer
 
 	private void createAndAdd(SyntaxKind kind)
 	{
-		SyntaxToken token = SyntaxTokenFactory.create(kind,
+		var token = SyntaxTokenFactory.create(kind,
 			scanner.lexemeStart(),
 			getOffsetInLine(),
 			line,

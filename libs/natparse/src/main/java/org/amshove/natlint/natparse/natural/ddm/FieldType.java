@@ -17,18 +17,13 @@ public enum FieldType
 	 */
 	public static FieldType fromSource(String source)
 	{
-		switch (source)
-		{
-			case "G":
-				return GROUP;
-			case "M":
-				return MULTIPLE;
-			case "P":
-				return PERIODIC;
-			case " ":
-				return NONE;
-			default:
-				throw new NaturalParseException(String.format("Can't determine FieldType from \"%s\"", source));
-		}
+		return switch (source)
+			{
+				case "G" -> GROUP;
+				case "M" -> MULTIPLE;
+				case "P" -> PERIODIC;
+				case " " -> NONE;
+				default -> throw new NaturalParseException(String.format("Can't determine FieldType from \"%s\"", source));
+			};
 	}
 }

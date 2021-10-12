@@ -36,7 +36,7 @@ class FieldParserShould
 			type = " ";
 		}
 
-		FieldType expectedFieldType = FieldType.valueOf(expectedType);
+        var expectedFieldType = FieldType.valueOf(expectedType);
 		assertThat(parsedField(fieldBuilder().withType(type)).fieldType()).isEqualTo(expectedFieldType);
 	}
 
@@ -77,7 +77,7 @@ class FieldParserShould
 	{ "A,ALPHANUMERIC", "B,BINARY", "C,CONTROL", "D,DATE", "F,FLOAT", "I,INTEGER", "L,LOGIC", "N,NUMERIC", "P,PACKED", "T,TIME", "U,UNICODE" })
 	void parseTheFormat(String format, String expectedFormat)
 	{
-		DataFormat expectedTypedFormat = DataFormat.valueOf(expectedFormat);
+        var expectedTypedFormat = DataFormat.valueOf(expectedFormat);
 		assertThat(parsedField(fieldBuilder().withFormat(format)).format()).isEqualTo(expectedTypedFormat);
 	}
 
@@ -116,7 +116,7 @@ class FieldParserShould
 			source = " ";
 		}
 
-		NullValueSuppression typedExpectedSupression = NullValueSuppression.valueOf(expectedSupression);
+        var typedExpectedSupression = NullValueSuppression.valueOf(expectedSupression);
 
 		assertThat(parsedField(fieldBuilder().withSupression(source)).suppression()).isEqualTo(typedExpectedSupression);
 	}
@@ -139,7 +139,7 @@ class FieldParserShould
 			descriptorLiteral = " ";
 		}
 
-		DescriptorType expectedType = DescriptorType.valueOf(expectedDescriptorType);
+        var expectedType = DescriptorType.valueOf(expectedDescriptorType);
 
 		assertThat(parsedField(fieldBuilder().withDescriptor(descriptorLiteral)).descriptor()).isEqualTo(expectedType);
 	}
@@ -148,7 +148,7 @@ class FieldParserShould
 	void parseEmptyDescriptors()
 	{
 		// this is the case when the ddm source has no remark and was saved without trailing whitespace
-		DdmField field = sut.parse(createScanner("  1 AA SOME-NUMBER                       N   12  N"));
+        var field = sut.parse(createScanner("  1 AA SOME-NUMBER                       N   12  N"));
 		assertThat(field.descriptor()).isEqualTo(DescriptorType.NONE);
 	}
 
@@ -172,14 +172,14 @@ class FieldParserShould
 	void parseEmptyRemarks()
 	{
 		// this is the case when the ddm source has no remark and was saved without trailing whitespace
-		DdmField field = sut.parse(createScanner("  1 AD ALPHANUMERIC-DESCRIPTOR           A   18    D"));
+        var field = sut.parse(createScanner("  1 AD ALPHANUMERIC-DESCRIPTOR           A   18    D"));
 		assertThat(field.remark()).isEmpty();
 	}
 
 	@Test
 	void parseAPeriodicGroup()
 	{
-		DdmField field = sut.parse(createScanner("P 1 AS PERIODIC-FIELD                                "));
+        var field = sut.parse(createScanner("P 1 AS PERIODIC-FIELD                                "));
 		assertThat(field.fieldType()).isEqualTo(FieldType.PERIODIC);
 		assertThat(field.name()).isEqualTo("PERIODIC-FIELD");
 		assertThat(field.length()).isEqualTo(0);
@@ -189,7 +189,7 @@ class FieldParserShould
 	@Test
 	void parseAGroup()
 	{
-		DdmField field = sut.parse(createScanner("G 1 AS GROUP-FIELD                                   "));
+        var field = sut.parse(createScanner("G 1 AS GROUP-FIELD                                   "));
 		assertThat(field.fieldType()).isEqualTo(FieldType.GROUP);
 		assertThat(field.name()).isEqualTo("GROUP-FIELD");
 		assertThat(field.length()).isEqualTo(0);

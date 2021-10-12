@@ -40,12 +40,12 @@ public class AbstractLexerTest
 
 	protected void assertTokens(String source, List<ExpectedSyntaxToken> expectedTokens)
 	{
-		Lexer lexer = new Lexer();
-		List<SyntaxToken> lexemes = lexer.lex(source);
-		for (int i = 0; i < expectedTokens.size(); i++)
+		var lexer = new Lexer();
+		var lexemes = lexer.lex(source);
+		for (var i = 0; i < expectedTokens.size(); i++)
 		{
-			ExpectedSyntaxToken expectedToken = expectedTokens.get(i);
-			SyntaxToken actualToken = lexemes.get(i);
+			var expectedToken = expectedTokens.get(i);
+			var actualToken = lexemes.get(i);
 
 			assertThat(actualToken.kind())
 				.as("Expected Token %d to be [%s] but was [%s]: '%s'",
@@ -64,11 +64,8 @@ public class AbstractLexerTest
 		}
 	}
 
-	protected static class ExpectedSyntaxToken
+	protected record ExpectedSyntaxToken(SyntaxKind kind, String expectedSource)
 	{
-		private final SyntaxKind kind;
-		private final String expectedSource;
-
 		private String escapedExpectedSource()
 		{
 			if (kind != SyntaxKind.NEW_LINE && kind != SyntaxKind.TAB)
@@ -78,10 +75,5 @@ public class AbstractLexerTest
 			return expectedSource.replace("\r", "\\r").replace("\n", "\\n").replace("\t", "\\t");
 		}
 
-		private ExpectedSyntaxToken(SyntaxKind kind, String expectedSource)
-		{
-			this.kind = kind;
-			this.expectedSource = expectedSource;
-		}
 	}
 }
