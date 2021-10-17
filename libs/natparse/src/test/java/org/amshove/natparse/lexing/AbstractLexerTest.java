@@ -73,13 +73,21 @@ public class AbstractLexerTest
 
 	protected TokenList assertDiagnostic(String source, LexerDiagnostic diagnostic)
 	{
+		return assertDiagnostics(source, diagnostic);
+	}
+
+	protected TokenList assertDiagnostics(String source, LexerDiagnostic... diagnostics)
+	{
 		var lexer = new Lexer();
 		var lexemes = lexer.lex(source);
-		var diagnostics = lexemes.diagnostics();
+		var foundDiagnostics = lexemes.diagnostics();
 
-		assertThat(diagnostics)
-			.as("Expected lex result to contain diagnostic [%s]", diagnostic)
-			.contains(diagnostic);
+		for (var diagnostic : diagnostics)
+		{
+			assertThat(foundDiagnostics)
+				.as("Expected lex result to contain diagnostic [%s]", diagnostic)
+				.contains(diagnostic);
+		}
 
 		return lexemes;
 	}

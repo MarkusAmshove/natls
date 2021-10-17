@@ -12,21 +12,12 @@ public class Lexer
 	private int line;
 	private int currentLineStartOffset;
 
-	// NOTE: Only for debugging purposes.
-	private List<Character> unknownCharacters;
-
 	private List<LexerDiagnostic> diagnostics;
-
-	public List<Character> getUnknownCharacters()
-	{
-		return unknownCharacters;
-	}
 
 	public TokenList lex(String source)
 	{
 		tokens = new ArrayList<>();
 		diagnostics = new ArrayList<>();
-		unknownCharacters = new ArrayList<>();
 		scanner = new SourceTextScanner(source);
 		line = 0;
 		currentLineStartOffset = 0;
@@ -182,7 +173,13 @@ public class Lexer
 					continue;
 
 				default:
-					unknownCharacters.add(scanner.peek());
+					diagnostics.add(LexerDiagnostic.create(
+						"Unknown character [%c]".formatted(scanner.peek()),
+						scanner.position(),
+						getOffsetInLine(),
+						line,
+						1,
+						LexerError.UNKNOWN_CHARACTER));
 					scanner.advance();
 			}
 		}
@@ -351,13 +348,7 @@ public class Lexer
 				scanner.advance();
 			}
 
-			addDiagnostic(LexerDiagnostic.create(
-				scanner.lexemeStart(),
-				getOffsetInLine(),
-				line,
-				scanner.lexemeLength(),
-				LexerError.UNTERMINATED_STRING
-			));
+			addDiagnostic("Unterminated String literal, expecting closing [%c]".formatted(c), LexerError.UNTERMINATED_STRING);
 
 			// We can still produce a valid token, although it is unterminated
 			createAndAdd(SyntaxKind.STRING);
@@ -424,8 +415,14 @@ public class Lexer
 		return false;
 	}
 
-	private void addDiagnostic(LexerDiagnostic diagnostic)
+	private void addDiagnostic(String message, LexerError error)
 	{
-		diagnostics.add(diagnostic);
+		diagnostics.add(LexerDiagnostic.create(
+			message,
+			scanner.lexemeStart(),
+			getOffsetInLine(),
+			line,
+			scanner.lexemeLength(),
+			error));
 	}
 }

@@ -11,9 +11,11 @@ public class LexerDiagnostic implements IPosition
 	private final int currentLine;
 	private final int length;
 	private final LexerError error;
+	private final String message;
 
-	private LexerDiagnostic(int offset, int offsetInLine, int currentLine, int length, LexerError error)
+	private LexerDiagnostic(String message, int offset, int offsetInLine, int currentLine, int length, LexerError error)
 	{
+		this.message = message;
 		this.offset = offset;
 		this.offsetInLine = offsetInLine;
 		this.currentLine = currentLine;
@@ -21,15 +23,33 @@ public class LexerDiagnostic implements IPosition
 		this.error = error;
 	}
 
-	static LexerDiagnostic create(int offset, int offsetInLine, int currentLine, int length, LexerError error)
+	static LexerDiagnostic create(String message, int offset, int offsetInLine, int currentLine, int length, LexerError error)
 	{
 		return new LexerDiagnostic(
+			message,
 			offset,
 			offsetInLine,
 			currentLine,
 			length,
 			error
 		);
+	}
+
+	static LexerDiagnostic create(int offset, int offsetInLine, int currentLine, int length, LexerError error)
+	{
+		return new LexerDiagnostic(
+			"",
+			offset,
+			offsetInLine,
+			currentLine,
+			length,
+			error
+		);
+	}
+
+	public String message()
+	{
+		return message;
 	}
 
 	@Override
@@ -56,7 +76,8 @@ public class LexerDiagnostic implements IPosition
 		return length;
 	}
 
-	@Override public boolean equals(Object o)
+	@Override
+	public boolean equals(Object o)
 	{
 		if (this == o)
 			return true;
@@ -72,7 +93,8 @@ public class LexerDiagnostic implements IPosition
 		return Objects.hash(offset, offsetInLine, currentLine, length, error);
 	}
 
-	@Override public String toString()
+	@Override
+	public String toString()
 	{
 		return "LexerDiagnostic{" +
 			"offset=" + offset +
