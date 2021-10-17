@@ -12,7 +12,7 @@ class TokenListShould
 	@Test
 	void returnTheTokenAtCurrentOffset()
 	{
-		SyntaxToken token = SyntaxTokenFactory.create(SyntaxKind.ADD, 0, 0, 1, "ADD");
+		var token = SyntaxTokenFactory.create(SyntaxKind.ADD, 0, 0, 1, "ADD");
 		var list = createTokenList(token);
 		assertThat(list.peek()).isEqualTo(token);
 	}
@@ -20,7 +20,7 @@ class TokenListShould
 	@Test
 	void beAbleToAdvance()
 	{
-		SyntaxToken token = SyntaxTokenFactory.create(SyntaxKind.ADD, 0, 0, 1, "ADD");
+		var token = SyntaxTokenFactory.create(SyntaxKind.ADD, 0, 0, 1, "ADD");
 		var list = createTokenList(
 			SyntaxTokenFactory.create(SyntaxKind.ASSIGN, 0, 0, 1, "ASSIGN"),
 			token
@@ -33,7 +33,7 @@ class TokenListShould
 	@Test
 	void returnNullWhenPeekingOverSize()
 	{
-		TokenList tokenList = createListWithTokens(10);
+		var tokenList = createListWithTokens(10);
 		assertThat(tokenList.peek()).isNotNull();
 		assertThat(tokenList.peek(10)).isNull();
 	}
@@ -41,7 +41,7 @@ class TokenListShould
 	@Test
 	void recognizeWhenAtEnd()
 	{
-		TokenList tokenList = createListWithTokens(2);
+		var tokenList = createListWithTokens(2);
 		assertThat(tokenList.isAtEnd()).isFalse();
 		tokenList.advance();
 		assertThat(tokenList.isAtEnd()).isFalse();
@@ -58,7 +58,7 @@ class TokenListShould
 	{
 		var tokens = new ArrayList<SyntaxToken>(amountOfTokens);
 
-		SyntaxKind[] syntaxKinds = SyntaxKind.values();
+		var syntaxKinds = SyntaxKind.values();
 		for (var i = 0; i < amountOfTokens; i++)
 		{
 			tokens.add(SyntaxTokenFactory.create(syntaxKinds[i], 0, 0, 0, syntaxKinds[i].toString()));

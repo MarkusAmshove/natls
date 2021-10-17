@@ -12,18 +12,12 @@ public class Lexer
 	private int line;
 	private int currentLineStartOffset;
 
-	// NOTE: Only for debugging purposes.
-	private List<Character> unknownCharacters;
-
-	public List<Character> getUnknownCharacters()
-	{
-		return unknownCharacters;
-	}
+	private List<LexerDiagnostic> diagnostics;
 
 	public TokenList lex(String source)
 	{
 		tokens = new ArrayList<>();
-		unknownCharacters = new ArrayList<>();
+		diagnostics = new ArrayList<>();
 		scanner = new SourceTextScanner(source);
 		line = 0;
 		currentLineStartOffset = 0;
@@ -179,11 +173,17 @@ public class Lexer
 					continue;
 
 				default:
-					unknownCharacters.add(scanner.peek());
+					diagnostics.add(LexerDiagnostic.create(
+						"Unknown character [%c]".formatted(scanner.peek()),
+						scanner.position(),
+						getOffsetInLine(),
+						line,
+						1,
+						LexerError.UNKNOWN_CHARACTER));
 					scanner.advance();
 			}
 		}
-		return TokenList.fromTokens(tokens);
+		return TokenList.fromTokensAndDiagnostics(tokens, diagnostics);
 	}
 
 	private void consumeIdentifier()
@@ -335,9 +335,24 @@ public class Lexer
 	{
 		scanner.start();
 		scanner.advance();
-		while (scanner.peek() != c && !scanner.isAtEnd())
+		while (scanner.peek() != c && !scanner.isAtEnd() && !isLineEnd())
 		{
 			scanner.advance();
+		}
+
+		if (scanner.peek() != c)
+		{
+			// Recovery
+			while (!isLineEnd() && !scanner.isAtEnd())
+			{
+				scanner.advance();
+			}
+
+			addDiagnostic("Unterminated String literal, expecting closing [%c]".formatted(c), LexerError.UNTERMINATED_STRING);
+
+			// We can still produce a valid token, although it is unterminated
+			createAndAdd(SyntaxKind.STRING);
+			return;
 		}
 
 		// The current character is the terminating string literal (' or "), therefore it needs to be consumed
@@ -375,6 +390,11 @@ public class Lexer
 
 	private int getOffsetInLine()
 	{
+		if(scanner.lexemeStart() ==  -1)
+		{
+			return scanner.position() - currentLineStartOffset;
+		}
+
 		return scanner.lexemeStart() - currentLineStartOffset;
 	}
 
@@ -393,5 +413,16 @@ public class Lexer
 			return true;
 		}
 		return false;
+	}
+
+	private void addDiagnostic(String message, LexerError error)
+	{
+		diagnostics.add(LexerDiagnostic.create(
+			message,
+			scanner.lexemeStart(),
+			getOffsetInLine(),
+			line,
+			scanner.lexemeLength(),
+			error));
 	}
 }
