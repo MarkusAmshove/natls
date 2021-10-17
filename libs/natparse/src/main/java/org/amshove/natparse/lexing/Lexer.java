@@ -399,6 +399,11 @@ public class Lexer
 
 	private int getOffsetInLine()
 	{
+		if(scanner.lexemeStart() ==  -1)
+		{
+			return scanner.position() - currentLineStartOffset;
+		}
+
 		return scanner.lexemeStart() - currentLineStartOffset;
 	}
 
