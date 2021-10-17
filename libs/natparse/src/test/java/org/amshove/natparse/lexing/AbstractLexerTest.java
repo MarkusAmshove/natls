@@ -10,7 +10,7 @@ public class AbstractLexerTest
 {
 	protected SyntaxToken lexSingle(String source, int index)
 	{
-		TokenList tokenList = new Lexer().lex(source);
+		var tokenList = new Lexer().lex(source);
 		for(var i = 0; i < index; i++)
 		{
 			tokenList.advance();
@@ -68,6 +68,37 @@ public class AbstractLexerTest
 			}
 
 			lexemes.advance();
+		}
+	}
+
+	protected TokenList assertDiagnostic(String source, LexerDiagnostic diagnostic)
+	{
+		var lexer = new Lexer();
+		var lexemes = lexer.lex(source);
+		var diagnostics = lexemes.diagnostics();
+
+		assertThat(diagnostics)
+			.as("Expected lex result to contain diagnostic [%s]", diagnostic)
+			.contains(diagnostic);
+
+		return lexemes;
+	}
+
+	protected void assertTokensInOrder(TokenList tokenList, SyntaxKind... kinds)
+	{
+		var nonWhitespaceTokens = tokenList
+			.allTokens()
+			.stream()
+			.filter(t -> t.kind() != SyntaxKind.NEW_LINE && t.kind() != SyntaxKind.WHITESPACE)
+			.toList();
+
+		assertThat(nonWhitespaceTokens.size())
+			.as("Token count mismatch. Expected [%d] but got [%d]", kinds.length, tokenList.size())
+			.isEqualTo(kinds.length);
+
+		for (var i = 0; i < kinds.length; i++)
+		{
+			assertThat(nonWhitespaceTokens.get(i).kind()).isEqualTo(kinds[i]);
 		}
 	}
 

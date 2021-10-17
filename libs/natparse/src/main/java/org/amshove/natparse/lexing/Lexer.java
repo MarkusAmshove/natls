@@ -15,6 +15,8 @@ public class Lexer
 	// NOTE: Only for debugging purposes.
 	private List<Character> unknownCharacters;
 
+	private List<LexerDiagnostic> diagnostics;
+
 	public List<Character> getUnknownCharacters()
 	{
 		return unknownCharacters;
@@ -23,6 +25,7 @@ public class Lexer
 	public TokenList lex(String source)
 	{
 		tokens = new ArrayList<>();
+		diagnostics = new ArrayList<>();
 		unknownCharacters = new ArrayList<>();
 		scanner = new SourceTextScanner(source);
 		line = 0;
@@ -183,7 +186,7 @@ public class Lexer
 					scanner.advance();
 			}
 		}
-		return TokenList.fromTokens(tokens);
+		return TokenList.fromTokensAndDiagnostics(tokens, diagnostics);
 	}
 
 	private void consumeIdentifier()
@@ -335,9 +338,30 @@ public class Lexer
 	{
 		scanner.start();
 		scanner.advance();
-		while (scanner.peek() != c && !scanner.isAtEnd())
+		while (scanner.peek() != c && !scanner.isAtEnd() && !isLineEnd())
 		{
 			scanner.advance();
+		}
+
+		if (scanner.peek() != c)
+		{
+			// Recovery
+			while (!isLineEnd() && !scanner.isAtEnd())
+			{
+				scanner.advance();
+			}
+
+			addDiagnostic(LexerDiagnostic.create(
+				scanner.lexemeStart(),
+				getOffsetInLine(),
+				line,
+				scanner.lexemeLength(),
+				LexerError.UNTERMINATED_STRING
+			));
+
+			// We can still produce a valid token, although it is unterminated
+			createAndAdd(SyntaxKind.STRING);
+			return;
 		}
 
 		// The current character is the terminating string literal (' or "), therefore it needs to be consumed
@@ -393,5 +417,10 @@ public class Lexer
 			return true;
 		}
 		return false;
+	}
+
+	private void addDiagnostic(LexerDiagnostic diagnostic)
+	{
+		diagnostics.add(diagnostic);
 	}
 }
