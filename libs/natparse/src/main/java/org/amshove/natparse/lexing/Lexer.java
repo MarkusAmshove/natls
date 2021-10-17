@@ -20,7 +20,7 @@ public class Lexer
 		return unknownCharacters;
 	}
 
-	public List<SyntaxToken> lex(String source)
+	public TokenList lex(String source)
 	{
 		tokens = new ArrayList<>();
 		unknownCharacters = new ArrayList<>();
@@ -183,7 +183,7 @@ public class Lexer
 					scanner.advance();
 			}
 		}
-		return tokens;
+		return TokenList.fromTokens(tokens);
 	}
 
 	private void consumeIdentifier()

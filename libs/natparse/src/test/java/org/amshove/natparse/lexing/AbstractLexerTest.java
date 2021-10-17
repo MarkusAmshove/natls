@@ -10,7 +10,12 @@ public class AbstractLexerTest
 {
 	protected SyntaxToken lexSingle(String source, int index)
 	{
-		return new Lexer().lex(source).get(index);
+		TokenList tokenList = new Lexer().lex(source);
+		for(var i = 0; i < index; i++)
+		{
+			tokenList.advance();
+		}
+		return tokenList.peek();
 	}
 
 	protected SyntaxToken lexSingle(String source)
@@ -45,7 +50,7 @@ public class AbstractLexerTest
 		for (var i = 0; i < expectedTokens.size(); i++)
 		{
 			var expectedToken = expectedTokens.get(i);
-			var actualToken = lexemes.get(i);
+			var actualToken = lexemes.peek();
 
 			assertThat(actualToken.kind())
 				.as("Expected Token %d to be [%s] but was [%s]: '%s'",
@@ -61,6 +66,8 @@ public class AbstractLexerTest
 					.as("Expected source [%s] but was [%s]", expectedToken.escapedExpectedSource(), actualToken.escapedSource())
 					.isEqualTo(expectedToken.expectedSource);
 			}
+
+			lexemes.advance();
 		}
 	}
 

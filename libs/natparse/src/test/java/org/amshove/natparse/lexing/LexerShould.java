@@ -16,13 +16,13 @@ public class LexerShould extends AbstractLexerTest
 		var lexer = new Lexer();
 		var tokens = lexer.lex("abc\nabc");
 
-		var firstAbc = tokens.get(0);
+		var firstAbc = tokens.peek();
 		assertThat(firstAbc.line()).isEqualTo(0);
 
-		var lineEnd = tokens.get(1);
+		var lineEnd = tokens.peek(1);
 		assertThat(lineEnd.line()).isEqualTo(0);
 
-		var secondAbc = tokens.get(2);
+		var secondAbc = tokens.peek(2);
 		assertThat(secondAbc.line()).isEqualTo(1);
 	}
 
