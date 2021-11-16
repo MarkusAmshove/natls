@@ -111,4 +111,10 @@ public class TokenList
 
 		return true;
 	}
+
+	// TODO: Figure out a better name
+	public TokenList newResetted()
+	{
+		return TokenList.fromTokensAndDiagnostics(tokens, diagnostics);
+	}
 }

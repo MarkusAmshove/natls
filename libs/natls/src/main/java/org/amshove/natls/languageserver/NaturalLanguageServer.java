@@ -24,6 +24,7 @@ public class NaturalLanguageServer implements LanguageServer
 
 			capabilities.setWorkspaceSymbolProvider(true);
 			capabilities.setDocumentSymbolProvider(true);
+			capabilities.setHoverProvider(true);
 			System.err.print("Starte");
 
 			var languageService = NaturalLanguageService.createService(Paths.get(URI.create(params.getRootUri())));

@@ -41,6 +41,12 @@ public class NaturalDocumentService implements TextDocumentService
 		return CompletableFuture.supplyAsync(() -> languageService.findSymbolsInFile(params.getTextDocument()));
 	}
 
+	@Override
+	public CompletableFuture<Hover> hover(HoverParams params)
+	{
+		return CompletableFuture.supplyAsync(() -> languageService.hoverSymbol(params.getTextDocument(), params.getPosition()));
+	}
+
 	public void setLanguageService(NaturalLanguageService languageService)
 	{
 		this.languageService = languageService;
