@@ -7,6 +7,7 @@ public class NaturalFile
 	private final String referableName;
 	private final Path path;
 	private final NaturalFileType filetype;
+	private NaturalLibrary library;
 
 	public NaturalFile(String referableName, Path path, NaturalFileType filetype)
 	{
@@ -18,5 +19,20 @@ public class NaturalFile
 	public String getReferableName()
 	{
 		return referableName;
+	}
+
+	public Path getPath()
+	{
+		return path;
+	}
+
+	/* package */ void setLibrary(NaturalLibrary library)
+	{
+		this.library = library;
+	}
+
+	public NaturalLibrary getLibrary()
+	{
+		return library;
 	}
 }

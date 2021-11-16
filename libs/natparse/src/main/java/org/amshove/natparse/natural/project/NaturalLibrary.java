@@ -47,5 +47,6 @@ public class NaturalLibrary
 	public void addFile(NaturalFile file)
 	{
 		files.put(file.getReferableName(), file);
+		file.setLibrary(this);
 	}
 }
