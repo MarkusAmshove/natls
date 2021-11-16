@@ -2,3 +2,6 @@ rootProject.name = 'natlint'
 
 include 'libs/natparse'
 project(':libs/natparse').name = 'natparse'
+
+include 'libs/natls'
+project(':libs/natls').name = 'natls'

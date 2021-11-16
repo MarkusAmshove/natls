@@ -5,9 +5,10 @@ plugins {
 
 ext {
     JAVA_VERSION = 17
-	libraries = [
+    libraries = [
 		// Implementation
 		guava : 'com.google.guava:guava:29.0-jre',
+        lsp4j : 'org.eclipse.lsp4j:org.eclipse.lsp4j:0.9.0',
 		// Test
 		junit_jupiter : 'org.junit:junit-bom:5.7.2',
 		assertJ : 'org.assertj:assertj-core:3.11.1'
@@ -17,6 +18,9 @@ ext {
 allprojects {
 	apply plugin: 'java-library'
 	apply plugin: 'jacoco'
+
+    group = 'org.amshove'
+    version = '0.1'
 
 	java {
 		toolchain {
