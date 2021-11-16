@@ -1,6 +1,7 @@
 package org.amshove.natparse.natural.project;
 
 import java.nio.file.Path;
+import java.util.Arrays;
 
 public enum NaturalFileType
 {
@@ -8,7 +9,9 @@ public enum NaturalFileType
 	PROGRAM("NSP"),
 	SUBROUTINE("NSS"),
 	LDA("NSL"),
-	DDM("NSD");
+	DDM("NSD"),
+	PDA("NSA"),
+	MAP("NSM");
 
 	public static final NaturalFileType[] VALUES = NaturalFileType.values();
 
@@ -27,8 +30,15 @@ public enum NaturalFileType
 			case "NSS" -> SUBROUTINE;
 			case "NSL" -> LDA;
 			case "NSD" -> DDM;
-			default -> throw new RuntimeException("Dunno");
+			case "NSA" -> PDA;
+			case "NSM" -> MAP;
+			default -> throw new RuntimeException(extension);
 		};
+	}
+
+	public static boolean isNaturalFile(Path filepath)
+	{
+		return Arrays.stream(VALUES).anyMatch(t -> t.matches(filepath));
 	}
 
 	public String getExtension()

@@ -75,4 +75,30 @@ public class TokenList
 	{
 		return List.copyOf(tokens);
 	}
+
+	public boolean advanceAfterNext(SyntaxKind kind)
+	{
+		if(advanceUntil(kind))
+		{
+			advance();
+			return !isAtEnd();
+		}
+
+		return false;
+	}
+
+	public boolean advanceUntil(SyntaxKind kind)
+	{
+		while(!isAtEnd() && peek().kind() != kind)
+		{
+			advance();
+		}
+
+		if(isAtEnd())
+		{
+			return false;
+		}
+
+		return true;
+	}
 }

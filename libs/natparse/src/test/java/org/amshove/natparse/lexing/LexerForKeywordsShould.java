@@ -3,9 +3,9 @@ package org.amshove.natparse.lexing;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import static org.junit.jupiter.api.DynamicTest.dynamicTest;
-
 import java.util.Arrays;
+
+import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 public class LexerForKeywordsShould extends AbstractLexerTest
 {
@@ -13,7 +13,7 @@ public class LexerForKeywordsShould extends AbstractLexerTest
 	@TestFactory
 	Iterable<DynamicTest> lexKCheckReservedKeywords()
 	{
-		// Reserved by KCHEKC (Keyword Check) of the compiler
+		// Reserved by KCHECK (Keyword Check) of the compiler
 		return Arrays.asList(
 			keywordTest("ABS", SyntaxKind.ABS),
 			keywordTest("ACCEPT", SyntaxKind.ACCEPT),
@@ -58,6 +58,7 @@ public class LexerForKeywordsShould extends AbstractLexerTest
 			keywordTest("END-BEFORE", SyntaxKind.END_BEFORE),
 			keywordTest("END-BREAK", SyntaxKind.END_BREAK),
 			keywordTest("END-BROWSE", SyntaxKind.END_BROWSE),
+			keywordTest("END-DATA", SyntaxKind.END_DATA),
 			keywordTest("END-DECIDE", SyntaxKind.END_DECIDE),
 			keywordTest("END-ENDDATA", SyntaxKind.END_ENDDATA),
 			keywordTest("END-ENDFILE", SyntaxKind.END_ENDFILE),
@@ -291,7 +292,6 @@ public class LexerForKeywordsShould extends AbstractLexerTest
 			keywordTest("EM", SyntaxKind.IDENTIFIER_OR_KEYWORD),
 			keywordTest("ENCODED", SyntaxKind.IDENTIFIER_OR_KEYWORD),
 			keywordTest("END-CLASS", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-			keywordTest("END-DEFINE", SyntaxKind.IDENTIFIER_OR_KEYWORD),
 			keywordTest("END-FUNCTION", SyntaxKind.IDENTIFIER_OR_KEYWORD),
 			keywordTest("END-INTERFACE", SyntaxKind.IDENTIFIER_OR_KEYWORD),
 			keywordTest("END-METHOD", SyntaxKind.IDENTIFIER_OR_KEYWORD),
