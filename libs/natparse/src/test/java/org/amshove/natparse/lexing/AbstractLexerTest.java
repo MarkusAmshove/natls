@@ -38,6 +38,11 @@ public class AbstractLexerTest
 		assertTokens(source, Arrays.stream(expectedKinds).map(this::token).collect(Collectors.toList()));
 	}
 
+	protected void assertTokensIgnoreWhitespace(String source, SyntaxKind... expectedKinds)
+	{
+		assertTokens(source, Arrays.stream(expectedKinds).map(this::token).collect(Collectors.toList()), List.of(SyntaxKind.WHITESPACE, SyntaxKind.NEW_LINE, SyntaxKind.TAB));
+	}
+
 	protected void assertTokens(String source, ExpectedSyntaxToken... expectedTokens)
 	{
 		assertTokens(source, Arrays.asList(expectedTokens));
@@ -45,12 +50,22 @@ public class AbstractLexerTest
 
 	protected void assertTokens(String source, List<ExpectedSyntaxToken> expectedTokens)
 	{
+		assertTokens(source, expectedTokens, List.of());
+	}
+
+	protected void assertTokens(String source, List<ExpectedSyntaxToken> expectedTokens, List<SyntaxKind> excludedKinds)
+	{
 		var lexer = new Lexer();
 		var lexemes = lexer.lex(source);
 		for (var i = 0; i < expectedTokens.size(); i++)
 		{
 			var expectedToken = expectedTokens.get(i);
 			var actualToken = lexemes.peek();
+			while(actualToken != null && excludedKinds.contains(actualToken.kind()))
+			{
+				lexemes.advance();
+				actualToken = lexemes.peek();
+			}
 
 			assertThat(actualToken.kind())
 				.as("Expected Token %d to be [%s] but was [%s]: '%s'",

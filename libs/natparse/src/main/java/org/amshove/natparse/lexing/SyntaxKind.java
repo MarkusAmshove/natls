@@ -37,6 +37,10 @@ public enum SyntaxKind
 	IDENTIFIER,
 	COMMENT,
 
+	// Builtin Functions/Expressions
+	TIMX,
+	DATX,
+
 	// KCheck reserved keywords
 	ABS,
 	ACCEPT,

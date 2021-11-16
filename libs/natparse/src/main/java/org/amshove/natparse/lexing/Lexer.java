@@ -63,7 +63,7 @@ public class Lexer
 					createAndAddCurrentSingleToken(SyntaxKind.MINUS);
 					continue;
 				case '*':
-					createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
+					consumeAsteriskOrFunction();
 					continue;
 				case '/':
 					createAndAddCurrentSingleToken(SyntaxKind.SLASH);
@@ -186,6 +186,27 @@ public class Lexer
 		return TokenList.fromTokensAndDiagnostics(tokens, diagnostics);
 	}
 
+	private void consumeAsteriskOrFunction()
+	{
+		var lookahead = scanner.peek(1);
+		if(lookahead != 'T' && lookahead != 'D')
+		{
+			createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
+			return;
+		}
+
+		scanner.start();
+		scanner.advance();
+		if(scanner.advanceIf("TIMX"))
+		{
+			createAndAdd(SyntaxKind.TIMX);
+		}
+		if(scanner.advanceIf("DATX"))
+		{
+			createAndAdd(SyntaxKind.DATX);
+		}
+	}
+
 	private void consumeIdentifier()
 	{
 		scanner.start();
@@ -196,11 +217,17 @@ public class Lexer
 		createAndAdd(SyntaxKind.IDENTIFIER);
 	}
 
+	private boolean isValidIdentifierCharacter()
+	{
+		var character = scanner.peek();
+		return Character.isAlphabetic(character) || Character.isDigit(character) || character == '-' || character == '/' || character == '@' || character == '$' || character == '&' || character == '#' || character == '+' || character == '.' || character == '_';
+	}
+
 	private void consumeIdentifierOrKeyword()
 	{
 		SyntaxKind kindHint = null;
 		scanner.start();
-		while (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd())
+		while (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd() && isValidIdentifierCharacter())
 		{
 
 			// Characters from which we can be sure that we're dealing with an identifier
@@ -252,10 +279,16 @@ public class Lexer
 		return scanner.peek() != ' ' && scanner.peek() != '\t';
 	}
 
+	private boolean isAtLineStart()
+	{
+		return scanner.position() - currentLineStartOffset == 0;
+	}
+
 	private boolean consumeComment()
 	{
-		var isSingleAsteriskComment = scanner.position() - currentLineStartOffset == 0 && scanner.peek() == '*';
-		var isInlineComment = scanner.peek() == '/' && scanner.peek(1) == '*';
+		var lookahead = scanner.peek(1);
+		var isSingleAsteriskComment = isAtLineStart() && scanner.peek() == '*' && (lookahead == ' ' || lookahead == '\t');
+		var isInlineComment = scanner.peek() == '/' && lookahead == '*';
 
 		if (isSingleAsteriskComment || isInlineComment)
 		{

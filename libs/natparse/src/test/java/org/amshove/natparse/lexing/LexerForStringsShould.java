@@ -53,4 +53,27 @@ public class LexerForStringsShould extends AbstractLexerTest
 
 		assertTokensInOrder(tokens, SyntaxKind.IDENTIFIER, SyntaxKind.COLON_EQUALS, SyntaxKind.STRING, SyntaxKind.WRITE, SyntaxKind.IDENTIFIER);
 	}
+
+	@Test
+	void correctlyParseTimeFormats()
+	{
+		assertTokensIgnoreWhitespace(
+			"MOVE EDITED *TIMX(EM=' 'HH':'II':'SS) TO #RIGHT-PROMPT ",
+			SyntaxKind.MOVE,
+			SyntaxKind.IDENTIFIER_OR_KEYWORD,
+			SyntaxKind.TIMX,
+			SyntaxKind.LPAREN,
+			SyntaxKind.IDENTIFIER_OR_KEYWORD, // EM
+			SyntaxKind.EQUALS,
+			SyntaxKind.STRING, // ' '
+			SyntaxKind.IDENTIFIER_OR_KEYWORD, // HH
+			SyntaxKind.STRING, // ':'
+			SyntaxKind.IDENTIFIER_OR_KEYWORD, // II
+			SyntaxKind.STRING, // ':'
+			SyntaxKind.IDENTIFIER_OR_KEYWORD, // SS
+			SyntaxKind.RPAREN,
+			SyntaxKind.IDENTIFIER_OR_KEYWORD, // TO
+			SyntaxKind.IDENTIFIER
+		);
+	}
 }
