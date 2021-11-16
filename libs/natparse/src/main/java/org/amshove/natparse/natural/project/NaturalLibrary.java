@@ -8,7 +8,7 @@ public class NaturalLibrary
 {
 	private final Path path;
 	private final String libraryName;
-	private List<NaturalLibrary> steplibs = new ArrayList<>();
+	private final List<NaturalLibrary> steplibs = new ArrayList<>();
 
 	public NaturalLibrary(Path path)
 	{

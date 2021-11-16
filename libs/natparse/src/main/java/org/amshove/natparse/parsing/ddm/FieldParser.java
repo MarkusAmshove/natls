@@ -5,7 +5,7 @@ import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.ddm.DescriptorType;
 import org.amshove.natparse.natural.ddm.FieldType;
 import org.amshove.natparse.natural.ddm.NullValueSuppression;
-import org.amshove.natparse.parsing.ddm.text.LinewiseTextScanner;
+import org.amshove.natparse.parsing.text.LinewiseTextScanner;
 
 class FieldParser
 {

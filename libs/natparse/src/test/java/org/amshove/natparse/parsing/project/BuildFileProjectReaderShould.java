@@ -2,7 +2,6 @@ package org.amshove.natparse.parsing.project;
 
 import org.amshove.natparse.infrastructure.IFilesystem;
 import org.amshove.natparse.natural.project.NaturalProject;
-import org.amshove.natparse.parsing.ddm.project.BuildFileProjectReader;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;

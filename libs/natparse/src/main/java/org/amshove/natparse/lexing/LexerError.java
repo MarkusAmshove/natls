@@ -5,9 +5,9 @@ public enum LexerError
 	UNKNOWN_CHARACTER("NPL001"),
 	UNTERMINATED_STRING("NPL002");
 
-	private String id;
+	private final String id;
 
-	private LexerError(String id)
+	LexerError(String id)
 	{
 		this.id = id;
 	}

@@ -1,9 +1,6 @@
 package org.amshove.natparse.parsing.project;
 
 import org.amshove.natparse.infrastructure.IFilesystem;
-import org.amshove.natparse.parsing.ddm.project.BuildFileParserException;
-import org.amshove.natparse.parsing.ddm.project.NaturalBuildFileParser;
-import org.amshove.natparse.parsing.ddm.project.XmlNaturalLibrary;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
 

@@ -1,6 +1,8 @@
 package org.amshove.natparse.parsing.ddm;
 
 import org.amshove.natparse.NaturalParseException;
+import org.amshove.natparse.parsing.ddm.DdmMetadata;
+import org.amshove.natparse.parsing.ddm.DdmMetadataParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

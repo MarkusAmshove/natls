@@ -1,4 +1,4 @@
-package org.amshove.natparse.parsing.ddm.project;
+package org.amshove.natparse.parsing.project;
 
 import org.dom4j.*;
 

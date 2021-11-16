@@ -1,7 +1,7 @@
 package org.amshove.natparse.parsing.ddm;
 
 import org.amshove.natparse.NaturalParseException;
-import org.amshove.natparse.parsing.ddm.text.LinewiseTextScanner;
+import org.amshove.natparse.parsing.text.LinewiseTextScanner;
 
 class SqlFieldParser extends FieldParser
 {
