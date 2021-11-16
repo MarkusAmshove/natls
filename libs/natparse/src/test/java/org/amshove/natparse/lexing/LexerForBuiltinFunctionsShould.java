@@ -2,8 +2,6 @@ package org.amshove.natparse.lexing;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
 public class LexerForBuiltinFunctionsShould extends AbstractLexerTest
 {
 	@Test
