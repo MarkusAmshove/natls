@@ -41,6 +41,16 @@ public class TokenList
 		return peek(0);
 	}
 
+	public List<SyntaxToken> tokensUntilNext(SyntaxKind kind)
+	{
+		var startOffset = currentOffset;
+		if(!advanceUntil(kind))
+		{
+			return List.of();
+		}
+		return List.copyOf(tokens.subList(startOffset, currentOffset));
+	}
+
 	public SyntaxToken peek(int offset)
 	{
 		var index = currentOffset + offset;

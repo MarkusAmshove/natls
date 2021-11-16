@@ -1,12 +1,20 @@
 package org.amshove.natls.languageserver;
 
+import org.amshove.natparse.lexing.Lexer;
+import org.amshove.natparse.lexing.SyntaxKind;
+import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
 import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -33,6 +41,25 @@ public class NaturalLanguageService
 		return new NaturalLanguageService(project);
 	}
 
+	public List<Either<SymbolInformation, DocumentSymbol>> findSymbolsInFile(TextDocumentIdentifier textDocument)
+	{
+		try
+		{
+			var filepath = Path.of(URI.create(textDocument.getUri()));
+			var lexer = new Lexer();
+			var tokens = lexer.lex(Files.readString(filepath));
+			return tokens.tokensUntilNext(SyntaxKind.END_DEFINE).stream()
+				.filter(t -> t.kind() == SyntaxKind.IDENTIFIER_OR_KEYWORD || t.kind() == SyntaxKind.IDENTIFIER)
+				.map(token -> convertToSymbolInformation(token, filepath))
+				.map(Either::<SymbolInformation, DocumentSymbol>forLeft)
+				.toList();
+		}
+		catch (IOException e)
+		{
+			throw new UncheckedIOException(e);
+		}
+	}
+
 	public List<? extends SymbolInformation> findWorkspaceSymbols(String query, CancelChecker cancelChecker)
 	{
 		return project.getLibraries().stream()
@@ -51,7 +78,7 @@ public class NaturalLanguageService
 
 	private SymbolInformation convertToSymbolInformation(NaturalFile file)
 	{
-		var symbolInformation = new SymbolInformation(
+		return new SymbolInformation(
 			file.getReferableName(),
 			SymbolKind.Class,
 			new Location(
@@ -63,6 +90,20 @@ public class NaturalLanguageService
 			),
 			file.getLibrary().getName()
 		);
-		return symbolInformation;
+	}
+
+	private SymbolInformation convertToSymbolInformation(SyntaxToken token, Path filepath)
+	{
+		return new SymbolInformation(
+			token.escapedSource(),
+			SymbolKind.Variable,
+			new Location(
+				filepath.toUri().toString(),
+				new Range(
+					new Position(token.line(), token.offsetInLine()),
+					new Position(token.line(), token.offsetInLine() + token.length())
+				)
+			)
+		);
 	}
 }
