@@ -1,4 +1,4 @@
-package org.amshove.natparse.parsing.ddm.text;
+package org.amshove.natparse.parsing.text;
 
 public class LinewiseTextScanner
 {

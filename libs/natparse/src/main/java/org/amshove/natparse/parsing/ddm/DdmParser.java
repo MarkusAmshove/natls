@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.amshove.natparse.NaturalParseException;
 import org.amshove.natparse.natural.ddm.*;
-import org.amshove.natparse.parsing.ddm.text.LinewiseTextScanner;
+import org.amshove.natparse.parsing.text.LinewiseTextScanner;
 
 import java.util.ArrayList;
 import java.util.List;

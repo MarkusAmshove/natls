@@ -1,0 +1,24 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '7.1.0'
+}
+
+dependencies {
+    implementation libraries.lsp4j
+    implementation project(':natparse')
+}
+
+shadowJar {
+    archiveBaseName.set('natls')
+    archiveClassifier.set('')
+    archiveVersion.set('')
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'org.amshove.natls.App',
+                'Implementation-Title': project.name,
+                'Implementation-Version': project.version
+        )
+    }
+}

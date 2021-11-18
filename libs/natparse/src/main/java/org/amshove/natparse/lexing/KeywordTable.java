@@ -61,7 +61,9 @@ public class KeywordTable
 				case "end-before" -> SyntaxKind.END_BEFORE;
 				case "end-break" -> SyntaxKind.END_BREAK;
 				case "end-browse" -> SyntaxKind.END_BROWSE;
+				case "end-data" -> SyntaxKind.END_DATA;
 				case "end-decide" -> SyntaxKind.END_DECIDE;
+				case "end-define" -> SyntaxKind.END_DEFINE;
 				case "end-enddata" -> SyntaxKind.END_ENDDATA;
 				case "end-endfile" -> SyntaxKind.END_ENDFILE;
 				case "end-endpage" -> SyntaxKind.END_ENDPAGE;

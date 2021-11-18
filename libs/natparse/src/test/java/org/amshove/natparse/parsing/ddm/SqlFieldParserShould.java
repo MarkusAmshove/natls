@@ -1,6 +1,8 @@
 package org.amshove.natparse.parsing.ddm;
 
-import org.amshove.natparse.parsing.ddm.text.LinewiseTextScanner;
+import org.amshove.natparse.parsing.ddm.DdmField;
+import org.amshove.natparse.parsing.ddm.SqlFieldParser;
+import org.amshove.natparse.parsing.text.LinewiseTextScanner;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
