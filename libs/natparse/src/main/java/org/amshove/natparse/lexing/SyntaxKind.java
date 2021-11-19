@@ -67,6 +67,7 @@ public enum SyntaxKind
 	COS,
 	COUNT,
 	CREATE,
+	DATA,
 	DECIDE,
 	DEFINE,
 	DELETE,
@@ -216,5 +217,10 @@ public enum SyntaxKind
 	WHEN,
 	WHILE,
 	WITH_CTE,
-	WRITE
+	WRITE;
+
+	public boolean isWhitespace()
+	{
+		return this == WHITESPACE || this == TAB;
+	}
 }

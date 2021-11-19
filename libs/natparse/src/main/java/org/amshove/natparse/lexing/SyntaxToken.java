@@ -1,6 +1,8 @@
 package org.amshove.natparse.lexing;
 
-public class SyntaxToken
+import org.amshove.natparse.IPosition;
+
+public class SyntaxToken implements IPosition
 {
 
 	private final SyntaxKind kind;

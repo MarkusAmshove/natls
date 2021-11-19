@@ -31,16 +31,14 @@ public class TokenList
 		return new TokenList(tokenList, diagnostics);
 	}
 
+	// TODO: ReadOnlyList
+
 	public List<LexerDiagnostic> diagnostics()
 	{
 		return diagnostics;
 	}
 
-	public SyntaxToken peek()
-	{
-		return peek(0);
-	}
-
+	// TODO: ReadOnlyList
 	public List<SyntaxToken> tokensUntilNext(SyntaxKind kind)
 	{
 		var startOffset = currentOffset;
@@ -51,16 +49,45 @@ public class TokenList
 		return List.copyOf(tokens.subList(startOffset, currentOffset));
 	}
 
+	/**
+	 * Peeks the next token, skipping whitespace.
+	 * @return
+	 */
+	public SyntaxToken peek()
+	{
+		return peek(0);
+	}
+
+	/**
+	 * Peeks the token <see>offset</see> times ahead, skipping all whitespace.
+	 * @return
+	 */
 	public SyntaxToken peek(int offset)
 	{
-		var index = currentOffset + offset;
-		if(isAtEnd(index))
+		var targetIndex = currentOffset + offset;
+		var validTokensLeft = offset;
+		while(!isAtEnd(targetIndex) && validTokensLeft > 0)
+		{
+			if(lookahead(targetIndex).kind().isWhitespace())
+			{
+				targetIndex++;
+			}
+			else
+			{
+				validTokensLeft--;
+			}
+		}
+
+		if(isAtEnd(targetIndex))
 		{
 			return null;
 		}
-		return tokens.get(index);
+		return tokens.get(targetIndex);
 	}
 
+	/**
+	 * Advances over the current token until the next non whitespace token.
+	 */
 	public void advance()
 	{
 		currentOffset++;
@@ -81,6 +108,7 @@ public class TokenList
 		return tokens.size();
 	}
 
+	// TODO: ReadOnlyList
 	List<SyntaxToken> allTokens()
 	{
 		return List.copyOf(tokens);
@@ -116,5 +144,10 @@ public class TokenList
 	public TokenList newResetted()
 	{
 		return TokenList.fromTokensAndDiagnostics(tokens, diagnostics);
+	}
+
+	private SyntaxToken lookahead(int offset)
+	{
+		return tokens.get(currentOffset + offset);
 	}
 }

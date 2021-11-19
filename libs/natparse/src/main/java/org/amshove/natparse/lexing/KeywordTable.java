@@ -43,6 +43,7 @@ public class KeywordTable
 				case "cos" -> SyntaxKind.COS;
 				case "count" -> SyntaxKind.COUNT;
 				case "create" -> SyntaxKind.CREATE;
+				case "data" -> SyntaxKind.DATA;
 				case "decide" -> SyntaxKind.DECIDE;
 				case "define" -> SyntaxKind.DEFINE;
 				case "delete" -> SyntaxKind.DELETE;

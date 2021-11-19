@@ -1,14 +1,15 @@
 package org.amshove.natparse.lexing;
 
-import org.amshove.natparse.IPosition;
+import org.amshove.natparse.IDiagnostic;
 
 import java.util.Objects;
 
-public class LexerDiagnostic implements IPosition
+class LexerDiagnostic implements IDiagnostic
 {
+	private final String id;
 	private final int offset;
 	private final int offsetInLine;
-	private final int currentLine;
+	private final int line;
 	private final int length;
 	private final LexerError error;
 	private final String message;
@@ -18,9 +19,10 @@ public class LexerDiagnostic implements IPosition
 		this.message = message;
 		this.offset = offset;
 		this.offsetInLine = offsetInLine;
-		this.currentLine = currentLine;
+		this.line = currentLine;
 		this.length = length;
 		this.error = error;
+		this.id = error.id();
 	}
 
 	static LexerDiagnostic create(String message, int offset, int offsetInLine, int currentLine, int length, LexerError error)
@@ -65,15 +67,20 @@ public class LexerDiagnostic implements IPosition
 	}
 
 	@Override
-	public int currentLine()
+	public int line()
 	{
-		return currentLine;
+		return line;
 	}
 
 	@Override
 	public int length()
 	{
 		return length;
+	}
+
+	public String id()
+	{
+		return id;
 	}
 
 	@Override
@@ -84,13 +91,13 @@ public class LexerDiagnostic implements IPosition
 		if (o == null || getClass() != o.getClass())
 			return false;
 		var that = (LexerDiagnostic) o;
-		return offset == that.offset && offsetInLine == that.offsetInLine && currentLine == that.currentLine && length == that.length && error == that.error;
+		return offset == that.offset && offsetInLine == that.offsetInLine && line == that.line && length == that.length && error == that.error;
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(offset, offsetInLine, currentLine, length, error);
+		return Objects.hash(offset, offsetInLine, line, length, error);
 	}
 
 	@Override
@@ -99,7 +106,7 @@ public class LexerDiagnostic implements IPosition
 		return "LexerDiagnostic{" +
 			"offset=" + offset +
 			", offsetInLine=" + offsetInLine +
-			", currentLine=" + currentLine +
+			", currentLine=" + line +
 			", length=" + length +
 			", error=" + error +
 			'}';
