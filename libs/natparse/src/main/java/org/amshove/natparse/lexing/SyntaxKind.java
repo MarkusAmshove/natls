@@ -41,7 +41,6 @@ public enum SyntaxKind
 	TIMX,
 	DATX,
 
-	// KCheck reserved keywords
 	ABS,
 	ACCEPT,
 	ADD,
@@ -139,6 +138,7 @@ public enum SyntaxKind
 	INT,
 	INVESTIGATE,
 	LIMIT,
+	LOCAL,
 	LOG,
 	LOOP,
 	MAP,
@@ -209,6 +209,7 @@ public enum SyntaxKind
 	TRUE,
 	UNTIL,
 	UPDATE,
+	USING,
 	UPLOAD,
 	VAL,
 	VALUE,
@@ -222,5 +223,10 @@ public enum SyntaxKind
 	public boolean isWhitespace()
 	{
 		return this == WHITESPACE || this == TAB;
+	}
+
+	public boolean isIdentifier()
+	{
+		return this == IDENTIFIER || this == IDENTIFIER_OR_KEYWORD; // TODO: Keyword temporary
 	}
 }

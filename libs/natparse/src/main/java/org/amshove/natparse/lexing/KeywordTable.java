@@ -115,6 +115,7 @@ public class KeywordTable
 				case "int" -> SyntaxKind.INT;
 				case "investigate" -> SyntaxKind.INVESTIGATE;
 				case "limit" -> SyntaxKind.LIMIT;
+				case "local" -> SyntaxKind.LOCAL;
 				case "log" -> SyntaxKind.LOG;
 				case "loop" -> SyntaxKind.LOOP;
 				case "map" -> SyntaxKind.MAP;
@@ -185,6 +186,7 @@ public class KeywordTable
 				case "true" -> SyntaxKind.TRUE;
 				case "until" -> SyntaxKind.UNTIL;
 				case "update" -> SyntaxKind.UPDATE;
+				case "using" -> SyntaxKind.USING;
 				case "upload" -> SyntaxKind.UPLOAD;
 				case "val" -> SyntaxKind.VAL;
 				case "value" -> SyntaxKind.VALUE;

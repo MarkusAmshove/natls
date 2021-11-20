@@ -3,9 +3,10 @@ package org.amshove.natparse.parsing;
 public enum ParserError
 {
 	NO_DEFINE_DATA_FOUND("NPP001"),
-	MISSING_END_DEFINE("NPP002");
+	MISSING_END_DEFINE("NPP002"),
+	UNEXPECTED_TOKEN("NPP003");
 
-	private final String id;
+    private final String id;
 
 	private ParserError(String id)
 	{

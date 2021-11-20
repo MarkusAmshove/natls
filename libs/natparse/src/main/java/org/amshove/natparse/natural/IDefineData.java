@@ -1,5 +1,8 @@
 package org.amshove.natparse.natural;
 
-public interface IDefineData
+import org.amshove.natparse.ReadOnlyList;
+
+public interface IDefineData extends ISyntaxNode
 {
+	ReadOnlyList<IUsingNode> localUsings();
 }

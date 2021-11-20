@@ -2,6 +2,8 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.IPosition;
+import org.amshove.natparse.lexing.SyntaxKind;
+import org.amshove.natparse.lexing.SyntaxToken;
 
 public class ParserDiagnostic implements IDiagnostic
 {
@@ -30,6 +32,18 @@ public class ParserDiagnostic implements IDiagnostic
 	public static ParserDiagnostic create(String message, IPosition position, ParserError error)
 	{
 		return new ParserDiagnostic(message, position.offset(), position.offsetInLine(), position.line(), position.length(), error);
+	}
+
+	public static ParserDiagnostic unexpectedToken(SyntaxKind expectedToken, SyntaxToken invalidToken)
+	{
+		return new ParserDiagnostic(
+			"Unexpected token <%s>, expected <%s>".formatted(invalidToken.kind(), expectedToken),
+			invalidToken.offset(),
+			invalidToken.offsetInLine(),
+			invalidToken.line(),
+			invalidToken.length(),
+			ParserError.UNEXPECTED_TOKEN
+		);
 	}
 
 	@Override

@@ -7,6 +7,8 @@ import java.util.stream.Stream;
 
 public class ReadOnlyList<T> implements Iterable<T>
 {
+	public static ReadOnlyList EMPTY = ReadOnlyList.from(new ArrayList<>());
+
 	private final ArrayList<T> collection;
 
 	private ReadOnlyList(Collection<T> collection)
@@ -33,5 +35,20 @@ public class ReadOnlyList<T> implements Iterable<T>
 	public int size()
 	{
 		return collection.size();
+	}
+
+	public T last()
+	{
+		return collection.get(size() - 1);
+	}
+
+	public T first()
+	{
+		return collection.get(0);
+	}
+
+	public T get(int index)
+	{
+		return collection.get(index);
 	}
 }

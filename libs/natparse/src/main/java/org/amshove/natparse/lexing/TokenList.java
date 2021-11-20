@@ -117,6 +117,18 @@ public class TokenList
 		currentOffset++;
 	}
 
+	/**
+	 * Advances over the current token, skipping all insignificant tokens.
+	 */
+	public void advanceAfterInsignificant()
+	{
+		currentOffset++;
+		while(!isAtEnd() && peekWithInsignificant().kind().isWhitespace())
+		{
+			currentOffset++;
+		}
+	}
+
 	public boolean isAtEnd()
 	{
 		return isAtEnd(currentOffset);
@@ -173,5 +185,36 @@ public class TokenList
 	private SyntaxToken lookahead(int offset)
 	{
 		return tokens.get(currentOffset + offset);
+	}
+
+	/**
+	 * Consumes the current token if it matches the kind and then advances until the next significant token.
+	 * @param kind
+	 */
+	public boolean consume(SyntaxKind kind)
+	{
+		if(peek().kind() == kind)
+		{
+			advanceAfterInsignificant();
+			return true;
+		}
+
+		return false;
+	}
+
+	public int getCurrentOffset()
+	{
+		return currentOffset;
+	}
+
+	/**
+	 * Returns all tokens from <see>start</see> to <see>end</see>.
+	 * @param start Inclusive index of the first token.
+	 * @param end Inclusive index of the last token.
+	 * @return
+	 */
+	public ReadOnlyList<SyntaxToken> subrange(int start, int end)
+	{
+		return ReadOnlyList.from(tokens.subList(start, end + 1));
 	}
 }

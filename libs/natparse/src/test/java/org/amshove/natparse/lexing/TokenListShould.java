@@ -49,9 +49,46 @@ class TokenListShould
 		assertThat(tokenList.isAtEnd()).isTrue();
 	}
 
+	@Test
+	void advanceOverWhitespace()
+	{
+		var tokenList = createTokenList(
+			SyntaxKind.ADD,
+			SyntaxKind.WHITESPACE,
+			SyntaxKind.TAB,
+			SyntaxKind.WHITESPACE,
+			SyntaxKind.IDENTIFIER
+		);
+
+		assertThat(tokenList.peek().kind()).isEqualTo(SyntaxKind.ADD);
+		tokenList.advanceAfterInsignificant();
+		assertThat(tokenList.peek().kind()).isEqualTo(SyntaxKind.IDENTIFIER);
+	}
+
+	@Test
+	void consumeAToken()
+	{
+		var tokenList = createTokenList(
+			SyntaxKind.LOCAL,
+			SyntaxKind.WHITESPACE,
+			SyntaxKind.USING,
+			SyntaxKind.WHITESPACE,
+			SyntaxKind.IDENTIFIER
+		);
+
+		assertThat(tokenList.peek().kind()).isEqualTo(SyntaxKind.LOCAL);
+		assertThat(tokenList.consume(SyntaxKind.LOCAL)).isTrue();
+		assertThat(tokenList.peek().kind()).isEqualTo(SyntaxKind.USING);
+	}
+
 	private TokenList createTokenList(SyntaxToken... tokens)
 	{
 		return TokenList.fromTokens(Arrays.stream(tokens).toList());
+	}
+
+	private TokenList createTokenList(SyntaxKind... tokenKinds)
+	{
+		return TokenList.fromTokens(Arrays.stream(tokenKinds).map(k -> SyntaxTokenFactory.create(k, 0, 0, 0, "")).toList());
 	}
 
 	private TokenList createListWithTokens(int amountOfTokens)
