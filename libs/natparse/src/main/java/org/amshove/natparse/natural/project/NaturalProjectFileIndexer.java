@@ -72,6 +72,6 @@ public class NaturalProjectFileIndexer
 			throw new RuntimeException("Could not find name of subroutine");
 		}
 
-		return lexemes.peek().escapedSource();
+		return lexemes.peekWithInsignificant().escapedSource();
 	}
 }

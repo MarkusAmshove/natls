@@ -23,7 +23,6 @@ public class DefineDataParser
 			return new ParseResult<IDefineData>(null, ReadOnlyList.from(diagnostics));
 		}
 
-
 		while(!tokens.isAtEnd() && tokens.peek().kind() != SyntaxKind.END_DEFINE)
 		{
 			/*

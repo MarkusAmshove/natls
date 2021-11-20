@@ -131,7 +131,7 @@ public class NaturalLanguageService
 		var tokens = lexPath(filepath);
 		while (!tokens.isAtEnd())
 		{
-			var token = tokens.peek();
+			var token = tokens.peekWithInsignificant();
 			if (token.line() != position.getLine())
 			{
 				tokens.advance();
@@ -146,7 +146,7 @@ public class NaturalLanguageService
 			tokens.advance();
 		}
 
-		var variableToSearchFor = tokens.peek().source();
+		var variableToSearchFor = tokens.peekWithInsignificant().source();
 		return getVariableDeclarationTokens(tokens.newResetted())
 			.filter(t -> t.escapedSource().toLowerCase().contains(variableToSearchFor.toLowerCase()))
 			.map(t -> new Hover(new MarkupContent(MarkupKind.PLAINTEXT, t.escapedSource())))

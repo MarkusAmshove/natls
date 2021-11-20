@@ -15,7 +15,7 @@ public class AbstractLexerTest
 		{
 			tokenList.advance();
 		}
-		return tokenList.peek();
+		return tokenList.peekWithInsignificant();
 	}
 
 	protected SyntaxToken lexSingle(String source)
@@ -60,11 +60,11 @@ public class AbstractLexerTest
 		for (var i = 0; i < expectedTokens.size(); i++)
 		{
 			var expectedToken = expectedTokens.get(i);
-			var actualToken = lexemes.peek();
+			var actualToken = lexemes.peekWithInsignificant();
 			while(actualToken != null && excludedKinds.contains(actualToken.kind()))
 			{
 				lexemes.advance();
-				actualToken = lexemes.peek();
+				actualToken = lexemes.peekWithInsignificant();
 			}
 
 			assertThat(actualToken.kind())

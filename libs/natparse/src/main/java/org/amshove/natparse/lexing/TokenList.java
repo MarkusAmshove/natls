@@ -53,7 +53,30 @@ public class TokenList
 	}
 
 	/**
-	 * Peeks the next token, skipping whitespace.
+	 * Peeks the next token, including all insignificant tokens.
+	 * @return
+	 */
+	public SyntaxToken peekWithInsignificant()
+	{
+		return peekWithInsignificant(0);
+	}
+
+	/**
+	 * Peeks the token <see>offset</see> times ahead, including all insignificant tokens.
+	 * @return
+	 */
+	public SyntaxToken peekWithInsignificant(int offset)
+	{
+		var index = currentOffset + offset;
+		if(isAtEnd(index))
+		{
+			return null;
+		}
+		return tokens.get(index);
+	}
+
+	/**
+	 * Peeks the next token, skipping all insignificant tokens in between.
 	 * @return
 	 */
 	public SyntaxToken peek()
@@ -61,10 +84,6 @@ public class TokenList
 		return peek(0);
 	}
 
-	/**
-	 * Peeks the token <see>offset</see> times ahead, skipping all whitespace.
-	 * @return
-	 */
 	public SyntaxToken peek(int offset)
 	{
 		var targetIndex = offset;
@@ -91,7 +110,7 @@ public class TokenList
 	}
 
 	/**
-	 * Advances over the current token until the next non whitespace token.
+	 * Advances over the current token.
 	 */
 	public void advance()
 	{
@@ -132,7 +151,7 @@ public class TokenList
 
 	public boolean advanceUntil(SyntaxKind kind)
 	{
-		while(!isAtEnd() && peek().kind() != kind)
+		while(!isAtEnd() && peekWithInsignificant().kind() != kind)
 		{
 			advance();
 		}
