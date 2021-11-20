@@ -9,6 +9,7 @@ public class App
 	{
 		var server = new NaturalLanguageServer();
 		var launcher = LSPLauncher.createServerLauncher(server, System.in, System.out);
+		server.connect(launcher.getRemoteProxy());
 		launcher.startListening();
 	}
 }

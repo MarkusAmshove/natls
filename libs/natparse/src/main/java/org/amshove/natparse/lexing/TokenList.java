@@ -1,5 +1,8 @@
 package org.amshove.natparse.lexing;
 
+import org.amshove.natparse.IDiagnostic;
+import org.amshove.natparse.ReadOnlyList;
+
 import java.util.List;
 
 public class TokenList
@@ -33,9 +36,9 @@ public class TokenList
 
 	// TODO: ReadOnlyList
 
-	public List<LexerDiagnostic> diagnostics()
+	public ReadOnlyList<IDiagnostic> diagnostics()
 	{
-		return diagnostics;
+		return ReadOnlyList.from(diagnostics.stream().map(d -> (IDiagnostic)d).toList()); // TODO: Perf
 	}
 
 	// TODO: ReadOnlyList
@@ -64,7 +67,7 @@ public class TokenList
 	 */
 	public SyntaxToken peek(int offset)
 	{
-		var targetIndex = currentOffset + offset;
+		var targetIndex = offset;
 		var validTokensLeft = offset;
 		while(!isAtEnd(targetIndex) && validTokensLeft > 0)
 		{
@@ -77,6 +80,8 @@ public class TokenList
 				validTokensLeft--;
 			}
 		}
+
+		targetIndex += currentOffset;
 
 		if(isAtEnd(targetIndex))
 		{

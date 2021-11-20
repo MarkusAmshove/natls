@@ -1,5 +1,7 @@
 package org.amshove.natls.languageserver;
 
+import org.amshove.natparse.IDiagnostic;
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
@@ -7,6 +9,7 @@ import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
+import org.amshove.natparse.parsing.DefineDataParser;
 import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
@@ -16,6 +19,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -72,6 +76,22 @@ public class NaturalLanguageService
 				return convertToSymbolInformation(f);
 			})
 			.toList();
+	}
+
+	public ReadOnlyList<IDiagnostic> parseFile(Path filepath)
+	{
+		var source = readSource(filepath);
+		return parseSource(source);
+	}
+
+	public ReadOnlyList<IDiagnostic> parseSource(String source)
+	{
+		var tokens = lexSource(source);
+		var parseResult = new DefineDataParser().parseDefineData(tokens);
+		var allDiagnostics = new ArrayList<IDiagnostic>();
+		allDiagnostics.addAll(tokens.diagnostics().stream().toList()); // TODO: Perf
+		allDiagnostics.addAll(parseResult.diagnostics().stream().toList()); // TODO: Perf
+		return ReadOnlyList.from(allDiagnostics);
 	}
 
 	private SymbolInformation convertToSymbolInformation(NaturalFile file)
@@ -131,18 +151,28 @@ public class NaturalLanguageService
 			.filter(t -> t.escapedSource().toLowerCase().contains(variableToSearchFor.toLowerCase()))
 			.map(t -> new Hover(new MarkupContent(MarkupKind.PLAINTEXT, t.escapedSource())))
 			.findFirst()
-			.orElseGet(() -> new Hover());
+			.orElseGet(Hover::new);
 	}
 
-	private TokenList lexPath(Path filepath)
+	private String readSource(Path path)
 	{
 		try
 		{
-			return new Lexer().lex(Files.readString(filepath));
+			return Files.readString(path);
 		}
 		catch (IOException e)
 		{
 			throw new UncheckedIOException(e);
 		}
+	}
+
+	private TokenList lexSource(String source)
+	{
+		return new Lexer().lex(source);
+	}
+
+	private TokenList lexPath(Path path)
+	{
+		return lexSource(readSource(path));
 	}
 }

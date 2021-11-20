@@ -65,6 +65,6 @@ public class ParserDiagnostic implements IDiagnostic
 	@Override
 	public String message()
 	{
-		return null;
+		return message;
 	}
 }
