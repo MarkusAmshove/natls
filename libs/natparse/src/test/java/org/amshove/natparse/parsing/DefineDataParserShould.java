@@ -64,7 +64,7 @@ class DefineDataParserShould extends AbstractParserTest
 		var lexResult = lexer.lex(source);
 		assertThat(lexResult.diagnostics().size()).as("Expected the source to lex without diagnostics").isZero();
 		var parser = new DefineDataParser();
-		var parseResult = parser.parseDefineData(lexResult);
+		var parseResult = parser.parse(lexResult);
 		assertThat(parseResult.diagnostics().size()).as("Expected the source to parse without diagnostics").isZero();
 
 		return parseResult.result();

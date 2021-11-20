@@ -87,7 +87,7 @@ public class NaturalLanguageService
 	public ReadOnlyList<IDiagnostic> parseSource(String source)
 	{
 		var tokens = lexSource(source);
-		var parseResult = new DefineDataParser().parseDefineData(tokens);
+		var parseResult = new DefineDataParser().parse(tokens);
 		var allDiagnostics = new ArrayList<IDiagnostic>();
 		allDiagnostics.addAll(tokens.diagnostics().stream().toList()); // TODO: Perf
 		allDiagnostics.addAll(parseResult.diagnostics().stream().toList()); // TODO: Perf

@@ -1,50 +1,27 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.IDiagnostic;
-import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.IDefineData;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class DefineDataParser
+public class DefineDataParser extends AbstractParser<IDefineData>
 {
-	private List<IDiagnostic> diagnostics;
-	private TokenList tokens;
 	private DefineData defineData;
 
-	public ParseResult<IDefineData> parseDefineData(TokenList tokens)
+	@Override
+	protected IDefineData parseInternal()
 	{
-		diagnostics = new ArrayList<>();
-		this.tokens = tokens;
 		defineData = new DefineData();
 
 		advanceToDefineData(tokens);
 		if (!isAtStartOfDefineData(tokens))
 		{
 			diagnostics.add(ParserDiagnostic.create("DEFINE DATA expected", 0, 0, 0, 0, ParserError.NO_DEFINE_DATA_FOUND));
-			return new ParseResult<>(null, ReadOnlyList.from(diagnostics));
+			return null;
 		}
 
 		defineData.setStartingNode(new TokenNode(tokens.peek()));
 
-		parseInternal();
-
-		if (tokens.isAtEnd())
-		{
-			diagnostics.add(ParserDiagnostic.create("No END-DEFINE found", tokens.peek(-1), ParserError.MISSING_END_DEFINE));
-			return new ParseResult<>(null, ReadOnlyList.from(diagnostics));
-		}
-
-		defineData.setEndNode(new TokenNode(tokens.peek()));
-
-		return new ParseResult<>(defineData, ReadOnlyList.from(diagnostics));
-	}
-
-	private void parseInternal()
-	{
 		while (!tokens.isAtEnd() && tokens.peekWithInsignificant().kind() != SyntaxKind.END_DEFINE)
 		{
 			var currentToken = tokens.peekWithInsignificant();
@@ -59,6 +36,16 @@ public class DefineDataParser
 
 			tokens.advance();
 		}
+
+		if (tokens.isAtEnd())
+		{
+			diagnostics.add(ParserDiagnostic.create("No END-DEFINE found", tokens.peek(-1), ParserError.MISSING_END_DEFINE));
+			return null;
+		}
+
+		defineData.setEndNode(new TokenNode(tokens.peek()));
+
+		return defineData;
 	}
 
 	private void parseLocal()

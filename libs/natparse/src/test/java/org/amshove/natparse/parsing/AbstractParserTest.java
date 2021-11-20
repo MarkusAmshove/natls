@@ -13,7 +13,7 @@ public abstract class AbstractParserTest
 	{
 		var lexer = new Lexer();
 		var tokens = lexer.lex(source);
-		var result = sut.parseDefineData(tokens);
+		var result = sut.parse(tokens);
 		assertThat(result.diagnostics().size())
 			.as("Expected to get at least one diagnostic, but found none")
 			.isGreaterThan(0);
