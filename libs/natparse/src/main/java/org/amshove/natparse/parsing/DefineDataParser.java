@@ -9,6 +9,7 @@ import java.util.List;
 
 public class DefineDataParser extends AbstractParser<IDefineData>
 {
+	private static final List<SyntaxKind> SCOPE_SYNTAX_KINDS = List.of(SyntaxKind.LOCAL, SyntaxKind.PARAMETER, SyntaxKind.GLOBAL);
 	private DefineData defineData;
 
 	@Override
@@ -51,7 +52,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		if(!isScopeToken(startToken))
 		{
-			diagnostics.add(ParserDiagnostic.unexpectedToken(List.of(SyntaxKind.LOCAL, SyntaxKind.PARAMETER), startToken));
+			diagnostics.add(ParserDiagnostic.unexpectedToken(SCOPE_SYNTAX_KINDS, startToken));
 			return;
 		}
 		tokens.advance();
@@ -86,8 +87,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private boolean isScopeToken(SyntaxToken token)
 	{
-		var kind = token.kind();
-		return kind == SyntaxKind.LOCAL || kind == SyntaxKind.PARAMETER;
+		return SCOPE_SYNTAX_KINDS.contains(token.kind());
 	}
 
 	private static void advanceToDefineData(TokenList tokens)

@@ -121,6 +121,7 @@ public enum SyntaxKind
 	FORMAT,
 	FRAC,
 	GET,
+	GLOBAL,
 	HISTOGRAM,
 	IF,
 	IGNORE,

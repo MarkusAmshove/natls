@@ -71,6 +71,8 @@ class UsingNode extends BaseSyntaxNode implements IUsingNode
 			case PARAMETER:
 				setParameter();
 				break;
+			case GLOBAL:
+				setGlobal();
 		}
 	}
 }

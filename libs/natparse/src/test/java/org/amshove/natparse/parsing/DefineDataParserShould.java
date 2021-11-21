@@ -91,6 +91,23 @@ class DefineDataParserShould extends AbstractParserTest
 		assertThat(parameterUsing.using().source()).isEqualTo("SOMEPDA");
 	}
 
+	@Test
+	void parseAGlobalUsing()
+	{
+		var source = """
+			   DEFINE DATA
+			   GLOBAL USING SOMEGDA
+			   END-DEFINE
+			""";
+
+		var defineData = assertParsesWithoutDiagnostics(source);
+
+		var parameterUsing = defineData.globalUsings().first();
+		assertThat(parameterUsing.parent()).isEqualTo(defineData);
+		assertThat(parameterUsing.isGlobalUsing()).isTrue();
+		assertThat(parameterUsing.using().source()).isEqualTo("SOMEGDA");
+	}
+
 	private IDefineData assertParsesWithoutDiagnostics(String source)
 	{
 		var lexer = new Lexer();
