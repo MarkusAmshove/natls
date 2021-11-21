@@ -10,13 +10,35 @@ public class TokenNode extends BaseSyntaxNode implements ITokenNode
 	public TokenNode(SyntaxToken token)
 	{
 		this.token = token;
-		setStart(token);
-		setEnd(token);
 	}
 
 	@Override
 	public SyntaxToken token()
 	{
 		return token;
+	}
+
+	@Override
+	public int offset()
+	{
+		return token.offset();
+	}
+
+	@Override
+	public int offsetInLine()
+	{
+		return token.offsetInLine();
+	}
+
+	@Override
+	public int line()
+	{
+		return token.line();
+	}
+
+	@Override
+	public int length()
+	{
+		return token.length();
 	}
 }

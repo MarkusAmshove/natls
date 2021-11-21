@@ -16,6 +16,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	protected IDefineData parseInternal()
 	{
 		defineData = new DefineData();
+		startNewNode(defineData);
 
 		advanceToDefineData(tokens);
 		if (!isAtStartOfDefineData(tokens))
@@ -24,15 +25,20 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			return null;
 		}
 
-		defineData.setStartingNode(new TokenNode(tokens.peek()));
-		tokens.advance();
-		tokens.advance();
+		if (!consume(SyntaxKind.DEFINE))
+		{
+			return null;
+		}
+
+		if(!consume(SyntaxKind.DATA))
+		{
+			return null;
+		}
 
 		while (!tokens.isAtEnd() && tokens.peek().kind() != SyntaxKind.END_DEFINE)
 		{
 			parseData();
-
-			tokens.advance();
+			finishNode();
 		}
 
 		if (tokens.isAtEnd())
@@ -41,45 +47,62 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			return null;
 		}
 
-		defineData.setEndNode(new TokenNode(tokens.peek()));
+		consume(SyntaxKind.END_DEFINE);
 
+		finishNode();
 		return defineData;
 	}
 
 	private void parseData()
 	{
-		var startToken = tokens.peek();
-
-		if(!isScopeToken(startToken))
+		if (!isScopeToken(peek()))
 		{
-			diagnostics.add(ParserDiagnostic.unexpectedToken(SCOPE_SYNTAX_KINDS, startToken));
+			diagnostics.add(ParserDiagnostic.unexpectedToken(SCOPE_SYNTAX_KINDS, peek()));
 			return;
 		}
-		tokens.advance();
 
-		var startIndex = tokens.getCurrentOffset();
-		if (tokens.consume(SyntaxKind.USING))
+		if(peek(1).kind() == SyntaxKind.USING)
 		{
-			parseUsing(startToken, startIndex);
+			parseUsing();
+		}
+	}
+
+	private void parseUsing()
+	{
+		var node = new UsingNode();
+		startNewNode(node);
+
+		var scopeToken = peek();
+		consume(scopeToken.kind());
+
+		node.setScope(lastToken.kind());
+
+		consume(SyntaxKind.USING);
+
+		if(!consumeIdentifier())
+		{
 			return;
 		}
+
+		node.setUsingTarget(lastToken);
+		defineData.addUsing(node);
 	}
 
 	private void parseUsing(SyntaxToken startToken, int startIndex)
 	{
 		var node = new UsingNode();
-		node.setStart(startToken);
+		currentNode = node;
+		node.addNode(new TokenNode(startToken));
 		node.setScope(startToken.kind());
 
 		var identifier = tokens.peek();
-		if(!identifier.kind().isIdentifier())
+		if (!identifier.kind().isIdentifier())
 		{
 			diagnostics.add(ParserDiagnostic.unexpectedToken(SyntaxKind.IDENTIFIER, identifier));
 			return;
 		}
 
 		node.setUsingTarget(identifier);
-		node.setEnd(identifier);
 		var nodeTokens = tokens.subrange(startIndex, tokens.getCurrentOffset());
 		ParserUtil.addTokensToNode(node, nodeTokens);
 		defineData.addUsing(node);

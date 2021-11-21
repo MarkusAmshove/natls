@@ -4,6 +4,7 @@ import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.IDefineData;
 import org.amshove.natparse.natural.ITokenNode;
+import org.amshove.natparse.natural.IUsingNode;
 import org.junit.jupiter.api.Test;
 
 import java.util.stream.Collectors;
@@ -38,10 +39,10 @@ class DefineDataParserShould extends AbstractParserTest
 		var defineData = assertParsesWithoutDiagnostics(source);
 
 		assertThat(defineData.line()).isEqualTo(0);
-		var firstTokenNode = assertNodeType(ITokenNode.class, defineData.nodes().first());
+		var firstTokenNode = assertNodeType(defineData.nodes().first(), ITokenNode.class);
 		assertThat(firstTokenNode.token().kind()).isEqualTo(SyntaxKind.DEFINE);
 		assertThat(defineData.nodes().last().line()).isEqualTo(2);
-		var lastTokenNode = assertNodeType(ITokenNode.class, defineData.nodes().last());
+		var lastTokenNode = assertNodeType(defineData.nodes().last(), ITokenNode.class);
 		assertThat(lastTokenNode.token().kind()).isEqualTo(SyntaxKind.END_DEFINE);
 	}
 
@@ -135,6 +136,34 @@ class DefineDataParserShould extends AbstractParserTest
 			() -> assertThat(usings.get(2).target().source()).isEqualTo("SOMEPDA"),
 			() -> assertThat(usings.get(3).isLocalUsing()).isTrue(),
 			() -> assertThat(usings.get(3).target().source()).isEqualTo("ALDA")
+		);
+	}
+
+	@Test
+	void setTheCorrectChildNodes()
+	{
+		var source = """
+			   DEFINE DATA
+			   GLOBAL USING SOMEGDA
+			   LOCAL USING SOMELDA
+			   PARAMETER USING SOMEPDA
+			   LOCAL USING ALDA
+			   END-DEFINE
+			""";
+
+		var defineData = assertParsesWithoutDiagnostics(source);
+
+		assertAll(
+			() -> assertTokenNode(defineData.nodes().get(0), n -> n.token().kind())
+				.isEqualTo(SyntaxKind.DEFINE),
+			() -> assertTokenNode(defineData.nodes().get(1), n -> n.token().kind())
+				.isEqualTo(SyntaxKind.DATA),
+			() -> assertNodeType(defineData.nodes().get(2), IUsingNode.class),
+			() -> assertNodeType(defineData.nodes().get(3), IUsingNode.class),
+			() -> assertNodeType(defineData.nodes().get(4), IUsingNode.class),
+			() -> assertNodeType(defineData.nodes().get(5), IUsingNode.class),
+			() -> assertTokenNode(defineData.nodes().get(6), n -> n.token().kind())
+				.isEqualTo(SyntaxKind.END_DEFINE)
 		);
 	}
 

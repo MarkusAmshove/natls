@@ -130,7 +130,7 @@ public class LexerForKeywordsShould extends AbstractLexerTest
 			keywordTest("ON", SyntaxKind.ON),
 			keywordTest("OPEN", SyntaxKind.OPEN),
 			keywordTest("OPTIONS", SyntaxKind.OPTIONS),
-			keywordTest("PARSE", SyntaxKind.PARAMETER),
+			keywordTest("PARAMETER", SyntaxKind.PARAMETER),
 			keywordTest("PARSE", SyntaxKind.PARSE),
 			keywordTest("PASSW", SyntaxKind.PASSW),
 			keywordTest("PERFORM", SyntaxKind.PERFORM),

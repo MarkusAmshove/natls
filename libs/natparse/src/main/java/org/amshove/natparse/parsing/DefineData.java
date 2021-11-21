@@ -40,22 +40,7 @@ class DefineData extends BaseSyntaxNode implements IDefineData
 
 	public void addUsing(UsingNode node)
 	{
-		addNode(node);
 		usings.add(node);
-	}
-
-	public void setStartingNode(TokenNode tokenNode)
-	{
-		setStart(tokenNode.token());
-		addNode(tokenNode);
-		startNode = tokenNode;
-	}
-
-	public void setEndNode(TokenNode tokenNode)
-	{
-		setEnd(tokenNode.token());
-		addNode(tokenNode);
-		endNode = tokenNode;
 	}
 
 }

@@ -1,19 +1,21 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.IPosition;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.ISyntaxTree;
 
-import java.util.LinkedHashSet;
+import java.util.ArrayList;
+import java.util.List;
 
 class BaseSyntaxNode implements ISyntaxNode
 {
-
-	private IPosition start;
-	private IPosition end;
-	private LinkedHashSet<ISyntaxNode> nodes = new LinkedHashSet<>();
+	private List<BaseSyntaxNode> nodes = new ArrayList<>();
 	private ISyntaxTree parent;
+
+	List<BaseSyntaxNode> getNodes()
+	{
+		return nodes;
+	}
 
 	public void setParent(ISyntaxTree parent)
 	{
@@ -25,38 +27,38 @@ class BaseSyntaxNode implements ISyntaxNode
 		return parent;
 	}
 
-	public void setStart(IPosition start)
-	{
-		this.start = start;
-	}
-
-	public void setEnd(IPosition end)
-	{
-		this.end = end;
-	}
-
 	@Override
 	public int offset()
 	{
-		return start.offset();
+		return getStart().offset();
 	}
 
 	@Override
 	public int offsetInLine()
 	{
-		return start.offsetInLine();
+		return getStart().offsetInLine();
 	}
 
 	@Override
 	public int line()
 	{
-		return start.line();
+		return getStart().line();
 	}
 
 	@Override
 	public int length()
 	{
-		return end.offset() - start.offset();
+		return getEnd().offset() - getStart().offset();
+	}
+
+	private ISyntaxNode getStart()
+	{
+		return nodes.get(0);
+	}
+
+	private ISyntaxNode getEnd()
+	{
+		return nodes.get(nodes.size() - 1);
 	}
 
 	void addNode(BaseSyntaxNode node)
