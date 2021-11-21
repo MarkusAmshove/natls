@@ -1,8 +1,11 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.SyntaxKind;
+import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.IDefineData;
+
+import java.util.List;
 
 public class DefineDataParser extends AbstractParser<IDefineData>
 {
@@ -21,18 +24,12 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 
 		defineData.setStartingNode(new TokenNode(tokens.peek()));
+		tokens.advance();
+		tokens.advance();
 
 		while (!tokens.isAtEnd() && tokens.peek().kind() != SyntaxKind.END_DEFINE)
 		{
-			var currentToken = tokens.peek();
-
-			switch (currentToken.kind())
-			{
-				case LOCAL:
-					parseLocal();
-				default:
-					break;
-			}
+			parseData();
 
 			tokens.advance();
 		}
@@ -48,36 +45,49 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		return defineData;
 	}
 
-	private void parseLocal()
+	private void parseData()
 	{
-		var startIndex = tokens.getCurrentOffset();
 		var startToken = tokens.peek();
-		if (!tokens.consume(SyntaxKind.LOCAL))
+
+		if(!isScopeToken(startToken))
 		{
-			diagnostics.add(ParserDiagnostic.unexpectedToken(SyntaxKind.LOCAL, tokens.peek()));
+			diagnostics.add(ParserDiagnostic.unexpectedToken(List.of(SyntaxKind.LOCAL, SyntaxKind.PARAMETER), startToken));
+			return;
+		}
+		tokens.advance();
+
+		var startIndex = tokens.getCurrentOffset();
+		if (tokens.consume(SyntaxKind.USING))
+		{
+			parseUsing(startToken, startIndex);
+			return;
+		}
+	}
+
+	private void parseUsing(SyntaxToken startToken, int startIndex)
+	{
+		var node = new UsingNode();
+		node.setStart(startToken);
+		node.setScope(startToken.kind());
+
+		var identifier = tokens.peek();
+		if(!identifier.kind().isIdentifier())
+		{
+			diagnostics.add(ParserDiagnostic.unexpectedToken(SyntaxKind.IDENTIFIER, identifier));
 			return;
 		}
 
-		if (tokens.consume(SyntaxKind.USING))
-		{
-			var node = new UsingNode();
-			node.setLocal();
-			node.setStart(startToken);
+		node.setUsingTarget(identifier);
+		node.setEnd(identifier);
+		var nodeTokens = tokens.subrange(startIndex, tokens.getCurrentOffset());
+		ParserUtil.addTokensToNode(node, nodeTokens);
+		defineData.addUsing(node);
+	}
 
-			var identifier = tokens.peek();
-			if (!identifier.kind().isIdentifier())
-			{
-				diagnostics.add(ParserDiagnostic.unexpectedToken(SyntaxKind.IDENTIFIER, identifier));
-				return;
-			}
-
-			node.setUsing(identifier);
-			node.setEnd(identifier);
-			var end = tokens.getCurrentOffset();
-			var nodeTokens = tokens.subrange(startIndex, end);
-			ParserUtil.addTokensToNode(node,nodeTokens);
-			defineData.addLocalUsing(node);
-		}
+	private boolean isScopeToken(SyntaxToken token)
+	{
+		var kind = token.kind();
+		return kind == SyntaxKind.LOCAL || kind == SyntaxKind.PARAMETER;
 	}
 
 	private static void advanceToDefineData(TokenList tokens)

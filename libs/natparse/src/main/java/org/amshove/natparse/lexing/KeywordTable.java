@@ -17,7 +17,6 @@ public class KeywordTable
 				case "lt" -> SyntaxKind.LT;
 				case "le" -> SyntaxKind.LE;
 
-				// KCheck keywords
 				case "abs" -> SyntaxKind.ABS;
 				case "accept" -> SyntaxKind.ACCEPT;
 				case "add" -> SyntaxKind.ADD;
@@ -134,6 +133,7 @@ public class KeywordTable
 				case "on" -> SyntaxKind.ON;
 				case "open" -> SyntaxKind.OPEN;
 				case "options" -> SyntaxKind.OPTIONS;
+				case "parameter" -> SyntaxKind.PARAMETER;
 				case "parse" -> SyntaxKind.PARSE;
 				case "passw" -> SyntaxKind.PASSW;
 				case "perform" -> SyntaxKind.PERFORM;

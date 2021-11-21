@@ -154,6 +154,7 @@ public enum SyntaxKind
 	ON,
 	OPEN,
 	OPTIONS,
+	PARAMETER,
 	PARSE,
 	PASSW,
 	PERFORM,

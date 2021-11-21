@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.IUsingNode;
 
@@ -34,29 +35,42 @@ class UsingNode extends BaseSyntaxNode implements IUsingNode
 		return isParameter;
 	}
 
-	void setUsing(SyntaxToken using)
+	void setUsingTarget(SyntaxToken using)
 	{
 		this.using = using;
 	}
 
-	void setLocal()
+	private void setLocal()
 	{
 		isLocal = true;
 		isParameter = false;
 		isGlobal = false;
 	}
 
-	void setParameter()
+	private void setParameter()
 	{
 		isLocal = false;
 		isParameter = true;
 		isGlobal = false;
 	}
 
-	void setGlobal()
+	private void setGlobal()
 	{
 		isLocal = false;
 		isParameter = false;
 		isGlobal = true;
+	}
+
+	void setScope(SyntaxKind scopeKind)
+	{
+		switch (scopeKind)
+		{
+			case LOCAL:
+				setLocal();
+				break;
+			case PARAMETER:
+				setParameter();
+				break;
+		}
 	}
 }

@@ -5,15 +5,14 @@ import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.ISyntaxTree;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
 
 class BaseSyntaxNode implements ISyntaxNode
 {
 
 	private IPosition start;
 	private IPosition end;
-	private List<ISyntaxNode> nodes = new ArrayList<>();
+	private LinkedHashSet<ISyntaxNode> nodes = new LinkedHashSet<>();
 	private ISyntaxTree parent;
 
 	public void setParent(ISyntaxTree parent)
