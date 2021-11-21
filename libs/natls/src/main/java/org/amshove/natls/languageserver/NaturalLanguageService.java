@@ -113,7 +113,7 @@ public class NaturalLanguageService
 	private SymbolInformation convertToSymbolInformation(SyntaxToken token, Path filepath)
 	{
 		return new SymbolInformation(
-			token.escapedSource(),
+			token.source(),
 			SymbolKind.Variable,
 			new Location(
 				filepath.toUri().toString(),
@@ -131,7 +131,7 @@ public class NaturalLanguageService
 		var tokens = lexPath(filepath);
 		while (!tokens.isAtEnd())
 		{
-			var token = tokens.peekWithInsignificant();
+			var token = tokens.peek();
 			if (token.line() != position.getLine())
 			{
 				tokens.advance();
@@ -146,10 +146,10 @@ public class NaturalLanguageService
 			tokens.advance();
 		}
 
-		var variableToSearchFor = tokens.peekWithInsignificant().source();
+		var variableToSearchFor = tokens.peek().source();
 		return getVariableDeclarationTokens(tokens.newResetted())
-			.filter(t -> t.escapedSource().toLowerCase().contains(variableToSearchFor.toLowerCase()))
-			.map(t -> new Hover(new MarkupContent(MarkupKind.PLAINTEXT, t.escapedSource())))
+			.filter(t -> t.source().toLowerCase().contains(variableToSearchFor.toLowerCase()))
+			.map(t -> new Hover(new MarkupContent(MarkupKind.PLAINTEXT, t.source())))
 			.findFirst()
 			.orElseGet(Hover::new);
 	}

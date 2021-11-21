@@ -2,9 +2,6 @@ package org.amshove.natparse.lexing;
 
 public enum SyntaxKind
 {
-	WHITESPACE,
-	NEW_LINE,
-	TAB,
 	LBRACKET,
 	RBRACKET,
 	LPAREN,
@@ -219,11 +216,6 @@ public enum SyntaxKind
 	WHILE,
 	WITH_CTE,
 	WRITE;
-
-	public boolean isWhitespace()
-	{
-		return this == WHITESPACE || this == TAB;
-	}
 
 	public boolean isIdentifier()
 	{

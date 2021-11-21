@@ -15,7 +15,7 @@ public class AbstractLexerTest
 		{
 			tokenList.advance();
 		}
-		return tokenList.peekWithInsignificant();
+		return tokenList.peek();
 	}
 
 	protected SyntaxToken lexSingle(String source)
@@ -38,11 +38,6 @@ public class AbstractLexerTest
 		assertTokens(source, Arrays.stream(expectedKinds).map(this::token).collect(Collectors.toList()));
 	}
 
-	protected void assertTokensIgnoreWhitespace(String source, SyntaxKind... expectedKinds)
-	{
-		assertTokens(source, Arrays.stream(expectedKinds).map(this::token).collect(Collectors.toList()), List.of(SyntaxKind.WHITESPACE, SyntaxKind.NEW_LINE, SyntaxKind.TAB));
-	}
-
 	protected void assertTokens(String source, ExpectedSyntaxToken... expectedTokens)
 	{
 		assertTokens(source, Arrays.asList(expectedTokens));
@@ -50,36 +45,26 @@ public class AbstractLexerTest
 
 	protected void assertTokens(String source, List<ExpectedSyntaxToken> expectedTokens)
 	{
-		assertTokens(source, expectedTokens, List.of());
-	}
-
-	protected void assertTokens(String source, List<ExpectedSyntaxToken> expectedTokens, List<SyntaxKind> excludedKinds)
-	{
 		var lexer = new Lexer();
 		var lexemes = lexer.lex(source);
 		for (var i = 0; i < expectedTokens.size(); i++)
 		{
 			var expectedToken = expectedTokens.get(i);
-			var actualToken = lexemes.peekWithInsignificant();
-			while(actualToken != null && excludedKinds.contains(actualToken.kind()))
-			{
-				lexemes.advance();
-				actualToken = lexemes.peekWithInsignificant();
-			}
+			var actualToken = lexemes.peek();
 
 			assertThat(actualToken.kind())
 				.as("Expected Token %d to be [%s] but was [%s]: '%s'",
 					i + 1,
 					expectedToken.kind,
 					actualToken.kind(),
-					actualToken.escapedSource())
+					actualToken.source())
 				.isEqualTo(expectedToken.kind);
 
-			if (expectedToken.expectedSource != null)
+			if (expectedToken.source != null)
 			{
 				assertThat(actualToken.source())
-					.as("Expected source [%s] but was [%s]", expectedToken.escapedExpectedSource(), actualToken.escapedSource())
-					.isEqualTo(expectedToken.expectedSource);
+					.as("Expected source [%s] but was [%s]", expectedToken.source(), actualToken.source())
+					.isEqualTo(expectedToken.source);
 			}
 
 			lexemes.advance();
@@ -112,7 +97,6 @@ public class AbstractLexerTest
 		var nonWhitespaceTokens = tokenList
 			.allTokens()
 			.stream()
-			.filter(t -> t.kind() != SyntaxKind.NEW_LINE && t.kind() != SyntaxKind.WHITESPACE)
 			.toList();
 
 		assertThat(nonWhitespaceTokens.size())
@@ -125,16 +109,7 @@ public class AbstractLexerTest
 		}
 	}
 
-	protected record ExpectedSyntaxToken(SyntaxKind kind, String expectedSource)
+	protected record ExpectedSyntaxToken(SyntaxKind kind, String source)
 	{
-		private String escapedExpectedSource()
-		{
-			if (kind != SyntaxKind.NEW_LINE && kind != SyntaxKind.TAB)
-			{
-				return expectedSource;
-			}
-			return expectedSource.replace("\r", "\\r").replace("\n", "\\n").replace("\t", "\\t");
-		}
-
 	}
 }

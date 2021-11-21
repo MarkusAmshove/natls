@@ -13,7 +13,6 @@ public class LexerForKeywordsShould extends AbstractLexerTest
 	@TestFactory
 	Iterable<DynamicTest> lexKCheckReservedKeywords()
 	{
-		// Reserved by KCHECK (Keyword Check) of the compiler
 		return Arrays.asList(
 			keywordTest("ABS", SyntaxKind.ABS),
 			keywordTest("ACCEPT", SyntaxKind.ACCEPT),

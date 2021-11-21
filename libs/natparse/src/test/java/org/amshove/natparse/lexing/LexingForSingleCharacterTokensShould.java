@@ -43,7 +43,7 @@ public class LexingForSingleCharacterTokensShould extends AbstractLexerTest
 	@Test
 	void lexAsterisk()
 	{
-		assertTokens(" *", token(SyntaxKind.WHITESPACE), token(SyntaxKind.ASTERISK, "*"));
+		assertTokens(" *", token(SyntaxKind.ASTERISK, "*"));
 	}
 
 	@Test

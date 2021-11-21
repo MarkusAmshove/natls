@@ -36,11 +36,6 @@ public class SyntaxToken implements IPosition
 		return source;
 	}
 
-	public String escapedSource()
-	{
-		return escapeSource();
-	}
-
 	public int length()
 	{
 		return source.length();
@@ -60,19 +55,11 @@ public class SyntaxToken implements IPosition
 	{
 		return String.format("S[Kind=%s; Source='%s'; Offset=%d; Length=%d; Line=%d; LineOffset=%d]",
 			kind,
-			escapeSource(),
+			source,
 			offset,
 			length(),
 			line,
 			offsetInLine);
 	}
 
-	private String escapeSource()
-	{
-		if (kind != SyntaxKind.NEW_LINE && kind != SyntaxKind.TAB)
-		{
-			return source;
-		}
-		return source.replace("\r", "\\r").replace("\n", "\\n").replace("\t", "\\t");
-	}
 }

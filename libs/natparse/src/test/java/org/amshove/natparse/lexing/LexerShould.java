@@ -16,13 +16,10 @@ public class LexerShould extends AbstractLexerTest
 		var lexer = new Lexer();
 		var tokens = lexer.lex("abc\nabc");
 
-		var firstAbc = tokens.peekWithInsignificant();
+		var firstAbc = tokens.peek();
 		assertThat(firstAbc.line()).isEqualTo(0);
 
-		var lineEnd = tokens.peekWithInsignificant(1);
-		assertThat(lineEnd.line()).isEqualTo(0);
-
-		var secondAbc = tokens.peekWithInsignificant(2);
+		var secondAbc = tokens.peek(1);
 		assertThat(secondAbc.line()).isEqualTo(1);
 	}
 
@@ -39,7 +36,7 @@ public class LexerShould extends AbstractLexerTest
 
 	@ParameterizedTest
 	@CsvSource(
-	{ "abc,0,0", "abc cba,2,4" })
+	{ "abc,0,0", "abc cba,1,4" })
 	void storeTheOffsetOfTokens(String source, int nthIndex, int expectedOffset)
 	{
 		var token = lexSingle(source, nthIndex);
@@ -51,7 +48,7 @@ public class LexerShould extends AbstractLexerTest
 	@Test
 	void storeTheOffsetInLineOfTokens()
 	{
-		assertThat(lexSingle("abc abc", 2).offsetInLine()).isEqualTo(4);
+		assertThat(lexSingle("abc abc", 1).offsetInLine()).isEqualTo(4);
 	}
 
 	@Test

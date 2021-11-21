@@ -57,7 +57,7 @@ public class LexerForStringsShould extends AbstractLexerTest
 	@Test
 	void correctlyParseTimeFormats()
 	{
-		assertTokensIgnoreWhitespace(
+		assertTokens(
 			"MOVE EDITED *TIMX(EM=' 'HH':'II':'SS) TO #RIGHT-PROMPT ",
 			SyntaxKind.MOVE,
 			SyntaxKind.IDENTIFIER_OR_KEYWORD,

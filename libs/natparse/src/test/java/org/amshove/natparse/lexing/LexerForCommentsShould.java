@@ -13,7 +13,7 @@ public class LexerForCommentsShould extends AbstractLexerTest
 	@Test
 	void lexInlineComment()
 	{
-		assertTokens("   /* Inline comment!", token(SyntaxKind.WHITESPACE), token(SyntaxKind.COMMENT, "/* Inline comment!"));
+		assertTokens("   /* Inline comment!", token(SyntaxKind.COMMENT, "/* Inline comment!"));
 	}
 
 	@Test
@@ -21,9 +21,7 @@ public class LexerForCommentsShould extends AbstractLexerTest
 	{
 		assertTokens("GT\n/*INCOMMENT\nGT",
 			token(SyntaxKind.GT),
-			token(SyntaxKind.NEW_LINE),
 			token(SyntaxKind.COMMENT, "/*INCOMMENT"),
-			token(SyntaxKind.NEW_LINE),
 			token(SyntaxKind.GT));
 	}
 }

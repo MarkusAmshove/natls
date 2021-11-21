@@ -26,7 +26,7 @@ public class NaturalProjectFileIndexer
 		for (var library : project.getLibraries())
 		{
 			filesystem.streamFilesRecursively(library.getSourcePath())
-				.filter(p -> NaturalFileType.isNaturalFile(p))
+				.filter(NaturalFileType::isNaturalFile)
 				.map(this::toNaturalFile)
 				.forEach(library::addFile);
 		}
@@ -72,6 +72,6 @@ public class NaturalProjectFileIndexer
 			throw new RuntimeException("Could not find name of subroutine");
 		}
 
-		return lexemes.peekWithInsignificant().escapedSource();
+		return lexemes.peek().source();
 	}
 }

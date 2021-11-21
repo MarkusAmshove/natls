@@ -22,9 +22,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		defineData.setStartingNode(new TokenNode(tokens.peek()));
 
-		while (!tokens.isAtEnd() && tokens.peekWithInsignificant().kind() != SyntaxKind.END_DEFINE)
+		while (!tokens.isAtEnd() && tokens.peek().kind() != SyntaxKind.END_DEFINE)
 		{
-			var currentToken = tokens.peekWithInsignificant();
+			var currentToken = tokens.peek();
 
 			switch (currentToken.kind())
 			{
@@ -51,7 +51,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	private void parseLocal()
 	{
 		var startIndex = tokens.getCurrentOffset();
-		var startToken = tokens.peekWithInsignificant();
+		var startToken = tokens.peek();
 		if (!tokens.consume(SyntaxKind.LOCAL))
 		{
 			diagnostics.add(ParserDiagnostic.unexpectedToken(SyntaxKind.LOCAL, tokens.peek()));

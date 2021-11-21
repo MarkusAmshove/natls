@@ -53,19 +53,19 @@ public class TokenList
 	}
 
 	/**
-	 * Peeks the next token, including all insignificant tokens.
+	 * Peeks the next token.
 	 * @return
 	 */
-	public SyntaxToken peekWithInsignificant()
+	public SyntaxToken peek()
 	{
-		return peekWithInsignificant(0);
+		return peek(0);
 	}
 
 	/**
-	 * Peeks the token <see>offset</see> times ahead, including all insignificant tokens.
+	 * Peeks the token <see>offset</see> times ahead.
 	 * @return
 	 */
-	public SyntaxToken peekWithInsignificant(int offset)
+	public SyntaxToken peek(int offset)
 	{
 		var index = currentOffset + offset;
 		if(isAtEnd(index))
@@ -76,57 +76,11 @@ public class TokenList
 	}
 
 	/**
-	 * Peeks the next token, skipping all insignificant tokens in between.
-	 * @return
-	 */
-	public SyntaxToken peek()
-	{
-		return peek(0);
-	}
-
-	public SyntaxToken peek(int offset)
-	{
-		var targetIndex = offset;
-		var validTokensLeft = offset;
-		while(!isAtEnd(targetIndex) && validTokensLeft > 0)
-		{
-			if(lookahead(targetIndex).kind().isWhitespace())
-			{
-				targetIndex++;
-			}
-			else
-			{
-				validTokensLeft--;
-			}
-		}
-
-		targetIndex += currentOffset;
-
-		if(isAtEnd(targetIndex))
-		{
-			return null;
-		}
-		return tokens.get(targetIndex);
-	}
-
-	/**
 	 * Advances over the current token.
 	 */
 	public void advance()
 	{
 		currentOffset++;
-	}
-
-	/**
-	 * Advances over the current token, skipping all insignificant tokens.
-	 */
-	public void advanceAfterInsignificant()
-	{
-		currentOffset++;
-		while(!isAtEnd() && peekWithInsignificant().kind().isWhitespace())
-		{
-			currentOffset++;
-		}
 	}
 
 	public boolean isAtEnd()
@@ -163,7 +117,7 @@ public class TokenList
 
 	public boolean advanceUntil(SyntaxKind kind)
 	{
-		while(!isAtEnd() && peekWithInsignificant().kind() != kind)
+		while(!isAtEnd() && peek().kind() != kind)
 		{
 			advance();
 		}
@@ -188,14 +142,14 @@ public class TokenList
 	}
 
 	/**
-	 * Consumes the current token if it matches the kind and then advances until the next significant token.
+	 * Consumes the current token if it matches the kind and then advances.
 	 * @param kind
 	 */
 	public boolean consume(SyntaxKind kind)
 	{
 		if(peek().kind() == kind)
 		{
-			advanceAfterInsignificant();
+			advance();
 			return true;
 		}
 

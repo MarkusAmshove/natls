@@ -14,7 +14,7 @@ class TokenListShould
 	{
 		var token = SyntaxTokenFactory.create(SyntaxKind.ADD, 0, 0, 1, "ADD");
 		var list = createTokenList(token);
-		assertThat(list.peekWithInsignificant()).isEqualTo(token);
+		assertThat(list.peek()).isEqualTo(token);
 	}
 
 	@Test
@@ -25,17 +25,17 @@ class TokenListShould
 			SyntaxTokenFactory.create(SyntaxKind.ASSIGN, 0, 0, 1, "ASSIGN"),
 			token
 		);
-		assertThat(list.peekWithInsignificant()).isNotEqualTo(token);
+		assertThat(list.peek()).isNotEqualTo(token);
 		list.advance();
-		assertThat(list.peekWithInsignificant()).isEqualTo(token);
+		assertThat(list.peek()).isEqualTo(token);
 	}
 
 	@Test
 	void returnNullWhenPeekingOverSize()
 	{
 		var tokenList = createListWithTokens(10);
-		assertThat(tokenList.peekWithInsignificant()).isNotNull();
-		assertThat(tokenList.peekWithInsignificant(10)).isNull();
+		assertThat(tokenList.peek()).isNotNull();
+		assertThat(tokenList.peek(10)).isNull();
 	}
 
 	@Test
@@ -54,14 +54,11 @@ class TokenListShould
 	{
 		var tokenList = createTokenList(
 			SyntaxKind.ADD,
-			SyntaxKind.WHITESPACE,
-			SyntaxKind.TAB,
-			SyntaxKind.WHITESPACE,
 			SyntaxKind.IDENTIFIER
 		);
 
 		assertThat(tokenList.peek().kind()).isEqualTo(SyntaxKind.ADD);
-		tokenList.advanceAfterInsignificant();
+		tokenList.advance();
 		assertThat(tokenList.peek().kind()).isEqualTo(SyntaxKind.IDENTIFIER);
 	}
 
@@ -70,9 +67,7 @@ class TokenListShould
 	{
 		var tokenList = createTokenList(
 			SyntaxKind.LOCAL,
-			SyntaxKind.WHITESPACE,
 			SyntaxKind.USING,
-			SyntaxKind.WHITESPACE,
 			SyntaxKind.IDENTIFIER
 		);
 

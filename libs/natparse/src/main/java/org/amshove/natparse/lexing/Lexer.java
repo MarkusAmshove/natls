@@ -24,13 +24,25 @@ public class Lexer
 
 		while (!scanner.isAtEnd() && scanner.peek() != '$')
 		{
-			if (consumeWhitespace() || consumeNewLine() || consumeComment())
+			if (consumeComment())
 			{
 				continue;
 			}
 
 			switch (scanner.peek())
 			{
+				case ' ':
+				case '\t':
+				case '\r':
+					scanner.advance();
+					continue;
+
+				case '\n':
+					line++;
+					scanner.advance();
+					currentLineStartOffset = scanner.position();
+					continue;
+
 				case '(':
 					createAndAddCurrentSingleToken(SyntaxKind.LPAREN);
 					continue;
@@ -335,35 +347,6 @@ public class Lexer
 		createAndAdd(SyntaxKind.NUMBER);
 	}
 
-	private boolean consumeWhitespace()
-	{
-		return consumeMultiple(' ', SyntaxKind.WHITESPACE) || consumeMultiple('\t', SyntaxKind.TAB);
-	}
-
-	private boolean consumeNewLine()
-	{
-		if (isLineEnd())
-		{
-			scanner.start();
-			if (scanner.peek() == '\n')
-			{
-				scanner.advance();
-				createAndAdd(SyntaxKind.NEW_LINE);
-				currentLineStartOffset = scanner.position();
-				line++;
-				return true;
-			}
-			if (scanner.advanceIf("\r\n"))
-			{
-				createAndAdd(SyntaxKind.NEW_LINE);
-				currentLineStartOffset = scanner.position();
-				line++;
-				return true;
-			}
-		}
-		return false;
-	}
-
 	private void consumeString(char c)
 	{
 		scanner.start();
@@ -392,22 +375,6 @@ public class Lexer
 		// to be included.
 		scanner.advance();
 		createAndAdd(SyntaxKind.STRING);
-	}
-
-	private boolean consumeMultiple(char c, SyntaxKind kind)
-	{
-		if (scanner.peek() == c)
-		{
-			scanner.start();
-			scanner.advance();
-			while (scanner.peek() == c)
-			{
-				scanner.advance();
-			}
-			createAndAdd(kind);
-			return true;
-		}
-		return false;
 	}
 
 	private void createAndAdd(SyntaxKind kind)
