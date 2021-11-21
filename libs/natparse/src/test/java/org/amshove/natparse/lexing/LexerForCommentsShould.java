@@ -2,26 +2,39 @@ package org.amshove.natparse.lexing;
 
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+
 public class LexerForCommentsShould extends AbstractLexerTest
 {
 	@Test
 	void lexSingleAsteriskComments()
 	{
-		assertTokens("* Hello from comment", token(SyntaxKind.COMMENT, "* Hello from comment"));
+		var tokenList = lexSource("* Hello from comment");
+		assertThat(tokenList.size()).isEqualTo(0);
+		assertThat(tokenList.comments().size()).isEqualTo(1);
+		assertThat(tokenList.comments().get(0).kind()).isEqualTo(SyntaxKind.COMMENT);
 	}
 
 	@Test
 	void lexInlineComment()
 	{
-		assertTokens("   /* Inline comment!", token(SyntaxKind.COMMENT, "/* Inline comment!"));
+		var tokenList = lexSource("   /* Inline comment!");
+		assertThat(tokenList.size()).isEqualTo(0);
+		assertThat(tokenList.comments().size()).isEqualTo(1);
+		assertThat(tokenList.comments().get(0).kind()).isEqualTo(SyntaxKind.COMMENT);
+		assertThat(tokenList.comments().get(0).source()).isEqualTo("/* Inline comment!");
 	}
 
 	@Test
 	void lexInlineCommentBeforeLinebreak()
 	{
-		assertTokens("GT\n/*INCOMMENT\nGT",
-			token(SyntaxKind.GT),
-			token(SyntaxKind.COMMENT, "/*INCOMMENT"),
-			token(SyntaxKind.GT));
+		var tokenList = lexSource("GT\n/*INCOMMENT\nGT");
+		assertThat(tokenList.size()).isEqualTo(2);
+		assertThat(tokenList.comments().size()).isEqualTo(1);
+		assertThat(tokenList.comments().get(0).kind()).isEqualTo(SyntaxKind.COMMENT);
+		assertThat(tokenList.comments().get(0).source()).isEqualTo("/*INCOMMENT");
+
+		assertThat(tokenList.peek().kind()).isEqualTo(SyntaxKind.GT);
+		assertThat(tokenList.peek(1).kind()).isEqualTo(SyntaxKind.GT);
 	}
 }

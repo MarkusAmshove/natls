@@ -44,7 +44,11 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			catch (ParseError e)
 			{
 				// Most liberal error handling currently is trying to advance to the next scope token
-				advanceToAny(SCOPE_SYNTAX_KINDS);
+				while(!tokens.isAtEnd() && (peek().kind() != SyntaxKind.END_DEFINE || SCOPE_SYNTAX_KINDS.contains(peek().kind())))
+				{
+					tokens.advance();
+					continue;
+				}
 			}
 		}
 

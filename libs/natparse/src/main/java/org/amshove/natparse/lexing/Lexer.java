@@ -9,6 +9,7 @@ public class Lexer
 {
 	private SourceTextScanner scanner;
 	private List<SyntaxToken> tokens;
+	private List<SyntaxToken> comments;
 	private int line;
 	private int currentLineStartOffset;
 
@@ -18,6 +19,7 @@ public class Lexer
 	{
 		tokens = new ArrayList<>();
 		diagnostics = new ArrayList<>();
+		comments = new ArrayList<>();
 		scanner = new SourceTextScanner(source);
 		line = 0;
 		currentLineStartOffset = 0;
@@ -195,7 +197,7 @@ public class Lexer
 					scanner.advance();
 			}
 		}
-		return TokenList.fromTokensAndDiagnostics(tokens, diagnostics);
+		return TokenList.fromTokensAndDiagnostics(tokens, diagnostics, comments);
 	}
 
 	private void consumeAsteriskOrFunction()
@@ -302,6 +304,18 @@ public class Lexer
 		var isSingleAsteriskComment = isAtLineStart() && scanner.peek() == '*' && (lookahead == ' ' || lookahead == '\t');
 		var isInlineComment = scanner.peek() == '/' && lookahead == '*';
 
+		if(isInlineComment && tokens.size() > 2)
+		{
+			// special case like (A5/*) which we might solve naively this way.
+			// (A5/*) is a shortcut for (A5/1:*)
+			var lastToken = tokens.get(tokens.size() - 1);
+			var prevLastToken = tokens.get(tokens.size() - 2);
+			if(lastToken.kind() == SyntaxKind.IDENTIFIER && prevLastToken.kind() == SyntaxKind.LPAREN)
+			{
+				return false;
+			}
+		}
+
 		if (isSingleAsteriskComment || isInlineComment)
 		{
 			scanner.start();
@@ -309,7 +323,15 @@ public class Lexer
 			{
 				scanner.advance();
 			}
-			createAndAdd(SyntaxKind.COMMENT);
+
+			var token = SyntaxTokenFactory.create(SyntaxKind.COMMENT,
+				scanner.lexemeStart(),
+				getOffsetInLine(),
+				line,
+				scanner.lexemeText());
+			comments.add(token);
+			scanner.reset();
+
 			return true;
 		}
 		return false;

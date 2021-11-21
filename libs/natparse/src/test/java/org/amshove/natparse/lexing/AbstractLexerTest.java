@@ -45,8 +45,7 @@ public class AbstractLexerTest
 
 	protected void assertTokens(String source, List<ExpectedSyntaxToken> expectedTokens)
 	{
-		var lexer = new Lexer();
-		var lexemes = lexer.lex(source);
+		var lexemes = lexSource(source);
 		for (var i = 0; i < expectedTokens.size(); i++)
 		{
 			var expectedToken = expectedTokens.get(i);
@@ -69,6 +68,11 @@ public class AbstractLexerTest
 
 			lexemes.advance();
 		}
+	}
+
+	protected TokenList lexSource(String source)
+	{
+		return new Lexer().lex(source);
 	}
 
 	protected TokenList assertDiagnostic(String source, LexerDiagnostic diagnostic)

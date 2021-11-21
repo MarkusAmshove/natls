@@ -9,6 +9,7 @@ public class TokenList
 {
 	private final List<SyntaxToken> tokens;
 	private final List<LexerDiagnostic> diagnostics;
+	private final List<SyntaxToken> comments;
 
 	private int currentOffset = 0;
 
@@ -16,12 +17,14 @@ public class TokenList
 	{
 		this.tokens = tokens;
 		diagnostics = List.of();
+		comments = List.of();
 	}
 
-	TokenList(List<SyntaxToken> tokens, List<LexerDiagnostic> diagnostics)
+	TokenList(List<SyntaxToken> tokens, List<LexerDiagnostic> diagnostics, List<SyntaxToken> comments)
 	{
 		this.tokens = tokens;
 		this.diagnostics = diagnostics;
+		this.comments = comments;
 	}
 
 	public static TokenList fromTokens(List<SyntaxToken> tokenList)
@@ -29,9 +32,9 @@ public class TokenList
 		return new TokenList(tokenList);
 	}
 
-	public static TokenList fromTokensAndDiagnostics(List<SyntaxToken> tokenList, List<LexerDiagnostic> diagnostics)
+	public static TokenList fromTokensAndDiagnostics(List<SyntaxToken> tokenList, List<LexerDiagnostic> diagnostics, List<SyntaxToken> comments)
 	{
-		return new TokenList(tokenList, diagnostics);
+		return new TokenList(tokenList, diagnostics, comments);
 	}
 
 	// TODO: ReadOnlyList
@@ -135,7 +138,12 @@ public class TokenList
 	// TODO: Figure out a better name
 	public TokenList newResetted()
 	{
-		return TokenList.fromTokensAndDiagnostics(tokens, diagnostics);
+		return TokenList.fromTokensAndDiagnostics(tokens, diagnostics, comments);
+	}
+
+	public ReadOnlyList<SyntaxToken> comments()
+	{
+		return ReadOnlyList.from(comments); // TODO: Perf
 	}
 
 	private SyntaxToken lookahead(int offset)
