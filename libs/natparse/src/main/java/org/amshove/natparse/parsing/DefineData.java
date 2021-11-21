@@ -32,6 +32,12 @@ class DefineData extends BaseSyntaxNode implements IDefineData
 		return usings.stream().filter(IUsingNode::isGlobalUsing).collect(ReadOnlyList.collector()); // TODO: Perf
 	}
 
+	@Override
+	public ReadOnlyList<IUsingNode> usings()
+	{
+		return ReadOnlyList.from(usings); // TODO: Perf
+	}
+
 	public void addUsing(UsingNode node)
 	{
 		addNode(node);

@@ -12,7 +12,7 @@ class UsingNode extends BaseSyntaxNode implements IUsingNode
 	private SyntaxToken using;
 
 	@Override
-	public SyntaxToken using()
+	public SyntaxToken target()
 	{
 		return using;
 	}

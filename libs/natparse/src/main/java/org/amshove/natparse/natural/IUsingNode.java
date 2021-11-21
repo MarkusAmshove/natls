@@ -7,7 +7,7 @@ public interface IUsingNode extends ISyntaxNode
 	/**
 	 * Contains the identifier that is being "used".
 	 */
-	SyntaxToken using();
+	SyntaxToken target();
 
 	boolean isLocalUsing();
 	boolean isGlobalUsing();

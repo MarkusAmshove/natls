@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 class DefineDataParserShould extends AbstractParserTest
 {
@@ -57,7 +58,7 @@ class DefineDataParserShould extends AbstractParserTest
 
 		assertThat(defineData.nodes()).isNotNull();
 		assertThat(defineData.localUsings().size()).isEqualTo(1);
-		assertThat(defineData.localUsings().first().using().source()).isEqualTo("SOMELDA");
+		assertThat(defineData.localUsings().first().target().source()).isEqualTo("SOMELDA");
 	}
 
 	@Test
@@ -88,7 +89,7 @@ class DefineDataParserShould extends AbstractParserTest
 		var parameterUsing = defineData.parameterUsings().first();
 		assertThat(parameterUsing.parent()).isEqualTo(defineData);
 		assertThat(parameterUsing.isParameterUsing()).isTrue();
-		assertThat(parameterUsing.using().source()).isEqualTo("SOMEPDA");
+		assertThat(parameterUsing.target().source()).isEqualTo("SOMEPDA");
 	}
 
 	@Test
@@ -105,7 +106,36 @@ class DefineDataParserShould extends AbstractParserTest
 		var parameterUsing = defineData.globalUsings().first();
 		assertThat(parameterUsing.parent()).isEqualTo(defineData);
 		assertThat(parameterUsing.isGlobalUsing()).isTrue();
-		assertThat(parameterUsing.using().source()).isEqualTo("SOMEGDA");
+		assertThat(parameterUsing.target().source()).isEqualTo("SOMEGDA");
+	}
+
+	@Test
+	void mixDifferentUsings()
+	{
+		var source = """
+			   DEFINE DATA
+			   GLOBAL USING SOMEGDA
+			   LOCAL USING SOMELDA
+			   PARAMETER USING SOMEPDA
+			   LOCAL USING ALDA
+			   END-DEFINE
+			""";
+
+		var defineData = assertParsesWithoutDiagnostics(source);
+
+		var usings = defineData.usings();
+		assertThat(usings.size()).isEqualTo(4);
+
+		assertAll(
+			() -> assertThat(usings.get(0).isGlobalUsing()).isTrue(),
+			() -> assertThat(usings.get(0).target().source()).isEqualTo("SOMEGDA"),
+			() -> assertThat(usings.get(1).isLocalUsing()).isTrue(),
+			() -> assertThat(usings.get(1).target().source()).isEqualTo("SOMELDA"),
+			() -> assertThat(usings.get(2).isParameterUsing()).isTrue(),
+			() -> assertThat(usings.get(2).target().source()).isEqualTo("SOMEPDA"),
+			() -> assertThat(usings.get(3).isLocalUsing()).isTrue(),
+			() -> assertThat(usings.get(3).target().source()).isEqualTo("ALDA")
+		);
 	}
 
 	private IDefineData assertParsesWithoutDiagnostics(String source)
