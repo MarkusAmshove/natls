@@ -63,8 +63,19 @@ class BaseSyntaxNode implements ISyntaxNode
 
 	void addNode(BaseSyntaxNode node)
 	{
+		if(node == null)
+		{
+			return;
+		}
+
 		node.setParent(this);
 		nodes.add(node);
+		nodeAdded(node);
+	}
+
+	protected void nodeAdded(BaseSyntaxNode node)
+	{
+
 	}
 
 	@Override

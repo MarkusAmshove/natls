@@ -25,20 +25,27 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			return null;
 		}
 
-		if (!consume(SyntaxKind.DEFINE))
+		if (!consumeAdding(defineData, SyntaxKind.DEFINE))
 		{
 			return null;
 		}
 
-		if(!consume(SyntaxKind.DATA))
+		if (!consumeAdding(defineData, SyntaxKind.DATA))
 		{
 			return null;
 		}
 
 		while (!tokens.isAtEnd() && tokens.peek().kind() != SyntaxKind.END_DEFINE)
 		{
-			parseData();
-			finishNode();
+			try
+			{
+				defineData.addNode(dataDefinition());
+			}
+			catch (ParseError e)
+			{
+				// Most liberal error handling currently is trying to advance to the next scope token
+				advanceToAny(SCOPE_SYNTAX_KINDS);
+			}
 		}
 
 		if (tokens.isAtEnd())
@@ -53,59 +60,38 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		return defineData;
 	}
 
-	private void parseData()
+	private BaseSyntaxNode dataDefinition() throws ParseError
 	{
 		if (!isScopeToken(peek()))
 		{
 			diagnostics.add(ParserDiagnostic.unexpectedToken(SCOPE_SYNTAX_KINDS, peek()));
-			return;
+			throw new ParseError();
 		}
 
 		if(peek(1).kind() == SyntaxKind.USING)
 		{
-			parseUsing();
+			return using();
 		}
+
+		tokens.advance();
+		return null;
 	}
 
-	private void parseUsing()
+	private UsingNode using() throws ParseError
 	{
 		var node = new UsingNode();
-		startNewNode(node);
 
-		var scopeToken = peek();
-		consume(scopeToken.kind());
+		var scopeToken = consumeAny(SCOPE_SYNTAX_KINDS);
+		node.setScope(scopeToken.kind());
+		node.addNode(new TokenNode(scopeToken));
 
-		node.setScope(lastToken.kind());
+		consumeAdding(node, SyntaxKind.USING);
 
-		consume(SyntaxKind.USING);
-
-		if(!consumeIdentifier())
-		{
-			return;
-		}
-
-		node.setUsingTarget(lastToken);
-		defineData.addUsing(node);
-	}
-
-	private void parseUsing(SyntaxToken startToken, int startIndex)
-	{
-		var node = new UsingNode();
-		currentNode = node;
-		node.addNode(new TokenNode(startToken));
-		node.setScope(startToken.kind());
-
-		var identifier = tokens.peek();
-		if (!identifier.kind().isIdentifier())
-		{
-			diagnostics.add(ParserDiagnostic.unexpectedToken(SyntaxKind.IDENTIFIER, identifier));
-			return;
-		}
-
+		var identifier = identifier();
 		node.setUsingTarget(identifier);
-		var nodeTokens = tokens.subrange(startIndex, tokens.getCurrentOffset());
-		ParserUtil.addTokensToNode(node, nodeTokens);
-		defineData.addUsing(node);
+		node.addNode(new TokenNode(identifier));
+
+		return node;
 	}
 
 	private boolean isScopeToken(SyntaxToken token)

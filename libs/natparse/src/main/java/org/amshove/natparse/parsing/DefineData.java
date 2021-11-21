@@ -43,4 +43,12 @@ class DefineData extends BaseSyntaxNode implements IDefineData
 		usings.add(node);
 	}
 
+	@Override
+	protected void nodeAdded(BaseSyntaxNode node)
+	{
+		if(node instanceof IUsingNode)
+		{
+			usings.add((IUsingNode) node);
+		}
+	}
 }

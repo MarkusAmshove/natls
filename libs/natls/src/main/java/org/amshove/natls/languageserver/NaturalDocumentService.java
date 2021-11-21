@@ -74,8 +74,10 @@ public class NaturalDocumentService implements TextDocumentService, LanguageClie
 	{
 		try
 		{
+			System.err.println("checkFile start");
 			var diagnostics = languageService.parseFile(LspUtil.uriToPath(textDocumentIdentifier));
 			publishDiagnostics(textDocumentIdentifier, diagnostics);
+			System.err.println("checkFile end");
 		}
 		catch (Exception e)
 		{

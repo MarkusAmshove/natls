@@ -96,6 +96,48 @@ abstract class AbstractParser<T>
 		return tokens.consume(kind);
 	}
 
+	protected boolean consumeAdding(BaseSyntaxNode currentNode, SyntaxKind kind)
+	{
+		if(!tokens.isAtEnd() && tokens.peek().kind() == kind)
+		{
+			currentNode.addNode(new TokenNode(tokens.peek()));
+		}
+		else
+		{
+			diagnostics.add(ParserDiagnostic.unexpectedToken(kind, tokens.peek()));
+		}
+		return tokens.consume(kind);
+	}
+
+	protected SyntaxToken identifier() throws ParseError
+	{
+		if(tokens.isAtEnd() || !tokens.peek().kind().isIdentifier())
+		{
+			diagnostics.add(ParserDiagnostic.unexpectedToken(SyntaxKind.IDENTIFIER, tokens.peek()));
+			throw new ParseError();
+		}
+
+		var token = tokens.peek();
+		tokens.advance();
+		return token;
+	}
+
+	protected SyntaxToken consumeAny(List<SyntaxKind> acceptedKinds) throws ParseError
+	{
+		if(tokens.isAtEnd() || !acceptedKinds.contains(tokens.peek().kind()))
+		{
+			diagnostics.add(ParserDiagnostic.unexpectedToken(acceptedKinds, tokens.peek()));
+			throw new ParseError();
+		}
+
+		return tokens.advance();
+	}
+
+	protected SyntaxToken previous()
+	{
+		return tokens.peek(-1);
+	}
+
 	protected boolean consumeIdentifier()
 	{
 		if(!tokens.isAtEnd() && tokens.peek().kind().isIdentifier())
@@ -105,6 +147,26 @@ abstract class AbstractParser<T>
 
 		diagnostics.add(ParserDiagnostic.unexpectedToken(SyntaxKind.IDENTIFIER, tokens.peek()));
 		return false;
+	}
+
+	protected boolean isAtEnd()
+	{
+		return tokens.isAtEnd();
+	}
+
+	protected void skip()
+	{
+		tokens.advance();
+	}
+
+	protected boolean advanceToAny(List<SyntaxKind> scopeSyntaxKinds)
+	{
+		while(!tokens.isAtEnd() && !scopeSyntaxKinds.contains(tokens.peek().kind()))
+		{
+			tokens.advance();
+		}
+
+		return tokens.isAtEnd();
 	}
 
 }

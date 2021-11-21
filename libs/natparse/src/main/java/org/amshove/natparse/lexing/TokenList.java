@@ -78,9 +78,11 @@ public class TokenList
 	/**
 	 * Advances over the current token.
 	 */
-	public void advance()
+	public SyntaxToken advance()
 	{
+		var token = peek();
 		currentOffset++;
+		return token;
 	}
 
 	public boolean isAtEnd()
