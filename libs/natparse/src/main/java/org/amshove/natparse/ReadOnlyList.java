@@ -9,6 +9,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ReadOnlyList<T> implements Iterable<T>
@@ -61,6 +62,12 @@ public class ReadOnlyList<T> implements Iterable<T>
 	public static <T> Collector<T, ?, ReadOnlyList<T>> collector()
 	{
 		return new ReadOnlyListCollector<>();
+	}
+
+	@Override
+	public String toString()
+	{
+		return "ReadOnlyList{" + collection.stream().map(T::toString).collect(Collectors.joining(",")) + '}';
 	}
 
 	private static class ReadOnlyListCollector<T> implements Collector<T, ArrayList<T>, ReadOnlyList<T>>

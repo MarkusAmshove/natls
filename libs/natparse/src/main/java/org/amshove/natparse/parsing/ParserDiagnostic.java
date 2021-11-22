@@ -96,4 +96,10 @@ public class ParserDiagnostic implements IDiagnostic
 	{
 		return message;
 	}
+
+	@Override
+	public String toString()
+	{
+		return "ParserDiagnostic{" + id + ":" + message + '}';
+	}
 }

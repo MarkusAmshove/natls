@@ -103,12 +103,6 @@ class LexerDiagnostic implements IDiagnostic
 	@Override
 	public String toString()
 	{
-		return "LexerDiagnostic{" +
-			"offset=" + offset +
-			", offsetInLine=" + offsetInLine +
-			", currentLine=" + line +
-			", length=" + length +
-			", error=" + error +
-			'}';
+		return "LexerDiagnostic{" + id + ":" + message + '}';
 	}
 }
