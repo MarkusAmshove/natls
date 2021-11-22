@@ -88,7 +88,7 @@ public class ParserDiagnostic implements IDiagnostic
 	@Override
 	public int length()
 	{
-		return 0;
+		return length;
 	}
 
 	@Override
