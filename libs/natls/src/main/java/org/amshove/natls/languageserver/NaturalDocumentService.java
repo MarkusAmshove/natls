@@ -95,7 +95,7 @@ public class NaturalDocumentService implements TextDocumentService, LanguageClie
 
 		var lspDiagnostics = diagnostics.stream().map(d -> new Diagnostic(
 			new Range(new Position(d.line(), d.offsetInLine()), new Position(d.line(), d.offsetInLine() + d.length())),
-			d.message() != null ? d.message() : "Why null?", // TODO: Who gave null?
+			d.message(),
 			DiagnosticSeverity.Error,
 			"natparse",
 			d.id()
