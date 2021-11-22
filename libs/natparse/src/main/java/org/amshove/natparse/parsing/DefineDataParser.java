@@ -53,7 +53,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		if (tokens.isAtEnd())
 		{
-			diagnostics.add(ParserDiagnostic.create("No END-DEFINE found", tokens.peek(-1), ParserError.MISSING_END_DEFINE));
+			diagnostics.add(ParserDiagnostic.create("No END-DEFINE found", defineData, ParserError.MISSING_END_DEFINE));
 			return null;
 		}
 
