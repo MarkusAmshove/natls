@@ -25,6 +25,7 @@ public abstract class AbstractParserTest
 			.anyMatch(d -> d.id().equals(expectedError.id()));
 	}
 
+	@SuppressWarnings("unchecked")
 	protected <T> T assertNodeType(ISyntaxNode node, Class<? extends T> expectedType)
 	{
 		assertThat(node).isInstanceOf(expectedType);

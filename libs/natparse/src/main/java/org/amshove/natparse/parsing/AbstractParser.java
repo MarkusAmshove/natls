@@ -31,7 +31,7 @@ abstract class AbstractParser<T>
 
 		var result = parseInternal();
 
-		return new ParseResult(result, ReadOnlyList.from(diagnostics));
+		return new ParseResult<>(result, ReadOnlyList.from(diagnostics));
 	}
 
 	protected abstract T parseInternal();
@@ -79,7 +79,7 @@ abstract class AbstractParser<T>
 
 	protected SyntaxToken peek(int offset)
 	{
-		return tokens.peek(1);
+		return tokens.peek(offset);
 	}
 
 	protected boolean consume(SyntaxKind kind)
