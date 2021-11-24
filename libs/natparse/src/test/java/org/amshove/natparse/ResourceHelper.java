@@ -38,7 +38,7 @@ public class ResourceHelper
 		try
 		{
 			var str = Resources.toString(Resources.getResource(targetPath), UTF_8);
-			return Arrays.stream(str.split(System.lineSeparator()))
+			return Arrays.stream(str.split("\n")) // always has linux line endings
 				.map(filename -> targetPath + filename)
 				.collect(Collectors.toList());
 		}
