@@ -59,12 +59,14 @@ public class DefineDataParserDiagnosticTest
 					var actualDiagnosticsHeading = parseResult.diagnostics().stream().map(IDiagnostic::toVerboseString).collect(Collectors.joining("\n"));
 
 					var heading = """
+      					File: %s
+      					
 						Expected Diagnostics:
 						%s
 
 						Actual Diagnostics:
 						%s
-						""".formatted(expectedDiagnosticsHeading, actualDiagnosticsHeading).stripIndent();
+						""".formatted(name, expectedDiagnosticsHeading, actualDiagnosticsHeading).stripIndent();
 
 					assertAll(heading, tests);
 				});
@@ -75,7 +77,7 @@ public class DefineDataParserDiagnosticTest
 
 	private static List<ExpectedDiagnostic> findExpectedDiagnostics(String source)
 	{
-		var lines = source.split(System.lineSeparator());
+		var lines = source.split("\n");
 		var expectedDiagnostics = new ArrayList<ExpectedDiagnostic>();
 
 		for (var i = 0; i < lines.length; i++)
