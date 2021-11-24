@@ -4,6 +4,7 @@ import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.IDefineData;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.IUsingNode;
+import org.amshove.natparse.natural.IVariableNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
 class DefineData extends BaseSyntaxNode implements IDefineData
 {
 	private List<IUsingNode> usings = new ArrayList<>();
+	private List<IVariableNode> variables = new ArrayList<>();
 	private ISyntaxNode startNode;
 	private ISyntaxNode endNode;
 
@@ -33,6 +35,12 @@ class DefineData extends BaseSyntaxNode implements IDefineData
 	}
 
 	@Override
+	public ReadOnlyList<IVariableNode> variables()
+	{
+		return ReadOnlyList.from(variables); // TODO: Perf
+	}
+
+	@Override
 	public ReadOnlyList<IUsingNode> usings()
 	{
 		return ReadOnlyList.from(usings); // TODO: Perf
@@ -43,12 +51,22 @@ class DefineData extends BaseSyntaxNode implements IDefineData
 		usings.add(node);
 	}
 
+	public void addVariable(VariableNode node)
+	{
+		variables.add(node);
+	}
+
 	@Override
 	protected void nodeAdded(BaseSyntaxNode node)
 	{
 		if(node instanceof IUsingNode)
 		{
 			usings.add((IUsingNode) node);
+		}
+
+		if(node instanceof IVariableNode)
+		{
+			variables.add((IVariableNode) node);
 		}
 	}
 }

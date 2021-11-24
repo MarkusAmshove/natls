@@ -96,7 +96,7 @@ abstract class AbstractParser<T>
 		return tokens.consume(kind);
 	}
 
-	protected boolean consumeAdding(BaseSyntaxNode currentNode, SyntaxKind kind)
+	protected boolean consume(BaseSyntaxNode currentNode, SyntaxKind kind)
 	{
 		if(!tokens.isAtEnd() && tokens.peek().kind() == kind)
 		{
@@ -121,6 +121,33 @@ abstract class AbstractParser<T>
 		tokens.advance();
 		return token;
 	}
+
+	protected SyntaxToken consumeMandatory(BaseSyntaxNode node, SyntaxKind kind) throws ParseError
+	{
+		if(consume(kind))
+		{
+			node.addNode(new TokenNode(previous()));
+			return previous();
+		}
+
+		diagnostics.add(ParserDiagnostic.unexpectedToken(kind, peek()));
+		throw new ParseError();
+	}
+
+	// TODO: Remove/Change once IDENTIFIER_OR_KEYWORD is no more
+	protected SyntaxToken consumeMandatoryIdentifier(BaseSyntaxNode node) throws ParseError
+	{
+		if(!isAtEnd() && peek().kind().isIdentifier())
+		{
+			node.addNode(new TokenNode(peek()));
+			tokens.advance();
+			return previous();
+		}
+
+		diagnostics.add(ParserDiagnostic.unexpectedToken(SyntaxKind.IDENTIFIER, peek()));
+		throw new ParseError();
+	}
+
 
 	protected SyntaxToken consumeAny(List<SyntaxKind> acceptedKinds) throws ParseError
 	{

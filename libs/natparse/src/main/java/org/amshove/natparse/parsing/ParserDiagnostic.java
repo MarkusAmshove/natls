@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.lexing.SyntaxKind;
@@ -16,6 +17,7 @@ public class ParserDiagnostic implements IDiagnostic
 	private final int line;
 	private final int length;
 	private final String id;
+	private final DiagnosticSeverity severity;
 
 	private ParserDiagnostic(String message, int offset, int offsetInLine, int line, int length, ParserError error)
 	{
@@ -25,6 +27,7 @@ public class ParserDiagnostic implements IDiagnostic
 		this.line = line;
 		this.length = length;
 		this.id = error.id();
+		severity = DiagnosticSeverity.ERROR;
 	}
 
 	public static ParserDiagnostic create(String message, int offset, int offsetInLine, int line, int length, ParserError error)
@@ -101,5 +104,11 @@ public class ParserDiagnostic implements IDiagnostic
 	public String toString()
 	{
 		return "ParserDiagnostic{" + id + ":" + message + '}';
+	}
+
+	@Override
+	public DiagnosticSeverity severity()
+	{
+		return severity;
 	}
 }

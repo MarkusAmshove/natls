@@ -3,19 +3,20 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
+import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IDefineData;
+import org.amshove.natparse.natural.VariableScope;
 
 import java.util.List;
 
 public class DefineDataParser extends AbstractParser<IDefineData>
 {
 	private static final List<SyntaxKind> SCOPE_SYNTAX_KINDS = List.of(SyntaxKind.LOCAL, SyntaxKind.PARAMETER, SyntaxKind.GLOBAL);
-	private DefineData defineData;
 
 	@Override
 	protected IDefineData parseInternal()
 	{
-		defineData = new DefineData();
+		var defineData = new DefineData();
 		startNewNode(defineData);
 
 		advanceToDefineData(tokens);
@@ -25,12 +26,12 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			return null;
 		}
 
-		if (!consumeAdding(defineData, SyntaxKind.DEFINE))
+		if (!consume(defineData, SyntaxKind.DEFINE))
 		{
 			return null;
 		}
 
-		if (!consumeAdding(defineData, SyntaxKind.DATA))
+		if (!consume(defineData, SyntaxKind.DATA))
 		{
 			return null;
 		}
@@ -44,7 +45,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			catch (ParseError e)
 			{
 				// Most liberal error handling currently is trying to advance to the next scope token
-				while(!tokens.isAtEnd() && (peek().kind() != SyntaxKind.END_DEFINE && !SCOPE_SYNTAX_KINDS.contains(peek().kind())))
+				while (!tokens.isAtEnd() && (peek().kind() != SyntaxKind.END_DEFINE && !SCOPE_SYNTAX_KINDS.contains(peek().kind())))
 				{
 					tokens.advance();
 				}
@@ -71,13 +72,52 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			throw new ParseError();
 		}
 
-		if(peek(1).kind() == SyntaxKind.USING)
+		if (peek(1).kind() == SyntaxKind.USING)
 		{
 			return using();
 		}
 
-		tokens.advance();
-		return null;
+		var scope = consumeAny(SCOPE_SYNTAX_KINDS);
+
+		var variable = variable();
+
+		variable.setScope(VariableScope.fromSyntaxKind(scope.kind()));
+
+		return variable;
+	}
+
+	private VariableNode variable() throws ParseError
+	{
+		var variable = new VariableNode();
+
+		var level = consumeMandatory(variable, SyntaxKind.NUMBER).intValue();
+		variable.setLevel(level);
+
+		var identifier = consumeMandatoryIdentifier(variable);
+		variable.setDeclaration(identifier);
+
+		if (consume(variable, SyntaxKind.LPAREN))
+		{
+			var dataType = consumeMandatoryIdentifier(variable).source(); // DataTypes like A10 get recognized as identifier
+			var format = DataFormat.fromSource(dataType.charAt(0));
+			var length = getLengthFromDataType(dataType);
+			variable.setDataFormat(format);
+			variable.setDataLength(length);
+			consumeMandatory(variable, SyntaxKind.RPAREN);
+		}
+
+		return variable;
+	}
+
+	private double getLengthFromDataType(String dataType)
+	{
+		if (dataType.length() == 1)
+		{
+			return 0.0;
+		}
+
+		dataType = dataType.replace(",", ".");
+		return Double.parseDouble(dataType.substring(1));
 	}
 
 	private UsingNode using() throws ParseError
@@ -88,7 +128,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		node.setScope(scopeToken.kind());
 		node.addNode(new TokenNode(scopeToken));
 
-		consumeAdding(node, SyntaxKind.USING);
+		consume(node, SyntaxKind.USING);
 
 		var identifier = identifier();
 		node.setUsingTarget(identifier);

@@ -1,5 +1,6 @@
 package org.amshove.natparse.lexing;
 
+import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.IDiagnostic;
 
 import java.util.Objects;
@@ -13,6 +14,7 @@ class LexerDiagnostic implements IDiagnostic
 	private final int length;
 	private final LexerError error;
 	private final String message;
+	private final DiagnosticSeverity severity;
 
 	private LexerDiagnostic(String message, int offset, int offsetInLine, int currentLine, int length, LexerError error)
 	{
@@ -23,6 +25,7 @@ class LexerDiagnostic implements IDiagnostic
 		this.length = length;
 		this.error = error;
 		this.id = error.id();
+		severity = DiagnosticSeverity.ERROR;
 	}
 
 	static LexerDiagnostic create(String message, int offset, int offsetInLine, int currentLine, int length, LexerError error)
@@ -104,5 +107,11 @@ class LexerDiagnostic implements IDiagnostic
 	public String toString()
 	{
 		return "LexerDiagnostic{" + id + ":" + message + '}';
+	}
+
+	@Override
+	public DiagnosticSeverity severity()
+	{
+		return severity;
 	}
 }

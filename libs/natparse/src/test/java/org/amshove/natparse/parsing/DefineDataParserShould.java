@@ -2,6 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
+import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IDefineData;
 import org.amshove.natparse.natural.ITokenNode;
 import org.amshove.natparse.natural.IUsingNode;
@@ -167,6 +168,38 @@ class DefineDataParserShould extends AbstractParserTest
 		);
 	}
 
+	@Test
+	void parseALocalVariable()
+	{
+		var source = """
+			define data
+			local
+			1 #MYVAR (A10)
+			end-define
+			""";
+
+		var defineData = assertParsesWithoutDiagnostics(source);
+
+		var variable = defineData.variables().first();
+		assertThat(variable.name()).isEqualTo("#MYVAR");
+		assertThat(variable.level()).isEqualTo(1);
+		assertThat(variable.dataFormat()).isEqualTo(DataFormat.ALPHANUMERIC);
+		assertThat(variable.dataLength()).isEqualTo(10.0);
+	}
+
+	@Test
+	void addADiagnosticForMissingDataFormats()
+	{
+		var source = """
+			define data
+			local
+			1 #MYVAR ()
+			end-define
+			""";
+
+		assertDiagnostic(source, ParserError.UNEXPECTED_TOKEN);
+	}
+
 	private IDefineData assertParsesWithoutDiagnostics(String source)
 	{
 		var lexer = new Lexer();
@@ -181,7 +214,7 @@ class DefineDataParserShould extends AbstractParserTest
 		assertThat(parseResult.diagnostics().size())
 			.as(
 				"Expected the source to parse without diagnostics%n%s"
-					.formatted(lexResult.diagnostics().stream().map(d -> d.message()).collect(Collectors.joining("\n"))))
+					.formatted(parseResult.diagnostics().stream().map(d -> d.message()).collect(Collectors.joining("\n"))))
 			.isZero();
 
 		return parseResult.result();

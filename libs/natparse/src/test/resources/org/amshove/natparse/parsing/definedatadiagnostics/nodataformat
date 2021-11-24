@@ -1,0 +1,4 @@
+define data
+local
+1 #MYVAR () /* !{D:ERROR:NPP003}
+end-define

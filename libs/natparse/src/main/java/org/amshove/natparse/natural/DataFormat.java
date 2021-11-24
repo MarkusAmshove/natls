@@ -25,20 +25,25 @@ public enum DataFormat
 	 */
 	public static DataFormat fromSource(String source)
 	{
+		return fromSource(source.charAt(0));
+	}
+
+	public static DataFormat fromSource(char source)
+	{
 		return switch (source)
 			{
-				case "A" -> ALPHANUMERIC;
-				case "B" -> BINARY;
-				case "C" -> CONTROL;
-				case "D" -> DATE;
-				case "F" -> FLOAT;
-				case "I" -> INTEGER;
-				case "L" -> LOGIC;
-				case "N" -> NUMERIC;
-				case "P" -> PACKED;
-				case "T" -> TIME;
-				case "U" -> UNICODE;
-				case " " -> NONE;
+				case 'A' -> ALPHANUMERIC;
+				case 'B' -> BINARY;
+				case 'C' -> CONTROL;
+				case 'D' -> DATE;
+				case 'F' -> FLOAT;
+				case 'I' -> INTEGER;
+				case 'L' -> LOGIC;
+				case 'N' -> NUMERIC;
+				case 'P' -> PACKED;
+				case 'T' -> TIME;
+				case 'U' -> UNICODE;
+				case ' ' -> NONE;
 				default -> throw new NaturalParseException(String.format("Can't determine DataFormat from format \"%s\"", source));
 			};
 	}
