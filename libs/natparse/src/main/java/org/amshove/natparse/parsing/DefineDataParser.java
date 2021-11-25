@@ -120,10 +120,25 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				type.setDynamicLength();
 			}
 
+			if (consumeOptionally(variable, SyntaxKind.INIT))
+			{
+				if(consumeOptionally(variable, SyntaxKind.LESSER_GREATER))
+				{
+					// special case for a better error message. <> is  just an empty initial value
+					diagnostics.add(ParserErrors.emptyInitValue(variable));
+				}
+				else
+				{
+					consumeMandatory(variable, SyntaxKind.LESSER);
+					var literal = consumeLiteral(variable);
+					type.setInitialValue(literal);
+					consumeMandatory(variable, SyntaxKind.GREATER);
+				}
+			}
+
 			variable.setType(type);
 		}
 
-		// TODO: Typecheck possible INITs
 		checkVariableType(variable);
 		return variable;
 	}
@@ -226,6 +241,48 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				case PACKED:
 					diagnostics.add(ParserErrors.dataTypeNeedsLength(variable));
 			}
+		}
+
+		if(variable.type().initialValue() != null)
+		{
+			switch(variable.type().format())
+			{
+				case ALPHANUMERIC:
+					expectInitialValueType(variable, SyntaxKind.STRING);
+					break;
+
+				case BINARY:
+				case CONTROL:
+				case DATE:
+				case TIME:
+				case UNICODE:
+				case NONE:
+					// TODO: Unsure about these at the moment
+					break;
+
+				case FLOAT:
+				case NUMERIC:
+				case PACKED:
+				case INTEGER:
+					expectInitialValueType(variable, SyntaxKind.NUMBER);
+					break;
+
+				case LOGIC:
+					var initialValueType = variable.type().initialValue().kind();
+					if(initialValueType != SyntaxKind.TRUE && initialValueType != SyntaxKind.FALSE)
+					{
+						diagnostics.add(ParserErrors.initValueMismatch(variable, SyntaxKind.TRUE, SyntaxKind.FALSE));
+					}
+					break;
+			}
+		}
+	}
+
+	private void expectInitialValueType(VariableNode variableNode, SyntaxKind expectedKind)
+	{
+		if(variableNode.type().initialValue().kind() != expectedKind)
+		{
+			diagnostics.add(ParserErrors.initValueMismatch(variableNode, expectedKind));
 		}
 	}
 

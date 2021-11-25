@@ -149,6 +149,11 @@ abstract class AbstractParser<T>
 		throw new ParseError();
 	}
 
+	protected SyntaxToken consumeLiteral(BaseSyntaxNode node) throws ParseError
+	{
+		return consumeAny(List.of(SyntaxKind.NUMBER, SyntaxKind.STRING, SyntaxKind.TRUE, SyntaxKind.FALSE));
+	}
+
 	// TODO: Remove/Change once IDENTIFIER_OR_KEYWORD is no more
 	protected SyntaxToken consumeMandatoryIdentifier(BaseSyntaxNode node) throws ParseError
 	{

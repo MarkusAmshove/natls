@@ -251,6 +251,25 @@ class DefineDataParserShould extends AbstractParserTest
 		assertDiagnostic("define data local 1 #m (%s) end-define".formatted(type), ParserError.VARIABLE_LENGTH_MISSING);
 	}
 
+	@Test
+	void supportInitialValues()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			define data local
+			1 #myvar (A10) dynamic init <'hello'>
+			end-define
+			""");
+
+		assertThat(defineData.variables().first().type().initialValue().source()).isEqualTo("'hello'");
+	}
+
+	@ParameterizedTest
+	@CsvSource({"A,5", "N,\"Hi\"", "I,\"Hello\"", "P,TRUE", "F,FALSE"})
+	void addADiagnosticForTypeMismatchesInInitialValues(String type, String literal)
+	{
+		assertDiagnostic("define data local 1 #var (%s4) init <%s> end-define".formatted(type, literal), ParserError.INITIAL_VALUE_TYPE_MISMATCH);
+	}
+
 	private IDefineData assertParsesWithoutDiagnostics(String source)
 	{
 		var lexer = new Lexer();

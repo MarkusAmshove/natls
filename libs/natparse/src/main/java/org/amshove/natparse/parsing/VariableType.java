@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IVariableType;
 
@@ -8,6 +9,7 @@ class VariableType implements IVariableType
 	private boolean hasDynamicLength;
 	private DataFormat format;
 	private double length;
+	private SyntaxToken initialValue;
 
 	@Override
 	public DataFormat format()
@@ -27,6 +29,12 @@ class VariableType implements IVariableType
 		return hasDynamicLength;
 	}
 
+	@Override
+	public SyntaxToken initialValue()
+	{
+		return initialValue;
+	}
+
 	void setDynamicLength()
 	{
 		hasDynamicLength = true;
@@ -40,5 +48,10 @@ class VariableType implements IVariableType
 	void setLength(double length)
 	{
 		this.length = length;
+	}
+
+	void setInitialValue(SyntaxToken token)
+	{
+		initialValue = token;
 	}
 }

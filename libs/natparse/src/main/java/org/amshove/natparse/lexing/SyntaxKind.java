@@ -132,6 +132,7 @@ public enum SyntaxKind
 	INCDIR,
 	INCLUDE,
 	INCMAC,
+	INIT,
 	INPUT,
 	INSERT,
 	INT,

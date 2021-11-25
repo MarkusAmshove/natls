@@ -111,6 +111,7 @@ public class KeywordTable
 				case "incdir" -> SyntaxKind.INCDIR;
 				case "include" -> SyntaxKind.INCLUDE;
 				case "incmac" -> SyntaxKind.INCMAC;
+				case "init" -> SyntaxKind.INIT;
 				case "input" -> SyntaxKind.INPUT;
 				case "insert" -> SyntaxKind.INSERT;
 				case "int" -> SyntaxKind.INT;
