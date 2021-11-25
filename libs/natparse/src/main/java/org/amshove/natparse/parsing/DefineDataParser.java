@@ -103,7 +103,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			var length = getLengthFromDataType(dataType);
 
 			// N12.7 results in Tokens <IDENTIFIER (N12), DOT, NUMBER>
-			if(consumeOptionally(variable, SyntaxKind.COMMA) || consumeOptionally(variable, SyntaxKind.DOT))
+			if (consumeOptionally(variable, SyntaxKind.COMMA) || consumeOptionally(variable, SyntaxKind.DOT))
 			{
 				var number = consumeMandatory(variable, SyntaxKind.NUMBER);
 				length = getLengthFromDataType(dataType + "." + number.source());
@@ -114,13 +114,14 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 			consumeMandatory(variable, SyntaxKind.RPAREN);
 
-			if(consumeOptionally(variable, SyntaxKind.DYNAMIC))
+			if (consumeOptionally(variable, SyntaxKind.DYNAMIC))
 			{
 				variable.setDynamicLength();
 			}
 		}
 
 		// TODO: Typecheck possible INITs
+		checkVariableType(variable);
 		return variable;
 	}
 
@@ -171,4 +172,58 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	{
 		return !tokens.isAtEnd() && tokens.peek().kind() == SyntaxKind.DEFINE && tokens.peek(1) != null && tokens.peek(1).kind() == SyntaxKind.DATA;
 	}
+
+	private void checkVariableType(VariableNode variable)
+	{
+		if (variable.hasDynamicLength())
+		{
+			switch (variable.dataFormat())
+			{
+				case ALPHANUMERIC:
+				case BINARY:
+				case UNICODE:
+					break;
+
+				case CONTROL:
+				case DATE:
+				case FLOAT:
+				case INTEGER:
+				case LOGIC:
+				case NUMERIC:
+				case PACKED:
+				case TIME:
+				case NONE:
+					diagnostics.add(ParserErrors.dynamicVariableLengthNotAllowed(variable));
+			}
+		}
+
+		if (variable.dataLength() == 0.0)
+		{
+			switch (variable.dataFormat())
+			{
+				case ALPHANUMERIC:
+				case BINARY:
+				case UNICODE:
+					if (!variable.hasDynamicLength())
+					{
+						diagnostics.add(ParserErrors.dataTypeNeedsLength(variable));
+					}
+					break;
+
+				case CONTROL:
+				case DATE:
+				case LOGIC:
+				case TIME:
+				case NONE:
+					break;
+
+				case FLOAT:
+				case INTEGER:
+				case NUMERIC:
+				case PACKED:
+					diagnostics.add(ParserErrors.dataTypeNeedsLength(variable));
+			}
+		}
+	}
+
 }

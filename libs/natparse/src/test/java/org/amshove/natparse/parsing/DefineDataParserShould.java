@@ -2,10 +2,16 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
-import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.DataFormat;
+import org.amshove.natparse.natural.IDefineData;
+import org.amshove.natparse.natural.ITokenNode;
+import org.amshove.natparse.natural.IUsingNode;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -222,6 +228,27 @@ class DefineDataParserShould extends AbstractParserTest
 			createTypeTest("(P02)", DataFormat.PACKED, 2.0, false),
 			createTypeTest("(T)", DataFormat.TIME, 0.0, false)
 		);
+	}
+
+	@ParameterizedTest
+	@CsvSource({ "A,true", "B,true", "C,false", "D,false", "F4,false", "I4,false", "L,false", "N4,false", "P4,false", "T,false", "U,true" })
+	void addDiagnosticsForTypesIfTheyDontAllowDynamicLength(String type, boolean canHaveDynamicLength)
+	{
+		if (canHaveDynamicLength)
+		{
+			assertParsesWithoutDiagnostics("DEFINE DATA LOCAL 1 #AVAR (%s) DYNAMIC END-DEFINE".formatted(type));
+		}
+		else
+		{
+			assertDiagnostic("DEFINE DATA LOCAL 1 #AVAR (%s) DYNAMIC END-DEFINE".formatted(type), ParserError.INVALID_DATA_TYPE_FOR_DYNAMIC_LENGTH);
+		}
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "F", "I", "N", "P", "A", "B", "U" })
+	void addDiagnosticsForTypesMissingALength(String type)
+	{
+		assertDiagnostic("define data local 1 #m (%s) end-define".formatted(type), ParserError.VARIABLE_LENGTH_MISSING);
 	}
 
 	private IDefineData assertParsesWithoutDiagnostics(String source)
