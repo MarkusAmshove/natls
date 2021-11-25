@@ -69,6 +69,7 @@ public enum SyntaxKind
 	DELETE,
 	DISPLAY,
 	DIVIDE,
+	DYNAMIC,
 	DLOGOFF,
 	DLOGON,
 	DNATIVE,

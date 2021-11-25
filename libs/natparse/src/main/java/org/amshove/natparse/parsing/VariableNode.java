@@ -13,6 +13,7 @@ public class VariableNode extends BaseSyntaxNode implements IVariableNode
 	private DataFormat dataFormat;
 	private double dataLength;
 	private VariableScope scope;
+	private boolean hasDynamicLength;
 
 	@Override
 	public SyntaxToken declaration()
@@ -56,6 +57,12 @@ public class VariableNode extends BaseSyntaxNode implements IVariableNode
 		return scope;
 	}
 
+	@Override
+	public boolean hasDynamicLength()
+	{
+		return hasDynamicLength;
+	}
+
 	void setLevel(int level)
 	{
 		this.level = level;
@@ -80,5 +87,10 @@ public class VariableNode extends BaseSyntaxNode implements IVariableNode
 	void setScope(VariableScope scope)
 	{
 		this.scope = scope;
+	}
+
+	void setDynamicLength()
+	{
+		hasDynamicLength = true;
 	}
 }

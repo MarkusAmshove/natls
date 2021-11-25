@@ -2,16 +2,17 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
-import org.amshove.natparse.natural.DataFormat;
-import org.amshove.natparse.natural.IDefineData;
-import org.amshove.natparse.natural.ITokenNode;
-import org.amshove.natparse.natural.IUsingNode;
+import org.amshove.natparse.natural.*;
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 class DefineDataParserShould extends AbstractParserTest
 {
@@ -200,6 +201,29 @@ class DefineDataParserShould extends AbstractParserTest
 		assertDiagnostic(source, ParserError.UNEXPECTED_TOKEN);
 	}
 
+	@TestFactory
+	List<DynamicTest> parseCorrectDataTypes()
+	{
+		return List.of(
+			createTypeTest("(A10)", DataFormat.ALPHANUMERIC, 10.0, false),
+			createTypeTest("(A) dynamic", DataFormat.ALPHANUMERIC, 0.0, true),
+			createTypeTest("(U7)", DataFormat.UNICODE, 7, false),
+			createTypeTest("(U) DYNAMIC", DataFormat.UNICODE, 0.0, true),
+			createTypeTest("(B2)", DataFormat.BINARY, 2.0, false),
+			createTypeTest("(B) dynamic", DataFormat.BINARY, 0.0, true),
+			createTypeTest("(C)", DataFormat.CONTROL, 0.0, false),
+			createTypeTest("(D)", DataFormat.DATE, 0.0, false),
+			createTypeTest("(F4)", DataFormat.FLOAT, 4.0, false),
+			createTypeTest("(I4)", DataFormat.INTEGER, 4.0, false),
+			createTypeTest("(L)", DataFormat.LOGIC, 0.0, false),
+			createTypeTest("(N8)", DataFormat.NUMERIC, 8.0, false),
+			createTypeTest("(N12,7)", DataFormat.NUMERIC, 12.7, false),
+			createTypeTest("(N12.7)", DataFormat.NUMERIC, 12.7, false),
+			createTypeTest("(P02)", DataFormat.PACKED, 2.0, false),
+			createTypeTest("(T)", DataFormat.TIME, 0.0, false)
+		);
+	}
+
 	private IDefineData assertParsesWithoutDiagnostics(String source)
 	{
 		var lexer = new Lexer();
@@ -218,5 +242,25 @@ class DefineDataParserShould extends AbstractParserTest
 			.isZero();
 
 		return parseResult.result();
+	}
+
+	private DynamicTest createTypeTest(String source, DataFormat expectedFormat, double expectedLength, boolean hasDynamicLength)
+	{
+		return dynamicTest(
+			source,
+			() -> {
+				var defineDataSource = """
+					define data
+					local
+					1 #myvar %s
+					end-define
+					""".formatted(source);
+				var defineData = assertParsesWithoutDiagnostics(defineDataSource);
+				var variable = defineData.variables().first();
+				assertThat(variable.dataFormat()).isEqualTo(expectedFormat);
+				assertThat(variable.dataLength()).isEqualTo(expectedLength);
+				assertThat(variable.hasDynamicLength()).isEqualTo(hasDynamicLength);
+			}
+		);
 	}
 }

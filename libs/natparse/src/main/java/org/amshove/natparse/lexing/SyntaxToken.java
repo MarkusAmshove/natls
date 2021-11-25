@@ -59,7 +59,7 @@ public class SyntaxToken implements IPosition
 	@Override
 	public String toString()
 	{
-		return String.format("S[Kind=%s; Source='%s'; Offset=%d; Length=%d; Line=%d; LineOffset=%d]",
+		return String.format("T[Kind=%s; Source='%s'; Offset=%d; Length=%d; Line=%d; LineOffset=%d]",
 			kind,
 			source,
 			offset,

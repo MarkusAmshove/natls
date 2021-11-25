@@ -8,4 +8,5 @@ public interface IVariableNode extends ISymbolNode
 	DataFormat dataFormat();
 	double dataLength();
 	VariableScope scope();
+	boolean hasDynamicLength();
 }

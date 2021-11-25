@@ -75,4 +75,9 @@ class UsingNode extends BaseSyntaxNode implements IUsingNode
 				setGlobal();
 		}
 	}
+
+	@Override public String toString()
+	{
+		return "UsingNode{isLocal=%s, isParameter=%s, isGlobal=%s, using=%s}".formatted(isLocal, isParameter, isGlobal, using);
+	}
 }

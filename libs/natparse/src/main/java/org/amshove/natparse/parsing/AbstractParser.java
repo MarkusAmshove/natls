@@ -96,17 +96,32 @@ abstract class AbstractParser<T>
 		return tokens.consume(kind);
 	}
 
-	protected boolean consume(BaseSyntaxNode currentNode, SyntaxKind kind)
+	/**
+	 * Consumes the current token only if the kind matches.
+	 * This will not add any diagnostics.
+	 * @param node
+	 * @param kind
+	 * @return Whether the token was consumed or not
+	 */
+	protected boolean consumeOptionally(BaseSyntaxNode node, SyntaxKind kind)
 	{
 		if(!tokens.isAtEnd() && tokens.peek().kind() == kind)
 		{
-			currentNode.addNode(new TokenNode(tokens.peek()));
+			node.addNode(new TokenNode(tokens.peek()));
 		}
-		else
+
+		return tokens.consume(kind);
+	}
+
+	protected boolean consume(BaseSyntaxNode node, SyntaxKind kind)
+	{
+		var tokenConsumed = consumeOptionally(node, kind);
+		if(!tokenConsumed)
 		{
 			diagnostics.add(ParserDiagnostic.unexpectedToken(kind, tokens.peek()));
 		}
-		return tokens.consume(kind);
+
+		return tokenConsumed;
 	}
 
 	protected SyntaxToken identifier() throws ParseError

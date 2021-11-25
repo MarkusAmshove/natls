@@ -101,11 +101,26 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			var dataType = consumeMandatoryIdentifier(variable).source(); // DataTypes like A10 get recognized as identifier
 			var format = DataFormat.fromSource(dataType.charAt(0));
 			var length = getLengthFromDataType(dataType);
+
+			// N12.7 results in Tokens <IDENTIFIER (N12), DOT, NUMBER>
+			if(consumeOptionally(variable, SyntaxKind.COMMA) || consumeOptionally(variable, SyntaxKind.DOT))
+			{
+				var number = consumeMandatory(variable, SyntaxKind.NUMBER);
+				length = getLengthFromDataType(dataType + "." + number.source());
+			}
+
 			variable.setDataFormat(format);
 			variable.setDataLength(length);
+
 			consumeMandatory(variable, SyntaxKind.RPAREN);
+
+			if(consumeOptionally(variable, SyntaxKind.DYNAMIC))
+			{
+				variable.setDynamicLength();
+			}
 		}
 
+		// TODO: Typecheck possible INITs
 		return variable;
 	}
 
@@ -122,19 +137,21 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private UsingNode using() throws ParseError
 	{
-		var node = new UsingNode();
+		var using = new UsingNode();
 
 		var scopeToken = consumeAny(SCOPE_SYNTAX_KINDS);
-		node.setScope(scopeToken.kind());
-		node.addNode(new TokenNode(scopeToken));
+		using.setScope(scopeToken.kind());
+		using.addNode(new TokenNode(scopeToken));
 
-		consume(node, SyntaxKind.USING);
+		consume(using, SyntaxKind.USING);
 
 		var identifier = identifier();
-		node.setUsingTarget(identifier);
-		node.addNode(new TokenNode(identifier));
+		using.setUsingTarget(identifier);
+		using.addNode(new TokenNode(identifier));
 
-		return node;
+		// TODO: add imported variables as synthetic nodes
+
+		return using;
 	}
 
 	private boolean isScopeToken(SyntaxToken token)

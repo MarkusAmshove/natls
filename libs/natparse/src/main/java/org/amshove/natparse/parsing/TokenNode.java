@@ -41,4 +41,9 @@ public class TokenNode extends BaseSyntaxNode implements ITokenNode
 	{
 		return token.length();
 	}
+
+	@Override public String toString()
+	{
+		return "TokenNode{token=%s}".formatted(token);
+	}
 }

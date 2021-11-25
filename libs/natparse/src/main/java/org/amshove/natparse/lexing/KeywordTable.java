@@ -54,6 +54,7 @@ public class KeywordTable
 				case "do" -> SyntaxKind.DO;
 				case "doend" -> SyntaxKind.DOEND;
 				case "download" -> SyntaxKind.DOWNLOAD;
+				case "dynamic" -> SyntaxKind.DYNAMIC;
 				case "eject" -> SyntaxKind.EJECT;
 				case "else" -> SyntaxKind.ELSE;
 				case "end" -> SyntaxKind.END;

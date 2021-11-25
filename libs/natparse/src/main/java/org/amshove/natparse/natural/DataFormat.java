@@ -30,7 +30,7 @@ public enum DataFormat
 
 	public static DataFormat fromSource(char source)
 	{
-		return switch (source)
+		return switch (Character.toUpperCase(source))
 			{
 				case 'A' -> ALPHANUMERIC;
 				case 'B' -> BINARY;
