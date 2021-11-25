@@ -38,6 +38,7 @@ public class KeywordTable
 				case "compose" -> SyntaxKind.COMPOSE;
 				case "compress" -> SyntaxKind.COMPRESS;
 				case "compute" -> SyntaxKind.COMPUTE;
+				case "const" -> SyntaxKind.CONST;
 				case "copy" -> SyntaxKind.COPY;
 				case "cos" -> SyntaxKind.COS;
 				case "count" -> SyntaxKind.COUNT;

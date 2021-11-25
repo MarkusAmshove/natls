@@ -65,7 +65,7 @@ public class TokenList
 	}
 
 	/**
-	 * Peeks the token <see>offset</see> times ahead.
+	 * Peeks the token `offset` times ahead.
 	 * @return
 	 */
 	public SyntaxToken peek(int offset)
@@ -172,7 +172,7 @@ public class TokenList
 	}
 
 	/**
-	 * Returns all tokens from <see>start</see> to <see>end</see>.
+	 * Returns all tokens from start to end.
 	 * @param start Inclusive index of the first token.
 	 * @param end Inclusive index of the last token.
 	 * @return

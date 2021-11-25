@@ -59,6 +59,7 @@ public enum SyntaxKind
 	COMPOSE,
 	COMPRESS,
 	COMPUTE,
+	CONST,
 	COPY,
 	COS,
 	COUNT,

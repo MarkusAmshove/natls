@@ -120,8 +120,12 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				type.setDynamicLength();
 			}
 
-			if (consumeOptionally(variable, SyntaxKind.INIT))
+			if (consumeOptionally(variable, SyntaxKind.INIT) || consumeOptionally(variable, SyntaxKind.CONST))
 			{
+				if(previous().kind() == SyntaxKind.CONST)
+				{
+					type.setConstant();
+				}
 				if(consumeOptionally(variable, SyntaxKind.LESSER_GREATER))
 				{
 					// special case for a better error message. <> is  just an empty initial value
@@ -135,6 +139,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 					consumeMandatory(variable, SyntaxKind.GREATER);
 				}
 			}
+
 
 			variable.setType(type);
 		}

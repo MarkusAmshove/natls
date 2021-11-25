@@ -10,6 +10,7 @@ class VariableType implements IVariableType
 	private DataFormat format;
 	private double length;
 	private SyntaxToken initialValue;
+	private boolean isConstant = true;
 
 	@Override
 	public DataFormat format()
@@ -35,6 +36,12 @@ class VariableType implements IVariableType
 		return initialValue;
 	}
 
+	@Override
+	public boolean isConstant()
+	{
+		return isConstant;
+	}
+
 	void setDynamicLength()
 	{
 		hasDynamicLength = true;
@@ -53,5 +60,10 @@ class VariableType implements IVariableType
 	void setInitialValue(SyntaxToken token)
 	{
 		initialValue = token;
+	}
+
+	void setConstant()
+	{
+		isConstant = true;
 	}
 }

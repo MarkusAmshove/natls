@@ -263,11 +263,32 @@ class DefineDataParserShould extends AbstractParserTest
 		assertThat(defineData.variables().first().type().initialValue().source()).isEqualTo("'hello'");
 	}
 
+	@Test
+	void supportConstantValues()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			define data local
+			1 #myvar (A10) dynamic const <'hello'>
+			end-define
+			""");
+
+		assertThat(defineData.variables().first().type().isConstant()).isTrue();
+		assertThat(defineData.variables().first().type().initialValue().source()).isEqualTo("'hello'");
+	}
+
+
 	@ParameterizedTest
 	@CsvSource({"A,5", "N,\"Hi\"", "I,\"Hello\"", "P,TRUE", "F,FALSE"})
 	void addADiagnosticForTypeMismatchesInInitialValues(String type, String literal)
 	{
 		assertDiagnostic("define data local 1 #var (%s4) init <%s> end-define".formatted(type, literal), ParserError.INITIAL_VALUE_TYPE_MISMATCH);
+	}
+
+	@ParameterizedTest
+	@CsvSource({"A,5", "N,\"Hi\"", "I,\"Hello\"", "P,TRUE", "F,FALSE"})
+	void addADiagnosticForTypeMismatchesInConstValues(String type, String literal)
+	{
+		assertDiagnostic("define data local 1 #var (%s4) const <%s> end-define".formatted(type, literal), ParserError.INITIAL_VALUE_TYPE_MISMATCH);
 	}
 
 	private IDefineData assertParsesWithoutDiagnostics(String source)
