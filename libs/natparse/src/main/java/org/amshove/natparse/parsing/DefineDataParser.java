@@ -109,15 +109,18 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				length = getLengthFromDataType(dataType + "." + number.source());
 			}
 
-			variable.setDataFormat(format);
-			variable.setDataLength(length);
+			var type = new VariableType();
+			type.setFormat(format);
+			type.setLength(length);
 
 			consumeMandatory(variable, SyntaxKind.RPAREN);
 
 			if (consumeOptionally(variable, SyntaxKind.DYNAMIC))
 			{
-				variable.setDynamicLength();
+				type.setDynamicLength();
 			}
+
+			variable.setType(type);
 		}
 
 		// TODO: Typecheck possible INITs
@@ -175,9 +178,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private void checkVariableType(VariableNode variable)
 	{
-		if (variable.hasDynamicLength())
+		if (variable.type().hasDynamicLength())
 		{
-			switch (variable.dataFormat())
+			switch (variable.type().format())
 			{
 				case ALPHANUMERIC:
 				case BINARY:
@@ -197,14 +200,14 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 		}
 
-		if (variable.dataLength() == 0.0)
+		if (variable.type().length() == 0.0)
 		{
-			switch (variable.dataFormat())
+			switch (variable.type().format())
 			{
 				case ALPHANUMERIC:
 				case BINARY:
 				case UNICODE:
-					if (!variable.hasDynamicLength())
+					if (!variable.type().hasDynamicLength())
 					{
 						diagnostics.add(ParserErrors.dataTypeNeedsLength(variable));
 					}

@@ -190,8 +190,8 @@ class DefineDataParserShould extends AbstractParserTest
 		var variable = defineData.variables().first();
 		assertThat(variable.name()).isEqualTo("#MYVAR");
 		assertThat(variable.level()).isEqualTo(1);
-		assertThat(variable.dataFormat()).isEqualTo(DataFormat.ALPHANUMERIC);
-		assertThat(variable.dataLength()).isEqualTo(10.0);
+		assertThat(variable.type().format()).isEqualTo(DataFormat.ALPHANUMERIC);
+		assertThat(variable.type().length()).isEqualTo(10.0);
 	}
 
 	@Test
@@ -284,9 +284,9 @@ class DefineDataParserShould extends AbstractParserTest
 					""".formatted(source);
 				var defineData = assertParsesWithoutDiagnostics(defineDataSource);
 				var variable = defineData.variables().first();
-				assertThat(variable.dataFormat()).isEqualTo(expectedFormat);
-				assertThat(variable.dataLength()).isEqualTo(expectedLength);
-				assertThat(variable.hasDynamicLength()).isEqualTo(hasDynamicLength);
+				assertThat(variable.type().format()).isEqualTo(expectedFormat);
+				assertThat(variable.type().length()).isEqualTo(expectedLength);
+				assertThat(variable.type().hasDynamicLength()).isEqualTo(hasDynamicLength);
 			}
 		);
 	}

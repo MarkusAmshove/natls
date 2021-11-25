@@ -5,7 +5,7 @@ class ParserErrors
 	public static ParserDiagnostic dataTypeNeedsLength(VariableNode variableNode)
 	{
 		return ParserDiagnostic.create(
-			"Data type <%s> needs to have a length".formatted(variableNode.dataFormat()),
+			"Data type <%s> needs to have a length".formatted(variableNode.type().format()),
 			variableNode,
 			ParserError.VARIABLE_LENGTH_MISSING
 		);
@@ -14,7 +14,7 @@ class ParserErrors
 	public static ParserDiagnostic dynamicVariableLengthNotAllowed(VariableNode variableNode)
 	{
 		return ParserDiagnostic.create(
-			"Dynamic length not allowed for data type <%s>".formatted(variableNode.dataFormat()),
+			"Dynamic length not allowed for data type <%s>".formatted(variableNode.type().format()),
 			variableNode,
 			ParserError.INVALID_DATA_TYPE_FOR_DYNAMIC_LENGTH
 		);

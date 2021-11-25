@@ -1,8 +1,8 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.SyntaxToken;
-import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IVariableNode;
+import org.amshove.natparse.natural.IVariableType;
 import org.amshove.natparse.natural.VariableScope;
 
 public class VariableNode extends BaseSyntaxNode implements IVariableNode
@@ -10,10 +10,8 @@ public class VariableNode extends BaseSyntaxNode implements IVariableNode
 	private int level;
 	private String name;
 	private SyntaxToken declaration;
-	private DataFormat dataFormat;
-	private double dataLength;
 	private VariableScope scope;
-	private boolean hasDynamicLength;
+	private VariableType type;
 
 	@Override
 	public SyntaxToken declaration()
@@ -40,27 +38,15 @@ public class VariableNode extends BaseSyntaxNode implements IVariableNode
 	}
 
 	@Override
-	public DataFormat dataFormat()
-	{
-		return dataFormat;
-	}
-
-	@Override
-	public double dataLength()
-	{
-		return dataLength;
-	}
-
-	@Override
 	public VariableScope scope()
 	{
 		return scope;
 	}
 
 	@Override
-	public boolean hasDynamicLength()
+	public IVariableType type()
 	{
-		return hasDynamicLength;
+		return type;
 	}
 
 	void setLevel(int level)
@@ -74,23 +60,13 @@ public class VariableNode extends BaseSyntaxNode implements IVariableNode
 		declaration = token;
 	}
 
-	void setDataFormat(DataFormat dataFormat)
-	{
-		this.dataFormat = dataFormat;
-	}
-
-	void setDataLength(double dataLength)
-	{
-		this.dataLength = dataLength;
-	}
-
 	void setScope(VariableScope scope)
 	{
 		this.scope = scope;
 	}
 
-	void setDynamicLength()
+	void setType(VariableType type)
 	{
-		hasDynamicLength = true;
+		this.type = type;
 	}
 }
