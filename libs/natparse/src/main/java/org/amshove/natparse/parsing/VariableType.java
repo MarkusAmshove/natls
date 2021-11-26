@@ -10,7 +10,7 @@ class VariableType implements IVariableType
 	private DataFormat format;
 	private double length;
 	private SyntaxToken initialValue;
-	private boolean isConstant = true;
+	private boolean isConstant = false;
 
 	@Override
 	public DataFormat format()

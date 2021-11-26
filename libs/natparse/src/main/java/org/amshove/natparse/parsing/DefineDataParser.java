@@ -3,9 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
-import org.amshove.natparse.natural.DataFormat;
-import org.amshove.natparse.natural.IDefineData;
-import org.amshove.natparse.natural.VariableScope;
+import org.amshove.natparse.natural.*;
 
 import java.util.List;
 
@@ -114,7 +112,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		var identifier = consumeMandatoryIdentifier(variable);
 		variable.setDeclaration(identifier);
 
-		if (consumeOptionally(variable, SyntaxKind.LPAREN))
+		if (consumeOptionally(variable, SyntaxKind.LPAREN)
+			&& (peek().kind() != SyntaxKind.ASTERISK && peek().kind() != SyntaxKind.NUMBER)) // group array
 		{
 			variable = typedVariable(variable);
 			checkVariableType((TypedNode) variable);
@@ -131,9 +130,15 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	{
 		var groupNode = new GroupNode(variable);
 
+		if (previous().kind() == SyntaxKind.LPAREN)
+		{
+			addArrayDimensions(groupNode);
+			consumeMandatory(groupNode, SyntaxKind.RPAREN);
+		}
+
 		while (peekKind(SyntaxKind.NUMBER))
 		{
-			if(peek().intValue() <= groupNode.level())
+			if (peek().intValue() <= groupNode.level())
 			{
 				break;
 			}
@@ -148,21 +153,43 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	private TypedNode typedVariable(VariableNode variable) throws ParseError
 	{
 		var typedVariable = new TypedNode(variable);
+		var type = new VariableType();
 
 		var dataType = consumeMandatoryIdentifier(typedVariable).source(); // DataTypes like A10 get recognized as identifier
 		var format = DataFormat.fromSource(dataType.charAt(0));
-		var length = getLengthFromDataType(dataType);
+		type.setFormat(format);
 
-		// N12.7 results in Tokens <IDENTIFIER (N12), DOT, NUMBER>
-		if (consumeOptionally(typedVariable, SyntaxKind.COMMA) || consumeOptionally(typedVariable, SyntaxKind.DOT))
+		var arrayConsumed = false;
+		if (dataType.contains("/"))
 		{
-			var number = consumeMandatory(typedVariable, SyntaxKind.NUMBER);
-			length = getLengthFromDataType(dataType + "." + number.source());
+			addArrayDimensionsWorkaroundSlash(typedVariable);
+			arrayConsumed = true;
 		}
 
-		var type = new VariableType();
-		type.setFormat(format);
-		type.setLength(length);
+		if (!arrayConsumed && peekKind(SyntaxKind.SLASH))
+		{
+			// the data type has no user defined length, which means we're at a / which
+			// won't be an int value
+			addArrayDimensions(typedVariable);
+			arrayConsumed = true;
+		}
+		else
+		{
+			var length = getLengthFromDataType(dataType);
+
+			// N12.7 results in Tokens <IDENTIFIER (N12), DOT, NUMBER>
+			if (consumeOptionally(typedVariable, SyntaxKind.COMMA) || consumeOptionally(typedVariable, SyntaxKind.DOT))
+			{
+				var number = consumeMandatory(typedVariable, SyntaxKind.NUMBER);
+				length = getLengthFromDataType(dataType + "." + number.source());
+			}
+			type.setLength(length);
+		}
+
+		if (consumeOptionally(typedVariable, SyntaxKind.SLASH) && !arrayConsumed)
+		{
+			addArrayDimensions(typedVariable);
+		}
 
 		consumeMandatory(typedVariable, SyntaxKind.RPAREN);
 
@@ -197,11 +224,12 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private double getLengthFromDataType(String dataType)
 	{
-		if (dataType.length() == 1)
+		if (dataType.length() == 1 || dataType.indexOf("/") == 1)
 		{
 			return 0.0;
 		}
 
+		dataType = dataType.split("/")[0];
 		dataType = dataType.replace(",", ".");
 		return Double.parseDouble(dataType.substring(1));
 	}
@@ -340,6 +368,228 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		if (variableNode.type().initialValue().kind() != expectedKind)
 		{
 			report(ParserErrors.initValueMismatch(variableNode, expectedKind));
+		}
+	}
+
+	private void addArrayDimensions(VariableNode variable)
+	{
+		addArrayDimension(variable);
+		while (consumeOptionally(variable, SyntaxKind.COMMA))
+		{
+			addArrayDimension(variable);
+		}
+
+		for (var dimension : variable.dimensions())
+		{
+			checkBounds(dimension);
+		}
+	}
+
+	private void addArrayDimension(VariableNode variable)
+	{
+		var dimension = new ArrayDimension();
+		var lowerBound = extractArrayBound(new TokenNode(peek()));
+		var upperBound = -1;
+		consume(dimension);
+
+		var workaroundNextDimension = false;
+		if (consumeOptionally(dimension, SyntaxKind.COLON))
+		{
+			if(peekKind(SyntaxKind.NUMBER) && peek().source().contains(","))
+			{
+				// Workaround for (T/1:10,50:*) where 10,50 gets recognized as a number
+				var numbers = peek().source().split(",");
+				var relevantNumber = numbers[0];
+
+				var firstNumberToken = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER, relevantNumber);
+				upperBound = extractArrayBound(firstNumberToken);
+				variable.addNode(firstNumberToken);
+				// we now also have to handle the next dimension, because our current
+				// token also contains the lower bound of the next dimension.
+				// 50 in the example above.
+				workaroundNextDimension = true;
+			}
+			else
+			{
+				upperBound = extractArrayBound(new TokenNode(peek()));
+				consume(dimension);
+			}
+		}
+		else
+		{
+			// only the upper bound was provided, like (A2/*)
+			upperBound = lowerBound;
+			lowerBound = 1;
+		}
+
+		if (!peekKind(SyntaxKind.RPAREN) && !peekKind(SyntaxKind.NUMBER)) // special case for (*)
+		{
+			consume(dimension);
+		}
+
+		dimension.setLowerBound(lowerBound);
+		dimension.setUpperBound(upperBound);
+
+		if(workaroundNextDimension)
+		{
+			addArrayDimensionWorkaroundComma(variable);
+		}
+
+		variable.addDimension(dimension);
+	}
+
+	private int extractArrayBound(ITokenNode token)
+	{
+		if (token.token().kind() == SyntaxKind.NUMBER)
+		{
+			return token.token().intValue();
+		}
+
+		return -1; // unbound
+	}
+
+	private void checkBounds(IArrayDimension dimension)
+	{
+		if (dimension.lowerBound() == 0)
+		{
+			report(ParserErrors.invalidArrayBound(dimension, dimension.lowerBound()));
+		}
+		if (dimension.upperBound() == 0)
+		{
+			report(ParserErrors.invalidArrayBound(dimension, dimension.upperBound()));
+		}
+	}
+
+	// TODO: Try to generify bound detection with workarounds once tests are green
+
+	/**
+	 * Workaround when the lower bound of an array was consumed as identifier, because
+	 * apparently / is a valid character for identifiers.
+	 *
+	 * @param typedVariable the variable to add the dimensions to.
+	 */
+	private void addArrayDimensionsWorkaroundSlash(TypedNode typedVariable)
+	{
+		var identifierToken = previous();
+		var relevantSource = identifierToken.source().substring(identifierToken.source().indexOf('/'));
+
+		var slashToken = SyntheticTokenNode.fromToken(identifierToken, SyntaxKind.SLASH, "/");
+		typedVariable.addNode(slashToken);
+		var boundToken = SyntheticTokenNode.fromToken(identifierToken, SyntaxKind.NUMBER, relevantSource.substring(1));
+
+		var dimension = new ArrayDimension();
+		dimension.addNode(boundToken);
+		var lowerBound = consumeOptionally(dimension, SyntaxKind.ASTERISK)
+			? -1 :
+			extractArrayBound(boundToken);
+		var upperBound = -1;
+
+
+		var workaroundNextDimension = false;
+		if (consumeOptionally(dimension, SyntaxKind.COLON))
+		{
+			if(peekKind(SyntaxKind.NUMBER) && peek().source().contains(","))
+			{
+				// Workaround for (T/1:10,50:*) where 10,50 gets recognized as a number
+				var numbers = peek().source().split(",");
+				var relevantNumber = numbers[0];
+
+				var firstNumberToken = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER, relevantNumber);
+				upperBound = extractArrayBound(firstNumberToken);
+				typedVariable.addNode(firstNumberToken);
+				// we now also have to handle the next dimension, because our current
+				// token also contains the lower bound of the next dimension.
+				// 50 in the example above.
+				workaroundNextDimension = true;
+			}
+			else
+			{
+				upperBound = extractArrayBound(new TokenNode(peek()));
+				consume(dimension);
+			}
+		}
+		else
+		{
+			// only the upper bound was provided, like (A2/*)
+			upperBound = lowerBound;
+			lowerBound = 1;
+		}
+
+		dimension.setLowerBound(lowerBound);
+		dimension.setUpperBound(upperBound);
+
+		if(workaroundNextDimension)
+		{
+			addArrayDimensionWorkaroundComma(typedVariable);
+		}
+
+		if (consumeOptionally(typedVariable, SyntaxKind.COMMA))
+		{
+			addArrayDimensions(typedVariable);
+		}
+	}
+
+	/**
+	 * Workaround when the previous array dimension had a numeric upper bound
+	 * and the current dimension has a numeric lower bound.
+	 *
+	 * This is because in (T/1:10,50:*) the 10,50 is recognized as a single number,
+	 * although the comma means a separation here.
+	 *
+	 * @param typedVariable the variable to add the dimensions to.
+	 */
+	private void addArrayDimensionWorkaroundComma(VariableNode typedVariable)
+	{
+		var syntheticSeparator = SyntheticTokenNode.fromToken(peek(), SyntaxKind.COMMA, ",");
+		typedVariable.addNode(syntheticSeparator);
+
+		var numbers = peek().source().split(",");
+		var lowerBoundNumber = numbers[1];
+		var syntheticLowerBound = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER, lowerBoundNumber);
+
+		var dimension = new ArrayDimension();
+		dimension.addNode(syntheticLowerBound);
+		var lowerBound = extractArrayBound(syntheticLowerBound);
+		var upperBound = -1;
+
+		discard(); // drop off the combined number which is actually separated
+
+		var workaroundNextDimension = false;
+		if (consumeOptionally(dimension, SyntaxKind.COLON))
+		{
+			if(peekKind(SyntaxKind.NUMBER) && peek().source().contains(","))
+			{
+				// Workaround for (T/1:10,50:*) where 10,50 gets recognized as a number
+				numbers = peek().source().split(",");
+				var relevantNumber = numbers[0];
+
+				var firstNumberToken = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER, relevantNumber);
+				upperBound = extractArrayBound(firstNumberToken);
+				typedVariable.addNode(firstNumberToken);
+				// we now also have to handle the next dimension, because our current
+				// token also contains the lower bound of the next dimension.
+				// 50 in the example above.
+				workaroundNextDimension = true;
+			}
+			else
+			{
+				upperBound = extractArrayBound(new TokenNode(peek()));
+				consume(dimension);
+			}
+		}
+		else
+		{
+			// only the upper bound was provided, like (A2/*)
+			upperBound = lowerBound;
+			lowerBound = 1;
+		}
+
+		dimension.setLowerBound(lowerBound);
+		dimension.setUpperBound(upperBound);
+
+		if(workaroundNextDimension)
+		{
+			addArrayDimensionWorkaroundComma(typedVariable);
 		}
 	}
 

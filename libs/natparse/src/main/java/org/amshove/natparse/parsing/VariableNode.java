@@ -2,10 +2,15 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.NaturalParseException;
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxToken;
+import org.amshove.natparse.natural.IArrayDimension;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.IVariableNode;
 import org.amshove.natparse.natural.VariableScope;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class VariableNode extends BaseSyntaxNode implements IVariableNode
 {
@@ -13,6 +18,7 @@ public class VariableNode extends BaseSyntaxNode implements IVariableNode
 	private String name;
 	private SyntaxToken declaration;
 	private VariableScope scope;
+	private List<IArrayDimension> dimensions = new ArrayList<>();
 
 	private String qualifiedName; // Gets computed on first demand
 
@@ -58,6 +64,12 @@ public class VariableNode extends BaseSyntaxNode implements IVariableNode
 	}
 
 	@Override
+	public ReadOnlyList<IArrayDimension> dimensions()
+	{
+		return ReadOnlyList.from(dimensions); // TODO: perf
+	}
+
+	@Override
 	public int level()
 	{
 		return level;
@@ -89,5 +101,11 @@ public class VariableNode extends BaseSyntaxNode implements IVariableNode
 	void setScope(VariableScope scope)
 	{
 		this.scope = scope;
+	}
+
+	void addDimension(ArrayDimension dimension)
+	{
+		dimensions.add(dimension);
+		addNode(dimension);
 	}
 }

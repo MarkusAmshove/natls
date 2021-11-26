@@ -37,6 +37,19 @@ abstract class AbstractParser<T>
 		return !isAtEnd() && peek().kind() == kind;
 	}
 
+	/**
+	 * Consumes the next token.
+	 * @param node to add to
+	 */
+	protected void consume(BaseSyntaxNode node)
+	{
+		if(!isAtEnd())
+		{
+			var token = tokens.advance();
+			node.addNode(new TokenNode(token));
+		}
+	}
+
 	protected SyntaxToken peek(int offset)
 	{
 		return tokens.peek(offset);
@@ -143,6 +156,11 @@ abstract class AbstractParser<T>
 		{
 			diagnostics.add(diagnostic);
 		}
+	}
+
+	protected void discard()
+	{
+		tokens.advance();
 	}
 
 }

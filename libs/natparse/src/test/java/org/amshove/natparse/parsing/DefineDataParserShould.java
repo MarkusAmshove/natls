@@ -329,6 +329,7 @@ class DefineDataParserShould extends AbstractParserTest
 			""");
 
 		var scopeNode = defineData.findDirectChildOfType(IScopeNode.class);
+		assertThat(scopeNode).isNotNull();
 		assertThat(scopeNode.nodes().size()).isEqualTo(3); // LOCAL + Group + Typed
 
 		var group = assertNodeType(defineData.variables().first(), IGroupNode.class);
@@ -376,6 +377,32 @@ class DefineDataParserShould extends AbstractParserTest
 		assertThat(afterGroup.name()).isEqualTo("#ONEAGAIN");
 		assertThat(afterGroup.qualifiedName()).isEqualTo("#ONEAGAIN");
 		assertThat(afterGroup.type().format()).isEqualTo(DataFormat.TIME);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"(T/2)",
+		"(T/1:10)",
+		"(T/1:*)",
+		"(T/*,1:5)",
+		"(T/*:10)",
+		"(A10/1:10)",
+		"(T/1:10,50:*,*:20)",
+		"(1:10,20:*)",
+		"(A20/1:10,50:*,*:20)",
+		"(1:10)",
+		"(1:*)",
+		"(*:5)",
+		"(*)",
+		"(5)"
+	})
+	void parseArrayDefinitions(String variable)
+	{
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 AN-ARRAY %s
+			end-define
+			""".formatted(variable));
 	}
 
 	private IDefineData assertParsesWithoutDiagnostics(String source)

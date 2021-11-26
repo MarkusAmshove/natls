@@ -1,6 +1,7 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.SyntaxKind;
+import org.amshove.natparse.natural.IArrayDimension;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -61,4 +62,13 @@ class ParserErrors
 		}
 		return null;
 	}
+
+    public static ParserDiagnostic invalidArrayBound(IArrayDimension dimension, int bound)
+	{
+		return ParserDiagnostic.create(
+			"<%d> is not a valid array bound. Try a number > 0 or *".formatted(bound),
+			dimension,
+			ParserError.INVALID_ARRAY_BOUND
+		);
+    }
 }
