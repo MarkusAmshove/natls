@@ -17,7 +17,6 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	protected IDefineData parseInternal()
 	{
 		var defineData = new DefineData();
-		startNewNode(defineData);
 
 		advanceToDefineData(tokens);
 		if (!isAtStartOfDefineData(tokens))
@@ -58,9 +57,15 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			return null;
 		}
 
-		consume(SyntaxKind.END_DEFINE);
+		try
+		{
+			consumeMandatory(defineData, SyntaxKind.END_DEFINE);
+		}
+		catch (ParseError e)
+		{
+			// it's okay, we're done here.
+		}
 
-		finishNode();
 		return defineData;
 	}
 

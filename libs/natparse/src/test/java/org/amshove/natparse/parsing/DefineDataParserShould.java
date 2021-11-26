@@ -276,7 +276,6 @@ class DefineDataParserShould extends AbstractParserTest
 		assertThat(defineData.variables().first().type().initialValue().source()).isEqualTo("'hello'");
 	}
 
-
 	@ParameterizedTest
 	@CsvSource({"A,5", "N,\"Hi\"", "I,\"Hello\"", "P,TRUE", "F,FALSE"})
 	void addADiagnosticForTypeMismatchesInInitialValues(String type, String literal)

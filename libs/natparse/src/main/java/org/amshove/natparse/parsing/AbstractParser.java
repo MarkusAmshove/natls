@@ -8,17 +8,10 @@ import org.amshove.natparse.lexing.TokenList;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 abstract class AbstractParser<T>
 {
 	protected TokenList tokens;
-	protected SyntaxToken lastToken;
-
-	private Stack<BaseSyntaxNode> parsedNodes;
-
-	protected BaseSyntaxNode currentNode;
-	private List<BaseSyntaxNode> childNodesOfCurrentNode;
 
 	private List<IDiagnostic> diagnostics;
 
@@ -26,8 +19,6 @@ abstract class AbstractParser<T>
 	{
 		this.tokens = tokens;
 		diagnostics = new ArrayList<>();
-		parsedNodes = new Stack<>();
-		childNodesOfCurrentNode = new ArrayList<>();
 
 		var result = parseInternal();
 
@@ -35,42 +26,6 @@ abstract class AbstractParser<T>
 	}
 
 	protected abstract T parseInternal();
-
-	protected void startNewNode(BaseSyntaxNode node)
-	{
-		for(var childNodes : childNodesOfCurrentNode)
-		{
-			currentNode.addNode(childNodes);
-		}
-
-		parsedNodes.push(currentNode);
-
-		childNodesOfCurrentNode = new ArrayList<>();
-		currentNode = node;
-	}
-
-	protected void finishNode()
-	{
-		for(var childNodes : childNodesOfCurrentNode)
-		{
-			currentNode.addNode(childNodes);
-		}
-
-		if(parsedNodes.empty())
-		{
-			currentNode = null;
-		}
-		else
-		{
-			var childNode = currentNode;
-			currentNode = parsedNodes.pop();
-			if(currentNode != null)
-			{
-				currentNode.addNode(childNode);
-			}
-		}
-		childNodesOfCurrentNode = new ArrayList<>();
-	}
 
 	protected SyntaxToken peek()
 	{
@@ -82,25 +37,11 @@ abstract class AbstractParser<T>
 		return tokens.peek(offset);
 	}
 
-	protected boolean consume(SyntaxKind kind)
-	{
-		if(!tokens.isAtEnd() && tokens.peek().kind() == kind)
-		{
-			childNodesOfCurrentNode.add(new TokenNode(tokens.peek()));
-			lastToken = tokens.peek();
-		}
-		else
-		{
-			diagnostics.add(ParserDiagnostic.unexpectedToken(kind, tokens.peek()));
-		}
-		return tokens.consume(kind);
-	}
-
 	/**
 	 * Consumes the current token only if the kind matches.
 	 * This will not add any diagnostics.
-	 * @param node
-	 * @param kind
+	 * @param node the node to add the token to
+	 * @param kind the kind of the token that should be consumed
 	 * @return Whether the token was consumed or not
 	 */
 	protected boolean consumeOptionally(BaseSyntaxNode node, SyntaxKind kind)
@@ -139,9 +80,8 @@ abstract class AbstractParser<T>
 
 	protected SyntaxToken consumeMandatory(BaseSyntaxNode node, SyntaxKind kind) throws ParseError
 	{
-		if(consume(kind))
+		if(consumeOptionally(node, kind))
 		{
-			node.addNode(new TokenNode(previous()));
 			return previous();
 		}
 
@@ -151,7 +91,9 @@ abstract class AbstractParser<T>
 
 	protected SyntaxToken consumeLiteral(BaseSyntaxNode node) throws ParseError
 	{
-		return consumeAny(List.of(SyntaxKind.NUMBER, SyntaxKind.STRING, SyntaxKind.TRUE, SyntaxKind.FALSE));
+		 var literal = consumeAny(List.of(SyntaxKind.NUMBER, SyntaxKind.STRING, SyntaxKind.TRUE, SyntaxKind.FALSE));
+		 node.addNode(new TokenNode(literal));
+		 return literal;
 	}
 
 	// TODO: Remove/Change once IDENTIFIER_OR_KEYWORD is no more
@@ -185,34 +127,8 @@ abstract class AbstractParser<T>
 		return tokens.peek(-1);
 	}
 
-	protected boolean consumeIdentifier()
-	{
-		if(!tokens.isAtEnd() && tokens.peek().kind().isIdentifier())
-		{
-			return consume(tokens.peek().kind());
-		}
-
-		diagnostics.add(ParserDiagnostic.unexpectedToken(SyntaxKind.IDENTIFIER, tokens.peek()));
-		return false;
-	}
-
 	protected boolean isAtEnd()
 	{
-		return tokens.isAtEnd();
-	}
-
-	protected void skip()
-	{
-		tokens.advance();
-	}
-
-	protected boolean advanceToAny(List<SyntaxKind> scopeSyntaxKinds)
-	{
-		while(!tokens.isAtEnd() && !scopeSyntaxKinds.contains(tokens.peek().kind()))
-		{
-			tokens.advance();
-		}
-
 		return tokens.isAtEnd();
 	}
 
