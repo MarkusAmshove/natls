@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.IPosition;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.ITokenNode;
 
@@ -19,30 +20,13 @@ public class TokenNode extends BaseSyntaxNode implements ITokenNode
 	}
 
 	@Override
-	public int offset()
+	public IPosition position()
 	{
-		return token.offset();
+		return token;
 	}
 
 	@Override
-	public int offsetInLine()
-	{
-		return token.offsetInLine();
-	}
-
-	@Override
-	public int line()
-	{
-		return token.line();
-	}
-
-	@Override
-	public int length()
-	{
-		return token.length();
-	}
-
-	@Override public String toString()
+	public String toString()
 	{
 		return "TokenNode{token=%s}".formatted(token);
 	}

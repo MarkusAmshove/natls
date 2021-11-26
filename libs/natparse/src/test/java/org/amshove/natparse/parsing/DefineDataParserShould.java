@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
@@ -43,10 +44,10 @@ class DefineDataParserShould extends AbstractParserTest
 
 		var defineData = assertParsesWithoutDiagnostics(source);
 
-		assertThat(defineData.line()).isEqualTo(0);
+		assertThat(defineData.position().line()).isEqualTo(0);
 		var firstTokenNode = assertNodeType(defineData.nodes().first(), ITokenNode.class);
 		assertThat(firstTokenNode.token().kind()).isEqualTo(SyntaxKind.DEFINE);
-		assertThat(defineData.nodes().last().line()).isEqualTo(2);
+		assertThat(defineData.nodes().last().position().line()).isEqualTo(2);
 		var lastTokenNode = assertNodeType(defineData.nodes().last(), ITokenNode.class);
 		assertThat(lastTokenNode.token().kind()).isEqualTo(SyntaxKind.END_DEFINE);
 	}
@@ -232,7 +233,7 @@ class DefineDataParserShould extends AbstractParserTest
 
 	@ParameterizedTest
 	@CsvSource({ "A,true", "B,true", "C,false", "D,false", "F4,false", "I4,false", "L,false", "N4,false", "P4,false", "T,false", "U,true" })
-	void addDiagnosticsForTypesIfTheyDontAllowDynamicLength(String type, boolean canHaveDynamicLength)
+	void addDiagnosticsForTypesIfTheyDoNotAllowDynamicLength(String type, boolean canHaveDynamicLength)
 	{
 		if (canHaveDynamicLength)
 		{
@@ -297,14 +298,14 @@ class DefineDataParserShould extends AbstractParserTest
 		assertThat(lexResult.diagnostics().size())
 			.as(
 				"Expected the source to lex without diagnostics%n%s"
-					.formatted(lexResult.diagnostics().stream().map(d -> d.message()).collect(Collectors.joining("\n"))))
+					.formatted(lexResult.diagnostics().stream().map(IDiagnostic::message).collect(Collectors.joining("\n"))))
 			.isZero();
 		var parser = new DefineDataParser();
 		var parseResult = parser.parse(lexResult);
 		assertThat(parseResult.diagnostics().size())
 			.as(
 				"Expected the source to parse without diagnostics%n%s"
-					.formatted(parseResult.diagnostics().stream().map(d -> d.message()).collect(Collectors.joining("\n"))))
+					.formatted(parseResult.diagnostics().stream().map(IDiagnostic::message).collect(Collectors.joining("\n"))))
 			.isZero();
 
 		return parseResult.result();

@@ -2,8 +2,9 @@ package org.amshove.natparse.natural;
 
 import org.amshove.natparse.IPosition;
 
-public interface ISyntaxNode extends IPosition, ISyntaxTree
+public interface ISyntaxNode extends ISyntaxTree
 {
-	// TODO: IPosition as position() ?
 	ISyntaxTree parent();
+
+	IPosition position();
 }
