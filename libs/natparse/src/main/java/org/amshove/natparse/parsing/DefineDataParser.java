@@ -82,13 +82,22 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			return using();
 		}
 
+		return scope();
+	}
+
+	private ScopeNode scope() throws ParseError
+	{
 		var scope = consumeAny(SCOPE_SYNTAX_KINDS);
+		var scopeNode = new ScopeNode();
 
 		var variable = variable();
 
 		variable.setScope(VariableScope.fromSyntaxKind(scope.kind()));
+		scopeNode.setScope(variable.scope());
 
-		return variable;
+		scopeNode.addVariable(variable);
+
+		return scopeNode;
 	}
 
 	private VariableNode variable() throws ParseError

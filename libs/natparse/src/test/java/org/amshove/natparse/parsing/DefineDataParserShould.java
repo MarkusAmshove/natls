@@ -2,10 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
-import org.amshove.natparse.natural.DataFormat;
-import org.amshove.natparse.natural.IDefineData;
-import org.amshove.natparse.natural.ITokenNode;
-import org.amshove.natparse.natural.IUsingNode;
+import org.amshove.natparse.natural.*;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
@@ -156,6 +153,8 @@ class DefineDataParserShould extends AbstractParserTest
 			   LOCAL USING SOMELDA
 			   PARAMETER USING SOMEPDA
 			   LOCAL USING ALDA
+			   LOCAL
+			   1 #MYVAR (A5)
 			   END-DEFINE
 			""";
 
@@ -170,7 +169,8 @@ class DefineDataParserShould extends AbstractParserTest
 			() -> assertNodeType(defineData.nodes().get(3), IUsingNode.class),
 			() -> assertNodeType(defineData.nodes().get(4), IUsingNode.class),
 			() -> assertNodeType(defineData.nodes().get(5), IUsingNode.class),
-			() -> assertTokenNode(defineData.nodes().get(6), n -> n.token().kind())
+			() -> assertNodeType(defineData.nodes().get(6), IScopeNode.class),
+			() -> assertTokenNode(defineData.nodes().get(7), n -> n.token().kind())
 				.isEqualTo(SyntaxKind.END_DEFINE)
 		);
 	}

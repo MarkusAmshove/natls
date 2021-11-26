@@ -1,10 +1,7 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.ReadOnlyList;
-import org.amshove.natparse.natural.IDefineData;
-import org.amshove.natparse.natural.ISyntaxNode;
-import org.amshove.natparse.natural.IUsingNode;
-import org.amshove.natparse.natural.IVariableNode;
+import org.amshove.natparse.natural.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,8 +10,6 @@ class DefineData extends BaseSyntaxNode implements IDefineData
 {
 	private List<IUsingNode> usings = new ArrayList<>();
 	private List<IVariableNode> variables = new ArrayList<>();
-	private ISyntaxNode startNode;
-	private ISyntaxNode endNode;
 
 	@Override
 	public ReadOnlyList<IUsingNode> localUsings()
@@ -46,27 +41,25 @@ class DefineData extends BaseSyntaxNode implements IDefineData
 		return ReadOnlyList.from(usings); // TODO: Perf
 	}
 
-	public void addUsing(UsingNode node)
-	{
-		usings.add(node);
-	}
-
-	public void addVariable(VariableNode node)
-	{
-		variables.add(node);
-	}
-
 	@Override
 	protected void nodeAdded(BaseSyntaxNode node)
 	{
-		if(node instanceof IUsingNode)
+		if (node instanceof IUsingNode)
 		{
 			usings.add((IUsingNode) node);
 		}
 
-		if(node instanceof IVariableNode)
+		if (node instanceof IScopeNode)
 		{
-			variables.add((IVariableNode) node);
+			addAllVariablesRecursively((IScopeNode) node);
+		}
+	}
+
+	private void addAllVariablesRecursively(IScopeNode scopeNode)
+	{
+		for (var variable : scopeNode.variables())
+		{
+			variables.add(variable);
 		}
 	}
 }
