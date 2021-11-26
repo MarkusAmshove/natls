@@ -256,7 +256,7 @@ class DefineDataParserShould extends AbstractParserTest
 	{
 		var defineData = assertParsesWithoutDiagnostics("""
 			define data local
-			1 #myvar (A10) dynamic init <'hello'>
+			1 #myvar (A10) init <'hello'>
 			end-define
 			""");
 
@@ -268,7 +268,7 @@ class DefineDataParserShould extends AbstractParserTest
 	{
 		var defineData = assertParsesWithoutDiagnostics("""
 			define data local
-			1 #myvar (A10) dynamic const <'hello'>
+			1 #myvar (A10) const <'hello'>
 			end-define
 			""");
 

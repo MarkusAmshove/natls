@@ -20,7 +20,7 @@ abstract class AbstractParser<T>
 	protected BaseSyntaxNode currentNode;
 	private List<BaseSyntaxNode> childNodesOfCurrentNode;
 
-	protected List<IDiagnostic> diagnostics;
+	private List<IDiagnostic> diagnostics;
 
 	public ParseResult<T> parse(TokenList tokens)
 	{
@@ -214,6 +214,14 @@ abstract class AbstractParser<T>
 		}
 
 		return tokens.isAtEnd();
+	}
+
+	protected void report(IDiagnostic diagnostic)
+	{
+		if(diagnostic != null)
+		{
+			diagnostics.add(diagnostic);
+		}
 	}
 
 }

@@ -51,4 +51,14 @@ class ParserErrors
 			ParserError.EMPTY_INITIAL_VALUE
 		);
 	}
+
+	public static ParserDiagnostic dynamicAndFixedLength(VariableNode variable)
+	{
+		var dynamicToken = variable.findDirectChildSyntaxToken(SyntaxKind.DYNAMIC);
+		if(dynamicToken != null)
+		{
+			return ParserDiagnostic.create("A variable with a fixed length can't also have dynamic length", dynamicToken, ParserError.DYNAMIC_AND_FIXED_LENGTH);
+		}
+		return null;
+	}
 }

@@ -22,7 +22,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		advanceToDefineData(tokens);
 		if (!isAtStartOfDefineData(tokens))
 		{
-			diagnostics.add(ParserDiagnostic.create("DEFINE DATA expected", 0, 0, 0, 0, ParserError.NO_DEFINE_DATA_FOUND));
+			report(ParserDiagnostic.create("DEFINE DATA expected", 0, 0, 0, 0, ParserError.NO_DEFINE_DATA_FOUND));
 			return null;
 		}
 
@@ -54,7 +54,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		if (tokens.isAtEnd())
 		{
-			diagnostics.add(ParserDiagnostic.create("No END-DEFINE found", defineData, ParserError.MISSING_END_DEFINE));
+			report(ParserDiagnostic.create("No END-DEFINE found", defineData, ParserError.MISSING_END_DEFINE));
 			return null;
 		}
 
@@ -68,7 +68,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	{
 		if (!isScopeToken(peek()))
 		{
-			diagnostics.add(ParserDiagnostic.unexpectedToken(SCOPE_SYNTAX_KINDS, peek()));
+			report(ParserDiagnostic.unexpectedToken(SCOPE_SYNTAX_KINDS, peek()));
 			throw new ParseError();
 		}
 
@@ -129,7 +129,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				if(consumeOptionally(variable, SyntaxKind.LESSER_GREATER))
 				{
 					// special case for a better error message. <> is  just an empty initial value
-					diagnostics.add(ParserErrors.emptyInitValue(variable));
+					report(ParserErrors.emptyInitValue(variable));
 				}
 				else
 				{
@@ -216,7 +216,12 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				case PACKED:
 				case TIME:
 				case NONE:
-					diagnostics.add(ParserErrors.dynamicVariableLengthNotAllowed(variable));
+					report(ParserErrors.dynamicVariableLengthNotAllowed(variable));
+			}
+
+			if(variable.type().length() > 0.0)
+			{
+				report(ParserErrors.dynamicAndFixedLength(variable));
 			}
 		}
 
@@ -229,7 +234,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				case UNICODE:
 					if (!variable.type().hasDynamicLength())
 					{
-						diagnostics.add(ParserErrors.dataTypeNeedsLength(variable));
+						report(ParserErrors.dataTypeNeedsLength(variable));
 					}
 					break;
 
@@ -244,7 +249,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				case INTEGER:
 				case NUMERIC:
 				case PACKED:
-					diagnostics.add(ParserErrors.dataTypeNeedsLength(variable));
+					report(ParserErrors.dataTypeNeedsLength(variable));
 			}
 		}
 
@@ -276,7 +281,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 					var initialValueType = variable.type().initialValue().kind();
 					if(initialValueType != SyntaxKind.TRUE && initialValueType != SyntaxKind.FALSE)
 					{
-						diagnostics.add(ParserErrors.initValueMismatch(variable, SyntaxKind.TRUE, SyntaxKind.FALSE));
+						report(ParserErrors.initValueMismatch(variable, SyntaxKind.TRUE, SyntaxKind.FALSE));
 					}
 					break;
 			}
@@ -287,7 +292,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	{
 		if(variableNode.type().initialValue().kind() != expectedKind)
 		{
-			diagnostics.add(ParserErrors.initValueMismatch(variableNode, expectedKind));
+			report(ParserErrors.initValueMismatch(variableNode, expectedKind));
 		}
 	}
 
