@@ -26,13 +26,14 @@ public abstract class AbstractParserTest
 	}
 
 	@SuppressWarnings("unchecked")
-	protected <T> T assertNodeType(ISyntaxNode node, Class<? extends T> expectedType)
+	protected <T extends ISyntaxNode> T assertNodeType(ISyntaxNode node, Class<T> expectedType)
 	{
 		assertThat(node).isInstanceOf(expectedType);
-		return (T)node;
+		var castedNode = (T)node;
+		return assertValidNode(castedNode);
 	}
 
-	protected <T, R> ObjectAssert<R> assertWithType(ISyntaxNode node, Class<? extends T> expectedType, Function<T, R> assertion)
+	protected <T extends ISyntaxNode, R> ObjectAssert<R> assertWithType(ISyntaxNode node, Class<T> expectedType, Function<T, R> assertion)
 	{
 		T typedNode = assertNodeType(node, expectedType);
 		return assertThat(assertion.apply(typedNode));
@@ -42,5 +43,18 @@ public abstract class AbstractParserTest
 	{
 		var typedNode = assertNodeType(node, ITokenNode.class);
 		return assertThat(extractor.apply(typedNode));
+	}
+
+	protected <T extends ISyntaxNode> T assertValidNode(T node)
+	{
+		assertThat(node.parent()).as("Parent for node was not set").isNotNull();
+		assertThat(node.position()).as("Position for node was not set").isNotNull();
+
+		if(!(node instanceof ITokenNode))
+		{
+			assertThat(node.nodes().size()).as("No child were added to node").isPositive();
+		}
+
+		return node;
 	}
 }
