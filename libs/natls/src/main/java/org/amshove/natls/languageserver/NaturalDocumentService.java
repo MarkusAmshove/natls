@@ -25,14 +25,21 @@ public class NaturalDocumentService implements TextDocumentService, LanguageClie
 	@Override
 	public void didChange(DidChangeTextDocumentParams params)
 	{
-		if(params.getContentChanges().size() > 1)
+		if (params.getContentChanges().size() > 1)
 		{
 			throw new RuntimeException("We currently support only full file sync");
 		}
 		var change = params.getContentChanges().get(0);
-		var fileuri = params.getTextDocument().getUri();
-		var diagnostics = languageService.parseSource(change.getText());
-		publishDiagnostics(fileuri, diagnostics);
+		var fileUri = params.getTextDocument().getUri();
+		try
+		{
+			var diagnostics = languageService.parseSource(change.getText());
+			publishDiagnostics(fileUri, diagnostics);
+		}
+		catch (Exception e)
+		{
+			publishUnhandledException(fileUri, e);
+		}
 	}
 
 	@Override
@@ -81,14 +88,35 @@ public class NaturalDocumentService implements TextDocumentService, LanguageClie
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			clearDiagnostics(textDocumentIdentifier);
+			publishUnhandledException(textDocumentIdentifier, e);
 		}
+	}
+
+	private void publishUnhandledException(String textDocumentIdentifier, Exception e)
+	{
+		client.publishDiagnostics(
+			new PublishDiagnosticsParams(
+				textDocumentIdentifier,
+				List.of(
+					new Diagnostic(
+						new Range(
+							new Position(0, 0),
+							new Position(0, 0)
+						),
+						"Unhandled exception: %s".formatted(e.getMessage())
+					)
+				)
+			)
+		);
+
+		throw new RuntimeException(e);
 	}
 
 	private void publishDiagnostics(String fileUri, ReadOnlyList<IDiagnostic> diagnostics)
 	{
 		clearDiagnostics(fileUri);
-		if(diagnostics.size() == 0)
+		if (diagnostics.size() == 0)
 		{
 			return;
 		}
@@ -97,7 +125,7 @@ public class NaturalDocumentService implements TextDocumentService, LanguageClie
 			new Range(new Position(d.line(), d.offsetInLine()), new Position(d.line(), d.offsetInLine() + d.length())),
 			d.message(),
 			DiagnosticSeverity.Error,
-			"natparse",
+			"natls",
 			d.id()
 		)).toList();
 
