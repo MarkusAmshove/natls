@@ -71,4 +71,13 @@ class ParserErrors
 			ParserError.INVALID_ARRAY_BOUND
 		);
     }
+
+	public static ParserDiagnostic incompleteArrayDefinition(BaseSyntaxNode node)
+	{
+		return ParserDiagnostic.create(
+			"Incomplete array definition",
+			node,
+			ParserError.INCOMPLETE_ARRAY_DEFINITION
+		);
+	}
 }

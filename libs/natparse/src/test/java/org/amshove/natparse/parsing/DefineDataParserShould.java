@@ -405,6 +405,24 @@ class DefineDataParserShould extends AbstractParserTest
 			""".formatted(variable));
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"A10/0",
+		"0",
+		"A5/1:0",
+		"L/0:0",
+		"C/0:5"
+	})
+	void addADiagnosticForZeroArrayBounds(String arrayDefinition)
+	{
+		assertDiagnostic("""
+			define data
+			local
+			1 #myarr (%s)
+			end-define
+			""".formatted(arrayDefinition), ParserError.INVALID_ARRAY_BOUND);
+	}
+
 	private IDefineData assertParsesWithoutDiagnostics(String source)
 	{
 		var lexer = new Lexer();

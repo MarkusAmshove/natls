@@ -92,6 +92,10 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		while (peekKind(SyntaxKind.NUMBER)) // level
 		{
 			var variable = variable();
+			for (var dimension : variable.dimensions())
+			{
+				checkBounds(dimension);
+			}
 
 			variable.setScope(VariableScope.fromSyntaxKind(scope.kind()));
 			scopeNode.setScope(variable.scope());
@@ -371,22 +375,23 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 	}
 
-	private void addArrayDimensions(VariableNode variable)
+	private void addArrayDimensions(VariableNode variable) throws ParseError
 	{
 		addArrayDimension(variable);
 		while (consumeOptionally(variable, SyntaxKind.COMMA))
 		{
 			addArrayDimension(variable);
 		}
-
-		for (var dimension : variable.dimensions())
-		{
-			checkBounds(dimension);
-		}
 	}
 
-	private void addArrayDimension(VariableNode variable)
+	private void addArrayDimension(VariableNode variable) throws ParseError
 	{
+		if(peek().kind() == SyntaxKind.RPAREN)
+		{
+			report(ParserErrors.incompleteArrayDefinition(variable));
+			throw new ParseError();
+		}
+
 		var dimension = new ArrayDimension();
 		var lowerBound = extractArrayBound(new TokenNode(peek()));
 		var upperBound = -1;
@@ -468,7 +473,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	 *
 	 * @param typedVariable the variable to add the dimensions to.
 	 */
-	private void addArrayDimensionsWorkaroundSlash(TypedNode typedVariable)
+	private void addArrayDimensionsWorkaroundSlash(TypedNode typedVariable) throws ParseError
 	{
 		var identifierToken = previous();
 		var relevantSource = identifierToken.source().substring(identifierToken.source().indexOf('/'));
@@ -476,6 +481,12 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		var slashToken = SyntheticTokenNode.fromToken(identifierToken, SyntaxKind.SLASH, "/");
 		typedVariable.addNode(slashToken);
 		var boundToken = SyntheticTokenNode.fromToken(identifierToken, SyntaxKind.NUMBER, relevantSource.substring(1));
+
+		if(boundToken.token().length() == 0 && peek().kind() != SyntaxKind.ASTERISK)
+		{
+			report(ParserErrors.incompleteArrayDefinition(slashToken));
+			throw new ParseError();
+		}
 
 		var dimension = new ArrayDimension();
 		dimension.addNode(boundToken);
@@ -518,6 +529,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		dimension.setLowerBound(lowerBound);
 		dimension.setUpperBound(upperBound);
 
+		typedVariable.addDimension(dimension);
+
 		if(workaroundNextDimension)
 		{
 			addArrayDimensionWorkaroundComma(typedVariable);
@@ -536,12 +549,12 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	 * This is because in (T/1:10,50:*) the 10,50 is recognized as a single number,
 	 * although the comma means a separation here.
 	 *
-	 * @param typedVariable the variable to add the dimensions to.
+	 * @param variable the variable to add the dimensions to.
 	 */
-	private void addArrayDimensionWorkaroundComma(VariableNode typedVariable)
+	private void addArrayDimensionWorkaroundComma(VariableNode variable)
 	{
 		var syntheticSeparator = SyntheticTokenNode.fromToken(peek(), SyntaxKind.COMMA, ",");
-		typedVariable.addNode(syntheticSeparator);
+		variable.addNode(syntheticSeparator);
 
 		var numbers = peek().source().split(",");
 		var lowerBoundNumber = numbers[1];
@@ -565,7 +578,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 				var firstNumberToken = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER, relevantNumber);
 				upperBound = extractArrayBound(firstNumberToken);
-				typedVariable.addNode(firstNumberToken);
+				variable.addNode(firstNumberToken);
 				// we now also have to handle the next dimension, because our current
 				// token also contains the lower bound of the next dimension.
 				// 50 in the example above.
@@ -586,10 +599,11 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		dimension.setLowerBound(lowerBound);
 		dimension.setUpperBound(upperBound);
+		variable.addDimension(dimension);
 
 		if(workaroundNextDimension)
 		{
-			addArrayDimensionWorkaroundComma(typedVariable);
+			addArrayDimensionWorkaroundComma(variable);
 		}
 	}
 
