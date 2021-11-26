@@ -6,5 +6,4 @@ public interface IVariableNode extends ISymbolNode
 	int level();
 	String name();
 	String qualifiedName();
-	IVariableType type();
 }

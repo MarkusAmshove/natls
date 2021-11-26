@@ -12,12 +12,6 @@ class BaseSyntaxNode implements ISyntaxNode
 {
 	private List<BaseSyntaxNode> nodes = new ArrayList<>();
 	private ISyntaxTree parent;
-	private IPosition position;
-
-	List<BaseSyntaxNode> getNodes()
-	{
-		return nodes;
-	}
 
 	public void setParent(ISyntaxTree parent)
 	{
@@ -44,11 +38,6 @@ class BaseSyntaxNode implements ISyntaxNode
 		node.setParent(this);
 		nodes.add(node);
 		nodeAdded(node);
-	}
-
-	void setPosition(IPosition position)
-	{
-		this.position = position;
 	}
 
 	protected void nodeAdded(BaseSyntaxNode node)

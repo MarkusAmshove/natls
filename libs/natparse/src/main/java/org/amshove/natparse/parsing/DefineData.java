@@ -8,8 +8,8 @@ import java.util.List;
 
 class DefineData extends BaseSyntaxNode implements IDefineData
 {
-	private List<IUsingNode> usings = new ArrayList<>();
-	private List<IVariableNode> variables = new ArrayList<>();
+	private final List<IUsingNode> usings = new ArrayList<>();
+	private final List<IVariableNode> variables = new ArrayList<>();
 
 	@Override
 	public ReadOnlyList<IUsingNode> localUsings()

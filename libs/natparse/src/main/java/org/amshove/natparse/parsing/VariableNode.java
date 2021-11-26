@@ -1,8 +1,10 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.IPosition;
+import org.amshove.natparse.NaturalParseException;
 import org.amshove.natparse.lexing.SyntaxToken;
+import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.IVariableNode;
-import org.amshove.natparse.natural.IVariableType;
 import org.amshove.natparse.natural.VariableScope;
 
 public class VariableNode extends BaseSyntaxNode implements IVariableNode
@@ -11,7 +13,8 @@ public class VariableNode extends BaseSyntaxNode implements IVariableNode
 	private String name;
 	private SyntaxToken declaration;
 	private VariableScope scope;
-	private VariableType type;
+
+	private String qualifiedName; // Gets computed on first demand
 
 	@Override
 	public SyntaxToken declaration()
@@ -28,7 +31,30 @@ public class VariableNode extends BaseSyntaxNode implements IVariableNode
 	@Override
 	public String qualifiedName()
 	{
-		return level == 1 ? name : null; // TODO: walk parents
+		if (qualifiedName != null)
+		{
+			return qualifiedName;
+		}
+
+		if (level == 1)
+		{
+			qualifiedName = name;
+			return name;
+		}
+
+		var parent = parent();
+		while (parent != null)
+		{
+			if (parent instanceof IVariableNode && ((IVariableNode) parent).level() == 1)
+			{
+				qualifiedName = "%s.%s".formatted(((IVariableNode) parent).name(), name());
+				return qualifiedName;
+			}
+
+			parent = ((ISyntaxNode)parent).parent();
+		}
+
+		throw new NaturalParseException("Could not determine qualified name");
 	}
 
 	@Override
@@ -44,9 +70,9 @@ public class VariableNode extends BaseSyntaxNode implements IVariableNode
 	}
 
 	@Override
-	public IVariableType type()
+	public IPosition position()
 	{
-		return type;
+		return declaration;
 	}
 
 	void setLevel(int level)
@@ -63,10 +89,5 @@ public class VariableNode extends BaseSyntaxNode implements IVariableNode
 	void setScope(VariableScope scope)
 	{
 		this.scope = scope;
-	}
-
-	void setType(VariableType type)
-	{
-		this.type = type;
 	}
 }

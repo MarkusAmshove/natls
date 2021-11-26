@@ -13,7 +13,7 @@ class ScopeNode extends BaseSyntaxNode implements IScopeNode
 {
 
 	private VariableScope scope;
-	private List<IVariableNode> variables = new ArrayList<>();
+	private final List<IVariableNode> variables = new ArrayList<>();
 
 	@Override
 	public VariableScope scope()

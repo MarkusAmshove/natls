@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 class ParserErrors
 {
-	public static ParserDiagnostic dataTypeNeedsLength(VariableNode variableNode)
+	public static ParserDiagnostic dataTypeNeedsLength(TypedNode variableNode)
 	{
 		return ParserDiagnostic.create(
 			"Data type <%s> needs to have a length".formatted(variableNode.type().format()),
@@ -16,7 +16,7 @@ class ParserErrors
 		);
 	}
 
-	public static ParserDiagnostic dynamicVariableLengthNotAllowed(VariableNode variableNode)
+	public static ParserDiagnostic dynamicVariableLengthNotAllowed(TypedNode variableNode)
 	{
 		return ParserDiagnostic.create(
 			"Dynamic length not allowed for data type <%s>".formatted(variableNode.type().format()),
@@ -25,7 +25,7 @@ class ParserErrors
 		);
 	}
 
-	public static ParserDiagnostic initValueMismatch(VariableNode variable, SyntaxKind expectedKind)
+	public static ParserDiagnostic initValueMismatch(TypedNode variable, SyntaxKind expectedKind)
 	{
 		return ParserDiagnostic.create(
 			"Type mismatch on initial value. Got <%s> but expected <%s>".formatted(variable.type().initialValue().kind(), expectedKind),
@@ -34,7 +34,7 @@ class ParserErrors
 		);
 	}
 
-	public static ParserDiagnostic initValueMismatch(VariableNode variable, SyntaxKind... expectedKinds)
+	public static ParserDiagnostic initValueMismatch(TypedNode variable, SyntaxKind... expectedKinds)
 	{
 		return ParserDiagnostic.create(
 			"Type mismatch on initial value. Got <%s> but expected one of <%s>".formatted(variable.type().initialValue().kind(), Arrays.stream(expectedKinds).map(k -> k.toString()).collect(Collectors.joining(","))),
@@ -43,7 +43,7 @@ class ParserErrors
 		);
 	}
 
-	public static ParserDiagnostic emptyInitValue(VariableNode variable)
+	public static ParserDiagnostic emptyInitValue(TypedNode variable)
 	{
 		return ParserDiagnostic.create(
 			"Initial value is empty",
@@ -52,7 +52,7 @@ class ParserErrors
 		);
 	}
 
-	public static ParserDiagnostic dynamicAndFixedLength(VariableNode variable)
+	public static ParserDiagnostic dynamicAndFixedLength(TypedNode variable)
 	{
 		var dynamicToken = variable.findDirectChildSyntaxToken(SyntaxKind.DYNAMIC);
 		if(dynamicToken != null)

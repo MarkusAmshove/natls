@@ -10,7 +10,8 @@ public interface ISyntaxTree
 	ReadOnlyList<? extends ISyntaxNode> nodes();
 
 	@Nullable
-	default <T extends ISyntaxNode> T findDirectChildOfType(Class<? extends ISyntaxNode> type)
+	@SuppressWarnings("unchecked")
+	default <T extends ISyntaxNode> T findDirectChildOfType(Class<T> type)
 	{
 		for (var node : nodes())
 		{

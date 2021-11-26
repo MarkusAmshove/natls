@@ -89,8 +89,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	{
 		var scope = consumeAny(SCOPE_SYNTAX_KINDS);
 		var scopeNode = new ScopeNode();
+		scopeNode.addNode(new TokenNode(scope));
 
-		while(peekKind(SyntaxKind.NUMBER)) // level
+		while (peekKind(SyntaxKind.NUMBER)) // level
 		{
 			var variable = variable();
 
@@ -113,56 +114,85 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		var identifier = consumeMandatoryIdentifier(variable);
 		variable.setDeclaration(identifier);
 
-		if (consume(variable, SyntaxKind.LPAREN))
+		if (consumeOptionally(variable, SyntaxKind.LPAREN))
 		{
-			var dataType = consumeMandatoryIdentifier(variable).source(); // DataTypes like A10 get recognized as identifier
-			var format = DataFormat.fromSource(dataType.charAt(0));
-			var length = getLengthFromDataType(dataType);
-
-			// N12.7 results in Tokens <IDENTIFIER (N12), DOT, NUMBER>
-			if (consumeOptionally(variable, SyntaxKind.COMMA) || consumeOptionally(variable, SyntaxKind.DOT))
-			{
-				var number = consumeMandatory(variable, SyntaxKind.NUMBER);
-				length = getLengthFromDataType(dataType + "." + number.source());
-			}
-
-			var type = new VariableType();
-			type.setFormat(format);
-			type.setLength(length);
-
-			consumeMandatory(variable, SyntaxKind.RPAREN);
-
-			if (consumeOptionally(variable, SyntaxKind.DYNAMIC))
-			{
-				type.setDynamicLength();
-			}
-
-			if (consumeOptionally(variable, SyntaxKind.INIT) || consumeOptionally(variable, SyntaxKind.CONST))
-			{
-				if(previous().kind() == SyntaxKind.CONST)
-				{
-					type.setConstant();
-				}
-				if(consumeOptionally(variable, SyntaxKind.LESSER_GREATER))
-				{
-					// special case for a better error message. <> is  just an empty initial value
-					report(ParserErrors.emptyInitValue(variable));
-				}
-				else
-				{
-					consumeMandatory(variable, SyntaxKind.LESSER);
-					var literal = consumeLiteral(variable);
-					type.setInitialValue(literal);
-					consumeMandatory(variable, SyntaxKind.GREATER);
-				}
-			}
-
-
-			variable.setType(type);
+			variable = typedVariable(variable);
+			checkVariableType((TypedNode) variable);
+		}
+		else
+		{
+			variable = groupVariable(variable);
 		}
 
-		checkVariableType(variable);
 		return variable;
+	}
+
+	private GroupNode groupVariable(VariableNode variable) throws ParseError
+	{
+		var groupNode = new GroupNode(variable);
+
+		while (peekKind(SyntaxKind.NUMBER))
+		{
+			if(peek().intValue() <= groupNode.level())
+			{
+				break;
+			}
+
+			var nestedVariable = variable();
+			groupNode.addVariable(nestedVariable);
+		}
+
+		return groupNode;
+	}
+
+	private TypedNode typedVariable(VariableNode variable) throws ParseError
+	{
+		var typedVariable = new TypedNode(variable);
+
+		var dataType = consumeMandatoryIdentifier(typedVariable).source(); // DataTypes like A10 get recognized as identifier
+		var format = DataFormat.fromSource(dataType.charAt(0));
+		var length = getLengthFromDataType(dataType);
+
+		// N12.7 results in Tokens <IDENTIFIER (N12), DOT, NUMBER>
+		if (consumeOptionally(typedVariable, SyntaxKind.COMMA) || consumeOptionally(typedVariable, SyntaxKind.DOT))
+		{
+			var number = consumeMandatory(typedVariable, SyntaxKind.NUMBER);
+			length = getLengthFromDataType(dataType + "." + number.source());
+		}
+
+		var type = new VariableType();
+		type.setFormat(format);
+		type.setLength(length);
+
+		consumeMandatory(typedVariable, SyntaxKind.RPAREN);
+
+		if (consumeOptionally(typedVariable, SyntaxKind.DYNAMIC))
+		{
+			type.setDynamicLength();
+		}
+
+		if (consumeOptionally(typedVariable, SyntaxKind.INIT) || consumeOptionally(typedVariable, SyntaxKind.CONST))
+		{
+			if (previous().kind() == SyntaxKind.CONST)
+			{
+				type.setConstant();
+			}
+			if (consumeOptionally(typedVariable, SyntaxKind.LESSER_GREATER))
+			{
+				// special case for a better error message. <> is  just an empty initial value
+				report(ParserErrors.emptyInitValue(typedVariable));
+			}
+			else
+			{
+				consumeMandatory(typedVariable, SyntaxKind.LESSER);
+				var literal = consumeLiteral(typedVariable);
+				type.setInitialValue(literal);
+				consumeMandatory(typedVariable, SyntaxKind.GREATER);
+			}
+		}
+
+		typedVariable.setType(type);
+		return typedVariable;
 	}
 
 	private double getLengthFromDataType(String dataType)
@@ -213,7 +243,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		return !tokens.isAtEnd() && tokens.peek().kind() == SyntaxKind.DEFINE && tokens.peek(1) != null && tokens.peek(1).kind() == SyntaxKind.DATA;
 	}
 
-	private void checkVariableType(VariableNode variable)
+	private void checkVariableType(TypedNode variable)
 	{
 		if (variable.type().hasDynamicLength())
 		{
@@ -236,7 +266,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 					report(ParserErrors.dynamicVariableLengthNotAllowed(variable));
 			}
 
-			if(variable.type().length() > 0.0)
+			if (variable.type().length() > 0.0)
 			{
 				report(ParserErrors.dynamicAndFixedLength(variable));
 			}
@@ -270,9 +300,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 		}
 
-		if(variable.type().initialValue() != null)
+		if (variable.type().initialValue() != null)
 		{
-			switch(variable.type().format())
+			switch (variable.type().format())
 			{
 				case ALPHANUMERIC:
 					expectInitialValueType(variable, SyntaxKind.STRING);
@@ -296,7 +326,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 				case LOGIC:
 					var initialValueType = variable.type().initialValue().kind();
-					if(initialValueType != SyntaxKind.TRUE && initialValueType != SyntaxKind.FALSE)
+					if (initialValueType != SyntaxKind.TRUE && initialValueType != SyntaxKind.FALSE)
 					{
 						report(ParserErrors.initValueMismatch(variable, SyntaxKind.TRUE, SyntaxKind.FALSE));
 					}
@@ -305,9 +335,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 	}
 
-	private void expectInitialValueType(VariableNode variableNode, SyntaxKind expectedKind)
+	private void expectInitialValueType(TypedNode variableNode, SyntaxKind expectedKind)
 	{
-		if(variableNode.type().initialValue().kind() != expectedKind)
+		if (variableNode.type().initialValue().kind() != expectedKind)
 		{
 			report(ParserErrors.initValueMismatch(variableNode, expectedKind));
 		}
