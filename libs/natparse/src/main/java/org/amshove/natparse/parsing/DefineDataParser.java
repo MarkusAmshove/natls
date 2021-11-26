@@ -90,12 +90,15 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		var scope = consumeAny(SCOPE_SYNTAX_KINDS);
 		var scopeNode = new ScopeNode();
 
-		var variable = variable();
+		while(peekKind(SyntaxKind.NUMBER)) // level
+		{
+			var variable = variable();
 
-		variable.setScope(VariableScope.fromSyntaxKind(scope.kind()));
-		scopeNode.setScope(variable.scope());
+			variable.setScope(VariableScope.fromSyntaxKind(scope.kind()));
+			scopeNode.setScope(variable.scope());
 
-		scopeNode.addVariable(variable);
+			scopeNode.addVariable(variable);
+		}
 
 		return scopeNode;
 	}

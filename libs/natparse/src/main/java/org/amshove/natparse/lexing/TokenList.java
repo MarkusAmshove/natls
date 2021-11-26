@@ -157,7 +157,7 @@ public class TokenList
 	 */
 	public boolean consume(SyntaxKind kind)
 	{
-		if(peek().kind() == kind)
+		if(!isAtEnd() && peek().kind() == kind)
 		{
 			advance();
 			return true;

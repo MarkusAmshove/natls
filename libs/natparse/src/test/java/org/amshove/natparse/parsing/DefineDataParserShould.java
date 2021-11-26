@@ -291,6 +291,25 @@ class DefineDataParserShould extends AbstractParserTest
 		assertDiagnostic("define data local 1 #var (%s4) const <%s> end-define".formatted(type, literal), ParserError.INITIAL_VALUE_TYPE_MISMATCH);
 	}
 
+	@Test
+	void parseMultipleVariables()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			define data
+			local
+			1 #FIRSTVAR (A10)
+			1 #SECONDVAR (A5)
+			end-define
+			""");
+
+
+		assertThat(defineData.variables().size()).isEqualTo(2);
+		assertThat(defineData.variables().first().name()).isEqualTo("#FIRSTVAR");
+		assertThat(defineData.variables().first().level()).isEqualTo(1);
+		assertThat(defineData.variables().get(1).name()).isEqualTo("#SECONDVAR");
+		assertThat(defineData.variables().get(1).level()).isEqualTo(1);
+	}
+
 	private IDefineData assertParsesWithoutDiagnostics(String source)
 	{
 		var lexer = new Lexer();

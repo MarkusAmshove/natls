@@ -32,6 +32,11 @@ abstract class AbstractParser<T>
 		return tokens.peek();
 	}
 
+	protected boolean peekKind(SyntaxKind kind)
+	{
+		return !isAtEnd() && peek().kind() == kind;
+	}
+
 	protected SyntaxToken peek(int offset)
 	{
 		return tokens.peek(offset);
