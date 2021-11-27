@@ -146,11 +146,6 @@ public class TokenList
 		return ReadOnlyList.from(comments); // TODO: Perf
 	}
 
-	private SyntaxToken lookahead(int offset)
-	{
-		return tokens.get(currentOffset + offset);
-	}
-
 	/**
 	 * Consumes the current token if it matches the kind and then advances.
 	 * @param kind
