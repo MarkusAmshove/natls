@@ -6,7 +6,7 @@ import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
-import org.amshove.natparse.natural.IDefineData;
+import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
@@ -52,7 +52,7 @@ public class NaturalLanguageService
 		var filepath = LspUtil.uriToPath(textDocument.getUri());
 		var tokens = lexPath(filepath);
 		var defineData = parseDefineData(tokens);
-		if(defineData != null)
+		if (defineData != null)
 		{
 			return defineData.variables().stream()
 				.map(variable -> convertToSymbolInformation(variable.declaration(), filepath))
@@ -137,6 +137,8 @@ public class NaturalLanguageService
 
 	public Hover hoverSymbol(TextDocumentIdentifier textDocument, Position position)
 	{
+		var emptyHover = new Hover(new MarkupContent(MarkupKind.PLAINTEXT, ""));
+
 		var filepath = LspUtil.uriToPath(textDocument.getUri());
 		var tokens = lexPath(filepath);
 		while (!tokens.isAtEnd())
@@ -148,7 +150,7 @@ public class NaturalLanguageService
 				continue;
 			}
 
-			if(token.offsetInLine() <= position.getCharacter() && token.offsetInLine() + token.length() >= position.getCharacter())
+			if (token.offsetInLine() <= position.getCharacter() && token.offsetInLine() + token.length() >= position.getCharacter())
 			{
 				break;
 			}
@@ -156,12 +158,82 @@ public class NaturalLanguageService
 			tokens.advance();
 		}
 
-		var variableToSearchFor = tokens.peek().source();
-		return getVariableDeclarationTokens(tokens.newResetted())
-			.filter(t -> t.source().toLowerCase().contains(variableToSearchFor.toLowerCase()))
-			.map(t -> new Hover(new MarkupContent(MarkupKind.PLAINTEXT, t.source())))
+		if (tokens.isAtEnd())
+		{
+			// No position found where we can provide hover for
+			System.err.println("No hover source found");
+			return emptyHover;
+		}
+
+		var variableToSearchFor = tokens.peek();
+		System.err.println("Hover for %s".formatted(variableToSearchFor.source()));
+
+		// TODO: perf: we should use the parsed source to find the hover position once we parse most stuff
+		// 	because we can then find the position which we should provide the hover for and use parsed references from there on
+		tokens = tokens.newResetted();
+
+		var defineData = new DefineDataParser().parse(tokens).result(); // TODO: check result
+		return defineData.variables().stream()
+			.filter(v -> v.declaration().source().equals(variableToSearchFor.source()))
+			.map(v ->
+				new Hover(
+					new MarkupContent(
+						MarkupKind.MARKDOWN,
+						createHoverMarkdownText(v)
+					)
+				)
+			)
 			.findFirst()
-			.orElseGet(Hover::new);
+			.orElseGet(() -> emptyHover);
+	}
+
+	private String createHoverMarkdownText(IVariableNode v)
+	{
+		var hoverText = "**(%s)** **%d** **%s**".formatted(v.scope().name(), v.level(), v.name());
+		if (v instanceof ITypedNode)
+		{
+			var typedVariable = (ITypedNode) v;
+			hoverText += " (%c".formatted(typedVariable.type().format().identifier());
+			if (typedVariable.type().length() > 0.0)
+			{
+				hoverText += "%f)".formatted(typedVariable.type().length());
+			}
+			if (typedVariable.type().hasDynamicLength())
+			{
+				hoverText += ") **DYNAMIC**";
+			}
+			if (typedVariable.type().isConstant())
+			{
+				hoverText += " CONST<";
+			}
+			if (typedVariable.type().initialValue() != null)
+			{
+				if(!typedVariable.type().isConstant())
+				{
+					hoverText += " INIT<";
+				}
+
+				hoverText += "**%s**>".formatted(typedVariable.type().initialValue().source());
+			}
+		}
+
+		if (v.level() > 1)
+		{
+			var groupOwner = v.parent();
+			while (!(groupOwner instanceof IGroupNode) && ((IGroupNode) groupOwner).level() == 1)
+			{
+				groupOwner = ((ISyntaxNode) groupOwner).parent();
+			}
+
+			var group = ((IGroupNode) groupOwner);
+			hoverText += "\n\nMember of group:";
+			hoverText += "\n\n**%d** **%s**".formatted(group.level(), group.name());
+		}
+
+		hoverText += "\n\nFrom module:";
+		hoverText += "\n\n*TODO*";
+
+		return hoverText;
 	}
 
 	private String readSource(Path path)

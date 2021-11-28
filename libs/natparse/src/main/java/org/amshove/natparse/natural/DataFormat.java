@@ -4,18 +4,30 @@ import org.amshove.natparse.NaturalParseException;
 
 public enum DataFormat
 {
-	ALPHANUMERIC,
-	BINARY,
-	CONTROL,
-	DATE,
-	FLOAT,
-	INTEGER,
-	LOGIC,
-	NUMERIC,
-	PACKED,
-	TIME,
-	UNICODE,
-	NONE;
+	ALPHANUMERIC('A'),
+	BINARY('B'),
+	CONTROL('C'),
+	DATE('D'),
+	FLOAT('F'),
+	INTEGER('I'),
+	LOGIC('L'),
+	NUMERIC('N'),
+	PACKED('P'),
+	TIME('T'),
+	UNICODE('U'),
+	NONE(' ');
+
+	private final char identifier;
+
+	DataFormat(char identifier)
+	{
+		this.identifier = identifier;
+	}
+
+	public char identifier()
+	{
+		return identifier;
+	}
 
 	/**
 	 * Constructs the DataFormat from source.
