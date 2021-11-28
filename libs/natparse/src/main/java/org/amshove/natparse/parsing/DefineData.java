@@ -51,15 +51,28 @@ class DefineData extends BaseSyntaxNode implements IDefineData
 
 		if (node instanceof IScopeNode)
 		{
-			addAllVariablesRecursively((IScopeNode) node);
+			addAllVariablesFromScope((IScopeNode) node);
 		}
 	}
 
-	private void addAllVariablesRecursively(IScopeNode scopeNode)
+	private void addAllVariablesFromScope(IScopeNode node)
 	{
-		for (var variable : scopeNode.variables())
+		for (var variable : node.variables())
 		{
-			variables.add(variable);
+			addAllVariablesRecursively(variable);
+		}
+	}
+
+	private void addAllVariablesRecursively(IVariableNode variable)
+	{
+		variables.add(variable);
+		if (variable instanceof IGroupNode)
+		{
+			var group =  ((IGroupNode)variable);
+			for (var nestedVariable : group.variables())
+			{
+				addAllVariablesRecursively(nestedVariable);
+			}
 		}
 	}
 }

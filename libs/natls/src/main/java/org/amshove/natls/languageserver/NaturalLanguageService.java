@@ -6,6 +6,7 @@ import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
+import org.amshove.natparse.natural.IDefineData;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
@@ -50,6 +51,15 @@ public class NaturalLanguageService
 	{
 		var filepath = LspUtil.uriToPath(textDocument.getUri());
 		var tokens = lexPath(filepath);
+		var defineData = parseDefineData(tokens);
+		if(defineData != null)
+		{
+			return defineData.variables().stream()
+				.map(variable -> convertToSymbolInformation(variable.declaration(), filepath))
+				.map(Either::<SymbolInformation, DocumentSymbol>forLeft)
+				.toList();
+		}
+
 		return getVariableDeclarationTokens(tokens)
 			.filter(t -> t.kind() == SyntaxKind.IDENTIFIER_OR_KEYWORD || t.kind() == SyntaxKind.IDENTIFIER)
 			.map(token -> convertToSymbolInformation(token, filepath))
@@ -174,5 +184,11 @@ public class NaturalLanguageService
 	private TokenList lexPath(Path path)
 	{
 		return lexSource(readSource(path));
+	}
+
+	private IDefineData parseDefineData(TokenList tokens)
+	{
+		var parser = new DefineDataParser();
+		return parser.parse(tokens).result();
 	}
 }
