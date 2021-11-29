@@ -49,6 +49,11 @@ public class SyntaxToken implements IPosition
 		return Integer.parseInt(source());
 	}
 
+	public String stringValue()
+	{
+		return source.substring(1, source.length() - 1);
+	}
+
 	public SyntaxToken(SyntaxKind kind, int offset, int lineOffset, int line, String source)
 	{
 		this.kind = kind;

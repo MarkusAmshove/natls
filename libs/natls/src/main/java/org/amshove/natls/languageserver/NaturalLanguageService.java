@@ -23,11 +23,13 @@ import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class NaturalLanguageService
 {
 
+	private static final Hover EMPTY_HOVER = new Hover(new MarkupContent(MarkupKind.PLAINTEXT, ""));
 	private final NaturalProject project;
 
 	private NaturalLanguageService(NaturalProject project)
@@ -138,22 +140,26 @@ public class NaturalLanguageService
 
 	public Hover hoverSymbol(TextDocumentIdentifier textDocument, Position position)
 	{
-		var emptyHover = new Hover(new MarkupContent(MarkupKind.PLAINTEXT, ""));
 
 		var filepath = LspUtil.uriToPath(textDocument.getUri());
-		var variableToSearchFor = findTokenAtPosition(filepath, position);
-		if (variableToSearchFor == null)
+		var symbolToSearchFor = findTokenAtPosition(filepath, position);
+		if (symbolToSearchFor == null)
 		{
 			// No position found where we can provide hover for
 			System.err.println("No hover source found");
-			return emptyHover;
+			return EMPTY_HOVER;
 		}
 
-		System.err.println("Hover for %s".formatted(variableToSearchFor.source()));
+		System.err.println("Hover for %s".formatted(symbolToSearchFor.source()));
+
+		if (symbolToSearchFor.kind() == SyntaxKind.STRING)
+		{
+			return hoverCallnat(symbolToSearchFor);
+		}
 
 		var defineData = parseDefineData(lexPath(filepath)); // TODO: perf: double lex
 		return defineData.variables().stream()
-			.filter(v -> v.declaration().source().equals(variableToSearchFor.source()))
+			.filter(v -> v.declaration().source().equals(symbolToSearchFor.source()))
 			.map(v ->
 				new Hover(
 					new MarkupContent(
@@ -163,7 +169,44 @@ public class NaturalLanguageService
 				)
 			)
 			.findFirst()
-			.orElseGet(() -> emptyHover);
+			.orElseGet(() -> EMPTY_HOVER);
+	}
+
+	private Hover hoverCallnat(SyntaxToken symbolToSearchFor)
+	{
+		var module = project.findModule(symbolToSearchFor.stringValue());
+		if (module == null)
+		{
+			return EMPTY_HOVER;
+		}
+
+		var tokens = lexPath(module.getPath());
+		var defineData = parseDefineData(tokens);
+		if (defineData == null)
+		{
+			return EMPTY_HOVER;
+		}
+
+		var hoverText = "**%s.%s**".formatted(module.getLibrary().getName(), module.getReferableName());
+		hoverText += "\n\nParameter:\n```natural\n";
+
+
+		// TODO: Order is not correct. DefineData should have .parameter() which have USINGs and non-USINGS
+		//  mixed in definition order
+		hoverText += defineData.parameterUsings().stream()
+			.map(using -> "PARAMETER USING %s".formatted(using.target().source())) // TODO: Maybe add the PDA content nested?
+			.collect(Collectors.joining("\n"));
+		hoverText += "\n```\n";
+		hoverText += defineData.variables().stream()
+			.filter(v -> v.scope() == VariableScope.PARAMETER)
+			.map(this::formatVariableHover).collect(Collectors.joining("\n"));
+
+		return new Hover(
+			new MarkupContent(
+				MarkupKind.MARKDOWN,
+				hoverText
+			)
+		);
 	}
 
 	private SyntaxToken findTokenAtPosition(Path filePath, Position position)
@@ -192,6 +235,30 @@ public class NaturalLanguageService
 
 	private String createHoverMarkdownText(IVariableNode v)
 	{
+		var hoverText = formatVariableHover(v);
+		hoverText += "\n";
+
+		if (v.level() > 1)
+		{
+			var groupOwner = v.parent();
+			while (!(groupOwner instanceof IGroupNode) && ((IGroupNode) groupOwner).level() == 1)
+			{
+				groupOwner = ((ISyntaxNode) groupOwner).parent();
+			}
+
+			var group = ((IGroupNode) groupOwner);
+			hoverText += "\n\n*member of:*";
+			hoverText += "%n ```natural%n %s %d %s%n```".formatted(group.scope().name(), group.level(), group.name());
+		}
+
+		hoverText += "\n\n*source:*";
+		hoverText += "\n- *TODO*";
+
+		return hoverText;
+	}
+
+	private String formatVariableHover(IVariableNode v)
+	{
 		var hoverText = "```natural%n%s %d %s".formatted(v.scope().name(), v.level(), v.name());
 		if (v instanceof ITypedNode typedVariable)
 		{
@@ -211,7 +278,7 @@ public class NaturalLanguageService
 			}
 			if (typedVariable.type().initialValue() != null)
 			{
-				if(!typedVariable.type().isConstant())
+				if (!typedVariable.type().isConstant())
 				{
 					hoverText += " INIT<";
 				}
@@ -221,23 +288,6 @@ public class NaturalLanguageService
 		}
 		hoverText += "\n```";
 
-		if (v.level() > 1)
-		{
-			var groupOwner = v.parent();
-			while (!(groupOwner instanceof IGroupNode) && ((IGroupNode) groupOwner).level() == 1)
-			{
-				groupOwner = ((ISyntaxNode) groupOwner).parent();
-			}
-
-			var group = ((IGroupNode) groupOwner);
-			hoverText += "\n\n*member of:*";
-			hoverText += "%n ```natural%n %s %d %s%n```".formatted(group.scope().name(), group.level(), group.name());
-		}
-
-		hoverText += "\n\n*source:*";
-		hoverText += "\n- *TODO*";
-
-		System.err.println(hoverText);
 		return hoverText;
 	}
 

@@ -1,5 +1,6 @@
 package org.amshove.natparse.natural.project;
 
+import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -22,5 +23,22 @@ public class NaturalProject
 	public List<NaturalLibrary> getLibraries()
 	{
 		return libraries;
+	}
+
+	@Nullable
+	public NaturalFile findModule(String moduleName)
+	{
+		for (var library : libraries)
+		{
+			for (var file : library.files())
+			{
+				if(file.getReferableName().equals(moduleName))
+				{
+					return file;
+				}
+			}
+		}
+
+		return null;
 	}
 }
