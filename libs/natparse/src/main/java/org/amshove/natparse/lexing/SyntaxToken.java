@@ -2,6 +2,8 @@ package org.amshove.natparse.lexing;
 
 import org.amshove.natparse.IPosition;
 
+import java.util.Objects;
+
 public class SyntaxToken implements IPosition
 {
 
@@ -68,4 +70,14 @@ public class SyntaxToken implements IPosition
 			offsetInLine);
 	}
 
+	public boolean equalsByPosition(SyntaxToken other)
+	{
+		return other != null && offset == other.offset && line == other.line && offsetInLine == other.offsetInLine;
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(kind, offset, offsetInLine, line, source);
+	}
 }

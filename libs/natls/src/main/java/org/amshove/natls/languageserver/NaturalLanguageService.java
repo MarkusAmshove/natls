@@ -140,7 +140,35 @@ public class NaturalLanguageService
 		var emptyHover = new Hover(new MarkupContent(MarkupKind.PLAINTEXT, ""));
 
 		var filepath = LspUtil.uriToPath(textDocument.getUri());
-		var tokens = lexPath(filepath);
+		var variableToSearchFor = findTokenAtPosition(filepath, position);
+		if (variableToSearchFor == null)
+		{
+			// No position found where we can provide hover for
+			System.err.println("No hover source found");
+			return emptyHover;
+		}
+
+		System.err.println("Hover for %s".formatted(variableToSearchFor.source()));
+
+		var defineData = parseDefineData(lexPath(filepath)); // TODO: perf: double lex
+		return defineData.variables().stream()
+			.filter(v -> v.declaration().source().equals(variableToSearchFor.source()))
+			.map(v ->
+				new Hover(
+					new MarkupContent(
+						MarkupKind.MARKDOWN,
+						createHoverMarkdownText(v)
+					)
+				)
+			)
+			.findFirst()
+			.orElseGet(() -> emptyHover);
+	}
+
+	private SyntaxToken findTokenAtPosition(Path filePath, Position position)
+	{
+		var tokens = lexPath(filePath);
+
 		while (!tokens.isAtEnd())
 		{
 			var token = tokens.peek();
@@ -158,33 +186,7 @@ public class NaturalLanguageService
 			tokens.advance();
 		}
 
-		if (tokens.isAtEnd())
-		{
-			// No position found where we can provide hover for
-			System.err.println("No hover source found");
-			return emptyHover;
-		}
-
-		var variableToSearchFor = tokens.peek();
-		System.err.println("Hover for %s".formatted(variableToSearchFor.source()));
-
-		// TODO: perf: we should use the parsed source to find the hover position once we parse most stuff
-		// 	because we can then find the position which we should provide the hover for and use parsed references from there on
-		tokens = tokens.newResetted();
-
-		var defineData = new DefineDataParser().parse(tokens).result(); // TODO: check result
-		return defineData.variables().stream()
-			.filter(v -> v.declaration().source().equals(variableToSearchFor.source()))
-			.map(v ->
-				new Hover(
-					new MarkupContent(
-						MarkupKind.MARKDOWN,
-						createHoverMarkdownText(v)
-					)
-				)
-			)
-			.findFirst()
-			.orElseGet(() -> emptyHover);
+		return tokens.peek();
 	}
 
 	private String createHoverMarkdownText(IVariableNode v)
@@ -262,5 +264,48 @@ public class NaturalLanguageService
 	{
 		var parser = new DefineDataParser();
 		return parser.parse(tokens).result();
+	}
+
+	public List<Location> gotoDefinition(DefinitionParams params)
+	{
+		var fileUri = params.getTextDocument().getUri();
+		var position = params.getPosition();
+
+		var tokenUnderCursor = findTokenAtPosition(LspUtil.uriToPath(fileUri), position);
+		if(tokenUnderCursor == null)
+		{
+			return List.of();
+		}
+
+		var defineData = parseDefineData(lexPath(LspUtil.uriToPath(fileUri))); // TODO: perf: double lexing
+		return defineData.variables().stream()
+			.filter(v -> v.name().equals(tokenUnderCursor.source()))
+			.map(v -> new Location(
+				fileUri,
+				new Range(
+					new Position(v.position().line(), v.position().offsetInLine()),
+					new Position(v.nodes().last().position().line(), v.nodes().last().position().offsetInLine())
+				)
+			))
+			.toList();
+	}
+
+	public List<Location> findReferences(ReferenceParams params)
+	{
+		var fileUri = params.getTextDocument().getUri();
+		var filePath = LspUtil.uriToPath(fileUri);
+		var position = params.getPosition();
+
+		var tokenUnderCursor = findTokenAtPosition(filePath, position);
+		if(tokenUnderCursor == null)
+		{
+			return List.of();
+		}
+		var tokens = lexPath(filePath);
+
+		return tokens.stream()
+			.filter(t -> t.kind().isIdentifier() && t.source().equals(tokenUnderCursor.source()) && !t.equalsByPosition(tokenUnderCursor))
+			.map(t -> LspUtil.toLocation(fileUri, t))
+			.toList();
 	}
 }

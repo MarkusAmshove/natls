@@ -23,6 +23,19 @@ public class NaturalDocumentService implements TextDocumentService, LanguageClie
 	}
 
 	@Override
+	public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> definition(
+		DefinitionParams params)
+	{
+		return CompletableFuture.supplyAsync(() -> Either.forLeft(languageService.gotoDefinition(params)));
+	}
+
+	@Override
+	public CompletableFuture<List<? extends Location>> references(ReferenceParams params)
+	{
+		return CompletableFuture.supplyAsync(() -> languageService.findReferences(params));
+	}
+
+	@Override
 	public void didChange(DidChangeTextDocumentParams params)
 	{
 		if (params.getContentChanges().size() > 1)

@@ -4,6 +4,7 @@ import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 public class TokenList
 {
@@ -175,5 +176,10 @@ public class TokenList
 	public ReadOnlyList<SyntaxToken> subrange(int start, int end)
 	{
 		return ReadOnlyList.from(tokens.subList(start, end + 1));
+	}
+
+	public Stream<SyntaxToken> stream()
+	{
+		return tokens.stream();
 	}
 }

@@ -25,13 +25,15 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			capabilities.setDocumentSymbolProvider(true);
 			capabilities.setHoverProvider(true);
 			capabilities.setTextDocumentSync(TextDocumentSyncKind.Full);
-			System.err.print("Starte");
+			capabilities.setDefinitionProvider(true);
+			capabilities.setReferencesProvider(true);
+			System.err.println("Starte");
 
 			var languageService = NaturalLanguageService.createService(Paths.get(URI.create(params.getRootUri())));
 			workspaceService.setLanguageService(languageService);
 			documentService.setLanguageService(languageService);
 
-			System.err.print("Bereit");
+			System.err.println("Bereit");
 			return new InitializeResult(capabilities);
 		});
 	}
