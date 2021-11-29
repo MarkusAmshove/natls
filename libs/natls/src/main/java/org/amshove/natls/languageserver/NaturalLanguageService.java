@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -191,18 +192,18 @@ public class NaturalLanguageService
 
 	private String createHoverMarkdownText(IVariableNode v)
 	{
-		var hoverText = "**(%s)** **%d** **%s**".formatted(v.scope().name(), v.level(), v.name());
-		if (v instanceof ITypedNode)
+		var hoverText = "```natural%n%s %d %s".formatted(v.scope().name(), v.level(), v.name());
+		if (v instanceof ITypedNode typedVariable)
 		{
-			var typedVariable = (ITypedNode) v;
 			hoverText += " (%c".formatted(typedVariable.type().format().identifier());
 			if (typedVariable.type().length() > 0.0)
 			{
-				hoverText += "%f)".formatted(typedVariable.type().length());
+				var dataLengthFormat = new DecimalFormat("#.#");
+				hoverText += "%s)".formatted(dataLengthFormat.format(typedVariable.type().length()));
 			}
 			if (typedVariable.type().hasDynamicLength())
 			{
-				hoverText += ") **DYNAMIC**";
+				hoverText += ") DYNAMIC";
 			}
 			if (typedVariable.type().isConstant())
 			{
@@ -215,9 +216,10 @@ public class NaturalLanguageService
 					hoverText += " INIT<";
 				}
 
-				hoverText += "**%s**>".formatted(typedVariable.type().initialValue().source());
+				hoverText += "%s>".formatted(typedVariable.type().initialValue().source());
 			}
 		}
+		hoverText += "\n```";
 
 		if (v.level() > 1)
 		{
@@ -228,13 +230,14 @@ public class NaturalLanguageService
 			}
 
 			var group = ((IGroupNode) groupOwner);
-			hoverText += "\n\nMember of group:";
-			hoverText += "\n\n**%d** **%s**".formatted(group.level(), group.name());
+			hoverText += "\n\n*member of:*";
+			hoverText += "%n ```natural%n %s %d %s%n```".formatted(group.scope().name(), group.level(), group.name());
 		}
 
-		hoverText += "\n\nFrom module:";
-		hoverText += "\n\n*TODO*";
+		hoverText += "\n\n*source:*";
+		hoverText += "\n- *TODO*";
 
+		System.err.println(hoverText);
 		return hoverText;
 	}
 
