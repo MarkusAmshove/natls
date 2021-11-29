@@ -190,7 +190,6 @@ public class NaturalLanguageService
 		var hoverText = "**%s.%s**".formatted(module.getLibrary().getName(), module.getReferableName());
 		hoverText += "\n\nParameter:\n```natural\n";
 
-
 		// TODO: Order is not correct. DefineData should have .parameter() which have USINGs and non-USINGS
 		//  mixed in definition order
 		hoverText += defineData.parameterUsings().stream()
@@ -325,7 +324,7 @@ public class NaturalLanguageService
 		var position = params.getPosition();
 
 		var tokenUnderCursor = findTokenAtPosition(LspUtil.uriToPath(fileUri), position);
-		if(tokenUnderCursor == null)
+		if (tokenUnderCursor == null)
 		{
 			return List.of();
 		}
@@ -350,7 +349,7 @@ public class NaturalLanguageService
 		var position = params.getPosition();
 
 		var tokenUnderCursor = findTokenAtPosition(filePath, position);
-		if(tokenUnderCursor == null)
+		if (tokenUnderCursor == null)
 		{
 			return List.of();
 		}
@@ -360,5 +359,39 @@ public class NaturalLanguageService
 			.filter(t -> t.kind().isIdentifier() && t.source().equals(tokenUnderCursor.source()) && !t.equalsByPosition(tokenUnderCursor))
 			.map(t -> LspUtil.toLocation(fileUri, t))
 			.toList();
+	}
+
+	public List<CompletionItem> complete(CompletionParams completionParams)
+	{
+		var fileUri = completionParams.getTextDocument().getUri();
+		var filePath = LspUtil.uriToPath(fileUri);
+
+		// TODO: Use position to filter what stuff to complete (variables, subroutines, ...)
+		// var position = completionParams.getPosition();
+
+		var defineData = parseDefineData(lexPath(filePath));
+		if (defineData == null)
+		{
+			return List.of();
+		}
+
+		var completionItems = defineData.variables().stream()
+			.map(v -> {
+				var item = new CompletionItem();
+				item.setKind(CompletionItemKind.Variable);
+
+				item.setLabel(v.qualifiedName());
+				if (v instanceof ITypedNode typedNode)
+				{
+					item.setDetail(typedNode.type().toShortString());
+				}
+
+				item.setDocumentation(new MarkupContent(MarkupKind.MARKDOWN, createHoverMarkdownText(v)));
+
+				return item;
+			})
+			.toList();
+		System.err.println("Returning " + completionItems.size() + " items for completion");
+		return completionItems;
 	}
 }

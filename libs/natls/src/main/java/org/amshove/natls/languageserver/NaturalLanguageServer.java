@@ -1,13 +1,11 @@
 package org.amshove.natls.languageserver;
 
-import org.eclipse.lsp4j.InitializeParams;
-import org.eclipse.lsp4j.InitializeResult;
-import org.eclipse.lsp4j.ServerCapabilities;
-import org.eclipse.lsp4j.TextDocumentSyncKind;
+import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.services.*;
 
 import java.net.URI;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class NaturalLanguageServer implements LanguageServer, LanguageClientAware
@@ -27,6 +25,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			capabilities.setTextDocumentSync(TextDocumentSyncKind.Full);
 			capabilities.setDefinitionProvider(true);
 			capabilities.setReferencesProvider(true);
+			capabilities.setCompletionProvider(new CompletionOptions(false, List.of(".")));
 			System.err.println("Starte");
 
 			var languageService = NaturalLanguageService.createService(Paths.get(URI.create(params.getRootUri())));

@@ -23,6 +23,12 @@ public class NaturalDocumentService implements TextDocumentService, LanguageClie
 	}
 
 	@Override
+	public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams completionParams)
+	{
+		return CompletableFuture.supplyAsync(() -> Either.forLeft(languageService.complete(completionParams)));
+	}
+
+	@Override
 	public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> definition(
 		DefinitionParams params)
 	{
