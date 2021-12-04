@@ -120,7 +120,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			&& (peek().kind() != SyntaxKind.ASTERISK && peek().kind() != SyntaxKind.NUMBER)) // group array
 		{
 			variable = typedVariable(variable);
-			checkVariableType((TypedNode) variable);
+			checkVariableType((TypedVariableNode) variable);
 		}
 		else
 		{
@@ -154,9 +154,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		return groupNode;
 	}
 
-	private TypedNode typedVariable(VariableNode variable) throws ParseError
+	private TypedVariableNode typedVariable(VariableNode variable) throws ParseError
 	{
-		var typedVariable = new TypedNode(variable);
+		var typedVariable = new TypedVariableNode(variable);
 		var type = new VariableType();
 
 		var dataType = consumeMandatoryIdentifier(typedVariable).source(); // DataTypes like A10 get recognized as identifier
@@ -275,7 +275,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		return !tokens.isAtEnd() && tokens.peek().kind() == SyntaxKind.DEFINE && tokens.peek(1) != null && tokens.peek(1).kind() == SyntaxKind.DATA;
 	}
 
-	private void checkVariableType(TypedNode variable)
+	private void checkVariableType(TypedVariableNode variable)
 	{
 		if (variable.type().hasDynamicLength())
 		{
@@ -367,7 +367,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 	}
 
-	private void expectInitialValueType(TypedNode variableNode, SyntaxKind expectedKind)
+	private void expectInitialValueType(TypedVariableNode variableNode, SyntaxKind expectedKind)
 	{
 		if (variableNode.type().initialValue().kind() != expectedKind)
 		{
@@ -473,7 +473,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	 *
 	 * @param typedVariable the variable to add the dimensions to.
 	 */
-	private void addArrayDimensionsWorkaroundSlash(TypedNode typedVariable) throws ParseError
+	private void addArrayDimensionsWorkaroundSlash(TypedVariableNode typedVariable) throws ParseError
 	{
 		var identifierToken = previous();
 		var relevantSource = identifierToken.source().substring(identifierToken.source().indexOf('/'));

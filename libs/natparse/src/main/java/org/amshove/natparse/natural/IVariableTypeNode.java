@@ -4,7 +4,7 @@ import org.amshove.natparse.lexing.SyntaxToken;
 
 import java.text.DecimalFormat;
 
-public interface IVariableType
+public interface IVariableTypeNode
 {
 	DataFormat format();
 	double length();
@@ -13,7 +13,7 @@ public interface IVariableType
 	/**
 	 * Returns the initial value of the variable or the constant variable if isConstant() returns true.
 	 * @return
-	 * @see IVariableType#isConstant()
+	 * @see IVariableTypeNode#isConstant()
 	 */
 	SyntaxToken initialValue();
 	boolean isConstant();

@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 class ParserErrors
 {
-	public static ParserDiagnostic dataTypeNeedsLength(TypedNode variableNode)
+	public static ParserDiagnostic dataTypeNeedsLength(TypedVariableNode variableNode)
 	{
 		return ParserDiagnostic.create(
 			"Data type <%s> needs to have a length".formatted(variableNode.type().format()),
@@ -17,7 +17,7 @@ class ParserErrors
 		);
 	}
 
-	public static ParserDiagnostic dynamicVariableLengthNotAllowed(TypedNode variableNode)
+	public static ParserDiagnostic dynamicVariableLengthNotAllowed(TypedVariableNode variableNode)
 	{
 		return ParserDiagnostic.create(
 			"Dynamic length not allowed for data type <%s>".formatted(variableNode.type().format()),
@@ -26,7 +26,7 @@ class ParserErrors
 		);
 	}
 
-	public static ParserDiagnostic initValueMismatch(TypedNode variable, SyntaxKind expectedKind)
+	public static ParserDiagnostic initValueMismatch(TypedVariableNode variable, SyntaxKind expectedKind)
 	{
 		return ParserDiagnostic.create(
 			"Type mismatch on initial value. Got <%s> but expected <%s>".formatted(variable.type().initialValue().kind(), expectedKind),
@@ -35,7 +35,7 @@ class ParserErrors
 		);
 	}
 
-	public static ParserDiagnostic initValueMismatch(TypedNode variable, SyntaxKind... expectedKinds)
+	public static ParserDiagnostic initValueMismatch(TypedVariableNode variable, SyntaxKind... expectedKinds)
 	{
 		return ParserDiagnostic.create(
 			"Type mismatch on initial value. Got <%s> but expected one of <%s>".formatted(variable.type().initialValue().kind(), Arrays.stream(expectedKinds).map(k -> k.toString()).collect(Collectors.joining(","))),
@@ -44,7 +44,7 @@ class ParserErrors
 		);
 	}
 
-	public static ParserDiagnostic emptyInitValue(TypedNode variable)
+	public static ParserDiagnostic emptyInitValue(TypedVariableNode variable)
 	{
 		return ParserDiagnostic.create(
 			"Initial value is empty",
@@ -53,7 +53,7 @@ class ParserErrors
 		);
 	}
 
-	public static ParserDiagnostic dynamicAndFixedLength(TypedNode variable)
+	public static ParserDiagnostic dynamicAndFixedLength(TypedVariableNode variable)
 	{
 		var dynamicToken = variable.findDescendantToken(SyntaxKind.DYNAMIC);
 		if(dynamicToken != null)

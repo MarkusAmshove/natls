@@ -1,13 +1,13 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.natural.ITypedNode;
-import org.amshove.natparse.natural.IVariableType;
+import org.amshove.natparse.natural.IVariableTypeNode;
 
-public class TypedNode extends VariableNode implements ITypedNode
+public class TypedVariableNode extends VariableNode implements ITypedNode
 {
 	private VariableType type;
 
-	public TypedNode(VariableNode variable)
+	public TypedVariableNode(VariableNode variable)
 	{
 		setLevel(variable.level());
 		setDeclaration(variable.declaration());
@@ -18,7 +18,7 @@ public class TypedNode extends VariableNode implements ITypedNode
 	}
 
 	@Override
-	public IVariableType type()
+	public IVariableTypeNode type()
 	{
 		return type;
 	}
