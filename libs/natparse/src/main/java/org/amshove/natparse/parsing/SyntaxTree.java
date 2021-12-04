@@ -7,6 +7,7 @@ import org.amshove.natparse.natural.ISyntaxTree;
 import org.amshove.natparse.natural.ITokenNode;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 record SyntaxTree(ReadOnlyList<? extends ISyntaxNode> children) implements ISyntaxTree
 {
@@ -14,6 +15,11 @@ record SyntaxTree(ReadOnlyList<? extends ISyntaxNode> children) implements ISynt
 	static ISyntaxTree create(ReadOnlyList<ISyntaxNode> children)
 	{
 		return new SyntaxTree(children);
+	}
+
+	static ISyntaxTree create(ISyntaxNode... children)
+	{
+		return new SyntaxTree(ReadOnlyList.from(Arrays.asList(children)));
 	}
 
 	static ISyntaxTree createFromTokens(ReadOnlyList<SyntaxToken> tokens)

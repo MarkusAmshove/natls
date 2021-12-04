@@ -4,6 +4,7 @@ import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 
 import javax.annotation.Nullable;
+import java.util.stream.Stream;
 
 public interface ISyntaxTree
 {
@@ -29,9 +30,8 @@ public interface ISyntaxTree
 	{
 		for (var node : nodes())
 		{
-			if (node instanceof ITokenNode)
+			if (node instanceof ITokenNode tokenNode)
 			{
-				var tokenNode = (ITokenNode) node;
 				if (tokenNode.token().kind() == kind)
 				{
 					return tokenNode;
@@ -40,5 +40,13 @@ public interface ISyntaxTree
 		}
 
 		return null;
+	}
+
+	@SuppressWarnings("unchecked")
+	default <T> Stream<T> descendantsOfType(Class<T> type)
+	{
+		return nodes().stream()
+			.filter(n -> type.isAssignableFrom(n.getClass()))
+			.map(n -> (T)n);
 	}
 }
