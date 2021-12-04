@@ -88,7 +88,7 @@ abstract class AbstractParser<T>
 		if(tokens.isAtEnd() || !tokens.peek().kind().isIdentifier())
 		{
 			diagnostics.add(ParserDiagnostic.unexpectedToken(SyntaxKind.IDENTIFIER, tokens.peek()));
-			throw new ParseError();
+			throw new ParseError(peek());
 		}
 
 		var token = tokens.peek();
@@ -104,7 +104,7 @@ abstract class AbstractParser<T>
 		}
 
 		diagnostics.add(ParserDiagnostic.unexpectedToken(kind, peek()));
-		throw new ParseError();
+		throw new ParseError(peek());
 	}
 
 	protected SyntaxToken consumeLiteral(BaseSyntaxNode node) throws ParseError
@@ -125,7 +125,7 @@ abstract class AbstractParser<T>
 		}
 
 		diagnostics.add(ParserDiagnostic.unexpectedToken(SyntaxKind.IDENTIFIER, peek()));
-		throw new ParseError();
+		throw new ParseError(peek());
 	}
 
 
@@ -134,7 +134,7 @@ abstract class AbstractParser<T>
 		if(tokens.isAtEnd() || !acceptedKinds.contains(tokens.peek().kind()))
 		{
 			diagnostics.add(ParserDiagnostic.unexpectedToken(acceptedKinds, tokens.peek()));
-			throw new ParseError();
+			throw new ParseError(peek());
 		}
 
 		return tokens.advance();

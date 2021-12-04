@@ -41,8 +41,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 			catch (ParseError e)
 			{
-				// Most liberal error handling currently is trying to advance to the next scope token
-				while (!tokens.isAtEnd() && (peek().kind() != SyntaxKind.END_DEFINE && !SCOPE_SYNTAX_KINDS.contains(peek().kind())))
+				// Skip to next line or END-DEFINE to recover
+				while (!tokens.isAtEnd() && peek().line() == e.getErrorToken().line() && peek().kind() != SyntaxKind.END_DEFINE)
 				{
 					tokens.advance();
 				}
@@ -72,7 +72,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		if (!isScopeToken(peek()))
 		{
 			report(ParserDiagnostic.unexpectedToken(SCOPE_SYNTAX_KINDS, peek()));
-			throw new ParseError();
+			throw new ParseError(peek());
 		}
 
 		if (peek(1).kind() == SyntaxKind.USING)
@@ -389,7 +389,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		if(peek().kind() == SyntaxKind.RPAREN)
 		{
 			report(ParserErrors.incompleteArrayDefinition(variable));
-			throw new ParseError();
+			throw new ParseError(peek());
 		}
 
 		var dimension = new ArrayDimension();
@@ -485,7 +485,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		if(boundToken.token().length() == 0 && peek().kind() != SyntaxKind.ASTERISK)
 		{
 			report(ParserErrors.incompleteArrayDefinition(slashToken));
-			throw new ParseError();
+			throw new ParseError(peek());
 		}
 
 		var dimension = new ArrayDimension();
