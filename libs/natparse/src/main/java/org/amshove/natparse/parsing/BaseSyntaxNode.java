@@ -46,7 +46,7 @@ class BaseSyntaxNode implements ISyntaxNode
 	}
 
 	@Override
-	public ReadOnlyList<? extends ISyntaxNode> nodes()
+	public ReadOnlyList<? extends ISyntaxNode> descendants()
 	{
 		return ReadOnlyList.from(nodes); // TODO: Perf
 	}

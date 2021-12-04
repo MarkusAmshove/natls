@@ -9,17 +9,17 @@ import org.amshove.natparse.natural.ITokenNode;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-record SyntaxTree(ReadOnlyList<? extends ISyntaxNode> children) implements ISyntaxTree
+record SyntaxTree(ReadOnlyList<? extends ISyntaxNode> descendants) implements ISyntaxTree
 {
 
-	static ISyntaxTree create(ReadOnlyList<ISyntaxNode> children)
+	static ISyntaxTree create(ReadOnlyList<ISyntaxNode> descendants)
 	{
-		return new SyntaxTree(children);
+		return new SyntaxTree(descendants);
 	}
 
-	static ISyntaxTree create(ISyntaxNode... children)
+	static ISyntaxTree create(ISyntaxNode... descendants)
 	{
-		return new SyntaxTree(ReadOnlyList.from(Arrays.asList(children)));
+		return new SyntaxTree(ReadOnlyList.from(Arrays.asList(descendants)));
 	}
 
 	static ISyntaxTree createFromTokens(ReadOnlyList<SyntaxToken> tokens)
@@ -34,8 +34,8 @@ record SyntaxTree(ReadOnlyList<? extends ISyntaxNode> children) implements ISynt
 	}
 
 	@Override
-	public ReadOnlyList<? extends ISyntaxNode> nodes()
+	public ReadOnlyList<? extends ISyntaxNode> descendants()
 	{
-		return children;
+		return descendants;
 	}
 }

@@ -8,13 +8,13 @@ import java.util.stream.Stream;
 
 public interface ISyntaxTree
 {
-	ReadOnlyList<? extends ISyntaxNode> nodes();
+	ReadOnlyList<? extends ISyntaxNode> descendants();
 
 	@Nullable
 	@SuppressWarnings("unchecked")
-	default <T extends ISyntaxNode> T findDirectChildOfType(Class<T> type)
+	default <T extends ISyntaxNode> T findDescendantOfType(Class<T> type)
 	{
-		for (var node : nodes())
+		for (var node : descendants())
 		{
 			if (type.isAssignableFrom(node.getClass()))
 			{
@@ -26,9 +26,9 @@ public interface ISyntaxTree
 	}
 
 	@Nullable
-	default ITokenNode findDirectChildSyntaxToken(SyntaxKind kind)
+	default ITokenNode findDescendantToken(SyntaxKind kind)
 	{
-		for (var node : nodes())
+		for (var node : descendants())
 		{
 			if (node instanceof ITokenNode tokenNode)
 			{
@@ -45,7 +45,7 @@ public interface ISyntaxTree
 	@SuppressWarnings("unchecked")
 	default <T extends ISyntaxNode> Stream<T> descendantsOfType(Class<T> type)
 	{
-		return nodes().stream()
+		return descendants().stream()
 			.filter(n -> type.isAssignableFrom(n.getClass()))
 			.map(n -> (T)n);
 	}

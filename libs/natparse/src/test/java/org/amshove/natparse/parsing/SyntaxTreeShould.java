@@ -27,7 +27,7 @@ class SyntaxTreeShould
 			new TokenNode(new SyntaxToken(SyntaxKind.END_DEFINE, 0, 0, 0, ""))
 		);
 
-		var tokenNode = tree.findDirectChildSyntaxToken(SyntaxKind.DEFINE);
+		var tokenNode = tree.findDescendantToken(SyntaxKind.DEFINE);
 		assertThat(tokenNode).isNotNull();
 		assertThat(tokenNode.token().kind()).isEqualTo(SyntaxKind.DEFINE);
 	}
@@ -40,7 +40,7 @@ class SyntaxTreeShould
 			new TokenNode(new SyntaxToken(SyntaxKind.END_DEFINE, 0, 0, 0, ""))
 		);
 
-		var tokenNode = tree.findDirectChildSyntaxToken(SyntaxKind.DEFINE);
+		var tokenNode = tree.findDescendantToken(SyntaxKind.DEFINE);
 		assertThat(tokenNode).isNull();
 	}
 
@@ -49,7 +49,7 @@ class SyntaxTreeShould
 	{
 		var tree = SyntaxTree.create(new BaseSyntaxNode(), new TokenNode(null), new VariableNode());
 
-		var tokenNode = tree.findDirectChildOfType(TokenNode.class);
+		var tokenNode = tree.findDescendantOfType(TokenNode.class);
 		assertThat(tokenNode).isNotNull();
 		assertThat(tokenNode.getClass()).isEqualTo(TokenNode.class);
 	}
@@ -59,7 +59,7 @@ class SyntaxTreeShould
 	{
 		var tree = SyntaxTree.create(new BaseSyntaxNode(), new VariableNode());
 
-		var tokenNode = tree.findDirectChildOfType(TokenNode.class);
+		var tokenNode = tree.findDescendantOfType(TokenNode.class);
 		assertThat(tokenNode).isNull();
 	}
 }

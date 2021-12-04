@@ -336,7 +336,7 @@ public class NaturalLanguageService
 				fileUri,
 				new Range(
 					new Position(v.position().line(), v.position().offsetInLine()),
-					new Position(v.nodes().last().position().line(), v.nodes().last().position().offsetInLine())
+					new Position(v.descendants().last().position().line(), v.descendants().last().position().offsetInLine())
 				)
 			))
 			.toList();

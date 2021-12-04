@@ -45,10 +45,10 @@ class DefineDataParserShould extends AbstractParserTest
 		var defineData = assertParsesWithoutDiagnostics(source);
 
 		assertThat(defineData.position().line()).isEqualTo(0);
-		var firstTokenNode = assertNodeType(defineData.nodes().first(), ITokenNode.class);
+		var firstTokenNode = assertNodeType(defineData.descendants().first(), ITokenNode.class);
 		assertThat(firstTokenNode.token().kind()).isEqualTo(SyntaxKind.DEFINE);
-		assertThat(defineData.nodes().last().position().line()).isEqualTo(2);
-		var lastTokenNode = assertNodeType(defineData.nodes().last(), ITokenNode.class);
+		assertThat(defineData.descendants().last().position().line()).isEqualTo(2);
+		var lastTokenNode = assertNodeType(defineData.descendants().last(), ITokenNode.class);
 		assertThat(lastTokenNode.token().kind()).isEqualTo(SyntaxKind.END_DEFINE);
 	}
 
@@ -63,7 +63,7 @@ class DefineDataParserShould extends AbstractParserTest
 
 		var defineData = assertParsesWithoutDiagnostics(source);
 
-		assertThat(defineData.nodes()).isNotNull();
+		assertThat(defineData.descendants()).isNotNull();
 		assertThat(defineData.localUsings().size()).isEqualTo(1);
 		assertThat(defineData.localUsings().first().target().source()).isEqualTo("SOMELDA");
 	}
@@ -162,16 +162,16 @@ class DefineDataParserShould extends AbstractParserTest
 		var defineData = assertParsesWithoutDiagnostics(source);
 
 		assertAll(
-			() -> assertTokenNode(defineData.nodes().get(0), n -> n.token().kind())
+			() -> assertTokenNode(defineData.descendants().get(0), n -> n.token().kind())
 				.isEqualTo(SyntaxKind.DEFINE),
-			() -> assertTokenNode(defineData.nodes().get(1), n -> n.token().kind())
+			() -> assertTokenNode(defineData.descendants().get(1), n -> n.token().kind())
 				.isEqualTo(SyntaxKind.DATA),
-			() -> assertNodeType(defineData.nodes().get(2), IUsingNode.class),
-			() -> assertNodeType(defineData.nodes().get(3), IUsingNode.class),
-			() -> assertNodeType(defineData.nodes().get(4), IUsingNode.class),
-			() -> assertNodeType(defineData.nodes().get(5), IUsingNode.class),
-			() -> assertNodeType(defineData.nodes().get(6), IScopeNode.class),
-			() -> assertTokenNode(defineData.nodes().get(7), n -> n.token().kind())
+			() -> assertNodeType(defineData.descendants().get(2), IUsingNode.class),
+			() -> assertNodeType(defineData.descendants().get(3), IUsingNode.class),
+			() -> assertNodeType(defineData.descendants().get(4), IUsingNode.class),
+			() -> assertNodeType(defineData.descendants().get(5), IUsingNode.class),
+			() -> assertNodeType(defineData.descendants().get(6), IScopeNode.class),
+			() -> assertTokenNode(defineData.descendants().get(7), n -> n.token().kind())
 				.isEqualTo(SyntaxKind.END_DEFINE)
 		);
 	}
@@ -328,16 +328,16 @@ class DefineDataParserShould extends AbstractParserTest
 			end-define
 			""");
 
-		var scopeNode = defineData.findDirectChildOfType(IScopeNode.class);
+		var scopeNode = defineData.findDescendantOfType(IScopeNode.class);
 		assertThat(scopeNode).isNotNull();
-		assertThat(scopeNode.nodes().size()).isEqualTo(3); // LOCAL + Group + Typed
+		assertThat(scopeNode.descendants().size()).isEqualTo(3); // LOCAL + Group + Typed
 
 		var group = assertNodeType(defineData.variables().first(), IGroupNode.class);
 
 		assertThat(group.level()).isEqualTo(1);
 		assertThat(group.name()).isEqualTo("#A-GROUP");
 		assertThat(group.qualifiedName()).isEqualTo("#A-GROUP");
-		assertThat(group.nodes().size()).isEqualTo(6); // 1 + #A-GROUP + 2 #WI..2 + 2 #WITH..2 + 2 #ANOTH.. + 2 #TWOAGAIN
+		assertThat(group.descendants().size()).isEqualTo(6); // 1 + #A-GROUP + 2 #WI..2 + 2 #WITH..2 + 2 #ANOTH.. + 2 #TWOAGAIN
 		{
 			var firstChild = assertNodeType(group.variables().first(), ITypedNode.class);
 			assertThat(firstChild.level()).isEqualTo(2);

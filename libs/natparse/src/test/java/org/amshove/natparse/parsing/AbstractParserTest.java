@@ -52,7 +52,7 @@ public abstract class AbstractParserTest
 
 		if(!(node instanceof ITokenNode))
 		{
-			assertThat(node.nodes().size()).as("No child were added to node").isPositive();
+			assertThat(node.descendants().size()).as("No child were added to node").isPositive();
 		}
 
 		return node;

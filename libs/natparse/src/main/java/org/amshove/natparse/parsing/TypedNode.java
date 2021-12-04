@@ -11,7 +11,7 @@ public class TypedNode extends VariableNode implements ITypedNode
 	{
 		setLevel(variable.level());
 		setDeclaration(variable.declaration());
-		for (var node : variable.nodes())
+		for (var node : variable.descendants())
 		{
 			addNode((BaseSyntaxNode) node);
 		}

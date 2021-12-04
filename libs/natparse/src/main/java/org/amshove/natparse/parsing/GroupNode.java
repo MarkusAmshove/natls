@@ -17,7 +17,7 @@ public class GroupNode extends VariableNode implements IGroupNode
 	{
 		setLevel(variable.level());
 		setDeclaration(variable.declaration());
-		for (var node : variable.nodes())
+		for (var node : variable.descendants())
 		{
 			addNode((BaseSyntaxNode) node);
 		}
