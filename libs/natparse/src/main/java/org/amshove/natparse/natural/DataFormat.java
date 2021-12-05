@@ -2,6 +2,8 @@ package org.amshove.natparse.natural;
 
 import org.amshove.natparse.NaturalParseException;
 
+import java.text.DecimalFormat;
+
 public enum DataFormat
 {
 	ALPHANUMERIC('A'),
@@ -16,6 +18,17 @@ public enum DataFormat
 	TIME('T'),
 	UNICODE('U'),
 	NONE(' ');
+
+	private static final DecimalFormat LENGTH_FORMAT = new DecimalFormat("#.#");
+	public static String formatLength(double length)
+	{
+		if(length == (long)length)
+		{
+			return "%d".formatted((long)length);
+		}
+
+		return LENGTH_FORMAT.format(length);
+	}
 
 	private final char identifier;
 

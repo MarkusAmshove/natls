@@ -1,6 +1,7 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.SyntaxKind;
+import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IArrayDimension;
 
 import java.util.Arrays;
@@ -117,4 +118,12 @@ class ParserErrors
 		);
 	}
 
+	public static ParserDiagnostic redefinitionLengthIsTooLong(RedefinitionNode node, double redefinitionLength, double maxLength)
+	{
+		return ParserDiagnostic.create(
+			"Length of redefinition (%s) exceeds target length (%s)".formatted(DataFormat.formatLength(redefinitionLength), DataFormat.formatLength(maxLength)),
+			node,
+			ParserError.REDEFINE_LENGTH_EXCEEDS_TARGET_LENGTH
+		);
+	}
 }

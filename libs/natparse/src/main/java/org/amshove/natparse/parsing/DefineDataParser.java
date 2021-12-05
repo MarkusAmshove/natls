@@ -656,11 +656,39 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		if (target == null)
 		{
 			report(ParserErrors.noTargetForRedefineFound(redefinitionNode));
+			return;
 		}
-		else
+
+		redefinitionNode.setTarget(target);
+
+		var targetLength = calculateVariableLength(target);
+		var redefineLength = calculateVariableLength(redefinitionNode);
+
+		if (targetLength != redefineLength)
 		{
-			redefinitionNode.setTarget(target);
+			report(ParserErrors.redefinitionLengthIsTooLong(redefinitionNode, redefineLength, targetLength));
 		}
+	}
+
+	private double calculateVariableLength(IVariableNode target)
+	{
+		if (target instanceof ITypedNode typedNode)
+		{
+			return typedNode.type().length();
+		}
+
+		if (target instanceof IGroupNode groupNode)
+		{
+			var groupLength = 0.0;
+			for (var member : groupNode.variables())
+			{
+				groupLength += calculateVariableLength(member);
+			}
+
+			return groupLength;
+		}
+
+		return 0.0;
 	}
 
 }

@@ -58,9 +58,14 @@ public class DefineDataParserDiagnosticTest
 					var expectedDiagnosticsHeading = expectedDiagnostics.stream().map(ExpectedDiagnostic::toString).collect(Collectors.joining("\n"));
 					var actualDiagnosticsHeading = parseResult.diagnostics().stream().map(IDiagnostic::toVerboseString).collect(Collectors.joining("\n"));
 
+					if (actualDiagnosticsHeading.isEmpty())
+					{
+						actualDiagnosticsHeading = "None";
+					}
+
 					var heading = """
-      					File: %s
-      					
+						File: %s
+											
 						Expected Diagnostics:
 						%s
 

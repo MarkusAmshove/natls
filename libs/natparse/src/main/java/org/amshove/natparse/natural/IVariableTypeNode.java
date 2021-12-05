@@ -2,8 +2,6 @@ package org.amshove.natparse.natural;
 
 import org.amshove.natparse.lexing.SyntaxToken;
 
-import java.text.DecimalFormat;
-
 public interface IVariableTypeNode
 {
 	DataFormat format();
@@ -25,8 +23,7 @@ public interface IVariableTypeNode
 		details += "(%s".formatted(format().identifier());
 		if(length() > 0.0)
 		{
-			var decimalFormat = new DecimalFormat("#.#");
-			details += "%s".formatted(decimalFormat.format(length()));
+			details += "%s".formatted(DataFormat.formatLength(length()));
 		}
 		details += ")";
 

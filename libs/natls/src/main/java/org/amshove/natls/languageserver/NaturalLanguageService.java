@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -264,8 +263,7 @@ public class NaturalLanguageService
 			hoverText += " (%c".formatted(typedVariable.type().format().identifier());
 			if (typedVariable.type().length() > 0.0)
 			{
-				var dataLengthFormat = new DecimalFormat("#.#");
-				hoverText += "%s)".formatted(dataLengthFormat.format(typedVariable.type().length()));
+				hoverText += "%s)".formatted(DataFormat.formatLength(typedVariable.type().length()));
 			}
 			if (typedVariable.type().hasDynamicLength())
 			{
