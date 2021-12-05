@@ -280,14 +280,14 @@ class DefineDataParserShould extends AbstractParserTest
 	}
 
 	@ParameterizedTest
-	@CsvSource({"A,5", "N,\"Hi\"", "I,\"Hello\"", "P,TRUE", "F,FALSE"})
+	@CsvSource({ "A,5", "N,\"Hi\"", "I,\"Hello\"", "P,TRUE", "F,FALSE" })
 	void addADiagnosticForTypeMismatchesInInitialValues(String type, String literal)
 	{
 		assertDiagnostic("define data local 1 #var (%s4) init <%s> end-define".formatted(type, literal), ParserError.INITIAL_VALUE_TYPE_MISMATCH);
 	}
 
 	@ParameterizedTest
-	@CsvSource({"A,5", "N,\"Hi\"", "I,\"Hello\"", "P,TRUE", "F,FALSE"})
+	@CsvSource({ "A,5", "N,\"Hi\"", "I,\"Hello\"", "P,TRUE", "F,FALSE" })
 	void addADiagnosticForTypeMismatchesInConstValues(String type, String literal)
 	{
 		assertDiagnostic("define data local 1 #var (%s4) const <%s> end-define".formatted(type, literal), ParserError.INITIAL_VALUE_TYPE_MISMATCH);
@@ -303,7 +303,6 @@ class DefineDataParserShould extends AbstractParserTest
 			1 #SECONDVAR (A5)
 			end-define
 			""");
-
 
 		assertThat(defineData.variables().size()).isEqualTo(2);
 		assertThat(defineData.variables().first().name()).isEqualTo("#FIRSTVAR");
@@ -453,6 +452,50 @@ class DefineDataParserShould extends AbstractParserTest
 		assertThat(independent.level()).isEqualTo(1);
 		assertThat(independent.name()).isEqualTo("+MY-AIV");
 		assertThat(independent.scope().isIndependent()).isTrue();
+	}
+
+	@Test
+	void parseRedefines()
+	{
+		var source = """
+			   DEFINE DATA
+			   LOCAL
+			   1 #DATE (N8)
+			   1 REDEFINE #DATE
+			   	2 #YEAR (N4)
+			   	2 #MONTH (N2)
+			   	2 #DAY (N2)
+			   END-DEFINE
+			""";
+
+		var defineData = assertParsesWithoutDiagnostics(source);
+
+		var date = defineData.variables().first();
+		var redefinition = assertNodeType(defineData.variables().get(1), IRedefinitionNode.class);
+		assertThat(redefinition.target()).isEqualTo(date);
+		assertThat(redefinition.variables().first().qualifiedName()).isEqualTo("#DATE.#YEAR");
+	}
+
+	@Test
+	void redefineGroups()
+	{
+		var source = """
+			   DEFINE DATA
+			   LOCAL
+			   01 #FIRSTVAR
+			     02 #FIRSTVAR-A (N2) INIT <5>
+			     02 #FIRSTVAR-B (P8) INIT <10>
+			  01 REDEFINE #FIRSTVAR
+			     02 #FIRSTVAR-ALPHA (A10)
+			   END-DEFINE
+			""";
+
+		var defineData = assertParsesWithoutDiagnostics(source);
+
+		var firstVar = defineData.variables().first();
+		var redefinition = assertNodeType(defineData.variables().get(3), IRedefinitionNode.class);
+		assertThat(redefinition.target()).isEqualTo(firstVar);
+		assertThat(redefinition.variables().first().qualifiedName()).isEqualTo("#FIRSTVAR.#FIRSTVAR-ALPHA");
 	}
 
 	private IDefineData assertParsesWithoutDiagnostics(String source)

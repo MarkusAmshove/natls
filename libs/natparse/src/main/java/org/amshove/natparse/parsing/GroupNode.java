@@ -11,12 +11,15 @@ import java.util.List;
 
 public class GroupNode extends VariableNode implements IGroupNode
 {
-	private List<IVariableNode> variables = new ArrayList<>();
+	private final List<IVariableNode> variables = new ArrayList<>();
 
 	public GroupNode(VariableNode variable)
 	{
 		setLevel(variable.level());
-		setDeclaration(variable.declaration());
+		if(variable.declaration() != null)
+		{
+			setDeclaration(variable.declaration());
+		}
 		for (var node : variable.descendants())
 		{
 			addNode((BaseSyntaxNode) node);

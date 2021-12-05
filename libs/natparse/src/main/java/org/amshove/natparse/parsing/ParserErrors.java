@@ -107,4 +107,14 @@ class ParserErrors
 			ParserError.GROUP_CANNOT_BE_EMPTY
 		);
 	}
+
+	public static ParserDiagnostic noTargetForRedefineFound(RedefinitionNode redefinitionNode)
+	{
+		return ParserDiagnostic.create(
+			"No target for REDEFINE found. The redefined variable must be declared beforehand",
+			redefinitionNode,
+			ParserError.NO_TARGET_VARIABLE_FOR_REDEFINE_FOUND
+		);
+	}
+
 }

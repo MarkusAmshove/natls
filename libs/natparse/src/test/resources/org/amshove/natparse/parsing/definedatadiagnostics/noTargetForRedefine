@@ -1,0 +1,5 @@
+define data
+local
+1 REDEFINE #DATE /* !{D:ERROR:NPP014}
+2 #YEAR (N4)
+end-define

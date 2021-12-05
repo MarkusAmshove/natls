@@ -98,11 +98,16 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 
 			variable.setScope(VariableScope.fromSyntaxKind(scope.kind()));
-			if(variable.scope().isIndependent())
+			if (variable.scope().isIndependent())
 			{
 				checkIndependentVariable(variable);
 			}
 			scopeNode.setScope(variable.scope());
+
+			if (variable instanceof RedefinitionNode redefinitionNode)
+			{
+				addTargetToRedefine(scopeNode, redefinitionNode);
+			}
 
 			scopeNode.addVariable(variable);
 		}
@@ -116,6 +121,11 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		var level = consumeMandatory(variable, SyntaxKind.NUMBER).intValue();
 		variable.setLevel(level);
+
+		if (consumeOptionally(variable, SyntaxKind.REDEFINE))
+		{
+			variable = new RedefinitionNode(variable);
+		}
 
 		var identifier = consumeMandatoryIdentifier(variable);
 		variable.setDeclaration(identifier);
@@ -136,7 +146,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private GroupNode groupVariable(VariableNode variable) throws ParseError
 	{
-		var groupNode = new GroupNode(variable);
+		var groupNode = variable instanceof RedefinitionNode
+			? (RedefinitionNode) variable
+			: new GroupNode(variable);
 
 		if (previous().kind() == SyntaxKind.LPAREN)
 		{
@@ -395,7 +407,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private void addArrayDimension(VariableNode variable) throws ParseError
 	{
-		if(peek().kind() == SyntaxKind.RPAREN)
+		if (peek().kind() == SyntaxKind.RPAREN)
 		{
 			report(ParserErrors.incompleteArrayDefinition(variable));
 			throw new ParseError(peek());
@@ -409,7 +421,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		var workaroundNextDimension = false;
 		if (consumeOptionally(dimension, SyntaxKind.COLON))
 		{
-			if(peekKind(SyntaxKind.NUMBER) && peek().source().contains(","))
+			if (peekKind(SyntaxKind.NUMBER) && peek().source().contains(","))
 			{
 				// Workaround for (T/1:10,50:*) where 10,50 gets recognized as a number
 				var numbers = peek().source().split(",");
@@ -444,7 +456,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		dimension.setLowerBound(lowerBound);
 		dimension.setUpperBound(upperBound);
 
-		if(workaroundNextDimension)
+		if (workaroundNextDimension)
 		{
 			addArrayDimensionWorkaroundComma(variable);
 		}
@@ -491,7 +503,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		typedVariable.addNode(slashToken);
 		var boundToken = SyntheticTokenNode.fromToken(identifierToken, SyntaxKind.NUMBER, relevantSource.substring(1));
 
-		if(boundToken.token().length() == 0 && peek().kind() != SyntaxKind.ASTERISK)
+		if (boundToken.token().length() == 0 && peek().kind() != SyntaxKind.ASTERISK)
 		{
 			report(ParserErrors.incompleteArrayDefinition(slashToken));
 			throw new ParseError(peek());
@@ -504,11 +516,10 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			extractArrayBound(boundToken);
 		var upperBound = -1;
 
-
 		var workaroundNextDimension = false;
 		if (consumeOptionally(dimension, SyntaxKind.COLON))
 		{
-			if(peekKind(SyntaxKind.NUMBER) && peek().source().contains(","))
+			if (peekKind(SyntaxKind.NUMBER) && peek().source().contains(","))
 			{
 				// Workaround for (T/1:10,50:*) where 10,50 gets recognized as a number
 				var numbers = peek().source().split(",");
@@ -540,7 +551,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		typedVariable.addDimension(dimension);
 
-		if(workaroundNextDimension)
+		if (workaroundNextDimension)
 		{
 			addArrayDimensionWorkaroundComma(typedVariable);
 		}
@@ -554,7 +565,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	/**
 	 * Workaround when the previous array dimension had a numeric upper bound
 	 * and the current dimension has a numeric lower bound.
-	 *
+	 * <p>
 	 * This is because in (T/1:10,50:*) the 10,50 is recognized as a single number,
 	 * although the comma means a separation here.
 	 *
@@ -579,7 +590,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		var workaroundNextDimension = false;
 		if (consumeOptionally(dimension, SyntaxKind.COLON))
 		{
-			if(peekKind(SyntaxKind.NUMBER) && peek().source().contains(","))
+			if (peekKind(SyntaxKind.NUMBER) && peek().source().contains(","))
 			{
 				// Workaround for (T/1:10,50:*) where 10,50 gets recognized as a number
 				numbers = peek().source().split(",");
@@ -610,7 +621,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		dimension.setUpperBound(upperBound);
 		variable.addDimension(dimension);
 
-		if(workaroundNextDimension)
+		if (workaroundNextDimension)
 		{
 			addArrayDimensionWorkaroundComma(variable);
 		}
@@ -618,14 +629,37 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private void checkIndependentVariable(VariableNode variable)
 	{
-		if(!variable.name().startsWith("+"))
+		if (!variable.name().startsWith("+"))
 		{
 			report(ParserErrors.invalidAivNaming(variable));
 		}
 
-		if(variable instanceof IGroupNode)
+		if (variable instanceof IGroupNode)
 		{
 			report(ParserErrors.independentCantBeGroup(variable));
+		}
+	}
+
+	private void addTargetToRedefine(ScopeNode scopeNode, RedefinitionNode redefinitionNode)
+	{
+		IVariableNode target = null;
+
+		for (var variable : scopeNode.variables())
+		{
+			if (variable.name().equalsIgnoreCase(redefinitionNode.name()))
+			{
+				target = variable;
+				break;
+			}
+		}
+
+		if (target == null)
+		{
+			report(ParserErrors.noTargetForRedefineFound(redefinitionNode));
+		}
+		else
+		{
+			redefinitionNode.setTarget(target);
 		}
 	}
 
