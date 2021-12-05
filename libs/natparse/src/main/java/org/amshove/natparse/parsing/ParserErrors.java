@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.IArrayDimension;
 
@@ -87,6 +88,15 @@ class ParserErrors
 			"Independent variable name must start with a +",
 			node,
 			ParserError.INDEPENDENT_VARIABLES_NAMING
+		);
+	}
+
+	public static ParserDiagnostic independentCantBeGroup(VariableNode variable)
+	{
+		return ParserDiagnostic.create(
+			"Independent variables can't be groups",
+			variable,
+			ParserError.INDEPENDENT_CANT_BE_GROUP
 		);
 	}
 }

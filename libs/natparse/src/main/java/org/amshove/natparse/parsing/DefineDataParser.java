@@ -98,7 +98,10 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 
 			variable.setScope(VariableScope.fromSyntaxKind(scope.kind()));
-			checkNaming(variable);
+			if(variable.scope().isIndependent())
+			{
+				checkIndependentVariable(variable);
+			}
 			scopeNode.setScope(variable.scope());
 
 			scopeNode.addVariable(variable);
@@ -608,11 +611,16 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 	}
 
-	private void checkNaming(VariableNode variable)
+	private void checkIndependentVariable(VariableNode variable)
 	{
-		if(variable.scope() == VariableScope.INDEPENDENT && !variable.name().startsWith("+"))
+		if(!variable.name().startsWith("+"))
 		{
 			report(ParserErrors.invalidAivNaming(variable));
+		}
+
+		if(variable instanceof IGroupNode)
+		{
+			report(ParserErrors.independentCantBeGroup(variable));
 		}
 	}
 
