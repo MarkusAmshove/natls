@@ -16,7 +16,7 @@ public enum VariableScope
 			case LOCAL -> LOCAL;
 			case PARAMETER -> PARAMETER;
 			case GLOBAL -> GLOBAL;
-//			case INDEPENDENT -> INDEPENDENT;
+			case INDEPENDENT -> INDEPENDENT;
 			default -> throw new NaturalParseException("Could not determine VariableScope from SyntaxKind");
 		};
 	}

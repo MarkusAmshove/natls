@@ -80,4 +80,13 @@ class ParserErrors
 			ParserError.INCOMPLETE_ARRAY_DEFINITION
 		);
 	}
+
+	public static ParserDiagnostic invalidAivNaming(VariableNode node)
+	{
+		return ParserDiagnostic.create(
+			"Independent variable name must start with a +",
+			node,
+			ParserError.INDEPENDENT_VARIABLES_NAMING
+		);
+	}
 }

@@ -423,6 +423,24 @@ class DefineDataParserShould extends AbstractParserTest
 			""".formatted(arrayDefinition), ParserError.INVALID_ARRAY_BOUND);
 	}
 
+	@Test
+	void parseIndependentVariables()
+	{
+		var source = """
+			   DEFINE DATA
+			   INDEPENDENT
+			   1 +MY-AIV (A10)
+			   END-DEFINE
+			""";
+
+		var defineData = assertParsesWithoutDiagnostics(source);
+
+		var independent = defineData.variables().first();
+		assertThat(independent.parent()).isInstanceOf(IScopeNode.class);
+		assertThat(independent.level()).isEqualTo(1);
+		assertThat(independent.name()).isEqualTo("+MY-AIV");
+	}
+
 	private IDefineData assertParsesWithoutDiagnostics(String source)
 	{
 		var lexer = new Lexer();

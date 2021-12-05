@@ -9,7 +9,7 @@ import java.util.List;
 
 public class DefineDataParser extends AbstractParser<IDefineData>
 {
-	private static final List<SyntaxKind> SCOPE_SYNTAX_KINDS = List.of(SyntaxKind.LOCAL, SyntaxKind.PARAMETER, SyntaxKind.GLOBAL);
+	private static final List<SyntaxKind> SCOPE_SYNTAX_KINDS = List.of(SyntaxKind.LOCAL, SyntaxKind.PARAMETER, SyntaxKind.GLOBAL, SyntaxKind.INDEPENDENT);
 
 	@Override
 	protected IDefineData parseInternal()
@@ -98,6 +98,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 
 			variable.setScope(VariableScope.fromSyntaxKind(scope.kind()));
+			checkNaming(variable);
 			scopeNode.setScope(variable.scope());
 
 			scopeNode.addVariable(variable);
@@ -604,6 +605,14 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		if(workaroundNextDimension)
 		{
 			addArrayDimensionWorkaroundComma(variable);
+		}
+	}
+
+	private void checkNaming(VariableNode variable)
+	{
+		if(variable.scope() == VariableScope.INDEPENDENT && !variable.name().startsWith("+"))
+		{
+			report(ParserErrors.invalidAivNaming(variable));
 		}
 	}
 
