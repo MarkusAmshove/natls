@@ -26,6 +26,11 @@ public class NaturalFile
 		return path;
 	}
 
+	public Path getProjectRelativePath()
+	{
+		return library.getSourcePath().getParent().getParent().relativize(path);
+	}
+
 	/* package */ void setLibrary(NaturalLibrary library)
 	{
 		this.library = library;
