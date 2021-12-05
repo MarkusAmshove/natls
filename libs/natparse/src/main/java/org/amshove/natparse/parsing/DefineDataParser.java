@@ -155,6 +155,11 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			groupNode.addVariable(nestedVariable);
 		}
 
+		if (groupNode.variables().size() == 0)
+		{
+			report(ParserErrors.emptyGroupVariable(groupNode));
+		}
+
 		return groupNode;
 	}
 

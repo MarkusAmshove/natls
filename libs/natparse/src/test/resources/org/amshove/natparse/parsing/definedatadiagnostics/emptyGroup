@@ -1,0 +1,4 @@
+define data
+local
+01 #mygroup /* !{D:ERROR:NPP013}
+end-define

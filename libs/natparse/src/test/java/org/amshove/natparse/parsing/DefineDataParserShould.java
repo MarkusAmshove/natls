@@ -388,19 +388,32 @@ class DefineDataParserShould extends AbstractParserTest
 		"(T/*:10)",
 		"(A10/1:10)",
 		"(T/1:10,50:*,*:20)",
-		"(1:10,20:*)",
 		"(A20/1:10,50:*,*:20)",
-		"(1:10)",
-		"(1:*)",
-		"(*:5)",
-		"(*)",
-		"(5)"
 	})
 	void parseArrayDefinitions(String variable)
 	{
 		assertParsesWithoutDiagnostics("""
 			define data local
 			1 AN-ARRAY %s
+			end-define
+			""".formatted(variable));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"(1:10,20:*)",
+		"(1:10)",
+		"(1:*)",
+		"(*:5)",
+		"(*)",
+		"(5)"
+	})
+	void parseArrayDefinitionsForGroups(String variable)
+	{
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 AN-ARRAY %s
+			2 INSIDE-GROUP (A5)
 			end-define
 			""".formatted(variable));
 	}

@@ -1,6 +1,5 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.IArrayDimension;
 
@@ -96,7 +95,16 @@ class ParserErrors
 		return ParserDiagnostic.create(
 			"Independent variables can't be groups",
 			variable,
-			ParserError.INDEPENDENT_CANT_BE_GROUP
+			ParserError.INDEPENDENT_CANNOT_BE_GROUP
+		);
+	}
+
+	public static ParserDiagnostic emptyGroupVariable(GroupNode groupNode)
+	{
+		return ParserDiagnostic.create(
+			"Group can not be empty",
+			groupNode,
+			ParserError.GROUP_CANNOT_BE_EMPTY
 		);
 	}
 }
