@@ -439,6 +439,7 @@ class DefineDataParserShould extends AbstractParserTest
 		assertThat(independent.parent()).isInstanceOf(IScopeNode.class);
 		assertThat(independent.level()).isEqualTo(1);
 		assertThat(independent.name()).isEqualTo("+MY-AIV");
+		assertThat(independent.scope().isIndependent()).isTrue();
 	}
 
 	private IDefineData assertParsesWithoutDiagnostics(String source)

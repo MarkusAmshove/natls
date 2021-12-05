@@ -20,4 +20,24 @@ public enum VariableScope
 			default -> throw new NaturalParseException("Could not determine VariableScope from SyntaxKind");
 		};
 	}
+
+	public boolean isLocal()
+	{
+		return this == LOCAL;
+	}
+
+	public boolean isParameter()
+	{
+		return this == PARAMETER;
+	}
+
+	public boolean isGlobal()
+	{
+		return this == GLOBAL;
+	}
+
+	public boolean isIndependent()
+	{
+		return this == INDEPENDENT;
+	}
 }

@@ -38,7 +38,7 @@ class ParserErrors
 	public static ParserDiagnostic initValueMismatch(TypedVariableNode variable, SyntaxKind... expectedKinds)
 	{
 		return ParserDiagnostic.create(
-			"Type mismatch on initial value. Got <%s> but expected one of <%s>".formatted(variable.type().initialValue().kind(), Arrays.stream(expectedKinds).map(k -> k.toString()).collect(Collectors.joining(","))),
+			"Type mismatch on initial value. Got <%s> but expected one of <%s>".formatted(variable.type().initialValue().kind(), Arrays.stream(expectedKinds).map(Enum::toString).collect(Collectors.joining(","))),
 			variable,
 			ParserError.INITIAL_VALUE_TYPE_MISMATCH
 		);

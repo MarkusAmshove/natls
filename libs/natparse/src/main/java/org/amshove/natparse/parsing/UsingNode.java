@@ -3,13 +3,12 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.IUsingNode;
+import org.amshove.natparse.natural.VariableScope;
 
 class UsingNode extends BaseSyntaxNode implements IUsingNode
 {
-	private boolean isLocal = false;
-	private boolean isParameter = false;
-	private boolean isGlobal = false;
 	private SyntaxToken using;
+	private VariableScope scope;
 
 	@Override
 	public SyntaxToken target()
@@ -20,19 +19,19 @@ class UsingNode extends BaseSyntaxNode implements IUsingNode
 	@Override
 	public boolean isLocalUsing()
 	{
-		return isLocal;
+		return scope.isLocal();
 	}
 
 	@Override
 	public boolean isGlobalUsing()
 	{
-		return isGlobal;
+		return scope.isGlobal();
 	}
 
 	@Override
 	public boolean isParameterUsing()
 	{
-		return isParameter;
+		return scope.isParameter();
 	}
 
 	void setUsingTarget(SyntaxToken using)
@@ -40,44 +39,13 @@ class UsingNode extends BaseSyntaxNode implements IUsingNode
 		this.using = using;
 	}
 
-	private void setLocal()
-	{
-		isLocal = true;
-		isParameter = false;
-		isGlobal = false;
-	}
-
-	private void setParameter()
-	{
-		isLocal = false;
-		isParameter = true;
-		isGlobal = false;
-	}
-
-	private void setGlobal()
-	{
-		isLocal = false;
-		isParameter = false;
-		isGlobal = true;
-	}
-
 	void setScope(SyntaxKind scopeKind)
 	{
-		switch (scopeKind)
-		{
-			case LOCAL:
-				setLocal();
-				break;
-			case PARAMETER:
-				setParameter();
-				break;
-			case GLOBAL:
-				setGlobal();
-		}
+		this.scope = VariableScope.fromSyntaxKind(scopeKind);
 	}
 
 	@Override public String toString()
 	{
-		return "UsingNode{isLocal=%s, isParameter=%s, isGlobal=%s, using=%s}".formatted(isLocal, isParameter, isGlobal, using);
+		return "UsingNode{scope=%s, using=%s}".formatted(scope, using);
 	}
 }
