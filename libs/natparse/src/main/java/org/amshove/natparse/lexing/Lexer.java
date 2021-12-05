@@ -224,7 +224,7 @@ public class Lexer
 	private void consumeIdentifier()
 	{
 		scanner.start();
-		while (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd())
+		while (!scanner.isAtEnd() && !isLineEnd() && isNoWhitespace() && isValidIdentifierCharacter())
 		{
 			scanner.advance();
 		}

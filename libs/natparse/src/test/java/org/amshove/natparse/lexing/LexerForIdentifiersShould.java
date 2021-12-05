@@ -70,6 +70,12 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 		assertTokens("message-me@mail", token(SyntaxKind.IDENTIFIER, "message-me@mail"));
 	}
 
+	@Test
+	void stopIdentifiersWhenANonIdentifierCharacterIsFound()
+	{
+		assertTokens("#DATE'test'", token(SyntaxKind.IDENTIFIER, "#DATE"), token(SyntaxKind.STRING));
+	}
+
 	@TestFactory
 	Iterable<DynamicTest> recognizeQualifiedVariables()
 	{
