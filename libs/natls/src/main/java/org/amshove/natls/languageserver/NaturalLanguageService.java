@@ -374,6 +374,7 @@ public class NaturalLanguageService
 		}
 
 		var completionItems = defineData.variables().stream()
+			.filter(v -> !(v instanceof IRedefinitionNode)) // this is the `REDEFINE #VAR`, which results in the variable being doubled in completion
 			.map(v -> {
 				var item = new CompletionItem();
 				item.setKind(CompletionItemKind.Variable);
