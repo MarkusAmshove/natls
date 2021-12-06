@@ -498,6 +498,22 @@ class DefineDataParserShould extends AbstractParserTest
 		assertThat(redefinition.variables().first().qualifiedName()).isEqualTo("#FIRSTVAR.#FIRSTVAR-ALPHA");
 	}
 
+	@Test
+	void notRaiseADiagnosticIfRedefineHasSmallerLength()
+	{
+		var source = """
+			   DEFINE DATA
+			   LOCAL
+			   1 #DATE (N8)
+			   1 REDEFINE #DATE
+			    2 #YEAR (N4)
+			    2 #MONTH (N2)
+			   END-DEFINE
+			""";
+
+		assertParsesWithoutDiagnostics(source);
+	}
+
 	private IDefineData assertParsesWithoutDiagnostics(String source)
 	{
 		var lexer = new Lexer();

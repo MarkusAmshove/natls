@@ -664,7 +664,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		var targetLength = calculateVariableLength(target);
 		var redefineLength = calculateVariableLength(redefinitionNode);
 
-		if (targetLength != redefineLength)
+		if (targetLength < redefineLength)
 		{
 			report(ParserErrors.redefinitionLengthIsTooLong(redefinitionNode, redefineLength, targetLength));
 		}
