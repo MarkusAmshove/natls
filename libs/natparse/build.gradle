@@ -2,4 +2,5 @@ dependencies {
     implementation libraries.dom4j
 
     testImplementation libraries.mockito
+    testImplementation libraries.archUnit
 }

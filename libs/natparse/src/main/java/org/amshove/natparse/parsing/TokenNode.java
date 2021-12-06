@@ -4,7 +4,7 @@ import org.amshove.natparse.IPosition;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.ITokenNode;
 
-public class TokenNode extends BaseSyntaxNode implements ITokenNode
+class TokenNode extends BaseSyntaxNode implements ITokenNode
 {
 	private final SyntaxToken token;
 

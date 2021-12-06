@@ -3,7 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.natural.ITypedNode;
 import org.amshove.natparse.natural.IVariableTypeNode;
 
-public class TypedVariableNode extends VariableNode implements ITypedNode
+class TypedVariableNode extends VariableNode implements ITypedNode
 {
 	private VariableType type;
 

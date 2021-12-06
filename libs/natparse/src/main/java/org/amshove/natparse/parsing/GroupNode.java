@@ -9,7 +9,7 @@ import org.amshove.natparse.natural.VariableScope;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GroupNode extends VariableNode implements IGroupNode
+class GroupNode extends VariableNode implements IGroupNode
 {
 	private final List<IVariableNode> variables = new ArrayList<>();
 

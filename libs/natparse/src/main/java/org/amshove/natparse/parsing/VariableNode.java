@@ -12,7 +12,7 @@ import org.amshove.natparse.natural.VariableScope;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VariableNode extends BaseSyntaxNode implements IVariableNode
+class VariableNode extends BaseSyntaxNode implements IVariableNode
 {
 	private int level;
 	private String name;
