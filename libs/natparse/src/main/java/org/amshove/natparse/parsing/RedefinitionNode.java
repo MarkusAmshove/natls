@@ -3,7 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.natural.IRedefinitionNode;
 import org.amshove.natparse.natural.IVariableNode;
 
-public class RedefinitionNode extends GroupNode implements IRedefinitionNode
+class RedefinitionNode extends GroupNode implements IRedefinitionNode
 {
 	private IVariableNode targetNode;
 

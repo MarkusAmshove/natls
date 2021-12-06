@@ -138,10 +138,40 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 		else
 		{
-			variable = groupVariable(variable);
+			if (consumeOptionally(variable, SyntaxKind.VIEW))
+			{
+				variable = view(variable);
+			}
+			else
+			{
+				variable = groupVariable(variable);
+			}
 		}
 
 		return variable;
+	}
+
+	private ViewNode view(VariableNode variable) throws ParseError
+	{
+		var view = new ViewNode(variable);
+
+		consumeOptionally(view, SyntaxKind.OF);
+
+		var ddm = consumeMandatoryIdentifier(view);
+		view.setDdmNameToken(ddm);
+
+		while (peekKind(SyntaxKind.NUMBER))
+		{
+			if(peek().intValue() <= view.level())
+			{
+				break;
+			}
+
+			var nestedField = variable();
+			view.addVariable(nestedField);
+		}
+
+		return view;
 	}
 
 	private GroupNode groupVariable(VariableNode variable) throws ParseError

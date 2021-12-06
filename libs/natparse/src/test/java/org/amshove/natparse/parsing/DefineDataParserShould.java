@@ -514,6 +514,43 @@ class DefineDataParserShould extends AbstractParserTest
 		assertParsesWithoutDiagnostics(source);
 	}
 
+	@Test
+	void parseViews()
+	{
+		var source = """
+			DEFINE DATA
+			LOCAL
+			1 MY-VIEW VIEW MY-DDM
+			2 DDM-FIELD (A15)
+			2 THE-SUPERDESCRIPTOR (N8)
+			2 REDEFINE THE-SUPERDESCRIPTOR
+			3 YEAR (N4)
+			3 MONTH (N2)
+			3 DAY (N2)
+			END-DEFINE
+			""";
+
+		var defineData = assertParsesWithoutDiagnostics(source);
+
+		var view = assertNodeType(defineData.variables().first(), IViewNode.class);
+		assertThat(view.declaration().source()).isEqualTo("MY-VIEW");
+		assertThat(view.ddmNameToken().source()).isEqualTo("MY-DDM");
+		assertThat(view.variables().size()).isEqualTo(3);
+		assertThat(view.variables().last()).isInstanceOf(IRedefinitionNode.class);
+		assertThat(((IRedefinitionNode) view.variables().last()).variables().size()).isEqualTo(3);
+	}
+
+	@Test
+	void parseViewWithOptionalOf()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data
+			local
+			1 my-view view of my-ddm
+			end-define
+			""");
+	}
+
 	private IDefineData assertParsesWithoutDiagnostics(String source)
 	{
 		var lexer = new Lexer();

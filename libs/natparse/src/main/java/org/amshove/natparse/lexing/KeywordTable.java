@@ -135,6 +135,7 @@ public class KeywordTable
 				case "null-handle" -> SyntaxKind.NULL_HANDLE;
 				case "obtain" -> SyntaxKind.OBTAIN;
 				case "old" -> SyntaxKind.OLD;
+				case "of" -> SyntaxKind.OF;
 				case "on" -> SyntaxKind.ON;
 				case "open" -> SyntaxKind.OPEN;
 				case "options" -> SyntaxKind.OPTIONS;
@@ -196,6 +197,7 @@ public class KeywordTable
 				case "val" -> SyntaxKind.VAL;
 				case "value" -> SyntaxKind.VALUE;
 				case "values" -> SyntaxKind.VALUES;
+				case "view" -> SyntaxKind.VIEW;
 				case "waste" -> SyntaxKind.WASTE;
 				case "when" -> SyntaxKind.WHEN;
 				case "while" -> SyntaxKind.WHILE;
