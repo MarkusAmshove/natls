@@ -40,4 +40,9 @@ public class NaturalFile
 	{
 		return library;
 	}
+
+	public NaturalFileType getFiletype()
+	{
+		return filetype;
+	}
 }
