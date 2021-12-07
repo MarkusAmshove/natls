@@ -64,17 +64,23 @@ public class App
 
 	public void run()
 	{
+		var startIndex = System.currentTimeMillis();
 		var project = new BuildFileProjectReader(filesystem).getNaturalProject(projectFile);
 		var indexer = new NaturalProjectFileIndexer(filesystem);
 		indexer.indexProject(project);
+		var endIndex = System.currentTimeMillis();
 
 		var lexer = new Lexer();
 		var parser = new DefineDataParser();
 		var diagnostics = new ArrayList<IDiagnostic>();
+		var filesChecked = 0;
+		var totalDiagnostics = 0;
+		var startCheck = System.currentTimeMillis();
 		for (var library : project.getLibraries())
 		{
 			for (var file : library.files().stream().filter(f -> f.getFiletype().hasDefineData()).toList())
 			{
+				filesChecked++;
 				try
 				{
 					diagnostics.clear();
@@ -84,6 +90,7 @@ public class App
 					var parseResult = parser.parse(tokens);
 					diagnostics.addAll(parseResult.diagnostics().stream().toList());
 
+					totalDiagnostics += diagnostics.size();
 					printDiagnostics(file.getPath(), diagnostics);
 				}
 				catch(Exception e)
@@ -93,6 +100,17 @@ public class App
 				}
 			}
 		}
+		var endCheck = System.currentTimeMillis();
+
+		var indexTime = endIndex - startIndex;
+		var checkTime = endCheck - startCheck;
+		System.out.println();
+		System.out.println("Done.");
+		System.out.println("Index time: " + indexTime + " ms");
+		System.out.println("Check time: " + checkTime + " ms");
+		System.out.println("Total: " + (indexTime + checkTime) + " ms");
+		System.out.println("Files checked: " + filesChecked);
+		System.out.println("Total diagnostics: " + totalDiagnostics);
 	}
 
 	private void printDiagnostics(Path filePath, List<IDiagnostic> diagnostics)
