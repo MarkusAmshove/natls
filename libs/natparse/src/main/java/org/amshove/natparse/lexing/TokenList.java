@@ -89,6 +89,14 @@ public class TokenList
 		return token;
 	}
 
+	/**
+	 * Resets the position offset times back.
+	 */
+	public void rollback(int offset)
+	{
+		currentOffset -= offset;
+	}
+
 	public boolean isAtEnd()
 	{
 		return isAtEnd(currentOffset);

@@ -1,0 +1,5 @@
+define data
+local
+1 #thearray (#length) /* !{D:ERROR:NPP016}
+2 #inside (a1)
+end-define

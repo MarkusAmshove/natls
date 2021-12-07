@@ -1,20 +1,26 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.NaturalParseException;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DefineDataParser extends AbstractParser<IDefineData>
 {
 	private static final List<SyntaxKind> SCOPE_SYNTAX_KINDS = List.of(SyntaxKind.LOCAL, SyntaxKind.PARAMETER, SyntaxKind.GLOBAL, SyntaxKind.INDEPENDENT);
 
+	private Map<String, VariableNode> declaredVariables;
+
 	@Override
 	protected IDefineData parseInternal()
 	{
 		var defineData = new DefineData();
+		declaredVariables = new HashMap<>();
 
 		advanceToDefineData(tokens);
 		if (!isAtStartOfDefineData(tokens))
@@ -110,6 +116,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 
 			scopeNode.addVariable(variable);
+			declaredVariables.put(variable.name(), variable);
 		}
 
 		return scopeNode;
@@ -134,7 +141,10 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			&& (peek().kind() != SyntaxKind.ASTERISK && peek().kind() != SyntaxKind.NUMBER)) // group array
 		{
 			variable = typedVariable(variable);
-			checkVariableType((TypedVariableNode) variable);
+			if(variable instanceof TypedVariableNode typedVariableNode)
+			{
+				checkVariableType(typedVariableNode);
+			}
 		}
 		else
 		{
@@ -162,7 +172,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		while (peekKind(SyntaxKind.NUMBER))
 		{
-			if(peek().intValue() <= view.level())
+			if (peek().intValue() <= view.level())
 			{
 				break;
 			}
@@ -205,13 +215,25 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		return groupNode;
 	}
 
-	private TypedVariableNode typedVariable(VariableNode variable) throws ParseError
+	private VariableNode typedVariable(VariableNode variable) throws ParseError
 	{
 		var typedVariable = new TypedVariableNode(variable);
 		var type = new VariableType();
 
 		var dataType = consumeMandatoryIdentifier(typedVariable).source(); // DataTypes like A10 get recognized as identifier
-		var format = DataFormat.fromSource(dataType.charAt(0));
+		DataFormat format;
+		try
+		{
+			format = DataFormat.fromSource(dataType.charAt(0));
+		}
+		catch (NaturalParseException e)
+		{
+			// This only happens if the variable is actually a group, but the array
+			// dimension is a reference to a constant.
+			rollbackOnce();
+			return groupVariable(variable);
+		}
+
 		type.setFormat(format);
 
 		var arrayConsumed = false;
@@ -501,6 +523,26 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			return token.token().intValue();
 		}
 
+		if (token.token().kind() == SyntaxKind.IDENTIFIER)
+		{
+			if (!declaredVariables.containsKey(token.token().source()))
+			{
+				report(ParserErrors.unresolvedReference(token));
+				return -1;
+			}
+
+			var constReference = declaredVariables.get(token.token().source());
+			if (!(constReference instanceof ITypedNode typedNode) || !typedNode.type().isConstant())
+			{
+				report(ParserErrors.arrayDimensionMustBeConst(token));
+			}
+			else
+			{
+				// TODO(references): typedNode.addReference(token);
+				return typedNode.type().initialValue().intValue();
+			}
+		}
+
 		return -1; // unbound
 	}
 
@@ -531,7 +573,12 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		var slashToken = SyntheticTokenNode.fromToken(identifierToken, SyntaxKind.SLASH, "/");
 		typedVariable.addNode(slashToken);
-		var boundToken = SyntheticTokenNode.fromToken(identifierToken, SyntaxKind.NUMBER, relevantSource.substring(1));
+
+		var boundTokenKind = relevantSource.substring(1).matches("\\d+")
+			? SyntaxKind.NUMBER
+			: SyntaxKind.IDENTIFIER; // when the bound is a reference to a variable
+
+		var boundToken = SyntheticTokenNode.fromToken(identifierToken, boundTokenKind, relevantSource.substring(1));
 
 		if (boundToken.token().length() == 0 && peek().kind() != SyntaxKind.ASTERISK)
 		{
@@ -601,7 +648,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	 *
 	 * @param variable the variable to add the dimensions to.
 	 */
-	private void addArrayDimensionWorkaroundComma(VariableNode variable)
+	private void addArrayDimensionWorkaroundComma(VariableNode variable) throws ParseError
 	{
 		var syntheticSeparator = SyntheticTokenNode.fromToken(peek(), SyntaxKind.COMMA, ",");
 		variable.addNode(syntheticSeparator);

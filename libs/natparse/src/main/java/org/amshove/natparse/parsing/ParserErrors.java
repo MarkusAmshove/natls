@@ -3,6 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IArrayDimension;
+import org.amshove.natparse.natural.ITokenNode;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -124,6 +125,24 @@ class ParserErrors
 			"Length of redefinition (%s) exceeds target length (%s)".formatted(DataFormat.formatLength(redefinitionLength), DataFormat.formatLength(maxLength)),
 			node,
 			ParserError.REDEFINE_LENGTH_EXCEEDS_TARGET_LENGTH
+		);
+	}
+
+	public static ParserDiagnostic unresolvedReference(ITokenNode node)
+	{
+		return ParserDiagnostic.create(
+			"Unresolved reference: %s".formatted(node.token().source()),
+			node,
+			ParserError.UNRESOLVED_REFERENCE
+		);
+	}
+
+	public static ParserDiagnostic arrayDimensionMustBeConst(ITokenNode token)
+	{
+		return ParserDiagnostic.create(
+			"If the array bound is a reference, the referenced variable must be const",
+			token,
+			ParserError.ARRAY_DIMENSION_MUST_BE_CONST
 		);
 	}
 }

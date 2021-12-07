@@ -163,4 +163,9 @@ abstract class AbstractParser<T>
 		tokens.advance();
 	}
 
+	protected void rollbackOnce()
+	{
+		tokens.rollback(1);
+	}
+
 }
