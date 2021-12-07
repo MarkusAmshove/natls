@@ -13,7 +13,7 @@ abstract class AbstractParser<T>
 {
 	protected TokenList tokens;
 
-	private List<IDiagnostic> diagnostics;
+	private List<IDiagnostic> diagnostics = new ArrayList<>();
 
 	public ParseResult<T> parse(TokenList tokens)
 	{

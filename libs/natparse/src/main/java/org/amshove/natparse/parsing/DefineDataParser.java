@@ -13,6 +13,7 @@ import java.util.Map;
 public class DefineDataParser extends AbstractParser<IDefineData>
 {
 	private static final List<SyntaxKind> SCOPE_SYNTAX_KINDS = List.of(SyntaxKind.LOCAL, SyntaxKind.PARAMETER, SyntaxKind.GLOBAL, SyntaxKind.INDEPENDENT);
+	private static final ViewParser viewParser = new ViewParser();
 
 	private Map<String, VariableNode> declaredVariables;
 
@@ -124,6 +125,11 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private VariableNode variable() throws ParseError
 	{
+//		if(peek(2).kind() == SyntaxKind.VIEW)
+//		{
+//			return view();
+//		}
+
 		var variable = new VariableNode();
 
 		var level = consumeMandatory(variable, SyntaxKind.NUMBER).intValue();
@@ -159,6 +165,15 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 
 		return variable;
+	}
+
+	private ViewNode view()
+	{
+		var view = viewParser.parse(tokens);
+
+
+		view.diagnostics().forEach(this::report);
+		return view.result();
 	}
 
 	private ViewNode view(VariableNode variable) throws ParseError
