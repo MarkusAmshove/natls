@@ -506,6 +506,23 @@ class DefineDataParserShould extends AbstractParserTest
 	}
 
 	@Test
+	void parseAnArrayWithLowerAndUpperBoundBeingReferences()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			define data local
+			1 c-min (N1) const<1>
+			1 c-max (n1) const<9>
+			1 #thegroup (c-min : c-max)
+			2 #inside (a1)
+			end-define
+			""");
+
+		var theGroup = assertNodeType(defineData.variables().get(2), IGroupNode.class);
+		assertThat(theGroup.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(theGroup.dimensions().first().upperBound()).isEqualTo(9);
+	}
+
+	@Test
 	void addAReferenceToTheConstantForConstArrayDimension()
 	{
 		var defineData = assertParsesWithoutDiagnostics("""

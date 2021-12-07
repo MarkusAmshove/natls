@@ -221,6 +221,12 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		var type = new VariableType();
 
 		var dataType = consumeMandatoryIdentifier(typedVariable).source(); // DataTypes like A10 get recognized as identifier
+		if(declaredVariables.containsKey(dataType))
+		{
+			// It is not a datatype, but an array dimension reference for a group.
+			rollbackOnce();
+			return groupVariable(variable);
+		}
 		DataFormat format;
 		try
 		{
