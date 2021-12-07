@@ -466,6 +466,46 @@ class DefineDataParserShould extends AbstractParserTest
 	}
 
 	@Test
+	void parseAnArrayThatHasAConstReferenceBoundInSecondDimensionWithoutWhitespace()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+				define data local
+				1 c-my-const (N2) CONST <56>
+				1 #my-arr (A8/1:2,1:c-my-const)
+				end-define
+			""");
+
+		var myConst = assertNodeType(defineData.variables().first(), IReferencableNode.class);
+		assertThat(myConst.references().size()).isEqualTo(1);
+		var myArr = assertNodeType(defineData.variables().last(), ITypedNode.class);
+		assertThat(myArr.dimensions().last().lowerBound()).isEqualTo(1);
+		assertThat(myArr.dimensions().last().upperBound()).isEqualTo(56);
+
+		assertThat(myArr.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(myArr.dimensions().first().upperBound()).isEqualTo(2);
+	}
+
+	@Test
+	void parseAnArrayThatHasAConstReferenceBoundInSecondDimensionWithWhitespace()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+				define data local
+				1 c-my-const (N2) CONST <56>
+				1 #my-arr (A8/1:2, 1:c-my-const)
+				end-define
+			""");
+
+		var myConst = assertNodeType(defineData.variables().first(), IReferencableNode.class);
+		assertThat(myConst.references().size()).isEqualTo(1);
+		var myArr = assertNodeType(defineData.variables().last(), ITypedNode.class);
+		assertThat(myArr.dimensions().last().lowerBound()).isEqualTo(1);
+		assertThat(myArr.dimensions().last().upperBound()).isEqualTo(56);
+
+		assertThat(myArr.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(myArr.dimensions().first().upperBound()).isEqualTo(2);
+	}
+
+	@Test
 	void addAReferenceToTheConstantForConstArrayDimension()
 	{
 		var defineData = assertParsesWithoutDiagnostics("""

@@ -523,7 +523,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			return token.token().intValue();
 		}
 
-		if (token.token().kind() == SyntaxKind.IDENTIFIER)
+		if (token.token().kind().isIdentifier())
 		{
 			if (!declaredVariables.containsKey(token.token().source()))
 			{
@@ -650,13 +650,22 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	 *
 	 * @param variable the variable to add the dimensions to.
 	 */
-	private void addArrayDimensionWorkaroundComma(VariableNode variable)
+	private void addArrayDimensionWorkaroundComma(VariableNode variable) throws ParseError
 	{
 		var syntheticSeparator = SyntheticTokenNode.fromToken(peek(), SyntaxKind.COMMA, ",");
 		variable.addNode(syntheticSeparator);
 
 		var numbers = peek().source().split(",");
+		if(numbers.length < 2) // There is a whitespace in between, so not actual the lower bound
+		{
+			discard();
+			// Back to normal, yay \o/
+			addArrayDimension(variable);
+			return;
+		}
+
 		var lowerBoundNumber = numbers[1];
+
 		var syntheticLowerBound = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER, lowerBoundNumber);
 
 		var dimension = new ArrayDimension();
