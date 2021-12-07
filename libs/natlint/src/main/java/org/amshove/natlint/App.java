@@ -75,14 +75,22 @@ public class App
 		{
 			for (var file : library.files().stream().filter(f -> f.getFiletype().hasDefineData()).toList())
 			{
-				diagnostics.clear();
-				var tokens = lexer.lex(filesystem.readFile(file.getPath()));
-				diagnostics.addAll(tokens.diagnostics().stream().toList());
+				try
+				{
+					diagnostics.clear();
+					var tokens = lexer.lex(filesystem.readFile(file.getPath()));
+					diagnostics.addAll(tokens.diagnostics().stream().toList());
 
-				var parseResult = parser.parse(tokens);
-				diagnostics.addAll(parseResult.diagnostics().stream().toList());
+					var parseResult = parser.parse(tokens);
+					diagnostics.addAll(parseResult.diagnostics().stream().toList());
 
-				printDiagnostics(file.getPath(), diagnostics);
+					printDiagnostics(file.getPath(), diagnostics);
+				}
+				catch(Exception e)
+				{
+					System.err.println(file.getPath());
+					throw e;
+				}
 			}
 		}
 	}
@@ -104,7 +112,7 @@ public class App
 			System.out.println();
 			System.out.println(readDiagnosticSourceLine(filePath, diagnostic));
 			System.out.println(squiggle(diagnostic));
-			System.out.println(red(diagnostic.message()));
+			System.out.println(message(diagnostic));
 			System.out.println();
 		}
 
@@ -113,6 +121,11 @@ public class App
 		diagnostics.stream()
 			.collect(Collectors.groupingBy(IDiagnostic::severity))
 			.forEach((severity, d) -> System.out.printf("%s: %d%n", severity, d.size()));
+	}
+
+	private String message(IDiagnostic diagnostic)
+	{
+		return " ".repeat(diagnostic.offsetInLine()) + red(diagnostic.message());
 	}
 
 	private String readDiagnosticSourceLine(Path path, IDiagnostic diagnostic)
