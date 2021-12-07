@@ -1,6 +1,7 @@
 package org.amshove.natlint;
 
 import org.amshove.natparse.IDiagnostic;
+import org.amshove.natparse.IPosition;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.infrastructure.IFilesystem;
 import org.amshove.natparse.lexing.Lexer;
@@ -59,7 +60,7 @@ public class App
 		new App(projectFile.get(), filesystem).run();
 	}
 
-	private static final Comparator<IDiagnostic> byLineNumber = Comparator.comparingInt(d -> d.line());
+	private static final Comparator<IDiagnostic> byLineNumber = Comparator.comparingInt(IPosition::line);
 
 	public void run()
 	{
@@ -74,6 +75,7 @@ public class App
 		{
 			for (var file : library.files().stream().filter(f -> f.getFiletype().hasDefineData()).toList())
 			{
+				diagnostics.clear();
 				var tokens = lexer.lex(filesystem.readFile(file.getPath()));
 				diagnostics.addAll(tokens.diagnostics().stream().toList());
 
@@ -146,18 +148,8 @@ public class App
 
 	private String squiggle(IDiagnostic diagnostic)
 	{
-		var squiggle = new StringBuffer();
-		for (var i = 0; i < diagnostic.offsetInLine(); i++)
-		{
-			squiggle.append(" ");
-		}
-
-		for (var i = 0; i < diagnostic.length(); i++)
-		{
-			squiggle.append("~");
-		}
-
-		return squiggle.toString();
+		return " ".repeat(Math.max(0, diagnostic.offsetInLine())) +
+			"~".repeat(Math.max(0, diagnostic.length()));
 	}
 
 	private String red(String message)
