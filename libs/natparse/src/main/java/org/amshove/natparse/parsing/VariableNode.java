@@ -4,10 +4,7 @@ import org.amshove.natparse.IPosition;
 import org.amshove.natparse.NaturalParseException;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxToken;
-import org.amshove.natparse.natural.IArrayDimension;
-import org.amshove.natparse.natural.ISyntaxNode;
-import org.amshove.natparse.natural.IVariableNode;
-import org.amshove.natparse.natural.VariableScope;
+import org.amshove.natparse.natural.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,8 +16,15 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 	private SyntaxToken declaration;
 	private VariableScope scope;
 	private List<IArrayDimension> dimensions = new ArrayList<>();
+	private List<ISymbolReferenceNode> references = new ArrayList<>();
 
 	private String qualifiedName; // Gets computed on first demand
+
+	@Override
+	public ReadOnlyList<ISymbolReferenceNode> references()
+	{
+		return ReadOnlyList.from(references); // TODO: Perf
+	}
 
 	@Override
 	public SyntaxToken declaration()
@@ -107,5 +111,11 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 	{
 		dimensions.add(dimension);
 		addNode(dimension);
+	}
+
+	void addReference(SymbolReferenceNode tokenNode)
+	{
+		references.add(tokenNode);
+		tokenNode.setReference(this);
 	}
 }

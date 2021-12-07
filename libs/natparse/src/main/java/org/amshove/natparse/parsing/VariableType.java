@@ -4,7 +4,7 @@ import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IVariableTypeNode;
 
-class VariableType implements IVariableTypeNode
+class VariableType  implements IVariableTypeNode
 {
 	private boolean hasDynamicLength;
 	private DataFormat format;

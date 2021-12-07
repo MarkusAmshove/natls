@@ -323,7 +323,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		var identifier = identifier();
 		using.setUsingTarget(identifier);
-		using.addNode(new TokenNode(identifier));
+		using.addNode(new SymbolReferenceNode(identifier)); // TODO(references): Add Reference to foreign DEFINE DATA
 
 		// TODO: add imported variables as synthetic nodes
 
@@ -466,7 +466,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 
 		var dimension = new ArrayDimension();
-		var lowerBound = extractArrayBound(new TokenNode(peek()));
+		var lowerBound = extractArrayBound(new TokenNode(peek()), dimension);
 		var upperBound = -1;
 		consume(dimension);
 
@@ -480,7 +480,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				var relevantNumber = numbers[0];
 
 				var firstNumberToken = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER, relevantNumber);
-				upperBound = extractArrayBound(firstNumberToken);
+				upperBound = extractArrayBound(firstNumberToken, dimension);
 				variable.addNode(firstNumberToken);
 				// we now also have to handle the next dimension, because our current
 				// token also contains the lower bound of the next dimension.
@@ -489,7 +489,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 			else
 			{
-				upperBound = extractArrayBound(new TokenNode(peek()));
+				upperBound = extractArrayBound(new TokenNode(peek()), dimension);
 				consume(dimension);
 			}
 		}
@@ -516,7 +516,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		variable.addDimension(dimension);
 	}
 
-	private int extractArrayBound(ITokenNode token)
+	private int extractArrayBound(ITokenNode token, ArrayDimension dimension)
 	{
 		if (token.token().kind() == SyntaxKind.NUMBER)
 		{
@@ -532,13 +532,15 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 
 			var constReference = declaredVariables.get(token.token().source());
-			if (!(constReference instanceof ITypedNode typedNode) || !typedNode.type().isConstant())
+			if (!(constReference instanceof TypedVariableNode typedNode) || !typedNode.type().isConstant())
 			{
 				report(ParserErrors.arrayDimensionMustBeConst(token));
 			}
 			else
 			{
-				// TODO(references): typedNode.addReference(token);
+				var referenceNode = new SymbolReferenceNode(token.token());
+				typedNode.addReference(referenceNode);
+				dimension.addNode(referenceNode);
 				return typedNode.type().initialValue().intValue();
 			}
 		}
@@ -590,7 +592,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		dimension.addNode(boundToken);
 		var lowerBound = consumeOptionally(dimension, SyntaxKind.ASTERISK)
 			? -1 :
-			extractArrayBound(boundToken);
+			extractArrayBound(boundToken, dimension);
 		var upperBound = -1;
 
 		var workaroundNextDimension = false;
@@ -603,7 +605,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				var relevantNumber = numbers[0];
 
 				var firstNumberToken = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER, relevantNumber);
-				upperBound = extractArrayBound(firstNumberToken);
+				upperBound = extractArrayBound(firstNumberToken, dimension);
 				typedVariable.addNode(firstNumberToken);
 				// we now also have to handle the next dimension, because our current
 				// token also contains the lower bound of the next dimension.
@@ -612,7 +614,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 			else
 			{
-				upperBound = extractArrayBound(new TokenNode(peek()));
+				upperBound = extractArrayBound(new TokenNode(peek()), dimension);
 				consume(dimension);
 			}
 		}
@@ -648,7 +650,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	 *
 	 * @param variable the variable to add the dimensions to.
 	 */
-	private void addArrayDimensionWorkaroundComma(VariableNode variable) throws ParseError
+	private void addArrayDimensionWorkaroundComma(VariableNode variable)
 	{
 		var syntheticSeparator = SyntheticTokenNode.fromToken(peek(), SyntaxKind.COMMA, ",");
 		variable.addNode(syntheticSeparator);
@@ -659,7 +661,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		var dimension = new ArrayDimension();
 		dimension.addNode(syntheticLowerBound);
-		var lowerBound = extractArrayBound(syntheticLowerBound);
+		var lowerBound = extractArrayBound(syntheticLowerBound, dimension);
 		var upperBound = -1;
 
 		discard(); // drop off the combined number which is actually separated
@@ -674,7 +676,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				var relevantNumber = numbers[0];
 
 				var firstNumberToken = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER, relevantNumber);
-				upperBound = extractArrayBound(firstNumberToken);
+				upperBound = extractArrayBound(firstNumberToken, dimension);
 				variable.addNode(firstNumberToken);
 				// we now also have to handle the next dimension, because our current
 				// token also contains the lower bound of the next dimension.
@@ -683,7 +685,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 			else
 			{
-				upperBound = extractArrayBound(new TokenNode(peek()));
+				upperBound = extractArrayBound(new TokenNode(peek()), dimension);
 				consume(dimension);
 			}
 		}

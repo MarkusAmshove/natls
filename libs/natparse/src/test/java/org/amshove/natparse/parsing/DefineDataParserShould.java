@@ -466,6 +466,24 @@ class DefineDataParserShould extends AbstractParserTest
 	}
 
 	@Test
+	void addAReferenceToTheConstantForConstArrayDimension()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			define data local
+			1 #length (N2) const <5>
+			1 #myarray (A10/#length)
+			end-define
+			""");
+
+		var length = assertNodeType(defineData.variables().first(), IReferencableNode.class);
+		var myArray = assertNodeType(defineData.variables().last(), ITypedNode.class);
+		var referenceNode = myArray.dimensions().first().findDescendantOfType(ISymbolReferenceNode.class);
+
+		assertThat(length.references().first()).isEqualTo(referenceNode);
+		assertThat(referenceNode.reference()).isEqualTo(length);
+	}
+
+	@Test
 	void parseIndependentVariables()
 	{
 		var source = """
