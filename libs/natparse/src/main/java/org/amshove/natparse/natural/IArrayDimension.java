@@ -2,9 +2,11 @@ package org.amshove.natparse.natural;
 
 public interface IArrayDimension extends ISyntaxNode
 {
+	int UNBOUND_VALUE = Integer.MAX_VALUE;
+
 	/**
 	 * Specifies the lower bound of the array.
-	 * If the array is unbound, it returns -1.
+	 * If the array is unbound, it returns int.MAX_VALUE.
 	 * Use `isLowerUnbound()` to check if it is unbound.
 	 * @return the lower bound.
 	 */
@@ -12,7 +14,7 @@ public interface IArrayDimension extends ISyntaxNode
 
 	/**
 	 * Specifies the upper bound of the array.
-	 * If the array is unbound, it returns -1.
+	 * If the array is unbound, it returns int.MAX_VALUE.
 	 * Use `isUpperUnbound()` to check if it is unbound.
 	 * @return the upper bound.
 	 */
@@ -20,11 +22,11 @@ public interface IArrayDimension extends ISyntaxNode
 
 	default boolean isLowerUnbound()
 	{
-		return lowerBound() < 0;
+		return lowerBound() == UNBOUND_VALUE;
 	}
 
 	default boolean isUpperUnbound()
 	{
-		return upperBound() < 0;
+		return upperBound() == UNBOUND_VALUE;
 	}
 }

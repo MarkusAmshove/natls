@@ -488,7 +488,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		var dimension = new ArrayDimension();
 		var lowerBound = extractArrayBound(new TokenNode(peek()), dimension);
-		var upperBound = -1;
+		var upperBound = ArrayDimension.UNBOUND_VALUE;
 		consume(dimension);
 
 		var workaroundNextDimension = false;
@@ -549,7 +549,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			if (!declaredVariables.containsKey(token.token().source()))
 			{
 				report(ParserErrors.unresolvedReference(token));
-				return -1;
+				return ArrayDimension.UNBOUND_VALUE;
 			}
 
 			var constReference = declaredVariables.get(token.token().source());
@@ -566,7 +566,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 		}
 
-		return -1; // unbound
+		return ArrayDimension.UNBOUND_VALUE;
 	}
 
 	private void checkBounds(IArrayDimension dimension)
@@ -612,9 +612,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		var dimension = new ArrayDimension();
 		dimension.addNode(boundToken);
 		var lowerBound = consumeOptionally(dimension, SyntaxKind.ASTERISK)
-			? -1 :
+			? ArrayDimension.UNBOUND_VALUE :
 			extractArrayBound(boundToken, dimension);
-		var upperBound = -1;
+		var upperBound = ArrayDimension.UNBOUND_VALUE;
 
 		var workaroundNextDimension = false;
 		if (consumeOptionally(dimension, SyntaxKind.COLON))
@@ -692,7 +692,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		var dimension = new ArrayDimension();
 		dimension.addNode(syntheticLowerBound);
 		var lowerBound = extractArrayBound(syntheticLowerBound, dimension);
-		var upperBound = -1;
+		var upperBound = ArrayDimension.UNBOUND_VALUE;
 
 		discard(); // drop off the combined number which is actually separated
 
