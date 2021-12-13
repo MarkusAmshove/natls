@@ -68,10 +68,22 @@ class ViewParser extends AbstractParser<ViewNode>
 
 		if(consumeOptionally(variable, SyntaxKind.LPAREN))
 		{
+			// Maybe Group Array
 			if(peek().kind() == SyntaxKind.ASTERISK || peek().kind() == SyntaxKind.NUMBER)
 			{
-				// Group Array
-				return group(variable);
+				var firstTokenInNextLine = peekNextLine();
+				if(firstTokenInNextLine.kind() == SyntaxKind.NUMBER && firstTokenInNextLine.intValue() > variable.level())
+				{
+					return group(variable);
+				}
+			}
+
+			if(peek().kind() == SyntaxKind.NUMBER)
+			{
+				addArrayDimension(variable);
+				var typedDdmArrayVariable = typedVariableFromDdm(variable);
+				consumeMandatory(typedDdmArrayVariable, SyntaxKind.RPAREN);
+				return typedDdmArrayVariable;
 			}
 
 			return typedVariable(variable);

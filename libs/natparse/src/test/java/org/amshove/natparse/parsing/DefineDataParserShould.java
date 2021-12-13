@@ -691,6 +691,26 @@ class DefineDataParserShould extends AbstractParserTest
 		assertThat(theArray.dimensions().first().lowerBound()).isEqualTo(1);
 		assertThat(theArray.dimensions().first().upperBound()).isEqualTo(9);
 	}
+	@Test
+	void parseAViewVariableWithoutTypeNotationButWithArrayNotation()
+	{
+		var source = """
+			DEFINE DATA
+			LOCAL
+			1 MY-VIEW VIEW MY-DDM
+			2 DDM-FIELD (1:10)
+			END-DEFINE
+			""";
+
+		var defineData = assertParsesWithoutDiagnostics(source);
+
+		var view = assertNodeType(defineData.variables().first(), IViewNode.class);
+		assertThat(view.variables().size()).isEqualTo(1);
+		var theArray = assertNodeType(view.variables().first(), TypedVariableNode.class);
+		assertThat(theArray.name()).isEqualTo("DDM-FIELD");
+		assertThat(theArray.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(theArray.dimensions().first().upperBound()).isEqualTo(10);
+	}
 
 	@Test
 	void parseViewWithOptionalOf()

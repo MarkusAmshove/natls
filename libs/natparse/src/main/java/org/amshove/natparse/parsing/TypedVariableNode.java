@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.natural.IArrayDimension;
 import org.amshove.natparse.natural.ITypedNode;
 import org.amshove.natparse.natural.IVariableTypeNode;
 
@@ -11,6 +12,10 @@ class TypedVariableNode extends VariableNode implements ITypedNode
 	{
 		setLevel(variable.level());
 		setDeclaration(variable.declaration());
+		for (var dimension : variable.dimensions())
+		{
+			addDimension((ArrayDimension) dimension);
+		}
 		for (var node : variable.descendants())
 		{
 			addNode((BaseSyntaxNode) node);

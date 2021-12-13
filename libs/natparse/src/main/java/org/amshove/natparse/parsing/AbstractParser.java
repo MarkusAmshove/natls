@@ -168,4 +168,15 @@ abstract class AbstractParser<T>
 		tokens.rollback(1);
 	}
 
+	protected SyntaxToken peekNextLine()
+	{
+		var offset = 0;
+		var currentLine = peek().line();
+		while(!tokens.isAtEnd(offset) && peek(offset).line() == currentLine)
+		{
+			offset++;
+		}
+
+		return peek(offset);
+	}
 }

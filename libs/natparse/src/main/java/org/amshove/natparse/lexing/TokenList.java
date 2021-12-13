@@ -102,7 +102,7 @@ public class TokenList
 		return isAtEnd(currentOffset);
 	}
 
-	private boolean isAtEnd(int offset)
+	public boolean isAtEnd(int offset)
 	{
 		return offset >= tokens.size();
 	}
