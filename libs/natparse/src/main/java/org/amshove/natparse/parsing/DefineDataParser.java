@@ -191,7 +191,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				break;
 			}
 
-			var nestedVariable = variable();
+			var nestedVariable = variable(); // TODO: Pass array dimension somehow. Or add multiple initial values and validate later?
 			groupNode.addVariable(nestedVariable);
 		}
 

@@ -837,6 +837,19 @@ class DefineDataParserShould extends AbstractParserTest
 		// TODO(array-initializer): Check values
 	}
 
+	@Test
+	void parseInitializerOfVariablesInGroupArray()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data
+			local
+			1 #myarraygroup (1:10)
+			2 #inside (A5) INIT <'abc', 'def', 'ghi'>
+			end-define
+			""");
+		// TODO(array-initializer): Check values
+	}
+
 	private IDefineData assertParsesWithoutDiagnostics(String source)
 	{
 		var lexer = new Lexer();
