@@ -703,6 +703,104 @@ class DefineDataParserShould extends AbstractParserTest
 			""");
 	}
 
+	@Test
+	void parseArrayInitialValues()
+	{
+		assertParsesWithoutDiagnostics("""
+						define data
+						local
+						1 #initialized-array (A3/1:2) INIT
+							(1) <'abc'>
+							(2) <'def'>
+						end-define
+			""");
+		// TODO(array-initializer): Check values
+	}
+
+	@Test
+	void parseArrayCommaSeparatedInitialValues()
+	{
+		assertParsesWithoutDiagnostics("""
+						define data
+						local
+						1 #initialized-array (A3/1:2) INIT <'abc','def'>
+						end-define
+			""");
+		// TODO(array-initializer): Check values
+	}
+
+	@Test
+	void parseArrayCommaSeparatedMultipleInitialValues()
+	{
+		assertParsesWithoutDiagnostics("""
+						define data
+						local
+						1 #initialized-array (A3/1:3) INIT <'abc',,'def'>
+						end-define
+			""");
+		// TODO(array-initializer): Check values
+	}
+
+	@Test
+	void parseArraySemicolonSeparatedMultipleInitialValues()
+	{
+		assertParsesWithoutDiagnostics("""
+						define data
+						local
+						1 #initialized-array (A3/1:3) INIT <1;2;3>
+						end-define
+			""");
+		// TODO(array-initializer): Check values
+	}
+
+	@Test
+	void parseArrayAsteriskInitialValues()
+	{
+		assertParsesWithoutDiagnostics("""
+						define data
+						local
+						1 #initialized-array (A3/1:2) INIT (*) <'abc'>
+						end-define
+			""");
+		// TODO(array-initializer): Check values
+	}
+
+	@Test
+	void parseArrayBoundInitialValues()
+	{
+		assertParsesWithoutDiagnostics("""
+						define data
+						local
+						1 #initialized-array (A3/1:5) INIT (1:5) <'abc'>
+						end-define
+			""");
+		// TODO(array-initializer): Check values
+	}
+
+	@Test
+	void parseArrayDifferentIndizesInitialValues()
+	{
+		assertParsesWithoutDiagnostics("""
+						define data
+						local
+						1 #initialized-array (A3/1:5) INIT (1,3) <'abc'>
+						end-define
+			""");
+		// TODO(array-initializer): Check values
+	}
+
+	@Test
+	void parseArrayIndexNotationInitialValues()
+	{
+		assertParsesWithoutDiagnostics("""
+						define data
+						local
+						1 #initialized-array (A3/1:5, 1:3) INIT (1,V) <'C','D'>
+						end-define
+			""");
+		// TODO(array-initializer): Check values
+	}
+
 	private IDefineData assertParsesWithoutDiagnostics(String source)
 	{
 		var lexer = new Lexer();

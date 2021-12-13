@@ -125,7 +125,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private VariableNode variable() throws ParseError
 	{
-		if(peek(2).kind() == SyntaxKind.VIEW)
+		if (peek(2).kind() == SyntaxKind.VIEW)
 		{
 			return view();
 		}
@@ -147,7 +147,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			&& (peek().kind() != SyntaxKind.ASTERISK && peek().kind() != SyntaxKind.NUMBER)) // group array
 		{
 			variable = typedVariable(variable);
-			if(variable instanceof TypedVariableNode typedVariableNode)
+			if (variable instanceof TypedVariableNode typedVariableNode)
 			{
 				checkVariableType(typedVariableNode);
 			}
@@ -235,7 +235,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		var type = new VariableType();
 
 		var dataType = consumeMandatoryIdentifier(typedVariable).source(); // DataTypes like A10 get recognized as identifier
-		if(declaredVariables.containsKey(dataType))
+		if (declaredVariables.containsKey(dataType))
 		{
 			// It is not a datatype, but an array dimension reference for a group.
 			rollbackOnce();
@@ -308,15 +308,52 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 			else
 			{
-				consumeMandatory(typedVariable, SyntaxKind.LESSER);
-				var literal = consumeLiteral(typedVariable);
-				type.setInitialValue(literal);
-				consumeMandatory(typedVariable, SyntaxKind.GREATER);
+				if (typedVariable.dimensions().size() > 0)
+				{
+					consumeArrayInitializer(typedVariable);
+				}
+				else
+				{
+					consumeMandatory(typedVariable, SyntaxKind.LESSER);
+					var literal = consumeLiteral(typedVariable);
+					type.setInitialValue(literal);
+					consumeMandatory(typedVariable, SyntaxKind.GREATER);
+				}
 			}
 		}
 
 		typedVariable.setType(type);
 		return typedVariable;
+	}
+
+	private void consumeArrayInitializer(TypedVariableNode typedVariable) throws ParseError
+	{
+		// TODO(array-initializer): Feed values
+
+		if(peekKind(SyntaxKind.LPAREN))
+		{
+			var lparen = consumeMandatory(typedVariable, SyntaxKind.LPAREN);
+
+			while (!consumeOptionally(typedVariable, SyntaxKind.RPAREN) && peek().line() == lparen.line())
+			{
+				consume(typedVariable);
+			}
+		}
+
+		if (peekKind(SyntaxKind.LESSER))
+		{
+			var lesser = consumeMandatory(typedVariable, SyntaxKind.LESSER);
+
+			while(!consumeOptionally(typedVariable, SyntaxKind.GREATER) && peek().line() == lesser.line())
+			{
+				consume(typedVariable);
+			}
+		}
+
+		if(peekKind(SyntaxKind.LPAREN)) // Theres more...
+		{
+			consumeArrayInitializer(typedVariable);
+		}
 	}
 
 	private double getLengthFromDataType(String dataType)
@@ -676,7 +713,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		variable.addNode(syntheticSeparator);
 
 		var numbers = peek().source().split(",");
-		if(numbers.length < 2) // There is a whitespace in between, so not actual the lower bound
+		if (numbers.length < 2) // There is a whitespace in between, so not actual the lower bound
 		{
 			discard();
 			// Back to normal, yay \o/
