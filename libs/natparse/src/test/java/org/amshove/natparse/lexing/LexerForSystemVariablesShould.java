@@ -2,7 +2,7 @@ package org.amshove.natparse.lexing;
 
 import org.junit.jupiter.api.Test;
 
-public class LexerForBuiltinFunctionsShould extends AbstractLexerTest
+public class LexerForSystemVariablesShould extends AbstractLexerTest
 {
 	@Test
 	void lexTimX()

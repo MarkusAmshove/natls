@@ -109,6 +109,14 @@ abstract class AbstractParser<T>
 
 	protected SyntaxToken consumeLiteral(BaseSyntaxNode node) throws ParseError
 	{
+		if(peek().kind().isSystemVariable())
+		{
+			var systemVariable = peek();
+			node.addNode(new SystemVariableNode(systemVariable));
+			discard();
+			return systemVariable;
+		}
+
 		 var literal = consumeAny(List.of(SyntaxKind.NUMBER, SyntaxKind.STRING, SyntaxKind.TRUE, SyntaxKind.FALSE));
 		 node.addNode(new TokenNode(literal));
 		 return literal;

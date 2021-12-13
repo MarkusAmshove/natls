@@ -483,6 +483,11 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				case NUMERIC:
 				case PACKED:
 				case INTEGER:
+					if(variable.type().initialValue().kind().isSystemVariable())
+					{
+						// TODO(system-variables): Check type
+						break;
+					}
 					expectInitialValueType(variable, SyntaxKind.NUMBER);
 					break;
 

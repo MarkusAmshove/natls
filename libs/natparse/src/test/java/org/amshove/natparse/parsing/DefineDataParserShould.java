@@ -266,6 +266,22 @@ class DefineDataParserShould extends AbstractParserTest
 	}
 
 	@Test
+	void supportSystemVariablesAsInitializer()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			define data local
+			1 #myvar (N8) init <*DATN>
+			end-define
+			""");
+
+		var variable = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
+		assertThat(variable.type().initialValue().source()).isEqualTo("*DATN");
+		var systemVar = variable.findDescendantOfType(ISystemVariableNode.class);
+		assertThat(systemVar).isNotNull();
+		assertThat(systemVar.systemVariable()).isEqualTo(SyntaxKind.DATN);
+	}
+
+	@Test
 	void supportConstantValues()
 	{
 		var defineData = assertParsesWithoutDiagnostics("""

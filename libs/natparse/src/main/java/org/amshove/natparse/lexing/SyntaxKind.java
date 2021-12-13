@@ -35,7 +35,7 @@ public enum SyntaxKind
 	IDENTIFIER,
 	COMMENT,
 
-	// Builtin Functions/Expressions
+	// System variables
 	TIMX,
 	DATX,
 	DATN,
@@ -230,5 +230,10 @@ public enum SyntaxKind
 	public boolean isIdentifier()
 	{
 		return this == IDENTIFIER || this == IDENTIFIER_OR_KEYWORD; // TODO: Keyword temporary
+	}
+
+	public boolean isSystemVariable()
+	{
+		return this == DATN || this == DATX || this == TIMX;
 	}
 }
