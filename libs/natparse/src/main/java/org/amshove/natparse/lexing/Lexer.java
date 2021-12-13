@@ -113,6 +113,10 @@ public class Lexer
 					consumeString('"');
 					continue;
 
+				case '^':
+					createAndAddCurrentSingleToken(SyntaxKind.CARET);
+					continue;
+
 				case 'a':
 				case 'A':
 				case 'b':
