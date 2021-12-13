@@ -68,7 +68,7 @@ class ParserErrors
     public static ParserDiagnostic invalidArrayBound(IArrayDimension dimension, int bound)
 	{
 		return ParserDiagnostic.create(
-			"<%d> is not a valid array bound. Try a number > 0 or *".formatted(bound),
+			"<%d> is not a valid array bound. Try a number >= 0 or *".formatted(bound),
 			dimension,
 			ParserError.INVALID_ARRAY_BOUND
 		);

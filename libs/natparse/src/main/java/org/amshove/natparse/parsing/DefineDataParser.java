@@ -612,11 +612,11 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private void checkBounds(IArrayDimension dimension)
 	{
-		if (dimension.lowerBound() == 0)
+		if (dimension.lowerBound() < 0)
 		{
 			report(ParserErrors.invalidArrayBound(dimension, dimension.lowerBound()));
 		}
-		if (dimension.upperBound() == 0)
+		if (dimension.upperBound() < 0)
 		{
 			report(ParserErrors.invalidArrayBound(dimension, dimension.upperBound()));
 		}
