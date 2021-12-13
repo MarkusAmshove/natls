@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
-public class LexingForNumbersShould extends AbstractLexerTest
+public class LexerForNumbersShould extends AbstractLexerTest
 {
 	@TestFactory
 	Iterable<DynamicTest> lexNumbersWithoutDecimalDelimiter()
@@ -64,5 +64,16 @@ public class LexingForNumbersShould extends AbstractLexerTest
 			dynamicTest("8", () -> assertTokens("8", token(SyntaxKind.NUMBER, "8"))),
 			dynamicTest("9", () -> assertTokens("9", token(SyntaxKind.NUMBER, "9"))),
 			dynamicTest("0", () -> assertTokens("0", token(SyntaxKind.NUMBER, "0"))));
+	}
+
+	@TestFactory
+	Iterable<DynamicTest> lexNegativeNumbers()
+	{
+		return Arrays.asList(
+			dynamicTest("-1", () -> assertTokens("-1", token(SyntaxKind.NUMBER, "-1"))),
+			dynamicTest("-2,3", () -> assertTokens("-2,3", token(SyntaxKind.NUMBER, "-2,3"))),
+			dynamicTest("-15", () -> assertTokens("-15", token(SyntaxKind.NUMBER, "-15"))),
+			dynamicTest("-1.2", () -> assertTokens("-1.2", token(SyntaxKind.NUMBER, "-1.2")))
+		);
 	}
 }

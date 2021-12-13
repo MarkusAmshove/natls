@@ -74,7 +74,7 @@ public class Lexer
 					}
 					continue;
 				case '-':
-					createAndAddCurrentSingleToken(SyntaxKind.MINUS);
+					consumeMinusOrNumber();
 					continue;
 				case '*':
 					consumeAsteriskOrFunction();
@@ -202,6 +202,24 @@ public class Lexer
 			}
 		}
 		return TokenList.fromTokensAndDiagnostics(tokens, diagnostics, comments);
+	}
+
+	private void consumeMinusOrNumber()
+	{
+		scanner.start();
+		scanner.advance(); // the minus
+		if(Character.isDigit(scanner.peek()))
+		{
+			while (Character.isDigit(scanner.peek()) || scanner.peek() == ',' || scanner.peek() == '.')
+			{
+				scanner.advance();
+			}
+			createAndAdd(SyntaxKind.NUMBER);
+		}
+		else
+		{
+			createAndAdd(SyntaxKind.MINUS);
+		}
 	}
 
 	private void consumeAsteriskOrFunction()
