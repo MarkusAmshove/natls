@@ -827,8 +827,20 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			return typedNode.type().length();
 		}
 
-		if (target instanceof IGroupNode groupNode) // TODO: This should be redefine node
+		if (target instanceof IRedefinitionNode redefinitionNode)
 		{
+			var groupLength = 0.0;
+			for (var member : redefinitionNode.variables())
+			{
+				if(member instanceof ITypedVariableNode typedVariableNode)
+				{
+					groupLength += typedVariableNode.type().length();
+				}
+			}
+
+			return groupLength;
+		}
+		else if (target instanceof IGroupNode groupNode) {
 			var groupLength = 0.0;
 			for (var member : groupNode.variables())
 			{

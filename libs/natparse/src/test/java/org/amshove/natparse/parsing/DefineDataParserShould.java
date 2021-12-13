@@ -598,6 +598,23 @@ class DefineDataParserShould extends AbstractParserTest
 	}
 
 	@Test
+	void notReportALengthDiagnosticForNestedRedefineVariables()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data
+			local
+			1 A-VAR (A8)
+			1 REDEFINE A-VAR
+			   2 INSIDE (A4)
+			   2 REDEFINE INSIDE
+				   3 INSIDE-INSIDE (A2) /* these should not be counted to the total length
+				   3 INSIDE-INSIDE-2 (A2)
+			   2 ALSO-INSIDE (A4)
+			end-define
+			""");
+	}
+
+	@Test
 	void redefineGroups()
 	{
 		var source = """
@@ -707,6 +724,7 @@ class DefineDataParserShould extends AbstractParserTest
 		assertThat(theArray.dimensions().first().lowerBound()).isEqualTo(1);
 		assertThat(theArray.dimensions().first().upperBound()).isEqualTo(9);
 	}
+
 	@Test
 	void parseAViewVariableWithoutTypeNotationButWithArrayNotation()
 	{
