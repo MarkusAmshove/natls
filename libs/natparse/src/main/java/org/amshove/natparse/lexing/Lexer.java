@@ -223,6 +223,10 @@ public class Lexer
 		{
 			createAndAdd(SyntaxKind.DATX);
 		}
+		if(scanner.advanceIf("DATN"))
+		{
+			createAndAdd(SyntaxKind.DATN);
+		}
 	}
 
 	private void consumeIdentifier()

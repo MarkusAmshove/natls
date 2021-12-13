@@ -38,6 +38,7 @@ public enum SyntaxKind
 	// Builtin Functions/Expressions
 	TIMX,
 	DATX,
+	DATN,
 
 	ABS,
 	ACCEPT,

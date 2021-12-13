@@ -15,4 +15,10 @@ public class LexerForBuiltinFunctionsShould extends AbstractLexerTest
 	{
 		assertTokens("*DATX", token(SyntaxKind.DATX, "*DATX"));
 	}
+
+	@Test
+	void lexDatN()
+	{
+		assertTokens("*DATN", token(SyntaxKind.DATN, "*DATN"));
+	}
 }
