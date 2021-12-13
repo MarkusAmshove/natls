@@ -264,6 +264,17 @@ public class Lexer
 			scanner.advance();
 		}
 
+		// Handling for C* count variables
+		if (scanner.lexemeLength() == 1 && scanner.peek() == '*')
+		{
+			scanner.advance();
+			while (!scanner.isAtEnd() && !isLineEnd() && isNoWhitespace() && isValidIdentifierCharacter())
+			{
+				scanner.advance();
+			}
+			kindHint = SyntaxKind.IDENTIFIER;
+		}
+
 		var lexeme = scanner.lexemeText();
 
 		if (kindHint != null)

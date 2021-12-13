@@ -65,6 +65,22 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 	}
 
 	@Test
+	void recognizeCountVariables()
+	{
+		assertTokens("C*NAMES", token(SyntaxKind.IDENTIFIER, "C*NAMES"));
+	}
+
+	@Test
+	void notAllowCountAsteriskToBeAtAnotherLocationThan2()
+	{
+		assertTokens("CN*AMES",
+			token(SyntaxKind.IDENTIFIER_OR_KEYWORD, "CN"),
+			token(SyntaxKind.ASTERISK),
+			token(SyntaxKind.IDENTIFIER_OR_KEYWORD, "AMES")
+		);
+	}
+
+	@Test
 	void recognizeVariablesWithCommercialAt()
 	{
 		assertTokens("message-me@mail", token(SyntaxKind.IDENTIFIER, "message-me@mail"));
