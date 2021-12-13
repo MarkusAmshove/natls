@@ -258,7 +258,7 @@ public class NaturalLanguageService
 	private String formatVariableHover(IVariableNode v)
 	{
 		var hoverText = "```natural%n%s %d %s".formatted(v.scope().name(), v.level(), v.name());
-		if (v instanceof ITypedNode typedVariable)
+		if (v instanceof ITypedVariableNode typedVariable)
 		{
 			hoverText += " (%c".formatted(typedVariable.type().format().identifier());
 			if (typedVariable.type().length() > 0.0)
@@ -380,7 +380,7 @@ public class NaturalLanguageService
 				item.setKind(CompletionItemKind.Variable);
 
 				item.setLabel(v.qualifiedName());
-				if (v instanceof ITypedNode typedNode)
+				if (v instanceof ITypedVariableNode typedNode)
 				{
 					item.setDetail(typedNode.type().toShortString());
 				}

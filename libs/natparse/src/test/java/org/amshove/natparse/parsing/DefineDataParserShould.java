@@ -188,7 +188,7 @@ class DefineDataParserShould extends AbstractParserTest
 
 		var defineData = assertParsesWithoutDiagnostics(source);
 
-		var variable = assertNodeType(defineData.variables().first(), ITypedNode.class);
+		var variable = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
 		assertThat(variable.name()).isEqualTo("#MYVAR");
 		assertThat(variable.level()).isEqualTo(1);
 		assertThat(variable.type().format()).isEqualTo(DataFormat.ALPHANUMERIC);
@@ -261,7 +261,7 @@ class DefineDataParserShould extends AbstractParserTest
 			end-define
 			""");
 
-		var variable = assertNodeType(defineData.variables().first(), ITypedNode.class);
+		var variable = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
 		assertThat(variable.type().initialValue().source()).isEqualTo("'hello'");
 	}
 
@@ -274,7 +274,7 @@ class DefineDataParserShould extends AbstractParserTest
 			end-define
 			""");
 
-		var variable = assertNodeType(defineData.variables().first(), ITypedNode.class);
+		var variable = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
 		assertThat(variable.type().isConstant()).isTrue();
 		assertThat(variable.type().initialValue().source()).isEqualTo("'hello'");
 	}
@@ -338,14 +338,14 @@ class DefineDataParserShould extends AbstractParserTest
 		assertThat(group.qualifiedName()).isEqualTo("#A-GROUP");
 		assertThat(group.descendants().size()).isEqualTo(6); // 1 + #A-GROUP + 2 #WI..2 + 2 #WITH..2 + 2 #ANOTH.. + 2 #TWOAGAIN
 		{
-			var firstChild = assertNodeType(group.variables().first(), ITypedNode.class);
+			var firstChild = assertNodeType(group.variables().first(), ITypedVariableNode.class);
 			assertThat(firstChild.level()).isEqualTo(2);
 			assertThat(firstChild.name()).isEqualTo("#WITHINGROUP1");
 			assertThat(firstChild.qualifiedName()).isEqualTo("#A-GROUP.#WITHINGROUP1");
 			assertThat(firstChild.type().format()).isEqualTo(DataFormat.ALPHANUMERIC);
 			assertThat(firstChild.type().length()).isEqualTo(5.0);
 
-			var secondChild = assertNodeType(group.variables().get(1), ITypedNode.class);
+			var secondChild = assertNodeType(group.variables().get(1), ITypedVariableNode.class);
 			assertThat(secondChild.level()).isEqualTo(2);
 			assertThat(secondChild.name()).isEqualTo("#WITHINGROUP2");
 			assertThat(secondChild.qualifiedName()).isEqualTo("#A-GROUP.#WITHINGROUP2");
@@ -357,21 +357,21 @@ class DefineDataParserShould extends AbstractParserTest
 			assertThat(thirdChild.name()).isEqualTo("#ANOTHERGROUP");
 			assertThat(thirdChild.qualifiedName()).isEqualTo("#A-GROUP.#ANOTHERGROUP");
 			{
-				var superIn = assertNodeType(thirdChild.variables().first(), ITypedNode.class);
+				var superIn = assertNodeType(thirdChild.variables().first(), ITypedVariableNode.class);
 				assertThat(superIn.level()).isEqualTo(3);
 				assertThat(superIn.name()).isEqualTo("#SUPERIN");
 				assertThat(superIn.type().format()).isEqualTo(DataFormat.LOGIC);
 				assertThat(superIn.qualifiedName()).isEqualTo("#A-GROUP.#SUPERIN");
 			}
 
-			var fourthChild = assertNodeType(group.variables().get(3), ITypedNode.class);
+			var fourthChild = assertNodeType(group.variables().get(3), ITypedVariableNode.class);
 			assertThat(fourthChild.level()).isEqualTo(2);
 			assertThat(fourthChild.name()).isEqualTo("#TWOAGAIN");
 			assertThat(fourthChild.qualifiedName()).isEqualTo("#A-GROUP.#TWOAGAIN");
 			assertThat(fourthChild.type().format()).isEqualTo(DataFormat.CONTROL);
 		}
 
-		var afterGroup = assertNodeType(defineData.variables().last(), ITypedNode.class);
+		var afterGroup = assertNodeType(defineData.variables().last(), ITypedVariableNode.class);
 		assertThat(afterGroup.level()).isEqualTo(1);
 		assertThat(afterGroup.name()).isEqualTo("#ONEAGAIN");
 		assertThat(afterGroup.qualifiedName()).isEqualTo("#ONEAGAIN");
@@ -461,7 +461,7 @@ class DefineDataParserShould extends AbstractParserTest
 			end-define
 			""");
 
-		var myArray = assertNodeType(defineData.variables().last(), ITypedNode.class);
+		var myArray = assertNodeType(defineData.variables().last(), ITypedVariableNode.class);
 		assertThat(myArray.dimensions().first().upperBound()).isEqualTo(5);
 	}
 
@@ -477,7 +477,7 @@ class DefineDataParserShould extends AbstractParserTest
 
 		var myConst = assertNodeType(defineData.variables().first(), IReferencableNode.class);
 		assertThat(myConst.references().size()).isEqualTo(1);
-		var myArr = assertNodeType(defineData.variables().last(), ITypedNode.class);
+		var myArr = assertNodeType(defineData.variables().last(), ITypedVariableNode.class);
 		assertThat(myArr.dimensions().last().lowerBound()).isEqualTo(1);
 		assertThat(myArr.dimensions().last().upperBound()).isEqualTo(56);
 
@@ -497,7 +497,7 @@ class DefineDataParserShould extends AbstractParserTest
 
 		var myConst = assertNodeType(defineData.variables().first(), IReferencableNode.class);
 		assertThat(myConst.references().size()).isEqualTo(1);
-		var myArr = assertNodeType(defineData.variables().last(), ITypedNode.class);
+		var myArr = assertNodeType(defineData.variables().last(), ITypedVariableNode.class);
 		assertThat(myArr.dimensions().last().lowerBound()).isEqualTo(1);
 		assertThat(myArr.dimensions().last().upperBound()).isEqualTo(56);
 
@@ -533,7 +533,7 @@ class DefineDataParserShould extends AbstractParserTest
 			""");
 
 		var length = assertNodeType(defineData.variables().first(), IReferencableNode.class);
-		var myArray = assertNodeType(defineData.variables().last(), ITypedNode.class);
+		var myArray = assertNodeType(defineData.variables().last(), ITypedVariableNode.class);
 		var referenceNode = myArray.dimensions().first().findDescendantOfType(ISymbolReferenceNode.class);
 
 		assertThat(length.references().first()).isEqualTo(referenceNode);
@@ -663,7 +663,7 @@ class DefineDataParserShould extends AbstractParserTest
 		assertThat(view.declaration().source()).isEqualTo("MY-VIEW");
 		assertThat(view.ddmNameToken().source()).isEqualTo("MY-DDM");
 		assertThat(view.variables().size()).isEqualTo(2);
-		var theArray = assertNodeType(view.variables().last(), ITypedNode.class);
+		var theArray = assertNodeType(view.variables().last(), ITypedVariableNode.class);
 		assertThat(theArray.dimensions().first().lowerBound()).isEqualTo(1);
 		assertThat(theArray.dimensions().first().upperBound()).isEqualTo(9);
 	}
@@ -853,7 +853,7 @@ class DefineDataParserShould extends AbstractParserTest
 					end-define
 					""".formatted(source);
 				var defineData = assertParsesWithoutDiagnostics(defineDataSource);
-				var variable = assertNodeType(defineData.variables().first(), ITypedNode.class);
+				var variable = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
 				assertThat(variable.type().format()).isEqualTo(expectedFormat);
 				assertThat(variable.type().length()).isEqualTo(expectedLength);
 				assertThat(variable.type().hasDynamicLength()).isEqualTo(hasDynamicLength);

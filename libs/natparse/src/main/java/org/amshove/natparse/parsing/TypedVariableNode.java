@@ -1,10 +1,9 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.natural.IArrayDimension;
-import org.amshove.natparse.natural.ITypedNode;
+import org.amshove.natparse.natural.ITypedVariableNode;
 import org.amshove.natparse.natural.IVariableTypeNode;
 
-class TypedVariableNode extends VariableNode implements ITypedNode
+class TypedVariableNode extends VariableNode implements ITypedVariableNode
 {
 	private VariableType type;
 

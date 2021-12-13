@@ -1,6 +1,6 @@
 package org.amshove.natparse.natural;
 
-public interface ITypedNode extends IVariableNode
+public interface ITypedVariableNode extends IVariableNode
 {
 	IVariableTypeNode type();
 }

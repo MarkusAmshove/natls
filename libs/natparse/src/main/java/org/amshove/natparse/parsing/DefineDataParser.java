@@ -817,7 +817,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private double calculateVariableLength(IVariableNode target)
 	{
-		if (target instanceof ITypedNode typedNode)
+		if (target instanceof ITypedVariableNode typedNode)
 		{
 			return typedNode.type().length();
 		}
