@@ -160,11 +160,15 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		return variable;
 	}
 
-	private ViewNode view()
+	private ViewNode view() throws ParseError
 	{
 		var view = viewParser.parse(tokens);
 
 		view.diagnostics().forEach(this::report);
+		if(view.result() == null)
+		{
+			throw new ParseError(peek());
+		}
 		return view.result();
 	}
 
