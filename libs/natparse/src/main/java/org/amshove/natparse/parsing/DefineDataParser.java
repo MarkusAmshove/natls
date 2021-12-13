@@ -344,7 +344,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		{
 			var lesser = consumeMandatory(typedVariable, SyntaxKind.LESSER);
 
-			while(!consumeOptionally(typedVariable, SyntaxKind.GREATER) && peek().line() == lesser.line())
+			while(!consumeOptionally(typedVariable, SyntaxKind.GREATER) && peek().kind() != SyntaxKind.END_DEFINE)
 			{
 				consume(typedVariable);
 			}
