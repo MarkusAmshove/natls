@@ -143,7 +143,17 @@ public class App
 
 	private String message(IDiagnostic diagnostic)
 	{
-		return " ".repeat(diagnostic.offsetInLine()) + red(diagnostic.message());
+		var message = new StringBuilder();
+		message.append(" ".repeat(diagnostic.offsetInLine()));
+		message.append(red("|"));
+		message.append(System.lineSeparator());
+		message.append(" ".repeat(diagnostic.offsetInLine()));
+		message.append(red("|"));
+		message.append(System.lineSeparator());
+		message.append(" ".repeat(diagnostic.offsetInLine()));
+		message.append(red("= "));
+		message.append(red(diagnostic.message()));
+		return message.toString();
 	}
 
 	private String readDiagnosticSourceLine(Path path, IDiagnostic diagnostic)
@@ -180,7 +190,7 @@ public class App
 	private String squiggle(IDiagnostic diagnostic)
 	{
 		return " ".repeat(Math.max(0, diagnostic.offsetInLine())) +
-			"~".repeat(Math.max(0, diagnostic.length()));
+			red("~".repeat(Math.max(0, diagnostic.length())));
 	}
 
 	private String red(String message)
