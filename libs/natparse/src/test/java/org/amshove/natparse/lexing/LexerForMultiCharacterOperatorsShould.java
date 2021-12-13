@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
-public class LexingForMultiCharacterOperatorsShould extends AbstractLexerTest
+public class LexerForMultiCharacterOperatorsShould extends AbstractLexerTest
 {
 	@Test
 	void lexColonEqualsAssign()
