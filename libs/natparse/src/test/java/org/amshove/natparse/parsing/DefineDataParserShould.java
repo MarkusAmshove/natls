@@ -646,6 +646,53 @@ class DefineDataParserShould extends AbstractParserTest
 	}
 
 	@Test
+	void parseViewsWithArrays()
+	{
+		var source = """
+			DEFINE DATA
+			LOCAL
+			1 MY-VIEW VIEW MY-DDM
+			2 DDM-FIELD
+			2 AN-ARRAY (N8/1:9)
+			END-DEFINE
+			""";
+
+		var defineData = assertParsesWithoutDiagnostics(source);
+
+		var view = assertNodeType(defineData.variables().first(), IViewNode.class);
+		assertThat(view.declaration().source()).isEqualTo("MY-VIEW");
+		assertThat(view.ddmNameToken().source()).isEqualTo("MY-DDM");
+		assertThat(view.variables().size()).isEqualTo(2);
+		var theArray = assertNodeType(view.variables().last(), ITypedNode.class);
+		assertThat(theArray.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(theArray.dimensions().first().upperBound()).isEqualTo(9);
+	}
+
+	@Test
+	void parseViewsWithGroupArrays()
+	{
+		var source = """
+			DEFINE DATA
+			LOCAL
+			1 MY-VIEW VIEW MY-DDM
+			2 DDM-FIELD
+			2 AN-GROUP-ARRAY (1:9)
+			3 ANOTHER-FIELD
+			3 ANOTHER-TYPED-FIELD (N2)
+			END-DEFINE
+			""";
+
+		var defineData = assertParsesWithoutDiagnostics(source);
+
+		var view = assertNodeType(defineData.variables().first(), IViewNode.class);
+		assertThat(view.variables().size()).isEqualTo(2);
+		var theArray = assertNodeType(view.variables().last(), IGroupNode.class);
+		assertThat(theArray.name()).isEqualTo("AN-GROUP-ARRAY");
+		assertThat(theArray.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(theArray.dimensions().first().upperBound()).isEqualTo(9);
+	}
+
+	@Test
 	void parseViewWithOptionalOf()
 	{
 		assertParsesWithoutDiagnostics("""

@@ -125,10 +125,10 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private VariableNode variable() throws ParseError
 	{
-//		if(peek(2).kind() == SyntaxKind.VIEW)
-//		{
-//			return view();
-//		}
+		if(peek(2).kind() == SyntaxKind.VIEW)
+		{
+			return view();
+		}
 
 		var variable = new VariableNode();
 
@@ -170,7 +170,6 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	private ViewNode view()
 	{
 		var view = viewParser.parse(tokens);
-
 
 		view.diagnostics().forEach(this::report);
 		return view.result();
@@ -786,7 +785,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			return typedNode.type().length();
 		}
 
-		if (target instanceof IGroupNode groupNode)
+		if (target instanceof IGroupNode groupNode) // TODO: This should be redefine node
 		{
 			var groupLength = 0.0;
 			for (var member : groupNode.variables())
