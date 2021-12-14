@@ -16,6 +16,15 @@ public class LexerForCommentsShould extends AbstractLexerTest
 	}
 
 	@Test
+	void lexSingleAsteriskCommentsWithDoubleAsterisk()
+	{
+		var tokenList = lexSource("**Hello from comment");
+		assertThat(tokenList.size()).isEqualTo(0);
+		assertThat(tokenList.comments().size()).isEqualTo(1);
+		assertThat(tokenList.comments().get(0).kind()).isEqualTo(SyntaxKind.COMMENT);
+	}
+
+	@Test
 	void lexEmptySingleAsteriskCommentsAtFileEnd()
 	{
 		var tokenList = lexSource("\n*");

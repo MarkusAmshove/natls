@@ -397,6 +397,7 @@ public class Lexer
 			&&
 			(
 				lookahead == ' '
+					|| lookahead == '*'
 					|| lookahead == '\t'
 					|| lookahead == '\n'
 					|| lookahead == '\r'
