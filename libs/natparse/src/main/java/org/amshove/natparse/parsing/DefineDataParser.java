@@ -15,6 +15,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	private static final List<SyntaxKind> SCOPE_SYNTAX_KINDS = List.of(SyntaxKind.LOCAL, SyntaxKind.PARAMETER, SyntaxKind.GLOBAL, SyntaxKind.INDEPENDENT);
 	private static final ViewParser viewParser = new ViewParser();
 
+	/**
+	 * Do not use this directly, use getDeclaredVariable or isVariableDeclared for proper case handling.
+	 */
 	private Map<String, VariableNode> declaredVariables;
 
 	@Override
@@ -221,7 +224,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		var type = new VariableType();
 
 		var dataType = consumeMandatoryIdentifier(typedVariable).source(); // DataTypes like A10 get recognized as identifier
-		if (declaredVariables.containsKey(dataType))
+		if (isVariableDeclared(dataType))
 		{
 			// It is not a datatype, but an array dimension reference for a group.
 			rollbackOnce();
@@ -573,13 +576,13 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		if (token.token().kind().isIdentifier())
 		{
-			if (!declaredVariables.containsKey(token.token().source()))
+			if (!isVariableDeclared(token.token().source().toUpperCase()))
 			{
 				report(ParserErrors.unresolvedReference(token));
 				return ArrayDimension.UNBOUND_VALUE;
 			}
 
-			var constReference = declaredVariables.get(token.token().source());
+			var constReference = getDeclaredVariable(token);
 			if (!(constReference instanceof TypedVariableNode typedNode) || !typedNode.type().isConstant())
 			{
 				report(ParserErrors.arrayDimensionMustBeConst(token));
@@ -839,4 +842,20 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		return 0.0;
 	}
 
+	private boolean isVariableDeclared(TokenNode tokenNode)
+	{
+		// Natural is case-insensitive, as that it considers everything upper case
+		return declaredVariables.containsKey(tokenNode.token().symbolName());
+	}
+
+	private boolean isVariableDeclared(String potentionalVariableName)
+	{
+		return declaredVariables.containsKey(potentionalVariableName.toUpperCase());
+	}
+
+	private VariableNode getDeclaredVariable(ITokenNode tokenNode)
+	{
+		// Natural is case-insensitive, as that it considers everything upper case
+		return declaredVariables.get(tokenNode.token().symbolName());
+	}
 }

@@ -2,6 +2,7 @@ package org.amshove.natparse.lexing;
 
 import org.amshove.natparse.IPosition;
 
+import java.util.Locale;
 import java.util.Objects;
 
 public class SyntaxToken implements IPosition
@@ -12,6 +13,7 @@ public class SyntaxToken implements IPosition
 	private final int offsetInLine;
 	private final int line;
 	private final String source;
+	private String identifierName = null;
 
 	public SyntaxKind kind()
 	{
@@ -52,6 +54,19 @@ public class SyntaxToken implements IPosition
 	public String stringValue()
 	{
 		return source.substring(1, source.length() - 1);
+	}
+
+	/**
+	 * Returns the token source as symbol name (all uppercase).
+	 */
+	public String symbolName()
+	{
+		if (identifierName != null)
+		{
+			return identifierName;
+		}
+		identifierName = source.toUpperCase();
+		return identifierName;
 	}
 
 	public SyntaxToken(SyntaxKind kind, int offset, int lineOffset, int line, String source)

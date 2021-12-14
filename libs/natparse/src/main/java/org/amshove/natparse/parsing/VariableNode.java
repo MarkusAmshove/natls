@@ -99,7 +99,7 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 
 	void setDeclaration(SyntaxToken token)
 	{
-		name = token.source();
+		name = token.source().toUpperCase(); // Natural is case-insensitive, as that it considers everything upper case
 		declaration = token;
 	}
 

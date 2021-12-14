@@ -870,7 +870,7 @@ class DefineDataParserShould extends AbstractParserTest
 		// TODO(array-initializer): Check values
 
 		var inside = data.variables().last();
-		assertThat(inside.name()).isEqualTo("#inside");
+		assertThat(inside.name()).isEqualTo("#INSIDE");
 		assertThat(inside.dimensions().first().lowerBound()).isEqualTo(1);
 		assertThat(inside.dimensions().first().upperBound()).isEqualTo(10);
 	}
@@ -888,7 +888,7 @@ class DefineDataParserShould extends AbstractParserTest
 		// TODO(array-initializer): Check values
 
 		var inside = data.variables().last();
-		assertThat(inside.name()).isEqualTo("#inside");
+		assertThat(inside.name()).isEqualTo("#INSIDE");
 		assertThat(inside.dimensions().size()).isEqualTo(2);
 		assertThat(inside.dimensions().first().lowerBound()).isEqualTo(1);
 		assertThat(inside.dimensions().first().upperBound()).isEqualTo(10);

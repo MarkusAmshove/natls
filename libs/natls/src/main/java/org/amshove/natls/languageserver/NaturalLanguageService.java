@@ -158,7 +158,7 @@ public class NaturalLanguageService
 
 		var defineData = parseDefineData(lexPath(filepath)); // TODO: perf: double lex
 		return defineData.variables().stream()
-			.filter(v -> v.declaration().source().equals(symbolToSearchFor.source()))
+			.filter(v -> v.declaration().symbolName().equals(symbolToSearchFor.symbolName()))
 			.map(v ->
 				new Hover(
 					new MarkupContent(
@@ -354,7 +354,7 @@ public class NaturalLanguageService
 		var tokens = lexPath(filePath);
 
 		return tokens.stream()
-			.filter(t -> t.kind().isIdentifier() && t.source().equals(tokenUnderCursor.source()) && !t.equalsByPosition(tokenUnderCursor))
+			.filter(t -> t.kind().isIdentifier() && t.symbolName().equals(tokenUnderCursor.symbolName()))
 			.map(t -> LspUtil.toLocation(fileUri, t))
 			.toList();
 	}
