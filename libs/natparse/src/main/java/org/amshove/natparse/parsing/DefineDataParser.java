@@ -770,7 +770,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			report(ParserErrors.invalidAivNaming(variable));
 		}
 
-		if (variable instanceof IGroupNode)
+		if (variable instanceof IGroupNode && !(variable instanceof IRedefinitionNode))
 		{
 			report(ParserErrors.independentCantBeGroup(variable));
 		}

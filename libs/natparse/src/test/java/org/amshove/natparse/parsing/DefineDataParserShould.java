@@ -619,6 +619,26 @@ class DefineDataParserShould extends AbstractParserTest
 	}
 
 	@Test
+	void redefineIndependentVariables()
+	{
+		var source = """
+			   DEFINE DATA
+			   INDEPENDENT
+			   1 +MY-AIV (A10)
+			   1 REDEFINE +MY-AIV
+			   2 #INSIDE (A2)
+			   END-DEFINE
+			""";
+
+		var defineData = assertParsesWithoutDiagnostics(source);
+
+		var myAiv = defineData.variables().first();
+		var redefinition = assertNodeType(defineData.variables().get(1), IRedefinitionNode.class);
+		assertThat(redefinition.target()).isEqualTo(myAiv);
+		assertThat(redefinition.variables().first().qualifiedName()).isEqualTo("+MY-AIV.#INSIDE");
+	}
+
+	@Test
 	void notRaiseADiagnosticIfRedefineHasSmallerLength()
 	{
 		var source = """
