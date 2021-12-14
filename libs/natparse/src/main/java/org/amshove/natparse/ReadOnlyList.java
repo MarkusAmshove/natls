@@ -64,6 +64,11 @@ public class ReadOnlyList<T> implements Iterable<T>
 		return new ReadOnlyListCollector<>();
 	}
 
+	public boolean isEmpty()
+	{
+		return collection.isEmpty();
+	}
+
 	@Override
 	public String toString()
 	{

@@ -2,18 +2,18 @@ package org.amshove.natlint;
 
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.IPosition;
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.infrastructure.IFilesystem;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
-import org.amshove.natparse.parsing.DefineDataParser;
+import org.amshove.natparse.parsing.NaturalParser;
 import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 public class App
@@ -62,6 +62,8 @@ public class App
 
 	private static final Comparator<IDiagnostic> byLineNumber = Comparator.comparingInt(IPosition::line);
 
+	private static record DiagnosticByCount(String message, int count){}
+
 	public void run()
 	{
 		var startIndex = System.currentTimeMillis();
@@ -71,8 +73,8 @@ public class App
 		var endIndex = System.currentTimeMillis();
 
 		var lexer = new Lexer();
-		var parser = new DefineDataParser();
-		var diagnostics = new ArrayList<IDiagnostic>();
+		var parser = new NaturalParser();
+		var diagnosticsPerType = new HashMap<String, Integer>();
 		var filesChecked = 0;
 		var totalDiagnostics = 0;
 		var startCheck = System.currentTimeMillis();
@@ -83,15 +85,16 @@ public class App
 				filesChecked++;
 				try
 				{
-					diagnostics.clear();
 					var tokens = lexer.lex(filesystem.readFile(file.getPath()));
-					diagnostics.addAll(tokens.diagnostics().stream().toList());
+					var module = parser.parse(file, tokens);
 
-					var parseResult = parser.parse(tokens);
-					diagnostics.addAll(parseResult.diagnostics().stream().toList());
-
-					totalDiagnostics += diagnostics.size();
-					printDiagnostics(file.getPath(), diagnostics);
+					module.diagnostics().forEach(d -> {
+						var count = diagnosticsPerType.computeIfAbsent(d.message(), (k) -> 0);
+						count++;
+						diagnosticsPerType.replace(d.message(), count);
+					});
+					totalDiagnostics += module.diagnostics().size();
+					printDiagnostics(file.getPath(), module.diagnostics());
 				}
 				catch(Exception e)
 				{
@@ -111,9 +114,14 @@ public class App
 		System.out.println("Total: " + (indexTime + checkTime) + " ms");
 		System.out.println("Files checked: " + filesChecked);
 		System.out.println("Total diagnostics: " + totalDiagnostics);
+		System.out.println();
+		diagnosticsPerType.entrySet().stream().map((entry) ->
+			new DiagnosticByCount(entry.getKey(), entry.getValue())).sorted(Comparator.comparingInt(DiagnosticByCount::count)).toList().forEach(d -> {
+			System.out.println(d.message + "|" + d.count);
+		});
 	}
 
-	private void printDiagnostics(Path filePath, List<IDiagnostic> diagnostics)
+	private void printDiagnostics(Path filePath, ReadOnlyList<IDiagnostic> diagnostics)
 	{
 		if (diagnostics.isEmpty())
 		{
