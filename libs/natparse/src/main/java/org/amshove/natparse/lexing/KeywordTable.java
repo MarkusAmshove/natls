@@ -101,6 +101,7 @@ public class KeywordTable
 				case "for" -> SyntaxKind.FOR;
 				case "format" -> SyntaxKind.FORMAT;
 				case "frac" -> SyntaxKind.FRAC;
+				case "full" -> SyntaxKind.FULL;
 				case "get" -> SyntaxKind.GET;
 				case "global" -> SyntaxKind.GLOBAL;
 				case "histogram" -> SyntaxKind.HISTOGRAM;
@@ -118,6 +119,7 @@ public class KeywordTable
 				case "insert" -> SyntaxKind.INSERT;
 				case "int" -> SyntaxKind.INT;
 				case "investigate" -> SyntaxKind.INVESTIGATE;
+				case "length" -> SyntaxKind.LENGTH;
 				case "limit" -> SyntaxKind.LIMIT;
 				case "local" -> SyntaxKind.LOCAL;
 				case "log" -> SyntaxKind.LOG;

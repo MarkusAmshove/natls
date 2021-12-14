@@ -326,6 +326,18 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	{
 		// TODO(array-initializer): Feed values
 
+		// TODO(array-initializer): Do something with these
+		consumeOptionally(typedVariable, SyntaxKind.ALL);
+		if (consumeOptionally(typedVariable, SyntaxKind.FULL))
+		{
+			consumeMandatory(typedVariable, SyntaxKind.LENGTH);
+		}
+		else
+		{
+			consumeOptionally(typedVariable, SyntaxKind.LENGTH);
+		}
+		consumeOptionally(typedVariable, SyntaxKind.NUMBER);
+
 		if (peekKind(SyntaxKind.LPAREN))
 		{
 			var lparen = consumeMandatory(typedVariable, SyntaxKind.LPAREN);

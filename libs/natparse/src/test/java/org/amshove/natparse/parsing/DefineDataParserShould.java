@@ -965,6 +965,50 @@ class DefineDataParserShould extends AbstractParserTest
 			""".formatted(attribute));
 	}
 
+	@Test
+	void parseInitAll()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data
+			local
+			1 #initialized-array (A3/1:2) INIT ALL <'A'>
+			end-define
+			""");
+	}
+
+	@Test
+	void parseInitAllLength()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data
+			local
+			1 #initialized-array (A3/1:2) INIT ALL LENGTH <'A'>
+			end-define
+			""");
+	}
+
+	@Test
+	void parseInitAllLengthN()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data
+			local
+			1 #initialized-array (A3/1:10) INIT ALL LENGTH 7 <'A'>
+			end-define
+			""");
+	}
+
+	@Test
+	void parseInitAllFullLength()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data
+			local
+			1 #initialized-array (A3/1:10) INIT ALL FULL LENGTH <'A'>
+			end-define
+			""");
+	}
+
 	private IDefineData assertParsesWithoutDiagnostics(String source)
 	{
 		var lexer = new Lexer();
