@@ -30,6 +30,7 @@ public class KeywordTable
 				case "before" -> SyntaxKind.BEFORE;
 				case "break" -> SyntaxKind.BREAK;
 				case "browse" -> SyntaxKind.BROWSE;
+				case "by" -> SyntaxKind.BY;
 				case "call" -> SyntaxKind.CALL;
 				case "calldbproc" -> SyntaxKind.CALLDBPROC;
 				case "callnat" -> SyntaxKind.CALLNAT;
@@ -140,6 +141,7 @@ public class KeywordTable
 				case "of" -> SyntaxKind.OF;
 				case "on" -> SyntaxKind.ON;
 				case "open" -> SyntaxKind.OPEN;
+				case "optional" -> SyntaxKind.OPTIONAL;
 				case "options" -> SyntaxKind.OPTIONS;
 				case "parameter" -> SyntaxKind.PARAMETER;
 				case "parse" -> SyntaxKind.PARSE;
@@ -159,6 +161,7 @@ public class KeywordTable
 				case "reset" -> SyntaxKind.RESET;
 				case "resize" -> SyntaxKind.RESIZE;
 				case "restore" -> SyntaxKind.RESTORE;
+				case "result" -> SyntaxKind.RESULT;
 				case "ret" -> SyntaxKind.RET;
 				case "retry" -> SyntaxKind.RETRY;
 				case "return" -> SyntaxKind.RETURN;

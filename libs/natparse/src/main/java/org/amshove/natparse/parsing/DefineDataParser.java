@@ -313,12 +313,22 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		if (consumeOptionally(typedVariable, SyntaxKind.LPAREN))
 		{
 			// TODO(masks): Parse for real and add to variable
+			// TODO(masks): Not legal for parameter?
 			while (!isAtEnd() && peek().kind() != SyntaxKind.RPAREN && peek().kind() != SyntaxKind.END_DEFINE)
 			{
 				consume(typedVariable);
 			}
 			consumeMandatory(typedVariable, SyntaxKind.RPAREN);
 		}
+
+		// TODO: Only for parameter
+		if(consumeOptionally(typedVariable, SyntaxKind.BY))
+		{
+			consumeMandatory(typedVariable, SyntaxKind.VALUE);
+			consumeOptionally(typedVariable, SyntaxKind.RESULT);
+		}
+		consumeOptionally(typedVariable, SyntaxKind.OPTIONAL);
+
 		return typedVariable;
 	}
 

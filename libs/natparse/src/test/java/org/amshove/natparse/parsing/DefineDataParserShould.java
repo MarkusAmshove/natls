@@ -1009,6 +1009,50 @@ class DefineDataParserShould extends AbstractParserTest
 			""");
 	}
 
+	@Test
+	void parseAParameterByValue()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data
+			parameter
+			1 #p-para (A3) BY VALUE
+			end-define
+			""");
+	}
+
+	@Test
+	void parseAParameterByValueResult()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data
+			parameter
+			1 #p-para (A3) BY VALUE RESULT
+			end-define
+			""");
+	}
+
+	@Test
+	void parseAParameterByValueResultOptional()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data
+			parameter
+			1 #p-para (A3) BY VALUE RESULT OPTIONAL
+			end-define
+			""");
+	}
+
+	@Test
+	void parseAParameterOptional()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data
+			parameter
+			1 #p-para (A3) OPTIONAL
+			end-define
+			""");
+	}
+
 	private IDefineData assertParsesWithoutDiagnostics(String source)
 	{
 		var lexer = new Lexer();
