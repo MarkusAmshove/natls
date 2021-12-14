@@ -12,6 +12,7 @@ import java.util.List;
 abstract class AbstractParser<T>
 {
 	protected TokenList tokens;
+	private TokenNode previousNode;
 
 	private List<IDiagnostic> diagnostics = new ArrayList<>();
 
@@ -26,6 +27,11 @@ abstract class AbstractParser<T>
 	}
 
 	protected abstract T parseInternal();
+
+	protected TokenNode getPreviousNode()
+	{
+		return previousNode;
+	}
 
 	protected SyntaxToken peek()
 	{
@@ -46,7 +52,8 @@ abstract class AbstractParser<T>
 		if(!isAtEnd())
 		{
 			var token = tokens.advance();
-			node.addNode(new TokenNode(token));
+			previousNode = new TokenNode(token);
+			node.addNode(previousNode);
 		}
 	}
 
@@ -66,7 +73,8 @@ abstract class AbstractParser<T>
 	{
 		if(!tokens.isAtEnd() && tokens.peek().kind() == kind)
 		{
-			node.addNode(new TokenNode(tokens.peek()));
+			previousNode = new TokenNode(tokens.peek());
+			node.addNode(previousNode);
 		}
 
 		return tokens.consume(kind);
@@ -129,7 +137,8 @@ abstract class AbstractParser<T>
 		}
 
 		 var literal = consumeAny(List.of(SyntaxKind.NUMBER, SyntaxKind.STRING, SyntaxKind.TRUE, SyntaxKind.FALSE));
-		 node.addNode(new TokenNode(literal));
+		 previousNode = new TokenNode(literal);
+		 node.addNode(previousNode);
 		 return literal;
 	}
 
@@ -138,7 +147,8 @@ abstract class AbstractParser<T>
 	{
 		if(!isAtEnd() && peek().kind().isIdentifier())
 		{
-			node.addNode(new TokenNode(peek()));
+			previousNode = new TokenNode(peek());
+			node.addNode(previousNode);
 			tokens.advance();
 			return previous();
 		}

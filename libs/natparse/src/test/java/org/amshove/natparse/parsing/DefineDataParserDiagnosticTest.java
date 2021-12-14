@@ -6,15 +6,12 @@ import org.amshove.natparse.ResourceHelper;
 import org.amshove.natparse.lexing.Lexer;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
-import org.junit.jupiter.api.function.Executable;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.assertj.core.api.AssertionsForClassTypes.fail;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 public class DefineDataParserDiagnosticTest
@@ -24,57 +21,38 @@ public class DefineDataParserDiagnosticTest
 	{
 		var diagnosticTests = ResourceHelper.findRelativeResourceFiles("definedatadiagnostics", getClass());
 		return diagnosticTests.stream()
-			.map(path -> {
+			.flatMap(path -> {
 				var name = Path.of(path).getFileName().toString();
 				var source = ResourceHelper.readResourceFile(path);
-				return dynamicTest(name, () -> {
-					var expectedDiagnostics = findExpectedDiagnostics(source);
+				var tests = new ArrayList<DynamicTest>();
+				var expectedDiagnostics = findExpectedDiagnostics(source);
 
-					var lexer = new Lexer();
-					var tokens = lexer.lex(source);
-					var parser = new DefineDataParser();
-					var parseResult = parser.parse(tokens);
+				var lexer = new Lexer();
+				var tokens = lexer.lex(source);
+				var parser = new DefineDataParser();
+				var parseResult = parser.parse(tokens);
 
-					var tests = new ArrayList<Executable>();
+				for (var diagnostic : parseResult.diagnostics())
+				{
+					tests.add(dynamicTest(name + ": Unexpected diagnostic in line " + (diagnostic.line() + 1), () -> {
+						if(expectedDiagnostics.stream().noneMatch(d -> d.matches(diagnostic)))
+						{
+							fail("Diagnostic [%s] not expected but found".formatted(diagnostic));
+						}
+					}));
+				}
 
-					for (var diagnostic : parseResult.diagnostics())
-					{
-						tests.add(() ->
-							assertThat(expectedDiagnostics)
-								.as("Diagnostic [%s] not expected, but found".formatted(diagnostic))
-								.anyMatch(d -> d.matches(diagnostic))
-						);
-					}
+				for (var expectedDiagnostic : expectedDiagnostics)
+				{
+					tests.add(dynamicTest(name + ": Expected diagnostic in line " + (expectedDiagnostic.line + 1) + " not found", () -> {
+						if(parseResult.diagnostics().stream().noneMatch(d -> ExpectedDiagnostic.doMatch(expectedDiagnostic, d)))
+						{
+							fail("Diagnostic [%s] expected but not found".formatted(expectedDiagnostic));
+						}
+					}));
+				}
 
-					for (var expectedDiagnostic : expectedDiagnostics)
-					{
-						tests.add(() ->
-							assertThat(parseResult.diagnostics())
-								.as("Diagnostic [%s] expected but not found".formatted(expectedDiagnostic))
-								.anyMatch(d -> ExpectedDiagnostic.doMatch(expectedDiagnostic, d))
-						);
-					}
-
-					var expectedDiagnosticsHeading = expectedDiagnostics.stream().map(ExpectedDiagnostic::toString).collect(Collectors.joining("\n"));
-					var actualDiagnosticsHeading = parseResult.diagnostics().stream().map(IDiagnostic::toVerboseString).collect(Collectors.joining("\n"));
-
-					if (actualDiagnosticsHeading.isEmpty())
-					{
-						actualDiagnosticsHeading = "None";
-					}
-
-					var heading = """
-						File: %s
-											
-						Expected Diagnostics:
-						%s
-
-						Actual Diagnostics:
-						%s
-						""".formatted(name, expectedDiagnosticsHeading, actualDiagnosticsHeading).stripIndent();
-
-					assertAll(heading, tests);
-				});
+				return tests.stream();
 			})
 			.toList();
 
@@ -94,11 +72,14 @@ public class DefineDataParserDiagnosticTest
 			}
 
 			var split = line.split("!\\{D:");
-			var severityAndId = split[1].split(":");
-			var severity = DiagnosticSeverity.valueOf(severityAndId[0]);
-			var id = severityAndId[1].split("}")[0];
+			for(var diagnosticIndex = 1; diagnosticIndex < split.length; diagnosticIndex++)
+			{
+				var severityAndId = split[diagnosticIndex].split(":");
+				var severity = DiagnosticSeverity.valueOf(severityAndId[0]);
+				var id = severityAndId[1].split("}")[0];
 
-			expectedDiagnostics.add(new ExpectedDiagnostic(i, id, severity));
+				expectedDiagnostics.add(new ExpectedDiagnostic(i, id, severity));
+			}
 		}
 
 		return expectedDiagnostics;

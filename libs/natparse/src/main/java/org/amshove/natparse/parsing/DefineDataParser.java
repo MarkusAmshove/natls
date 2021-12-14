@@ -20,6 +20,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	 */
 	private Map<String, VariableNode> declaredVariables;
 
+	private VariableScope currentScope;
+
 	@Override
 	protected IDefineData parseInternal()
 	{
@@ -97,22 +99,24 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	{
 		var scope = consumeAny(SCOPE_SYNTAX_KINDS);
 		var scopeNode = new ScopeNode();
+		currentScope = VariableScope.fromSyntaxKind(scope.kind());
+
 		scopeNode.addNode(new TokenNode(scope));
+		scopeNode.setScope(currentScope);
 
 		while (peekKind(SyntaxKind.NUMBER)) // level
 		{
 			var variable = variable();
+			variable.setScope(currentScope);
 			for (var dimension : variable.dimensions())
 			{
 				checkBounds(dimension);
 			}
 
-			variable.setScope(VariableScope.fromSyntaxKind(scope.kind()));
 			if (variable.scope().isIndependent())
 			{
 				checkIndependentVariable(variable);
 			}
-			scopeNode.setScope(variable.scope());
 
 			if (variable instanceof RedefinitionNode redefinitionNode)
 			{
@@ -324,10 +328,23 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		// TODO: Only for parameter
 		if(consumeOptionally(typedVariable, SyntaxKind.BY))
 		{
-			consumeMandatory(typedVariable, SyntaxKind.VALUE);
-			consumeOptionally(typedVariable, SyntaxKind.RESULT);
+			if(currentScope != VariableScope.PARAMETER)
+			{
+				report(ParserErrors.byValueNotAllowedInCurrentScope(getPreviousNode(), currentScope));
+				consumeOptionally(typedVariable, SyntaxKind.VALUE);
+				consumeOptionally(typedVariable, SyntaxKind.RESULT);
+			}
+			else
+			{
+				consumeMandatory(typedVariable, SyntaxKind.VALUE);
+				consumeOptionally(typedVariable, SyntaxKind.RESULT);
+			}
 		}
-		consumeOptionally(typedVariable, SyntaxKind.OPTIONAL);
+
+		if(consumeOptionally(typedVariable, SyntaxKind.OPTIONAL) && currentScope != VariableScope.PARAMETER)
+		{
+			report(ParserErrors.optionalNotAllowedInCurrentScope(getPreviousNode(), currentScope));
+		}
 
 		return typedVariable;
 	}

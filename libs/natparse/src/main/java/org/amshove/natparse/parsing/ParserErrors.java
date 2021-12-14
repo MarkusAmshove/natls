@@ -1,9 +1,11 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IArrayDimension;
 import org.amshove.natparse.natural.ITokenNode;
+import org.amshove.natparse.natural.VariableScope;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -143,6 +145,24 @@ class ParserErrors
 			"If the array bound is a reference, the referenced variable must be const",
 			token,
 			ParserError.ARRAY_DIMENSION_MUST_BE_CONST
+		);
+	}
+
+	public static ParserDiagnostic byValueNotAllowedInCurrentScope(TokenNode errorToken, VariableScope currentScope)
+	{
+		return ParserDiagnostic.create(
+			"%s is not allowed in scope %s".formatted(errorToken.token().source(), currentScope),
+			errorToken,
+			ParserError.BY_VALUE_NOT_ALLOWED_IN_SCOPE
+		);
+	}
+
+	public static IDiagnostic optionalNotAllowedInCurrentScope(TokenNode errorToken, VariableScope currentScope)
+	{
+		return ParserDiagnostic.create(
+			"OPTIONAL is not allowed in scope %s".formatted(currentScope),
+			errorToken,
+			ParserError.OPTIONAL_NOT_ALLOWED_IN_SCOPE
 		);
 	}
 }
