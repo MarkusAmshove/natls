@@ -434,6 +434,17 @@ class DefineDataParserShould extends AbstractParserTest
 	}
 
 	@Test
+	void parseAnArrayWithWhitespaceBeforeTheSlash()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data
+			local
+			01 #DATN (N8 /1:5)
+			end-define
+			""");
+	}
+
+	@Test
 	void parseAnArrayThatHasAConstReferenceAsDimension()
 	{
 		var defineData = assertParsesWithoutDiagnostics("""
