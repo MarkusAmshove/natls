@@ -936,6 +936,35 @@ class DefineDataParserShould extends AbstractParserTest
 			""".formatted(mask));
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"AD=D",
+		"AD=B",
+		"AD=I",
+		"AD=N",
+		"AD=V",
+		"AD=U",
+		"AD=C",
+		"AD=Y",
+		"AD=P",
+		"CD=BL",
+		"CD=GR",
+		"CD=NE",
+		"CD=PI",
+		"CD=RE",
+		"CD=TU",
+		"CD=YE",
+		"AD=I CD=BL"
+	})
+	void parseAttributeConstantsAsInit(String attribute)
+	{
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 #VAR (C) INIT <(%s)>
+			end-define
+			""".formatted(attribute));
+	}
+
 	private IDefineData assertParsesWithoutDiagnostics(String source)
 	{
 		var lexer = new Lexer();

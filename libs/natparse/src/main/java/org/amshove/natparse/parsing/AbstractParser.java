@@ -117,6 +117,17 @@ abstract class AbstractParser<T>
 			return systemVariable;
 		}
 
+		if(peek().kind() == SyntaxKind.LPAREN) // Attributes
+		{
+			var lparen = peek(); // TODO(attributes): This is not correct but good for now.
+			while (!isAtEnd() && peek().kind() != SyntaxKind.RPAREN && peek().kind() != SyntaxKind.END_DEFINE)
+			{
+				consume(node);
+			}
+			consumeMandatory(node, SyntaxKind.RPAREN);
+			return lparen;
+		}
+
 		 var literal = consumeAny(List.of(SyntaxKind.NUMBER, SyntaxKind.STRING, SyntaxKind.TRUE, SyntaxKind.FALSE));
 		 node.addNode(new TokenNode(literal));
 		 return literal;
