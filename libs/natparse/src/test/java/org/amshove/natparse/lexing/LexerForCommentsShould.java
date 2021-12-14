@@ -16,6 +16,24 @@ public class LexerForCommentsShould extends AbstractLexerTest
 	}
 
 	@Test
+	void lexEmptySingleAsteriskCommentsAtFileEnd()
+	{
+		var tokenList = lexSource("\n*");
+		assertThat(tokenList.size()).isEqualTo(0);
+		assertThat(tokenList.comments().size()).isEqualTo(1);
+		assertThat(tokenList.comments().get(0).kind()).isEqualTo(SyntaxKind.COMMENT);
+	}
+
+	@Test
+	void lexEmptySingleAsteriskCommentsAtLineEnd()
+	{
+		var tokenList = lexSource("\n*\n");
+		assertThat(tokenList.size()).isEqualTo(0);
+		assertThat(tokenList.comments().size()).isEqualTo(1);
+		assertThat(tokenList.comments().get(0).kind()).isEqualTo(SyntaxKind.COMMENT);
+	}
+
+	@Test
 	void lexInlineComment()
 	{
 		var tokenList = lexSource("   /* Inline comment!");

@@ -208,7 +208,7 @@ public class Lexer
 	{
 		scanner.start();
 		scanner.advance(); // the minus
-		if(Character.isDigit(scanner.peek()))
+		if (Character.isDigit(scanner.peek()))
 		{
 			while (Character.isDigit(scanner.peek()) || scanner.peek() == ',' || scanner.peek() == '.')
 			{
@@ -225,7 +225,7 @@ public class Lexer
 	private void consumeAsteriskOrFunction()
 	{
 		var lookahead = scanner.peek(1);
-		if(lookahead != 'T' && lookahead != 'D')
+		if (lookahead != 'T' && lookahead != 'D')
 		{
 			createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
 			return;
@@ -233,15 +233,15 @@ public class Lexer
 
 		scanner.start();
 		scanner.advance();
-		if(scanner.advanceIf("TIMX"))
+		if (scanner.advanceIf("TIMX"))
 		{
 			createAndAdd(SyntaxKind.TIMX);
 		}
-		if(scanner.advanceIf("DATX"))
+		if (scanner.advanceIf("DATX"))
 		{
 			createAndAdd(SyntaxKind.DATX);
 		}
-		if(scanner.advanceIf("DATN"))
+		if (scanner.advanceIf("DATN"))
 		{
 			createAndAdd(SyntaxKind.DATN);
 		}
@@ -286,7 +286,7 @@ public class Lexer
 			scanner.advance();
 		}
 
-		if(scanner.peek() == ',' || scanner.peek() == '.')
+		if (scanner.peek() == ',' || scanner.peek() == '.')
 		{
 			// TODO(lexermode): This is only needed because the Define Data Parser relies on DataFormats to be identifiers currently.
 			//		With a fitting lexer mode we can build this better.
@@ -294,15 +294,15 @@ public class Lexer
 			{
 				scanner.advance();
 			}
-			if(!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd() && scanner.peek() == '.' || scanner.peek() == ',')
+			if (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd() && scanner.peek() == '.' || scanner.peek() == ',')
 			{
 				scanner.advance();
 			}
-			while(!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd() && Character.isDigit(scanner.peek()))
+			while (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd() && Character.isDigit(scanner.peek()))
 			{
 				scanner.advance();
 			}
-			if(mightBeDataFormat(scanner.lexemeText()))
+			if (mightBeDataFormat(scanner.lexemeText()))
 			{
 				kindHint = SyntaxKind.IDENTIFIER;
 			}
@@ -360,7 +360,7 @@ public class Lexer
 	private boolean mightBeDataFormat(String possibleDataFormat)
 	{
 		var chars = possibleDataFormat.toCharArray();
-		if(!Character.isLetter(chars[0]))
+		if (!Character.isLetter(chars[0]))
 		{
 			return false;
 		}
@@ -392,16 +392,25 @@ public class Lexer
 	private boolean consumeComment()
 	{
 		var lookahead = scanner.peek(1);
-		var isSingleAsteriskComment = isAtLineStart() && scanner.peek() == '*' && (lookahead == ' ' || lookahead == '\t');
+		var isSingleAsteriskComment = isAtLineStart()
+			&& scanner.peek() == '*'
+			&&
+			(
+				lookahead == ' '
+					|| lookahead == '\t'
+					|| lookahead == '\n'
+					|| lookahead == '\r'
+					|| lookahead == SourceTextScanner.END_CHARACTER
+			);
 		var isInlineComment = scanner.peek() == '/' && lookahead == '*';
 
-		if(isInlineComment && tokens.size() > 2)
+		if (isInlineComment && tokens.size() > 2)
 		{
 			// special case like (A5/*) which we might solve naively this way.
 			// (A5/*) is a shortcut for (A5/1:*)
 			var lastToken = tokens.get(tokens.size() - 1);
 			var prevLastToken = tokens.get(tokens.size() - 2);
-			if(lastToken.kind() == SyntaxKind.IDENTIFIER && prevLastToken.kind() == SyntaxKind.LPAREN)
+			if (lastToken.kind() == SyntaxKind.IDENTIFIER && prevLastToken.kind() == SyntaxKind.LPAREN)
 			{
 				return false;
 			}
@@ -503,7 +512,7 @@ public class Lexer
 
 	private int getOffsetInLine()
 	{
-		if(scanner.lexemeStart() ==  -1)
+		if (scanner.lexemeStart() == -1)
 		{
 			return scanner.position() - currentLineStartOffset;
 		}
