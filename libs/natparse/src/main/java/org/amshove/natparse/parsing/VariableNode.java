@@ -15,8 +15,9 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 	private String name;
 	private SyntaxToken declaration;
 	private VariableScope scope;
-	private List<IArrayDimension> dimensions = new ArrayList<>();
-	private List<ISymbolReferenceNode> references = new ArrayList<>();
+	private final List<ISymbolReferenceNode> references = new ArrayList<>();
+
+	protected final List<IArrayDimension> dimensions = new ArrayList<>();
 
 	private String qualifiedName; // Gets computed on first demand
 

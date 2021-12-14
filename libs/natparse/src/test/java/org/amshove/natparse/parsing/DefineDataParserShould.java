@@ -840,7 +840,7 @@ class DefineDataParserShould extends AbstractParserTest
 	@Test
 	void parseInitializerOfVariablesInGroupArray()
 	{
-		assertParsesWithoutDiagnostics("""
+		var data = assertParsesWithoutDiagnostics("""
 			define data
 			local
 			1 #myarraygroup (1:10)
@@ -848,6 +848,32 @@ class DefineDataParserShould extends AbstractParserTest
 			end-define
 			""");
 		// TODO(array-initializer): Check values
+
+		var inside = data.variables().last();
+		assertThat(inside.name()).isEqualTo("#inside");
+		assertThat(inside.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(inside.dimensions().first().upperBound()).isEqualTo(10);
+	}
+
+	@Test
+	void addMultipleDimensionsForGroupArraysContainingArrays()
+	{
+		var data = assertParsesWithoutDiagnostics("""
+			define data
+			local
+			1 #myarraygroup (1:10)
+			2 #inside (A5/1:5) /* This is considered a second dimension, so (1:10,1:5)
+			end-define
+			""");
+		// TODO(array-initializer): Check values
+
+		var inside = data.variables().last();
+		assertThat(inside.name()).isEqualTo("#inside");
+		assertThat(inside.dimensions().size()).isEqualTo(2);
+		assertThat(inside.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(inside.dimensions().first().upperBound()).isEqualTo(10);
+		assertThat(inside.dimensions().last().lowerBound()).isEqualTo(1);
+		assertThat(inside.dimensions().last().upperBound()).isEqualTo(5);
 	}
 
 	private IDefineData assertParsesWithoutDiagnostics(String source)

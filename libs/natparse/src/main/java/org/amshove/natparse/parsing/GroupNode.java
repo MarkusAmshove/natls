@@ -2,6 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.NaturalParseException;
 import org.amshove.natparse.ReadOnlyList;
+import org.amshove.natparse.natural.IArrayDimension;
 import org.amshove.natparse.natural.IGroupNode;
 import org.amshove.natparse.natural.IVariableNode;
 import org.amshove.natparse.natural.VariableScope;
@@ -52,5 +53,10 @@ class GroupNode extends VariableNode implements IGroupNode
 		{
 			((VariableNode)variable).setScope(scope);
 		}
+	}
+
+	List<IArrayDimension> getDimensions()
+	{
+		return dimensions;
 	}
 }

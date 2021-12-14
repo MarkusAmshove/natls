@@ -125,12 +125,24 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private VariableNode variable() throws ParseError
 	{
+		return variable(List.of());
+	}
+
+	private VariableNode variable(List<IArrayDimension> inheritedDimensions) throws ParseError
+	{
 		if (peek(2).kind() == SyntaxKind.VIEW)
 		{
 			return view();
 		}
 
 		var variable = new VariableNode();
+		if(!inheritedDimensions.isEmpty())
+		{
+			for (var inheritedDimension : inheritedDimensions)
+			{
+				variable.addDimension((ArrayDimension) inheritedDimension);
+			}
+		}
 
 		var level = consumeMandatory(variable, SyntaxKind.NUMBER).intValue();
 		variable.setLevel(level);
@@ -191,7 +203,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				break;
 			}
 
-			var nestedVariable = variable(); // TODO: Pass array dimension somehow. Or add multiple initial values and validate later?
+			var nestedVariable = variable(groupNode.getDimensions());
 			groupNode.addVariable(nestedVariable);
 		}
 
