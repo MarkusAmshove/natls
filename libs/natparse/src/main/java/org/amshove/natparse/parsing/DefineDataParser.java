@@ -549,7 +549,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			lowerBound = 1;
 		}
 
-		if (!peekKind(SyntaxKind.RPAREN) && !peekKind(SyntaxKind.NUMBER)) // special case for (*)
+		if (!peekKind(SyntaxKind.RPAREN) && !peekKind(SyntaxKind.NUMBER) && !peekKind(SyntaxKind.COMMA)) // special case for (*)
 		{
 			consume(dimension);
 		}

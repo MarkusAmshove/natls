@@ -445,6 +445,19 @@ class DefineDataParserShould extends AbstractParserTest
 	}
 
 	@Test
+	void parseAnArrayWithMultipleCommasAndReferences()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data
+			local
+			01 #C1 (N2) CONST<1>
+			01 #C2 (N2) CONST<2>
+			01 #ARR(N12,7/1:#C1,1:#C2)
+			end-define
+			""");
+	}
+
+	@Test
 	void parseAnArrayThatHasAConstReferenceAsDimension()
 	{
 		var defineData = assertParsesWithoutDiagnostics("""

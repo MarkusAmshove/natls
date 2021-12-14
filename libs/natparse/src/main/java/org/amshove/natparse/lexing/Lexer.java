@@ -279,11 +279,33 @@ public class Lexer
 				case '&':
 				case '#':
 				case '+':
-				case '.': // Qualified Variable
+				case '.':
 					kindHint = SyntaxKind.IDENTIFIER;
 			}
 
 			scanner.advance();
+		}
+
+		if(scanner.peek() == ',' || scanner.peek() == '.')
+		{
+			// TODO(lexermode): This is only needed because the Define Data Parser relies on DataFormats to be identifiers currently.
+			//		With a fitting lexer mode we can build this better.
+			while (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd() && Character.isDigit(scanner.peek()))
+			{
+				scanner.advance();
+			}
+			if(!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd() && scanner.peek() == '.' || scanner.peek() == ',')
+			{
+				scanner.advance();
+			}
+			while(!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd() && Character.isDigit(scanner.peek()))
+			{
+				scanner.advance();
+			}
+			if(mightBeDataFormat(scanner.lexemeText()))
+			{
+				kindHint = SyntaxKind.IDENTIFIER;
+			}
 		}
 
 		// Handling for C* count variables
@@ -333,6 +355,38 @@ public class Lexer
 	private boolean isAtLineStart()
 	{
 		return scanner.position() - currentLineStartOffset == 0;
+	}
+
+	private boolean mightBeDataFormat(String possibleDataFormat)
+	{
+		var chars = possibleDataFormat.toCharArray();
+		if(!Character.isLetter(chars[0]))
+		{
+			return false;
+		}
+
+		var floatingPointCount = 0;
+		for (var i = 1; i < chars.length; i++)
+		{
+			char c = chars[i];
+			if (floatingPointCount > 1)
+			{
+				return false;
+			}
+
+			if (c == '.' || c == ',')
+			{
+				floatingPointCount++;
+				continue;
+			}
+
+			if (!Character.isDigit(c))
+			{
+				return false;
+			}
+		}
+
+		return floatingPointCount < 2;
 	}
 
 	private boolean consumeComment()

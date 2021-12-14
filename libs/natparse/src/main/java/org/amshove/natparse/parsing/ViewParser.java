@@ -113,23 +113,21 @@ class ViewParser extends AbstractParser<ViewNode>
 			arrayConsumed = true;
 		}
 
-		if (!arrayConsumed && peekKind(SyntaxKind.SLASH))
+		var length = getLengthFromDataType(dataType);
+		// N12.7 results in Tokens <IDENTIFIER (N12), DOT, NUMBER>
+		if (consumeOptionally(typedVariable, SyntaxKind.COMMA) || consumeOptionally(typedVariable, SyntaxKind.DOT))
+		{
+			var number = consumeMandatory(typedVariable, SyntaxKind.NUMBER);
+			length = getLengthFromDataType(dataType + "." + number.source());
+		}
+		type.setLength(length);
+
+		if (!arrayConsumed && consumeOptionally(typedVariable, SyntaxKind.SLASH))
 		{
 			// the data type has no user defined length, which means we're at a / which
 			// won't be an int value
 			addArrayDimensions(typedVariable);
 			arrayConsumed = true;
-		}
-		else
-		{
-			var length = getLengthFromDataType(dataType);
-			// N12.7 results in Tokens <IDENTIFIER (N12), DOT, NUMBER>
-			if (consumeOptionally(typedVariable, SyntaxKind.COMMA) || consumeOptionally(typedVariable, SyntaxKind.DOT))
-			{
-				var number = consumeMandatory(typedVariable, SyntaxKind.NUMBER);
-				length = getLengthFromDataType(dataType + "." + number.source());
-			}
-			type.setLength(length);
 		}
 
 		if(consumeOptionally(typedVariable, SyntaxKind.SLASH) && !arrayConsumed)
@@ -257,7 +255,7 @@ class ViewParser extends AbstractParser<ViewNode>
 			lowerBound = 1;
 		}
 
-		if (!peekKind(SyntaxKind.RPAREN) && !peekKind(SyntaxKind.NUMBER)) // special case for (*)
+		if (!peekKind(SyntaxKind.RPAREN) && !peekKind(SyntaxKind.NUMBER) && !peekKind(SyntaxKind.COMMA)) // special case for (*)
 		{
 			consume(dimension);
 		}
