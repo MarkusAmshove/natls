@@ -920,6 +920,22 @@ class DefineDataParserShould extends AbstractParserTest
 		assertThat(inside.dimensions().last().upperBound()).isEqualTo(5);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"EM=9999",
+		"EMU=9999",
+		"HD='header'",
+		"PM=952"
+	})
+	void parseEditMasks(String mask)
+	{
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 #VAR (N10) (%s)
+			end-define
+			""".formatted(mask));
+	}
+
 	private IDefineData assertParsesWithoutDiagnostics(String source)
 	{
 		var lexer = new Lexer();

@@ -139,7 +139,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 
 		var variable = new VariableNode();
-		if(!inheritedDimensions.isEmpty())
+		if (!inheritedDimensions.isEmpty())
 		{
 			for (var inheritedDimension : inheritedDimensions)
 			{
@@ -180,7 +180,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		var view = viewParser.parse(tokens);
 
 		view.diagnostics().forEach(this::report);
-		if(view.result() == null)
+		if (view.result() == null)
 		{
 			throw new ParseError(peek());
 		}
@@ -310,6 +310,15 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 
 		typedVariable.setType(type);
+		if (consumeOptionally(typedVariable, SyntaxKind.LPAREN))
+		{
+			// TODO(masks): Parse for real and add to variable
+			while (!isAtEnd() && peek().kind() != SyntaxKind.RPAREN && peek().kind() != SyntaxKind.END_DEFINE)
+			{
+				consume(typedVariable);
+			}
+			consumeMandatory(typedVariable, SyntaxKind.RPAREN);
+		}
 		return typedVariable;
 	}
 
@@ -317,7 +326,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	{
 		// TODO(array-initializer): Feed values
 
-		if(peekKind(SyntaxKind.LPAREN))
+		if (peekKind(SyntaxKind.LPAREN))
 		{
 			var lparen = consumeMandatory(typedVariable, SyntaxKind.LPAREN);
 
@@ -331,13 +340,13 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		{
 			consumeMandatory(typedVariable, SyntaxKind.LESSER);
 
-			while(!consumeOptionally(typedVariable, SyntaxKind.GREATER) && peek().kind() != SyntaxKind.END_DEFINE)
+			while (!consumeOptionally(typedVariable, SyntaxKind.GREATER) && peek().kind() != SyntaxKind.END_DEFINE)
 			{
 				consume(typedVariable);
 			}
 		}
 
-		if(peekKind(SyntaxKind.LPAREN)) // Theres more...
+		if (peekKind(SyntaxKind.LPAREN)) // Theres more...
 		{
 			consumeArrayInitializer(typedVariable);
 		}
@@ -470,7 +479,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				case NUMERIC:
 				case PACKED:
 				case INTEGER:
-					if(variable.type().initialValue().kind().isSystemVariable())
+					if (variable.type().initialValue().kind().isSystemVariable())
 					{
 						// TODO(system-variables): Check type
 						break;
@@ -819,7 +828,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			var groupLength = 0.0;
 			for (var member : redefinitionNode.variables())
 			{
-				if(member instanceof ITypedVariableNode typedVariableNode)
+				if (member instanceof ITypedVariableNode typedVariableNode)
 				{
 					groupLength += typedVariableNode.type().length();
 				}
@@ -827,15 +836,17 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 			return groupLength;
 		}
-		else if (target instanceof IGroupNode groupNode) {
-			var groupLength = 0.0;
-			for (var member : groupNode.variables())
+		else
+			if (target instanceof IGroupNode groupNode)
 			{
-				groupLength += calculateVariableLength(member);
-			}
+				var groupLength = 0.0;
+				for (var member : groupNode.variables())
+				{
+					groupLength += calculateVariableLength(member);
+				}
 
-			return groupLength;
-		}
+				return groupLength;
+			}
 
 		return 0.0;
 	}
