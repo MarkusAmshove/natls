@@ -401,6 +401,7 @@ public class Lexer
 					|| lookahead == '\t'
 					|| lookahead == '\n'
 					|| lookahead == '\r'
+					|| lookahead == '/'
 					|| lookahead == SourceTextScanner.END_CHARACTER
 			);
 		var isInlineComment = scanner.peek() == '/' && lookahead == '*';

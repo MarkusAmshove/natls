@@ -18,9 +18,9 @@ class SystemVariableNode extends BaseSyntaxNode implements ISystemVariableNode
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public ReadOnlyList<ISymbolReferenceNode> references()
 	{
-		//noinspection unchecked
 		return ReadOnlyList.EMPTY;
 	}
 

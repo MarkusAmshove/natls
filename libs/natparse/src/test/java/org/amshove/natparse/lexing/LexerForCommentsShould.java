@@ -16,6 +16,17 @@ public class LexerForCommentsShould extends AbstractLexerTest
 	}
 
 	@Test
+	void lexSingleAsteriskCommentsSpecialCase()
+	{
+		// This is special because it is not allowed according to the Natural documentation,
+		// but NaturalONE does allow it
+		var tokenList = lexSource("*/ Hello from comment");
+		assertThat(tokenList.size()).isEqualTo(0);
+		assertThat(tokenList.comments().size()).isEqualTo(1);
+		assertThat(tokenList.comments().get(0).kind()).isEqualTo(SyntaxKind.COMMENT);
+	}
+
+	@Test
 	void lexSingleAsteriskCommentsWithDoubleAsterisk()
 	{
 		var tokenList = lexSource("**Hello from comment");
