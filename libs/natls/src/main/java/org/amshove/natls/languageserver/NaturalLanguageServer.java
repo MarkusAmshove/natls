@@ -6,6 +6,7 @@ import org.eclipse.lsp4j.services.*;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class NaturalLanguageServer implements LanguageServer, LanguageClientAware
@@ -28,6 +29,15 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			capabilities.setDefinitionProvider(true);
 			capabilities.setReferencesProvider(true);
 			capabilities.setCompletionProvider(new CompletionOptions(false, List.of(".")));
+
+			if (client != null)
+			{
+				var watchFileMethod = "workspace/didChangeWatchedFiles";
+				var natunitWatcher = new FileSystemWatcher("build/test-results/**/*.xml");
+				var sourceWatcher = new FileSystemWatcher("Natural-Libraries/**/*.*");
+				var watchChangesRegistrationOption = new DidChangeWatchedFilesRegistrationOptions(List.of(natunitWatcher, sourceWatcher));
+				client.registerCapability(new RegistrationParams(List.of(new Registration(UUID.randomUUID().toString(), watchFileMethod, watchChangesRegistrationOption))));
+			}
 
 			if (client != null)
 			{
