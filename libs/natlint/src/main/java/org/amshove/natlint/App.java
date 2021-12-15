@@ -14,7 +14,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.stream.Collectors;
 
 public class App
 {
@@ -128,12 +127,11 @@ public class App
 			return;
 		}
 
-		System.out.println(filePath);
 		var sortedDiagnostics = diagnostics.stream().sorted(byLineNumber).toList();
 
 		for (var diagnostic : sortedDiagnostics)
 		{
-			System.out.printf("%s:%s at %d:%d%n", diagnostic.severity(), diagnostic.id(), diagnostic.line(), diagnostic.offsetInLine());
+			System.out.printf("%s:%d:%d", filePath, diagnostic.line() + 1, diagnostic.offsetInLine());
 
 			System.out.println();
 			System.out.println(readDiagnosticSourceLine(filePath, diagnostic));
@@ -143,10 +141,6 @@ public class App
 		}
 
 		System.out.println();
-		System.out.println("Summary: ");
-		diagnostics.stream()
-			.collect(Collectors.groupingBy(IDiagnostic::severity))
-			.forEach((severity, d) -> System.out.printf("%s: %d%n", severity, d.size()));
 	}
 
 	private String message(IDiagnostic diagnostic)
@@ -160,6 +154,8 @@ public class App
 		message.append(System.lineSeparator());
 		message.append(" ".repeat(diagnostic.offsetInLine()));
 		message.append(red("= "));
+		message.append(red(diagnostic.severity().toString()));
+		message.append(red(": "));
 		message.append(red(diagnostic.message()));
 		return message.toString();
 	}
