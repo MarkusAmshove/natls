@@ -140,4 +140,13 @@ public class LanguageServerFile
 			);
 		}
 	}
+
+	public INaturalModule module()
+	{
+		if(module == null)
+		{
+			parse();
+		}
+		return module;
+	}
 }

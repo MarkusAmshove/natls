@@ -1,5 +1,6 @@
 package org.amshove.natls.languageserver;
 
+import org.amshove.natparse.parsing.NaturalModule;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
@@ -60,6 +61,45 @@ public class NaturalDocumentService implements TextDocumentService
 	public void didSave(DidSaveTextDocumentParams params)
 	{
 		languageService.fileSaved(LspUtil.uriToPath(params.getTextDocument().getUri()));
+	}
+
+	@Override
+	public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params)
+	{
+		return CompletableFuture.supplyAsync(() -> {
+			var path = LspUtil.uriToPath(params.getTextDocument().getUri());
+			var file = languageService.findNaturalFile(path);
+			if (file == null)
+			{
+				return List.of();
+			}
+
+			var module = file.module();
+			if(module instanceof NaturalModule naturalModule && naturalModule.defineData() != null)
+			{
+				// TODO(code-lens): Add an actual command
+				System.err.println("Kodilensi");
+				return naturalModule
+					.defineData()
+					.variables()
+					.stream()
+					.filter(v -> v.references().size() > 0)
+					.map(v -> new CodeLens(
+						LspUtil.toRange(v.declaration()),
+						new Command(v.references().size() + " references", "empty"),
+						new Object()
+					))
+					.toList();
+			}
+
+			return List.of();
+		});
+	}
+
+	@Override
+	public CompletableFuture<CodeLens> resolveCodeLens(CodeLens unresolved)
+	{
+		return CompletableFuture.completedFuture(unresolved);
 	}
 
 	@Override

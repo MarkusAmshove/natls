@@ -29,6 +29,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			capabilities.setDefinitionProvider(true);
 			capabilities.setReferencesProvider(true);
 			capabilities.setCompletionProvider(new CompletionOptions(false, List.of(".")));
+			capabilities.setCodeLensProvider(new CodeLensOptions(true));
 
 			if (client != null)
 			{

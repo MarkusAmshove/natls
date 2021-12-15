@@ -23,10 +23,7 @@ public class LspUtil
 	{
 		return new Location(
 			fileUri,
-			new Range(
-				new Position(token.line(), token.offsetInLine()),
-				new Position(token.line(), token.offsetInLine() + token.length())
-			)
+			toRange(token)
 		);
 	}
 
@@ -41,6 +38,14 @@ public class LspUtil
 			DiagnosticSeverity.Error,
 			sourceTool,
 			diagnostic.id()
+		);
+	}
+
+	public static Range toRange(SyntaxToken token)
+	{
+		return new Range(
+			new Position(token.line(), token.offsetInLine()),
+			new Position(token.line(), token.offsetInLine() + token.length())
 		);
 	}
 }
