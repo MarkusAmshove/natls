@@ -2,6 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.SyntaxKind;
+import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IArrayDimension;
 import org.amshove.natparse.natural.ITokenNode;
@@ -163,6 +164,15 @@ class ParserErrors
 			"OPTIONAL is not allowed in scope %s".formatted(currentScope),
 			errorToken,
 			ParserError.OPTIONAL_NOT_ALLOWED_IN_SCOPE
+		);
+	}
+
+	public static IDiagnostic trailingToken(SyntaxToken token)
+	{
+		return ParserDiagnostic.create(
+			"Trailing token <%s> not allowed here".formatted(token.kind()),
+			new TokenNode(token),
+			ParserError.TRAILING_TOKEN
 		);
 	}
 }

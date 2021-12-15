@@ -53,11 +53,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 			catch (ParseError e)
 			{
-				// Skip to next line or END-DEFINE to recover
-				while (!tokens.isAtEnd() && peek().line() == e.getErrorToken().line() && peek().kind() != SyntaxKind.END_DEFINE)
-				{
-					tokens.advance();
-				}
+				skipToNextLineAsRecovery(e);
 			}
 		}
 
@@ -79,11 +75,32 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		return defineData;
 	}
 
+	private void skipToNextLineAsRecovery(ParseError e)
+	{
+		// Skip to next line or END-DEFINE to recover
+		while (!tokens.isAtEnd() && peek().line() == e.getErrorToken().line() && peek().kind() != SyntaxKind.END_DEFINE)
+		{
+			tokens.advance();
+		}
+	}
+
+	private void skipToNextLineReportingEveryToken()
+	{
+		var currentLine = peek().line();
+		// Skip to next line or END-DEFINE to recover
+		while (!tokens.isAtEnd() && peek().line() == currentLine && peek().kind() != SyntaxKind.END_DEFINE)
+		{
+			report(ParserErrors.trailingToken(peek()));
+			discard();
+		}
+	}
+
 	private BaseSyntaxNode dataDefinition() throws ParseError
 	{
 		if (!isScopeToken(peek()))
 		{
 			report(ParserDiagnostic.unexpectedToken(SCOPE_SYNTAX_KINDS, peek()));
+			discard();
 			throw new ParseError(peek());
 		}
 
@@ -106,25 +123,32 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		while (peekKind(SyntaxKind.NUMBER)) // level
 		{
-			var variable = variable();
-			variable.setScope(currentScope);
-			for (var dimension : variable.dimensions())
+			try
 			{
-				checkBounds(dimension);
-			}
+				var variable = variable();
+				variable.setScope(currentScope);
+				for (var dimension : variable.dimensions())
+				{
+					checkBounds(dimension);
+				}
 
-			if (variable.scope().isIndependent())
+				if (variable.scope().isIndependent())
+				{
+					checkIndependentVariable(variable);
+				}
+
+				if (variable instanceof RedefinitionNode redefinitionNode)
+				{
+					addTargetToRedefine(scopeNode, redefinitionNode);
+				}
+
+				scopeNode.addVariable(variable);
+				declaredVariables.put(variable.name(), variable);
+			}
+			catch(ParseError e)
 			{
-				checkIndependentVariable(variable);
+				skipToNextLineAsRecovery(e);
 			}
-
-			if (variable instanceof RedefinitionNode redefinitionNode)
-			{
-				addTargetToRedefine(scopeNode, redefinitionNode);
-			}
-
-			scopeNode.addVariable(variable);
-			declaredVariables.put(variable.name(), variable);
 		}
 
 		return scopeNode;
@@ -143,37 +167,46 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 
 		var variable = new VariableNode();
-		if (!inheritedDimensions.isEmpty())
+		try
 		{
-			for (var inheritedDimension : inheritedDimensions)
+			if (!inheritedDimensions.isEmpty())
 			{
-				variable.addDimension((ArrayDimension) inheritedDimension);
+				for (var inheritedDimension : inheritedDimensions)
+				{
+					variable.addDimension((ArrayDimension) inheritedDimension);
+				}
+			}
+
+			var level = consumeMandatory(variable, SyntaxKind.NUMBER).intValue();
+			variable.setLevel(level);
+
+			if (consumeOptionally(variable, SyntaxKind.REDEFINE))
+			{
+				variable = new RedefinitionNode(variable);
+			}
+
+			var identifier = consumeMandatoryIdentifier(variable);
+			variable.setDeclaration(identifier);
+
+			if (consumeOptionally(variable, SyntaxKind.LPAREN)
+				&& (peek().kind() != SyntaxKind.ASTERISK && peek().kind() != SyntaxKind.NUMBER)) // group array
+			{
+				variable = typedVariable(variable);
+				if (variable instanceof TypedVariableNode typedVariableNode)
+				{
+					checkVariableType(typedVariableNode);
+				}
+			}
+			else
+			{
+				variable = groupVariable(variable);
 			}
 		}
-
-		var level = consumeMandatory(variable, SyntaxKind.NUMBER).intValue();
-		variable.setLevel(level);
-
-		if (consumeOptionally(variable, SyntaxKind.REDEFINE))
+		catch (ParseError e)
 		{
-			variable = new RedefinitionNode(variable);
-		}
-
-		var identifier = consumeMandatoryIdentifier(variable);
-		variable.setDeclaration(identifier);
-
-		if (consumeOptionally(variable, SyntaxKind.LPAREN)
-			&& (peek().kind() != SyntaxKind.ASTERISK && peek().kind() != SyntaxKind.NUMBER)) // group array
-		{
-			variable = typedVariable(variable);
-			if (variable instanceof TypedVariableNode typedVariableNode)
-			{
-				checkVariableType(typedVariableNode);
-			}
-		}
-		else
-		{
-			variable = groupVariable(variable);
+			// Skip to the next line, but still return however far we've come to let groups be kinda complete.
+			// This results in an unfinished variable, but provides way better error recovery.
+			skipToNextLineAsRecovery(e);
 		}
 
 		return variable;
@@ -212,6 +245,12 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 			var nestedVariable = variable(groupNode.getDimensions());
 			groupNode.addVariable(nestedVariable);
+
+			if(peek().line() == previous().line())
+			{
+				// Error handling for trailing stuff that shouldn't be there
+				skipToNextLineReportingEveryToken();
+			}
 		}
 
 		if (groupNode.variables().size() == 0)

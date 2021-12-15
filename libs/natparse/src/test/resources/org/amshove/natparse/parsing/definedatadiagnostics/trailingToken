@@ -1,0 +1,5 @@
+define data local
+1 #mygroup
+2 #myvar (A8) '' /* !{D:ERROR:NPP020}
+2 #myvar2 (N4)
+end-define

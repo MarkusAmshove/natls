@@ -169,6 +169,11 @@ abstract class AbstractParser<T>
 		return tokens.advance();
 	}
 
+	protected boolean peekAny(List<SyntaxKind> acceptedKinds)
+	{
+		return !tokens.isAtEnd() && acceptedKinds.contains(tokens.peek().kind());
+	}
+
 	protected SyntaxToken previous()
 	{
 		return tokens.peek(-1);
