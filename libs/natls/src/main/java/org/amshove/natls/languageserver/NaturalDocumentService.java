@@ -78,7 +78,6 @@ public class NaturalDocumentService implements TextDocumentService
 			if(module instanceof NaturalModule naturalModule && naturalModule.defineData() != null)
 			{
 				// TODO(code-lens): Add an actual command
-				System.err.println("Kodilensi");
 				return naturalModule
 					.defineData()
 					.variables()
