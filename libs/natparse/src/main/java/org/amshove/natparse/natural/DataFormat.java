@@ -50,6 +50,10 @@ public enum DataFormat
 	 */
 	public static DataFormat fromSource(String source)
 	{
+		if(source.length() > 1 && !Character.isDigit(source.charAt(1)) && source.charAt(1) != '/') // TODO(lexermode): slash for array :(
+		{
+			throw new NaturalParseException(String.format("Can't determine DataFormat from format \"%s\"", source));
+		}
 		return fromSource(source.charAt(0));
 	}
 

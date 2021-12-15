@@ -533,9 +533,9 @@ class DefineDataParserShould extends AbstractParserTest
 	{
 		var defineData = assertParsesWithoutDiagnostics("""
 			define data local
-			1 c-min (N1) const<1>
-			1 c-max (n1) const<9>
-			1 #thegroup (c-min : c-max)
+			1 #c-min (N1) const<1>
+			1 #c-max (n1) const<9>
+			1 #thegroup (#c-min : #c-max)
 			2 #inside (a1)
 			end-define
 			""");
