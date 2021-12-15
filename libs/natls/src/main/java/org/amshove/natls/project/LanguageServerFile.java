@@ -3,9 +3,15 @@ package org.amshove.natls.project;
 import org.amshove.natls.DiagnosticTool;
 import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natparse.IDiagnostic;
+import org.amshove.natparse.lexing.Lexer;
+import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.project.NaturalFile;
+import org.amshove.natparse.parsing.NaturalParser;
 import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.Range;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -13,6 +19,7 @@ public class LanguageServerFile
 {
 	private final NaturalFile file;
 	private final Map<String, List<Diagnostic>> diagnosticsByTool = new HashMap<>();
+	private INaturalModule module;
 
 	public LanguageServerFile(NaturalFile file)
 	{
@@ -57,5 +64,80 @@ public class LanguageServerFile
 	public Path getPath()
 	{
 		return file.getPath();
+	}
+
+	public void open()
+	{
+		parse();
+	}
+
+	public void close()
+	{
+		module = null;
+		clearDiagnosticsByTool(DiagnosticTool.NATPARSE);
+	}
+
+	public void changed(String newSource)
+	{
+		parseInternal(newSource);
+	}
+
+	public void save()
+	{
+		parse();
+	}
+
+	public void parse()
+	{
+		try
+		{
+			parseInternal(Files.readString(file.getPath()));
+		}
+		catch (Exception e)
+		{
+			addDiagnostic(DiagnosticTool.NATPARSE,
+				new Diagnostic(
+					new Range(
+						new Position(0, 0),
+						new Position(0, 0)
+					),
+					"Unhandled exception: %s".formatted(e.getMessage())
+				)
+			);
+		}
+	}
+
+	private void parseInternal(String source)
+	{
+		try
+		{
+			clearDiagnosticsByTool(DiagnosticTool.NATPARSE);
+
+			var lexer = new Lexer();
+			var tokenList = lexer.lex(source);
+			var parser = new NaturalParser();
+
+			module = parser.parse(file, tokenList);
+			for (var diagnostic : module.diagnostics())
+			{
+				addDiagnostic(DiagnosticTool.NATPARSE, diagnostic);
+			}
+
+			// lint
+			// clearByTool NATLINT
+			// add linter diagnostics
+		}
+		catch (Exception e)
+		{
+			addDiagnostic(DiagnosticTool.NATPARSE,
+				new Diagnostic(
+					new Range(
+						new Position(0, 0),
+						new Position(0, 0)
+					),
+					"Unhandled exception: %s".formatted(e.getMessage())
+				)
+			);
+		}
 	}
 }

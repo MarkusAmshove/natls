@@ -5,18 +5,15 @@ import org.amshove.natls.DiagnosticTool;
 import org.amshove.natls.natunit.NatUnitResultParser;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.CompletableFutures;
-import org.eclipse.lsp4j.services.LanguageClient;
-import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class NaturalWorkspaceService implements WorkspaceService, LanguageClientAware
+public class NaturalWorkspaceService implements WorkspaceService
 {
 	private NaturalLanguageService languageService;
-	private LanguageClient client;
 
 	@Override
 	public void didChangeConfiguration(DidChangeConfigurationParams params)
@@ -27,6 +24,8 @@ public class NaturalWorkspaceService implements WorkspaceService, LanguageClient
 	@Override
 	public void didChangeWatchedFiles(DidChangeWatchedFilesParams params)
 	{
+		// TODO: Handle delete of a module
+		// TODO: Handle new module
 		for (var change : params.getChanges())
 		{
 			if (!change.getUri().endsWith(".xml") && !change.getUri().endsWith(".XML"))
@@ -105,11 +104,5 @@ public class NaturalWorkspaceService implements WorkspaceService, LanguageClient
 	public void setLanguageService(NaturalLanguageService languageService)
 	{
 		this.languageService = languageService;
-	}
-
-	@Override
-	public void connect(LanguageClient client)
-	{
-		this.client = client;
 	}
 }

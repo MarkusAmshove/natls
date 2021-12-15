@@ -413,4 +413,53 @@ public class NaturalLanguageService implements LanguageClientAware
 	{
 		this.client = client;
 	}
+
+	public void fileSaved(Path path)
+	{
+		var file = findNaturalFile(path);
+		if(file == null)
+		{
+			// TODO: Handle new file
+			return;
+		}
+
+		file.save();
+		publishDiagnostics(file);
+	}
+
+	public void fileClosed(Path path)
+	{
+		var file = findNaturalFile(path);
+		if(file == null)
+		{
+			return;
+		}
+
+		file.close();
+		publishDiagnostics(file);
+	}
+
+	public void fileOpened(Path path)
+	{
+		var file = findNaturalFile(path);
+		if(file == null)
+		{
+			return;
+		}
+
+		file.open();
+		publishDiagnostics(file);
+	}
+
+	public void fileChanged(Path path, String newSource)
+	{
+		var file = findNaturalFile(path);
+		if(file == null)
+		{
+			return;
+		}
+
+		file.changed(newSource);
+		publishDiagnostics(file);
+	}
 }
