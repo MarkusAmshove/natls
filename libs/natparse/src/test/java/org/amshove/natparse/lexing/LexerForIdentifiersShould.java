@@ -41,6 +41,12 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 	}
 
 	@Test
+	void recognizeAivVariablesWithMultipleSymbols()
+	{
+		assertTokens("+#MY-AIV", token(SyntaxKind.IDENTIFIER, "+#MY-AIV"));
+	}
+
+	@Test
 	void recognizeHyphensInNames()
 	{
 		assertTokens("MY-VAR", token(SyntaxKind.IDENTIFIER_OR_KEYWORD, "MY-VAR"));

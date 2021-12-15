@@ -64,7 +64,7 @@ public class Lexer
 					createAndAddFollowupEquals(SyntaxKind.COLON, SyntaxKind.COLON_EQUALS);
 					continue;
 				case '+':
-					if (Character.isAlphabetic(scanner.peek(1)))
+					if (isValidIdentifierCharacter(scanner.peek(1)))
 					{
 						consumeIdentifier();
 					}
@@ -254,16 +254,15 @@ public class Lexer
 	private void consumeIdentifier()
 	{
 		scanner.start();
-		while (!scanner.isAtEnd() && !isLineEnd() && isNoWhitespace() && isValidIdentifierCharacter())
+		while (!scanner.isAtEnd() && !isLineEnd() && isNoWhitespace() && isValidIdentifierCharacter(scanner.peek()))
 		{
 			scanner.advance();
 		}
 		createAndAdd(SyntaxKind.IDENTIFIER);
 	}
 
-	private boolean isValidIdentifierCharacter()
+	private boolean isValidIdentifierCharacter(char character)
 	{
-		var character = scanner.peek();
 		return Character.isAlphabetic(character) || Character.isDigit(character) || character == '-' || character == '/' || character == '@' || character == '$' || character == '&' || character == '#' || character == '+' || character == '.' || character == '_';
 	}
 
@@ -271,7 +270,7 @@ public class Lexer
 	{
 		SyntaxKind kindHint = null;
 		scanner.start();
-		while (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd() && isValidIdentifierCharacter())
+		while (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd() && isValidIdentifierCharacter(scanner.peek()))
 		{
 
 			// Characters from which we can be sure that we're dealing with an identifier
@@ -316,7 +315,7 @@ public class Lexer
 		if (scanner.lexemeLength() == 1 && scanner.peek() == '*')
 		{
 			scanner.advance();
-			while (!scanner.isAtEnd() && !isLineEnd() && isNoWhitespace() && isValidIdentifierCharacter())
+			while (!scanner.isAtEnd() && !isLineEnd() && isNoWhitespace() && isValidIdentifierCharacter(scanner.peek()))
 			{
 				scanner.advance();
 			}
