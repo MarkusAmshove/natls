@@ -54,6 +54,10 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			{
 				skipToNextLineAsRecovery(e);
 			}
+			catch (Exception e)
+			{
+				skipToNextLineReportingEveryToken();
+			}
 		}
 
 		if (tokens.isAtEnd())
