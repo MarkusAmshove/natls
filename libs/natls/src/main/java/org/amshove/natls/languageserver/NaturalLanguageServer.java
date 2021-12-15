@@ -13,6 +13,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 	private final NaturalWorkspaceService workspaceService = new NaturalWorkspaceService();
 	private final NaturalDocumentService documentService = new NaturalDocumentService();
 	private final NaturalLanguageService languageService = new NaturalLanguageService();
+	private LanguageClient client;
 
 	@Override
 	public CompletableFuture<InitializeResult> initialize(InitializeParams params)
@@ -27,13 +28,22 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			capabilities.setDefinitionProvider(true);
 			capabilities.setReferencesProvider(true);
 			capabilities.setCompletionProvider(new CompletionOptions(false, List.of(".")));
-			System.err.println("Starte");
 
+			if (client != null)
+			{
+				client.showMessage(ClientMessage.info("Natural Language Server initializing..."));
+			}
+
+			var start = System.currentTimeMillis();
 			languageService.indexProject(Paths.get(URI.create(params.getRootUri())));
 			workspaceService.setLanguageService(languageService);
 			documentService.setLanguageService(languageService);
+			var done = System.currentTimeMillis();
 
-			System.err.println("Bereit");
+			if (client != null)
+			{
+				client.showMessage(ClientMessage.info("Natural Language Server initialized after " + (done - start) + "ms"));
+			}
 			return new InitializeResult(capabilities);
 		});
 	}
@@ -65,6 +75,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 	@Override
 	public void connect(LanguageClient client)
 	{
+		this.client = client;
 		languageService.connect(client);
 	}
 }
