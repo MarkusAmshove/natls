@@ -2,7 +2,6 @@ package org.amshove.natparse.lexing;
 
 import org.amshove.natparse.IPosition;
 
-import java.util.Locale;
 import java.util.Objects;
 
 public class SyntaxToken implements IPosition
@@ -48,6 +47,11 @@ public class SyntaxToken implements IPosition
 	// TODO: Introduce `LiteralToken`?
 	public int intValue()
 	{
+		if(kind.isSystemVariable())
+		{
+			// TODO(system-variables): Check actual lengths
+			return 8;
+		}
 		return Integer.parseInt(source());
 	}
 

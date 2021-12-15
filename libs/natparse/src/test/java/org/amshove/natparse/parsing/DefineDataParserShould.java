@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 class DefineDataParserShould extends AbstractParserTest
@@ -752,6 +753,28 @@ class DefineDataParserShould extends AbstractParserTest
 	}
 
 	@Test
+	void parseViewsWithArraysReferencingVariables()
+	{
+		var source = """
+			DEFINE DATA
+			LOCAL
+			1 #MY-VAR (N1) INIT <*LANGUAGE>
+			1 MY-VIEW VIEW MY-DDM
+			2 ARRAY-INSIDE (#MY-VAR)
+			END-DEFINE
+			""";
+
+		var defineData = assertParsesWithoutDiagnostics(source);
+
+		var view = findVariable(defineData, "MY-VIEW", IViewNode.class);
+		assertThat(view.variables().size()).isEqualTo(1);
+		var theArray = assertNodeType(view.variables().first(), ITypedVariableNode.class);
+		assertThat(theArray.name()).isEqualTo("ARRAY-INSIDE");
+		assertThat(theArray.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(theArray.dimensions().first().upperBound()).isEqualTo(8);
+	}
+
+	@Test
 	void parseAViewVariableWithoutTypeNotationButWithArrayNotation()
 	{
 		var source = """
@@ -1091,5 +1114,16 @@ class DefineDataParserShould extends AbstractParserTest
 				assertThat(variable.type().hasDynamicLength()).isEqualTo(hasDynamicLength);
 			}
 		);
+	}
+
+	private <T extends ISyntaxNode> T findVariable(IDefineData defineData, String variableName, Class<T> expectedType)
+	{
+		var variable = defineData.variables().stream().filter(v -> v.name().equals(variableName)).findFirst();
+		if(variable.isEmpty())
+		{
+			fail("Could not find variable %s in %s".formatted(variable, defineData.variables().stream().map(IVariableNode::toString).collect(Collectors.joining(", "))));
+		}
+
+		return assertNodeType(variable.get(), expectedType);
 	}
 }

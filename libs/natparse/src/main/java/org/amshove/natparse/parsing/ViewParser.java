@@ -5,8 +5,18 @@ import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IArrayDimension;
 import org.amshove.natparse.natural.ITokenNode;
 
+import java.util.Map;
+
 class ViewParser extends AbstractParser<ViewNode>
 {
+
+	private final Map<String, VariableNode> declaredVariables;
+
+	ViewParser(Map<String, VariableNode> declaredVariables)
+	{
+		this.declaredVariables = declaredVariables;
+	}
+
 	@Override
 	protected ViewNode parseInternal()
 	{
@@ -78,7 +88,7 @@ class ViewParser extends AbstractParser<ViewNode>
 				}
 			}
 
-			if(peek().kind() == SyntaxKind.NUMBER)
+			if(peek().kind() == SyntaxKind.NUMBER || (peek().kind().isIdentifier() && isVariableDeclared(peek().symbolName())))
 			{
 				addArrayDimension(variable);
 				var typedDdmArrayVariable = typedVariableFromDdm(variable);
@@ -103,6 +113,13 @@ class ViewParser extends AbstractParser<ViewNode>
 		var type = new VariableType();
 
 		var dataType = consumeMandatoryIdentifier(typedVariable).source();
+
+		if(declaredVariables.containsKey(dataType))
+		{
+			addArrayDimension(typedVariable);
+			return typedVariable;
+		}
+
 		var format = DataFormat.fromSource(dataType.charAt(0));
 		type.setFormat(format);
 
@@ -189,6 +206,7 @@ class ViewParser extends AbstractParser<ViewNode>
 
 	private void checkVariableTypeAgainstDdm(TypedVariableNode typed)
 	{
+		// TODO
 	}
 
 	private double getLengthFromDataType(String dataType)
@@ -276,6 +294,28 @@ class ViewParser extends AbstractParser<ViewNode>
 		if (token.token().kind() == SyntaxKind.NUMBER)
 		{
 			return token.token().intValue();
+		}
+
+		if (token.token().kind().isIdentifier())
+		{
+			if (!isVariableDeclared(token.token().symbolName()))
+			{
+				report(ParserErrors.unresolvedReference(token));
+				return ArrayDimension.UNBOUND_VALUE;
+			}
+
+			var constReference = getDeclaredVariable(token);
+			if (!(constReference instanceof TypedVariableNode typedNode) || typedNode.type().initialValue() == null)
+			{
+				report(ParserErrors.arrayDimensionMustBeConstOrInitialized(token));
+			}
+			else
+			{
+				var referenceNode = new SymbolReferenceNode(token.token());
+				typedNode.addReference(referenceNode);
+				dimension.addNode(referenceNode);
+				return typedNode.type().initialValue().intValue();
+			}
 		}
 
 		return ArrayDimension.UNBOUND_VALUE;
@@ -446,5 +486,16 @@ class ViewParser extends AbstractParser<ViewNode>
 		{
 			addArrayDimensionWorkaroundComma(variable);
 		}
+	}
+
+	private boolean isVariableDeclared(String potentionalVariableName)
+	{
+		return declaredVariables.containsKey(potentionalVariableName.toUpperCase());
+	}
+
+	private VariableNode getDeclaredVariable(ITokenNode tokenNode)
+	{
+		// Natural is case-insensitive, as that it considers everything upper case
+		return declaredVariables.get(tokenNode.token().symbolName());
 	}
 }

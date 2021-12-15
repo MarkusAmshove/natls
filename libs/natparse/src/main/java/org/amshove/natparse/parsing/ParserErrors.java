@@ -140,12 +140,12 @@ class ParserErrors
 		);
 	}
 
-	public static ParserDiagnostic arrayDimensionMustBeConst(ITokenNode token)
+	public static ParserDiagnostic arrayDimensionMustBeConstOrInitialized(ITokenNode token)
 	{
 		return ParserDiagnostic.create(
-			"If the array bound is a reference, the referenced variable must be const",
+			"If the array bound is a reference, the referenced variable must either be CONST or INIT",
 			token,
-			ParserError.ARRAY_DIMENSION_MUST_BE_CONST
+			ParserError.ARRAY_DIMENSION_MUST_BE_CONST_OR_INIT
 		);
 	}
 

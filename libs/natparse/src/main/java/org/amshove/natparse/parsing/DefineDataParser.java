@@ -13,7 +13,6 @@ import java.util.Map;
 public class DefineDataParser extends AbstractParser<IDefineData>
 {
 	private static final List<SyntaxKind> SCOPE_SYNTAX_KINDS = List.of(SyntaxKind.LOCAL, SyntaxKind.PARAMETER, SyntaxKind.GLOBAL, SyntaxKind.INDEPENDENT);
-	private static final ViewParser viewParser = new ViewParser();
 
 	/**
 	 * Do not use this directly, use getDeclaredVariable or isVariableDeclared for proper case handling.
@@ -214,7 +213,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private ViewNode view() throws ParseError
 	{
-		var view = viewParser.parse(tokens);
+		var view = new ViewParser(declaredVariables).parse(tokens);
 
 		view.diagnostics().forEach(this::report);
 		if (view.result() == null)
@@ -670,7 +669,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			var constReference = getDeclaredVariable(token);
 			if (!(constReference instanceof TypedVariableNode typedNode) || !typedNode.type().isConstant())
 			{
-				report(ParserErrors.arrayDimensionMustBeConst(token));
+				report(ParserErrors.arrayDimensionMustBeConstOrInitialized(token));
 			}
 			else
 			{
