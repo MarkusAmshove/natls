@@ -225,7 +225,7 @@ public class Lexer
 	private void consumeAsteriskOrFunction()
 	{
 		var lookahead = scanner.peek(1);
-		if (lookahead != 'T' && lookahead != 'D')
+		if (lookahead != 'T' && lookahead != 'D' && lookahead != 'L')
 		{
 			createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
 			return;
@@ -244,6 +244,10 @@ public class Lexer
 		if (scanner.advanceIf("DATN"))
 		{
 			createAndAdd(SyntaxKind.DATN);
+		}
+		if (scanner.advanceIf("LANGUAGE"))
+		{
+			createAndAdd(SyntaxKind.LANGUAGE);
 		}
 	}
 

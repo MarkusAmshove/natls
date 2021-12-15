@@ -143,6 +143,7 @@ public enum SyntaxKind
 	INSERT,
 	INT,
 	INVESTIGATE,
+	LANGUAGE,
 	LENGTH,
 	LIMIT,
 	LOCAL,
@@ -239,6 +240,6 @@ public enum SyntaxKind
 
 	public boolean isSystemVariable()
 	{
-		return this == DATN || this == DATX || this == TIMX;
+		return this == DATN || this == DATX || this == TIMX || this == LANGUAGE;
 	}
 }
