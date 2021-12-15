@@ -65,5 +65,6 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 	public void connect(LanguageClient client)
 	{
 		documentService.connect(client);
+		workspaceService.connect(client);
 	}
 }

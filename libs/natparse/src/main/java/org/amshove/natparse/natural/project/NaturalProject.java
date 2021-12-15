@@ -41,4 +41,26 @@ public class NaturalProject
 
 		return null;
 	}
+
+	@Nullable
+	public NaturalFile findModule(String libName, String moduleName)
+	{
+		for (var library : libraries)
+		{
+			if(!library.getName().equalsIgnoreCase(libName))
+			{
+				continue;
+			}
+
+			for (var file : library.files())
+			{
+				if(file.getReferableName().equalsIgnoreCase(moduleName))
+				{
+					return file;
+				}
+			}
+		}
+
+		return null;
+	}
 }

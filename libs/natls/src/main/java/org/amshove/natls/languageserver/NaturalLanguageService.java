@@ -393,4 +393,9 @@ public class NaturalLanguageService
 		System.err.println("Returning " + completionItems.size() + " items for completion");
 		return completionItems;
 	}
+
+	public NaturalFile findNaturalFile(String library, String name)
+	{
+		return project.findModule(library, name);
+	}
 }
