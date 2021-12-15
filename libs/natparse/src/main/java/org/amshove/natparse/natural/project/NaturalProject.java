@@ -26,6 +26,24 @@ public class NaturalProject
 	}
 
 	@Nullable
+	public NaturalFile findModule(Path path)
+	{
+		// TODO(perf): We could inspect the path and skip libraries
+		for (var library : libraries)
+		{
+			for (var file : library.files())
+			{
+				if(file.getPath().equals(path))
+				{
+					return file;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	@Nullable
 	public NaturalFile findModule(String moduleName)
 	{
 		for (var library : libraries)

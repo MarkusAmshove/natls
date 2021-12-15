@@ -1,8 +1,8 @@
 package org.amshove.natls.languageserver;
 
 import com.google.common.io.Files;
+import org.amshove.natls.DiagnosticTool;
 import org.amshove.natls.natunit.NatUnitResultParser;
-import org.amshove.natls.natunit.NatUnitTestResult;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.CompletableFutures;
 import org.eclipse.lsp4j.services.LanguageClient;
@@ -10,7 +10,6 @@ import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -50,18 +49,18 @@ public class NaturalWorkspaceService implements WorkspaceService, LanguageClient
 			{
 				continue;
 			}
+
+			naturalFile.clearDiagnosticsByTool(DiagnosticTool.NATUNIT);
+
 			if(change.getType() == FileChangeType.Deleted)
 			{
-				// TODO(natunit): We have to send the normal parser/linter diagnostics, because this will clear them
-				client.publishDiagnostics(new PublishDiagnosticsParams(naturalFile.getPath().toUri().toString(), List.of()));
+				languageService.publishDiagnostics(naturalFile);
 			}
 			else
 			{
 				var result = new NatUnitResultParser().parse(testFile);
-				// TODO(natunit): We have to send the normal parser/linter diagnostics, because this will clear them
-				var failureDiagnostics = new ArrayList<Diagnostic>();
 
-				for (NatUnitTestResult testResult : result.getTestResults())
+				for (var testResult : result.getTestResults())
 				{
 					if(testResult.hasFailed())
 					{
@@ -79,18 +78,18 @@ public class NaturalWorkspaceService implements WorkspaceService, LanguageClient
 							var theAssertionLine = Files.readLines(naturalFile.getPath().toFile(), Charset.defaultCharset()).get(line);
 							var startIndex = theAssertionLine.length() - theAssertionLine.trim().length();
 
-							failureDiagnostics.add(new Diagnostic(
+							naturalFile.addDiagnostic(DiagnosticTool.NATUNIT, new Diagnostic(
 								new Range(new Position(line, startIndex), new Position(line, theAssertionLine.length())),
 								"Assertion Failure: " + actualFailureMessage,
 								DiagnosticSeverity.Error,
-								"NatUnit"
+								DiagnosticTool.NATUNIT.getId()
 							));
 						}
 						catch (Exception e) {}
 					}
 				}
 
-				client.publishDiagnostics(new PublishDiagnosticsParams(naturalFile.getPath().toUri().toString(), failureDiagnostics));
+				languageService.publishDiagnostics(naturalFile);
 			}
 		}
 	}

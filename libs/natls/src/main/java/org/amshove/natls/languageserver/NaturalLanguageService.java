@@ -1,5 +1,7 @@
 package org.amshove.natls.languageserver;
 
+import org.amshove.natls.project.LanguageServerFile;
+import org.amshove.natls.project.LanguageServerProject;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.Lexer;
@@ -15,6 +17,8 @@ import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.eclipse.lsp4j.services.LanguageClient;
+import org.eclipse.lsp4j.services.LanguageClientAware;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -25,28 +29,21 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class NaturalLanguageService
+public class NaturalLanguageService implements LanguageClientAware
 {
 
 	private static final Hover EMPTY_HOVER = new Hover(new MarkupContent(MarkupKind.PLAINTEXT, ""));
-	private final NaturalProject project;
+	private NaturalProject project; // TODO: Replace
+	private LanguageServerProject languageServerProject;
+	private LanguageClient client;
 
-	private NaturalLanguageService(NaturalProject project)
-	{
-		this.project = project;
-	}
-
-	/***
-	 * Creates the language service wrapping all LSP functionality.
-	 * All project files will be indexed during creation.
-	 * @param workspaceRoot Path to the workspace folder
-	 */
-	public static NaturalLanguageService createService(Path workspaceRoot)
+	public void indexProject(Path workspaceRoot)
 	{
 		var project = new BuildFileProjectReader().getNaturalProject(workspaceRoot.resolve("_naturalBuild"));
 		var indexer = new NaturalProjectFileIndexer();
 		indexer.indexProject(project);
-		return new NaturalLanguageService(project);
+		this.project = project;
+		languageServerProject = LanguageServerProject.fromProject(project);
 	}
 
 	public List<Either<SymbolInformation, DocumentSymbol>> findSymbolsInFile(TextDocumentIdentifier textDocument)
@@ -394,8 +391,26 @@ public class NaturalLanguageService
 		return completionItems;
 	}
 
-	public NaturalFile findNaturalFile(String library, String name)
+	public LanguageServerFile findNaturalFile(String library, String name)
 	{
-		return project.findModule(library, name);
+		var naturalFile = project.findModule(library, name);
+		return languageServerProject.findFile(naturalFile);
+	}
+
+	public LanguageServerFile findNaturalFile(Path path)
+	{
+		var naturalFile = project.findModule(path);
+		return languageServerProject.findFile(naturalFile);
+	}
+
+	public void publishDiagnostics(LanguageServerFile file)
+	{
+		client.publishDiagnostics(new PublishDiagnosticsParams(file.getUri(), file.allDiagnostics()));
+	}
+
+	@Override
+	public void connect(LanguageClient client)
+	{
+		this.client = client;
 	}
 }

@@ -1,5 +1,6 @@
 package org.amshove.natls.languageserver;
 
+import org.amshove.natls.DiagnosticTool;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
 import org.eclipse.lsp4j.*;
@@ -64,7 +65,8 @@ public class NaturalDocumentService implements TextDocumentService, LanguageClie
 	@Override
 	public void didClose(DidCloseTextDocumentParams params)
 	{
-
+		// TODO: Do we want to clear all diagnostics?
+		//		at least clear the parse tree
 	}
 
 	@Override
@@ -101,7 +103,8 @@ public class NaturalDocumentService implements TextDocumentService, LanguageClie
 		try
 		{
 			System.err.println("checkFile start");
-			var diagnostics = languageService.parseFile(LspUtil.uriToPath(textDocumentIdentifier));
+			var filepath = LspUtil.uriToPath(textDocumentIdentifier);
+			var diagnostics = languageService.parseFile(filepath);
 			publishDiagnostics(textDocumentIdentifier, diagnostics);
 			System.err.println("checkFile end");
 		}
@@ -134,21 +137,15 @@ public class NaturalDocumentService implements TextDocumentService, LanguageClie
 
 	private void publishDiagnostics(String fileUri, ReadOnlyList<IDiagnostic> diagnostics)
 	{
-		clearDiagnostics(fileUri);
-		if (diagnostics.size() == 0)
+		var naturalFile = languageService.findNaturalFile(LspUtil.uriToPath(fileUri));
+		naturalFile.clearDiagnosticsByTool(DiagnosticTool.NATPARSE);
+
+		for (var diagnostic : diagnostics)
 		{
-			return;
+			naturalFile.addDiagnostic(DiagnosticTool.NATPARSE, diagnostic);
 		}
 
-		var lspDiagnostics = diagnostics.stream().map(d -> new Diagnostic(
-			new Range(new Position(d.line(), d.offsetInLine()), new Position(d.line(), d.offsetInLine() + d.length())),
-			d.message(),
-			DiagnosticSeverity.Error,
-			"natls",
-			d.id()
-		)).toList();
-
-		client.publishDiagnostics(new PublishDiagnosticsParams(fileUri, lspDiagnostics));
+		languageService.publishDiagnostics(naturalFile);
 	}
 
 	private void clearDiagnostics(String fileUri)

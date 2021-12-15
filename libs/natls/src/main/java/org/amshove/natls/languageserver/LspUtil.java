@@ -1,9 +1,8 @@
 package org.amshove.natls.languageserver;
 
+import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.SyntaxToken;
-import org.eclipse.lsp4j.Location;
-import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.*;
 
 import java.net.URI;
 import java.nio.file.Path;
@@ -28,6 +27,20 @@ public class LspUtil
 				new Position(token.line(), token.offsetInLine()),
 				new Position(token.line(), token.offsetInLine() + token.length())
 			)
+		);
+	}
+
+	public static Diagnostic toLspDiagnostic(String sourceTool, IDiagnostic diagnostic)
+	{
+		return new Diagnostic(
+			new Range(
+				new Position(diagnostic.line(), diagnostic.offsetInLine()),
+				new Position(diagnostic.line(), diagnostic.offsetInLine() + diagnostic.length())
+			),
+			diagnostic.message(),
+			DiagnosticSeverity.Error,
+			sourceTool,
+			diagnostic.id()
 		);
 	}
 }
