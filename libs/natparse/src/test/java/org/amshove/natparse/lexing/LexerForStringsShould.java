@@ -55,6 +55,12 @@ public class LexerForStringsShould extends AbstractLexerTest
 	}
 
 	@Test
+	void lexHexStrings()
+	{
+		assertTokens("H'00'", token(SyntaxKind.STRING, "H'00'"));
+	}
+
+	@Test
 	void correctlyParseTimeFormats()
 	{
 		assertTokens(

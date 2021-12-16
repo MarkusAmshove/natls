@@ -117,6 +117,18 @@ public class Lexer
 					createAndAddCurrentSingleToken(SyntaxKind.CARET);
 					continue;
 
+				case 'h':
+				case 'H':
+					if(scanner.peek(1) == '\'')
+					{
+						consumeHexString();
+					}
+					else
+					{
+						consumeIdentifierOrKeyword();
+					}
+					continue;
+
 				case 'a':
 				case 'A':
 				case 'b':
@@ -131,8 +143,6 @@ public class Lexer
 				case 'F':
 				case 'g':
 				case 'G':
-				case 'h':
-				case 'H':
 				case 'i':
 				case 'I':
 				case 'j':
@@ -472,6 +482,36 @@ public class Lexer
 			scanner.advance();
 		}
 		createAndAdd(SyntaxKind.NUMBER);
+	}
+
+	private void consumeHexString()
+	{
+		scanner.start();
+		scanner.advance(2); // H and '
+		while (scanner.peek() != '\'' && !scanner.isAtEnd() && !isLineEnd())
+		{
+			scanner.advance();
+		}
+
+		if(scanner.peek() != '\'')
+		{
+			// Recovery
+			while (!isLineEnd() && !scanner.isAtEnd())
+			{
+				scanner.advance();
+			}
+
+			addDiagnostic("Unterminated String literal, expecting closing [']", LexerError.UNTERMINATED_STRING);
+
+			// We can still produce a valid token, although it is unterminated
+			createAndAdd(SyntaxKind.STRING);
+			return;
+		}
+
+		// We don't evaluate the content. Is it worth it? We could convert it to the actual characters.
+
+		scanner.advance();
+		createAndAdd(SyntaxKind.STRING);
 	}
 
 	private void consumeString(char c)
