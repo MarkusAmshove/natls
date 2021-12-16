@@ -323,9 +323,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			type.setDynamicLength();
 		}
 
-		if (consumeOptionally(typedVariable, SyntaxKind.INIT) || consumeOptionally(typedVariable, SyntaxKind.CONST))
+		if (consumeOptionally(typedVariable, SyntaxKind.INIT) || consumeOptionally(typedVariable, SyntaxKind.CONST) || consumeOptionally(typedVariable, SyntaxKind.CONSTANT))
 		{
-			if (previous().kind() == SyntaxKind.CONST)
+			if (previous().kind() == SyntaxKind.CONST || previous().kind() == SyntaxKind.CONSTANT)
 			{
 				type.setConstant();
 			}

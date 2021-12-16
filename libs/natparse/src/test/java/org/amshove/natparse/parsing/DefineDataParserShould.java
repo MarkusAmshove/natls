@@ -287,6 +287,20 @@ class DefineDataParserShould extends AbstractParserTest
 	{
 		var defineData = assertParsesWithoutDiagnostics("""
 			define data local
+			1 #myvar (A10) constant <'hello'>
+			end-define
+			""");
+
+		var variable = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
+		assertThat(variable.type().isConstant()).isTrue();
+		assertThat(variable.type().initialValue().source()).isEqualTo("'hello'");
+	}
+
+	@Test
+	void supportConstantValuesWithConst()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			define data local
 			1 #myvar (A10) const <'hello'>
 			end-define
 			""");
