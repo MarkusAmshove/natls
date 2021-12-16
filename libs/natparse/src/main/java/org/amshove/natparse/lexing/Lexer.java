@@ -77,7 +77,7 @@ public class Lexer
 					consumeMinusOrNumber();
 					continue;
 				case '*':
-					consumeAsteriskOrFunction();
+					consumeAsteriskOrSystemVariable();
 					continue;
 				case '/':
 					createAndAddCurrentSingleToken(SyntaxKind.SLASH);
@@ -232,13 +232,26 @@ public class Lexer
 		}
 	}
 
-	private void consumeAsteriskOrFunction()
+	private void consumeAsteriskOrSystemVariable()
 	{
 		var lookahead = scanner.peek(1);
-		if (lookahead != 'T' && lookahead != 'D' && lookahead != 'L')
+		switch(lookahead)
 		{
-			createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
-			return;
+			case 'd':
+			case 'D':
+			case 'l':
+			case 'L':
+			case 't':
+			case 'T':
+			case 'p':
+			case 'P':
+			case 'u':
+			case 'U':
+				break;
+			default:
+				createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
+				return;
+
 		}
 
 		scanner.start();
@@ -258,6 +271,14 @@ public class Lexer
 		if (scanner.advanceIf("LANGUAGE"))
 		{
 			createAndAdd(SyntaxKind.LANGUAGE);
+		}
+		if (scanner.advanceIf("PROGRAM"))
+		{
+			createAndAdd(SyntaxKind.PROGRAM);
+		}
+		if (scanner.advanceIf("USER"))
+		{
+			createAndAdd(SyntaxKind.USER);
 		}
 	}
 

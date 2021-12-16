@@ -175,6 +175,7 @@ public enum SyntaxKind
 	POS,
 	PRINT,
 	PROCESS,
+	PROGRAM,
 	READ,
 	REDEFINE,
 	REDUCE,
@@ -222,6 +223,7 @@ public enum SyntaxKind
 	TRUE,
 	UNTIL,
 	UPDATE,
+	USER,
 	USING,
 	UPLOAD,
 	VAL,
@@ -241,6 +243,6 @@ public enum SyntaxKind
 
 	public boolean isSystemVariable()
 	{
-		return this == DATN || this == DATX || this == TIMX || this == LANGUAGE;
+		return this == DATN || this == DATX || this == TIMX || this == LANGUAGE || this == PROGRAM || this == USER;
 	}
 }

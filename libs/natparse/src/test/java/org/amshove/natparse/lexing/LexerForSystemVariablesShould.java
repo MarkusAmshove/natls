@@ -27,4 +27,16 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 	{
 		assertTokens("*LANGUAGE", token(SyntaxKind.LANGUAGE, "*LANGUAGE"));
 	}
+
+	@Test
+	void lexProgram()
+	{
+		assertTokens("*PROGRAM", token(SyntaxKind.PROGRAM, "*PROGRAM"));
+	}
+
+	@Test
+	void lexUser()
+	{
+		assertTokens("*USER", token(SyntaxKind.USER, "*USER"));
+	}
 }

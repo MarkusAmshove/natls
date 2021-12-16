@@ -540,11 +540,6 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				case NUMERIC:
 				case PACKED:
 				case INTEGER:
-					if (variable.type().initialValue().kind().isSystemVariable())
-					{
-						// TODO(system-variables): Check type
-						break;
-					}
 					expectInitialValueType(variable, SyntaxKind.NUMBER);
 					break;
 
@@ -561,7 +556,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private void expectInitialValueType(TypedVariableNode variableNode, SyntaxKind expectedKind)
 	{
-		if (variableNode.type().initialValue().kind() != expectedKind)
+		if (variableNode.type().initialValue().kind() != expectedKind
+			&& !variableNode.type().initialValue().kind().isSystemVariable()) // TODO(system-variables): Check type
 		{
 			report(ParserErrors.initValueMismatch(variableNode, expectedKind));
 		}
