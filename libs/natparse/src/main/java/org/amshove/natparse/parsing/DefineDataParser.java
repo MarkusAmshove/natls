@@ -78,26 +78,6 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		return defineData;
 	}
 
-	private void skipToNextLineAsRecovery(ParseError e)
-	{
-		// Skip to next line or END-DEFINE to recover
-		while (!tokens.isAtEnd() && peek().line() == e.getErrorToken().line() && peek().kind() != SyntaxKind.END_DEFINE)
-		{
-			tokens.advance();
-		}
-	}
-
-	private void skipToNextLineReportingEveryToken()
-	{
-		var currentLine = peek().line();
-		// Skip to next line or END-DEFINE to recover
-		while (!tokens.isAtEnd() && peek().line() == currentLine && peek().kind() != SyntaxKind.END_DEFINE)
-		{
-			report(ParserErrors.trailingToken(peek()));
-			discard();
-		}
-	}
-
 	private BaseSyntaxNode dataDefinition() throws ParseError
 	{
 		if (!isScopeToken(peek()))
@@ -151,6 +131,10 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			catch(ParseError e)
 			{
 				skipToNextLineAsRecovery(e);
+			}
+			catch (Exception e)
+			{
+				skipToNextLineReportingEveryToken();
 			}
 		}
 

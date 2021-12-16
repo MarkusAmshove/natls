@@ -213,4 +213,25 @@ abstract class AbstractParser<T>
 
 		return peek(offset);
 	}
+
+	protected void skipToNextLineAsRecovery(ParseError e)
+	{
+		// Skip to next line or END-DEFINE to recover
+		while (!tokens.isAtEnd() && peek().line() == e.getErrorToken().line() && peek().kind() != SyntaxKind.END_DEFINE)
+		{
+			tokens.advance();
+		}
+	}
+
+	protected void skipToNextLineReportingEveryToken()
+	{
+		var currentLine = peek().line();
+		// Skip to next line or END-DEFINE to recover
+		while (!tokens.isAtEnd() && peek().line() == currentLine && peek().kind() != SyntaxKind.END_DEFINE)
+		{
+			report(ParserErrors.trailingToken(peek()));
+			discard();
+		}
+	}
+
 }

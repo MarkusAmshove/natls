@@ -46,11 +46,11 @@ class ViewParser extends AbstractParser<ViewNode>
 				}
 				catch (ParseError e)
 				{
-					// Skip to the next line or end of view, which is determined by the next variable that has the same or lower level
-					while (!tokens.isAtEnd() && peek().line() == e.getErrorToken().line() || (peek().kind() == SyntaxKind.NUMBER && peek().intValue() > view.level()))
-					{
-						tokens.advance();
-					}
+					skipToNextLineAsRecovery(e);
+				}
+				catch (Exception e)
+				{
+					skipToNextLineReportingEveryToken();
 				}
 			}
 
