@@ -117,6 +117,14 @@ public class Lexer
 					createAndAddCurrentSingleToken(SyntaxKind.CARET);
 					continue;
 
+				case '%':
+					createAndAddCurrentSingleToken(SyntaxKind.PERCENT);
+					continue;
+
+				case '?':
+					createAndAddCurrentSingleToken(SyntaxKind.QUESTIONMARK);
+					continue;
+
 				case 'h':
 				case 'H':
 					if(scanner.peek(1) == '\'')

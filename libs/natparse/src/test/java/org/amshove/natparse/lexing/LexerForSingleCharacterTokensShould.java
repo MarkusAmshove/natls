@@ -105,4 +105,16 @@ public class LexerForSingleCharacterTokensShould extends AbstractLexerTest
 	{
 		assertTokens("^", token(SyntaxKind.CARET, "^"));
 	}
+
+	@Test
+	void lexPercent()
+	{
+		assertTokens("%", token(SyntaxKind.PERCENT, "%"));
+	}
+
+	@Test
+	void lexQuestionmark()
+	{
+		assertTokens("?", token(SyntaxKind.QUESTIONMARK, "?"));
+	}
 }
