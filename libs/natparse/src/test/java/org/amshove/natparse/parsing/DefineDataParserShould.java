@@ -1090,6 +1090,18 @@ class DefineDataParserShould extends AbstractParserTest
 			""");
 	}
 
+	@Test
+	void addNoDiagnosticForMultipleDeclarationsInASingleLine()
+	{
+		assertParsesWithoutDiagnostics("""
+			  define data
+			  local
+			  1 #date (n8)
+			  1 redefine #date 2 #date-yyyy(n4) 2 #date-mm (n2) 2 #date-dd(n2)
+			  end-define
+			""");
+	}
+
 	private IDefineData assertParsesWithoutDiagnostics(String source)
 	{
 		var lexer = new Lexer();
@@ -1133,7 +1145,7 @@ class DefineDataParserShould extends AbstractParserTest
 	private <T extends ISyntaxNode> T findVariable(IDefineData defineData, String variableName, Class<T> expectedType)
 	{
 		var variable = defineData.variables().stream().filter(v -> v.name().equals(variableName)).findFirst();
-		if(variable.isEmpty())
+		if (variable.isEmpty())
 		{
 			fail("Could not find variable %s in %s".formatted(variable, defineData.variables().stream().map(IVariableNode::toString).collect(Collectors.joining(", "))));
 		}

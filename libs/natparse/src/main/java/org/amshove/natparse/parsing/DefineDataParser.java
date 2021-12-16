@@ -233,7 +233,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			var nestedVariable = variable(groupNode.getDimensions());
 			groupNode.addVariable(nestedVariable);
 
-			if(peek().line() == previous().line())
+			if(peek().line() == previous().line()
+				&& peek().kind() != SyntaxKind.NUMBER) // multiple variables declared in the same line...
 			{
 				// Error handling for trailing stuff that shouldn't be there
 				skipToNextLineReportingEveryToken();
