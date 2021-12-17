@@ -175,4 +175,12 @@ class ParserErrors
 			ParserError.TRAILING_TOKEN
 		);
 	}
+
+    public static IDiagnostic fillerMustHaveXKeyword(SyntaxToken token) {
+		return ParserDiagnostic.create(
+			"FILLER is missing X after value. (e.g. FILLER 10X)",
+			new TokenNode(token),
+			ParserError.FILLER_MISSING_X
+		);
+    }
 }

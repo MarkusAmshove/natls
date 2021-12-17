@@ -122,6 +122,7 @@ public enum SyntaxKind
 	EXPORT,
 	FALSE,
 	FETCH,
+	FILLER,
 	FIND,
 	FOR,
 	FORMAT,

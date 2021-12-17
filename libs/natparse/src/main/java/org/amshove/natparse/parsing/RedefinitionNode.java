@@ -6,6 +6,7 @@ import org.amshove.natparse.natural.IVariableNode;
 class RedefinitionNode extends GroupNode implements IRedefinitionNode
 {
 	private IVariableNode targetNode;
+	private int fillerBytes;
 
 	public RedefinitionNode(VariableNode variable)
 	{
@@ -18,8 +19,19 @@ class RedefinitionNode extends GroupNode implements IRedefinitionNode
 		return targetNode;
 	}
 
+	@Override
+	public int fillerBytes()
+	{
+		return fillerBytes;
+	}
+
 	void setTarget(IVariableNode targetNode)
 	{
 		this.targetNode = targetNode;
+	}
+
+	void addFillerBytes(int bytes)
+	{
+		fillerBytes += bytes;
 	}
 }

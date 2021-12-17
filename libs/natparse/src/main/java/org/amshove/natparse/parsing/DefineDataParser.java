@@ -230,14 +230,21 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				break;
 			}
 
-			var nestedVariable = variable(groupNode.getDimensions());
-			groupNode.addVariable(nestedVariable);
-
-			if(peek().line() == previous().line()
-				&& peek().kind() != SyntaxKind.NUMBER) // multiple variables declared in the same line...
+			if(peek(1).kind() == SyntaxKind.FILLER && groupNode instanceof RedefinitionNode redefinitionNode)
 			{
-				// Error handling for trailing stuff that shouldn't be there
-				skipToNextLineReportingEveryToken();
+				parseRedefineFiller(redefinitionNode);
+			}
+			else
+			{
+				var nestedVariable = variable(groupNode.getDimensions());
+				groupNode.addVariable(nestedVariable);
+
+				if (peek().line() == previous().line()
+					&& peek().kind() != SyntaxKind.NUMBER) // multiple variables declared in the same line...
+				{
+					// Error handling for trailing stuff that shouldn't be there
+					skipToNextLineReportingEveryToken();
+				}
 			}
 		}
 
@@ -247,6 +254,26 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 
 		return groupNode;
+	}
+
+	private void parseRedefineFiller(RedefinitionNode redefinitionNode) throws ParseError
+	{
+		consume(redefinitionNode, SyntaxKind.NUMBER); // Level
+		consume(redefinitionNode, SyntaxKind.FILLER);
+		var fillerBytes = consumeMandatory(redefinitionNode, SyntaxKind.NUMBER);
+		redefinitionNode.addFillerBytes(fillerBytes.intValue());
+
+		if(!peek().kind().isIdentifier())
+		{
+			report(ParserErrors.fillerMustHaveXKeyword(fillerBytes));
+			return;
+		}
+
+		var x = consumeMandatoryIdentifier(redefinitionNode); // the X
+		if (!x.symbolName().equals("X"))
+		{
+			report(ParserErrors.fillerMustHaveXKeyword(fillerBytes));
+		}
 	}
 
 	private VariableNode typedVariable(VariableNode variable) throws ParseError

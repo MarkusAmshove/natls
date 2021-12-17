@@ -99,6 +99,7 @@ public class KeywordTable
 				case "export" -> SyntaxKind.EXPORT;
 				case "false" -> SyntaxKind.FALSE;
 				case "fetch" -> SyntaxKind.FETCH;
+				case "filler" -> SyntaxKind.FILLER;
 				case "find" -> SyntaxKind.FIND;
 				case "for" -> SyntaxKind.FOR;
 				case "format" -> SyntaxKind.FORMAT;
