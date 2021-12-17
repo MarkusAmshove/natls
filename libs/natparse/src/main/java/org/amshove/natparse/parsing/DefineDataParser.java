@@ -491,11 +491,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private void checkVariableType(TypedVariableNode variable)
 	{
-		// TODO: F only 4 or 8
-		// I only 1, 2 or 4
-		// N only 1-29, after floating point must be <= 7
-		// P only 1-29, after floating point must be <= 7
-
+		var variableLength = variable.type().length();
 		if (variable.type().hasDynamicLength())
 		{
 			switch (variable.type().format())
@@ -517,13 +513,47 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 					report(ParserErrors.dynamicVariableLengthNotAllowed(variable));
 			}
 
-			if (variable.type().length() > 0.0)
+			if (variableLength > 0.0)
 			{
 				report(ParserErrors.dynamicAndFixedLength(variable));
 			}
 		}
 
-		if (variable.type().length() == 0.0)
+		if (variableLength != 0.0)
+		{
+			switch (variable.type().format())
+			{
+				case ALPHANUMERIC, BINARY, UNICODE -> {
+					if (variableLength < 1 || variableLength > VariableTypeNode.ONE_GIGABYTE)
+					{
+						report(ParserErrors.invalidLengthForDataTypeRange(variable, 1, VariableTypeNode.ONE_GIGABYTE));
+					}
+				}
+				case CONTROL, DATE, LOGIC, TIME -> {
+					report(ParserErrors.typeCantHaveLength(variable));
+				}
+				case FLOAT -> {
+					if (variableLength != 4 && variableLength != 8)
+					{
+						report(ParserErrors.invalidLengthForDataType(variable, 4, 8));
+					}
+				}
+				case INTEGER -> {
+					if (variableLength != 1 && variableLength != 2 && variableLength != 4)
+					{
+						report(ParserErrors.invalidLengthForDataType(variable, 1, 2, 4));
+					}
+				}
+				case NUMERIC, PACKED -> {
+					if (variableLength < 1 || variableLength > 29)
+					{
+						report(ParserErrors.invalidLengthForDataTypeRange(variable, 1, 29));
+					}
+				}
+			}
+		}
+
+		if (variableLength == 0.0)
 		{
 			switch (variable.type().format())
 			{
@@ -947,9 +977,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		for (var variable : redefinitionNode.variables())
 		{
-			if(variable instanceof ITypedVariableNode typedVariableNode)
+			if (variable instanceof ITypedVariableNode typedVariableNode)
 			{
-				if(typedVariableNode.type().hasDynamicLength())
+				if (typedVariableNode.type().hasDynamicLength())
 				{
 					report(ParserErrors.redefineCantContainVariableWithDynamicLength(typedVariableNode));
 					skipLengthCheck = true;
@@ -957,7 +987,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 		}
 
-		if(skipLengthCheck)
+		if (skipLengthCheck)
 		{
 			return;
 		}

@@ -1225,6 +1225,81 @@ class DefineDataParserShould extends AbstractParserTest
 			ParserError.REDEFINE_LENGTH_EXCEEDS_TARGET_LENGTH);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"1", "3", "5", "7", "9", "11", "32"
+	})
+	void showADiagnosticForInvalidFloatLengths(String length)
+	{
+		assertDiagnostic("""
+				define data local
+				1 #fl (F%s)
+				end-define
+				""".formatted(length),
+			ParserError.INVALID_LENGTH_FOR_DATA_TYPE
+		);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"3", "5", "8", "12", "24", "32"
+	})
+	void showADiagnosticForInvalidIntegerLengths(String length)
+	{
+		assertDiagnostic("""
+				define data local
+				1 #fl (I%s)
+				end-define
+				""".formatted(length),
+			ParserError.INVALID_LENGTH_FOR_DATA_TYPE
+		);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"30", "32"
+	})
+	void showADiagnosticForInvalidNumericLengths(String length)
+	{
+		assertDiagnostic("""
+				define data local
+				1 #fl (N%s)
+				end-define
+				""".formatted(length),
+			ParserError.INVALID_LENGTH_FOR_DATA_TYPE
+		);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"30", "32"
+	})
+	void showADiagnosticForInvalidPackedLengths(String length)
+	{
+		assertDiagnostic("""
+				define data local
+				1 #fl (P%s)
+				end-define
+				""".formatted(length),
+			ParserError.INVALID_LENGTH_FOR_DATA_TYPE
+		);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"C", "D", "L", "T"
+	})
+	void showADiagnosticForLengthsWithTypesThatCantSpecifyLength(String type)
+	{
+		assertDiagnostic("""
+				define data local
+				1 #fl (%s1)
+				end-define
+				""".formatted(type),
+			ParserError.INVALID_LENGTH_FOR_DATA_TYPE
+		);
+	}
+
 	private IDefineData assertParsesWithoutDiagnostics(String source)
 	{
 		var lexer = new Lexer();

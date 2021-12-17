@@ -58,21 +58,21 @@ class ParserErrors
 	public static ParserDiagnostic dynamicAndFixedLength(TypedVariableNode variable)
 	{
 		var dynamicToken = variable.findDescendantToken(SyntaxKind.DYNAMIC);
-		if(dynamicToken != null)
+		if (dynamicToken != null)
 		{
 			return ParserDiagnostic.create("A variable with a fixed length can't also have dynamic length", dynamicToken, ParserError.DYNAMIC_AND_FIXED_LENGTH);
 		}
 		return null;
 	}
 
-    public static ParserDiagnostic invalidArrayBound(IArrayDimension dimension, int bound)
+	public static ParserDiagnostic invalidArrayBound(IArrayDimension dimension, int bound)
 	{
 		return ParserDiagnostic.create(
 			"<%d> is not a valid array bound. Try a number >= 0 or *".formatted(bound),
 			dimension,
 			ParserError.INVALID_ARRAY_BOUND
 		);
-    }
+	}
 
 	public static ParserDiagnostic incompleteArrayDefinition(BaseSyntaxNode node)
 	{
@@ -173,21 +173,23 @@ class ParserErrors
 		);
 	}
 
-    public static IDiagnostic fillerMustHaveXKeyword(SyntaxToken token) {
+	public static IDiagnostic fillerMustHaveXKeyword(SyntaxToken token)
+	{
 		return ParserDiagnostic.create(
 			"FILLER is missing X after value. (e.g. FILLER 10X)",
 			new TokenNode(token),
 			ParserError.FILLER_MISSING_X
 		);
-    }
+	}
 
-    public static IDiagnostic redefineTargetCantBeXArray(IArrayDimension dimension) {
+	public static IDiagnostic redefineTargetCantBeXArray(IArrayDimension dimension)
+	{
 		return ParserDiagnostic.create(
 			"Can not redefine X-Arrays",
 			dimension,
 			ParserError.REDEFINE_TARGET_CANT_BE_X_ARRAY
 		);
-    }
+	}
 
 	public static IDiagnostic redefineCantTargetDynamic(RedefinitionNode redefinitionNode)
 	{
@@ -204,6 +206,38 @@ class ParserErrors
 			"REDEFINE can not contain a variable with dynamic length",
 			variable,
 			ParserError.REDEFINE_TARGET_CANT_CONTAIN_DYNAMIC
+		);
+	}
+
+	public static IDiagnostic invalidLengthForDataTypeRange(ITypedVariableNode typeNode, int lowestValue, int highestValue)
+	{
+		return ParserDiagnostic.create(
+			"Invalid length: %s. Has to be in range of %d to %d".formatted(
+				DataFormat.formatLength(typeNode.type().length()),
+				lowestValue,
+				highestValue),
+			typeNode,
+			ParserError.INVALID_LENGTH_FOR_DATA_TYPE
+		);
+	}
+
+	public static IDiagnostic invalidLengthForDataType(ITypedVariableNode typeNode, int... possibleValues)
+	{
+		return ParserDiagnostic.create(
+			"Invalid length: %s. Has to be one of %s".formatted(
+				DataFormat.formatLength(typeNode.type().length()),
+				Arrays.stream(possibleValues).mapToObj(Integer::toString).collect(Collectors.joining(","))),
+			typeNode,
+			ParserError.INVALID_LENGTH_FOR_DATA_TYPE
+		);
+	}
+
+	public static IDiagnostic typeCantHaveLength(ITypedVariableNode typeNode, int... possibleValues)
+	{
+		return ParserDiagnostic.create(
+			"Invalid length: Length for %s can not be specified".formatted(DataFormat.formatLength(typeNode.type().length())),
+			typeNode,
+			ParserError.INVALID_LENGTH_FOR_DATA_TYPE
 		);
 	}
 }

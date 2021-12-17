@@ -6,7 +6,7 @@ import org.amshove.natparse.natural.IVariableTypeNode;
 
 class VariableTypeNode implements IVariableTypeNode
 {
-	private static final int ONE_GIGABYTE = 1073741824;
+	static final int ONE_GIGABYTE = 1073741824;
 
 
 	private boolean hasDynamicLength;
