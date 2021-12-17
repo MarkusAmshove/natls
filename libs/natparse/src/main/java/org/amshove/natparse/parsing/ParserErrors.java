@@ -3,10 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
-import org.amshove.natparse.natural.DataFormat;
-import org.amshove.natparse.natural.IArrayDimension;
-import org.amshove.natparse.natural.ITokenNode;
-import org.amshove.natparse.natural.VariableScope;
+import org.amshove.natparse.natural.*;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -191,4 +188,22 @@ class ParserErrors
 			ParserError.REDEFINE_TARGET_CANT_BE_X_ARRAY
 		);
     }
+
+	public static IDiagnostic redefineCantTargetDynamic(RedefinitionNode redefinitionNode)
+	{
+		return ParserDiagnostic.create(
+			"REDEFINE can not target variable with dynamic length",
+			redefinitionNode,
+			ParserError.REDEFINE_TARGET_CANT_BE_DYNAMIC
+		);
+	}
+
+	public static IDiagnostic redefineCantContainVariableWithDynamicLength(ITypedVariableNode variable)
+	{
+		return ParserDiagnostic.create(
+			"REDEFINE can not contain a variable with dynamic length",
+			variable,
+			ParserError.REDEFINE_TARGET_CANT_CONTAIN_DYNAMIC
+		);
+	}
 }

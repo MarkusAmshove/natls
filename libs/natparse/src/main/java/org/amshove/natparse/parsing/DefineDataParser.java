@@ -128,7 +128,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				scopeNode.addVariable(variable);
 				declaredVariables.put(variable.name(), variable);
 			}
-			catch(ParseError e)
+			catch (ParseError e)
 			{
 				skipToNextLineAsRecovery(e);
 			}
@@ -230,7 +230,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				break;
 			}
 
-			if(peek(1).kind() == SyntaxKind.FILLER && groupNode instanceof RedefinitionNode redefinitionNode)
+			if (peek(1).kind() == SyntaxKind.FILLER && groupNode instanceof RedefinitionNode redefinitionNode)
 			{
 				parseRedefineFiller(redefinitionNode);
 			}
@@ -263,7 +263,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		var fillerBytes = consumeMandatory(redefinitionNode, SyntaxKind.NUMBER);
 		redefinitionNode.addFillerBytes(fillerBytes.intValue());
 
-		if(!peek().kind().isIdentifier())
+		if (!peek().kind().isIdentifier())
 		{
 			report(ParserErrors.fillerMustHaveXKeyword(fillerBytes));
 			return;
@@ -375,9 +375,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 
 		// TODO: Only for parameter
-		if(consumeOptionally(typedVariable, SyntaxKind.BY))
+		if (consumeOptionally(typedVariable, SyntaxKind.BY))
 		{
-			if(currentScope != VariableScope.PARAMETER)
+			if (currentScope != VariableScope.PARAMETER)
 			{
 				report(ParserErrors.byValueNotAllowedInCurrentScope(getPreviousNode(), currentScope));
 				consumeOptionally(typedVariable, SyntaxKind.VALUE);
@@ -390,7 +390,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 		}
 
-		if(consumeOptionally(typedVariable, SyntaxKind.OPTIONAL) && currentScope != VariableScope.PARAMETER)
+		if (consumeOptionally(typedVariable, SyntaxKind.OPTIONAL) && currentScope != VariableScope.PARAMETER)
 		{
 			report(ParserErrors.optionalNotAllowedInCurrentScope(getPreviousNode(), currentScope));
 		}
@@ -495,7 +495,6 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		// I only 1, 2 or 4
 		// N only 1-29, after floating point must be <= 7
 		// P only 1-29, after floating point must be <= 7
-
 
 		if (variable.type().hasDynamicLength())
 		{
@@ -675,7 +674,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		{
 			var isUnboundV = token.token().symbolName().equals("V"); // (1:V) is allowed in parameter scope, where V stands for unbound
 
-			if(currentScope.isParameter() && isUnboundV && !isVariableDeclared(token.token().symbolName()))
+			if (currentScope.isParameter() && isUnboundV && !isVariableDeclared(token.token().symbolName()))
 			{
 				return ArrayDimension.UNBOUND_VALUE;
 			}
@@ -767,23 +766,24 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				// 50 in the example above.
 				workaroundNextDimension = true;
 			}
-			else if(peekKind(SyntaxKind.IDENTIFIER) && peek().source().contains(","))
-			{
-				// Workaround for (A01/1:V,1:#MAX) where V,1 gets recognized as identifier, but V is the actual identifier
-				var identifier = peek().source().split(",")[0];
-				var syntheticIdentifier = SyntheticTokenNode.fromToken(peek(), SyntaxKind.IDENTIFIER, identifier);
-				upperBound = extractArrayBound(syntheticIdentifier, dimension);
-				typedVariable.addNode(syntheticIdentifier);
-				// we now also have to handle the next dimension, because our current
-				// token also contains the lower bound of the next dimension.
-				// 50 in the example above.
-				workaroundNextDimension = true;
-			}
 			else
-			{
-				upperBound = extractArrayBound(new TokenNode(peek()), dimension);
-				consume(dimension);
-			}
+				if (peekKind(SyntaxKind.IDENTIFIER) && peek().source().contains(","))
+				{
+					// Workaround for (A01/1:V,1:#MAX) where V,1 gets recognized as identifier, but V is the actual identifier
+					var identifier = peek().source().split(",")[0];
+					var syntheticIdentifier = SyntheticTokenNode.fromToken(peek(), SyntaxKind.IDENTIFIER, identifier);
+					upperBound = extractArrayBound(syntheticIdentifier, dimension);
+					typedVariable.addNode(syntheticIdentifier);
+					// we now also have to handle the next dimension, because our current
+					// token also contains the lower bound of the next dimension.
+					// 50 in the example above.
+					workaroundNextDimension = true;
+				}
+				else
+				{
+					upperBound = extractArrayBound(new TokenNode(peek()), dimension);
+					consume(dimension);
+				}
 		}
 		else
 		{
@@ -914,20 +914,28 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			return;
 		}
 
+		if (target instanceof TypedVariableNode typedTarget && typedTarget.type().hasDynamicLength())
+		{
+			report(ParserErrors.redefineCantTargetDynamic(redefinitionNode));
+			return;
+		}
+
 		redefinitionNode.setTarget(target);
 
 		var targetLength = calculateVariableLengthInBytes(target);
 		var redefineLength = calculateVariableLengthInBytes(redefinitionNode);
 
-		if(target.isArray())
+		var skipLengthCheck = false;
+
+		if (target.isArray())
 		{
 			var totalOccurrences = 0;
 			for (var dimension : target.dimensions())
 			{
-				if(dimension.isLowerUnbound() || dimension.isUpperUnbound())
+				if (dimension.isLowerUnbound() || dimension.isUpperUnbound())
 				{
 					report(ParserErrors.redefineTargetCantBeXArray(dimension));
-					return;
+					skipLengthCheck = true;
 				}
 				else
 				{
@@ -935,6 +943,23 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				}
 			}
 			targetLength *= totalOccurrences;
+		}
+
+		for (var variable : redefinitionNode.variables())
+		{
+			if(variable instanceof ITypedVariableNode typedVariableNode)
+			{
+				if(typedVariableNode.type().hasDynamicLength())
+				{
+					report(ParserErrors.redefineCantContainVariableWithDynamicLength(typedVariableNode));
+					skipLengthCheck = true;
+				}
+			}
+		}
+
+		if(skipLengthCheck)
+		{
+			return;
 		}
 
 		if (redefineLength > targetLength)

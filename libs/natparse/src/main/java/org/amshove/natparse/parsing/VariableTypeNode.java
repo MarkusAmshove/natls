@@ -6,6 +6,9 @@ import org.amshove.natparse.natural.IVariableTypeNode;
 
 class VariableTypeNode implements IVariableTypeNode
 {
+	private static final int ONE_GIGABYTE = 1073741824;
+
+
 	private boolean hasDynamicLength;
 	private DataFormat format;
 	private double length;
@@ -47,14 +50,19 @@ class VariableTypeNode implements IVariableTypeNode
 	{
 		return switch (format)
 			{
-				case ALPHANUMERIC, BINARY, FLOAT, INTEGER -> (int) length;
+				case ALPHANUMERIC, BINARY -> hasDynamicLength
+					? ONE_GIGABYTE // max internal length in bytes
+					: (int)length;
+				case FLOAT, INTEGER -> (int) length;
 				case CONTROL -> 2;
 				case DATE -> 4;
 				case LOGIC -> 1;
 				case NUMERIC -> calculateNumericSize();
 				case PACKED -> calculatePackedSize();
 				case TIME -> 7;
-				case UNICODE -> Math.max((int) length, 2);
+				case UNICODE -> hasDynamicLength()
+					? ONE_GIGABYTE // max internal length in bytes
+					: Math.max((int) length, 2);
 				case NONE -> 0;
 			};
 	}
