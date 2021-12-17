@@ -5,16 +5,24 @@ import org.amshove.natparse.lexing.SyntaxToken;
 public interface IVariableTypeNode
 {
 	DataFormat format();
+
+	/**
+	 * Returns the `literal` length as defined in the source, e.g. 2 for A2.
+	 */
 	double length();
 	boolean hasDynamicLength();
 
 	/**
 	 * Returns the initial value of the variable or the constant variable if isConstant() returns true.
-	 * @return
 	 * @see IVariableTypeNode#isConstant()
 	 */
 	SyntaxToken initialValue();
 	boolean isConstant();
+
+	/**
+	 * Returns the actual size in bytes.
+	 */
+	int byteSize();
 
     default String toShortString()
 	{

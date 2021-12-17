@@ -491,6 +491,12 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private void checkVariableType(TypedVariableNode variable)
 	{
+		// TODO: F only 4 or 8
+		// I only 1, 2 or 4
+		// N only 1-29, after floating point must be <= 7
+		// P only 1-29, after floating point must be <= 7
+
+
 		if (variable.type().hasDynamicLength())
 		{
 			switch (variable.type().format())
@@ -910,20 +916,20 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		redefinitionNode.setTarget(target);
 
-		var targetLength = calculateVariableLength(target);
-		var redefineLength = calculateVariableLength(redefinitionNode);
+		var targetLength = calculateVariableLengthInBytes(target);
+		var redefineLength = calculateVariableLengthInBytes(redefinitionNode);
 
-		if (targetLength < redefineLength)
+		if (redefineLength > targetLength)
 		{
 			report(ParserErrors.redefinitionLengthIsTooLong(redefinitionNode, redefineLength, targetLength));
 		}
 	}
 
-	private double calculateVariableLength(IVariableNode target)
+	private double calculateVariableLengthInBytes(IVariableNode target)
 	{
 		if (target instanceof ITypedVariableNode typedNode)
 		{
-			return typedNode.type().length();
+			return typedNode.type().byteSize();
 		}
 
 		if (target instanceof IRedefinitionNode redefinitionNode)
@@ -933,7 +939,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			{
 				if (member instanceof ITypedVariableNode typedVariableNode)
 				{
-					groupLength += typedVariableNode.type().length();
+					groupLength += typedVariableNode.type().byteSize();
 				}
 			}
 
@@ -945,7 +951,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				var groupLength = 0.0;
 				for (var member : groupNode.variables())
 				{
-					groupLength += calculateVariableLength(member);
+					groupLength += calculateVariableLengthInBytes(member);
 				}
 
 				return groupLength;

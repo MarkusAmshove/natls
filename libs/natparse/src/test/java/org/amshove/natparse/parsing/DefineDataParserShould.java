@@ -694,9 +694,9 @@ class DefineDataParserShould extends AbstractParserTest
 			   LOCAL
 			   01 #FIRSTVAR
 			     02 #FIRSTVAR-A (N2) INIT <5>
-			     02 #FIRSTVAR-B (P8) INIT <10>
+			     02 #FIRSTVAR-B (P6) INIT <10>
 			  01 REDEFINE #FIRSTVAR
-			     02 #FIRSTVAR-ALPHA (A10)
+			     02 #FIRSTVAR-ALPHA (A6)
 			   END-DEFINE
 			""";
 

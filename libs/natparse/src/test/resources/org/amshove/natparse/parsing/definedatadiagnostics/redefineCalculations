@@ -1,0 +1,20 @@
+/* All length definitions in this file should pass
+define data
+local
+/***********
+01 #RV1 (N12,7)
+01 REDEFINE #RV1
+   02 #RV11(N4)
+   02 #RV12(N2)
+   02 #RV13(N2)
+   02 #RV14(N2)
+   02 #RV15(N2)
+   02 #RV16(N7)
+/***********
+01 #RV2
+02 #RV22 (N2)
+02 #RV23 (P6)
+01 REDEFINE #RV2
+02 #RV2R1 (A6)
+/***********
+end-define

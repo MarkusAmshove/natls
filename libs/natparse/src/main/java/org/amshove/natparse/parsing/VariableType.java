@@ -4,7 +4,7 @@ import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IVariableTypeNode;
 
-class VariableType  implements IVariableTypeNode
+class VariableType implements IVariableTypeNode
 {
 	private boolean hasDynamicLength;
 	private DataFormat format;
@@ -42,6 +42,23 @@ class VariableType  implements IVariableTypeNode
 		return isConstant;
 	}
 
+	@Override
+	public int byteSize()
+	{
+		return switch (format)
+			{
+				case ALPHANUMERIC, BINARY, FLOAT, INTEGER -> (int) length;
+				case CONTROL -> 2;
+				case DATE -> 4;
+				case LOGIC -> 1;
+				case NUMERIC -> calculateNumericSize();
+				case PACKED -> calculatePackedSize();
+				case TIME -> 7;
+				case UNICODE -> Math.max((int) length, 2);
+				case NONE -> 0;
+			};
+	}
+
 	void setDynamicLength()
 	{
 		hasDynamicLength = true;
@@ -65,5 +82,29 @@ class VariableType  implements IVariableTypeNode
 	void setConstant()
 	{
 		isConstant = true;
+	}
+
+	private int calculateNumericSize()
+	{
+		var digitsBeforeDecimalPoint = (int) length;
+		var digitsAfterDecimalPoint = calculateDigitsAfterDecimalPoint();
+
+		return Math.max(1, digitsBeforeDecimalPoint + digitsAfterDecimalPoint);
+	}
+
+	private int calculatePackedSize()
+	{
+		var numericSize = calculateNumericSize() / 2;
+		if(numericSize % 2 != 0)
+		{
+			numericSize++;
+		}
+
+		return Math.max(1, numericSize);
+	}
+
+	private int calculateDigitsAfterDecimalPoint()
+	{
+		return Integer.parseInt((Double.toString(length).split("\\.")[1]));
 	}
 }
