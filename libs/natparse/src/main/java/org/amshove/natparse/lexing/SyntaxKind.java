@@ -146,6 +146,7 @@ public enum SyntaxKind
 	INVESTIGATE,
 	LANGUAGE,
 	LENGTH,
+	LIBRARY_ID,
 	LIMIT,
 	LOCAL,
 	LOG,
@@ -245,6 +246,6 @@ public enum SyntaxKind
 
 	public boolean isSystemVariable()
 	{
-		return this == DATN || this == DATX || this == TIMX || this == LANGUAGE || this == PROGRAM || this == USER;
+		return this == DATN || this == DATX || this == TIMX || this == LANGUAGE || this == PROGRAM || this == USER || this == LIBRARY_ID;
 	}
 }

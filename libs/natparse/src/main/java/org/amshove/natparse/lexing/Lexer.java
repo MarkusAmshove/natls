@@ -280,6 +280,10 @@ public class Lexer
 		{
 			createAndAdd(SyntaxKind.LANGUAGE);
 		}
+		if (scanner.advanceIf("LIBRARY-ID"))
+		{
+			createAndAdd(SyntaxKind.LIBRARY_ID);
+		}
 		if (scanner.advanceIf("PROGRAM"))
 		{
 			createAndAdd(SyntaxKind.PROGRAM);
