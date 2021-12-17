@@ -36,6 +36,7 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 	@Override
 	public String name()
 	{
+		// TODO: If this needs a qualified name, return the qualified name instead.
 		return name;
 	}
 

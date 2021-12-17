@@ -376,10 +376,16 @@ public class NaturalLanguageService implements LanguageClientAware
 				var item = new CompletionItem();
 				item.setKind(CompletionItemKind.Variable);
 
-				item.setLabel(v.qualifiedName());
+				item.setLabel(v.name());
 				if (v instanceof ITypedVariableNode typedNode)
 				{
-					item.setDetail(typedNode.type().toShortString());
+					item.setLabel(v.name() + " : " + typedNode.type().toShortString());
+					item.setInsertText(v.name());
+				}
+				if (v instanceof IGroupNode groupNode)
+				{
+					item.setLabel(v.name() + " : Group");
+					item.setInsertText(v.name());
 				}
 
 				item.setDocumentation(new MarkupContent(MarkupKind.MARKDOWN, createHoverMarkdownText(v)));
