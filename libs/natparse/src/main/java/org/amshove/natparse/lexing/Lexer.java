@@ -421,12 +421,12 @@ public class Lexer
 
 	private boolean isNoWhitespace()
 	{
-		return isNoWhitespace(0);
+		return !isWhitespace(0);
 	}
 
-	private boolean isNoWhitespace(int offset)
+	private boolean isWhitespace(int offset)
 	{
-		return scanner.peek(offset) != ' ' && scanner.peek(offset) != '\t';
+		return scanner.peek(offset) == ' ' || scanner.peek(offset) == '\t' || scanner.peek(offset) == '\r' || scanner.peek(offset) == '\n';
 	}
 
 	private boolean isAtLineStart()
@@ -668,7 +668,7 @@ public class Lexer
 	private int findNextNonWhitespaceLookaheadOffset()
 	{
 		var start = 1;
-		while (!scanner.isAtEnd() && !isNoWhitespace(start))
+		while (!scanner.isAtEnd() && isWhitespace(start))
 		{
 			start++;
 		}
