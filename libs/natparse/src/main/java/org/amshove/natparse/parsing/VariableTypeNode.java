@@ -73,6 +73,12 @@ class VariableTypeNode implements IVariableTypeNode
 		return this.byteSize() <= other.byteSize();
 	}
 
+	@Override
+	public int sumOfDigits()
+	{
+		return calculateNumericSize();
+	}
+
 	void setDynamicLength()
 	{
 		hasDynamicLength = true;

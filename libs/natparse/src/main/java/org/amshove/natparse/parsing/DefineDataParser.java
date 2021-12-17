@@ -545,7 +545,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 					}
 				}
 				case NUMERIC, PACKED -> {
-					if (variableLength < 1 || variableLength > 29)
+					var sumOfDigits = variable.type().sumOfDigits();
+					if (sumOfDigits < 1 || sumOfDigits > 29)
 					{
 						report(ParserErrors.invalidLengthForDataTypeRange(variable, 1, 29));
 					}

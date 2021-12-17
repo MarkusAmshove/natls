@@ -24,6 +24,11 @@ public interface IVariableTypeNode
 	 */
 	int byteSize();
 
+	/**
+	 * Returns the sum of all digits. For example 9 for N7,2
+	 */
+	int sumOfDigits();
+
 	boolean fitsInto(IVariableTypeNode other);
 
     default String toShortString()
