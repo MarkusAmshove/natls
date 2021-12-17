@@ -30,6 +30,16 @@ public interface IArrayDimension extends ISyntaxNode
 		return upperBound() == UNBOUND_VALUE;
 	}
 
+	default int occurerences()
+	{
+		if(isLowerUnbound() || isUpperUnbound())
+		{
+			return UNBOUND_VALUE;
+		}
+
+		return upperBound() - lowerBound() + 1;
+	}
+
 	default String displayFormat()
 	{
 		return "%s:%s".formatted(

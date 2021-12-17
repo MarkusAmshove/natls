@@ -1167,6 +1167,64 @@ class DefineDataParserShould extends AbstractParserTest
 			""");
 	}
 
+	@Test
+	void addADiagnosticIfRedefiningXArray()
+	{
+		assertDiagnostic("""
+				 define data local
+				 1 #arr (I4/1:*)
+				 1 redefine #arr
+				 2 #r1 (i4)
+				 2 #r2 (i4)
+				 2 #r3 (i4)
+				 end-define
+				""",
+			ParserError.REDEFINE_TARGET_CANT_BE_X_ARRAY);
+	}
+
+	@Test
+	void showNoDiagnosticForRedefinesWhenThereAreMembersForEveryIndex()
+	{
+		assertParsesWithoutDiagnostics("""
+			 define data local
+			 1 #arr (I4/1:3)
+			 1 redefine #arr
+			 2 #r1 (i4)
+			 2 #r2 (i4)
+			 2 #r3 (i4)
+			 end-define
+			""");
+	}
+
+	@Test
+	void showNoDiagnosticForRedefinesWhenThereAreMoreMembersThanOccurrences()
+	{
+		assertParsesWithoutDiagnostics("""
+			 define data local
+			 1 #arr (I4/1:10)
+			 1 redefine #arr
+			 2 #r1 (i4)
+			 2 #r2 (i4)
+			 2 #r3 (i4)
+			 end-define
+			""");
+	}
+
+	@Test
+	void showADiagnosticForRedefinesWhenThereAreMoreMembersThanArrayDimensions()
+	{
+		assertDiagnostic("""
+				 define data local
+				 1 #arr (I4/1:2)
+				 1 redefine #arr
+				 2 #r1 (i4)
+				 2 #r2 (i4)
+				 2 #r3 (i4)
+				 end-define
+				""",
+			ParserError.REDEFINE_LENGTH_EXCEEDS_TARGET_LENGTH);
+	}
+
 	private IDefineData assertParsesWithoutDiagnostics(String source)
 	{
 		var lexer = new Lexer();

@@ -4,7 +4,7 @@ import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IVariableTypeNode;
 
-class VariableType implements IVariableTypeNode
+class VariableTypeNode implements IVariableTypeNode
 {
 	private boolean hasDynamicLength;
 	private DataFormat format;
@@ -57,6 +57,12 @@ class VariableType implements IVariableTypeNode
 				case UNICODE -> Math.max((int) length, 2);
 				case NONE -> 0;
 			};
+	}
+
+	@Override
+	public boolean fitsInto(IVariableTypeNode other)
+	{
+		return this.byteSize() <= other.byteSize();
 	}
 
 	void setDynamicLength()

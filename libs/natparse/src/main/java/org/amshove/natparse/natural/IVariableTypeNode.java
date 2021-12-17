@@ -24,6 +24,8 @@ public interface IVariableTypeNode
 	 */
 	int byteSize();
 
+	boolean fitsInto(IVariableTypeNode other);
+
     default String toShortString()
 	{
 		var details = "";

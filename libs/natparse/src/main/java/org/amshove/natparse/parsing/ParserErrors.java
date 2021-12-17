@@ -183,4 +183,12 @@ class ParserErrors
 			ParserError.FILLER_MISSING_X
 		);
     }
+
+    public static IDiagnostic redefineTargetCantBeXArray(IArrayDimension dimension) {
+		return ParserDiagnostic.create(
+			"Can not redefine X-Arrays",
+			dimension,
+			ParserError.REDEFINE_TARGET_CANT_BE_X_ARRAY
+		);
+    }
 }

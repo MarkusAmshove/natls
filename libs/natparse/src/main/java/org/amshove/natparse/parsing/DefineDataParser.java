@@ -279,7 +279,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	private VariableNode typedVariable(VariableNode variable) throws ParseError
 	{
 		var typedVariable = new TypedVariableNode(variable);
-		var type = new VariableType();
+		var type = new VariableTypeNode();
 
 		var dataType = consumeMandatoryIdentifier(typedVariable).source(); // DataTypes like A10 get recognized as identifier
 
@@ -918,6 +918,24 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		var targetLength = calculateVariableLengthInBytes(target);
 		var redefineLength = calculateVariableLengthInBytes(redefinitionNode);
+
+		if(target.isArray())
+		{
+			var totalOccurrences = 0;
+			for (var dimension : target.dimensions())
+			{
+				if(dimension.isLowerUnbound() || dimension.isUpperUnbound())
+				{
+					report(ParserErrors.redefineTargetCantBeXArray(dimension));
+					return;
+				}
+				else
+				{
+					totalOccurrences += dimension.occurerences();
+				}
+			}
+			targetLength *= totalOccurrences;
+		}
 
 		if (redefineLength > targetLength)
 		{

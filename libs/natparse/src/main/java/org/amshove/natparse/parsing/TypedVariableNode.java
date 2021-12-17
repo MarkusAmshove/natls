@@ -5,7 +5,7 @@ import org.amshove.natparse.natural.IVariableTypeNode;
 
 class TypedVariableNode extends VariableNode implements ITypedVariableNode
 {
-	private VariableType type;
+	private VariableTypeNode type;
 
 	public TypedVariableNode(VariableNode variable)
 	{
@@ -27,7 +27,7 @@ class TypedVariableNode extends VariableNode implements ITypedVariableNode
 		return type;
 	}
 
-	void setType(VariableType type)
+	void setType(VariableTypeNode type)
 	{
 		this.type = type;
 	}
