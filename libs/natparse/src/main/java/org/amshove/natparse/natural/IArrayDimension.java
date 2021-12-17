@@ -29,4 +29,12 @@ public interface IArrayDimension extends ISyntaxNode
 	{
 		return upperBound() == UNBOUND_VALUE;
 	}
+
+	default String displayFormat()
+	{
+		return "%s:%s".formatted(
+			isLowerUnbound() ? "*" : lowerBound(),
+			isUpperUnbound() ? "*" : upperBound()
+		);
+	}
 }

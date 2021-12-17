@@ -281,6 +281,11 @@ public class NaturalLanguageService implements LanguageClientAware
 			}
 		}
 		hoverText += "\n```";
+		if (v.isArray())
+		{
+			hoverText += "\n\n*dimensions:*";
+			hoverText += "%n ```%n%s%n```".formatted(v.dimensions().stream().map(IArrayDimension::displayFormat).collect(Collectors.joining(",")));
+		}
 
 		return hoverText;
 	}
