@@ -1300,6 +1300,19 @@ class DefineDataParserShould extends AbstractParserTest
 		);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"TRUE", "FALSE"
+	})
+	void showNoDiagnosticForInitiatingAnAlphanumericWithBoolean(String bool)
+	{
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 #MYSTR (A1) INIT <%s>
+			end-define
+			""".formatted(bool));
+	}
+
 	private IDefineData assertParsesWithoutDiagnostics(String source)
 	{
 		var lexer = new Lexer();

@@ -249,4 +249,9 @@ public enum SyntaxKind
 	{
 		return this == DATN || this == DATX || this == TIMX || this == LANGUAGE || this == PROGRAM || this == USER || this == LIBRARY_ID;
 	}
+
+	public boolean isBoolean()
+	{
+		return this == TRUE || this == FALSE;
+	}
 }

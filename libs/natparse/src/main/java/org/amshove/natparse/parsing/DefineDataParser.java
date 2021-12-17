@@ -587,6 +587,10 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			switch (variable.type().format())
 			{
 				case ALPHANUMERIC:
+					if(variable.type().initialValue().kind().isBoolean())
+					{
+						break;
+					}
 					expectInitialValueType(variable, SyntaxKind.STRING);
 					break;
 
