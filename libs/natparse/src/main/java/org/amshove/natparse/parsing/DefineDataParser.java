@@ -640,14 +640,21 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		if (token.token().kind().isIdentifier())
 		{
-			if (!isVariableDeclared(token.token().source().toUpperCase()))
+			var isUnboundV = token.token().symbolName().equals("V"); // (1:V) is allowed in parameter scope, where V stands for unbound
+
+			if(currentScope.isParameter() && isUnboundV && !isVariableDeclared(token.token().symbolName()))
+			{
+				return ArrayDimension.UNBOUND_VALUE;
+			}
+
+			if (!isVariableDeclared(token.token().symbolName()))
 			{
 				report(ParserErrors.unresolvedReference(token));
 				return ArrayDimension.UNBOUND_VALUE;
 			}
 
 			var constReference = getDeclaredVariable(token);
-			if (!(constReference instanceof TypedVariableNode typedNode) || !typedNode.type().isConstant())
+			if (!(constReference instanceof TypedVariableNode typedNode) || typedNode.type().initialValue() == null)
 			{
 				report(ParserErrors.arrayDimensionMustBeConstOrInitialized(token));
 			}
@@ -722,6 +729,18 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				var firstNumberToken = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER, relevantNumber);
 				upperBound = extractArrayBound(firstNumberToken, dimension);
 				typedVariable.addNode(firstNumberToken);
+				// we now also have to handle the next dimension, because our current
+				// token also contains the lower bound of the next dimension.
+				// 50 in the example above.
+				workaroundNextDimension = true;
+			}
+			else if(peekKind(SyntaxKind.IDENTIFIER) && peek().source().contains(","))
+			{
+				// Workaround for (A01/1:V,1:#MAX) where V,1 gets recognized as identifier, but V is the actual identifier
+				var identifier = peek().source().split(",")[0];
+				var syntheticIdentifier = SyntheticTokenNode.fromToken(peek(), SyntaxKind.IDENTIFIER, identifier);
+				upperBound = extractArrayBound(syntheticIdentifier, dimension);
+				typedVariable.addNode(syntheticIdentifier);
 				// we now also have to handle the next dimension, because our current
 				// token also contains the lower bound of the next dimension.
 				// 50 in the example above.

@@ -543,6 +543,24 @@ class DefineDataParserShould extends AbstractParserTest
 	}
 
 	@Test
+	void parseAnArrayWithTwoDimensionReferencesSeparated()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+				define data local
+				1 V (I2) INIT <200>
+				1 #MAX (n2) INIT <2>
+				1 #my-arr (A01/1:V,1:#MAX) /* NOTE: V is a reference, not unbound (only viable for PARAMETER scope)
+				end-define
+			""");
+
+		var arr = findVariable(defineData, "#my-arr", ITypedVariableNode.class);
+		assertThat(arr.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(arr.dimensions().first().upperBound()).isEqualTo(200);
+		assertThat(arr.dimensions().get(1).lowerBound()).isEqualTo(1);
+		assertThat(arr.dimensions().get(1).upperBound()).isEqualTo(2);
+	}
+
+	@Test
 	void parseAnArrayWithLowerAndUpperBoundBeingReferences()
 	{
 		var defineData = assertParsesWithoutDiagnostics("""
@@ -818,6 +836,20 @@ class DefineDataParserShould extends AbstractParserTest
 			1 my-view view of my-ddm
 			end-define
 			""");
+	}
+
+	@Test
+	void allowVAsUnboundInParameterScope()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+						define data
+						parameter
+						1 #p-unbound-array (A3/V)
+						end-define
+			""");
+
+		var variable = findVariable(defineData, "#p-unbound-array", ITypedVariableNode.class);
+		assertThat(variable.dimensions().first().isUpperUnbound()).isTrue();
 	}
 
 	@Test
@@ -1144,10 +1176,10 @@ class DefineDataParserShould extends AbstractParserTest
 
 	private <T extends ISyntaxNode> T findVariable(IDefineData defineData, String variableName, Class<T> expectedType)
 	{
-		var variable = defineData.variables().stream().filter(v -> v.name().equals(variableName)).findFirst();
+		var variable = defineData.variables().stream().filter(v -> v.name().equals(variableName.toUpperCase())).findFirst();
 		if (variable.isEmpty())
 		{
-			fail("Could not find variable %s in %s".formatted(variable, defineData.variables().stream().map(IVariableNode::toString).collect(Collectors.joining(", "))));
+			fail("Could not find variable %s in %s".formatted(variableName, defineData.variables().stream().map(IVariableNode::toString).collect(Collectors.joining(", "))));
 		}
 
 		return assertNodeType(variable.get(), expectedType);
