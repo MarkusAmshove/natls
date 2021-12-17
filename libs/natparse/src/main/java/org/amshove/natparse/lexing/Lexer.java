@@ -74,7 +74,7 @@ public class Lexer
 					}
 					continue;
 				case '-':
-					consumeMinusOrNumber();
+					consumeMinusOrNumberOrStringConcat();
 					continue;
 				case '*':
 					consumeAsteriskOrSystemVariable();
@@ -127,7 +127,7 @@ public class Lexer
 
 				case 'h':
 				case 'H':
-					if(scanner.peek(1) == '\'')
+					if (scanner.peek(1) == '\'')
 					{
 						consumeHexString();
 					}
@@ -222,8 +222,34 @@ public class Lexer
 		return TokenList.fromTokensAndDiagnostics(tokens, diagnostics, comments);
 	}
 
-	private void consumeMinusOrNumber()
+	private void consumeMinusOrNumberOrStringConcat()
 	{
+		var lookaheadIndex = findNextNonWhitespaceLookaheadOffset();
+		var lookahead = scanner.peek(lookaheadIndex);
+		var previousToken = previous();
+		var isStringConcatenation = previousToken != null && previousToken.kind() == SyntaxKind.STRING && (lookahead == '\'' || lookahead == '"');
+		if (isStringConcatenation)
+		{
+			var previousString = previous();
+			var previousStringIndex = tokens.size() - 1;
+			scanner.advance(lookaheadIndex);
+			consumeString(lookahead);
+			var currentString = previous();
+			var currentStringIndex = tokens.size() - 1;
+			for (var i = currentStringIndex; i >= previousStringIndex; i--)
+			{
+				tokens.remove(i);
+			}
+			addToken(SyntaxTokenFactory.create(
+				SyntaxKind.STRING,
+				previousString.offset(),
+				previousString.offsetInLine(),
+				previousString.line(),
+				"'" + previousString.stringValue() + currentString.stringValue() + "'"
+			));
+			return;
+		}
+
 		scanner.start();
 		scanner.advance(); // the minus
 		if (Character.isDigit(scanner.peek()))
@@ -243,7 +269,7 @@ public class Lexer
 	private void consumeAsteriskOrSystemVariable()
 	{
 		var lookahead = scanner.peek(1);
-		switch(lookahead)
+		switch (lookahead)
 		{
 			case 'd':
 			case 'D':
@@ -395,7 +421,12 @@ public class Lexer
 
 	private boolean isNoWhitespace()
 	{
-		return scanner.peek() != ' ' && scanner.peek() != '\t';
+		return isNoWhitespace(0);
+	}
+
+	private boolean isNoWhitespace(int offset)
+	{
+		return scanner.peek(offset) != ' ' && scanner.peek(offset) != '\t';
 	}
 
 	private boolean isAtLineStart()
@@ -526,7 +557,7 @@ public class Lexer
 			scanner.advance();
 		}
 
-		if(scanner.peek() != '\'')
+		if (scanner.peek() != '\'')
 		{
 			// Recovery
 			while (!isLineEnd() && !scanner.isAtEnd())
@@ -584,8 +615,16 @@ public class Lexer
 			getOffsetInLine(),
 			line,
 			scanner.lexemeText());
-		tokens.add(token);
-		scanner.reset();
+		addToken(token);
+	}
+
+	private SyntaxToken previous()
+	{
+		if(tokens.isEmpty())
+		{
+			return null;
+		}
+		return tokens.get(tokens.size() - 1);
 	}
 
 	private int getOffsetInLine()
@@ -624,5 +663,22 @@ public class Lexer
 			line,
 			scanner.lexemeLength(),
 			error));
+	}
+
+	private int findNextNonWhitespaceLookaheadOffset()
+	{
+		var start = 1;
+		while (!scanner.isAtEnd() && !isNoWhitespace(start))
+		{
+			start++;
+		}
+
+		return start;
+	}
+
+	private void addToken(SyntaxToken token)
+	{
+		tokens.add(token);
+		scanner.reset();
 	}
 }

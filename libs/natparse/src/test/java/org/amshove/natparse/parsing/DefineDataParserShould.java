@@ -267,6 +267,21 @@ class DefineDataParserShould extends AbstractParserTest
 	}
 
 	@Test
+	void parseInitialMultilineStrings()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			define data local
+			1 #myvar (A10) init <'hello '
+			- 'world' /* Comment
+					- '!'>
+			end-define
+			""");
+
+		var variable = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
+		assertThat(variable.type().initialValue().source()).isEqualTo("'hello world!'");
+	}
+
+	@Test
 	void supportSystemVariablesAsInitializer()
 	{
 		var defineData = assertParsesWithoutDiagnostics("""

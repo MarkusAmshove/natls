@@ -82,4 +82,20 @@ public class LexerForStringsShould extends AbstractLexerTest
 			SyntaxKind.IDENTIFIER
 		);
 	}
+
+	@Test
+	void lexConcatenatedString()
+	{
+		assertTokens("""
+				INPUT
+				'Hello'
+				 - ' World'
+						-'!'
+				 WRITE
+				""",
+			token(SyntaxKind.INPUT),
+			token(SyntaxKind.STRING, "'Hello World!'"),
+			token(SyntaxKind.WRITE)
+		);
+	}
 }
