@@ -1068,6 +1068,28 @@ class DefineDataParserShould extends AbstractParserTest
 	}
 
 	@Test
+	void parseInitLengthN()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data
+			local
+			1 #initialized (a4) init length 4 <'!'>
+			end-define
+			""");
+	}
+
+	@Test
+	void parseInitFullLength()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data
+			local
+			1 #initialized (a4) init full length <'!'>
+			end-define
+			""");
+	}
+
+	@Test
 	void parseInitAll()
 	{
 		assertParsesWithoutDiagnostics("""

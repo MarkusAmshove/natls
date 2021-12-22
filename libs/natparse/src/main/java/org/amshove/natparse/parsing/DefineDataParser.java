@@ -341,6 +341,17 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			{
 				type.setConstant();
 			}
+
+			if (consumeOptionally(typedVariable, SyntaxKind.FULL))
+			{
+				consumeMandatory(typedVariable, SyntaxKind.LENGTH);
+			}
+
+			if (consumeOptionally(typedVariable, SyntaxKind.LENGTH))
+			{
+				consumeMandatory(typedVariable, SyntaxKind.NUMBER);
+			}
+
 			if (consumeOptionally(typedVariable, SyntaxKind.LESSER_GREATER))
 			{
 				// special case for a better error message. <> is  just an empty initial value
