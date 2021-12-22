@@ -10,9 +10,11 @@ import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFile;
+import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
 import org.amshove.natparse.parsing.DefineDataParser;
+import org.amshove.natparse.parsing.NaturalModule;
 import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
@@ -228,6 +230,30 @@ public class NaturalLanguageService implements LanguageClientAware
 		return tokens.peek();
 	}
 
+	private SyntaxToken findPreviousTokenOfPosition(Path filePath, Position position)
+	{
+		var tokens = lexPath(filePath);
+
+		while (!tokens.isAtEnd())
+		{
+			var token = tokens.peek();
+			if (token.line() < position.getLine())
+			{
+				tokens.advance();
+				continue;
+			}
+
+			if (token.offsetInLine() <= position.getCharacter() && token.offsetInLine() + token.length() >= position.getCharacter())
+			{
+				break;
+			}
+
+			tokens.advance();
+		}
+
+		return tokens.peek(-2); // TODO: Sometimes -1..
+	}
+
 	private String createHoverMarkdownText(IVariableNode v)
 	{
 		var hoverText = formatVariableHover(v);
@@ -375,6 +401,36 @@ public class NaturalLanguageService implements LanguageClientAware
 			return List.of();
 		}
 
+		var token = findPreviousTokenOfPosition(filePath, completionParams.getPosition());
+		System.err.println(token.kind());
+		if(token != null && token.kind() == SyntaxKind.CALLNAT)
+		{
+			return findNaturalFile(filePath).getLibrary().getModulesOfType(NaturalFileType.SUBPROGRAM, true)
+				.stream()
+				.map(f -> (NaturalModule)f.module())
+				.map(module -> {
+					var completionItem = new CompletionItem(module.name());
+					completionItem.setKind(CompletionItemKind.Snippet);
+					completionItem.setInsertTextFormat(InsertTextFormat.Snippet);
+					var insertText = "'${0:%s}'".formatted(module.name());
+
+					if(module.defineData() == null)
+					{
+						return completionItem;
+					}
+
+					var parameter = module.defineData().variables().stream().filter(v -> v.scope() == VariableScope.PARAMETER && v.level() == 1).toList();
+					var parameterIndex = 1;
+					for (var aParameter : parameter)
+					{
+						insertText += " ${%d:%s}".formatted(parameterIndex++, aParameter.name());
+					}
+					completionItem.setInsertText(insertText);
+					return completionItem;
+				})
+				.toList();
+		}
+
 		var completionItems = defineData.variables().stream()
 			.filter(v -> !(v instanceof IRedefinitionNode)) // this is the `REDEFINE #VAR`, which results in the variable being doubled in completion
 			.map(v -> {
@@ -398,7 +454,6 @@ public class NaturalLanguageService implements LanguageClientAware
 				return item;
 			})
 			.toList();
-		System.err.println("Returning " + completionItems.size() + " items for completion");
 		return completionItems;
 	}
 

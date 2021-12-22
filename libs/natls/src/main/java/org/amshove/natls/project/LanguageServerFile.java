@@ -6,6 +6,7 @@ import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.project.NaturalFile;
+import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.parsing.NaturalParser;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.Position;
@@ -20,6 +21,7 @@ public class LanguageServerFile
 	private final NaturalFile file;
 	private final Map<String, List<Diagnostic>> diagnosticsByTool = new HashMap<>();
 	private INaturalModule module;
+	private LanguageServerLibrary library;
 
 	public LanguageServerFile(NaturalFile file)
 	{
@@ -148,5 +150,20 @@ public class LanguageServerFile
 			parse();
 		}
 		return module;
+	}
+
+	void setLibrary(LanguageServerLibrary library)
+	{
+		this.library = library;
+	}
+
+	public LanguageServerLibrary getLibrary()
+	{
+		return library;
+	}
+
+	public NaturalFileType getType()
+	{
+		return file.getFiletype();
 	}
 }

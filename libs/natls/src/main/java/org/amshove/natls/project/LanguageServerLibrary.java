@@ -1,9 +1,12 @@
 package org.amshove.natls.project;
 
 import org.amshove.natparse.natural.project.NaturalFile;
+import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.natural.project.NaturalLibrary;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -16,6 +19,7 @@ public class LanguageServerLibrary
 	{
 		this.library = library;
 		this.files = files;
+		files.values().forEach(f -> f.setLibrary(this));
 	}
 
 	public String name()
@@ -36,5 +40,16 @@ public class LanguageServerLibrary
 	public LanguageServerFile findFile(Path path)
 	{
 		return files.values().stream().filter(f -> f.getPath().equals(path)).findFirst().orElse(null);
+	}
+
+	public List<LanguageServerFile> getModulesOfType(NaturalFileType type, boolean includeStepLibs)
+	{
+		var filesOfType = files.values().stream().filter(f -> f.getType() == type).collect(Collectors.toCollection(ArrayList::new));
+		if(includeStepLibs)
+		{
+			// TODO: Include steplibs
+		}
+
+		return filesOfType;
 	}
 }
