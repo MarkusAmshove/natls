@@ -178,6 +178,7 @@ public class NaturalLanguageService implements LanguageClientAware
 			return EMPTY_HOVER;
 		}
 
+		// TODO: Use LanguageServerFile
 		var tokens = lexPath(module.getPath());
 		var defineData = parseDefineData(tokens);
 		if (defineData == null)
