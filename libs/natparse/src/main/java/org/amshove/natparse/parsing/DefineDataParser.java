@@ -713,7 +713,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	{
 		if (token.token().kind() == SyntaxKind.NUMBER)
 		{
-			return token.token().intValue();
+			return token.token().source().contains(",")
+				? Integer.parseInt(token.token().source().split(",")[0])
+				: token.token().intValue();
 		}
 
 		if (token.token().kind().isIdentifier())
@@ -776,7 +778,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		var slashToken = SyntheticTokenNode.fromToken(identifierToken, SyntaxKind.SLASH, "/");
 		typedVariable.addNode(slashToken);
 
-		var boundTokenKind = relevantSource.substring(1).matches("\\d+")
+		var boundTokenKind = relevantSource.substring(1).matches("\\d+,?\\d*")
 			? SyntaxKind.NUMBER
 			: SyntaxKind.IDENTIFIER; // when the bound is a reference to a variable
 
@@ -790,6 +792,26 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		var dimension = new ArrayDimension();
 		dimension.addNode(boundToken);
+
+		if(boundTokenKind == SyntaxKind.NUMBER && boundToken.token().source().contains(",") && peekKind(SyntaxKind.RPAREN))
+		{
+			// We're here because we found something like: (A10/5,10)
+			// At this position, boundToken has 5,10 which is two dimensions: 1:5 and 1:10
+			// before the tokens get recognized separately within the Lexer, we have to add both bounds now.
+			var bothNumbers = boundToken.token().source().split(",");
+			var firstDimensionBound = Integer.parseInt(bothNumbers[0]);
+			var secondDimensionBound = Integer.parseInt(bothNumbers[1]);
+			dimension.setLowerBound(1);
+			dimension.setUpperBound(firstDimensionBound);
+			typedVariable.addDimension(dimension);
+			var secondDimension = new ArrayDimension();
+			secondDimension.setLowerBound(1);
+			secondDimension.setUpperBound(secondDimensionBound);
+			secondDimension.addNode(boundToken);
+			typedVariable.addDimension(secondDimension);
+			return;
+		}
+
 		var lowerBound = consumeOptionally(dimension, SyntaxKind.ASTERISK)
 			? ArrayDimension.UNBOUND_VALUE :
 			extractArrayBound(boundToken, dimension);
@@ -848,7 +870,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			addArrayDimensionWorkaroundComma(typedVariable);
 		}
 
-		if (consumeOptionally(typedVariable, SyntaxKind.COMMA))
+		if (consumeOptionally(typedVariable, SyntaxKind.COMMA)
+			|| relevantSource.contains(",") && peekKind(SyntaxKind.IDENTIFIER))
 		{
 			addArrayDimensions(typedVariable);
 		}

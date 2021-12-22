@@ -576,6 +576,39 @@ class DefineDataParserShould extends AbstractParserTest
 	}
 
 	@Test
+	void parseAnArrayWithCommaSeparatedUpperBoundsWithoutLowerBound()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+				define data local
+				1 #my-arr (A01/5,10)
+				end-define
+			""");
+
+		var arr = findVariable(defineData, "#my-arr", ITypedVariableNode.class);
+		assertThat(arr.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(arr.dimensions().first().upperBound()).isEqualTo(5);
+		assertThat(arr.dimensions().get(1).lowerBound()).isEqualTo(1);
+		assertThat(arr.dimensions().get(1).upperBound()).isEqualTo(10);
+	}
+
+	@Test
+	void parseAnArrayWithCommaSeparatedUpperBoundsWithReferenceWithoutLowerBound()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+				define data local
+				1 #ref (N2) init <10>
+				1 #my-arr (A01/5,#ref)
+				end-define
+			""");
+
+		var arr = findVariable(defineData, "#my-arr", ITypedVariableNode.class);
+		assertThat(arr.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(arr.dimensions().first().upperBound()).isEqualTo(5);
+		assertThat(arr.dimensions().get(1).lowerBound()).isEqualTo(1);
+		assertThat(arr.dimensions().get(1).upperBound()).isEqualTo(10);
+	}
+
+	@Test
 	void parseAnArrayWithLowerAndUpperBoundBeingReferences()
 	{
 		var defineData = assertParsesWithoutDiagnostics("""
