@@ -82,9 +82,10 @@ public class App
 			for (var file : library.files().stream().filter(f -> f.getFiletype().hasDefineData()).toList())
 			{
 				filesChecked++;
+				var filePath = file.getPath();
 				try
 				{
-					var tokens = lexer.lex(filesystem.readFile(file.getPath()));
+					var tokens = lexer.lex(filesystem.readFile(filePath), filePath);
 					var module = parser.parse(file, tokens);
 
 					module.diagnostics().forEach(d -> {
@@ -93,11 +94,11 @@ public class App
 						diagnosticsPerType.replace(d.message(), count);
 					});
 					totalDiagnostics += module.diagnostics().size();
-					printDiagnostics(file.getPath(), module.diagnostics());
+					printDiagnostics(filePath, module.diagnostics());
 				}
 				catch(Exception e)
 				{
-					System.err.println(file.getPath());
+					System.err.println(filePath);
 					throw e;
 				}
 			}

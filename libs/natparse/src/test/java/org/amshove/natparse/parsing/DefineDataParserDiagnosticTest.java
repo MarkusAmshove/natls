@@ -28,7 +28,7 @@ public class DefineDataParserDiagnosticTest
 				var expectedDiagnostics = findExpectedDiagnostics(source);
 
 				var lexer = new Lexer();
-				var tokens = lexer.lex(source);
+				var tokens = lexer.lex(source, Path.of(path));
 				var parser = new DefineDataParser();
 				var parseResult = parser.parse(tokens);
 

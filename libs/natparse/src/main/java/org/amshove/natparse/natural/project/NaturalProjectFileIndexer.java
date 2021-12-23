@@ -49,7 +49,7 @@ public class NaturalProjectFileIndexer
 
 	private String extractSubroutineName(Path path)
 	{
-		var lexemes = new Lexer().lex(filesystem.readFile(path));
+		var lexemes = new Lexer().lex(filesystem.readFile(path), path);
 
 		// Skip define data
 		if(!lexemes.advanceAfterNext(SyntaxKind.END_DEFINE))

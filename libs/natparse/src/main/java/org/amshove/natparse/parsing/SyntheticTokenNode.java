@@ -19,7 +19,7 @@ class SyntheticTokenNode extends BaseSyntaxNode implements ITokenNode
 		var newOffsetInLine = originalToken.offsetInLine() + indexInOriginalSource;
 		var line = originalToken.line();
 
-		newToken = new SyntaxToken(newKind, newOffset, newOffsetInLine, line, newSource);
+		newToken = new SyntaxToken(newKind, newOffset, newOffsetInLine, line, newSource, originalToken.filePath());
 	}
 
 	public static SyntheticTokenNode fromToken(SyntaxToken token, SyntaxKind newKind, String newSource)

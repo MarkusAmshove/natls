@@ -2,6 +2,7 @@ package org.amshove.natparse.lexing;
 
 import org.amshove.natparse.lexing.text.SourceTextScanner;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,11 +13,13 @@ public class Lexer
 	private List<SyntaxToken> comments;
 	private int line;
 	private int currentLineStartOffset;
+	private Path filePath;
 
 	private List<LexerDiagnostic> diagnostics;
 
-	public TokenList lex(String source)
+	public TokenList lex(String source, Path filePath)
 	{
+		this.filePath = filePath;
 		tokens = new ArrayList<>();
 		diagnostics = new ArrayList<>();
 		comments = new ArrayList<>();
@@ -245,7 +248,8 @@ public class Lexer
 				previousString.offset(),
 				previousString.offsetInLine(),
 				previousString.line(),
-				"'" + previousString.stringValue() + currentString.stringValue() + "'"
+				"'" + previousString.stringValue() + currentString.stringValue() + "'",
+				filePath
 			));
 			return;
 		}
@@ -507,7 +511,8 @@ public class Lexer
 				scanner.lexemeStart(),
 				getOffsetInLine(),
 				line,
-				scanner.lexemeText());
+				scanner.lexemeText(),
+				filePath);
 			comments.add(token);
 			scanner.reset();
 
@@ -614,7 +619,8 @@ public class Lexer
 			scanner.lexemeStart(),
 			getOffsetInLine(),
 			line,
-			scanner.lexemeText());
+			scanner.lexemeText(),
+			filePath);
 		addToken(token);
 	}
 

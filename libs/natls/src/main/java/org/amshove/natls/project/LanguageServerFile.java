@@ -116,7 +116,7 @@ public class LanguageServerFile
 			clearDiagnosticsByTool(DiagnosticTool.NATPARSE);
 
 			var lexer = new Lexer();
-			var tokenList = lexer.lex(source);
+			var tokenList = lexer.lex(source, file.getPath());
 			var parser = new NaturalParser();
 
 			module = parser.parse(file, tokenList);

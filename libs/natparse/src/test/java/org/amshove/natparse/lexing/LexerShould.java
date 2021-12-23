@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.nio.file.Paths;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Nested
@@ -14,7 +16,7 @@ public class LexerShould extends AbstractLexerTest
 	void storeTheLineInformationOfTokens()
 	{
 		var lexer = new Lexer();
-		var tokens = lexer.lex("abc\nabc");
+		var tokens = lexer.lex("abc\nabc", Paths.get("TEST.NSN"));
 
 		var firstAbc = tokens.peek();
 		assertThat(firstAbc.line()).isEqualTo(0);

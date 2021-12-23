@@ -92,12 +92,12 @@ public class NaturalLanguageService implements LanguageClientAware
 	public ReadOnlyList<IDiagnostic> parseFile(Path filepath)
 	{
 		var source = readSource(filepath);
-		return parseSource(source);
+		return parseSource(source, filepath);
 	}
 
-	public ReadOnlyList<IDiagnostic> parseSource(String source)
+	public ReadOnlyList<IDiagnostic> parseSource(String source, Path path)
 	{
-		var tokens = lexSource(source);
+		var tokens = lexSource(source, path);
 		var parseResult = new DefineDataParser().parse(tokens);
 		var allDiagnostics = new ArrayList<IDiagnostic>();
 		allDiagnostics.addAll(tokens.diagnostics().stream().toList()); // TODO: Perf
@@ -329,14 +329,14 @@ public class NaturalLanguageService implements LanguageClientAware
 		}
 	}
 
-	private TokenList lexSource(String source)
+	private TokenList lexSource(String source, Path path)
 	{
-		return new Lexer().lex(source);
+		return new Lexer().lex(source, path);
 	}
 
 	private TokenList lexPath(Path path)
 	{
-		return lexSource(readSource(path));
+		return lexSource(readSource(path), path);
 	}
 
 	private IDefineData parseDefineData(TokenList tokens)

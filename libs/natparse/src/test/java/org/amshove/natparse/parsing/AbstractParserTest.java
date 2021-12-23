@@ -5,6 +5,7 @@ import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.ITokenNode;
 import org.assertj.core.api.ObjectAssert;
 
+import java.nio.file.Paths;
 import java.util.function.Function;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -16,7 +17,7 @@ public abstract class AbstractParserTest
 	protected void assertDiagnostic(String source, ParserError expectedError)
 	{
 		var lexer = new Lexer();
-		var tokens = lexer.lex(source);
+		var tokens = lexer.lex(source, Paths.get("TESTMODULE.NSN"));
 		var result = sut.parse(tokens);
 		assertThat(result.diagnostics().size())
 			.as("Expected to get at least one diagnostic, but found none")

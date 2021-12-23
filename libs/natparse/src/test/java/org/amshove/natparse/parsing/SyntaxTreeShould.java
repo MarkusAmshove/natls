@@ -4,10 +4,17 @@ import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Paths;
+
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 class SyntaxTreeShould
 {
+	private SyntaxToken createToken(SyntaxKind kind, int offset, int lineOffset, int line, String source)
+	{
+		return new SyntaxToken(kind, offset, lineOffset, line, source, Paths.get("TEST.NSA"));
+	}
+
 	@Test
 	void returnAStreamOfDescendantsByType()
 	{
@@ -22,9 +29,9 @@ class SyntaxTreeShould
 	void findATokenWithSpecificKind()
 	{
 		var tree = SyntaxTree.create(
-			new TokenNode(new SyntaxToken(SyntaxKind.ADD, 0, 0, 0, "")),
-			new TokenNode(new SyntaxToken(SyntaxKind.DEFINE, 0, 0, 0, "")),
-			new TokenNode(new SyntaxToken(SyntaxKind.END_DEFINE, 0, 0, 0, ""))
+			new TokenNode(createToken(SyntaxKind.ADD, 0, 0, 0, "")),
+			new TokenNode(createToken(SyntaxKind.DEFINE, 0, 0, 0, "")),
+			new TokenNode(createToken(SyntaxKind.END_DEFINE, 0, 0, 0, ""))
 		);
 
 		var tokenNode = tree.findDescendantToken(SyntaxKind.DEFINE);
@@ -36,8 +43,8 @@ class SyntaxTreeShould
 	void returnNullWhenLookingForATokenKindThatIsNotContained()
 	{
 		var tree = SyntaxTree.create(
-			new TokenNode(new SyntaxToken(SyntaxKind.ADD, 0, 0, 0, "")),
-			new TokenNode(new SyntaxToken(SyntaxKind.END_DEFINE, 0, 0, 0, ""))
+			new TokenNode(createToken(SyntaxKind.ADD, 0, 0, 0, "")),
+			new TokenNode(createToken(SyntaxKind.END_DEFINE, 0, 0, 0, ""))
 		);
 
 		var tokenNode = tree.findDescendantToken(SyntaxKind.DEFINE);

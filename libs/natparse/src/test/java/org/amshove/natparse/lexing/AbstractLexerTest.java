@@ -1,5 +1,6 @@
 package org.amshove.natparse.lexing;
 
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -10,7 +11,7 @@ public class AbstractLexerTest
 {
 	protected SyntaxToken lexSingle(String source, int index)
 	{
-		var tokenList = new Lexer().lex(source);
+		var tokenList = new Lexer().lex(source, Paths.get("TEST.NSN"));
 		for(var i = 0; i < index; i++)
 		{
 			tokenList.advance();
@@ -72,7 +73,7 @@ public class AbstractLexerTest
 
 	protected TokenList lexSource(String source)
 	{
-		return new Lexer().lex(source);
+		return new Lexer().lex(source, Paths.get("TEST.NSN"));
 	}
 
 	protected TokenList assertDiagnostic(String source, LexerDiagnostic diagnostic)
@@ -83,7 +84,7 @@ public class AbstractLexerTest
 	protected TokenList assertDiagnostics(String source, LexerDiagnostic... diagnostics)
 	{
 		var lexer = new Lexer();
-		var lexemes = lexer.lex(source);
+		var lexemes = lexer.lex(source, Paths.get("TEST.NSN"));
 		var foundDiagnostics = lexemes.diagnostics();
 
 		for (var diagnostic : diagnostics)

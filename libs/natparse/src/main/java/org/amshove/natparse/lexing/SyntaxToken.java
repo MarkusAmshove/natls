@@ -2,6 +2,7 @@ package org.amshove.natparse.lexing;
 
 import org.amshove.natparse.IPosition;
 
+import java.nio.file.Path;
 import java.util.Objects;
 
 public class SyntaxToken implements IPosition
@@ -12,6 +13,7 @@ public class SyntaxToken implements IPosition
 	private final int offsetInLine;
 	private final int line;
 	private final String source;
+	private final Path filePath;
 	private String identifierName = null;
 
 	public SyntaxKind kind()
@@ -44,6 +46,11 @@ public class SyntaxToken implements IPosition
 		return source.length();
 	}
 
+	public Path filePath()
+	{
+		return filePath;
+	}
+
 	// TODO: Introduce `LiteralToken`?
 	public int intValue()
 	{
@@ -73,13 +80,14 @@ public class SyntaxToken implements IPosition
 		return identifierName;
 	}
 
-	public SyntaxToken(SyntaxKind kind, int offset, int lineOffset, int line, String source)
+	public SyntaxToken(SyntaxKind kind, int offset, int lineOffset, int line, String source, Path filePath)
 	{
 		this.kind = kind;
 		this.offset = offset;
 		this.offsetInLine = lineOffset;
 		this.line = line;
 		this.source = source;
+		this.filePath = filePath;
 	}
 
 	@Override
