@@ -388,6 +388,46 @@ public class NaturalLanguageService implements LanguageClientAware
 			.toList();
 	}
 
+	public SignatureHelp signatureHelp(TextDocumentIdentifier textDocument, Position position)
+	{
+		var filePath = LspUtil.uriToPath(textDocument.getUri());
+
+		var token = findTokenAtPosition(filePath, position);
+		if(token == null || token.kind() != SyntaxKind.STRING)
+		{
+			return null;
+		}
+
+		var calledModule = token.stringValue();
+		var calledFile = languageServerProject.findFileByReferableName(calledModule);
+		var module = (NaturalModule) calledFile.module();
+		if(module.defineData() == null)
+		{
+			return null;
+		}
+
+		var parameter = module.defineData().variables().stream()
+			.filter(v -> v.scope().isParameter())
+			.filter(v -> v.level() == 1)
+			.map(v -> (ITypedVariableNode) v)
+			.toList();
+
+		var help = new SignatureHelp();
+		var signatureInformation = new SignatureInformation(module.name());
+		var parameterInfos = new ArrayList<ParameterInformation>();
+		for (var p : parameter)
+		{
+			var parameterInfo = new ParameterInformation();
+			parameterInfo.setLabel(p.name());
+			parameterInfo.setDocumentation(new MarkupContent(MarkupKind.MARKDOWN, formatVariableHover(p)));
+			parameterInfos.add(parameterInfo);
+		}
+		signatureInformation.setParameters(parameterInfos);
+		help.setSignatures(List.of(signatureInformation));
+		// TODO: This needs to actually set the correct current parameter position, once we have a callnat statement
+		return help;
+	}
+
 	public List<CompletionItem> complete(CompletionParams completionParams)
 	{
 		var fileUri = completionParams.getTextDocument().getUri();
@@ -411,7 +451,7 @@ public class NaturalLanguageService implements LanguageClientAware
 				.map(f -> (NaturalModule)f.module())
 				.map(module -> {
 					var completionItem = new CompletionItem(module.name());
-					completionItem.setKind(CompletionItemKind.Snippet);
+					completionItem.setKind(CompletionItemKind.Class);
 					completionItem.setInsertTextFormat(InsertTextFormat.Snippet);
 					var insertText = "'${0:%s}'".formatted(module.name());
 

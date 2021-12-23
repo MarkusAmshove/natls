@@ -166,4 +166,9 @@ public class LanguageServerFile
 	{
 		return file.getFiletype();
 	}
+
+	public String getReferableName()
+	{
+		return file.getReferableName();
+	}
 }

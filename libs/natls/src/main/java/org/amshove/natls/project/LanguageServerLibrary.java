@@ -6,6 +6,7 @@ import org.amshove.natparse.natural.project.NaturalLibrary;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -51,5 +52,10 @@ public class LanguageServerLibrary
 		}
 
 		return filesOfType;
+	}
+
+	public Collection<LanguageServerFile> files()
+	{
+		return files.values();
 	}
 }

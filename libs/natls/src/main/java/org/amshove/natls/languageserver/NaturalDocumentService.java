@@ -113,6 +113,12 @@ public class NaturalDocumentService implements TextDocumentService
 		return CompletableFuture.supplyAsync(() -> languageService.hoverSymbol(params.getTextDocument(), params.getPosition()));
 	}
 
+	@Override
+	public CompletableFuture<SignatureHelp> signatureHelp(SignatureHelpParams params)
+	{
+		return CompletableFuture.supplyAsync(() -> languageService.signatureHelp(params.getTextDocument(), params.getPosition()));
+	}
+
 	public void setLanguageService(NaturalLanguageService languageService)
 	{
 		this.languageService = languageService;

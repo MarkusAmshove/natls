@@ -27,4 +27,22 @@ public class LanguageServerProject
 	{
 		return libraries.get(naturalFile.getLibrary().getName()).findFile(naturalFile);
 	}
+
+	// TODO: This shouldn't be here. The callers should use the LanguageServerFile as object provider
+	//	  to find stuff that is actually in scope.
+	public LanguageServerFile findFileByReferableName(String referableName)
+	{
+		for (var lib : libraries.values())
+		{
+			for(var file : lib.files())
+			{
+				if(file.getReferableName().equalsIgnoreCase(referableName))
+				{
+					return file;
+				}
+			}
+		}
+
+		return null;
+	}
 }
