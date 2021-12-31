@@ -1369,6 +1369,33 @@ class DefineDataParserShould extends AbstractParserTest
 			""".formatted(bool));
 	}
 
+	@Test
+	void reportADiagnosticIfVariableNamesAreDuplicated()
+	{
+		assertDiagnostic("""
+			define data
+			local
+			1 #MYSTR (A1)
+			1 #MYSTR (A1)
+			end-define
+			""",
+		ParserError.DUPLICATED_SYMBOL);
+	}
+
+	@Test
+	void reportNoDiagnosticIfVariablesHaveSameNameButDifferentQualifiedName()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data
+			local
+			1 #GROUP1
+				2 #MYSTR (A1)
+			1 #GROUP2
+				2 #MYSTR (A1)
+			end-define
+			""");
+	}
+
 	private IDefineData assertParsesWithoutDiagnostics(String source)
 	{
 		var lexer = new Lexer();

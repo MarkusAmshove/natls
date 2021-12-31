@@ -9,4 +9,16 @@ public interface IPosition
 	int line();
 	int length();
 	Path filePath();
+
+	default String fileNameWithoutExtension()
+	{
+		var fileName = filePath().getFileName().toString();
+		if(!fileName.contains("."))
+		{
+			return fileName;
+		}
+
+		var extensionIndex = fileName.lastIndexOf('.');
+		return fileName.substring(0, extensionIndex);
+	}
 }

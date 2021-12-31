@@ -16,6 +16,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	/**
 	 * Do not use this directly, use getDeclaredVariable or isVariableDeclared for proper case handling.
+	 * Also use addDeclaredVariable for error handling.
 	 */
 	private Map<String, VariableNode> declaredVariables;
 
@@ -131,7 +132,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				}
 
 				scopeNode.addVariable(variable);
-				declaredVariables.put(variable.name(), variable);
+				addDeclaredVariable(variable);
 			}
 			catch (ParseError e)
 			{
@@ -489,7 +490,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			using.setDefineData(defineData);
 			for (var variable : defineData.variables())
 			{
-				declaredVariables.put(variable.name(), (VariableNode) variable);
+				addDeclaredVariable((VariableNode) variable);
 			}
 		}
 
@@ -1093,5 +1094,18 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	{
 		// Natural is case-insensitive, as that it considers everything upper case
 		return declaredVariables.get(tokenNode.token().symbolName());
+	}
+
+	private void addDeclaredVariable(VariableNode variable)
+	{
+		if(declaredVariables.containsKey(variable.qualifiedName())
+			&& !(variable instanceof IRedefinitionNode))
+		{
+			var alreadyDefined = declaredVariables.get(variable.qualifiedName());
+			report(ParserErrors.duplicatedSymbols(variable, alreadyDefined));
+			return;
+		}
+
+		declaredVariables.put(variable.qualifiedName(), variable);
 	}
 }

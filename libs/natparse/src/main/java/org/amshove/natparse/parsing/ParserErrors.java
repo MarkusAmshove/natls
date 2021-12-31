@@ -276,4 +276,16 @@ class ParserErrors
 			ParserError.UNRESOLVED_IMPORT
 		);
 	}
+
+	public static IDiagnostic duplicatedSymbols(ISymbolNode duplicatedSymbol, ISymbolNode firstDeclaration)
+	{
+		return ParserDiagnostic.create(
+			"Symbol with name %s already declared in %s".formatted(
+				duplicatedSymbol.declaration().symbolName(),
+				firstDeclaration.position().fileNameWithoutExtension()
+			),
+			duplicatedSymbol,
+			ParserError.DUPLICATED_SYMBOL
+		);
+	}
 }
