@@ -6,7 +6,7 @@ import org.amshove.natparse.natural.*;
 import java.util.ArrayList;
 import java.util.List;
 
-class DefineData extends BaseSyntaxNode implements IDefineData
+class DefineDataNode extends BaseSyntaxNode implements IDefineData
 {
 	private final List<IUsingNode> usings = new ArrayList<>();
 	private final List<IVariableNode> variables = new ArrayList<>();
@@ -44,14 +44,28 @@ class DefineData extends BaseSyntaxNode implements IDefineData
 	@Override
 	protected void nodeAdded(BaseSyntaxNode node)
 	{
-		if (node instanceof IUsingNode)
+		if (node instanceof IUsingNode usingNode)
 		{
-			usings.add((IUsingNode) node);
+			usings.add(usingNode);
+			addAllVariablesFromUsing(usingNode);
 		}
 
 		if (node instanceof IScopeNode)
 		{
 			addAllVariablesFromScope((IScopeNode) node);
+		}
+	}
+
+	private void addAllVariablesFromUsing(IUsingNode usingNode)
+	{
+		if(usingNode.defineData() == null)
+		{
+			return;
+		}
+
+		for (var variable : usingNode.defineData().variables())
+		{
+			variables.add(variable);
 		}
 	}
 
@@ -66,9 +80,8 @@ class DefineData extends BaseSyntaxNode implements IDefineData
 	private void addAllVariablesRecursively(IVariableNode variable)
 	{
 		variables.add(variable);
-		if (variable instanceof IGroupNode)
+		if (variable instanceof IGroupNode group)
 		{
-			var group =  ((IGroupNode)variable);
 			for (var nestedVariable : group.variables())
 			{
 				addAllVariablesRecursively(nestedVariable);

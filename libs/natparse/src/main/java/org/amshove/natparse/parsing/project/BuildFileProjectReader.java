@@ -71,7 +71,7 @@ public class BuildFileProjectReader
 		{
 			for (var steplib : library.getSteplibs())
 			{
-				libraryMap.get(library.getName()).addSteplib(libraryMap.get(steplib));
+				libraryMap.get(library.getName()).addStepLib(libraryMap.get(steplib));
 			}
 		}
 

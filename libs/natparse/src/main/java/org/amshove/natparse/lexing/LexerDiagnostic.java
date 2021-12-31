@@ -3,6 +3,7 @@ package org.amshove.natparse.lexing;
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.IDiagnostic;
 
+import java.nio.file.Path;
 import java.util.Objects;
 
 class LexerDiagnostic implements IDiagnostic
@@ -12,11 +13,12 @@ class LexerDiagnostic implements IDiagnostic
 	private final int offsetInLine;
 	private final int line;
 	private final int length;
+	private final Path filePath;
 	private final LexerError error;
 	private final String message;
 	private final DiagnosticSeverity severity;
 
-	private LexerDiagnostic(String message, int offset, int offsetInLine, int currentLine, int length, LexerError error)
+	private LexerDiagnostic(String message, int offset, int offsetInLine, int currentLine, int length, Path filePath, LexerError error)
 	{
 		this.message = message;
 		this.offset = offset;
@@ -25,10 +27,11 @@ class LexerDiagnostic implements IDiagnostic
 		this.length = length;
 		this.error = error;
 		this.id = error.id();
+		this.filePath = filePath;
 		severity = DiagnosticSeverity.ERROR;
 	}
 
-	static LexerDiagnostic create(String message, int offset, int offsetInLine, int currentLine, int length, LexerError error)
+	static LexerDiagnostic create(String message, int offset, int offsetInLine, int currentLine, int length, Path filePath, LexerError error)
 	{
 		return new LexerDiagnostic(
 			message,
@@ -36,11 +39,12 @@ class LexerDiagnostic implements IDiagnostic
 			offsetInLine,
 			currentLine,
 			length,
+			filePath,
 			error
 		);
 	}
 
-	static LexerDiagnostic create(int offset, int offsetInLine, int currentLine, int length, LexerError error)
+	static LexerDiagnostic create(int offset, int offsetInLine, int currentLine, int length, Path filePath, LexerError error)
 	{
 		return new LexerDiagnostic(
 			"",
@@ -48,6 +52,7 @@ class LexerDiagnostic implements IDiagnostic
 			offsetInLine,
 			currentLine,
 			length,
+			filePath,
 			error
 		);
 	}
@@ -79,6 +84,12 @@ class LexerDiagnostic implements IDiagnostic
 	public int length()
 	{
 		return length;
+	}
+
+	@Override
+	public Path filePath()
+	{
+		return filePath;
 	}
 
 	public String id()

@@ -2,6 +2,7 @@ package org.amshove.natls.languageserver;
 
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.SyntaxToken;
+import org.amshove.natparse.natural.ISyntaxNode;
 import org.eclipse.lsp4j.*;
 
 import java.net.URI;
@@ -17,6 +18,11 @@ public class LspUtil
 	public static Path uriToPath(String uri)
 	{
 		return Paths.get(URI.create(uri));
+	}
+
+	public static String pathToUri(Path path)
+	{
+		return path.toUri().toString();
 	}
 
 	public static Location toLocation(String fileUri, SyntaxToken token)
@@ -46,6 +52,18 @@ public class LspUtil
 		return new Range(
 			new Position(token.line(), token.offsetInLine()),
 			new Position(token.line(), token.offsetInLine() + token.length())
+		);
+	}
+
+	public static Location toLocation(ISyntaxNode node)
+	{
+		var position = node.position();
+		return new Location(
+			pathToUri(position.filePath()),
+			new Range(
+				new Position(position.line(), position.offsetInLine()),
+				new Position(node.descendants().last().position().line(), node.descendants().last().position().offsetInLine())
+			)
 		);
 	}
 }

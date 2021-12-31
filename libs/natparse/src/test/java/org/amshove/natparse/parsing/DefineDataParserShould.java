@@ -1378,7 +1378,7 @@ class DefineDataParserShould extends AbstractParserTest
 				"Expected the source to lex without diagnostics%n%s"
 					.formatted(lexResult.diagnostics().stream().map(IDiagnostic::message).collect(Collectors.joining("\n"))))
 			.isZero();
-		var parser = new DefineDataParser();
+		var parser = new DefineDataParser(null);
 		var parseResult = parser.parse(lexResult);
 		assertThat(parseResult.diagnostics().size())
 			.as(

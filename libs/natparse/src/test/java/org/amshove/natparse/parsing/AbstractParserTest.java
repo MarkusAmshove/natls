@@ -12,7 +12,7 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 public abstract class AbstractParserTest
 {
-	private final DefineDataParser sut = new DefineDataParser();
+	private final DefineDataParser sut = new DefineDataParser(null);
 
 	protected void assertDiagnostic(String source, ParserError expectedError)
 	{

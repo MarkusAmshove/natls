@@ -9,6 +9,8 @@ public interface IUsingNode extends ISyntaxNode
 	 */
 	SyntaxToken target();
 
+	IDefineData defineData();
+
 	boolean isLocalUsing();
 	boolean isGlobalUsing();
 	boolean isParameterUsing();

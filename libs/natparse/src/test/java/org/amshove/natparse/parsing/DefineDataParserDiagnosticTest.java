@@ -29,7 +29,7 @@ public class DefineDataParserDiagnosticTest
 
 				var lexer = new Lexer();
 				var tokens = lexer.lex(source, Path.of(path));
-				var parser = new DefineDataParser();
+				var parser = new DefineDataParser(null);
 				var parseResult = parser.parse(tokens);
 
 				for (var diagnostic : parseResult.diagnostics())

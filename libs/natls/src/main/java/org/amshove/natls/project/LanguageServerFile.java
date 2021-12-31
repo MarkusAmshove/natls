@@ -117,7 +117,7 @@ public class LanguageServerFile
 
 			var lexer = new Lexer();
 			var tokenList = lexer.lex(source, file.getPath());
-			var parser = new NaturalParser();
+			var parser = new NaturalParser(library);
 
 			module = parser.parse(file, tokenList);
 			for (var diagnostic : module.diagnostics())

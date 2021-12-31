@@ -2,12 +2,9 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.IDiagnostic;
-import org.amshove.natparse.lexing.SyntaxKind;
-import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.ISyntaxNode;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.nio.file.Path;
 
 public class ParserDiagnostic implements IDiagnostic
 {
@@ -16,10 +13,11 @@ public class ParserDiagnostic implements IDiagnostic
 	private final int offsetInLine;
 	private final int line;
 	private final int length;
+	private final Path filePath;
 	private final String id;
 	private final DiagnosticSeverity severity;
 
-	private ParserDiagnostic(String message, int offset, int offsetInLine, int line, int length, ParserError error)
+	private ParserDiagnostic(String message, int offset, int offsetInLine, int line, int length, Path filePath, ParserError error)
 	{
 		this.message = message;
 		this.offset = offset;
@@ -27,42 +25,19 @@ public class ParserDiagnostic implements IDiagnostic
 		this.line = line;
 		this.length = length;
 		this.id = error.id();
+		this.filePath = filePath;
 		severity = DiagnosticSeverity.ERROR;
 	}
 
-	public static ParserDiagnostic create(String message, int offset, int offsetInLine, int line, int length, ParserError error)
+	public static ParserDiagnostic create(String message, int offset, int offsetInLine, int line, int length, Path filePath, ParserError error)
 	{
-		return new ParserDiagnostic(message, offset, offsetInLine, line, length, error);
+		return new ParserDiagnostic(message, offset, offsetInLine, line, length, filePath, error);
 	}
 
 	public static ParserDiagnostic create(String message, ISyntaxNode node, ParserError error)
 	{
 		var position = node.position();
-		return new ParserDiagnostic(message, position.offset(), position.offsetInLine(), position.line(), position.length(), error);
-	}
-
-	public static ParserDiagnostic unexpectedToken(SyntaxKind expectedToken, SyntaxToken invalidToken)
-	{
-		return new ParserDiagnostic(
-			"Unexpected token <%s>, expected <%s>".formatted(invalidToken.kind(), expectedToken),
-			invalidToken.offset(),
-			invalidToken.offsetInLine(),
-			invalidToken.line(),
-			invalidToken.length(),
-			ParserError.UNEXPECTED_TOKEN
-		);
-	}
-
-	public static ParserDiagnostic unexpectedToken(List<SyntaxKind> expectedTokenKinds, SyntaxToken invalidToken)
-	{
-		return new ParserDiagnostic(
-			"Unexpected token <%s>, expected one of <%s>".formatted(invalidToken.kind(), expectedTokenKinds.stream().map(Enum::toString).collect(Collectors.joining(", "))),
-			invalidToken.offset(),
-			invalidToken.offsetInLine(),
-			invalidToken.line(),
-			invalidToken.length(),
-			ParserError.UNEXPECTED_TOKEN
-		);
+		return new ParserDiagnostic(message, position.offset(), position.offsetInLine(), position.line(), position.length(), position.filePath(), error);
 	}
 
 	@Override
@@ -93,6 +68,12 @@ public class ParserDiagnostic implements IDiagnostic
 	public int length()
 	{
 		return length;
+	}
+
+	@Override
+	public Path filePath()
+	{
+		return filePath;
 	}
 
 	@Override

@@ -3,6 +3,7 @@ package org.amshove.natparse.lexing;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -11,34 +12,35 @@ public class TokenList
 	private final List<SyntaxToken> tokens;
 	private final List<LexerDiagnostic> diagnostics;
 	private final List<SyntaxToken> comments;
+	private final Path filePath;
 
 	private int currentOffset = 0;
 
-	TokenList(List<SyntaxToken> tokens)
+	TokenList(Path filePath, List<SyntaxToken> tokens)
 	{
 		this.tokens = tokens;
 		diagnostics = List.of();
 		comments = List.of();
+		this.filePath = filePath;
 	}
 
-	TokenList(List<SyntaxToken> tokens, List<LexerDiagnostic> diagnostics, List<SyntaxToken> comments)
+	TokenList(Path filePath, List<SyntaxToken> tokens, List<LexerDiagnostic> diagnostics, List<SyntaxToken> comments)
 	{
 		this.tokens = tokens;
 		this.diagnostics = diagnostics;
 		this.comments = comments;
+		this.filePath = filePath;
 	}
 
-	public static TokenList fromTokens(List<SyntaxToken> tokenList)
+	public static TokenList fromTokens(Path filePath, List<SyntaxToken> tokenList)
 	{
-		return new TokenList(tokenList);
+		return new TokenList(filePath, tokenList);
 	}
 
-	public static TokenList fromTokensAndDiagnostics(List<SyntaxToken> tokenList, List<LexerDiagnostic> diagnostics, List<SyntaxToken> comments)
+	public static TokenList fromTokensAndDiagnostics(Path filePath, List<SyntaxToken> tokenList, List<LexerDiagnostic> diagnostics, List<SyntaxToken> comments)
 	{
-		return new TokenList(tokenList, diagnostics, comments);
+		return new TokenList(filePath, tokenList, diagnostics, comments);
 	}
-
-	// TODO: ReadOnlyList
 
 	public ReadOnlyList<IDiagnostic> diagnostics()
 	{
@@ -54,6 +56,11 @@ public class TokenList
 			return List.of();
 		}
 		return List.copyOf(tokens.subList(startOffset, currentOffset));
+	}
+
+	public Path filePath()
+	{
+		return filePath;
 	}
 
 	/**
@@ -147,7 +154,7 @@ public class TokenList
 	// TODO: Figure out a better name
 	public TokenList newResetted()
 	{
-		return TokenList.fromTokensAndDiagnostics(tokens, diagnostics, comments);
+		return TokenList.fromTokensAndDiagnostics(filePath, tokens, diagnostics, comments);
 	}
 
 	public ReadOnlyList<SyntaxToken> comments()

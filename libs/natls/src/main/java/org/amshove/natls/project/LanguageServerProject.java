@@ -16,6 +16,10 @@ public class LanguageServerProject
 	{
 		this.project = project;
 		this.libraries = libraries.stream().collect(Collectors.toMap(LanguageServerLibrary::name, l -> l));
+		for (var lib : this.libraries.values())
+		{
+			lib.referenceStepLibs(this.libraries);
+		}
 	}
 
 	public static LanguageServerProject fromProject(NaturalProject project)

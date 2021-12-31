@@ -218,11 +218,12 @@ public class Lexer
 						getOffsetInLine(),
 						line,
 						1,
+						filePath,
 						LexerError.UNKNOWN_CHARACTER));
 					scanner.advance();
 			}
 		}
-		return TokenList.fromTokensAndDiagnostics(tokens, diagnostics, comments);
+		return TokenList.fromTokensAndDiagnostics(filePath, tokens, diagnostics, comments);
 	}
 
 	private void consumeMinusOrNumberOrStringConcat()
@@ -668,6 +669,7 @@ public class Lexer
 			getOffsetInLine(),
 			line,
 			scanner.lexemeLength(),
+			filePath,
 			error));
 	}
 

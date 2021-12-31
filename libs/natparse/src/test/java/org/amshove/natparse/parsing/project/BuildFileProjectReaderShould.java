@@ -57,7 +57,7 @@ class BuildFileProjectReaderShould
 
 		var naturalProject = createProject(fileSystem);
 		var naturalLibrary = naturalProject.getLibraries().get(0);
-		assertThat(naturalLibrary.getSteplibs().size()).as("System library should not be contained").isEqualTo(0);
+		assertThat(naturalLibrary.getStepLibs().size()).as("System library should not be contained").isEqualTo(0);
 	}
 
 	@Test
@@ -70,8 +70,8 @@ class BuildFileProjectReaderShould
 
 		var naturalProject = createProject(fileSystem);
 		var naturalLibrary = naturalProject.getLibraries().stream().filter(l -> l.getName().equals("MYLIB")).findFirst().orElseThrow(() -> new RuntimeException(""));
-		assertThat(naturalLibrary.getSteplibs().size()).isEqualTo(1);
-		assertThat(naturalLibrary.getSteplibs().get(0).getName()).isEqualTo("SECONDLIB");
+		assertThat(naturalLibrary.getStepLibs().size()).isEqualTo(1);
+		assertThat(naturalLibrary.getStepLibs().get(0).getName()).isEqualTo("SECONDLIB");
 	}
 
 	private Path sourceDirectory(String name)

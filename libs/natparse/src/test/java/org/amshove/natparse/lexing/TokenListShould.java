@@ -84,12 +84,12 @@ class TokenListShould
 
 	private TokenList createTokenList(SyntaxToken... tokens)
 	{
-		return TokenList.fromTokens(Arrays.stream(tokens).toList());
+		return TokenList.fromTokens(Paths.get("TOKENLISTSHOULD.NSN"), Arrays.stream(tokens).toList());
 	}
 
 	private TokenList createTokenList(SyntaxKind... tokenKinds)
 	{
-		return TokenList.fromTokens(Arrays.stream(tokenKinds).map(k -> createToken(k, 0, 0, 0, "")).toList());
+		return TokenList.fromTokens(Paths.get("TOKENLISTSHOULD.NSN"), Arrays.stream(tokenKinds).map(k -> createToken(k, 0, 0, 0, "")).toList());
 	}
 
 	private TokenList createListWithTokens(int amountOfTokens)
@@ -102,6 +102,6 @@ class TokenListShould
 			tokens.add(createToken(syntaxKinds[i], 0, 0, 0, syntaxKinds[i].toString()));
 		}
 
-		return TokenList.fromTokens(tokens);
+		return TokenList.fromTokens(Paths.get("TOKENLISTSHOULD.NSN"), tokens);
 	}
 }

@@ -21,16 +21,21 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private VariableScope currentScope;
 
+	public DefineDataParser(IModuleProvider moduleProvider)
+	{
+		super(moduleProvider);
+	}
+
 	@Override
 	protected IDefineData parseInternal()
 	{
-		var defineData = new DefineData();
+		var defineData = new DefineDataNode();
 		declaredVariables = new HashMap<>();
 
 		advanceToDefineData(tokens);
 		if (!isAtStartOfDefineData(tokens))
 		{
-			report(ParserDiagnostic.create("DEFINE DATA expected", 0, 0, 0, 0, ParserError.NO_DEFINE_DATA_FOUND));
+			report(ParserDiagnostic.create("DEFINE DATA expected", 0, 0, 0, 0, tokens.filePath(), ParserError.NO_DEFINE_DATA_FOUND));
 			return null;
 		}
 
@@ -82,7 +87,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	{
 		if (!isScopeToken(peek()))
 		{
-			report(ParserDiagnostic.unexpectedToken(SCOPE_SYNTAX_KINDS, peek()));
+			report(ParserErrors.unexpectedToken(SCOPE_SYNTAX_KINDS, peek()));
 			discard();
 			throw new ParseError(peek());
 		}
@@ -201,7 +206,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private ViewNode view() throws ParseError
 	{
-		var view = new ViewParser(declaredVariables).parse(tokens);
+		var view = new ViewParser(moduleProvider, declaredVariables).parse(tokens);
 
 		view.diagnostics().forEach(this::report);
 		if (view.result() == null)
@@ -475,9 +480,18 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		var identifier = identifier();
 		using.setUsingTarget(identifier);
-		using.addNode(new SymbolReferenceNode(identifier)); // TODO(references): Add Reference to foreign DEFINE DATA
+		var identifierReference = new SymbolReferenceNode(identifier);
+		using.addNode(identifierReference); // TODO(references): Add Reference to foreign DEFINE DATA
 
-		// TODO: add imported variables as synthetic nodes
+		var defineData = sideloadDefineData(identifierReference);
+		if(defineData != null)
+		{
+			using.setDefineData(defineData);
+			for (var variable : defineData.variables())
+			{
+				declaredVariables.put(variable.name(), (VariableNode) variable);
+			}
+		}
 
 		return using;
 	}
@@ -540,9 +554,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 						report(ParserErrors.invalidLengthForDataTypeRange(variable, 1, VariableTypeNode.ONE_GIGABYTE));
 					}
 				}
-				case CONTROL, DATE, LOGIC, TIME -> {
-					report(ParserErrors.typeCantHaveLength(variable));
-				}
+				case CONTROL, DATE, LOGIC, TIME -> report(ParserErrors.typeCantHaveLength(variable));
 				case FLOAT -> {
 					if (variableLength != 4 && variableLength != 8)
 					{
@@ -598,7 +610,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			switch (variable.type().format())
 			{
 				case ALPHANUMERIC:
-					if(variable.type().initialValue().kind().isBoolean())
+					if (variable.type().initialValue().kind().isBoolean())
 					{
 						break;
 					}
@@ -793,7 +805,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		var dimension = new ArrayDimension();
 		dimension.addNode(boundToken);
 
-		if(boundTokenKind == SyntaxKind.NUMBER && boundToken.token().source().contains(",") && peekKind(SyntaxKind.RPAREN))
+		if (boundTokenKind == SyntaxKind.NUMBER && boundToken.token().source().contains(",") && peekKind(SyntaxKind.RPAREN))
 		{
 			// We're here because we found something like: (A10/5,10)
 			// At this position, boundToken has 5,10 which is two dimensions: 1:5 and 1:10
@@ -1070,12 +1082,6 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 
 		return 0.0;
-	}
-
-	private boolean isVariableDeclared(TokenNode tokenNode)
-	{
-		// Natural is case-insensitive, as that it considers everything upper case
-		return declaredVariables.containsKey(tokenNode.token().symbolName());
 	}
 
 	private boolean isVariableDeclared(String potentionalVariableName)

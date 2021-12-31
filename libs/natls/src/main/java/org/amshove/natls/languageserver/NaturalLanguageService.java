@@ -2,8 +2,6 @@ package org.amshove.natls.languageserver;
 
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natls.project.LanguageServerProject;
-import org.amshove.natparse.IDiagnostic;
-import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
@@ -87,22 +85,6 @@ public class NaturalLanguageService implements LanguageClientAware
 				return convertToSymbolInformation(f);
 			})
 			.toList();
-	}
-
-	public ReadOnlyList<IDiagnostic> parseFile(Path filepath)
-	{
-		var source = readSource(filepath);
-		return parseSource(source, filepath);
-	}
-
-	public ReadOnlyList<IDiagnostic> parseSource(String source, Path path)
-	{
-		var tokens = lexSource(source, path);
-		var parseResult = new DefineDataParser().parse(tokens);
-		var allDiagnostics = new ArrayList<IDiagnostic>();
-		allDiagnostics.addAll(tokens.diagnostics().stream().toList()); // TODO: Perf
-		allDiagnostics.addAll(parseResult.diagnostics().stream().toList()); // TODO: Perf
-		return ReadOnlyList.from(allDiagnostics);
 	}
 
 	private SymbolInformation convertToSymbolInformation(NaturalFile file)
@@ -339,33 +321,37 @@ public class NaturalLanguageService implements LanguageClientAware
 		return lexSource(readSource(path), path);
 	}
 
+	// TODO: Remove
 	private IDefineData parseDefineData(TokenList tokens)
 	{
-		var parser = new DefineDataParser();
+		var parser = new DefineDataParser(null);
 		return parser.parse(tokens).result();
 	}
 
 	public List<Location> gotoDefinition(DefinitionParams params)
 	{
 		var fileUri = params.getTextDocument().getUri();
+		var filePath = LspUtil.uriToPath(fileUri);
 		var position = params.getPosition();
 
-		var tokenUnderCursor = findTokenAtPosition(LspUtil.uriToPath(fileUri), position);
+		var tokenUnderCursor = findTokenAtPosition(filePath, position); // TODO: Double lexing
+		System.err.println(tokenUnderCursor);
 		if (tokenUnderCursor == null)
 		{
 			return List.of();
 		}
 
-		var defineData = parseDefineData(lexPath(LspUtil.uriToPath(fileUri))); // TODO: perf: double lexing
+		var file = findNaturalFile(filePath);
+		var module = file.module();
+		IDefineData defineData;
+		if (!(module instanceof IHasDefineData hasDefineData))
+		{
+			return List.of();
+		}
+		defineData = hasDefineData.defineData();
 		return defineData.variables().stream()
 			.filter(v -> v.name().equals(tokenUnderCursor.source()))
-			.map(v -> new Location(
-				fileUri,
-				new Range(
-					new Position(v.position().line(), v.position().offsetInLine()),
-					new Position(v.descendants().last().position().line(), v.descendants().last().position().offsetInLine())
-				)
-			))
+			.map(LspUtil::toLocation)
 			.toList();
 	}
 
@@ -393,7 +379,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var filePath = LspUtil.uriToPath(textDocument.getUri());
 
 		var token = findTokenAtPosition(filePath, position);
-		if(token == null || token.kind() != SyntaxKind.STRING)
+		if (token == null || token.kind() != SyntaxKind.STRING)
 		{
 			return null;
 		}
@@ -401,7 +387,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var calledModule = token.stringValue();
 		var calledFile = languageServerProject.findFileByReferableName(calledModule);
 		var module = (NaturalModule) calledFile.module();
-		if(module.defineData() == null)
+		if (module.defineData() == null)
 		{
 			return null;
 		}
@@ -436,31 +422,34 @@ public class NaturalLanguageService implements LanguageClientAware
 		// TODO: Use position to filter what stuff to complete (variables, subroutines, ...)
 		// var position = completionParams.getPosition();
 
-		var defineData = parseDefineData(lexPath(filePath));
-		if (defineData == null)
+		var file = findNaturalFile(filePath);
+		var module = file.module();
+		IDefineData defineData;
+		if (!(module instanceof IHasDefineData hasDefineData))
 		{
 			return List.of();
 		}
+		defineData = hasDefineData.defineData();
 
 		var token = findPreviousTokenOfPosition(filePath, completionParams.getPosition());
 		System.err.println(token.kind());
-		if(token != null && token.kind() == SyntaxKind.CALLNAT)
+		if (token != null && token.kind() == SyntaxKind.CALLNAT)
 		{
 			return findNaturalFile(filePath).getLibrary().getModulesOfType(NaturalFileType.SUBPROGRAM, true)
 				.stream()
-				.map(f -> (NaturalModule)f.module())
-				.map(module -> {
-					var completionItem = new CompletionItem(module.name());
+				.map(f -> (NaturalModule) f.module())
+				.map(calledModule -> {
+					var completionItem = new CompletionItem(calledModule.name());
 					completionItem.setKind(CompletionItemKind.Class);
 					completionItem.setInsertTextFormat(InsertTextFormat.Snippet);
-					var insertText = "'${0:%s}'".formatted(module.name());
+					var insertText = "'${0:%s}'".formatted(calledModule.name());
 
-					if(module.defineData() == null)
+					if (calledModule.defineData() == null)
 					{
 						return completionItem;
 					}
 
-					var parameter = module.defineData().variables().stream().filter(v -> v.scope() == VariableScope.PARAMETER && v.level() == 1).toList();
+					var parameter = calledModule.defineData().variables().stream().filter(v -> v.scope() == VariableScope.PARAMETER && v.level() == 1).toList();
 					var parameterIndex = 1;
 					for (var aParameter : parameter)
 					{
@@ -524,7 +513,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	public void fileSaved(Path path)
 	{
 		var file = findNaturalFile(path);
-		if(file == null)
+		if (file == null)
 		{
 			// TODO: Handle new file
 			return;
@@ -537,7 +526,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	public void fileClosed(Path path)
 	{
 		var file = findNaturalFile(path);
-		if(file == null)
+		if (file == null)
 		{
 			return;
 		}
@@ -549,7 +538,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	public void fileOpened(Path path)
 	{
 		var file = findNaturalFile(path);
-		if(file == null)
+		if (file == null)
 		{
 			return;
 		}
@@ -561,7 +550,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	public void fileChanged(Path path, String newSource)
 	{
 		var file = findNaturalFile(path);
-		if(file == null)
+		if (file == null)
 		{
 			return;
 		}

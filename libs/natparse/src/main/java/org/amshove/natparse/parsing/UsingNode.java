@@ -2,6 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
+import org.amshove.natparse.natural.IDefineData;
 import org.amshove.natparse.natural.IUsingNode;
 import org.amshove.natparse.natural.VariableScope;
 
@@ -9,6 +10,7 @@ class UsingNode extends BaseSyntaxNode implements IUsingNode
 {
 	private SyntaxToken using;
 	private VariableScope scope;
+	private IDefineData defineData;
 
 	@Override
 	public SyntaxToken target()
@@ -34,6 +36,12 @@ class UsingNode extends BaseSyntaxNode implements IUsingNode
 		return scope.isParameter();
 	}
 
+	@Override
+	public IDefineData defineData()
+	{
+		return defineData;
+	}
+
 	void setUsingTarget(SyntaxToken using)
 	{
 		this.using = using;
@@ -44,7 +52,13 @@ class UsingNode extends BaseSyntaxNode implements IUsingNode
 		this.scope = VariableScope.fromSyntaxKind(scopeKind);
 	}
 
-	@Override public String toString()
+	void setDefineData(IDefineData defineData)
+	{
+		this.defineData = defineData;
+	}
+
+	@Override
+	public String toString()
 	{
 		return "UsingNode{scope=%s, using=%s}".formatted(scope, using);
 	}

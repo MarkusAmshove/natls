@@ -114,6 +114,11 @@ public class AbstractLexerTest
 		}
 	}
 
+	protected LexerDiagnostic assertedDiagnostic(int offset, int offsetInLine, int currentLine, int length, LexerError error)
+	{
+		return LexerDiagnostic.create(offset, offsetInLine, currentLine, length, Paths.get("LexerTest.NSN"), error);
+	}
+
 	protected record ExpectedSyntaxToken(SyntaxKind kind, String source)
 	{
 	}

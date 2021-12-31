@@ -1,8 +1,10 @@
 package org.amshove.natls.project;
 
+import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.natural.project.NaturalLibrary;
+import org.amshove.natparse.parsing.IModuleProvider;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -11,10 +13,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class LanguageServerLibrary
+public class LanguageServerLibrary implements IModuleProvider
 {
 	private final NaturalLibrary library;
 	private final Map<String, LanguageServerFile> files;
+	private final List<LanguageServerLibrary> stepLibs = new ArrayList<>();
 
 	public LanguageServerLibrary(NaturalLibrary library, Map<String, LanguageServerFile> files)
 	{
@@ -30,7 +33,10 @@ public class LanguageServerLibrary
 
 	public static LanguageServerLibrary fromLibrary(NaturalLibrary library)
 	{
-		return new LanguageServerLibrary(library, library.files().stream().collect(Collectors.toMap(NaturalFile::getReferableName, LanguageServerFile::fromFile)));
+		return new LanguageServerLibrary(
+			library,
+			library.files().stream().collect(Collectors.toMap(NaturalFile::getReferableName, LanguageServerFile::fromFile))
+		);
 	}
 
 	public LanguageServerFile findFile(NaturalFile naturalFile)
@@ -57,5 +63,42 @@ public class LanguageServerLibrary
 	public Collection<LanguageServerFile> files()
 	{
 		return files.values();
+	}
+
+	@Override
+	public INaturalModule findNaturalModule(String referableName)
+	{
+		var found = provideNaturalModule(referableName, true);
+		System.err.println(found);
+		return found;
+	}
+
+	private INaturalModule provideNaturalModule(String referableName, boolean includeStepLibs)
+	{
+		if(files.containsKey(referableName))
+		{
+			return files.get(referableName).module();
+		}
+
+		if(includeStepLibs)
+		{
+			for (var stepLib : stepLibs)
+			{
+				if(stepLib.provideNaturalModule(referableName, false) instanceof LanguageServerFile languageServerFile)
+				{
+					return languageServerFile.module();
+				}
+			}
+		}
+
+		return null;
+	}
+
+	public void referenceStepLibs(Map<String, LanguageServerLibrary> libraries)
+	{
+		for (var stepLib : library.getStepLibs())
+		{
+			stepLibs.add(libraries.get(stepLib.getName()));
+		}
 	}
 }

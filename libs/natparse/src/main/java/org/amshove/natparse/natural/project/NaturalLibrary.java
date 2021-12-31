@@ -10,7 +10,7 @@ public class NaturalLibrary
 {
 	private final Path path;
 	private final String libraryName;
-	private final List<NaturalLibrary> steplibs = new ArrayList<>();
+	private final List<NaturalLibrary> stepLibs = new ArrayList<>();
 	private final Map<String, NaturalFile> files = new HashMap<>();
 
 	public NaturalLibrary(Path path)
@@ -29,14 +29,14 @@ public class NaturalLibrary
 		return path;
 	}
 
-	public void addSteplib(NaturalLibrary steplib)
+	public void addStepLib(NaturalLibrary stepLib)
 	{
-		steplibs.add(steplib);
+		stepLibs.add(stepLib);
 	}
 
-	public List<NaturalLibrary> getSteplibs()
+	public List<NaturalLibrary> getStepLibs()
 	{
-		return steplibs;
+		return stepLibs;
 	}
 
 	public List<NaturalFile> files()
@@ -48,5 +48,24 @@ public class NaturalLibrary
 	{
 		files.put(file.getReferableName(), file);
 		file.setLibrary(this);
+	}
+
+	public NaturalFile findFileByReferableName(String referableName, boolean includeStepLibs)
+	{
+		if(files.containsKey(referableName))
+		{
+			return files.get(referableName);
+		}
+
+		for (var stepLib : stepLibs)
+		{
+			var foundFile = stepLib.findFileByReferableName(referableName, false);
+			if(foundFile != null)
+			{
+				return foundFile;
+			}
+		}
+
+		return null;
 	}
 }

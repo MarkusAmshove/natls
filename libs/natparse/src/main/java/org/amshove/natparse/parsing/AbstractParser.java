@@ -5,16 +5,23 @@ import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
+import org.amshove.natparse.natural.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 abstract class AbstractParser<T>
 {
+	protected final IModuleProvider moduleProvider;
 	protected TokenList tokens;
 	private TokenNode previousNode;
 
 	private List<IDiagnostic> diagnostics = new ArrayList<>();
+
+	public AbstractParser(IModuleProvider moduleProvider)
+	{
+		this.moduleProvider = moduleProvider;
+	}
 
 	public ParseResult<T> parse(TokenList tokens)
 	{
@@ -27,6 +34,33 @@ abstract class AbstractParser<T>
 	}
 
 	protected abstract T parseInternal();
+
+	private INaturalModule sideloadModule(String referableName, ISymbolReferenceNode importNode)
+	{
+		if(moduleProvider == null)
+		{
+			return null;
+		}
+
+		var module = moduleProvider.findNaturalModule(referableName);
+
+		if(module == null)
+		{
+			report(ParserErrors.unresolvedImport(importNode));
+		}
+
+		return module;
+	}
+
+	protected IDefineData sideloadDefineData(ISymbolReferenceNode importNode)
+	{
+		if(sideloadModule(importNode.token().symbolName(), importNode) instanceof IHasDefineData hasDefineData)
+		{
+			return hasDefineData.defineData();
+		}
+
+		return null;
+	}
 
 	protected TokenNode getPreviousNode()
 	{
@@ -85,7 +119,7 @@ abstract class AbstractParser<T>
 		var tokenConsumed = consumeOptionally(node, kind);
 		if(!tokenConsumed)
 		{
-			diagnostics.add(ParserDiagnostic.unexpectedToken(kind, tokens.peek()));
+			diagnostics.add(ParserErrors.unexpectedToken(kind, tokens.peek()));
 		}
 
 		return tokenConsumed;
@@ -95,7 +129,7 @@ abstract class AbstractParser<T>
 	{
 		if(tokens.isAtEnd() || !tokens.peek().kind().isIdentifier())
 		{
-			diagnostics.add(ParserDiagnostic.unexpectedToken(SyntaxKind.IDENTIFIER, tokens.peek()));
+			diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens.peek()));
 			throw new ParseError(peek());
 		}
 
@@ -111,7 +145,7 @@ abstract class AbstractParser<T>
 			return previous();
 		}
 
-		diagnostics.add(ParserDiagnostic.unexpectedToken(kind, peek()));
+		diagnostics.add(ParserErrors.unexpectedToken(kind, peek()));
 		throw new ParseError(peek());
 	}
 
@@ -153,7 +187,7 @@ abstract class AbstractParser<T>
 			return previous();
 		}
 
-		diagnostics.add(ParserDiagnostic.unexpectedToken(SyntaxKind.IDENTIFIER, peek()));
+		diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, peek()));
 		throw new ParseError(peek());
 	}
 
@@ -162,7 +196,7 @@ abstract class AbstractParser<T>
 	{
 		if(tokens.isAtEnd() || !acceptedKinds.contains(tokens.peek().kind()))
 		{
-			diagnostics.add(ParserDiagnostic.unexpectedToken(acceptedKinds, tokens.peek()));
+			diagnostics.add(ParserErrors.unexpectedToken(acceptedKinds, tokens.peek()));
 			throw new ParseError(peek());
 		}
 

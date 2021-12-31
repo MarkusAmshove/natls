@@ -21,7 +21,7 @@ public class LexerForStringsShould extends AbstractLexerTest
 	{
 		assertDiagnostic(
 			"#VAR := 'This is unterminated",
-			LexerDiagnostic.create(8, 8, 0, 21, LexerError.UNTERMINATED_STRING)
+			assertedDiagnostic(8, 8, 0, 21, LexerError.UNTERMINATED_STRING)
 		);
 	}
 
@@ -30,7 +30,7 @@ public class LexerForStringsShould extends AbstractLexerTest
 	{
 		assertDiagnostic(
 			"#VAR := \"This is unterminated",
-			LexerDiagnostic.create(8, 8, 0, 21, LexerError.UNTERMINATED_STRING)
+			assertedDiagnostic(8, 8, 0, 21, LexerError.UNTERMINATED_STRING)
 		);
 	}
 
@@ -39,7 +39,7 @@ public class LexerForStringsShould extends AbstractLexerTest
 	{
 		assertDiagnostic(
 			"#VAR := \"This is unterminated\nWRITE #VAR",
-			LexerDiagnostic.create(8, 8, 0, 21, LexerError.UNTERMINATED_STRING)
+			assertedDiagnostic(8, 8, 0, 21, LexerError.UNTERMINATED_STRING)
 		);
 	}
 
@@ -48,7 +48,7 @@ public class LexerForStringsShould extends AbstractLexerTest
 	{
 		var tokens = assertDiagnostic(
 			"#VAR := \"This is unterminated\nWRITE #VAR",
-			LexerDiagnostic.create(8, 8, 0, 21, LexerError.UNTERMINATED_STRING)
+			assertedDiagnostic(8, 8, 0, 21, LexerError.UNTERMINATED_STRING)
 		);
 
 		assertTokensInOrder(tokens, SyntaxKind.IDENTIFIER, SyntaxKind.COLON_EQUALS, SyntaxKind.STRING, SyntaxKind.WRITE, SyntaxKind.IDENTIFIER);

@@ -12,8 +12,9 @@ class ViewParser extends AbstractParser<ViewNode>
 
 	private final Map<String, VariableNode> declaredVariables;
 
-	ViewParser(Map<String, VariableNode> declaredVariables)
+	ViewParser(IModuleProvider moduleProvider, Map<String, VariableNode> declaredVariables)
 	{
+		super(moduleProvider);
 		this.declaredVariables = declaredVariables;
 	}
 

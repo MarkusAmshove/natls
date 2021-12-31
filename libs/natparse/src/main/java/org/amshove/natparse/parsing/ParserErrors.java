@@ -6,10 +6,37 @@ import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 class ParserErrors
 {
+	public static ParserDiagnostic unexpectedToken(SyntaxKind expectedToken, SyntaxToken invalidToken)
+	{
+		return ParserDiagnostic.create(
+			"Unexpected token <%s>, expected <%s>".formatted(invalidToken.kind(), expectedToken),
+			invalidToken.offset(),
+			invalidToken.offsetInLine(),
+			invalidToken.line(),
+			invalidToken.length(),
+			invalidToken.filePath(),
+			ParserError.UNEXPECTED_TOKEN
+		);
+	}
+
+	public static ParserDiagnostic unexpectedToken(List<SyntaxKind> expectedTokenKinds, SyntaxToken invalidToken)
+	{
+		return ParserDiagnostic.create(
+			"Unexpected token <%s>, expected one of <%s>".formatted(invalidToken.kind(), expectedTokenKinds.stream().map(Enum::toString).collect(Collectors.joining(", "))),
+			invalidToken.offset(),
+			invalidToken.offsetInLine(),
+			invalidToken.line(),
+			invalidToken.length(),
+			invalidToken.filePath(),
+			ParserError.UNEXPECTED_TOKEN
+		);
+	}
+
 	public static ParserDiagnostic dataTypeNeedsLength(TypedVariableNode variableNode)
 	{
 		return ParserDiagnostic.create(
@@ -238,6 +265,15 @@ class ParserErrors
 			"Invalid length: Length for %s can not be specified".formatted(DataFormat.formatLength(typeNode.type().length())),
 			typeNode,
 			ParserError.INVALID_LENGTH_FOR_DATA_TYPE
+		);
+	}
+
+	public static IDiagnostic unresolvedImport(ITokenNode importNode)
+	{
+		return ParserDiagnostic.create(
+			"Could not resolve import %s".formatted(importNode.token().symbolName()),
+			importNode,
+			ParserError.UNRESOLVED_IMPORT
 		);
 	}
 }
