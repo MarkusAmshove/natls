@@ -61,7 +61,9 @@ public class App
 
 	private static final Comparator<IDiagnostic> byLineNumber = Comparator.comparingInt(IPosition::line);
 
-	private static record DiagnosticByCount(String message, int count){}
+	private record DiagnosticByCount(String message, int count)
+	{
+	}
 
 	public void run()
 	{
@@ -96,7 +98,7 @@ public class App
 					totalDiagnostics += module.diagnostics().size();
 					printDiagnostics(filePath, module.diagnostics());
 				}
-				catch(Exception e)
+				catch (Exception e)
 				{
 					System.err.println(filePath);
 					throw e;
@@ -115,10 +117,9 @@ public class App
 		System.out.println("Files checked: " + filesChecked);
 		System.out.println("Total diagnostics: " + totalDiagnostics);
 		System.out.println();
-		diagnosticsPerType.entrySet().stream().map((entry) ->
-			new DiagnosticByCount(entry.getKey(), entry.getValue())).sorted(Comparator.comparingInt(DiagnosticByCount::count)).toList().forEach(d -> {
-			System.out.println(d.message + "|" + d.count);
-		});
+		diagnosticsPerType.entrySet().stream().map((entry) -> new DiagnosticByCount(entry.getKey(), entry.getValue())).sorted(Comparator.comparingInt(DiagnosticByCount::count))
+			.toList()
+			.forEach(d -> System.out.println(d.message + "|" + d.count));
 	}
 
 	private void printDiagnostics(Path filePath, ReadOnlyList<IDiagnostic> diagnostics)

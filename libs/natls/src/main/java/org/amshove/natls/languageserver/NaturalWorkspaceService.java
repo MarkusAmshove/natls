@@ -96,9 +96,7 @@ public class NaturalWorkspaceService implements WorkspaceService
 	@Override
 	public CompletableFuture<List<? extends SymbolInformation>> symbol(WorkspaceSymbolParams params)
 	{
-		return CompletableFutures.computeAsync(cancelChecker -> {
-			return languageService.findWorkspaceSymbols(params.getQuery(), cancelChecker);
-		});
+		return CompletableFutures.computeAsync(cancelChecker -> languageService.findWorkspaceSymbols(params.getQuery(), cancelChecker));
 	}
 
 	public void setLanguageService(NaturalLanguageService languageService)

@@ -65,7 +65,6 @@ public class TokenList
 
 	/**
 	 * Peeks the next token.
-	 * @return
 	 */
 	public SyntaxToken peek()
 	{
@@ -74,7 +73,6 @@ public class TokenList
 
 	/**
 	 * Peeks the token `offset` times ahead.
-	 * @return
 	 */
 	public SyntaxToken peek(int offset)
 	{
@@ -143,12 +141,7 @@ public class TokenList
 			advance();
 		}
 
-		if(isAtEnd())
-		{
-			return false;
-		}
-
-		return true;
+		return !isAtEnd();
 	}
 
 	// TODO: Figure out a better name
@@ -164,7 +157,6 @@ public class TokenList
 
 	/**
 	 * Consumes the current token if it matches the kind and then advances.
-	 * @param kind
 	 */
 	public boolean consume(SyntaxKind kind)
 	{
@@ -186,7 +178,6 @@ public class TokenList
 	 * Returns all tokens from start to end.
 	 * @param start Inclusive index of the first token.
 	 * @param end Inclusive index of the last token.
-	 * @return
 	 */
 	public ReadOnlyList<SyntaxToken> subrange(int start, int end)
 	{

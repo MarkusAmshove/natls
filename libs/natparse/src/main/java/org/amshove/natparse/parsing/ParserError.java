@@ -28,7 +28,6 @@ public enum ParserError
 	REDEFINE_TARGET_CANT_CONTAIN_DYNAMIC("NPP024"),
 	INVALID_LENGTH_FOR_DATA_TYPE("NPP025"),
 	UNRESOLVED_IMPORT("NPP026");
-	;
 
 	private final String id;
 

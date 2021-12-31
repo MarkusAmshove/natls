@@ -130,8 +130,6 @@ public class NaturalLanguageService implements LanguageClientAware
 			return EMPTY_HOVER;
 		}
 
-		System.err.println("Hover for %s".formatted(symbolToSearchFor.source()));
-
 		if (symbolToSearchFor.kind() == SyntaxKind.STRING)
 		{
 			return hoverCallnat(symbolToSearchFor);
@@ -374,7 +372,7 @@ public class NaturalLanguageService implements LanguageClientAware
 			.map(t -> LspUtil.toLocation(fileUri, t))
 			.toList();
 
-		var references = new ArrayList<Location>(hackyReferences);
+		var references = new ArrayList<>(hackyReferences);
 
 		var module = findNaturalFile(filePath).module();
 		if(module instanceof IHasDefineData hasDefineData)
@@ -385,7 +383,7 @@ public class NaturalLanguageService implements LanguageClientAware
 					.findVariable(tokenUnderCursor.symbolName())
 					.references()
 					.stream()
-					.map(r -> r.position())
+					.map(ISyntaxNode::position)
 					.map(LspUtil::toLocation)
 					.toList()
 			);
@@ -480,7 +478,7 @@ public class NaturalLanguageService implements LanguageClientAware
 				.toList();
 		}
 
-		var completionItems = defineData.variables().stream()
+		return defineData.variables().stream()
 			.filter(v -> !(v instanceof IRedefinitionNode)) // this is the `REDEFINE #VAR`, which results in the variable being doubled in completion
 			.map(v -> {
 				var item = new CompletionItem();
@@ -503,7 +501,6 @@ public class NaturalLanguageService implements LanguageClientAware
 				return item;
 			})
 			.toList();
-		return completionItems;
 	}
 
 	public LanguageServerFile findNaturalFile(String library, String name)

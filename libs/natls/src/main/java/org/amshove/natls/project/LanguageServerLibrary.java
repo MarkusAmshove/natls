@@ -68,8 +68,7 @@ public class LanguageServerLibrary implements IModuleProvider
 	@Override
 	public INaturalModule findNaturalModule(String referableName)
 	{
-		var found = provideNaturalModule(referableName, true);
-		return found;
+		return provideNaturalModule(referableName, true);
 	}
 
 	private INaturalModule provideNaturalModule(String referableName, boolean includeStepLibs)

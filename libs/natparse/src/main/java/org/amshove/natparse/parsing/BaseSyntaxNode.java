@@ -10,7 +10,7 @@ import java.util.List;
 
 class BaseSyntaxNode implements ISyntaxNode
 {
-	private List<BaseSyntaxNode> nodes = new ArrayList<>();
+	private final List<BaseSyntaxNode> nodes = new ArrayList<>();
 	private ISyntaxTree parent;
 
 	public void setParent(ISyntaxTree parent)

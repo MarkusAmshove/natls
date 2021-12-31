@@ -240,9 +240,9 @@ public class Lexer
 			consumeString(lookahead);
 			var currentString = previous();
 			var currentStringIndex = tokens.size() - 1;
-			for (var i = currentStringIndex; i >= previousStringIndex; i--)
+			if (currentStringIndex >= previousStringIndex)
 			{
-				tokens.remove(i);
+				tokens.subList(previousStringIndex, currentStringIndex + 1).clear();
 			}
 			addToken(SyntaxTokenFactory.create(
 				SyntaxKind.STRING,

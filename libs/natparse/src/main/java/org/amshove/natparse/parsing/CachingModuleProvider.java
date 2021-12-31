@@ -11,7 +11,7 @@ import java.util.Map;
 
 class CachingModuleProvider implements IModuleProvider
 {
-	private static Map<NaturalLibrary, Map<String, ParsedModule>> libToReferableNameToFileCache = new HashMap<>();
+	private static final Map<NaturalLibrary, Map<String, ParsedModule>> libToReferableNameToFileCache = new HashMap<>();
 	private final NaturalFile caller;
 
 	CachingModuleProvider(NaturalFile caller)
@@ -26,12 +26,12 @@ class CachingModuleProvider implements IModuleProvider
 		var referableToModule = libToReferableNameToFileCache.computeIfAbsent(callerLib, (l) -> new HashMap<>());
 
 		var foundModule = referableToModule.computeIfAbsent(referableName, n -> new ParsedModule(callerLib.findFileByReferableName(referableName, true), null));
-		if(foundModule.file == null)
+		if (foundModule.file == null)
 		{
 			return null;
 		}
 
-		if(foundModule.module != null)
+		if (foundModule.module != null)
 		{
 			return foundModule.module;
 		}
@@ -50,5 +50,7 @@ class CachingModuleProvider implements IModuleProvider
 		}
 	}
 
-	private static record ParsedModule(NaturalFile file, INaturalModule module){}
+	private record ParsedModule(NaturalFile file, INaturalModule module)
+	{
+	}
 }
