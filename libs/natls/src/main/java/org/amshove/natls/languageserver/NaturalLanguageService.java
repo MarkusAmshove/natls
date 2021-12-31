@@ -498,17 +498,24 @@ public class NaturalLanguageService implements LanguageClientAware
 				var variableName = v.name();
 
 				item.setLabel(variableName);
+				var label = "";
 				if (v instanceof ITypedVariableNode typedNode)
 				{
-					item.setLabel(variableName + " : " + typedNode.type().toShortString());
+					label = variableName + " :" + typedNode.type().toShortString();
 					item.setInsertText(variableName);
 				}
 				if (v instanceof IGroupNode groupNode)
 				{
-					item.setLabel(variableName + " : Group");
+					label = variableName + " : Group";
 					item.setInsertText(variableName);
 				}
 
+				if(!v.position().filePath().equals(defineData.position().filePath()))
+				{
+					label += " (%s)".formatted(v.position().fileNameWithoutExtension());
+				}
+
+				item.setLabel(label);
 				item.setDocumentation(new MarkupContent(MarkupKind.MARKDOWN, createHoverMarkdownText(v)));
 
 				return item;
