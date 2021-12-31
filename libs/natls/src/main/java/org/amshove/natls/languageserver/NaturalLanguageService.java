@@ -122,7 +122,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	{
 
 		var filepath = LspUtil.uriToPath(textDocument.getUri());
-		var symbolToSearchFor = findTokenAtPosition(filepath, position);
+		var symbolToSearchFor = findTokenAtPosition(filepath, position); // TODO: Actually look for a node, could be ISymbolReferenceNode
 		if (symbolToSearchFor == null)
 		{
 			// No position found where we can provide hover for
@@ -135,8 +135,16 @@ public class NaturalLanguageService implements LanguageClientAware
 			return hoverCallnat(symbolToSearchFor);
 		}
 
-		var defineData = parseDefineData(lexPath(filepath)); // TODO: perf: double lex
-		return defineData.variables().stream()
+		var module = findNaturalFile(filepath).module();
+		IDefineData defineData;
+		if (!(module instanceof IHasDefineData hasDefineData))
+		{
+			return EMPTY_HOVER;
+		}
+
+		return hasDefineData
+			.defineData()
+			.variables().stream()
 			.filter(v -> v.declaration().symbolName().equals(symbolToSearchFor.symbolName()))
 			.map(v ->
 				new Hover(
@@ -254,7 +262,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		}
 
 		hoverText += "\n\n*source:*";
-		hoverText += "\n- *TODO*";
+		hoverText += "\n- %s".formatted(v.position().filePath().toFile().getName());
 
 		return hoverText;
 	}
@@ -375,7 +383,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var references = new ArrayList<>(hackyReferences);
 
 		var module = findNaturalFile(filePath).module();
-		if(module instanceof IHasDefineData hasDefineData)
+		if (module instanceof IHasDefineData hasDefineData)
 		{
 			references.addAll(
 				hasDefineData
