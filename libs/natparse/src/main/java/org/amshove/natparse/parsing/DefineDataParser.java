@@ -1098,14 +1098,34 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private void addDeclaredVariable(VariableNode variable)
 	{
-		if(declaredVariables.containsKey(variable.qualifiedName())
-			&& !(variable instanceof IRedefinitionNode))
+		if(variable instanceof GroupNode groupNode)
 		{
-			var alreadyDefined = declaredVariables.get(variable.qualifiedName());
-			report(ParserErrors.duplicatedSymbols(variable, alreadyDefined));
+			for (var nestedVariable : groupNode.variables())
+			{
+				addDeclaredVariable((VariableNode)nestedVariable);
+			}
+		}
+
+		if(declaredVariables.containsKey(variable.name()) && !(variable instanceof IRedefinitionNode))
+		{
+			var alreadyDefined = declaredVariables.get(variable.name());
+			if(!variable.qualifiedName().equals(alreadyDefined.qualifiedName()))
+			{
+				declaredVariables.remove(variable.name());
+				declaredVariables.put(alreadyDefined.qualifiedName(), alreadyDefined);
+				declaredVariables.put(variable.qualifiedName(), variable);
+				alreadyDefined.useQualifiedName();
+				variable.useQualifiedName();
+			}
+			else
+			{
+				report(ParserErrors.duplicatedSymbols(variable, alreadyDefined));
+			}
+
 			return;
 		}
 
-		declaredVariables.put(variable.qualifiedName(), variable);
+		declaredVariables.put(variable.name(), variable);
+
 	}
 }

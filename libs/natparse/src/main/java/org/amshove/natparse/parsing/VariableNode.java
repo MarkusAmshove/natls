@@ -15,6 +15,7 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 	private String name;
 	private SyntaxToken declaration;
 	private VariableScope scope;
+	private boolean needsQualifiedName = false;
 	private final List<ISymbolReferenceNode> references = new ArrayList<>();
 
 	protected final List<IArrayDimension> dimensions = new ArrayList<>();
@@ -36,8 +37,7 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 	@Override
 	public String name()
 	{
-		// TODO: If this needs a qualified name, return the qualified name instead.
-		return name;
+		return needsQualifiedName ? qualifiedName() : name;
 	}
 
 	@Override
@@ -119,5 +119,10 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 	{
 		references.add(tokenNode);
 		tokenNode.setReference(this);
+	}
+
+	void useQualifiedName()
+	{
+		needsQualifiedName = true;
 	}
 }

@@ -495,8 +495,7 @@ public class NaturalLanguageService implements LanguageClientAware
 				var item = new CompletionItem();
 				item.setKind(CompletionItemKind.Variable);
 
-				var needsQualifiedName = defineData.variables().stream().filter(va -> !(va instanceof IRedefinitionNode)).filter(va -> va.name().equals(v.name())).count() > 1;
-				var variableName = needsQualifiedName ? v.qualifiedName() : v.name();
+				var variableName = v.name();
 
 				item.setLabel(variableName);
 				if (v instanceof ITypedVariableNode typedNode)
