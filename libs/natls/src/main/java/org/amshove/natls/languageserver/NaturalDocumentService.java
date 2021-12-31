@@ -1,6 +1,6 @@
 package org.amshove.natls.languageserver;
 
-import org.amshove.natparse.parsing.NaturalModule;
+import org.amshove.natparse.natural.IHasDefineData;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
@@ -75,7 +75,7 @@ public class NaturalDocumentService implements TextDocumentService
 			}
 
 			var module = file.module();
-			if(module instanceof NaturalModule naturalModule && naturalModule.defineData() != null)
+			if(module instanceof IHasDefineData naturalModule && naturalModule.defineData() != null)
 			{
 				// TODO(code-lens): Add an actual command
 				return naturalModule

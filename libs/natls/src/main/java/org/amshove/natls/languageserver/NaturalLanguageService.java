@@ -12,7 +12,6 @@ import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
 import org.amshove.natparse.parsing.DefineDataParser;
-import org.amshove.natparse.parsing.NaturalModule;
 import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
@@ -412,13 +411,15 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		var calledModule = token.stringValue();
 		var calledFile = languageServerProject.findFileByReferableName(calledModule);
-		var module = (NaturalModule) calledFile.module();
-		if (module.defineData() == null)
+		var module = (INaturalModule) calledFile.module();
+
+		if(!(module instanceof IHasDefineData hasDefineData))
 		{
 			return null;
 		}
+		var defineData = hasDefineData.defineData();
 
-		var parameter = module.defineData().variables().stream()
+		var parameter = defineData.variables().stream()
 			.filter(v -> v.scope().isParameter())
 			.filter(v -> v.level() == 1)
 			.map(v -> (ITypedVariableNode) v)
@@ -462,19 +463,21 @@ public class NaturalLanguageService implements LanguageClientAware
 		{
 			return findNaturalFile(filePath).getLibrary().getModulesOfType(NaturalFileType.SUBPROGRAM, true)
 				.stream()
-				.map(f -> (NaturalModule) f.module())
+				.map(LanguageServerFile::module)
 				.map(calledModule -> {
 					var completionItem = new CompletionItem(calledModule.name());
 					completionItem.setKind(CompletionItemKind.Class);
 					completionItem.setInsertTextFormat(InsertTextFormat.Snippet);
 					var insertText = "'${0:%s}'".formatted(calledModule.name());
 
-					if (calledModule.defineData() == null)
+					if(!(calledModule instanceof IHasDefineData calledHasDefineData))
 					{
 						return completionItem;
 					}
 
-					var parameter = calledModule.defineData().variables().stream().filter(v -> v.scope() == VariableScope.PARAMETER && v.level() == 1).toList();
+					var calledDefineData = calledHasDefineData.defineData();
+
+					var parameter = calledDefineData.variables().stream().filter(v -> v.scope() == VariableScope.PARAMETER && v.level() == 1).toList();
 					var parameterIndex = 1;
 					for (var aParameter : parameter)
 					{

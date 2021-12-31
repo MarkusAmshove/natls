@@ -481,7 +481,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		var identifier = identifier();
 		using.setUsingTarget(identifier);
 		var identifierReference = new SymbolReferenceNode(identifier);
-		using.addNode(identifierReference); // TODO(references): Add Reference to foreign DEFINE DATA
+		using.addNode(identifierReference);
 
 		var defineData = sideloadDefineData(identifierReference);
 		if(defineData != null)

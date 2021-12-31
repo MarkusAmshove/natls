@@ -8,7 +8,7 @@ import org.amshove.natparse.natural.project.NaturalFile;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NaturalModule
+class NaturalModule
 	// TODO: Clean up once new subclasses happen. Remove public then
 	implements INaturalModule, IExternalSubroutine, IGlobalDataArea, ILocalDataArea, IParameterDataArea, IProgram, ISubprogram
 {
