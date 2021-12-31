@@ -69,7 +69,6 @@ public class LanguageServerLibrary implements IModuleProvider
 	public INaturalModule findNaturalModule(String referableName)
 	{
 		var found = provideNaturalModule(referableName, true);
-		System.err.println(found);
 		return found;
 	}
 

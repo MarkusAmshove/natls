@@ -1,6 +1,7 @@
 package org.amshove.natls.languageserver;
 
 import org.amshove.natparse.IDiagnostic;
+import org.amshove.natparse.IPosition;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.eclipse.lsp4j.*;
@@ -58,11 +59,27 @@ public class LspUtil
 	public static Location toLocation(ISyntaxNode node)
 	{
 		var position = node.position();
+		return toLocation(position, node.descendants().last().position());
+	}
+
+	public static Location toLocation(IPosition position)
+	{
 		return new Location(
 			pathToUri(position.filePath()),
 			new Range(
 				new Position(position.line(), position.offsetInLine()),
-				new Position(node.descendants().last().position().line(), node.descendants().last().position().offsetInLine())
+				new Position(position.line(), position.offsetInLine() + position.length())
+			)
+		);
+	}
+
+	public static Location toLocation(IPosition position, IPosition endPosition)
+	{
+		return new Location(
+			pathToUri(position.filePath()),
+			new Range(
+				new Position(position.line(), position.offsetInLine()),
+				new Position(endPosition.line(), endPosition.offsetInLine())
 			)
 		);
 	}

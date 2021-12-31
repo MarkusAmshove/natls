@@ -3,6 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.*;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +34,21 @@ class DefineDataNode extends BaseSyntaxNode implements IDefineData
 	public ReadOnlyList<IVariableNode> variables()
 	{
 		return ReadOnlyList.from(variables); // TODO: Perf
+	}
+
+	@Nullable
+	@Override
+	public IVariableNode findVariable(String symbolName)
+	{
+		for (var variable : variables)
+		{
+			if(variable.name().equals(symbolName))
+			{
+				return variable;
+			}
+		}
+
+		return null;
 	}
 
 	@Override

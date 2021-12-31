@@ -368,10 +368,30 @@ public class NaturalLanguageService implements LanguageClientAware
 		}
 		var tokens = lexPath(filePath);
 
-		return tokens.stream()
+		// TODO: This will be replaced
+		var hackyReferences = tokens.stream()
 			.filter(t -> t.kind().isIdentifier() && t.symbolName().equals(tokenUnderCursor.symbolName()))
 			.map(t -> LspUtil.toLocation(fileUri, t))
 			.toList();
+
+		var references = new ArrayList<Location>(hackyReferences);
+
+		var module = findNaturalFile(filePath).module();
+		if(module instanceof IHasDefineData hasDefineData)
+		{
+			references.addAll(
+				hasDefineData
+					.defineData()
+					.findVariable(tokenUnderCursor.symbolName())
+					.references()
+					.stream()
+					.map(r -> r.position())
+					.map(LspUtil::toLocation)
+					.toList()
+			);
+		}
+
+		return references;
 	}
 
 	public SignatureHelp signatureHelp(TextDocumentIdentifier textDocument, Position position)
@@ -432,7 +452,6 @@ public class NaturalLanguageService implements LanguageClientAware
 		defineData = hasDefineData.defineData();
 
 		var token = findPreviousTokenOfPosition(filePath, completionParams.getPosition());
-		System.err.println(token.kind());
 		if (token != null && token.kind() == SyntaxKind.CALLNAT)
 		{
 			return findNaturalFile(filePath).getLibrary().getModulesOfType(NaturalFileType.SUBPROGRAM, true)
