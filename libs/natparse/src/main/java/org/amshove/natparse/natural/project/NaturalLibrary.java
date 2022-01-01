@@ -57,12 +57,15 @@ public class NaturalLibrary
 			return files.get(referableName);
 		}
 
-		for (var stepLib : stepLibs)
+		if(includeStepLibs)
 		{
-			var foundFile = stepLib.findFileByReferableName(referableName, false);
-			if(foundFile != null)
+			for (var stepLib : stepLibs)
 			{
-				return foundFile;
+				var foundFile = stepLib.findFileByReferableName(referableName, false);
+				if (foundFile != null)
+				{
+					return foundFile;
+				}
 			}
 		}
 

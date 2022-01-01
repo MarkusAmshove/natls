@@ -82,9 +82,10 @@ public class LanguageServerLibrary implements IModuleProvider
 		{
 			for (var stepLib : stepLibs)
 			{
-				if(stepLib.provideNaturalModule(referableName, false) instanceof LanguageServerFile languageServerFile)
+				var foundModule = stepLib.provideNaturalModule(referableName, false);
+				if(foundModule != null)
 				{
-					return languageServerFile.module();
+					return foundModule;
 				}
 			}
 		}

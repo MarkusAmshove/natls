@@ -19,6 +19,10 @@ class XmlLibraryVisitor implements Visitor
 		{
 			beginNewSteplib(node);
 		}
+		if (node.getName().equalsIgnoreCase("LibrarySteplibNSV"))
+		{
+			addSteplib(node);
+		}
 		if (node.getName().equalsIgnoreCase("LibrarySteplibExtensions"))
 		{
 			addSteplib(node);
