@@ -1,0 +1,4 @@
+define data
+local using ALDEF1
+local using ALDEF1 /* !{D:ERROR:NPP028}
+end-define

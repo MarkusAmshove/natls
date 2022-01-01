@@ -2,6 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.IDiagnostic;
+import org.amshove.natparse.IPosition;
 import org.amshove.natparse.natural.ISyntaxNode;
 
 import java.nio.file.Path;
@@ -36,7 +37,11 @@ public class ParserDiagnostic implements IDiagnostic
 
 	public static ParserDiagnostic create(String message, ISyntaxNode node, ParserError error)
 	{
-		var position = node.position();
+		return create(message, node.position(), error);
+	}
+
+	public static ParserDiagnostic create(String message, IPosition position, ParserError error)
+	{
 		return new ParserDiagnostic(message, position.offset(), position.offsetInLine(), position.line(), position.length(), position.filePath(), error);
 	}
 

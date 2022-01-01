@@ -22,6 +22,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private VariableScope currentScope;
 
+	private DefineDataNode defineData;
+
 	public DefineDataParser(IModuleProvider moduleProvider)
 	{
 		super(moduleProvider);
@@ -30,7 +32,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	@Override
 	protected IDefineData parseInternal()
 	{
-		var defineData = new DefineDataNode();
+		defineData = new DefineDataNode();
 		declaredVariables = new HashMap<>();
 
 		advanceToDefineData(tokens);
@@ -483,6 +485,15 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		using.setUsingTarget(identifier);
 		var identifierReference = new SymbolReferenceNode(identifier);
 		using.addNode(identifierReference);
+
+		for (var presentUsing : defineData.usings())
+		{
+			if(presentUsing.target().symbolName().equals(identifier.symbolName()))
+			{
+				report(ParserErrors.duplicatedImport(identifier));
+			}
+		}
+
 
 		var defineData = sideloadDefineData(identifierReference);
 		if(defineData != null)

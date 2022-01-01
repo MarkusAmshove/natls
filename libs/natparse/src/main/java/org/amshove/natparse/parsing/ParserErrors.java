@@ -288,4 +288,13 @@ class ParserErrors
 			ParserError.DUPLICATED_SYMBOL
 		);
 	}
+
+	public static IDiagnostic duplicatedImport(SyntaxToken identifier)
+	{
+		return ParserDiagnostic.create(
+			"Import with name %s is already defined".formatted(identifier.symbolName()),
+			identifier,
+			ParserError.DUPLICATED_IMPORT
+		);
+	}
 }
