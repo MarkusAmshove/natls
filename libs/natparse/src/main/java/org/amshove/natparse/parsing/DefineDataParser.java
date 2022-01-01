@@ -490,7 +490,10 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			using.setDefineData(defineData);
 			for (var variable : defineData.variables())
 			{
-				addDeclaredVariable((VariableNode) variable);
+				if(variable.level() == 1)
+				{
+					addDeclaredVariable((VariableNode) variable);
+				}
 			}
 		}
 
@@ -1085,9 +1088,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		return 0.0;
 	}
 
-	private boolean isVariableDeclared(String potentionalVariableName)
+	private boolean isVariableDeclared(String potentialVariableName)
 	{
-		return declaredVariables.containsKey(potentionalVariableName.toUpperCase());
+		return declaredVariables.containsKey(potentialVariableName.toUpperCase());
 	}
 
 	private VariableNode getDeclaredVariable(ITokenNode tokenNode)
@@ -1106,7 +1109,13 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 		}
 
-		if(declaredVariables.containsKey(variable.name()) && !(variable instanceof IRedefinitionNode))
+		if(variable instanceof IRedefinitionNode)
+		{
+			// Nested variables are already handled above. The #VAR in `REDEFINE #VAR` doesn't need to be added
+			return;
+		}
+
+		if(declaredVariables.containsKey(variable.name()))
 		{
 			var alreadyDefined = declaredVariables.get(variable.name());
 			if(!variable.qualifiedName().equals(alreadyDefined.qualifiedName()))
@@ -1126,6 +1135,5 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 
 		declaredVariables.put(variable.name(), variable);
-
 	}
 }
