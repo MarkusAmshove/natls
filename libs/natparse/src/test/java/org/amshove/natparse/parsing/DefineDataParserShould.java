@@ -207,7 +207,7 @@ class DefineDataParserShould extends AbstractParserTest
 			end-define
 			""";
 
-		assertDiagnostic(source, ParserError.UNEXPECTED_TOKEN);
+		assertDiagnostic(source, ParserError.INCOMPLETE_ARRAY_DEFINITION);
 	}
 
 	@TestFactory

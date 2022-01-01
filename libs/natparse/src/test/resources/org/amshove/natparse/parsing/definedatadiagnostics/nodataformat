@@ -1,4 +1,4 @@
 define data
 local
-1 #MYVAR () /* !{D:ERROR:NPP003}
+1 #MYVAR () /* !{D:ERROR:NPP010}
 end-define

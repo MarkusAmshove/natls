@@ -127,11 +127,12 @@ abstract class AbstractParser<T>
 
 	protected SyntaxToken identifier() throws ParseError
 	{
-		if(tokens.isAtEnd() || !tokens.peek().kind().isIdentifier())
-		{
-			diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens.peek()));
-			throw new ParseError(peek());
-		}
+		// TODO(kcheck): This currently allows keywords as identifier
+//		if(tokens.isAtEnd() || !tokens.peek().kind().isIdentifier())
+//		{
+//			diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens.peek()));
+//			throw new ParseError(peek());
+//		}
 
 		var token = tokens.peek();
 		tokens.advance();
@@ -179,7 +180,8 @@ abstract class AbstractParser<T>
 	// TODO: Remove/Change once IDENTIFIER_OR_KEYWORD is no more
 	protected SyntaxToken consumeMandatoryIdentifier(BaseSyntaxNode node) throws ParseError
 	{
-		if(!isAtEnd() && peek().kind().isIdentifier())
+		// TODO(kcheck): This currently allows keywords as identifier
+		if(!isAtEnd())
 		{
 			previousNode = new TokenNode(peek());
 			node.addNode(previousNode);
