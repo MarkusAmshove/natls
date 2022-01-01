@@ -12,11 +12,15 @@ import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 
 public class App
 {
+	private static String singleFile; // TODO: Implement proper
+
 	private final Path projectFile;
 	private final IFilesystem filesystem;
 
@@ -28,6 +32,8 @@ public class App
 
 	public static void main(String[] args)
 	{
+		var arguments = new ArrayList<>(Arrays.stream(args).toList());
+
 		var workingDirectoryPath = System.getProperty("user.dir");
 		var workingDirectory = Paths.get(workingDirectoryPath);
 		var filesystem = new ActualFilesystem();
@@ -42,6 +48,11 @@ public class App
 		if (workingDirectory.getRoot().equals(workingDirectory) || projectFile.isEmpty())
 		{
 			throw new RuntimeException("Project root could not be determined. _naturalBuild file not found");
+		}
+
+		if(arguments.remove("--single"))
+		{
+			singleFile = arguments.get(0);
 		}
 
 		System.out.printf("""
@@ -67,6 +78,9 @@ public class App
 
 	public void run()
 	{
+		var singleLib = singleFile != null ? singleFile.split("\\.")[0] : null; // TODO: Implement proper
+		var singleModule = singleFile != null ? singleFile.split("\\.")[1] : null; // TODO: Implement proper
+
 		var startIndex = System.currentTimeMillis();
 		var project = new BuildFileProjectReader(filesystem).getNaturalProject(projectFile);
 		var indexer = new NaturalProjectFileIndexer(filesystem);
@@ -79,10 +93,21 @@ public class App
 		var filesChecked = 0;
 		var totalDiagnostics = 0;
 		var startCheck = System.currentTimeMillis();
+
 		for (var library : project.getLibraries())
 		{
+			if(singleLib != null && !singleLib.equalsIgnoreCase(library.getName()))
+			{
+				continue;
+			}
+
 			for (var file : library.files().stream().filter(f -> f.getFiletype().hasDefineData()).toList())
 			{
+				if(singleModule != null && !singleModule.equalsIgnoreCase(file.getReferableName()))
+				{
+					continue;
+				}
+
 				filesChecked++;
 				var filePath = file.getPath();
 				try
