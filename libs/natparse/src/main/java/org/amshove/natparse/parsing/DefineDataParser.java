@@ -238,7 +238,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				break;
 			}
 
-			if (peek(1).kind() == SyntaxKind.FILLER && groupNode instanceof RedefinitionNode redefinitionNode)
+			if (peek(1).kind() == SyntaxKind.FILLER
+				&& peek(2).kind() == SyntaxKind.NUMBER
+				&& groupNode instanceof RedefinitionNode redefinitionNode)
 			{
 				parseRedefineFiller(redefinitionNode);
 			}
