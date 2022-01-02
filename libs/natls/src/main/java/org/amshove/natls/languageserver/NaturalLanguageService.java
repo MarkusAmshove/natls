@@ -2,6 +2,7 @@ package org.amshove.natls.languageserver;
 
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natls.project.LanguageServerProject;
+import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
@@ -38,7 +39,12 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	public void indexProject(Path workspaceRoot)
 	{
-		var project = new BuildFileProjectReader().getNaturalProject(workspaceRoot.resolve("_naturalBuild"));
+		var projectFile = new ActualFilesystem().findNaturalProjectFile(workspaceRoot);
+		if(projectFile.isEmpty())
+		{
+			throw new RuntimeException("Could not load Natural project. .natural or _naturalBuild not found");
+		}
+		var project = new BuildFileProjectReader().getNaturalProject(projectFile.get());
 		var indexer = new NaturalProjectFileIndexer();
 		indexer.indexProject(project);
 		this.project = project;

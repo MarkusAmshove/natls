@@ -43,11 +43,11 @@ public class App
 			workingDirectory = workingDirectory.getParent();
 		}
 
-		var projectFile = filesystem.findFile("_naturalBuild", workingDirectory);
+		var projectFile = filesystem.findNaturalProjectFile(workingDirectory);
 
 		if (workingDirectory.getRoot().equals(workingDirectory) || projectFile.isEmpty())
 		{
-			throw new RuntimeException("Project root could not be determined. _naturalBuild file not found");
+			throw new RuntimeException("Project root could not be determined. .natural or _naturalBuild file not found");
 		}
 
 		if(arguments.remove("--single"))
@@ -59,14 +59,15 @@ public class App
 			     .@@@@@@@@@@@@@@@&
 			    /@@@@@@@@@@@@@@@@@.          %s
 			     @@@@@@@@*@@@@@@@@           Version: %s
-			  ....###############
+			  ....###############            Project file: %s
 			......###.@/##.@.####......
 			     .###############
 			     .###############
 			     .###############
 			       ############.
 			           ....
-			%n""", App.class.getPackage().getImplementationTitle(), App.class.getPackage().getImplementationVersion());
+			%n""", App.class.getPackage().getImplementationTitle(), App.class.getPackage().getImplementationVersion(), projectFile.get().getFileName());
+
 		new App(projectFile.get(), filesystem).run();
 	}
 
