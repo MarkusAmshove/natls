@@ -74,6 +74,21 @@ class BuildFileProjectReaderShould
 		assertThat(naturalLibrary.getStepLibs().get(0).getName()).isEqualTo("SECONDLIB");
 	}
 
+	@Test
+	void linkStepLibsWithSystemLibrary()
+	{
+		var fileSystem = new BuildFileBuilder(BUILD_FILE_PATH)
+			.addLibrary("SYSTEM")
+			.addLibrary("MYLIB", "SECONDLIB")
+			.addLibrary("SECONDLIB")
+			.toFileSystem();
+
+		var naturalProject = createProject(fileSystem);
+		var naturalLibrary = naturalProject.getLibraries().stream().filter(l -> l.getName().equals("MYLIB")).findFirst().orElseThrow(() -> new RuntimeException(""));
+		assertThat(naturalLibrary.getStepLibs().size()).isEqualTo(2);
+		assertThat(naturalLibrary.getStepLibs().get(1).getName()).isEqualTo("SYSTEM");
+	}
+
 	private Path sourceDirectory(String name)
 	{
 		return Paths.get(BUILD_FILE_PATH.getParent().toString(), "Natural-Libraries", name);
