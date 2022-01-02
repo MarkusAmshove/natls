@@ -1420,12 +1420,26 @@ class DefineDataParserShould extends AbstractParserTest
 	void allowFillerToBeAVariableNameInRedefine()
 	{
 		assertParsesWithoutDiagnostics("""
-   			define data local
-   			1 #var1 (A10)
-   			1 redefine #var1
-   			2 filler (a2)
-   			2 rest (a8)
-   			end-define
+			define data local
+			1 #var1 (A10)
+			1 redefine #var1
+			2 filler (a2)
+			2 rest (a8)
+			end-define
+			""");
+	}
+
+	@Test
+	void allowFillerWithinAGroupWithinARedefine()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 #var1 (A10)
+			1 redefine #var1
+			2 #thegroup
+			3 filler 5X
+			3 rest (a5)
+			end-define
 			""");
 	}
 

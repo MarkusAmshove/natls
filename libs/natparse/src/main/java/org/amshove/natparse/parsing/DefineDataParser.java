@@ -22,6 +22,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private VariableScope currentScope;
 
+	private RedefinitionNode currentRedefineNode;
+
 	private DefineDataNode defineData;
 
 	public DefineDataParser(IModuleProvider moduleProvider)
@@ -225,6 +227,12 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			? (RedefinitionNode) variable
 			: new GroupNode(variable);
 
+		var previousRedefine = currentRedefineNode;
+		if(groupNode instanceof RedefinitionNode redefine)
+		{
+			currentRedefineNode = redefine;
+		}
+
 		if (previous().kind() == SyntaxKind.LPAREN)
 		{
 			addArrayDimensions(groupNode);
@@ -240,9 +248,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 			if (peek(1).kind() == SyntaxKind.FILLER
 				&& peek(2).kind() == SyntaxKind.NUMBER
-				&& groupNode instanceof RedefinitionNode redefinitionNode)
+				&& currentRedefineNode != null)
 			{
-				parseRedefineFiller(redefinitionNode);
+				parseRedefineFiller(currentRedefineNode);
 			}
 			else
 			{
@@ -262,6 +270,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		{
 			report(ParserErrors.emptyGroupVariable(groupNode));
 		}
+
+		currentRedefineNode = previousRedefine;
 
 		return groupNode;
 	}
