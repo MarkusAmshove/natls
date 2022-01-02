@@ -7,7 +7,7 @@ import org.amshove.natparse.natural.project.NaturalFile;
 
 public class NaturalParser
 {
-	private IModuleProvider moduleProvider;
+	private final IModuleProvider moduleProvider;
 
 	public NaturalParser()
 	{
@@ -21,9 +21,14 @@ public class NaturalParser
 
 	public INaturalModule parse(NaturalFile file, TokenList tokens)
 	{
-		if(moduleProvider == null)
+		var moduleProviderToUse = moduleProvider;
+		if(moduleProviderToUse == null)
 		{
-			moduleProvider = new CachingModuleProvider(file);
+			// The caching module provider uses a static field to cache, so
+			// we can instantiate it new for every module to be parsed.
+			// In fact, currently it has to be instantiated every time, because
+			// it saves the file to get the library.
+			moduleProviderToUse = new CachingModuleProvider(file);
 		}
 
 		var naturalModule = new NaturalModule(file);
@@ -31,7 +36,7 @@ public class NaturalParser
 
 		if(tokens.peek().kind() == SyntaxKind.DEFINE && tokens.peek(1).kind() == SyntaxKind.DATA)
 		{
-			var defineDataParser = new DefineDataParser(moduleProvider);
+			var defineDataParser = new DefineDataParser(moduleProviderToUse);
 			var result = defineDataParser.parse(tokens);
 			naturalModule.addDiagnostics(result.diagnostics());
 			var defineData = result.result();
