@@ -327,17 +327,37 @@ class DefineDataParserShould extends AbstractParserTest
 	}
 
 	@ParameterizedTest
-	@CsvSource({ "A,5", "N,\"Hi\"", "I,\"Hello\"", "P,TRUE", "F,FALSE" })
+	@CsvSource({ "N,\"Hi\"", "I,\"Hello\"", "P,TRUE", "F,FALSE" })
 	void addADiagnosticForTypeMismatchesInInitialValues(String type, String literal)
 	{
 		assertDiagnostic("define data local 1 #var (%s4) init <%s> end-define".formatted(type, literal), ParserError.INITIAL_VALUE_TYPE_MISMATCH);
 	}
 
 	@ParameterizedTest
-	@CsvSource({ "A,5", "N,\"Hi\"", "I,\"Hello\"", "P,TRUE", "F,FALSE" })
+	@CsvSource({ "N,\"Hi\"", "I,\"Hello\"", "P,TRUE", "F,FALSE" })
 	void addADiagnosticForTypeMismatchesInConstValues(String type, String literal)
 	{
 		assertDiagnostic("define data local 1 #var (%s4) const <%s> end-define".formatted(type, literal), ParserError.INITIAL_VALUE_TYPE_MISMATCH);
+	}
+
+	@Test
+	void allowNumericInitialValuesForAlphanumericFields()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 #ALPH (A5) INIT <010>
+			end-define
+			""");
+	}
+
+	@Test
+	void allowNumericConstValuesForAlphanumericFields()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 #ALPH (A5) CONST <010>
+			end-define
+			""");
 	}
 
 	@Test
@@ -1373,13 +1393,13 @@ class DefineDataParserShould extends AbstractParserTest
 	void reportADiagnosticIfVariableNamesAreDuplicated()
 	{
 		assertDiagnostic("""
-			define data
-			local
-			1 #MYSTR (A1)
-			1 #MYSTR (A1)
-			end-define
-			""",
-		ParserError.DUPLICATED_SYMBOL);
+				define data
+				local
+				1 #MYSTR (A1)
+				1 #MYSTR (A1)
+				end-define
+				""",
+			ParserError.DUPLICATED_SYMBOL);
 	}
 
 	@Test

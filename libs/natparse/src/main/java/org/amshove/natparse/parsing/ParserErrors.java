@@ -66,6 +66,11 @@ class ParserErrors
 
 	public static ParserDiagnostic initValueMismatch(TypedVariableNode variable, SyntaxKind... expectedKinds)
 	{
+		if(expectedKinds.length == 1)
+		{
+			return initValueMismatch(variable, expectedKinds[0]);
+		}
+
 		return ParserDiagnostic.create(
 			"Type mismatch on initial value. Got <%s> but expected one of <%s>".formatted(variable.type().initialValue().kind(), Arrays.stream(expectedKinds).map(Enum::toString).collect(Collectors.joining(","))),
 			variable,

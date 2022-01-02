@@ -629,7 +629,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 					{
 						break;
 					}
-					expectInitialValueType(variable, SyntaxKind.STRING);
+					expectInitialValueType(variable, SyntaxKind.STRING, SyntaxKind.NUMBER);
 					break;
 
 				case BINARY:
@@ -659,12 +659,19 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 	}
 
-	private void expectInitialValueType(TypedVariableNode variableNode, SyntaxKind expectedKind)
+	private void expectInitialValueType(TypedVariableNode variableNode, SyntaxKind... expectedKinds)
 	{
-		if (variableNode.type().initialValue().kind() != expectedKind
-			&& !variableNode.type().initialValue().kind().isSystemVariable()) // TODO(system-variables): Check type
+		for (var expectedKind : expectedKinds)
 		{
-			report(ParserErrors.initValueMismatch(variableNode, expectedKind));
+			if(variableNode.type().initialValue().kind() == expectedKind)
+			{
+				return;
+			}
+		}
+
+		if (!variableNode.type().initialValue().kind().isSystemVariable()) // TODO(system-variables): Check type
+		{
+			report(ParserErrors.initValueMismatch(variableNode, expectedKinds));
 		}
 	}
 
