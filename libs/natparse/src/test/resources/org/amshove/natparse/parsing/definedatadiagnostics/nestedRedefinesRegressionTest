@@ -1,0 +1,35 @@
+/* This contains a mix of complex nested groups and redefines
+/* including FILLERs and a FILLER Variable
+/* This is expected to be parsed without diagnostics
+DEFINE DATA
+LOCAL
+1 #INPUT
+  2 #DATA (A80)
+  2 FILLER (A5)
+  2 REDEFINE #DATA
+    3 P-PARM-1   (A16)
+    3 REDEFINE P-PARM-1
+      4 P-VARPAR (N8)
+      4 REDEFINE P-VARPAR
+        5 P-VARPAR-A (A8)
+      4 P-VARPAR2(N8)
+      4 REDEFINE P-VARPAR2
+        5 P-VARPAR2-A (A8)
+    3 FILLER  4X
+    3 P-VARBR(A1)
+    3 REDEFINE P-VARBR
+      4 P-VARBR-N (N1)
+    3 FILLER 19X
+    3 P-MYVAR     (A1)
+    3 FILLER 19X
+    3 P-ANOTHERVAR(A1)
+    3 FILLER 19X
+  2 #DATO (A80)
+  2 REDEFINE #DATO
+    3 P-VAR3    (A8)
+    3 FILLER 12X
+    3 P-AVAR1  (A20)
+    3 P-AVAR2  (A20)
+    3 P-AVAR3  (A20)
+  2 #DATP (A80)
+END-DEFINE

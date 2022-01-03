@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.fail;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 public class DefineDataParserDiagnosticTest
@@ -34,18 +35,25 @@ public class DefineDataParserDiagnosticTest
 
 				for (var diagnostic : parseResult.diagnostics())
 				{
-					tests.add(dynamicTest(name + ": Unexpected diagnostic in line " + (diagnostic.line() + 1), () -> {
-						if(expectedDiagnostics.stream().noneMatch(d -> d.matches(diagnostic)))
+					tests.add(dynamicTest(name + ": Actual diagnostic in line " + (diagnostic.line() + 1), () -> {
+						if (expectedDiagnostics.stream().noneMatch(d -> d.matches(diagnostic)))
 						{
 							fail("Diagnostic [%s] not expected but found".formatted(diagnostic));
 						}
 					}));
 				}
 
+				if (expectedDiagnostics.isEmpty())
+				{
+					tests.add(dynamicTest(name + ": Expected no diagnostics", () -> {
+						assertThat(parseResult.diagnostics()).isEmpty();
+					}));
+				}
+
 				for (var expectedDiagnostic : expectedDiagnostics)
 				{
 					tests.add(dynamicTest(name + ": Expected diagnostic in line " + (expectedDiagnostic.line + 1) + " not found", () -> {
-						if(parseResult.diagnostics().stream().noneMatch(d -> ExpectedDiagnostic.doMatch(expectedDiagnostic, d)))
+						if (parseResult.diagnostics().stream().noneMatch(d -> ExpectedDiagnostic.doMatch(expectedDiagnostic, d)))
 						{
 							fail("Diagnostic [%s] expected but not found".formatted(expectedDiagnostic));
 						}
@@ -72,7 +80,7 @@ public class DefineDataParserDiagnosticTest
 			}
 
 			var split = line.split("!\\{D:");
-			for(var diagnosticIndex = 1; diagnosticIndex < split.length; diagnosticIndex++)
+			for (var diagnosticIndex = 1; diagnosticIndex < split.length; diagnosticIndex++)
 			{
 				var severityAndId = split[diagnosticIndex].split(":");
 				var severity = DiagnosticSeverity.valueOf(severityAndId[0]);
