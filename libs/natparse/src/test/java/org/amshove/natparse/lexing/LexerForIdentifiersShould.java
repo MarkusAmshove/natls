@@ -98,6 +98,13 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 		assertTokens("#DATE'test'", token(SyntaxKind.IDENTIFIER, "#DATE"), token(SyntaxKind.STRING));
 	}
 
+	@Test
+	void stopIdentifiersWhenACommentIsFollowing()
+	{
+		// Slash is a valid character for identifiers, but * is not.
+		assertTokens("#MYVAR/*Asd", token(SyntaxKind.IDENTIFIER, "#MYVAR"));
+	}
+
 	@TestFactory
 	Iterable<DynamicTest> recognizeQualifiedVariables()
 	{

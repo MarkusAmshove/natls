@@ -330,6 +330,13 @@ public class Lexer
 		scanner.start();
 		while (!scanner.isAtEnd() && !isLineEnd() && isNoWhitespace() && isValidIdentifierCharacter(scanner.peek()))
 		{
+			if(scanner.peek() == '/' && scanner.peek(1) == '*')
+			{
+				// Slash is a valid character for identifiers, but an asterisk is not.
+				// If a variable is named #MYVAR/* we can safely assume its a variable followed
+				// by a comment.
+				break;
+			}
 			scanner.advance();
 		}
 		createAndAdd(SyntaxKind.IDENTIFIER);
