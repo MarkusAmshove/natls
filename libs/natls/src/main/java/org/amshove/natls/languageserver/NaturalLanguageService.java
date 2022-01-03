@@ -361,7 +361,8 @@ public class NaturalLanguageService implements LanguageClientAware
 		}
 		defineData = hasDefineData.defineData();
 		return defineData.variables().stream()
-			.filter(v -> v.name().equals(tokenUnderCursor.source()))
+			.filter(v -> !(v instanceof IRedefinitionNode))
+			.filter(v -> v.name().equals(tokenUnderCursor.symbolName()))
 			.map(LspUtil::toLocation)
 			.toList();
 	}
