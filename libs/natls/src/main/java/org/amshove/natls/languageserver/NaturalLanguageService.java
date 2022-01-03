@@ -131,7 +131,6 @@ public class NaturalLanguageService implements LanguageClientAware
 		if (symbolToSearchFor == null)
 		{
 			// No position found where we can provide hover for
-			System.err.println("No hover source found");
 			return EMPTY_HOVER;
 		}
 
@@ -346,7 +345,6 @@ public class NaturalLanguageService implements LanguageClientAware
 		var position = params.getPosition();
 
 		var tokenUnderCursor = findTokenAtPosition(filePath, position); // TODO: Double lexing
-		System.err.println(tokenUnderCursor);
 		if (tokenUnderCursor == null)
 		{
 			return List.of();
