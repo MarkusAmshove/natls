@@ -2,4 +2,6 @@ dependencies {
     implementation libraries.dom4j
 
     testImplementation libraries.mockito
+    testImplementation libraries.archUnit
+    testImplementation libraries.slf4j_simple
 }

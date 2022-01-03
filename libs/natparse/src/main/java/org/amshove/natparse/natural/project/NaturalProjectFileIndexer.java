@@ -26,7 +26,7 @@ public class NaturalProjectFileIndexer
 		for (var library : project.getLibraries())
 		{
 			filesystem.streamFilesRecursively(library.getSourcePath())
-				.filter(p -> NaturalFileType.isNaturalFile(p))
+				.filter(NaturalFileType::isNaturalFile)
 				.map(this::toNaturalFile)
 				.forEach(library::addFile);
 		}
@@ -42,14 +42,14 @@ public class NaturalProjectFileIndexer
 	{
 		var filename = path.getFileName().toString().split("\\.")[0];
 		return switch(type) {
-			case SUBPROGRAM, LDA, PDA, MAP, DDM, PROGRAM -> filename;
+			case SUBPROGRAM, LDA, PDA, MAP, DDM, PROGRAM, GDA -> filename;
 			case SUBROUTINE -> extractSubroutineName(path);
 		};
 	}
 
 	private String extractSubroutineName(Path path)
 	{
-		var lexemes = new Lexer().lex(filesystem.readFile(path));
+		var lexemes = new Lexer().lex(filesystem.readFile(path), path);
 
 		// Skip define data
 		if(!lexemes.advanceAfterNext(SyntaxKind.END_DEFINE))
@@ -72,6 +72,6 @@ public class NaturalProjectFileIndexer
 			throw new RuntimeException("Could not find name of subroutine");
 		}
 
-		return lexemes.peek().escapedSource();
+		return lexemes.peek().source();
 	}
 }

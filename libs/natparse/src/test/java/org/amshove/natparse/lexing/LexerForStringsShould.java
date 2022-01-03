@@ -21,7 +21,7 @@ public class LexerForStringsShould extends AbstractLexerTest
 	{
 		assertDiagnostic(
 			"#VAR := 'This is unterminated",
-			LexerDiagnostic.create(8, 8, 0, 21, LexerError.UNTERMINATED_STRING)
+			assertedDiagnostic(8, 8, 0, 21, LexerError.UNTERMINATED_STRING)
 		);
 	}
 
@@ -30,7 +30,7 @@ public class LexerForStringsShould extends AbstractLexerTest
 	{
 		assertDiagnostic(
 			"#VAR := \"This is unterminated",
-			LexerDiagnostic.create(8, 8, 0, 21, LexerError.UNTERMINATED_STRING)
+			assertedDiagnostic(8, 8, 0, 21, LexerError.UNTERMINATED_STRING)
 		);
 	}
 
@@ -39,7 +39,7 @@ public class LexerForStringsShould extends AbstractLexerTest
 	{
 		assertDiagnostic(
 			"#VAR := \"This is unterminated\nWRITE #VAR",
-			LexerDiagnostic.create(8, 8, 0, 21, LexerError.UNTERMINATED_STRING)
+			assertedDiagnostic(8, 8, 0, 21, LexerError.UNTERMINATED_STRING)
 		);
 	}
 
@@ -48,16 +48,22 @@ public class LexerForStringsShould extends AbstractLexerTest
 	{
 		var tokens = assertDiagnostic(
 			"#VAR := \"This is unterminated\nWRITE #VAR",
-			LexerDiagnostic.create(8, 8, 0, 21, LexerError.UNTERMINATED_STRING)
+			assertedDiagnostic(8, 8, 0, 21, LexerError.UNTERMINATED_STRING)
 		);
 
 		assertTokensInOrder(tokens, SyntaxKind.IDENTIFIER, SyntaxKind.COLON_EQUALS, SyntaxKind.STRING, SyntaxKind.WRITE, SyntaxKind.IDENTIFIER);
 	}
 
 	@Test
+	void lexHexStrings()
+	{
+		assertTokens("H'00'", token(SyntaxKind.STRING, "H'00'"));
+	}
+
+	@Test
 	void correctlyParseTimeFormats()
 	{
-		assertTokensIgnoreWhitespace(
+		assertTokens(
 			"MOVE EDITED *TIMX(EM=' 'HH':'II':'SS) TO #RIGHT-PROMPT ",
 			SyntaxKind.MOVE,
 			SyntaxKind.IDENTIFIER_OR_KEYWORD,
@@ -74,6 +80,22 @@ public class LexerForStringsShould extends AbstractLexerTest
 			SyntaxKind.RPAREN,
 			SyntaxKind.IDENTIFIER_OR_KEYWORD, // TO
 			SyntaxKind.IDENTIFIER
+		);
+	}
+
+	@Test
+	void lexConcatenatedString()
+	{
+		assertTokens("""
+				INPUT
+				'Hello'
+				 - ' World'
+						-'!'
+				 WRITE
+				""",
+			token(SyntaxKind.INPUT),
+			token(SyntaxKind.STRING, "'Hello World!'"),
+			token(SyntaxKind.WRITE)
 		);
 	}
 }

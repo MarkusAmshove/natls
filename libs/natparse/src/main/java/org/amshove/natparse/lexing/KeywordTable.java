@@ -17,7 +17,6 @@ public class KeywordTable
 				case "lt" -> SyntaxKind.LT;
 				case "le" -> SyntaxKind.LE;
 
-				// KCheck keywords
 				case "abs" -> SyntaxKind.ABS;
 				case "accept" -> SyntaxKind.ACCEPT;
 				case "add" -> SyntaxKind.ADD;
@@ -31,6 +30,7 @@ public class KeywordTable
 				case "before" -> SyntaxKind.BEFORE;
 				case "break" -> SyntaxKind.BREAK;
 				case "browse" -> SyntaxKind.BROWSE;
+				case "by" -> SyntaxKind.BY;
 				case "call" -> SyntaxKind.CALL;
 				case "calldbproc" -> SyntaxKind.CALLDBPROC;
 				case "callnat" -> SyntaxKind.CALLNAT;
@@ -39,10 +39,13 @@ public class KeywordTable
 				case "compose" -> SyntaxKind.COMPOSE;
 				case "compress" -> SyntaxKind.COMPRESS;
 				case "compute" -> SyntaxKind.COMPUTE;
+				case "const" -> SyntaxKind.CONST;
+				case "constant" -> SyntaxKind.CONSTANT;
 				case "copy" -> SyntaxKind.COPY;
 				case "cos" -> SyntaxKind.COS;
 				case "count" -> SyntaxKind.COUNT;
 				case "create" -> SyntaxKind.CREATE;
+				case "data" -> SyntaxKind.DATA;
 				case "decide" -> SyntaxKind.DECIDE;
 				case "define" -> SyntaxKind.DEFINE;
 				case "delete" -> SyntaxKind.DELETE;
@@ -54,6 +57,7 @@ public class KeywordTable
 				case "do" -> SyntaxKind.DO;
 				case "doend" -> SyntaxKind.DOEND;
 				case "download" -> SyntaxKind.DOWNLOAD;
+				case "dynamic" -> SyntaxKind.DYNAMIC;
 				case "eject" -> SyntaxKind.EJECT;
 				case "else" -> SyntaxKind.ELSE;
 				case "end" -> SyntaxKind.END;
@@ -95,11 +99,14 @@ public class KeywordTable
 				case "export" -> SyntaxKind.EXPORT;
 				case "false" -> SyntaxKind.FALSE;
 				case "fetch" -> SyntaxKind.FETCH;
+				case "filler" -> SyntaxKind.FILLER;
 				case "find" -> SyntaxKind.FIND;
 				case "for" -> SyntaxKind.FOR;
 				case "format" -> SyntaxKind.FORMAT;
 				case "frac" -> SyntaxKind.FRAC;
+				case "full" -> SyntaxKind.FULL;
 				case "get" -> SyntaxKind.GET;
+				case "global" -> SyntaxKind.GLOBAL;
 				case "histogram" -> SyntaxKind.HISTOGRAM;
 				case "if" -> SyntaxKind.IF;
 				case "ignore" -> SyntaxKind.IGNORE;
@@ -109,11 +116,15 @@ public class KeywordTable
 				case "incdir" -> SyntaxKind.INCDIR;
 				case "include" -> SyntaxKind.INCLUDE;
 				case "incmac" -> SyntaxKind.INCMAC;
+				case "independent" -> SyntaxKind.INDEPENDENT;
+				case "init" -> SyntaxKind.INIT;
 				case "input" -> SyntaxKind.INPUT;
 				case "insert" -> SyntaxKind.INSERT;
 				case "int" -> SyntaxKind.INT;
 				case "investigate" -> SyntaxKind.INVESTIGATE;
+				case "length" -> SyntaxKind.LENGTH;
 				case "limit" -> SyntaxKind.LIMIT;
+				case "local" -> SyntaxKind.LOCAL;
 				case "log" -> SyntaxKind.LOG;
 				case "loop" -> SyntaxKind.LOOP;
 				case "map" -> SyntaxKind.MAP;
@@ -129,9 +140,12 @@ public class KeywordTable
 				case "null-handle" -> SyntaxKind.NULL_HANDLE;
 				case "obtain" -> SyntaxKind.OBTAIN;
 				case "old" -> SyntaxKind.OLD;
+				case "of" -> SyntaxKind.OF;
 				case "on" -> SyntaxKind.ON;
 				case "open" -> SyntaxKind.OPEN;
+				case "optional" -> SyntaxKind.OPTIONAL;
 				case "options" -> SyntaxKind.OPTIONS;
+				case "parameter" -> SyntaxKind.PARAMETER;
 				case "parse" -> SyntaxKind.PARSE;
 				case "passw" -> SyntaxKind.PASSW;
 				case "perform" -> SyntaxKind.PERFORM;
@@ -149,6 +163,7 @@ public class KeywordTable
 				case "reset" -> SyntaxKind.RESET;
 				case "resize" -> SyntaxKind.RESIZE;
 				case "restore" -> SyntaxKind.RESTORE;
+				case "result" -> SyntaxKind.RESULT;
 				case "ret" -> SyntaxKind.RET;
 				case "retry" -> SyntaxKind.RETRY;
 				case "return" -> SyntaxKind.RETURN;
@@ -184,10 +199,12 @@ public class KeywordTable
 				case "true" -> SyntaxKind.TRUE;
 				case "until" -> SyntaxKind.UNTIL;
 				case "update" -> SyntaxKind.UPDATE;
+				case "using" -> SyntaxKind.USING;
 				case "upload" -> SyntaxKind.UPLOAD;
 				case "val" -> SyntaxKind.VAL;
 				case "value" -> SyntaxKind.VALUE;
 				case "values" -> SyntaxKind.VALUES;
+				case "view" -> SyntaxKind.VIEW;
 				case "waste" -> SyntaxKind.WASTE;
 				case "when" -> SyntaxKind.WHEN;
 				case "while" -> SyntaxKind.WHILE;

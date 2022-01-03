@@ -17,6 +17,11 @@ public class XmlNaturalLibrary
 
 	public void addSteplib(String name)
 	{
+		if(name.equals(this.name))
+		{
+			return;
+		}
+
 		steplibs.add(name);
 	}
 

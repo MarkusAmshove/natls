@@ -1,0 +1,3 @@
+define data local
+1 #myvar (A10) const <'hello'
+end-define /* !{D:ERROR:NPP003}

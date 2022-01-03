@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.nio.file.Paths;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Nested
@@ -14,15 +16,12 @@ public class LexerShould extends AbstractLexerTest
 	void storeTheLineInformationOfTokens()
 	{
 		var lexer = new Lexer();
-		var tokens = lexer.lex("abc\nabc");
+		var tokens = lexer.lex("abc\nabc", Paths.get("TEST.NSN"));
 
 		var firstAbc = tokens.peek();
 		assertThat(firstAbc.line()).isEqualTo(0);
 
-		var lineEnd = tokens.peek(1);
-		assertThat(lineEnd.line()).isEqualTo(0);
-
-		var secondAbc = tokens.peek(2);
+		var secondAbc = tokens.peek(1);
 		assertThat(secondAbc.line()).isEqualTo(1);
 	}
 
@@ -39,7 +38,7 @@ public class LexerShould extends AbstractLexerTest
 
 	@ParameterizedTest
 	@CsvSource(
-	{ "abc,0,0", "abc cba,2,4" })
+	{ "abc,0,0", "abc cba,1,4" })
 	void storeTheOffsetOfTokens(String source, int nthIndex, int expectedOffset)
 	{
 		var token = lexSingle(source, nthIndex);
@@ -51,16 +50,16 @@ public class LexerShould extends AbstractLexerTest
 	@Test
 	void storeTheOffsetInLineOfTokens()
 	{
-		assertThat(lexSingle("abc abc", 2).offsetInLine()).isEqualTo(4);
+		assertThat(lexSingle("abc abc", 1).offsetInLine()).isEqualTo(4);
 	}
 
 	@Test
 	void storeUnknownCharacters()
 	{
 		assertDiagnostics("\u2412\u4123\u1234",
-			LexerDiagnostic.create(0, 0, 0, 1, LexerError.UNKNOWN_CHARACTER),
-			LexerDiagnostic.create(1, 1, 0, 1, LexerError.UNKNOWN_CHARACTER),
-			LexerDiagnostic.create(2, 2, 0, 1, LexerError.UNKNOWN_CHARACTER)
+			assertedDiagnostic(0, 0, 0, 1, LexerError.UNKNOWN_CHARACTER),
+			assertedDiagnostic(1, 1, 0, 1, LexerError.UNKNOWN_CHARACTER),
+			assertedDiagnostic(2, 2, 0, 1, LexerError.UNKNOWN_CHARACTER)
 		);
 	}
 
@@ -68,9 +67,9 @@ public class LexerShould extends AbstractLexerTest
 	void storeUnknownCharactersAfterTokens()
 	{
 		assertDiagnostics("WRITE #var\n\u2412\u4123\u1234",
-			LexerDiagnostic.create(11, 0, 1, 1, LexerError.UNKNOWN_CHARACTER),
-			LexerDiagnostic.create(12, 1, 1, 1, LexerError.UNKNOWN_CHARACTER),
-			LexerDiagnostic.create(13, 2, 1, 1, LexerError.UNKNOWN_CHARACTER)
+			assertedDiagnostic(11, 0, 1, 1, LexerError.UNKNOWN_CHARACTER),
+			assertedDiagnostic(12, 1, 1, 1, LexerError.UNKNOWN_CHARACTER),
+			assertedDiagnostic(13, 2, 1, 1, LexerError.UNKNOWN_CHARACTER)
 		);
 	}
 }

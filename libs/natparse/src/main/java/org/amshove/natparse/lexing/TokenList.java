@@ -1,46 +1,53 @@
 package org.amshove.natparse.lexing;
 
+import org.amshove.natparse.IDiagnostic;
+import org.amshove.natparse.ReadOnlyList;
+
+import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class TokenList
 {
 	private final List<SyntaxToken> tokens;
 	private final List<LexerDiagnostic> diagnostics;
+	private final List<SyntaxToken> comments;
+	private final Path filePath;
 
 	private int currentOffset = 0;
 
-	TokenList(List<SyntaxToken> tokens)
+	TokenList(Path filePath, List<SyntaxToken> tokens)
 	{
 		this.tokens = tokens;
 		diagnostics = List.of();
+		comments = List.of();
+		this.filePath = filePath;
 	}
 
-	TokenList(List<SyntaxToken> tokens, List<LexerDiagnostic> diagnostics)
+	TokenList(Path filePath, List<SyntaxToken> tokens, List<LexerDiagnostic> diagnostics, List<SyntaxToken> comments)
 	{
 		this.tokens = tokens;
 		this.diagnostics = diagnostics;
+		this.comments = comments;
+		this.filePath = filePath;
 	}
 
-	public static TokenList fromTokens(List<SyntaxToken> tokenList)
+	public static TokenList fromTokens(Path filePath, List<SyntaxToken> tokenList)
 	{
-		return new TokenList(tokenList);
+		return new TokenList(filePath, tokenList);
 	}
 
-	public static TokenList fromTokensAndDiagnostics(List<SyntaxToken> tokenList, List<LexerDiagnostic> diagnostics)
+	public static TokenList fromTokensAndDiagnostics(Path filePath, List<SyntaxToken> tokenList, List<LexerDiagnostic> diagnostics, List<SyntaxToken> comments)
 	{
-		return new TokenList(tokenList, diagnostics);
+		return new TokenList(filePath, tokenList, diagnostics, comments);
 	}
 
-	public List<LexerDiagnostic> diagnostics()
+	public ReadOnlyList<IDiagnostic> diagnostics()
 	{
-		return diagnostics;
+		return ReadOnlyList.from(diagnostics.stream().map(d -> (IDiagnostic)d).toList()); // TODO: Perf
 	}
 
-	public SyntaxToken peek()
-	{
-		return peek(0);
-	}
-
+	// TODO: ReadOnlyList
 	public List<SyntaxToken> tokensUntilNext(SyntaxKind kind)
 	{
 		var startOffset = currentOffset;
@@ -51,6 +58,22 @@ public class TokenList
 		return List.copyOf(tokens.subList(startOffset, currentOffset));
 	}
 
+	public Path filePath()
+	{
+		return filePath;
+	}
+
+	/**
+	 * Peeks the next token.
+	 */
+	public SyntaxToken peek()
+	{
+		return peek(0);
+	}
+
+	/**
+	 * Peeks the token `offset` times ahead.
+	 */
 	public SyntaxToken peek(int offset)
 	{
 		var index = currentOffset + offset;
@@ -61,9 +84,22 @@ public class TokenList
 		return tokens.get(index);
 	}
 
-	public void advance()
+	/**
+	 * Advances over the current token.
+	 */
+	public SyntaxToken advance()
 	{
+		var token = peek();
 		currentOffset++;
+		return token;
+	}
+
+	/**
+	 * Resets the position offset times back.
+	 */
+	public void rollback(int offset)
+	{
+		currentOffset -= offset;
 	}
 
 	public boolean isAtEnd()
@@ -71,7 +107,7 @@ public class TokenList
 		return isAtEnd(currentOffset);
 	}
 
-	private boolean isAtEnd(int offset)
+	public boolean isAtEnd(int offset)
 	{
 		return offset >= tokens.size();
 	}
@@ -81,6 +117,7 @@ public class TokenList
 		return tokens.size();
 	}
 
+	// TODO: ReadOnlyList
 	List<SyntaxToken> allTokens()
 	{
 		return List.copyOf(tokens);
@@ -104,17 +141,51 @@ public class TokenList
 			advance();
 		}
 
-		if(isAtEnd())
-		{
-			return false;
-		}
-
-		return true;
+		return !isAtEnd();
 	}
 
 	// TODO: Figure out a better name
 	public TokenList newResetted()
 	{
-		return TokenList.fromTokensAndDiagnostics(tokens, diagnostics);
+		return TokenList.fromTokensAndDiagnostics(filePath, tokens, diagnostics, comments);
+	}
+
+	public ReadOnlyList<SyntaxToken> comments()
+	{
+		return ReadOnlyList.from(comments); // TODO: Perf
+	}
+
+	/**
+	 * Consumes the current token if it matches the kind and then advances.
+	 */
+	public boolean consume(SyntaxKind kind)
+	{
+		if(!isAtEnd() && peek().kind() == kind)
+		{
+			advance();
+			return true;
+		}
+
+		return false;
+	}
+
+	public int getCurrentOffset()
+	{
+		return currentOffset;
+	}
+
+	/**
+	 * Returns all tokens from start to end.
+	 * @param start Inclusive index of the first token.
+	 * @param end Inclusive index of the last token.
+	 */
+	public ReadOnlyList<SyntaxToken> subrange(int start, int end)
+	{
+		return ReadOnlyList.from(tokens.subList(start, end + 1));
+	}
+
+	public Stream<SyntaxToken> stream()
+	{
+		return tokens.stream();
 	}
 }

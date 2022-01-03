@@ -2,7 +2,7 @@ package org.amshove.natparse.lexing;
 
 import org.junit.jupiter.api.Test;
 
-public class LexingForSingleCharacterTokensShould extends AbstractLexerTest
+public class LexerForSingleCharacterTokensShould extends AbstractLexerTest
 {
 	@Test
 	void lexLeftParenthesis()
@@ -43,7 +43,7 @@ public class LexingForSingleCharacterTokensShould extends AbstractLexerTest
 	@Test
 	void lexAsterisk()
 	{
-		assertTokens(" *", token(SyntaxKind.WHITESPACE), token(SyntaxKind.ASTERISK, "*"));
+		assertTokens(" *", token(SyntaxKind.ASTERISK, "*"));
 	}
 
 	@Test
@@ -98,5 +98,23 @@ public class LexingForSingleCharacterTokensShould extends AbstractLexerTest
 	void lexRightBracket()
 	{
 		assertTokens("]", token(SyntaxKind.RBRACKET, "]"));
+	}
+
+	@Test
+	void lexCaret()
+	{
+		assertTokens("^", token(SyntaxKind.CARET, "^"));
+	}
+
+	@Test
+	void lexPercent()
+	{
+		assertTokens("%", token(SyntaxKind.PERCENT, "%"));
+	}
+
+	@Test
+	void lexQuestionmark()
+	{
+		assertTokens("?", token(SyntaxKind.QUESTIONMARK, "?"));
 	}
 }

@@ -1,0 +1,4 @@
+define data local
+1 #var (n2)
+1 #arr (a10/1:#var) /* !{D:ERROR:NPP017}
+end-define

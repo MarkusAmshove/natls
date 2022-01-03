@@ -1,0 +1,12 @@
+define data
+local
+1 #var1 (a) dynamic by value /* !{D:ERROR:NPP018}
+1 #var2 (a) dynamic by value result /* !{D:ERROR:NPP018}
+1 #var3 (a) dynamic by value result optional /* !{D:ERROR:NPP018} !{D:ERROR:NPP019}
+1 #var4 (a) dynamic optional /* !{D:ERROR:NPP019}
+global
+1 gvar1 (a) dynamic by value /* !{D:ERROR:NPP018}
+1 gvar2 (a) dynamic by value result /* !{D:ERROR:NPP018}
+1 gvar3 (a) dynamic by value result optional /* !{D:ERROR:NPP018} !{D:ERROR:NPP019}
+1 gvar4 (a) dynamic  optional /* !{D:ERROR:NPP019}
+end-define

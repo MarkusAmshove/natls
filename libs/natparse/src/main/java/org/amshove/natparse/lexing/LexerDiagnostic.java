@@ -1,29 +1,37 @@
 package org.amshove.natparse.lexing;
 
-import org.amshove.natparse.IPosition;
+import org.amshove.natparse.DiagnosticSeverity;
+import org.amshove.natparse.IDiagnostic;
 
+import java.nio.file.Path;
 import java.util.Objects;
 
-public class LexerDiagnostic implements IPosition
+class LexerDiagnostic implements IDiagnostic
 {
+	private final String id;
 	private final int offset;
 	private final int offsetInLine;
-	private final int currentLine;
+	private final int line;
 	private final int length;
+	private final Path filePath;
 	private final LexerError error;
 	private final String message;
+	private final DiagnosticSeverity severity;
 
-	private LexerDiagnostic(String message, int offset, int offsetInLine, int currentLine, int length, LexerError error)
+	private LexerDiagnostic(String message, int offset, int offsetInLine, int currentLine, int length, Path filePath, LexerError error)
 	{
 		this.message = message;
 		this.offset = offset;
 		this.offsetInLine = offsetInLine;
-		this.currentLine = currentLine;
+		this.line = currentLine;
 		this.length = length;
 		this.error = error;
+		this.id = error.id();
+		this.filePath = filePath;
+		severity = DiagnosticSeverity.ERROR;
 	}
 
-	static LexerDiagnostic create(String message, int offset, int offsetInLine, int currentLine, int length, LexerError error)
+	static LexerDiagnostic create(String message, int offset, int offsetInLine, int currentLine, int length, Path filePath, LexerError error)
 	{
 		return new LexerDiagnostic(
 			message,
@@ -31,11 +39,12 @@ public class LexerDiagnostic implements IPosition
 			offsetInLine,
 			currentLine,
 			length,
+			filePath,
 			error
 		);
 	}
 
-	static LexerDiagnostic create(int offset, int offsetInLine, int currentLine, int length, LexerError error)
+	static LexerDiagnostic create(int offset, int offsetInLine, int currentLine, int length, Path filePath, LexerError error)
 	{
 		return new LexerDiagnostic(
 			"",
@@ -43,6 +52,7 @@ public class LexerDiagnostic implements IPosition
 			offsetInLine,
 			currentLine,
 			length,
+			filePath,
 			error
 		);
 	}
@@ -65,15 +75,26 @@ public class LexerDiagnostic implements IPosition
 	}
 
 	@Override
-	public int currentLine()
+	public int line()
 	{
-		return currentLine;
+		return line;
 	}
 
 	@Override
 	public int length()
 	{
 		return length;
+	}
+
+	@Override
+	public Path filePath()
+	{
+		return filePath;
+	}
+
+	public String id()
+	{
+		return id;
 	}
 
 	@Override
@@ -84,24 +105,24 @@ public class LexerDiagnostic implements IPosition
 		if (o == null || getClass() != o.getClass())
 			return false;
 		var that = (LexerDiagnostic) o;
-		return offset == that.offset && offsetInLine == that.offsetInLine && currentLine == that.currentLine && length == that.length && error == that.error;
+		return offset == that.offset && offsetInLine == that.offsetInLine && line == that.line && length == that.length && error == that.error;
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(offset, offsetInLine, currentLine, length, error);
+		return Objects.hash(offset, offsetInLine, line, length, error);
 	}
 
 	@Override
 	public String toString()
 	{
-		return "LexerDiagnostic{" +
-			"offset=" + offset +
-			", offsetInLine=" + offsetInLine +
-			", currentLine=" + currentLine +
-			", length=" + length +
-			", error=" + error +
-			'}';
+		return "LexerDiagnostic{" + id + ":" + message + '}';
+	}
+
+	@Override
+	public DiagnosticSeverity severity()
+	{
+		return severity;
 	}
 }

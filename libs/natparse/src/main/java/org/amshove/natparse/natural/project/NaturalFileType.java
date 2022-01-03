@@ -11,6 +11,7 @@ public enum NaturalFileType
 	LDA("NSL"),
 	DDM("NSD"),
 	PDA("NSA"),
+	GDA("NSG"),
 	MAP("NSM");
 
 	public static final NaturalFileType[] VALUES = NaturalFileType.values();
@@ -24,16 +25,18 @@ public enum NaturalFileType
 
 	public static NaturalFileType fromExtension(String extension)
 	{
-		return switch (extension) {
-			case "NSN" -> SUBPROGRAM;
-			case "NSP" -> PROGRAM;
-			case "NSS" -> SUBROUTINE;
-			case "NSL" -> LDA;
-			case "NSD" -> DDM;
-			case "NSA" -> PDA;
-			case "NSM" -> MAP;
-			default -> throw new RuntimeException(extension);
-		};
+		return switch (extension)
+			{
+				case "NSN" -> SUBPROGRAM;
+				case "NSP" -> PROGRAM;
+				case "NSS" -> SUBROUTINE;
+				case "NSL" -> LDA;
+				case "NSD" -> DDM;
+				case "NSA" -> PDA;
+				case "NSM" -> MAP;
+				case "NSG" -> GDA;
+				default -> throw new RuntimeException(extension);
+			};
 	}
 
 	public static boolean isNaturalFile(Path filepath)
@@ -49,5 +52,14 @@ public enum NaturalFileType
 	public boolean matches(Path path)
 	{
 		return path.getFileName().toString().endsWith("." + extension);
+	}
+
+	public boolean hasDefineData()
+	{
+		return switch (this)
+			{
+				case SUBPROGRAM, PROGRAM, SUBROUTINE, LDA, PDA, GDA -> true;
+				default -> false;
+			};
 	}
 }

@@ -2,9 +2,6 @@ package org.amshove.natparse.lexing;
 
 public enum SyntaxKind
 {
-	WHITESPACE,
-	NEW_LINE,
-	TAB,
 	LBRACKET,
 	RBRACKET,
 	LPAREN,
@@ -13,6 +10,7 @@ public enum SyntaxKind
 	COLON,
 	COLON_EQUALS,
 	DOT,
+	CARET,
 	COMMA,
 	PLUS,
 	MINUS,
@@ -37,11 +35,11 @@ public enum SyntaxKind
 	IDENTIFIER,
 	COMMENT,
 
-	// Builtin Functions/Expressions
+	// System variables
 	TIMX,
 	DATX,
+	DATN,
 
-	// KCheck reserved keywords
 	ABS,
 	ACCEPT,
 	ADD,
@@ -55,6 +53,7 @@ public enum SyntaxKind
 	BEFORE,
 	BREAK,
 	BROWSE,
+	BY,
 	CALL,
 	CALLDBPROC,
 	CALLNAT,
@@ -63,15 +62,19 @@ public enum SyntaxKind
 	COMPOSE,
 	COMPRESS,
 	COMPUTE,
+	CONST,
+	CONSTANT,
 	COPY,
 	COS,
 	COUNT,
 	CREATE,
+	DATA,
 	DECIDE,
 	DEFINE,
 	DELETE,
 	DISPLAY,
 	DIVIDE,
+	DYNAMIC,
 	DLOGOFF,
 	DLOGON,
 	DNATIVE,
@@ -119,11 +122,14 @@ public enum SyntaxKind
 	EXPORT,
 	FALSE,
 	FETCH,
+	FILLER,
 	FIND,
 	FOR,
 	FORMAT,
 	FRAC,
+	FULL,
 	GET,
+	GLOBAL,
 	HISTOGRAM,
 	IF,
 	IGNORE,
@@ -133,11 +139,17 @@ public enum SyntaxKind
 	INCDIR,
 	INCLUDE,
 	INCMAC,
+	INDEPENDENT,
+	INIT,
 	INPUT,
 	INSERT,
 	INT,
 	INVESTIGATE,
+	LANGUAGE,
+	LENGTH,
+	LIBRARY_ID,
 	LIMIT,
+	LOCAL,
 	LOG,
 	LOOP,
 	MAP,
@@ -152,16 +164,22 @@ public enum SyntaxKind
 	NONE,
 	NULL_HANDLE,
 	OBTAIN,
+	OF,
 	OLD,
 	ON,
 	OPEN,
+	OPTIONAL,
 	OPTIONS,
+	PARAMETER,
 	PARSE,
 	PASSW,
+	PERCENT,
 	PERFORM,
 	POS,
 	PRINT,
 	PROCESS,
+	PROGRAM,
+	QUESTIONMARK,
 	READ,
 	REDEFINE,
 	REDUCE,
@@ -173,6 +191,7 @@ public enum SyntaxKind
 	RESET,
 	RESIZE,
 	RESTORE,
+	RESULT,
 	RET,
 	RETRY,
 	RETURN,
@@ -208,13 +227,31 @@ public enum SyntaxKind
 	TRUE,
 	UNTIL,
 	UPDATE,
+	USER,
+	USING,
 	UPLOAD,
 	VAL,
 	VALUE,
 	VALUES,
+	VIEW,
 	WASTE,
 	WHEN,
 	WHILE,
 	WITH_CTE,
-	WRITE
+	WRITE;
+
+	public boolean isIdentifier()
+	{
+		return this == IDENTIFIER || this == IDENTIFIER_OR_KEYWORD; // TODO: Keyword temporary
+	}
+
+	public boolean isSystemVariable()
+	{
+		return this == DATN || this == DATX || this == TIMX || this == LANGUAGE || this == PROGRAM || this == USER || this == LIBRARY_ID;
+	}
+
+	public boolean isBoolean()
+	{
+		return this == TRUE || this == FALSE;
+	}
 }

@@ -41,6 +41,12 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 	}
 
 	@Test
+	void recognizeAivVariablesWithMultipleSymbols()
+	{
+		assertTokens("+#MY-AIV", token(SyntaxKind.IDENTIFIER, "+#MY-AIV"));
+	}
+
+	@Test
 	void recognizeHyphensInNames()
 	{
 		assertTokens("MY-VAR", token(SyntaxKind.IDENTIFIER_OR_KEYWORD, "MY-VAR"));
@@ -65,9 +71,38 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 	}
 
 	@Test
+	void recognizeCountVariables()
+	{
+		assertTokens("C*NAMES", token(SyntaxKind.IDENTIFIER, "C*NAMES"));
+	}
+
+	@Test
+	void notAllowCountAsteriskToBeAtAnotherLocationThan2()
+	{
+		assertTokens("CN*AMES",
+			token(SyntaxKind.IDENTIFIER_OR_KEYWORD, "CN"),
+			token(SyntaxKind.ASTERISK),
+			token(SyntaxKind.IDENTIFIER_OR_KEYWORD, "AMES")
+		);
+	}
+
+	@Test
 	void recognizeVariablesWithCommercialAt()
 	{
 		assertTokens("message-me@mail", token(SyntaxKind.IDENTIFIER, "message-me@mail"));
+	}
+
+	@Test
+	void stopIdentifiersWhenANonIdentifierCharacterIsFound()
+	{
+		assertTokens("#DATE'test'", token(SyntaxKind.IDENTIFIER, "#DATE"), token(SyntaxKind.STRING));
+	}
+
+	@Test
+	void stopIdentifiersWhenACommentIsFollowing()
+	{
+		// Slash is a valid character for identifiers, but * is not.
+		assertTokens("#MYVAR/*Asd", token(SyntaxKind.IDENTIFIER, "#MYVAR"));
 	}
 
 	@TestFactory

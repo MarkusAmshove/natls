@@ -2,6 +2,7 @@ package org.amshove.natparse.lexing;
 
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -9,10 +10,15 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 class TokenListShould
 {
+	private SyntaxToken createToken(SyntaxKind kind, int offset, int offsetInLine, int line, String source)
+	{
+		return SyntaxTokenFactory.create(kind, offset, offsetInLine, line, source, Paths.get("TESTMODULE.NSN"));
+	}
+
 	@Test
 	void returnTheTokenAtCurrentOffset()
 	{
-		var token = SyntaxTokenFactory.create(SyntaxKind.ADD, 0, 0, 1, "ADD");
+		var token = createToken(SyntaxKind.ADD, 0, 0, 1, "ADD");
 		var list = createTokenList(token);
 		assertThat(list.peek()).isEqualTo(token);
 	}
@@ -20,9 +26,9 @@ class TokenListShould
 	@Test
 	void beAbleToAdvance()
 	{
-		var token = SyntaxTokenFactory.create(SyntaxKind.ADD, 0, 0, 1, "ADD");
+		var token = createToken(SyntaxKind.ADD, 0, 0, 1, "ADD");
 		var list = createTokenList(
-			SyntaxTokenFactory.create(SyntaxKind.ASSIGN, 0, 0, 1, "ASSIGN"),
+			createToken(SyntaxKind.ASSIGN, 0, 0, 1, "ASSIGN"),
 			token
 		);
 		assertThat(list.peek()).isNotEqualTo(token);
@@ -49,9 +55,41 @@ class TokenListShould
 		assertThat(tokenList.isAtEnd()).isTrue();
 	}
 
+	@Test
+	void advanceOverWhitespace()
+	{
+		var tokenList = createTokenList(
+			SyntaxKind.ADD,
+			SyntaxKind.IDENTIFIER
+		);
+
+		assertThat(tokenList.peek().kind()).isEqualTo(SyntaxKind.ADD);
+		tokenList.advance();
+		assertThat(tokenList.peek().kind()).isEqualTo(SyntaxKind.IDENTIFIER);
+	}
+
+	@Test
+	void consumeAToken()
+	{
+		var tokenList = createTokenList(
+			SyntaxKind.LOCAL,
+			SyntaxKind.USING,
+			SyntaxKind.IDENTIFIER
+		);
+
+		assertThat(tokenList.peek().kind()).isEqualTo(SyntaxKind.LOCAL);
+		assertThat(tokenList.consume(SyntaxKind.LOCAL)).isTrue();
+		assertThat(tokenList.peek().kind()).isEqualTo(SyntaxKind.USING);
+	}
+
 	private TokenList createTokenList(SyntaxToken... tokens)
 	{
-		return TokenList.fromTokens(Arrays.stream(tokens).toList());
+		return TokenList.fromTokens(Paths.get("TOKENLISTSHOULD.NSN"), Arrays.stream(tokens).toList());
+	}
+
+	private TokenList createTokenList(SyntaxKind... tokenKinds)
+	{
+		return TokenList.fromTokens(Paths.get("TOKENLISTSHOULD.NSN"), Arrays.stream(tokenKinds).map(k -> createToken(k, 0, 0, 0, "")).toList());
 	}
 
 	private TokenList createListWithTokens(int amountOfTokens)
@@ -61,9 +99,9 @@ class TokenListShould
 		var syntaxKinds = SyntaxKind.values();
 		for (var i = 0; i < amountOfTokens; i++)
 		{
-			tokens.add(SyntaxTokenFactory.create(syntaxKinds[i], 0, 0, 0, syntaxKinds[i].toString()));
+			tokens.add(createToken(syntaxKinds[i], 0, 0, 0, syntaxKinds[i].toString()));
 		}
 
-		return TokenList.fromTokens(tokens);
+		return TokenList.fromTokens(Paths.get("TOKENLISTSHOULD.NSN"), tokens);
 	}
 }

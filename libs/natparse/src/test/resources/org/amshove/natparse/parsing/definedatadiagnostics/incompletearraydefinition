@@ -1,0 +1,6 @@
+define data
+local
+1 #myvar1 (A10/) /* !{D:ERROR:NPP010}
+local
+1 #myvar2 (L/) /* !{D:ERROR:NPP010}
+end-define
