@@ -38,7 +38,7 @@ public class App
 		var workingDirectory = Paths.get(workingDirectoryPath);
 		var filesystem = new ActualFilesystem();
 
-		while (!workingDirectory.getRoot().equals(workingDirectory) && filesystem.findFile("_naturalBuild", workingDirectory).isEmpty())
+		while (!workingDirectory.getRoot().equals(workingDirectory) && filesystem.findNaturalProjectFile(workingDirectory).isEmpty())
 		{
 			workingDirectory = workingDirectory.getParent();
 		}
