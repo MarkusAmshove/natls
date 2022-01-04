@@ -49,4 +49,9 @@ public class LanguageServerProject
 
 		return null;
 	}
+
+	public Collection<LanguageServerLibrary> libraries()
+	{
+		return libraries.values();
+	}
 }

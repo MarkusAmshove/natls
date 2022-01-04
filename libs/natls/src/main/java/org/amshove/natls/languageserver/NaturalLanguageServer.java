@@ -1,6 +1,7 @@
 package org.amshove.natls.languageserver;
 
 import org.eclipse.lsp4j.*;
+import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
 import org.eclipse.lsp4j.services.*;
 
 import java.net.URI;
@@ -89,5 +90,16 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 	{
 		this.client = client;
 		languageService.connect(client);
+	}
+
+	@JsonRequest
+	public CompletableFuture<Void> parseProject()
+	{
+		if (languageService.isInitialized())
+		{
+			return languageService.parseAll();
+		}
+
+		return CompletableFuture.completedFuture(null);
 	}
 }

@@ -26,6 +26,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,6 +38,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	private NaturalProject project; // TODO: Replace
 	private LanguageServerProject languageServerProject;
 	private LanguageClient client;
+	private boolean initialized;
 
 	public void indexProject(Path workspaceRoot)
 	{
@@ -49,6 +52,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		indexer.indexProject(project);
 		this.project = project;
 		languageServerProject = LanguageServerProject.fromProject(project);
+		initialized = true;
 	}
 
 	public List<Either<SymbolInformation, DocumentSymbol>> findSymbolsInFile(TextDocumentIdentifier textDocument)
@@ -598,5 +602,53 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		file.changed(newSource);
 		publishDiagnostics(file);
+	}
+
+	public CompletableFuture<Void> parseAll()
+	{
+		var libraries = languageServerProject.libraries();
+		var params = new WorkDoneProgressCreateParams();
+		var token = UUID.randomUUID().toString();
+		params.setToken(token);
+		return client.createProgress(params).thenRunAsync(() -> {
+			var begin = new WorkDoneProgressBegin();
+			begin.setTitle("Parse whole Natural Project");
+			begin.setMessage("Parsing the whole project");
+			begin.setPercentage(0);
+			client.notifyProgress(new ProgressParams(Either.forLeft(token), Either.forLeft(begin)));
+
+			var fileCount = libraries.stream().map(l -> (long) l.files().size()).mapToLong(l -> l).sum();
+			var filesParsed = 0;
+			for (var lib : libraries)
+			{
+				for (var file : lib.files())
+				{
+					if(!file.getType().hasDefineData())
+					{
+						filesParsed++;
+						continue;
+					}
+					var qualifiedName = "%s.%s".formatted(lib.name(), file.getReferableName());
+
+					var progress = new WorkDoneProgressReport();
+					progress.setMessage(qualifiedName);
+					var percentage = (int) (filesParsed * 100 / fileCount);
+					progress.setPercentage(percentage);
+					client.notifyProgress(new ProgressParams(Either.forLeft(token), Either.forLeft(progress)));
+					file.parse();
+					publishDiagnostics(file);
+					filesParsed++;
+				}
+			}
+
+			var end = new WorkDoneProgressEnd();
+			end.setMessage("Done");
+			client.notifyProgress(new ProgressParams(Either.forLeft(token), Either.forLeft(end)));
+		});
+	}
+
+	public boolean isInitialized()
+	{
+		return initialized;
 	}
 }
