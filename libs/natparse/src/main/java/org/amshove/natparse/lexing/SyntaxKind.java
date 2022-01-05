@@ -214,6 +214,7 @@ public enum SyntaxKind
 	START,
 	STOP,
 	STORE,
+	SUBROUTINE,
 	SUBSTR,
 	SUBSTRING,
 	SUBTRACT,

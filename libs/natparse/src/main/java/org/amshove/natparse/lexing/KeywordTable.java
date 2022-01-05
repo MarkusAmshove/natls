@@ -186,6 +186,7 @@ public class KeywordTable
 				case "start" -> SyntaxKind.START;
 				case "stop" -> SyntaxKind.STOP;
 				case "store" -> SyntaxKind.STORE;
+				case "subroutine" -> SyntaxKind.SUBROUTINE;
 				case "substr" -> SyntaxKind.SUBSTR;
 				case "substring" -> SyntaxKind.SUBSTRING;
 				case "subtract" -> SyntaxKind.SUBTRACT;

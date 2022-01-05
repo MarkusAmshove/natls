@@ -62,16 +62,11 @@ public class NaturalProjectFileIndexer
 			throw new RuntimeException("Could not find DEFINE SUBSROUTINE");
 		}
 
-		if(!lexemes.advanceAfterNext(SyntaxKind.IDENTIFIER_OR_KEYWORD))
+		if(!lexemes.advanceAfterNext(SyntaxKind.SUBROUTINE))
 		{
 			throw new RuntimeException("Could not find keyword SUBROUTINE after DEFINE");
 		}
 
-		if(!lexemes.advanceUntil(SyntaxKind.IDENTIFIER_OR_KEYWORD))
-		{
-			throw new RuntimeException("Could not find name of subroutine");
-		}
-
-		return lexemes.peek().source();
+		return lexemes.peek().symbolName();
 	}
 }
