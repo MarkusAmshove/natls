@@ -3,5 +3,5 @@ dependencies {
 
     testImplementation libraries.mockito
     testImplementation libraries.archUnit
-    testImplementation libraries.slf4j_simple
+    testImplementation libraries.slf4j_nop
 }

@@ -2,6 +2,7 @@ package org.amshove.natls.languageserver;
 
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natls.project.LanguageServerProject;
+import org.amshove.natls.project.ModuleReferenceParser;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
@@ -52,6 +53,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		indexer.indexProject(project);
 		this.project = project;
 		languageServerProject = LanguageServerProject.fromProject(project);
+		parseFileReferences();
 		initialized = true;
 	}
 
@@ -652,6 +654,22 @@ public class NaturalLanguageService implements LanguageClientAware
 			end.setMessage("Done");
 			client.notifyProgress(new ProgressParams(Either.forLeft(token), Either.forLeft(end)));
 		});
+	}
+	
+	private void parseFileReferences()
+	{
+		var parser = new ModuleReferenceParser();
+		for (var library : languageServerProject.libraries())
+		{
+			for (var file : library.files())
+			{
+				switch(file.getType())
+				{
+					case PROGRAM, SUBPROGRAM, SUBROUTINE
+						-> parser.parseReferences(file);
+				}
+			}
+		}
 	}
 
 	public boolean isInitialized()

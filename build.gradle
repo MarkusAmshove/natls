@@ -13,6 +13,7 @@ ext {
         dom4j : 'org.dom4j:dom4j:2.1.3',
         slf4j_api    : "org.slf4j:slf4j-api:${SLF4J_VERSION}",
         slf4j_simple : "org.slf4j:slf4j-simple:${SLF4J_VERSION}",
+        slf4j_nop    : "org.slf4j:slf4j-nop:${SLF4J_VERSION}",
 		// Test
 		junit_jupiter : 'org.junit:junit-bom:5.7.2',
 		assertJ : 'org.assertj:assertj-core:3.11.1',
