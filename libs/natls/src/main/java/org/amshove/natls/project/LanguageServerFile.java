@@ -103,7 +103,15 @@ public class LanguageServerFile implements IModuleProvider
 
 	public void changed(String newSource)
 	{
-		parseInternal(newSource, true); // Callers currently can't get the changed source because they read from disk
+		// Tuning: Reduce the load if the module has too many dependants.
+		// 	Its fair enough to reparse the dependants on save only when changing
+		//  a central module
+		var reparseDependants = incomingReferences.size() < 20;
+		if(!reparseDependants)
+		{
+			System.err.printf("I have too many dependants, don't reparse them: %d%n", incomingReferences.size());
+		}
+		parseInternal(newSource, reparseDependants);
 	}
 
 	public void save()
