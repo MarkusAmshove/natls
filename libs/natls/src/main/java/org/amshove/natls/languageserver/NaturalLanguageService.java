@@ -546,6 +546,13 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	public void publishDiagnostics(LanguageServerFile file)
 	{
+		publishDiagnosticsOfFile(file);
+		file.getIncomingReferences().forEach(this::publishDiagnosticsOfFile);
+		file.getOutgoingReferences().forEach(this::publishDiagnosticsOfFile);
+	}
+
+	private void publishDiagnosticsOfFile(LanguageServerFile file)
+	{
 		client.publishDiagnostics(new PublishDiagnosticsParams(file.getUri(), file.allDiagnostics()));
 	}
 
@@ -635,7 +642,7 @@ public class NaturalLanguageService implements LanguageClientAware
 					var percentage = (int) (filesParsed * 100 / fileCount);
 					progress.setPercentage(percentage);
 					client.notifyProgress(new ProgressParams(Either.forLeft(token), Either.forLeft(progress)));
-					file.parse();
+					file.parse(false);
 					publishDiagnostics(file);
 					filesParsed++;
 				}
