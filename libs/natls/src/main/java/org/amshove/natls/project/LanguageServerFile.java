@@ -166,6 +166,7 @@ public class LanguageServerFile implements IModuleProvider
 			{
 				var callers = new ArrayList<>(incomingReferences);
 				incomingReferences.clear();
+				// TODO: Add LSP Progress
 				callers.forEach(LanguageServerFile::dependencyChanged);
 			}
 		}
