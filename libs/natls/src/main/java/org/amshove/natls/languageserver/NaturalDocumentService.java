@@ -88,8 +88,8 @@ public class NaturalDocumentService implements TextDocumentService
 			if (module instanceof IHasDefineData naturalModule && naturalModule.defineData() != null)
 			{
 				moduleReferenceCodeLens.setRange(LspUtil.toRange(
-					naturalModule.defineData().descendants().first().position())
-				);
+					naturalModule.defineData().position()
+				));
 				// TODO(code-lens): Add an actual command
 				naturalModule
 					.defineData()
@@ -104,7 +104,7 @@ public class NaturalDocumentService implements TextDocumentService
 					.forEach(codelens::add);
 			}
 
-			if(file.getIncomingReferences().size() > 1)
+			if(!file.getIncomingReferences().isEmpty())
 			{
 				codelens.add(moduleReferenceCodeLens);
 			}
