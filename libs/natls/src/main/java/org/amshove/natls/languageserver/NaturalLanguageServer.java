@@ -44,7 +44,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 
 			if (client != null)
 			{
-				client.showMessage(ClientMessage.info("Natural Language Server initializing..."));
+				client.showMessage(ClientMessage.log("Natural Language Server initializing..."));
 			}
 
 			var start = System.currentTimeMillis();
@@ -55,7 +55,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 
 			if (client != null)
 			{
-				client.showMessage(ClientMessage.info("Natural Language Server initialized after " + (done - start) + "ms"));
+				client.showMessage(ClientMessage.log("Natural Language Server initialized after " + (done - start) + "ms"));
 			}
 			return new InitializeResult(capabilities);
 		});
