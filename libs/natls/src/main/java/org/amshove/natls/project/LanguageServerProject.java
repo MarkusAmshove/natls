@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class LanguageServerProject
 {
@@ -54,5 +55,15 @@ public class LanguageServerProject
 	public Collection<LanguageServerLibrary> libraries()
 	{
 		return libraries.values();
+	}
+
+    public Stream<LanguageServerFile> provideAllFiles()
+	{
+		return libraries.values().stream().flatMap(l -> l.files().stream());
+    }
+
+	public long countAllFiles()
+	{
+		return provideAllFiles().count();
 	}
 }

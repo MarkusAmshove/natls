@@ -93,11 +93,22 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 	}
 
 	@JsonRequest
-	public CompletableFuture<Void> parseProject()
+	public CompletableFuture<Void> parseProject(Object params)
 	{
 		if (languageService.isInitialized())
 		{
 			return languageService.parseAll();
+		}
+
+		return CompletableFuture.completedFuture(null);
+	}
+
+	@JsonRequest
+	public CompletableFuture<Void> reparseReferences(Object params)
+	{
+		if (languageService.isInitialized())
+		{
+			return languageService.parseFileReferences();
 		}
 
 		return CompletableFuture.completedFuture(null);

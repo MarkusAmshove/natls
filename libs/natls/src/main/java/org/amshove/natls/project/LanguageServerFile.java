@@ -145,7 +145,7 @@ public class LanguageServerFile implements IModuleProvider
 		{
 			System.err.printf("Parsing %s%n", file.getReferableName());
 			System.err.printf("I have %d dependants%n", incomingReferences.size());
-			outgoingReferences.forEach(ref -> ref.removeIncomingRefernce(this));
+			outgoingReferences.forEach(ref -> ref.removeIncomingReference(this));
 			outgoingReferences.clear(); // Will be added when we let our callers parse again
 			clearDiagnosticsByTool(DiagnosticTool.NATPARSE);
 
@@ -232,7 +232,7 @@ public class LanguageServerFile implements IModuleProvider
         incomingReferences.add(caller);
     }
 
-	private void removeIncomingRefernce(LanguageServerFile caller)
+	private void removeIncomingReference(LanguageServerFile caller)
 	{
 		incomingReferences.remove(caller);
 	}
@@ -241,4 +241,17 @@ public class LanguageServerFile implements IModuleProvider
     {
         outgoingReferences.add(calledModule);
     }
+
+	private void removeOutgoingReference(LanguageServerFile calledModule)
+	{
+		outgoingReferences.remove(calledModule);
+	}
+
+	public void clearAllIncomingAndOutgoingReferences()
+	{
+		outgoingReferences.forEach(ref -> ref.removeIncomingReference(this));
+		outgoingReferences.clear();
+		incomingReferences.forEach(ref -> ref.removeOutgoingReference(this));
+		incomingReferences.clear();
+	}
 }

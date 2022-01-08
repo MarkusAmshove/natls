@@ -1,5 +1,8 @@
 package org.amshove.natls.languageserver;
 
+import org.amshove.natls.progress.IProgressMonitor;
+import org.amshove.natls.progress.NullProgressMonitor;
+import org.amshove.natls.progress.ProgressTasks;
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natls.project.LanguageServerProject;
 import org.amshove.natls.project.ModuleReferenceParser;
@@ -53,7 +56,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		indexer.indexProject(project);
 		this.project = project;
 		languageServerProject = LanguageServerProject.fromProject(project);
-		parseFileReferences();
+		parseFileReferences(new NullProgressMonitor());
 		initialized = true;
 	}
 
@@ -655,18 +658,37 @@ public class NaturalLanguageService implements LanguageClientAware
 		});
 	}
 	
-	private void parseFileReferences()
+	public CompletableFuture<Void> parseFileReferences()
 	{
+		return ProgressTasks.startNew("Parsing file references", client, this::parseFileReferences);
+	}
+
+	private void parseFileReferences(IProgressMonitor monitor)
+	{
+		monitor.progress("Clearing current references", 0);
 		var parser = new ModuleReferenceParser();
+		languageServerProject.provideAllFiles().forEach(LanguageServerFile::clearAllIncomingAndOutgoingReferences);
+		var allFilesCount = languageServerProject.countAllFiles();
+		var processedFiles = 0L;
 		for (var library : languageServerProject.libraries())
 		{
+			if(monitor.isCancellationRequested())
+			{
+				break;
+			}
 			for (var file : library.files())
 			{
-				switch(file.getType())
+				if(monitor.isCancellationRequested())
 				{
-					case PROGRAM, SUBPROGRAM, SUBROUTINE
-						-> parser.parseReferences(file);
+					break;
 				}
+				var percentageDone = 100L * processedFiles / allFilesCount;
+				monitor.progress("%s.%s".formatted(library.name(), file.getReferableName()), (int) percentageDone);
+				switch (file.getType())
+				{
+					case PROGRAM, SUBPROGRAM, SUBROUTINE -> parser.parseReferences(file);
+				}
+				processedFiles++;
 			}
 		}
 	}

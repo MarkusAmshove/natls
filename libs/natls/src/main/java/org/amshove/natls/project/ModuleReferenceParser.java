@@ -24,6 +24,7 @@ public class ModuleReferenceParser
 		try
 		{
 			System.err.printf("Start %s%n", file.getReferableName());
+			file.clearAllIncomingAndOutgoingReferences();
 			var start = System.currentTimeMillis();
 			var tokens = lexer.lex(Files.readString(path), path);
 			var calledModules = processReferences(tokens);
