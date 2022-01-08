@@ -42,7 +42,7 @@ public class NaturalProjectFileIndexer
 	{
 		var filename = path.getFileName().toString().split("\\.")[0];
 		return switch(type) {
-			case SUBPROGRAM, LDA, PDA, MAP, DDM, PROGRAM, GDA -> filename;
+			case SUBPROGRAM, LDA, PDA, MAP, DDM, PROGRAM, GDA, FUNCTION, COPYCODE -> filename;
 			case SUBROUTINE -> extractSubroutineName(path);
 		};
 	}

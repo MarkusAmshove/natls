@@ -12,7 +12,9 @@ public enum NaturalFileType
 	DDM("NSD"),
 	PDA("NSA"),
 	GDA("NSG"),
-	MAP("NSM");
+	MAP("NSM"),
+	COPYCODE("NSC"),
+	FUNCTION("NS7");
 
 	public static final NaturalFileType[] VALUES = NaturalFileType.values();
 
@@ -35,6 +37,8 @@ public enum NaturalFileType
 				case "NSA" -> PDA;
 				case "NSM" -> MAP;
 				case "NSG" -> GDA;
+				case "NSC" -> COPYCODE;
+				case "NS7" -> FUNCTION;
 				default -> throw new RuntimeException(extension);
 			};
 	}
@@ -58,7 +62,7 @@ public enum NaturalFileType
 	{
 		return switch (this)
 			{
-				case SUBPROGRAM, PROGRAM, SUBROUTINE, LDA, PDA, GDA -> true;
+				case SUBPROGRAM, PROGRAM, SUBROUTINE, LDA, PDA, GDA, FUNCTION -> true;
 				default -> false;
 			};
 	}

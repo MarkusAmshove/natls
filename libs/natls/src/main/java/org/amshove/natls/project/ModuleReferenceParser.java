@@ -72,6 +72,14 @@ public class ModuleReferenceParser
 				case PERFORM -> calledSubroutines.add(processPerform(tokens));
 				case CALLNAT -> calledModules.add(processCallnat(tokens));
 				case FETCH -> calledModules.add(processFetch(tokens));
+				case INCLUDE -> calledModules.add(processCopycode(tokens));
+				case IDENTIFIER ->
+					{
+						if(tokens.peek(1).kind() == SyntaxKind.LPAREN && tokens.peek(2).kind() == SyntaxKind.LESSER)
+						{
+							calledModules.add(processFunction(tokens));
+						}
+					}
 			}
 
 			tokens.advance();
@@ -86,6 +94,27 @@ public class ModuleReferenceParser
 		}
 
 		return calledModules;
+	}
+
+	private String processFunction(TokenList tokens)
+	{
+		if(tokens.peek().kind().isIdentifier())
+		{
+			return tokens.peek().symbolName();
+		}
+
+		return null;
+	}
+
+	private String processCopycode(TokenList tokens)
+	{
+		tokens.advance(); // include
+		if(tokens.peek().kind().isIdentifier())
+		{
+			return tokens.peek().symbolName();
+		}
+
+		return null;
 	}
 
 	private String processFetch(TokenList tokens)

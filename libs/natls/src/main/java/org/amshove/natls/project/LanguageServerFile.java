@@ -143,7 +143,8 @@ public class LanguageServerFile implements IModuleProvider
 	{
 		try
 		{
-			System.err.println("Parsing %s".formatted(file.getReferableName()));
+			System.err.printf("Parsing %s%n", file.getReferableName());
+			System.err.printf("I have %d dependants%n", incomingReferences.size());
 			outgoingReferences.forEach(ref -> ref.removeIncomingRefernce(this));
 			outgoingReferences.clear(); // Will be added when we let our callers parse again
 			clearDiagnosticsByTool(DiagnosticTool.NATPARSE);
