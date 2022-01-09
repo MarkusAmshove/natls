@@ -1,6 +1,6 @@
 package org.amshove.natls.languageserver;
 
-import org.amshove.natls.progress.NullProgressMonitor;
+import org.amshove.natls.progress.MessageProgressMonitor;
 import org.amshove.natls.progress.WorkDoneProgressMonitor;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -38,7 +38,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 
 			var progressMonitor = params.getWorkDoneToken() != null
 				? new WorkDoneProgressMonitor(params.getWorkDoneToken().getLeft(), client)
-				: new NullProgressMonitor();
+				: new MessageProgressMonitor(client);
 
 
 			if (client != null)
@@ -63,16 +63,22 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 				progressMonitor.progress("Natural Language Server initializing", 0);
 			}
 
+			var startTime = System.currentTimeMillis();
 			progressMonitor.progress("Begin indexing", 5);
 			languageService.indexProject(Paths.get(URI.create(params.getRootUri())), progressMonitor);
 			workspaceService.setLanguageService(languageService);
 			documentService.setLanguageService(languageService);
+			var endTime = System.currentTimeMillis();
 
 			if(params.getWorkDoneToken() != null)
 			{
 				var end = new WorkDoneProgressEnd();
 				end.setMessage("Initialization done");
 				client.notifyProgress(new ProgressParams(params.getWorkDoneToken(), Either.forLeft(end)));
+			}
+			else
+			{
+				progressMonitor.progress("Initialization done in %dms".formatted(endTime - startTime), 100);
 			}
 			return new InitializeResult(capabilities);
 		});
