@@ -1,5 +1,6 @@
 package org.amshove.natls.progress;
 
+import org.amshove.natls.languageserver.ClientMessage;
 import org.eclipse.lsp4j.ProgressParams;
 import org.eclipse.lsp4j.WorkDoneProgressBegin;
 import org.eclipse.lsp4j.WorkDoneProgressCreateParams;
@@ -16,8 +17,50 @@ import java.util.function.Consumer;
 public class ProgressTasks
 {
 	private static final ConcurrentMap<String, IProgressMonitor> runningTasks = new ConcurrentHashMap<>();
+	private static ClientProgressType progressType = ClientProgressType.MESSAGE;
+
+	public static void setClientProgressType(ClientProgressType type)
+	{
+		progressType = type;
+	}
 
 	public static CompletableFuture<Void> startNew(String title, LanguageClient client, Consumer<IProgressMonitor> task)
+	{
+		if (progressType == ClientProgressType.WORK_DONE)
+		{
+			return startNewWorkDone(title, client, task);
+		}
+		else
+		{
+			return startNewMessageBased(title, client, task);
+		}
+	}
+
+	private static CompletableFuture<Void> startNewMessageBased(String title, LanguageClient client, Consumer<IProgressMonitor> task)
+	{
+		return CompletableFuture.supplyAsync(() -> {
+			var taskId = UUID.randomUUID().toString();
+			var progressMonitor = new MessageProgressMonitor(client);
+			runningTasks.put(taskId, progressMonitor);
+			try
+			{
+				client.showMessage(ClientMessage.log(title));
+				task.accept(progressMonitor);
+			}
+			catch (Exception e)
+			{
+				System.err.printf("Error in task %s: %s%n", taskId, e.getMessage());
+			}
+			finally
+			{
+				client.showMessage(ClientMessage.log("%s done".formatted(title)));
+			}
+
+			return null;
+		});
+	}
+
+	private static CompletableFuture<Void> startNewWorkDone(String title, LanguageClient client, Consumer<IProgressMonitor> task)
 	{
 		var taskId = UUID.randomUUID().toString();
 		var params = new WorkDoneProgressCreateParams();

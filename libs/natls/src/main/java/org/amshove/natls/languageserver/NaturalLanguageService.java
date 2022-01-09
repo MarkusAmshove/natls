@@ -46,7 +46,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	public void indexProject(Path workspaceRoot, IProgressMonitor progressMonitor)
 	{
 		var projectFile = new ActualFilesystem().findNaturalProjectFile(workspaceRoot);
-		if(projectFile.isEmpty())
+		if (projectFile.isEmpty())
 		{
 			throw new RuntimeException("Could not load Natural project. .natural or _naturalBuild not found");
 		}
@@ -425,7 +425,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var calledFile = languageServerProject.findFileByReferableName(calledModule);
 		var module = (INaturalModule) calledFile.module();
 
-		if(!(module instanceof IHasDefineData hasDefineData))
+		if (!(module instanceof IHasDefineData hasDefineData))
 		{
 			return null;
 		}
@@ -482,7 +482,7 @@ public class NaturalLanguageService implements LanguageClientAware
 					completionItem.setInsertTextFormat(InsertTextFormat.Snippet);
 					var insertText = "'${0:%s}'".formatted(calledModule.name());
 
-					if(!(calledModule instanceof IHasDefineData calledHasDefineData))
+					if (!(calledModule instanceof IHasDefineData calledHasDefineData))
 					{
 						return completionItem;
 					}
@@ -522,7 +522,7 @@ public class NaturalLanguageService implements LanguageClientAware
 					item.setInsertText(variableName);
 				}
 
-				if(!v.position().filePath().equals(defineData.position().filePath()))
+				if (!v.position().filePath().equals(defineData.position().filePath()))
 				{
 					label += " (%s)".formatted(v.position().fileNameWithoutExtension());
 				}
@@ -614,49 +614,39 @@ public class NaturalLanguageService implements LanguageClientAware
 		publishDiagnostics(file);
 	}
 
-	public CompletableFuture<Void> parseAll()
+	public void parseAll(IProgressMonitor monitor)
 	{
 		var libraries = languageServerProject.libraries();
 		var params = new WorkDoneProgressCreateParams();
 		var token = UUID.randomUUID().toString();
 		params.setToken(token);
-		return client.createProgress(params).thenRunAsync(() -> {
-			var begin = new WorkDoneProgressBegin();
-			begin.setTitle("Parse whole Natural Project");
-			begin.setMessage("Parsing the whole project");
-			begin.setPercentage(0);
-			client.notifyProgress(new ProgressParams(Either.forLeft(token), Either.forLeft(begin)));
 
-			var fileCount = libraries.stream().map(l -> (long) l.files().size()).mapToLong(l -> l).sum();
-			var filesParsed = 0;
-			for (var lib : libraries)
+		monitor.progress("Parse whole Natural Project", 0);
+
+		var fileCount = libraries.stream().map(l -> (long) l.files().size()).mapToLong(l -> l).sum();
+		var filesParsed = 0;
+		for (var lib : libraries)
+		{
+			for (var file : lib.files())
 			{
-				for (var file : lib.files())
+				if (!file.getType().hasDefineData())
 				{
-					if(!file.getType().hasDefineData())
-					{
-						filesParsed++;
-						continue;
-					}
-					var qualifiedName = "%s.%s".formatted(lib.name(), file.getReferableName());
-
-					var progress = new WorkDoneProgressReport();
-					progress.setMessage(qualifiedName);
-					var percentage = (int) (filesParsed * 100 / fileCount);
-					progress.setPercentage(percentage);
-					client.notifyProgress(new ProgressParams(Either.forLeft(token), Either.forLeft(progress)));
-					file.parse(false);
-					publishDiagnostics(file);
 					filesParsed++;
+					continue;
 				}
-			}
+				var qualifiedName = "%s.%s".formatted(lib.name(), file.getReferableName());
 
-			var end = new WorkDoneProgressEnd();
-			end.setMessage("Done");
-			client.notifyProgress(new ProgressParams(Either.forLeft(token), Either.forLeft(end)));
-		});
+				var percentage = (int) (filesParsed * 100 / fileCount);
+				monitor.progress(qualifiedName, percentage);
+				file.parse(false);
+				publishDiagnostics(file);
+				filesParsed++;
+			}
+		}
+
+		monitor.progress("Done", 100);
 	}
-	
+
 	public CompletableFuture<Void> parseFileReferences()
 	{
 		return ProgressTasks.startNew("Parsing file references", client, this::parseFileReferences);
@@ -671,13 +661,13 @@ public class NaturalLanguageService implements LanguageClientAware
 		var processedFiles = 0L;
 		for (var library : languageServerProject.libraries())
 		{
-			if(monitor.isCancellationRequested())
+			if (monitor.isCancellationRequested())
 			{
 				break;
 			}
 			for (var file : library.files())
 			{
-				if(monitor.isCancellationRequested())
+				if (monitor.isCancellationRequested())
 				{
 					break;
 				}

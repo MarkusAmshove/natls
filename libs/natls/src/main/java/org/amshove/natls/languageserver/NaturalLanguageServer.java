@@ -1,6 +1,8 @@
 package org.amshove.natls.languageserver;
 
+import org.amshove.natls.progress.ClientProgressType;
 import org.amshove.natls.progress.MessageProgressMonitor;
+import org.amshove.natls.progress.ProgressTasks;
 import org.amshove.natls.progress.WorkDoneProgressMonitor;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -40,7 +42,6 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 				? new WorkDoneProgressMonitor(params.getWorkDoneToken().getLeft(), client)
 				: new MessageProgressMonitor(client);
 
-
 			if (client != null)
 			{
 				var watchFileMethod = "workspace/didChangeWatchedFiles";
@@ -52,6 +53,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 
 			if(params.getWorkDoneToken() != null)
 			{
+				ProgressTasks.setClientProgressType(ClientProgressType.WORK_DONE); // move somewhere else?
 				var begin = new WorkDoneProgressBegin();
 				begin.setTitle("Natural Language Server initializing");
 				begin.setMessage("");
@@ -120,7 +122,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 	{
 		if (languageService.isInitialized())
 		{
-			return languageService.parseAll();
+			return ProgressTasks.startNew("Parsing Natural Project", client, languageService::parseAll);
 		}
 
 		return CompletableFuture.completedFuture(null);
