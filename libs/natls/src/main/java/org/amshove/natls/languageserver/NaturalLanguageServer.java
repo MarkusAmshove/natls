@@ -1,6 +1,9 @@
 package org.amshove.natls.languageserver;
 
+import org.amshove.natls.progress.NullProgressMonitor;
+import org.amshove.natls.progress.WorkDoneProgressMonitor;
 import org.eclipse.lsp4j.*;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
 import org.eclipse.lsp4j.services.*;
 
@@ -33,6 +36,11 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			capabilities.setCodeLensProvider(new CodeLensOptions(true));
 			capabilities.setSignatureHelpProvider(new SignatureHelpOptions()); // Maybe < for Functions?
 
+			var progressMonitor = params.getWorkDoneToken() != null
+				? new WorkDoneProgressMonitor(params.getWorkDoneToken().getLeft(), client)
+				: new NullProgressMonitor();
+
+
 			if (client != null)
 			{
 				var watchFileMethod = "workspace/didChangeWatchedFiles";
@@ -42,20 +50,29 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 				client.registerCapability(new RegistrationParams(List.of(new Registration(UUID.randomUUID().toString(), watchFileMethod, watchChangesRegistrationOption))));
 			}
 
-			if (client != null)
+			if(params.getWorkDoneToken() != null)
 			{
-				client.showMessage(ClientMessage.log("Natural Language Server initializing..."));
+				var begin = new WorkDoneProgressBegin();
+				begin.setTitle("Natural Language Server initializing");
+				begin.setMessage("");
+				begin.setPercentage(0);
+				client.notifyProgress(new ProgressParams(params.getWorkDoneToken(), Either.forLeft(begin)));
+			}
+			else
+			{
+				progressMonitor.progress("Natural Language Server initializing", 0);
 			}
 
-			var start = System.currentTimeMillis();
-			languageService.indexProject(Paths.get(URI.create(params.getRootUri())));
+			progressMonitor.progress("Begin indexing", 5);
+			languageService.indexProject(Paths.get(URI.create(params.getRootUri())), progressMonitor);
 			workspaceService.setLanguageService(languageService);
 			documentService.setLanguageService(languageService);
-			var done = System.currentTimeMillis();
 
-			if (client != null)
+			if(params.getWorkDoneToken() != null)
 			{
-				client.showMessage(ClientMessage.log("Natural Language Server initialized after " + (done - start) + "ms"));
+				var end = new WorkDoneProgressEnd();
+				end.setMessage("Initialization done");
+				client.notifyProgress(new ProgressParams(params.getWorkDoneToken(), Either.forLeft(end)));
 			}
 			return new InitializeResult(capabilities);
 		});

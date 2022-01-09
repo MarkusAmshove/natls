@@ -1,7 +1,6 @@
 package org.amshove.natls.languageserver;
 
 import org.amshove.natls.progress.IProgressMonitor;
-import org.amshove.natls.progress.NullProgressMonitor;
 import org.amshove.natls.progress.ProgressTasks;
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natls.project.LanguageServerProject;
@@ -44,7 +43,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	private LanguageClient client;
 	private boolean initialized;
 
-	public void indexProject(Path workspaceRoot)
+	public void indexProject(Path workspaceRoot, IProgressMonitor progressMonitor)
 	{
 		var projectFile = new ActualFilesystem().findNaturalProjectFile(workspaceRoot);
 		if(projectFile.isEmpty())
@@ -56,7 +55,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		indexer.indexProject(project);
 		this.project = project;
 		languageServerProject = LanguageServerProject.fromProject(project);
-		parseFileReferences(new NullProgressMonitor());
+		parseFileReferences(progressMonitor);
 		initialized = true;
 	}
 
@@ -683,7 +682,7 @@ public class NaturalLanguageService implements LanguageClientAware
 					break;
 				}
 				var percentageDone = 100L * processedFiles / allFilesCount;
-				monitor.progress("%s.%s".formatted(library.name(), file.getReferableName()), (int) percentageDone);
+				monitor.progress("Indexing %s.%s".formatted(library.name(), file.getReferableName()), (int) percentageDone);
 				switch (file.getType())
 				{
 					case PROGRAM, SUBPROGRAM, SUBROUTINE -> parser.parseReferences(file);
