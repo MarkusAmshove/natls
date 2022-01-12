@@ -263,7 +263,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		if (v.level() > 1)
 		{
 			var groupOwner = v.parent();
-			while (!(groupOwner instanceof IGroupNode group) || ((IGroupNode) groupOwner).level() == 1)
+			while (!(groupOwner instanceof IGroupNode group) || ((IGroupNode) groupOwner).level() > 1)
 			{
 				groupOwner = ((ISyntaxNode) groupOwner).parent();
 			}

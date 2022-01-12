@@ -23,9 +23,7 @@ public class ModuleReferenceParser
 		var path = file.getPath();
 		try
 		{
-			System.err.printf("Start %s%n", file.getReferableName());
 			file.clearAllIncomingAndOutgoingReferences();
-			var start = System.currentTimeMillis();
 			var tokens = lexer.lex(Files.readString(path), path);
 			var calledModules = processReferences(tokens);
 			for (var calledModule : calledModules)
@@ -37,16 +35,12 @@ public class ModuleReferenceParser
 					{
 						calledFile.addIncomingReference(file);
 						file.addOutgoingReference(calledFile);
-						System.err.printf("\tAdding reference: %s -> %s%n", file.getReferableName(), calledFile.getReferableName());
 					}
 					else
 					{
-						System.err.printf("\t%s not found%n", calledModule);
 					}
 				}
 			}
-			var end = System.currentTimeMillis();
-			System.err.printf("%s %dms%n", file.getReferableName(), (end - start));
 		}
 		catch (IOException e)
 		{

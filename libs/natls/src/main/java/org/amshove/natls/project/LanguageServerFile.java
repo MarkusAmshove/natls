@@ -97,7 +97,6 @@ public class LanguageServerFile implements IModuleProvider
 
 	void dependencyChanged()
 	{
-		System.err.println("Reparsing because a dependency changed");
 		parse(true);
 	}
 
@@ -107,10 +106,6 @@ public class LanguageServerFile implements IModuleProvider
 		// 	Its fair enough to reparse the dependants on save only when changing
 		//  a central module
 		var reparseDependants = incomingReferences.size() < 20;
-		if(!reparseDependants)
-		{
-			System.err.printf("I have too many dependants, don't reparse them: %d%n", incomingReferences.size());
-		}
 		parseInternal(newSource, reparseDependants);
 	}
 
