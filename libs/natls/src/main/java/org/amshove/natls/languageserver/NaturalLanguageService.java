@@ -703,4 +703,56 @@ public class NaturalLanguageService implements LanguageClientAware
 	{
 		return initialized;
 	}
+
+	public List<CallHierarchyOutgoingCall> createCallHierarchyOutgoingCalls(CallHierarchyItem item)
+	{
+		var file = findNaturalFile(LspUtil.uriToPath(item.getUri()));
+		return file.getOutgoingReferences().stream()
+			.map(r -> {
+				var call = new CallHierarchyOutgoingCall();
+				call.setTo(callHierarchyItem(r));
+				call.setFromRanges(List.of(item.getRange()));
+				return call;
+			})
+			.toList();
+	}
+
+	public List<CallHierarchyIncomingCall> createCallHierarchyIncomingCalls(CallHierarchyItem item)
+	{
+		var file = findNaturalFile(LspUtil.uriToPath(item.getUri()));
+		System.err.println("Caller of " + file.getReferableName() + " : " + file.getIncomingReferences().stream().map(LanguageServerFile::getReferableName).collect(Collectors.joining(";")));
+		return file.getIncomingReferences().stream()
+			.map(r -> {
+				var call = new CallHierarchyIncomingCall();
+				call.setFrom(callHierarchyItem(r));
+				call.setFromRanges(List.of(new Range(new Position(0,0), new Position(0,0))));
+				return call;
+			})
+			.toList();
+	}
+
+	public List<CallHierarchyItem> createCallHierarchyItems(CallHierarchyPrepareParams params)
+	{
+		var file = findNaturalFile(LspUtil.uriToPath(params.getTextDocument().getUri()));
+		var item = new CallHierarchyItem();
+		item.setRange(new Range(new Position(0,0), new Position(0,0)));
+		item.setSelectionRange(new Range(new Position(0,0), new Position(0,0)));
+		item.setName(file.getReferableName());
+		item.setDetail(file.getType().toString());
+		item.setUri(params.getTextDocument().getUri());
+		item.setKind(SymbolKind.Class);
+		return List.of(item);
+	}
+
+	private CallHierarchyItem callHierarchyItem(LanguageServerFile file)
+	{
+		var item = new CallHierarchyItem();
+		item.setRange(new Range(new Position(0,0), new Position(0,0)));
+		item.setSelectionRange(new Range(new Position(0,0), new Position(0,0)));
+		item.setName(file.getReferableName());
+		item.setDetail(file.getType().toString());
+		item.setUri(file.getPath().toUri().toString());
+		item.setKind(SymbolKind.Class);
+		return item;
+	}
 }

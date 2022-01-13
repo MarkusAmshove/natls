@@ -36,9 +36,6 @@ public class ModuleReferenceParser
 						calledFile.addIncomingReference(file);
 						file.addOutgoingReference(calledFile);
 					}
-					else
-					{
-					}
 				}
 			}
 		}

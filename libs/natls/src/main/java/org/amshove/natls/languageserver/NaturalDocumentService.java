@@ -137,6 +137,25 @@ public class NaturalDocumentService implements TextDocumentService
 		return CompletableFuture.supplyAsync(() -> languageService.signatureHelp(params.getTextDocument(), params.getPosition()));
 	}
 
+	@Override
+	public CompletableFuture<List<CallHierarchyIncomingCall>> callHierarchyIncomingCalls(CallHierarchyIncomingCallsParams params)
+	{
+		return CompletableFuture.supplyAsync(() -> languageService.createCallHierarchyIncomingCalls(params.getItem()));
+	}
+
+	@Override
+	public CompletableFuture<List<CallHierarchyOutgoingCall>> callHierarchyOutgoingCalls(CallHierarchyOutgoingCallsParams params)
+	{
+		// TODO: Might contain work done token
+		return CompletableFuture.supplyAsync(() -> languageService.createCallHierarchyOutgoingCalls(params.getItem()));
+	}
+
+	@Override
+	public CompletableFuture<List<CallHierarchyItem>> prepareCallHierarchy(CallHierarchyPrepareParams params)
+	{
+		return CompletableFuture.supplyAsync(()->languageService.createCallHierarchyItems(params));
+	}
+
 	public void setLanguageService(NaturalLanguageService languageService)
 	{
 		this.languageService = languageService;
