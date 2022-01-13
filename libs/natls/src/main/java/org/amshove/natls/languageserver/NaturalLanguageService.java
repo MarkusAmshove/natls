@@ -135,6 +135,10 @@ public class NaturalLanguageService implements LanguageClientAware
 	{
 
 		var filepath = LspUtil.uriToPath(textDocument.getUri());
+		if (findNaturalFile(filepath).getType() == NaturalFileType.COPYCODE)
+		{
+			return EMPTY_HOVER;
+		}
 		var symbolToSearchFor = findTokenAtPosition(filepath, position); // TODO: Actually look for a node, could be ISymbolReferenceNode
 		if (symbolToSearchFor == null)
 		{
