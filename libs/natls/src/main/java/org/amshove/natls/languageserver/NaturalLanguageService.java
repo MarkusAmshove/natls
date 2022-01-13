@@ -481,7 +481,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var file = findNaturalFile(filePath);
 		var module = file.module();
 		IDefineData defineData;
-		if (!(module instanceof IHasDefineData hasDefineData))
+		if (!(module instanceof IHasDefineData hasDefineData) || hasDefineData.defineData() == null)
 		{
 			return List.of();
 		}
