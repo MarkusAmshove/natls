@@ -365,11 +365,24 @@ public class NaturalLanguageService implements LanguageClientAware
 			return List.of();
 		}
 		defineData = hasDefineData.defineData();
-		return defineData.variables().stream()
+		var matchingVariableDeclarations = defineData.variables().stream()
 			.filter(v -> !(v instanceof IRedefinitionNode))
 			.filter(v -> v.name().equals(tokenUnderCursor.symbolName()))
 			.map(LspUtil::toLocation)
 			.toList();
+
+		if(!matchingVariableDeclarations.isEmpty())
+		{
+			return matchingVariableDeclarations;
+		}
+
+		var referencedModule = file.findNaturalModule(tokenUnderCursor.symbolName());
+		if (referencedModule == null)
+		{
+			return List.of();
+		}
+
+		return List.of(new Location(referencedModule.file().getPath().toUri().toString(), new Range(new Position(0,0), new Position(0,0))));
 	}
 
 	public List<Location> findReferences(ReferenceParams params)
