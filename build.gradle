@@ -15,7 +15,7 @@ ext {
         slf4j_simple : "org.slf4j:slf4j-simple:${SLF4J_VERSION}",
         slf4j_nop    : "org.slf4j:slf4j-nop:${SLF4J_VERSION}",
 		// Test
-		junit_jupiter : 'org.junit:junit-bom:5.7.2',
+		junit_jupiter : 'org.junit:junit-bom:5.8.2',
 		assertJ : 'org.assertj:assertj-core:3.11.1',
         mockito : 'org.mockito:mockito-all:1.10.19',
         archUnit: 'com.tngtech.archunit:archunit:0.22.0'
