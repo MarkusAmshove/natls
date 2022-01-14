@@ -104,7 +104,7 @@ public class App
 
 			for (var file : library.files().stream().filter(f -> f.getFiletype().hasDefineData()).toList())
 			{
-				if(singleModule != null && !singleModule.equalsIgnoreCase(file.getReferableName()))
+				if(singleModule != null && !singleModule.equalsIgnoreCase(file.getFilenameWithoutExtension()))
 				{
 					continue;
 				}

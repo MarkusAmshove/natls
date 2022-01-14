@@ -1,10 +1,8 @@
 package org.amshove.natls.project;
 
-import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.natural.project.NaturalLibrary;
-import org.amshove.natparse.parsing.IModuleProvider;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -13,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class LanguageServerLibrary implements IModuleProvider
+public class LanguageServerLibrary
 {
 	private final NaturalLibrary library;
 	private final Map<String, LanguageServerFile> files;
@@ -65,24 +63,18 @@ public class LanguageServerLibrary implements IModuleProvider
 		return files.values();
 	}
 
-	@Override
-	public INaturalModule findNaturalModule(String referableName)
-	{
-		return provideNaturalModule(referableName, true);
-	}
-
-	private INaturalModule provideNaturalModule(String referableName, boolean includeStepLibs)
+	LanguageServerFile provideNaturalFile(String referableName, boolean includeStepLibs)
 	{
 		if(files.containsKey(referableName))
 		{
-			return files.get(referableName).module();
+			return files.get(referableName);
 		}
 
 		if(includeStepLibs)
 		{
 			for (var stepLib : stepLibs)
 			{
-				var foundModule = stepLib.provideNaturalModule(referableName, false);
+				var foundModule = stepLib.provideNaturalFile(referableName, false);
 				if(foundModule != null)
 				{
 					return foundModule;

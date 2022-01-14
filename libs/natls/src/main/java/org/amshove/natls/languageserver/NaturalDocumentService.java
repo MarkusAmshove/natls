@@ -5,6 +5,7 @@ import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -74,24 +75,41 @@ public class NaturalDocumentService implements TextDocumentService
 				return List.of();
 			}
 
+			var codelens = new ArrayList<CodeLens>();
+
+			var moduleReferenceCodeLens = new CodeLens();
+			moduleReferenceCodeLens.setCommand(
+				new Command(
+					file.getIncomingReferences().size() + " references",
+					"")
+			);
+
 			var module = file.module();
-			if(module instanceof IHasDefineData naturalModule && naturalModule.defineData() != null)
+			if (module instanceof IHasDefineData naturalModule && naturalModule.defineData() != null)
 			{
+				moduleReferenceCodeLens.setRange(LspUtil.toRange(
+					naturalModule.defineData().position()
+				));
 				// TODO(code-lens): Add an actual command
-				return naturalModule
+				naturalModule
 					.defineData()
 					.variables()
 					.stream()
 					.filter(v -> v.references().size() > 0)
 					.map(v -> new CodeLens(
 						LspUtil.toRange(v.declaration()),
-						new Command(v.references().size() + " references", "empty"),
+						new Command(v.references().size() + " references", ""),
 						new Object()
 					))
-					.toList();
+					.forEach(codelens::add);
 			}
 
-			return List.of();
+			if(!file.getIncomingReferences().isEmpty())
+			{
+				codelens.add(moduleReferenceCodeLens);
+			}
+
+			return codelens;
 		});
 	}
 
@@ -117,6 +135,25 @@ public class NaturalDocumentService implements TextDocumentService
 	public CompletableFuture<SignatureHelp> signatureHelp(SignatureHelpParams params)
 	{
 		return CompletableFuture.supplyAsync(() -> languageService.signatureHelp(params.getTextDocument(), params.getPosition()));
+	}
+
+	@Override
+	public CompletableFuture<List<CallHierarchyIncomingCall>> callHierarchyIncomingCalls(CallHierarchyIncomingCallsParams params)
+	{
+		return CompletableFuture.supplyAsync(() -> languageService.createCallHierarchyIncomingCalls(params.getItem()));
+	}
+
+	@Override
+	public CompletableFuture<List<CallHierarchyOutgoingCall>> callHierarchyOutgoingCalls(CallHierarchyOutgoingCallsParams params)
+	{
+		// TODO: Might contain work done token
+		return CompletableFuture.supplyAsync(() -> languageService.createCallHierarchyOutgoingCalls(params.getItem()));
+	}
+
+	@Override
+	public CompletableFuture<List<CallHierarchyItem>> prepareCallHierarchy(CallHierarchyPrepareParams params)
+	{
+		return CompletableFuture.supplyAsync(()->languageService.createCallHierarchyItems(params));
 	}
 
 	public void setLanguageService(NaturalLanguageService languageService)

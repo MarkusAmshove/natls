@@ -48,12 +48,17 @@ public class LspUtil
 		);
 	}
 
-	public static Range toRange(SyntaxToken token)
+	public static Range toRange(IPosition position)
 	{
 		return new Range(
-			new Position(token.line(), token.offsetInLine()),
-			new Position(token.line(), token.offsetInLine() + token.length())
+			new Position(position.line(), position.offsetInLine()),
+			new Position(position.line(), position.offsetInLine() + position.length())
 		);
+	}
+
+	public static Range toRange(SyntaxToken token)
+	{
+		return toRange((IPosition)token);
 	}
 
 	public static Location toLocation(ISyntaxNode node)

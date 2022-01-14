@@ -1,0 +1,10 @@
+define data
+local
+end-define
+
+FETCH RETURN 'PROG2'
+
+ISTRUE(<TRUE>)
+
+
+End

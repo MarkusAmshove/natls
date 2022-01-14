@@ -9,6 +9,11 @@ public class ClientMessage
 	{
 	}
 
+	public static MessageParams log(String message)
+	{
+		return new MessageParams(MessageType.Log, message);
+	}
+
 	public static MessageParams info(String message)
 	{
 		return new MessageParams(MessageType.Info, message);

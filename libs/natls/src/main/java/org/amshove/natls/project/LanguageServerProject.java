@@ -3,9 +3,11 @@ package org.amshove.natls.project;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalProject;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class LanguageServerProject
 {
@@ -48,5 +50,20 @@ public class LanguageServerProject
 		}
 
 		return null;
+	}
+
+	public Collection<LanguageServerLibrary> libraries()
+	{
+		return libraries.values();
+	}
+
+    public Stream<LanguageServerFile> provideAllFiles()
+	{
+		return libraries.values().stream().flatMap(l -> l.files().stream());
+    }
+
+	public long countAllFiles()
+	{
+		return provideAllFiles().count();
 	}
 }

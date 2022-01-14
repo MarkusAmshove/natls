@@ -31,6 +31,18 @@ public class NaturalFile
 		return library.getSourcePath().getParent().getParent().relativize(path);
 	}
 
+	public String getFilenameWithoutExtension()
+	{
+		var fileName = path.getFileName().toString();
+		if(!fileName.contains("."))
+		{
+			return fileName;
+		}
+
+		var extensionIndex = fileName.lastIndexOf('.');
+		return fileName.substring(0, extensionIndex);
+	}
+
 	/* package */ void setLibrary(NaturalLibrary library)
 	{
 		this.library = library;

@@ -1,7 +1,10 @@
 package org.amshove.natls.languageserver;
 
+import org.amshove.natls.progress.IProgressMonitor;
+import org.amshove.natls.progress.ProgressTasks;
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natls.project.LanguageServerProject;
+import org.amshove.natls.project.ModuleReferenceParser;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
@@ -26,6 +29,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,11 +41,12 @@ public class NaturalLanguageService implements LanguageClientAware
 	private NaturalProject project; // TODO: Replace
 	private LanguageServerProject languageServerProject;
 	private LanguageClient client;
+	private boolean initialized;
 
-	public void indexProject(Path workspaceRoot)
+	public void indexProject(Path workspaceRoot, IProgressMonitor progressMonitor)
 	{
 		var projectFile = new ActualFilesystem().findNaturalProjectFile(workspaceRoot);
-		if(projectFile.isEmpty())
+		if (projectFile.isEmpty())
 		{
 			throw new RuntimeException("Could not load Natural project. .natural or _naturalBuild not found");
 		}
@@ -49,6 +55,8 @@ public class NaturalLanguageService implements LanguageClientAware
 		indexer.indexProject(project);
 		this.project = project;
 		languageServerProject = LanguageServerProject.fromProject(project);
+		parseFileReferences(progressMonitor);
+		initialized = true;
 	}
 
 	public List<Either<SymbolInformation, DocumentSymbol>> findSymbolsInFile(TextDocumentIdentifier textDocument)
@@ -127,6 +135,10 @@ public class NaturalLanguageService implements LanguageClientAware
 	{
 
 		var filepath = LspUtil.uriToPath(textDocument.getUri());
+		if (findNaturalFile(filepath).getType() == NaturalFileType.COPYCODE)
+		{
+			return EMPTY_HOVER;
+		}
 		var symbolToSearchFor = findTokenAtPosition(filepath, position); // TODO: Actually look for a node, could be ISymbolReferenceNode
 		if (symbolToSearchFor == null)
 		{
@@ -159,7 +171,7 @@ public class NaturalLanguageService implements LanguageClientAware
 				)
 			)
 			.findFirst()
-			.orElseGet(() -> EMPTY_HOVER);
+			.orElse(EMPTY_HOVER);
 	}
 
 	private Hover hoverCallnat(SyntaxToken symbolToSearchFor)
@@ -255,12 +267,11 @@ public class NaturalLanguageService implements LanguageClientAware
 		if (v.level() > 1)
 		{
 			var groupOwner = v.parent();
-			while (!(groupOwner instanceof IGroupNode) && ((IGroupNode) groupOwner).level() == 1)
+			while (!(groupOwner instanceof IGroupNode group) || ((IGroupNode) groupOwner).level() > 1)
 			{
 				groupOwner = ((ISyntaxNode) groupOwner).parent();
 			}
 
-			var group = ((IGroupNode) groupOwner);
 			hoverText += "\n\n*member of:*";
 			hoverText += "%n ```natural%n %s %d %s%n```".formatted(group.scope().name(), group.level(), group.name());
 		}
@@ -358,11 +369,24 @@ public class NaturalLanguageService implements LanguageClientAware
 			return List.of();
 		}
 		defineData = hasDefineData.defineData();
-		return defineData.variables().stream()
+		var matchingVariableDeclarations = defineData.variables().stream()
 			.filter(v -> !(v instanceof IRedefinitionNode))
 			.filter(v -> v.name().equals(tokenUnderCursor.symbolName()))
 			.map(LspUtil::toLocation)
 			.toList();
+
+		if(!matchingVariableDeclarations.isEmpty())
+		{
+			return matchingVariableDeclarations;
+		}
+
+		var referencedModule = file.findNaturalModule(tokenUnderCursor.symbolName());
+		if (referencedModule == null)
+		{
+			return List.of();
+		}
+
+		return List.of(new Location(referencedModule.file().getPath().toUri().toString(), new Range(new Position(0,0), new Position(0,0))));
 	}
 
 	public List<Location> findReferences(ReferenceParams params)
@@ -418,7 +442,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var calledFile = languageServerProject.findFileByReferableName(calledModule);
 		var module = (INaturalModule) calledFile.module();
 
-		if(!(module instanceof IHasDefineData hasDefineData))
+		if (!(module instanceof IHasDefineData hasDefineData))
 		{
 			return null;
 		}
@@ -457,7 +481,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var file = findNaturalFile(filePath);
 		var module = file.module();
 		IDefineData defineData;
-		if (!(module instanceof IHasDefineData hasDefineData))
+		if (!(module instanceof IHasDefineData hasDefineData) || hasDefineData.defineData() == null)
 		{
 			return List.of();
 		}
@@ -475,7 +499,7 @@ public class NaturalLanguageService implements LanguageClientAware
 					completionItem.setInsertTextFormat(InsertTextFormat.Snippet);
 					var insertText = "'${0:%s}'".formatted(calledModule.name());
 
-					if(!(calledModule instanceof IHasDefineData calledHasDefineData))
+					if (!(calledModule instanceof IHasDefineData calledHasDefineData))
 					{
 						return completionItem;
 					}
@@ -515,7 +539,7 @@ public class NaturalLanguageService implements LanguageClientAware
 					item.setInsertText(variableName);
 				}
 
-				if(!v.position().filePath().equals(defineData.position().filePath()))
+				if (!v.position().filePath().equals(defineData.position().filePath()))
 				{
 					label += " (%s)".formatted(v.position().fileNameWithoutExtension());
 				}
@@ -541,6 +565,13 @@ public class NaturalLanguageService implements LanguageClientAware
 	}
 
 	public void publishDiagnostics(LanguageServerFile file)
+	{
+		publishDiagnosticsOfFile(file);
+		file.getIncomingReferences().forEach(this::publishDiagnosticsOfFile);
+		file.getOutgoingReferences().forEach(this::publishDiagnosticsOfFile);
+	}
+
+	private void publishDiagnosticsOfFile(LanguageServerFile file)
 	{
 		client.publishDiagnostics(new PublishDiagnosticsParams(file.getUri(), file.allDiagnostics()));
 	}
@@ -598,5 +629,130 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		file.changed(newSource);
 		publishDiagnostics(file);
+	}
+
+	public void parseAll(IProgressMonitor monitor)
+	{
+		var libraries = languageServerProject.libraries();
+		var params = new WorkDoneProgressCreateParams();
+		var token = UUID.randomUUID().toString();
+		params.setToken(token);
+
+		monitor.progress("Parse whole Natural Project", 0);
+
+		var fileCount = libraries.stream().map(l -> (long) l.files().size()).mapToLong(l -> l).sum();
+		var filesParsed = 0;
+		for (var lib : libraries)
+		{
+			for (var file : lib.files())
+			{
+				if (!file.getType().hasDefineData())
+				{
+					filesParsed++;
+					continue;
+				}
+				var qualifiedName = "%s.%s".formatted(lib.name(), file.getReferableName());
+
+				var percentage = (int) (filesParsed * 100 / fileCount);
+				monitor.progress(qualifiedName, percentage);
+				file.parse(false);
+				publishDiagnostics(file);
+				filesParsed++;
+			}
+		}
+
+		monitor.progress("Done", 100);
+	}
+
+	public CompletableFuture<Void> parseFileReferences()
+	{
+		return ProgressTasks.startNew("Parsing file references", client, this::parseFileReferences);
+	}
+
+	private void parseFileReferences(IProgressMonitor monitor)
+	{
+		monitor.progress("Clearing current references", 0);
+		var parser = new ModuleReferenceParser();
+		languageServerProject.provideAllFiles().forEach(LanguageServerFile::clearAllIncomingAndOutgoingReferences);
+		var allFilesCount = languageServerProject.countAllFiles();
+		var processedFiles = 0L;
+		for (var library : languageServerProject.libraries())
+		{
+			if (monitor.isCancellationRequested())
+			{
+				break;
+			}
+			for (var file : library.files())
+			{
+				if (monitor.isCancellationRequested())
+				{
+					break;
+				}
+				var percentageDone = 100L * processedFiles / allFilesCount;
+				monitor.progress("Indexing %s.%s".formatted(library.name(), file.getReferableName()), (int) percentageDone);
+				switch (file.getType())
+				{
+					case PROGRAM, SUBPROGRAM, SUBROUTINE -> parser.parseReferences(file);
+				}
+				processedFiles++;
+			}
+		}
+	}
+
+	public boolean isInitialized()
+	{
+		return initialized;
+	}
+
+	public List<CallHierarchyOutgoingCall> createCallHierarchyOutgoingCalls(CallHierarchyItem item)
+	{
+		var file = findNaturalFile(LspUtil.uriToPath(item.getUri()));
+		return file.getOutgoingReferences().stream()
+			.map(r -> {
+				var call = new CallHierarchyOutgoingCall();
+				call.setTo(callHierarchyItem(r));
+				call.setFromRanges(List.of(item.getRange()));
+				return call;
+			})
+			.toList();
+	}
+
+	public List<CallHierarchyIncomingCall> createCallHierarchyIncomingCalls(CallHierarchyItem item)
+	{
+		var file = findNaturalFile(LspUtil.uriToPath(item.getUri()));
+		System.err.println("Caller of " + file.getReferableName() + " : " + file.getIncomingReferences().stream().map(LanguageServerFile::getReferableName).collect(Collectors.joining(";")));
+		return file.getIncomingReferences().stream()
+			.map(r -> {
+				var call = new CallHierarchyIncomingCall();
+				call.setFrom(callHierarchyItem(r));
+				call.setFromRanges(List.of(new Range(new Position(0,0), new Position(0,0))));
+				return call;
+			})
+			.toList();
+	}
+
+	public List<CallHierarchyItem> createCallHierarchyItems(CallHierarchyPrepareParams params)
+	{
+		var file = findNaturalFile(LspUtil.uriToPath(params.getTextDocument().getUri()));
+		var item = new CallHierarchyItem();
+		item.setRange(new Range(new Position(0,0), new Position(0,0)));
+		item.setSelectionRange(new Range(new Position(0,0), new Position(0,0)));
+		item.setName(file.getReferableName());
+		item.setDetail(file.getType().toString());
+		item.setUri(params.getTextDocument().getUri());
+		item.setKind(SymbolKind.Class);
+		return List.of(item);
+	}
+
+	private CallHierarchyItem callHierarchyItem(LanguageServerFile file)
+	{
+		var item = new CallHierarchyItem();
+		item.setRange(new Range(new Position(0,0), new Position(0,0)));
+		item.setSelectionRange(new Range(new Position(0,0), new Position(0,0)));
+		item.setName(file.getReferableName());
+		item.setDetail(file.getType().toString());
+		item.setUri(file.getPath().toUri().toString());
+		item.setKind(SymbolKind.Class);
+		return item;
 	}
 }
