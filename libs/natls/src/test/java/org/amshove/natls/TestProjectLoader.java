@@ -34,10 +34,9 @@ public class TestProjectLoader
 
 	private static void copyProjectToTemporaryFolder(Path destinationDirectory, Path sourceDirectoryLocation)
 	{
-		try
+		try(var walk = Files.walk(sourceDirectoryLocation))
 		{
-			Files.walk(sourceDirectoryLocation)
-				.forEach(source -> {
+				walk.forEach(source -> {
 					var target = destinationDirectory.resolve(sourceDirectoryLocation.relativize(source));
 
 					// Root folder
