@@ -59,6 +59,12 @@ public class ModuleReferenceParserShould
 		assertThatFileReferences(module("PROG2"), module("PROG3"));
 	}
 
+	@Test
+	void resolveFunctionCalls()
+	{
+		assertThatFileReferences(module("PROG1"), module("ISTRUE"))	;
+	}
+
 	private void assertThatFileReferences(LanguageServerFile fileWithOutgoingReference, LanguageServerFile fileWithIncomingReference)
 	{
 		assertThat(fileWithOutgoingReference.getOutgoingReferences())
