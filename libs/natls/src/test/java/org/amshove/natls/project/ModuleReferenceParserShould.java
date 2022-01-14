@@ -32,7 +32,6 @@ public class ModuleReferenceParserShould
 	{
 		if(System.getenv().containsKey("GITHUB_ACTIONS"))
 		{
-			System.err.println("GITHUB ACTIONS");
 			return;
 		}
 
