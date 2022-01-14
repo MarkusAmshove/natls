@@ -1,0 +1,13 @@
+<LibraryStepLibs>
+    <LibrariesSteplibs>
+        <LibrarySteplib>
+            <LibrarySteplibName>LIBONE</LibrarySteplibName>
+            <LibrarySteplibNSV>LIBTWO</LibrarySteplibNSV>
+            <LibrarySteplibExtensions>1;LIBTWO[-1,-1];</LibrarySteplibExtensions>
+        </LibrarySteplib>
+        <LibrarySteplib>
+            <LibrarySteplibName>LIBTWO</LibrarySteplibName>
+            <LibrarySteplibExtensions>0;</LibrarySteplibExtensions>
+        </LibrarySteplib>
+    </LibrariesSteplibs>
+</LibraryStepLibs>

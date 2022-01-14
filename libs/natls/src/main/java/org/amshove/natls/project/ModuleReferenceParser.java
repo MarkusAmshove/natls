@@ -23,7 +23,6 @@ public class ModuleReferenceParser
 		var path = file.getPath();
 		try
 		{
-			file.clearAllIncomingAndOutgoingReferences();
 			var tokens = lexer.lex(Files.readString(path), path);
 			var calledModules = processReferences(tokens);
 			for (var calledModule : calledModules)
