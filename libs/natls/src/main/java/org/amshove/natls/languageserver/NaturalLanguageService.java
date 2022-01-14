@@ -171,7 +171,7 @@ public class NaturalLanguageService implements LanguageClientAware
 				)
 			)
 			.findFirst()
-			.orElseGet(() -> EMPTY_HOVER);
+			.orElse(EMPTY_HOVER);
 	}
 
 	private Hover hoverCallnat(SyntaxToken symbolToSearchFor)

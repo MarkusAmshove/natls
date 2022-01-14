@@ -28,7 +28,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build
-        run: ./gradlew check shadowJar --stacktrace
+        run: ./gradlew check shadowJar --stacktrace --no-daemon
 
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action/composite@v1
