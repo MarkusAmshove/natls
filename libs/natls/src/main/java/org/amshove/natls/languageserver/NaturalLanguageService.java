@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -152,16 +153,18 @@ public class NaturalLanguageService implements LanguageClientAware
 		}
 
 		var module = findNaturalFile(filepath).module();
-		IDefineData defineData;
 		if (!(module instanceof IHasDefineData hasDefineData))
 		{
 			return EMPTY_HOVER;
 		}
 
-		return hasDefineData
+        Predicate<IVariableNode> variableFilter = symbolToSearchFor.symbolName().contains(".")
+            ? v -> v.qualifiedName().equals(symbolToSearchFor.symbolName())
+            : v -> v.declaration().symbolName().equals(symbolToSearchFor.symbolName());
+        return hasDefineData
 			.defineData()
 			.variables().stream()
-			.filter(v -> v.declaration().symbolName().equals(symbolToSearchFor.symbolName()))
+			.filter(variableFilter)
 			.map(v ->
 				new Hover(
 					new MarkupContent(
