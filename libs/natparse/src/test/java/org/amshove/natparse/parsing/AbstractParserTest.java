@@ -1,14 +1,17 @@
 package org.amshove.natparse.parsing;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+
+import java.nio.file.Paths;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.ITokenNode;
 import org.assertj.core.api.ObjectAssert;
-
-import java.nio.file.Paths;
-import java.util.function.Function;
-
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 public abstract class AbstractParserTest<NodeType>
 {
@@ -18,6 +21,26 @@ public abstract class AbstractParserTest<NodeType>
     {
         this.sut = sut;
     }
+
+    protected NodeType assertParsesWithoutDiagnostics(String source)
+    {
+        var lexer = new Lexer();
+		var lexResult = lexer.lex(source, Paths.get("TEST.NSA"));
+		assertThat(lexResult.diagnostics().size())
+			.as(
+				"Expected the source to lex without diagnostics%n%s"
+					.formatted(lexResult.diagnostics().stream().map(IDiagnostic::message).collect(Collectors.joining("\n"))))
+			.isZero();
+		var parseResult = sut.parse(lexResult);
+		assertThat(parseResult.diagnostics().size())
+			.as(
+				"Expected the source to parse without diagnostics%n%s"
+					.formatted(parseResult.diagnostics().stream().map(IDiagnostic::message).collect(Collectors.joining("\n"))))
+			.isZero();
+
+		return parseResult.result();
+    }
+
 
 	protected void assertDiagnostic(String source, ParserError expectedError)
 	{

@@ -1,7 +1,5 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.IDiagnostic;
-import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
 import org.junit.jupiter.api.DynamicTest;
@@ -11,7 +9,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -1445,26 +1442,6 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			3 rest (a5)
 			end-define
 			""");
-	}
-
-	private IDefineData assertParsesWithoutDiagnostics(String source)
-	{
-		var lexer = new Lexer();
-		var lexResult = lexer.lex(source, Paths.get("TEST.NSA"));
-		assertThat(lexResult.diagnostics().size())
-			.as(
-				"Expected the source to lex without diagnostics%n%s"
-					.formatted(lexResult.diagnostics().stream().map(IDiagnostic::message).collect(Collectors.joining("\n"))))
-			.isZero();
-		var parser = new DefineDataParser(null);
-		var parseResult = parser.parse(lexResult);
-		assertThat(parseResult.diagnostics().size())
-			.as(
-				"Expected the source to parse without diagnostics%n%s"
-					.formatted(parseResult.diagnostics().stream().map(IDiagnostic::message).collect(Collectors.joining("\n"))))
-			.isZero();
-
-		return parseResult.result();
 	}
 
 	private DynamicTest createTypeTest(String source, DataFormat expectedFormat, double expectedLength, boolean hasDynamicLength)
