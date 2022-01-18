@@ -10,9 +10,14 @@ import java.util.function.Function;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-public abstract class AbstractParserTest
+public abstract class AbstractParserTest<NodeType>
 {
-	private final DefineDataParser sut = new DefineDataParser(null);
+	private final AbstractParser<NodeType> sut;
+
+    protected AbstractParserTest(AbstractParser<NodeType> sut)
+    {
+        this.sut = sut;
+    }
 
 	protected void assertDiagnostic(String source, ParserError expectedError)
 	{

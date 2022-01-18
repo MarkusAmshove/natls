@@ -20,8 +20,12 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
-class DefineDataParserShould extends AbstractParserTest
+class DefineDataParserShould extends AbstractParserTest<IDefineData>
 {
+    DefineDataParserShould()
+    {
+        super(new DefineDataParser(null));
+    }
 
 	@Test
 	void returnADiagnosticWhenNoDefineDataIsFound()
