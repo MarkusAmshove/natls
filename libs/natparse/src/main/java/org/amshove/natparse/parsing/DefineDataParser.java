@@ -507,11 +507,12 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 
 
-		var defineData = sideloadDefineData(identifierReference);
-		if(defineData != null)
+		var defineDataModule = sideloadDefineData(identifierReference);
+		if(defineDataModule != null)
 		{
-			using.setDefineData(defineData);
-			for (var variable : defineData.variables())
+			using.setReferencingModule((NaturalModule)defineDataModule);
+			using.setDefineData(defineDataModule.defineData());
+			for (var variable : defineDataModule.defineData().variables())
 			{
 				if(variable.level() == 1)
 				{

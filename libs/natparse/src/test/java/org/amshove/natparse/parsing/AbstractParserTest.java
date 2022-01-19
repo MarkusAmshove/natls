@@ -33,6 +33,12 @@ public abstract class AbstractParserTest<NodeType>
 		sut = sutFactory.apply(null);
 	}
 
+	protected void useStubModuleProvider()
+	{
+		moduleProvider = new ModuleProviderStub();
+		sut = sutFactory.apply(moduleProvider);
+	}
+
 	protected NodeType assertParsesWithoutDiagnostics(String source)
 	{
 		var lexer = new Lexer();
@@ -95,5 +101,12 @@ public abstract class AbstractParserTest<NodeType>
 		}
 
 		return node;
+	}
+
+	protected NaturalModule newEmptyLda()
+	{
+		var module = new NaturalModule(null);
+		module.setDefineData(new DefineDataNode());
+		return module;
 	}
 }

@@ -3,6 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.IDefineData;
+import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.IUsingNode;
 import org.amshove.natparse.natural.VariableScope;
 
@@ -11,6 +12,7 @@ class UsingNode extends BaseSyntaxNode implements IUsingNode
 	private SyntaxToken using;
 	private VariableScope scope;
 	private IDefineData defineData;
+	private INaturalModule referencingModule;
 
 	@Override
 	public SyntaxToken target()
@@ -61,5 +63,26 @@ class UsingNode extends BaseSyntaxNode implements IUsingNode
 	public String toString()
 	{
 		return "UsingNode{scope=%s, using=%s}".formatted(scope, using);
+	}
+
+	@Override
+	public INaturalModule reference()
+	{
+		return referencingModule;
+	}
+
+	@Override
+	public SyntaxToken referencingToken()
+	{
+		return using;
+	}
+
+	void setReferencingModule(NaturalModule module)
+	{
+		referencingModule = module;
+		if (referencingModule != null)
+		{
+			module.addReference(this);
+		}
 	}
 }

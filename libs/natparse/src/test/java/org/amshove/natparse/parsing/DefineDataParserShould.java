@@ -73,6 +73,25 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void referenceAUsingTarget()
+	{
+		useStubModuleProvider();
+		var importedLda = newEmptyLda();
+		moduleProvider.addModule("SOMELDA", importedLda);
+
+		var source = """
+			   DEFINE DATA
+			   LOCAL USING SOMELDA
+			   END-DEFINE
+			""";
+
+		var defineData = assertParsesWithoutDiagnostics(source);
+		var using = defineData.localUsings().first();
+		assertThat(using.referencingToken().symbolName()).isEqualTo("SOMELDA");
+		assertThat(using.reference()).isEqualTo(importedLda);
+	}
+
+	@Test
 	void setTheCorrectParentForNodes()
 	{
 		var source = """
