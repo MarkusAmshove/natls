@@ -1,6 +1,7 @@
 plugins {
 	id 'java-library'
 	id 'org.sonarqube' version '2.7'
+    id "com.diffplug.spotless" version "6.2.0"
 }
 
 ext {
@@ -20,6 +21,18 @@ ext {
         mockito : 'org.mockito:mockito-all:1.10.19',
         archUnit: 'com.tngtech.archunit:archunit:0.22.0'
 	]
+}
+
+spotless {
+    format 'gradle', {
+        target '.gradle'
+        indentWithTabs()
+    }
+    java {
+        target '**/src/*/java/**/*.java'
+        toggleOffOn('"""', '"""')
+        indentWithTabs()
+    }
 }
 
 allprojects {

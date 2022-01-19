@@ -171,10 +171,10 @@ abstract class AbstractParser<T>
 			return lparen;
 		}
 
-		 var literal = consumeAny(List.of(SyntaxKind.NUMBER, SyntaxKind.STRING, SyntaxKind.TRUE, SyntaxKind.FALSE));
-		 previousNode = new TokenNode(literal);
-		 node.addNode(previousNode);
-		 return literal;
+		var literal = consumeAny(List.of(SyntaxKind.NUMBER, SyntaxKind.STRING, SyntaxKind.TRUE, SyntaxKind.FALSE));
+		previousNode = new TokenNode(literal);
+		node.addNode(previousNode);
+		return literal;
 	}
 
 	// TODO: Remove/Change once IDENTIFIER_OR_KEYWORD is no more
