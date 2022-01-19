@@ -1,30 +1,30 @@
 package org.amshove.natparse.parsing;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-
-import java.nio.file.Paths;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.ITokenNode;
 import org.assertj.core.api.ObjectAssert;
 
+import java.nio.file.Paths;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+
 public abstract class AbstractParserTest<NodeType>
 {
 	private final AbstractParser<NodeType> sut;
 
-    protected AbstractParserTest(AbstractParser<NodeType> sut)
-    {
-        this.sut = sut;
-    }
+	protected AbstractParserTest(AbstractParser<NodeType> sut)
+	{
+		this.sut = sut;
+	}
 
-    protected NodeType assertParsesWithoutDiagnostics(String source)
-    {
-        var lexer = new Lexer();
+	protected NodeType assertParsesWithoutDiagnostics(String source)
+	{
+		var lexer = new Lexer();
 		var lexResult = lexer.lex(source, Paths.get("TEST.NSA"));
 		assertThat(lexResult.diagnostics().size())
 			.as(
@@ -39,7 +39,7 @@ public abstract class AbstractParserTest<NodeType>
 			.isZero();
 
 		return parseResult.result();
-    }
+	}
 
 
 	protected void assertDiagnostic(String source, ParserError expectedError)

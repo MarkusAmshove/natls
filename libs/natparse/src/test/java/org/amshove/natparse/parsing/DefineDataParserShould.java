@@ -19,10 +19,10 @@ import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 class DefineDataParserShould extends AbstractParserTest<IDefineData>
 {
-    DefineDataParserShould()
-    {
-        super(new DefineDataParser(null));
-    }
+	DefineDataParserShould()
+	{
+		super(new DefineDataParser(null));
+	}
 
 	@Test
 	void returnADiagnosticWhenNoDefineDataIsFound()
@@ -748,10 +748,10 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			   DEFINE DATA
 			   LOCAL
 			   01 #FIRSTVAR
-			     02 #FIRSTVAR-A (N2) INIT <5>
-			     02 #FIRSTVAR-B (P6) INIT <10>
+				 02 #FIRSTVAR-A (N2) INIT <5>
+				 02 #FIRSTVAR-B (P6) INIT <10>
 			  01 REDEFINE #FIRSTVAR
-			     02 #FIRSTVAR-ALPHA (A6)
+				 02 #FIRSTVAR-ALPHA (A6)
 			   END-DEFINE
 			""";
 
@@ -791,8 +791,8 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			   LOCAL
 			   1 #DATE (N8)
 			   1 REDEFINE #DATE
-			    2 #YEAR (N4)
-			    2 #MONTH (N2)
+				2 #YEAR (N4)
+				2 #MONTH (N2)
 			   END-DEFINE
 			""";
 

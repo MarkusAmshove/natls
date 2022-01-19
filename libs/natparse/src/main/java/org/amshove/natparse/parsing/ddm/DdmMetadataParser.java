@@ -10,13 +10,13 @@ class DdmMetadataParser
 
 	DdmMetadata parseMetadataLine(String line)
 	{
-        var matcher = METADATA_PATTERN.matcher(line);
+		var matcher = METADATA_PATTERN.matcher(line);
 		if (!matcher.find())
 		{
 			throw new NaturalParseException(String.format("DDM Metadata line could not be parsed: \"%s\"", line));
 		}
 
-        var metadata = new DdmMetadata();
+		var metadata = new DdmMetadata();
 		metadata.setName(matcher.group("DBNAME"));
 		metadata.setDatabaseNumber(matcher.group("DBNR"));
 		metadata.setFileNumber(matcher.group("FILENR"));

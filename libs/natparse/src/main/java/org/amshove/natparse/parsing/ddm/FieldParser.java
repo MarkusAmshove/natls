@@ -37,20 +37,20 @@ class FieldParser
 
 	public DdmField parse(LinewiseTextScanner scanner)
 	{
-        var fieldLine = scanner.peek();
-        var fieldType = parseFieldType(fieldLine);
+		var fieldLine = scanner.peek();
+		var fieldType = parseFieldType(fieldLine);
 
-        var name = parseName(fieldLine);
-        var shortname = parseShortname(fieldLine);
-        var level = parseLevel(fieldLine);
-        var suppression = parseSuppression(fieldLine);
-        var descriptorType = parseDescriptorType(fieldLine);
-        var remark = parseRemark(fieldLine);
+		var name = parseName(fieldLine);
+		var shortname = parseShortname(fieldLine);
+		var level = parseLevel(fieldLine);
+		var suppression = parseSuppression(fieldLine);
+		var descriptorType = parseDescriptorType(fieldLine);
+		var remark = parseRemark(fieldLine);
 
-        var length = fieldType == FieldType.GROUP || fieldType == FieldType.PERIODIC
+		var length = fieldType == FieldType.GROUP || fieldType == FieldType.PERIODIC
 			? 0
 			: parseLength(scanner);
-        var dataFormat = fieldType == FieldType.GROUP || fieldType == FieldType.PERIODIC
+		var dataFormat = fieldType == FieldType.GROUP || fieldType == FieldType.PERIODIC
 			? DataFormat.NONE
 			: parseFormat(fieldLine);
 
@@ -73,7 +73,7 @@ class FieldParser
 
 	private static int parseLevel(String line)
 	{
-        var level = getField(line, LEVEL_INDEX, LEVEL_LENGTH);
+		var level = getField(line, LEVEL_INDEX, LEVEL_LENGTH);
 		return Integer.parseInt(level);
 	}
 
@@ -89,13 +89,13 @@ class FieldParser
 
 	private static DataFormat parseFormat(String line)
 	{
-        var format = getField(line, FORMAT_INDEX, FORMAT_LENGTH);
+		var format = getField(line, FORMAT_INDEX, FORMAT_LENGTH);
 		return DataFormat.fromSource(format);
 	}
 
 	protected double parseLength(LinewiseTextScanner scanner)
 	{
-        var ddmLength = getField(scanner.peek(), LENGTH_INDEX, LENGTH_LENGTH);
+		var ddmLength = getField(scanner.peek(), LENGTH_INDEX, LENGTH_LENGTH);
 		if (ddmLength.contains(","))
 		{
 			// Using NumberFormat would not throw on invalid Characters
@@ -114,13 +114,13 @@ class FieldParser
 
 	private static NullValueSuppression parseSuppression(String line)
 	{
-        var suppression = getField(line, SUPPRESSION_INDEX, SUPPRESSION_LENGTH);
+		var suppression = getField(line, SUPPRESSION_INDEX, SUPPRESSION_LENGTH);
 		return NullValueSuppression.fromSource(suppression);
 	}
 
 	private static String getField(String line, int index, int length)
 	{
-        var endIndex = index + length;
+		var endIndex = index + length;
 
 		if (index > line.length())
 		{
@@ -130,7 +130,7 @@ class FieldParser
 		// DDM source was saved without trailing whitespace
 		if (endIndex > line.length())
 		{
-            var firstPart = line.substring(index);
+			var firstPart = line.substring(index);
 			return firstPart + " ".repeat(length - firstPart.length());
 		}
 

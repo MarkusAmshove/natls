@@ -4,5 +4,5 @@ import org.amshove.natparse.ReadOnlyList;
 
 public interface IStatementListNode extends ISyntaxNode
 {
-    ReadOnlyList<IStatementNode> statements();
+	ReadOnlyList<IStatementNode> statements();
 }

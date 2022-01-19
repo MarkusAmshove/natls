@@ -35,15 +35,15 @@ public class DdmParser
 	public IDataDefinitionModule parseDdm(String content)
 	{
 		resetParser();
-        var lines = content.split("[\\r\\n]+");
-        var scanner = new LinewiseTextScanner(lines);
+		var lines = content.split("[\\r\\n]+");
+		var scanner = new LinewiseTextScanner(lines);
 		fieldParser = adabasFieldParser;
 
 		ImmutableList.Builder<IDdmField> ddmFields = ImmutableList.builder();
 
 		while (!scanner.isAtEnd())
 		{
-            var line = scanner.peek();
+			var line = scanner.peek();
 
 			if (isLineToSkip(line))
 			{
@@ -53,7 +53,7 @@ public class DdmParser
 
 			if (line.startsWith("DB:"))
 			{
-                var metadata = metadataParser.parseMetadataLine(line);
+				var metadata = metadataParser.parseMetadataLine(line);
 				ddm = new DataDefinitionModule(metadata.databaseNumber(), metadata.fileNumber(), metadata.name(), metadata.defaultSequence());
 				scanner.advance();
 				continue;
@@ -71,10 +71,10 @@ public class DdmParser
 				continue;
 			}
 
-            var field = parseField(scanner);
+			var field = parseField(scanner);
 			if (field.fieldType() == FieldType.GROUP)
 			{
-                var groupField = new GroupField(field);
+				var groupField = new GroupField(field);
 				scanner.advance();
 				ImmutableList.Builder<IDdmField> groupMembers = ImmutableList.builder();
 				parseGroup(scanner, groupField, groupMembers);
@@ -159,7 +159,7 @@ public class DdmParser
 				return;
 			}
 
-            var nextField = parseField(scanner);
+			var nextField = parseField(scanner);
 
 			if (nextField.level() <= currentField.level())
 			{
@@ -173,7 +173,7 @@ public class DdmParser
 			}
 			else
 			{
-                var childGroupField = new GroupField(nextField);
+				var childGroupField = new GroupField(nextField);
 				groupMembers.add(childGroupField);
 				scanner.advance();
 				ImmutableList.Builder<IDdmField> childGroupMembers = ImmutableList.builder();
@@ -189,12 +189,12 @@ public class DdmParser
 		// SOURCE FIELD(S) comment from predic
 		scanner.advance();
 
-        var superdescriptor = new Superdescriptor(field);
+		var superdescriptor = new Superdescriptor(field);
 		ImmutableList.Builder<ISuperdescriptorChild> children = ImmutableList.builder();
 
 		while (!scanner.isAtEnd() && containsSuperdescriptorSourceFieldRange(scanner.peek()))
 		{
-            var child = superdescriptorChildParser.parse(scanner.peek());
+			var child = superdescriptorChildParser.parse(scanner.peek());
 			children.add(child);
 			childrenToReference.add(child);
 			scanner.advance();

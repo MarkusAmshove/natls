@@ -158,10 +158,10 @@ public class NaturalLanguageService implements LanguageClientAware
 			return EMPTY_HOVER;
 		}
 
-        Predicate<IVariableNode> variableFilter = symbolToSearchFor.symbolName().contains(".")
-            ? v -> v.qualifiedName().equals(symbolToSearchFor.symbolName())
-            : v -> v.declaration().symbolName().equals(symbolToSearchFor.symbolName());
-        return hasDefineData
+		Predicate<IVariableNode> variableFilter = symbolToSearchFor.symbolName().contains(".")
+			? v -> v.qualifiedName().equals(symbolToSearchFor.symbolName())
+			: v -> v.declaration().symbolName().equals(symbolToSearchFor.symbolName());
+		return hasDefineData
 			.defineData()
 			.variables().stream()
 			.filter(variableFilter)
