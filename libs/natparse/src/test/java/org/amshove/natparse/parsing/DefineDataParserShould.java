@@ -21,7 +21,8 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 {
 	DefineDataParserShould()
 	{
-		super(new DefineDataParser(null));
+		super(DefineDataParser::new);
+		ignoreModuleProvider();
 	}
 
 	@Test

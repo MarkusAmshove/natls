@@ -15,6 +15,7 @@ class NaturalModule
 	private final NaturalFile file;
 	private IDefineData defineData;
 	private final List<IDiagnostic> diagnostics = new ArrayList<>();
+	private final List<IModuleReferencingNode> references = new ArrayList<>();
 
 	NaturalModule(NaturalFile file)
 	{
@@ -40,6 +41,12 @@ class NaturalModule
 	}
 
 	@Override
+	public ReadOnlyList<IModuleReferencingNode> references()
+	{
+		return ReadOnlyList.from(references);
+	}
+
+	@Override
 	public IDefineData defineData()
 	{
 		return defineData;
@@ -56,5 +63,10 @@ class NaturalModule
 		{
 			this.diagnostics.add(diagnostic);
 		}
+	}
+
+	void addReference(IModuleReferencingNode referencingNode)
+	{
+		references.add(referencingNode);
 	}
 }

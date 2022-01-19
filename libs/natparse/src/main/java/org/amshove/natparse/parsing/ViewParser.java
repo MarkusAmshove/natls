@@ -172,7 +172,7 @@ class ViewParser extends AbstractParser<ViewNode>
 			? (RedefinitionNode) variable
 			: new GroupNode(variable);
 
-		if (previous().kind() == SyntaxKind.LPAREN)
+		if (previousToken().kind() == SyntaxKind.LPAREN)
 		{
 			addArrayDimensions(group);
 			consumeMandatory(group, SyntaxKind.RPAREN);
@@ -344,7 +344,7 @@ class ViewParser extends AbstractParser<ViewNode>
 	 */
 	private void addArrayDimensionsWorkaroundSlash(TypedVariableNode typedVariable) throws ParseError
 	{
-		var identifierToken = previous();
+		var identifierToken = previousToken();
 		var relevantSource = identifierToken.source().substring(identifierToken.source().indexOf('/'));
 
 		var slashToken = SyntheticTokenNode.fromToken(identifierToken, SyntaxKind.SLASH, "/");

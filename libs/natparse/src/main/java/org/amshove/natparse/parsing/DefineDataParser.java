@@ -233,7 +233,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			currentRedefineNode = redefine;
 		}
 
-		if (previous().kind() == SyntaxKind.LPAREN)
+		if (previousToken().kind() == SyntaxKind.LPAREN)
 		{
 			addArrayDimensions(groupNode);
 			consumeMandatory(groupNode, SyntaxKind.RPAREN);
@@ -257,7 +257,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				var nestedVariable = variable(groupNode.getDimensions());
 				groupNode.addVariable(nestedVariable);
 
-				if (peek().line() == previous().line()
+				if (peek().line() == previousToken().line()
 					&& peek().kind() != SyntaxKind.NUMBER) // multiple variables declared in the same line...
 				{
 					// Error handling for trailing stuff that shouldn't be there
@@ -357,7 +357,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		if (consumeOptionally(typedVariable, SyntaxKind.INIT) || consumeOptionally(typedVariable, SyntaxKind.CONST) || consumeOptionally(typedVariable, SyntaxKind.CONSTANT))
 		{
-			if (previous().kind() == SyntaxKind.CONST || previous().kind() == SyntaxKind.CONSTANT)
+			if (previousToken().kind() == SyntaxKind.CONST || previousToken().kind() == SyntaxKind.CONSTANT)
 			{
 				type.setConstant();
 			}
@@ -818,7 +818,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	 */
 	private void addArrayDimensionsWorkaroundSlash(TypedVariableNode typedVariable) throws ParseError
 	{
-		var identifierToken = previous();
+		var identifierToken = previousToken();
 		var relevantSource = identifierToken.source().substring(identifierToken.source().indexOf('/'));
 
 		var slashToken = SyntheticTokenNode.fromToken(identifierToken, SyntaxKind.SLASH, "/");

@@ -15,11 +15,22 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 public abstract class AbstractParserTest<NodeType>
 {
-	private final AbstractParser<NodeType> sut;
+	private final Function<IModuleProvider, AbstractParser<NodeType>> sutFactory;
+	private AbstractParser<NodeType> sut;
 
-	protected AbstractParserTest(AbstractParser<NodeType> sut)
+	protected ModuleProviderStub moduleProvider;
+
+	protected AbstractParserTest(Function<IModuleProvider, AbstractParser<NodeType>> sutFactory)
 	{
-		this.sut = sut;
+		this.sutFactory = sutFactory;
+		moduleProvider = new ModuleProviderStub();
+		this.sut = sutFactory.apply(moduleProvider);
+	}
+
+	protected void ignoreModuleProvider()
+	{
+		moduleProvider = null;
+		sut = sutFactory.apply(null);
 	}
 
 	protected NodeType assertParsesWithoutDiagnostics(String source)
@@ -40,7 +51,6 @@ public abstract class AbstractParserTest<NodeType>
 
 		return parseResult.result();
 	}
-
 
 	protected void assertDiagnostic(String source, ParserError expectedError)
 	{

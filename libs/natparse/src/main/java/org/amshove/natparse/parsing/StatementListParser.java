@@ -51,8 +51,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		if(consumeOptionally(callnat, SyntaxKind.STRING))
 		{
-			callnat.setCalledModule(previous());
-
+			callnat.setCalledModule(previousToken());
+			var referencedModule = sideloadModule(callnat.referencingToken().stringValue(), previousTokenNode());
+			callnat.setReferencedModule((NaturalModule) referencedModule);
 		}
 
 		statementList.addStatement(callnat);

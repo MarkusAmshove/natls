@@ -12,13 +12,18 @@ import java.util.List;
 
 abstract class AbstractParser<T>
 {
-	protected final IModuleProvider moduleProvider;
+	protected IModuleProvider moduleProvider;
 	protected TokenList tokens;
 	private TokenNode previousNode;
 
 	private List<IDiagnostic> diagnostics = new ArrayList<>();
 
 	public AbstractParser(IModuleProvider moduleProvider)
+	{
+		this.moduleProvider = moduleProvider;
+	}
+
+	void setModuleProvider(IModuleProvider moduleProvider)
 	{
 		this.moduleProvider = moduleProvider;
 	}
@@ -35,7 +40,7 @@ abstract class AbstractParser<T>
 
 	protected abstract T parseInternal();
 
-	private INaturalModule sideloadModule(String referableName, ISymbolReferenceNode importNode)
+	protected INaturalModule sideloadModule(String referableName, ITokenNode importNode)
 	{
 		if(moduleProvider == null)
 		{
@@ -143,7 +148,7 @@ abstract class AbstractParser<T>
 	{
 		if(consumeOptionally(node, kind))
 		{
-			return previous();
+			return previousToken();
 		}
 
 		diagnostics.add(ParserErrors.unexpectedToken(kind, peek()));
@@ -186,7 +191,7 @@ abstract class AbstractParser<T>
 			previousNode = new TokenNode(peek());
 			node.addNode(previousNode);
 			tokens.advance();
-			return previous();
+			return previousToken();
 		}
 
 		diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, peek()));
@@ -210,7 +215,12 @@ abstract class AbstractParser<T>
 		return !tokens.isAtEnd() && acceptedKinds.contains(tokens.peek().kind());
 	}
 
-	protected SyntaxToken previous()
+	protected TokenNode previousTokenNode()
+	{
+		return previousNode;
+	}
+
+	protected SyntaxToken previousToken()
 	{
 		return tokens.peek(-1);
 	}

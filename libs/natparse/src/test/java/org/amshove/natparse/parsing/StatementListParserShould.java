@@ -8,19 +8,33 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-class StatementParserShould extends AbstractParserTest<IStatementListNode>
+class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 {
-	protected StatementParserShould()
+	protected StatementListParserShould()
 	{
-		super(new StatementListParser(null));
+		super(StatementListParser::new);
 	}
 
 	@Test
 	void parseASimpleCallnat()
 	{
+		ignoreModuleProvider();
 		var callnat = assertParsesSingleStatement("CALLNAT 'MODULE'", ICallnatNode.class);
 		assertThat(callnat.calledModule().kind()).isEqualTo(SyntaxKind.STRING);
 		assertThat(callnat.calledModule().stringValue()).isEqualTo("MODULE");
+	}
+
+	@Test
+	void addBidirectionalReferencesForCallnats()
+	{
+		var calledSubprogram = new NaturalModule(null);
+		moduleProvider.addModule("A-MODULE", calledSubprogram);
+
+		var callnat = assertParsesSingleStatement("CALLNAT 'A-MODULE'", ICallnatNode.class);
+		assertThat(callnat.reference()).isEqualTo(calledSubprogram);
+		assertThat(callnat.referencingToken().kind()).isEqualTo(SyntaxKind.STRING);
+		assertThat(callnat.referencingToken().stringValue()).isEqualTo("A-MODULE");
+		assertThat(calledSubprogram.references()).contains(callnat);
 	}
 
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
