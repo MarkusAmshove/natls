@@ -9,17 +9,17 @@ import org.amshove.natparse.natural.IStatementNode;
 
 class StatementListNode extends BaseSyntaxNode implements IStatementListNode
 {
-    private final List<IStatementNode> statements = new ArrayList<>();
+	private final List<IStatementNode> statements = new ArrayList<>();
 
 	@Override
 	public ReadOnlyList<IStatementNode> statements()
-    {
+	{
 		return ReadOnlyList.from(statements);
 	}
 
-    void addStatement(StatementNode statement)
-    {
-        statements.add(statement);
-        statement.setParent(this);
-    }
+	void addStatement(StatementNode statement)
+	{
+		statements.add(statement);
+		statement.setParent(this);
+	}
 }

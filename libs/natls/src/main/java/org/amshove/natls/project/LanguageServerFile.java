@@ -222,20 +222,20 @@ public class LanguageServerFile implements IModuleProvider
 		return calledFile.module();
 	}
 
-    void addIncomingReference(LanguageServerFile caller)
-    {
-        incomingReferences.add(caller);
-    }
+	void addIncomingReference(LanguageServerFile caller)
+	{
+		incomingReferences.add(caller);
+	}
 
 	private void removeIncomingReference(LanguageServerFile caller)
 	{
 		incomingReferences.remove(caller);
 	}
 
-    void addOutgoingReference(LanguageServerFile calledModule)
-    {
-        outgoingReferences.add(calledModule);
-    }
+	void addOutgoingReference(LanguageServerFile calledModule)
+	{
+		outgoingReferences.add(calledModule);
+	}
 
 	private void removeOutgoingReference(LanguageServerFile calledModule)
 	{
