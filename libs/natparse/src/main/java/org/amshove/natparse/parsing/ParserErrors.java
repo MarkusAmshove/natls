@@ -276,7 +276,7 @@ class ParserErrors
 	public static IDiagnostic unresolvedImport(ITokenNode importNode)
 	{
 		return ParserDiagnostic.create(
-			"Could not resolve import %s".formatted(importNode.token().symbolName()),
+			"Could not resolve external module %s".formatted(importNode.token().symbolName()),
 			importNode,
 			ParserError.UNRESOLVED_IMPORT
 		);

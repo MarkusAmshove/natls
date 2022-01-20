@@ -66,4 +66,13 @@ public enum NaturalFileType
 				default -> false;
 			};
 	}
+
+	public boolean hasBody()
+	{
+		return switch (this)
+			{
+				case SUBPROGRAM, PROGRAM, SUBROUTINE, FUNCTION, COPYCODE -> true;
+				default -> false;
+			};
+	}
 }

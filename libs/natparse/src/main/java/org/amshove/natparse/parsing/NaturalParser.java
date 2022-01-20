@@ -43,6 +43,14 @@ public class NaturalParser
 			naturalModule.setDefineData(defineData);
 		}
 
+		if(file.getFiletype().hasBody())
+		{
+			var statementParser = new StatementListParser(moduleProviderToUse);
+			var result = statementParser.parse(tokens);
+			naturalModule.addDiagnostics(result.diagnostics());
+			naturalModule.setBody(result.result());
+		}
+
 		return naturalModule;
 	}
 }

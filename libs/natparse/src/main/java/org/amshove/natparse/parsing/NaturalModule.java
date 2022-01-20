@@ -16,6 +16,7 @@ class NaturalModule
 	private IDefineData defineData;
 	private final List<IDiagnostic> diagnostics = new ArrayList<>();
 	private final List<IModuleReferencingNode> references = new ArrayList<>();
+	private IStatementListNode body;
 
 	NaturalModule(NaturalFile file)
 	{
@@ -68,5 +69,16 @@ class NaturalModule
 	void addReference(IModuleReferencingNode referencingNode)
 	{
 		references.add(referencingNode);
+	}
+
+	@Override
+	public IStatementListNode body()
+	{
+		return body;
+	}
+
+	void setBody(IStatementListNode body)
+	{
+		this.body = body;
 	}
 }

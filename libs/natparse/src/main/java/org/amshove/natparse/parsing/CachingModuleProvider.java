@@ -22,6 +22,11 @@ class CachingModuleProvider implements IModuleProvider
 	@Override
 	public INaturalModule findNaturalModule(String referableName)
 	{
+		if(referableName.startsWith("USR") && referableName.endsWith("N"))
+		{
+			return null; // built-in user exits
+		}
+
 		var callerLib = caller.getLibrary();
 		var referableToModule = libToReferableNameToFileCache.computeIfAbsent(callerLib, (l) -> new HashMap<>());
 
@@ -38,9 +43,13 @@ class CachingModuleProvider implements IModuleProvider
 
 		try
 		{
+			// Parsing only the DEFINE DATA should be enough for everything except COPYCODEs
+			// If we'd parse more, we would have to handle cyclomatic dependencies
 			var source = Files.readString(foundModule.file.getPath());
 			var tokens = new Lexer().lex(source, foundModule.file.getPath());
-			var module = new NaturalParser().parse(foundModule.file, tokens);
+			var result = new DefineDataParser(this).parse(tokens);
+			var module = new NaturalModule(foundModule.file);
+			module.setDefineData(result.result());
 			referableToModule.put(referableName, new ParsedModule(foundModule.file, module));
 			return module;
 		}

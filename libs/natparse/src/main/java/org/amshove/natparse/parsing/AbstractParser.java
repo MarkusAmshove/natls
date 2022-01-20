@@ -49,7 +49,7 @@ abstract class AbstractParser<T>
 
 		var module = moduleProvider.findNaturalModule(referableName);
 
-		if(module == null)
+		if(module == null && !(referableName.startsWith("USR") && referableName.endsWith("N")))
 		{
 			report(ParserErrors.unresolvedImport(importNode));
 		}
