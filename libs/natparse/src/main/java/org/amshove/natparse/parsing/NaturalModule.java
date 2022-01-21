@@ -15,7 +15,7 @@ class NaturalModule
 	private final NaturalFile file;
 	private IDefineData defineData;
 	private final List<IDiagnostic> diagnostics = new ArrayList<>();
-	private final List<IModuleReferencingNode> references = new ArrayList<>();
+	private final List<IModuleReferencingNode> callers = new ArrayList<>();
 	private IStatementListNode body;
 
 	NaturalModule(NaturalFile file)
@@ -42,9 +42,9 @@ class NaturalModule
 	}
 
 	@Override
-	public ReadOnlyList<IModuleReferencingNode> references()
+	public ReadOnlyList<IModuleReferencingNode> callers()
 	{
-		return ReadOnlyList.from(references);
+		return ReadOnlyList.from(callers);
 	}
 
 	@Override
@@ -68,7 +68,7 @@ class NaturalModule
 
 	void addReference(IModuleReferencingNode referencingNode)
 	{
-		references.add(referencingNode);
+		callers.add(referencingNode);
 	}
 
 	@Override
@@ -80,5 +80,11 @@ class NaturalModule
 	void setBody(IStatementListNode body)
 	{
 		this.body = body;
+	}
+
+	@Override
+	public void removeCaller(IModuleReferencingNode callerNode)
+	{
+		callers.remove(callerNode);
 	}
 }

@@ -229,6 +229,16 @@ public class LanguageServerFile implements IModuleProvider
 
 	private void removeIncomingReference(LanguageServerFile caller)
 	{
+		if(module != null)
+		{
+			for (var callerNode : module.callers())
+			{
+				if(callerNode.referencingToken().filePath().equals(caller.file.getPath()))
+				{
+					module.removeCaller(callerNode);
+				}
+			}
+		}
 		incomingReferences.remove(caller);
 	}
 

@@ -9,5 +9,6 @@ public interface INaturalModule
 	String name();
 	NaturalFile file();
 	ReadOnlyList<IDiagnostic> diagnostics();
-	ReadOnlyList<IModuleReferencingNode> references();
+	ReadOnlyList<IModuleReferencingNode> callers();
+	void removeCaller(IModuleReferencingNode node);
 }

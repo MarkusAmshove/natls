@@ -34,7 +34,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(callnat.reference()).isEqualTo(calledSubprogram);
 		assertThat(callnat.referencingToken().kind()).isEqualTo(SyntaxKind.STRING);
 		assertThat(callnat.referencingToken().stringValue()).isEqualTo("A-MODULE");
-		assertThat(calledSubprogram.references()).contains(callnat);
+		assertThat(calledSubprogram.callers()).contains(callnat);
 	}
 
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
