@@ -357,7 +357,6 @@ public class Lexer
 			// Characters from which we can be sure that we're dealing with an identifier
 			switch (scanner.peek())
 			{
-				case '/':
 				case '@':
 				case '$':
 				case '&':
@@ -365,6 +364,18 @@ public class Lexer
 				case '+':
 				case '.':
 					kindHint = SyntaxKind.IDENTIFIER;
+			}
+
+			if(scanner.peek() == '/')
+			{
+				kindHint = SyntaxKind.IDENTIFIER;
+
+				if(scanner.peek(1) == '*' && tokens.get(tokens.size() - 1).kind() == SyntaxKind.INCLUDE)
+				{
+					// The slash belongs to a comment, and we aren't parsing an array definition.
+					// TODO(lexermode): This should no longer be needed when the array definition is handled by a parser mode.
+					break;
+				}
 			}
 
 			scanner.advance();
