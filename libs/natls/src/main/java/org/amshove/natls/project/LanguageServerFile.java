@@ -7,7 +7,9 @@ import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
+import org.amshove.natparse.parsing.DefineDataParser;
 import org.amshove.natparse.parsing.IModuleProvider;
+import org.amshove.natparse.parsing.NaturalModule;
 import org.amshove.natparse.parsing.NaturalParser;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.Position;
@@ -189,6 +191,43 @@ public class LanguageServerFile implements IModuleProvider
 		return module;
 	}
 
+	// TODO(cyclic-dependencies):
+	//   Currently necessary for dependency loops which would cause a stack overflow. e.g. MOD1 -> MOD2 -> MOD1 ...
+	//   Solution might be to instantiate modules while indexing, only replacing stuff with the parser
+	private INaturalModule parseDefineDataOnly()
+	{
+		if(module != null)
+		{
+			return module;
+		}
+
+		try
+		{
+			var source = Files.readString(file.getPath());
+			var lexer = new Lexer();
+			var tokenList = lexer.lex(source, file.getPath());
+			var defineDataParser = new DefineDataParser(this);
+			var definedata = defineDataParser.parse(tokenList);
+			var module = new NaturalModule(file);
+			module.setDefineData(definedata.result());
+			this.module = module;
+		}
+		catch (Exception e)
+		{
+			addDiagnostic(DiagnosticTool.NATPARSE,
+				new Diagnostic(
+					new Range(
+						new Position(0, 0),
+						new Position(0, 0)
+					),
+					"Unhandled exception: %s".formatted(e.getMessage())
+				)
+			);
+		}
+
+		return module;
+	}
+
 	void setLibrary(LanguageServerLibrary library)
 	{
 		this.library = library;
@@ -219,7 +258,7 @@ public class LanguageServerFile implements IModuleProvider
 
 		addOutgoingReference(calledFile);
 		calledFile.addIncomingReference(this);
-		return calledFile.module();
+		return calledFile.parseDefineDataOnly();
 	}
 
 	void addIncomingReference(LanguageServerFile caller)

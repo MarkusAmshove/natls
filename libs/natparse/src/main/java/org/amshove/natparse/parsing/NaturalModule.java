@@ -8,7 +8,7 @@ import org.amshove.natparse.natural.project.NaturalFile;
 import java.util.ArrayList;
 import java.util.List;
 
-class NaturalModule
+public class NaturalModule
 	// TODO: Clean up once new subclasses happen. Remove public then
 	implements INaturalModule, IExternalSubroutine, IGlobalDataArea, ILocalDataArea, IParameterDataArea, IProgram, ISubprogram
 {
@@ -18,7 +18,7 @@ class NaturalModule
 	private final List<IModuleReferencingNode> callers = new ArrayList<>();
 	private IStatementListNode body;
 
-	NaturalModule(NaturalFile file)
+	public NaturalModule(NaturalFile file)
 	{
 		this.file = file;
 	}
@@ -53,7 +53,8 @@ class NaturalModule
 		return defineData;
 	}
 
-	void setDefineData(IDefineData defineData)
+	// TODO(cyclic-dependencies): temporary?
+	public void setDefineData(IDefineData defineData)
 	{
 		this.defineData = defineData;
 	}
