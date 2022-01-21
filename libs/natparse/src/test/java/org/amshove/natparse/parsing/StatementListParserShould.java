@@ -37,6 +37,17 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void findCalledSubprogramsWhenSourceContainsLowerCaseCharacters()
+	{
+		var calledSubprogram = new NaturalModule(null);
+		moduleProvider.addModule("A-MODULE", calledSubprogram);
+
+		var callnat = assertParsesSingleStatement("CALLNAT 'A-module'", ICallnatNode.class);
+		assertThat(callnat.reference()).isEqualTo(calledSubprogram);
+		assertThat(calledSubprogram.callers()).contains(callnat);
+	}
+
+	@Test
 	void parseASimpleInclude()
 	{
 		ignoreModuleProvider();
