@@ -27,6 +27,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					case CALLNAT:
 						callnat();
 						break;
+					case INCLUDE:
+						include();
+						break;
 					default:
 						// While the parser is incomplete, we just skip over everything we don't know yet
 						tokens.advance();
@@ -51,11 +54,26 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		if(consumeOptionally(callnat, SyntaxKind.STRING))
 		{
-			callnat.setCalledModule(previousToken());
+			callnat.setReferencingToken(previousToken());
 			var referencedModule = sideloadModule(callnat.referencingToken().stringValue(), previousTokenNode());
 			callnat.setReferencedModule((NaturalModule) referencedModule);
 		}
 
 		statementList.addStatement(callnat);
+	}
+
+	private void include() throws ParseError
+	{
+		var include = new IncludeNode();
+
+		consumeMandatory(include, SyntaxKind.INCLUDE);
+
+		var referencingToken = consumeMandatoryIdentifier(include);
+		include.setReferencingToken(referencingToken);
+
+		var referencedModule = sideloadModule(referencingToken.symbolName(), previousTokenNode());
+		include.setReferencedModule((NaturalModule) referencedModule);
+
+		statementList.addStatement(include);
 	}
 }

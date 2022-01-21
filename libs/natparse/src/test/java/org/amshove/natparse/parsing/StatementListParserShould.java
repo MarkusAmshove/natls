@@ -2,6 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.ICallnatNode;
+import org.amshove.natparse.natural.IIncludeNode;
 import org.amshove.natparse.natural.IStatementListNode;
 import org.amshove.natparse.natural.IStatementNode;
 import org.junit.jupiter.api.Test;
@@ -20,8 +21,8 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	{
 		ignoreModuleProvider();
 		var callnat = assertParsesSingleStatement("CALLNAT 'MODULE'", ICallnatNode.class);
-		assertThat(callnat.calledModule().kind()).isEqualTo(SyntaxKind.STRING);
-		assertThat(callnat.calledModule().stringValue()).isEqualTo("MODULE");
+		assertThat(callnat.referencingToken().kind()).isEqualTo(SyntaxKind.STRING);
+		assertThat(callnat.referencingToken().stringValue()).isEqualTo("MODULE");
 	}
 
 	@Test
@@ -32,9 +33,27 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 
 		var callnat = assertParsesSingleStatement("CALLNAT 'A-MODULE'", ICallnatNode.class);
 		assertThat(callnat.reference()).isEqualTo(calledSubprogram);
-		assertThat(callnat.referencingToken().kind()).isEqualTo(SyntaxKind.STRING);
-		assertThat(callnat.referencingToken().stringValue()).isEqualTo("A-MODULE");
 		assertThat(calledSubprogram.callers()).contains(callnat);
+	}
+
+	@Test
+	void parseASimpleInclude()
+	{
+		ignoreModuleProvider();
+		var include = assertParsesSingleStatement("INCLUDE L4NLOGIT", IIncludeNode.class);
+		assertThat(include.referencingToken().kind()).isEqualTo(SyntaxKind.IDENTIFIER_OR_KEYWORD);
+		assertThat(include.referencingToken().symbolName()).isEqualTo("L4NLOGIT");
+	}
+
+	@Test
+	void addABidirectionalReferenceForIncludes()
+	{
+		var includedCopycode = new NaturalModule(null);
+		moduleProvider.addModule("L4NLOGIT", includedCopycode);
+
+		var include = assertParsesSingleStatement("INCLUDE L4NLOGIT", IIncludeNode.class);
+		assertThat(include.reference()).isEqualTo(includedCopycode);
+		assertThat(includedCopycode.callers()).contains(include);
 	}
 
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
