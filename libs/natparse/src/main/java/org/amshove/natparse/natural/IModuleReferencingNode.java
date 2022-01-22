@@ -2,7 +2,7 @@ package org.amshove.natparse.natural;
 
 import org.amshove.natparse.lexing.SyntaxToken;
 
-public interface IModuleReferencingNode
+public interface IModuleReferencingNode extends ISyntaxNode
 {
 	/**
 	 * The referenced module.

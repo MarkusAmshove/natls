@@ -3,7 +3,9 @@ package org.amshove.natls.project;
 import org.amshove.natls.DiagnosticTool;
 import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natparse.IDiagnostic;
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.Lexer;
+import org.amshove.natparse.natural.IModuleReferencingNode;
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
@@ -140,16 +142,15 @@ public class LanguageServerFile implements IModuleProvider
 	{
 		try
 		{
-			System.err.printf("Parsing %s%n", file.getReferableName());
-			System.err.printf("I have %d dependants%n", incomingReferences.size());
 			outgoingReferences.forEach(ref -> ref.removeIncomingReference(this));
-			outgoingReferences.clear(); // Will be added when we let our callers parse again
+			outgoingReferences.clear(); // Will be re-added during parse
 			clearDiagnosticsByTool(DiagnosticTool.NATPARSE);
 
 			var lexer = new Lexer();
 			var tokenList = lexer.lex(source, file.getPath());
 			var parser = new NaturalParser(this);
 
+			var previousCallers = module != null ? module.callers() : ReadOnlyList.<IModuleReferencingNode>from(List.of());
 			module = parser.parse(file, tokenList);
 			for (var diagnostic : module.diagnostics())
 			{
@@ -166,6 +167,13 @@ public class LanguageServerFile implements IModuleProvider
 				incomingReferences.clear();
 				// TODO: Add LSP Progress
 				callers.forEach(LanguageServerFile::dependencyChanged);
+			}
+			else
+			{
+				for (var previousCaller : previousCallers)
+				{
+					module.addCaller(previousCaller);
+				}
 			}
 		}
 		catch (Exception e)

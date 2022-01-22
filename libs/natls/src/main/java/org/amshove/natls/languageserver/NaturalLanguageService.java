@@ -764,7 +764,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	{
 		var item = new CallHierarchyItem();
 		item.setRange(LspUtil.toRange(node.referencingToken()));
-		item.setSelectionRange(LspUtil.toRange(node.referencingToken()));
+		item.setSelectionRange(LspUtil.toRange(node));
 		item.setName(referableModuleName);
 		item.setDetail(node.getClass().getSimpleName());
 		item.setUri(node.referencingToken().filePath().toUri().toString());

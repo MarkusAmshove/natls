@@ -88,4 +88,10 @@ public class NaturalModule
 	{
 		callers.remove(callerNode);
 	}
+
+	@Override
+	public void addCaller(IModuleReferencingNode caller)
+	{
+		callers.add(caller);
+	}
 }

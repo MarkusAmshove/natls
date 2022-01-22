@@ -61,6 +61,14 @@ public class LspUtil
 		return toRange((IPosition)token);
 	}
 
+	public static Range toRange(ISyntaxNode node)
+	{
+		return new Range(
+			new Position(node.position().line(), node.position().offsetInLine()),
+			new Position(node.descendants().last().position().line(), node.descendants().last().position().offsetInLine())
+		);
+	}
+
 	public static Location toLocation(ISyntaxNode node)
 	{
 		var position = node.position();
