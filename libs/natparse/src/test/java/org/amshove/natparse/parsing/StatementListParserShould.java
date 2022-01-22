@@ -26,6 +26,23 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void raiseADiagnosticWhenNoModuleIsPassed()
+	{
+		ignoreModuleProvider();
+		assertDiagnostic("CALLNAT 1", ParserError.UNEXPECTED_TOKEN);
+	}
+
+	@Test
+	void allowVariablesAsModuleReferences()
+	{
+		ignoreModuleProvider();
+		var callnat = assertParsesSingleStatement("CALLNAT #THE-SUBPROGRAM", ICallnatNode.class);
+		assertThat(callnat.referencingToken().kind()).isEqualTo(SyntaxKind.IDENTIFIER);
+		assertThat(callnat.referencingToken().symbolName()).isEqualTo("#THE-SUBPROGRAM");
+		assertThat(callnat.reference()).isNull();
+	}
+
+	@Test
 	void addBidirectionalReferencesForCallnats()
 	{
 		var calledSubprogram = new NaturalModule(null);
@@ -54,6 +71,12 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		var include = assertParsesSingleStatement("INCLUDE L4NLOGIT", IIncludeNode.class);
 		assertThat(include.referencingToken().kind()).isEqualTo(SyntaxKind.IDENTIFIER_OR_KEYWORD);
 		assertThat(include.referencingToken().symbolName()).isEqualTo("L4NLOGIT");
+	}
+
+	@Test
+	void raiseADiagnosticWhenNoCopycodeIsPassed()
+	{
+		assertDiagnostic("INCLUDE 1", ParserError.UNEXPECTED_TOKEN);
 	}
 
 	@Test

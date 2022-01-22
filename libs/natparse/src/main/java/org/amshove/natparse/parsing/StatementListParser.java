@@ -3,6 +3,8 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.IStatementListNode;
 
+import java.util.List;
+
 class StatementListParser extends AbstractParser<IStatementListNode>
 {
 
@@ -51,6 +53,16 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var callnat = new CallnatNode();
 
 		consumeMandatory(callnat, SyntaxKind.CALLNAT);
+
+		if(!peekKind(SyntaxKind.STRING) && !peekKind(SyntaxKind.IDENTIFIER) && !peekKind(SyntaxKind.IDENTIFIER_OR_KEYWORD))
+		{
+			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING, SyntaxKind.IDENTIFIER), peek()));
+		}
+
+		if(consumeOptionally(callnat, SyntaxKind.IDENTIFIER) || consumeOptionally(callnat, SyntaxKind.IDENTIFIER_OR_KEYWORD))
+		{
+			callnat.setReferencingToken(previousToken());
+		}
 
 		if(consumeOptionally(callnat, SyntaxKind.STRING))
 		{

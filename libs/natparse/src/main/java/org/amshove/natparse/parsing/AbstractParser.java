@@ -186,7 +186,8 @@ abstract class AbstractParser<T>
 	protected SyntaxToken consumeMandatoryIdentifier(BaseSyntaxNode node) throws ParseError
 	{
 		// TODO(kcheck): This currently allows keywords as identifier
-		if(!isAtEnd())
+		var kind = peek().kind();
+		if(!isAtEnd() && !kind.isLiteralOrConst())
 		{
 			previousNode = new TokenNode(peek());
 			node.addNode(previousNode);
