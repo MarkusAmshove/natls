@@ -92,7 +92,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		if (consumeOptionally(callnat, SyntaxKind.STRING))
 		{
 			callnat.setReferencingToken(previousToken());
-			var referencedModule = sideloadModule(callnat.referencingToken().stringValue().toUpperCase(), previousTokenNode());
+			var referencedModule = sideloadModule(callnat.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode());
 			callnat.setReferencedModule((NaturalModule) referencedModule);
 		}
 	}
@@ -133,7 +133,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		if (consumeOptionally(fetch, SyntaxKind.STRING))
 		{
 			fetch.setReferencingToken(previousToken());
-			var referencedModule = sideloadModule(fetch.referencingToken().stringValue().toUpperCase(), previousTokenNode());
+			var referencedModule = sideloadModule(fetch.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode());
 			fetch.setReferencedModule((NaturalModule) referencedModule);
 		}
 	}

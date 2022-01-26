@@ -58,6 +58,17 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void allowTrailingSpacesInModuleNamesThatAreInStrings()
+	{
+		var calledSubprogram = new NaturalModule(null);
+		moduleProvider.addModule("A-MODULE", calledSubprogram);
+
+		var callnat = assertParsesSingleStatement("CALLNAT 'A-MODULE ' ", ICallnatNode.class);
+		assertThat(callnat.reference()).isEqualTo(calledSubprogram);
+		assertThat(calledSubprogram.callers()).contains(callnat);
+	}
+
+	@Test
 	void findCalledSubprogramsWhenSourceContainsLowerCaseCharacters()
 	{
 		var calledSubprogram = new NaturalModule(null);
