@@ -1,11 +1,10 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.SyntaxKind;
-import org.amshove.natparse.natural.ICallnatNode;
-import org.amshove.natparse.natural.IIncludeNode;
-import org.amshove.natparse.natural.IStatementListNode;
-import org.amshove.natparse.natural.IStatementNode;
+import org.amshove.natparse.natural.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
@@ -88,6 +87,76 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		var include = assertParsesSingleStatement("INCLUDE L4NLOGIT", IIncludeNode.class);
 		assertThat(include.reference()).isEqualTo(includedCopycode);
 		assertThat(includedCopycode.callers()).contains(include);
+	}
+
+	@Test
+	void parseASimpleFetch()
+	{
+		ignoreModuleProvider();
+		var fetch = assertParsesSingleStatement("FETCH 'PROG'", IFetchNode.class);
+		assertThat(fetch.referencingToken().kind()).isEqualTo(SyntaxKind.STRING);
+		assertThat(fetch.referencingToken().stringValue()).isEqualTo("PROG");
+	}
+
+	@Test
+	void parseASimpleFetchReturn()
+	{
+		ignoreModuleProvider();
+		var fetch = assertParsesSingleStatement("FETCH RETURN 'PROG'", IFetchNode.class);
+		assertThat(fetch.referencingToken().kind()).isEqualTo(SyntaxKind.STRING);
+		assertThat(fetch.referencingToken().stringValue()).isEqualTo("PROG");
+	}
+
+	@Test
+	void parseASimpleFetchRepeat()
+	{
+		ignoreModuleProvider();
+		var fetch = assertParsesSingleStatement("FETCH REPEAT 'PROG'", IFetchNode.class);
+		assertThat(fetch.referencingToken().kind()).isEqualTo(SyntaxKind.STRING);
+		assertThat(fetch.referencingToken().stringValue()).isEqualTo("PROG");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"",
+		"REPEAT",
+		"RETURN"
+	})
+	void parseAFetchWithVariables(String fetchType)
+	{
+		ignoreModuleProvider();
+		var fetch = assertParsesSingleStatement("FETCH %s #MYVAR".formatted(fetchType), IFetchNode.class);
+		assertThat(fetch.referencingToken().kind()).isEqualTo(SyntaxKind.IDENTIFIER);
+		assertThat(fetch.referencingToken().symbolName()).isEqualTo("#MYVAR");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"",
+		"REPEAT",
+		"RETURN"
+	})
+	void parseAFetchWithQualifiedVariables(String fetchType)
+	{
+		ignoreModuleProvider();
+		var fetch = assertParsesSingleStatement("FETCH %s #MYGROUP.#MYVAR".formatted(fetchType), IFetchNode.class);
+		assertThat(fetch.referencingToken().kind()).isEqualTo(SyntaxKind.IDENTIFIER);
+		assertThat(fetch.referencingToken().symbolName()).isEqualTo("#MYGROUP.#MYVAR");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"",
+		"RETURN",
+		"REPEAT"
+	})
+	void resolveExternalModulesForAFetchStatement(String fetchSource)
+	{
+		var program = new NaturalModule(null);
+		moduleProvider.addModule("PROG", program);
+
+		var fetch = assertParsesSingleStatement("FETCH %s 'PROG'".formatted(fetchSource), IFetchNode.class);
+		assertThat(fetch.reference()).isEqualTo(program);
 	}
 
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)

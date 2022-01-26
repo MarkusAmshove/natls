@@ -32,6 +32,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					case INCLUDE:
 						include();
 						break;
+					case FETCH:
+						fetch();
+						break;
 					default:
 						// While the parser is incomplete, we just skip over everything we don't know yet
 						tokens.advance();
@@ -51,15 +54,16 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	private void callnat() throws ParseError
 	{
 		var callnat = new CallnatNode();
+		statementList.addStatement(callnat);
 
 		consumeMandatory(callnat, SyntaxKind.CALLNAT);
 
-		if(!peekKind(SyntaxKind.STRING) && !peekKind(SyntaxKind.IDENTIFIER) && !peekKind(SyntaxKind.IDENTIFIER_OR_KEYWORD))
+		if(isNotCallnatOrFetchModule())
 		{
 			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING, SyntaxKind.IDENTIFIER), peek()));
 		}
 
-		if(consumeOptionally(callnat, SyntaxKind.IDENTIFIER) || consumeOptionally(callnat, SyntaxKind.IDENTIFIER_OR_KEYWORD))
+		if(consumeEitherOptionally(callnat, SyntaxKind.IDENTIFIER, SyntaxKind.IDENTIFIER_OR_KEYWORD))
 		{
 			callnat.setReferencingToken(previousToken());
 		}
@@ -70,13 +74,12 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			var referencedModule = sideloadModule(callnat.referencingToken().stringValue().toUpperCase(), previousTokenNode());
 			callnat.setReferencedModule((NaturalModule) referencedModule);
 		}
-
-		statementList.addStatement(callnat);
 	}
 
 	private void include() throws ParseError
 	{
 		var include = new IncludeNode();
+		statementList.addStatement(include);
 
 		consumeMandatory(include, SyntaxKind.INCLUDE);
 
@@ -85,7 +88,37 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		var referencedModule = sideloadModule(referencingToken.symbolName(), previousTokenNode());
 		include.setReferencedModule((NaturalModule) referencedModule);
+	}
 
-		statementList.addStatement(include);
+	private void fetch() throws ParseError
+	{
+		var fetch = new FetchNode();
+		statementList.addStatement(fetch);
+
+		consumeMandatory(fetch, SyntaxKind.FETCH);
+
+		consumeEitherOptionally(fetch, SyntaxKind.RETURN, SyntaxKind.REPEAT);
+
+		if(isNotCallnatOrFetchModule())
+		{
+			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING, SyntaxKind.IDENTIFIER), peek()));
+		}
+
+		if(consumeEitherOptionally(fetch, SyntaxKind.IDENTIFIER, SyntaxKind.IDENTIFIER_OR_KEYWORD))
+		{
+			fetch.setReferencingToken(previousToken());
+		}
+
+		if(consumeOptionally(fetch, SyntaxKind.STRING))
+		{
+			fetch.setReferencingToken(previousToken());
+			var referencedModule = sideloadModule(fetch.referencingToken().stringValue().toUpperCase(), previousTokenNode());
+			fetch.setReferencedModule((NaturalModule) referencedModule);
+		}
+	}
+
+	private boolean isNotCallnatOrFetchModule()
+	{
+		return !peekKind(SyntaxKind.STRING) && !peekKind(SyntaxKind.IDENTIFIER) && !peekKind(SyntaxKind.IDENTIFIER_OR_KEYWORD);
 	}
 }

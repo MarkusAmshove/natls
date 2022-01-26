@@ -119,6 +119,27 @@ abstract class AbstractParser<T>
 		return tokens.consume(kind);
 	}
 
+	/**
+	 * Consumes either firstKind, secondKind or none.
+	 * This will not add any diagnostics.
+	 * @param node the node to add the token to
+	 * @param firstKind the first possible kind
+	 * @param secondKind the second possible kind
+	 * @return Whether any token was consumed or not
+	 */
+	protected boolean consumeEitherOptionally(BaseSyntaxNode node, SyntaxKind firstKind, SyntaxKind secondKind)
+	{
+		if(!tokens.isAtEnd() && (tokens.peek().kind() == firstKind || tokens.peek().kind() == secondKind))
+		{
+			previousNode = new TokenNode(tokens.peek());
+			node.addNode(previousNode);
+			tokens.advance();
+			return true;
+		}
+
+		return false;
+	}
+
 	protected boolean consume(BaseSyntaxNode node, SyntaxKind kind)
 	{
 		var tokenConsumed = consumeOptionally(node, kind);
