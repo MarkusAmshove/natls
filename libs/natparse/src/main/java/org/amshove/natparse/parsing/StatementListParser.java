@@ -2,7 +2,9 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.IStatementListNode;
+import org.amshove.natparse.natural.ISymbolReferenceNode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 class StatementListParser extends AbstractParser<IStatementListNode>
@@ -10,21 +12,29 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private StatementListNode statementList;
 
+	private List<ISymbolReferenceNode> unresolvedReferences;
+
 	StatementListParser(IModuleProvider moduleProvider)
 	{
 		super(moduleProvider);
+	}
+
+	public List<ISymbolReferenceNode> getUnresolvedReferences()
+	{
+		return unresolvedReferences;
 	}
 
 	@Override
 	protected IStatementListNode parseInternal()
 	{
 		statementList = new StatementListNode();
+		unresolvedReferences = new ArrayList<>();
 
-		while(!tokens.isAtEnd())
+		while (!tokens.isAtEnd())
 		{
 			try
 			{
-				switch(tokens.peek().kind())
+				switch (tokens.peek().kind())
 				{
 					case CALLNAT:
 						callnat();
@@ -35,12 +45,16 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					case FETCH:
 						fetch();
 						break;
+					case IDENTIFIER:
+					case IDENTIFIER_OR_KEYWORD:
+						identifierReference();
+						break;
 					default:
 						// While the parser is incomplete, we just skip over everything we don't know yet
 						tokens.advance();
 				}
 			}
-			catch(ParseError e)
+			catch (ParseError e)
 			{
 				// Currently just skip over the token
 				// TODO: Add a diagnostic. For this move the method from DefineDataParser up into AbstractParser
@@ -51,6 +65,13 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return statementList;
 	}
 
+	private void identifierReference() throws ParseError
+	{
+		var token = identifier();
+		var node = new SymbolReferenceNode(token);
+		unresolvedReferences.add(node);
+	}
+
 	private void callnat() throws ParseError
 	{
 		var callnat = new CallnatNode();
@@ -58,17 +79,17 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		consumeMandatory(callnat, SyntaxKind.CALLNAT);
 
-		if(isNotCallnatOrFetchModule())
+		if (isNotCallnatOrFetchModule())
 		{
 			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING, SyntaxKind.IDENTIFIER), peek()));
 		}
 
-		if(consumeEitherOptionally(callnat, SyntaxKind.IDENTIFIER, SyntaxKind.IDENTIFIER_OR_KEYWORD))
+		if (consumeEitherOptionally(callnat, SyntaxKind.IDENTIFIER, SyntaxKind.IDENTIFIER_OR_KEYWORD))
 		{
 			callnat.setReferencingToken(previousToken());
 		}
 
-		if(consumeOptionally(callnat, SyntaxKind.STRING))
+		if (consumeOptionally(callnat, SyntaxKind.STRING))
 		{
 			callnat.setReferencingToken(previousToken());
 			var referencedModule = sideloadModule(callnat.referencingToken().stringValue().toUpperCase(), previousTokenNode());
@@ -99,17 +120,17 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		consumeEitherOptionally(fetch, SyntaxKind.RETURN, SyntaxKind.REPEAT);
 
-		if(isNotCallnatOrFetchModule())
+		if (isNotCallnatOrFetchModule())
 		{
 			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING, SyntaxKind.IDENTIFIER), peek()));
 		}
 
-		if(consumeEitherOptionally(fetch, SyntaxKind.IDENTIFIER, SyntaxKind.IDENTIFIER_OR_KEYWORD))
+		if (consumeEitherOptionally(fetch, SyntaxKind.IDENTIFIER, SyntaxKind.IDENTIFIER_OR_KEYWORD))
 		{
 			fetch.setReferencingToken(previousToken());
 		}
 
-		if(consumeOptionally(fetch, SyntaxKind.STRING))
+		if (consumeOptionally(fetch, SyntaxKind.STRING))
 		{
 			fetch.setReferencingToken(previousToken());
 			var referencedModule = sideloadModule(fetch.referencingToken().stringValue().toUpperCase(), previousTokenNode());
