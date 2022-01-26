@@ -24,4 +24,17 @@ class SymbolReferenceNode extends TokenNode implements ISymbolReferenceNode
 	{
 		reference = symbolNode;
 	}
+
+	@Override
+	public void destroy()
+	{
+		if(reference == null)
+		{
+			return;
+		}
+
+		reference.removeReference(this);
+		reference = null;
+		super.destroy();
+	}
 }

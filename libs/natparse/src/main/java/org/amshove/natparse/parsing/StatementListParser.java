@@ -70,6 +70,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var token = identifier();
 		var node = new SymbolReferenceNode(token);
 		unresolvedReferences.add(node);
+		statementList.addStatement(new SyntheticVariableStatementNode(node));
 	}
 
 	private void callnat() throws ParseError

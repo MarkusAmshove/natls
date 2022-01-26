@@ -5,4 +5,6 @@ import org.amshove.natparse.ReadOnlyList;
 public interface IReferencableNode extends ISyntaxNode
 {
 	ReadOnlyList<ISymbolReferenceNode> references();
+
+	void removeReference(ISymbolReferenceNode node);
 }

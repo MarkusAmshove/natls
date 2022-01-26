@@ -56,4 +56,13 @@ class BaseSyntaxNode implements ISyntaxNode
 	{
 		return getStart().position();
 	}
+
+	@Override
+	public void destroy()
+	{
+		for (var descendant : nodes)
+		{
+			descendant.destroy();
+		}
+	}
 }

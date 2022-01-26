@@ -1,11 +1,11 @@
 package org.amshove.natparse.parsing;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.IStatementListNode;
 import org.amshove.natparse.natural.IStatementNode;
+
+import java.util.ArrayList;
+import java.util.List;
 
 class StatementListNode extends BaseSyntaxNode implements IStatementListNode
 {
@@ -20,6 +20,7 @@ class StatementListNode extends BaseSyntaxNode implements IStatementListNode
 	void addStatement(StatementNode statement)
 	{
 		statements.add(statement);
+		addNode(statement);
 		statement.setParent(this);
 	}
 }

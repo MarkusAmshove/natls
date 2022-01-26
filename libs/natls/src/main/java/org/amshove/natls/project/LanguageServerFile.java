@@ -5,8 +5,7 @@ import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.Lexer;
-import org.amshove.natparse.natural.IModuleReferencingNode;
-import org.amshove.natparse.natural.INaturalModule;
+import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.parsing.DefineDataParser;
@@ -142,6 +141,11 @@ public class LanguageServerFile implements IModuleProvider
 	{
 		try
 		{
+			if(module != null)
+			{
+				destroyPresentNodes();
+			}
+
 			outgoingReferences.forEach(ref -> ref.removeIncomingReference(this));
 			outgoingReferences.clear(); // Will be re-added during parse
 			clearDiagnosticsByTool(DiagnosticTool.NATPARSE);
@@ -187,6 +191,19 @@ public class LanguageServerFile implements IModuleProvider
 					"Unhandled exception: %s".formatted(e.getMessage())
 				)
 			);
+		}
+	}
+
+	private void destroyPresentNodes()
+	{
+		if(module instanceof IHasDefineData hasDefineData)
+		{
+			hasDefineData.defineData().descendants().forEach(ISyntaxNode::destroy);
+		}
+
+		if(module instanceof IHasBody hasBody)
+		{
+			hasBody.body().destroy();
 		}
 	}
 

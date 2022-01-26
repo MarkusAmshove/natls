@@ -495,6 +495,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		var identifier = identifier();
 		using.setUsingTarget(identifier);
+		// TODO: Change to ModuleReferencingNode
 		var identifierReference = new SymbolReferenceNode(identifier);
 		using.addNode(identifierReference);
 
