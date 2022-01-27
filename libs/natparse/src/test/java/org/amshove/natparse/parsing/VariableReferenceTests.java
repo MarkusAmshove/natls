@@ -28,4 +28,14 @@ public class VariableReferenceTests extends ParserIntegrationTest
 
 		assertThat(variable.references()).hasSize(3);
 	}
+
+	@Test
+	void usingNodeShouldHaveAReferenceToIncludedModule(@ProjectName("variablereferencetests") NaturalProject project)
+	{
+		var subprogram = assertFileParsesAs(project.findModule("SUBMOD2"), ISubprogram.class);
+		var using = subprogram.defineData().usings().first();
+
+		assertThat(using.reference()).isNotNull();
+		assertThat(using.referencingToken().symbolName()).isEqualTo("MYLDA");
+	}
 }
