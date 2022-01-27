@@ -105,6 +105,12 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 		assertTokens("#MYVAR/*Asd", token(SyntaxKind.IDENTIFIER, "#MYVAR"));
 	}
 
+	@Test
+	void stopIdentifierWhenACommentIsFollowingWithWhitespace()
+	{
+		assertTokens("INCLUDE IDEN/*", token(SyntaxKind.INCLUDE), token(SyntaxKind.IDENTIFIER, "IDEN"));
+	}
+
 	@TestFactory
 	Iterable<DynamicTest> recognizeQualifiedVariables()
 	{

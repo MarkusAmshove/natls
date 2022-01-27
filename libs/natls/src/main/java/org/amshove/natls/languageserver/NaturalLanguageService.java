@@ -158,10 +158,10 @@ public class NaturalLanguageService implements LanguageClientAware
 			return EMPTY_HOVER;
 		}
 
-        Predicate<IVariableNode> variableFilter = symbolToSearchFor.symbolName().contains(".")
-            ? v -> v.qualifiedName().equals(symbolToSearchFor.symbolName())
-            : v -> v.declaration().symbolName().equals(symbolToSearchFor.symbolName());
-        return hasDefineData
+		Predicate<IVariableNode> variableFilter = symbolToSearchFor.symbolName().contains(".")
+			? v -> v.qualifiedName().equals(symbolToSearchFor.symbolName())
+			: v -> v.declaration().symbolName().equals(symbolToSearchFor.symbolName());
+		return hasDefineData
 			.defineData()
 			.variables().stream()
 			.filter(variableFilter)
@@ -723,11 +723,10 @@ public class NaturalLanguageService implements LanguageClientAware
 	public List<CallHierarchyIncomingCall> createCallHierarchyIncomingCalls(CallHierarchyItem item)
 	{
 		var file = findNaturalFile(LspUtil.uriToPath(item.getUri()));
-		System.err.println("Caller of " + file.getReferableName() + " : " + file.getIncomingReferences().stream().map(LanguageServerFile::getReferableName).collect(Collectors.joining(";")));
-		return file.getIncomingReferences().stream()
+		return file.module().callers().stream()
 			.map(r -> {
 				var call = new CallHierarchyIncomingCall();
-				call.setFrom(callHierarchyItem(r));
+				call.setFrom(callHierarchyItem(r, findNaturalFile(r.referencingToken().filePath()).getReferableName()));
 				call.setFromRanges(List.of(new Range(new Position(0,0), new Position(0,0))));
 				return call;
 			})
@@ -736,6 +735,8 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	public List<CallHierarchyItem> createCallHierarchyItems(CallHierarchyPrepareParams params)
 	{
+		// TODO: Use Position from params. If in DEFINE DATA or top level statement block, search for module references
+		// 	If within local subroutine, get the local call hierarchy to that subroutine
 		var file = findNaturalFile(LspUtil.uriToPath(params.getTextDocument().getUri()));
 		var item = new CallHierarchyItem();
 		item.setRange(new Range(new Position(0,0), new Position(0,0)));
@@ -755,6 +756,18 @@ public class NaturalLanguageService implements LanguageClientAware
 		item.setName(file.getReferableName());
 		item.setDetail(file.getType().toString());
 		item.setUri(file.getPath().toUri().toString());
+		item.setKind(SymbolKind.Class);
+		return item;
+	}
+
+	private CallHierarchyItem callHierarchyItem(IModuleReferencingNode node, String referableModuleName)
+	{
+		var item = new CallHierarchyItem();
+		item.setRange(LspUtil.toRange(node.referencingToken()));
+		item.setSelectionRange(LspUtil.toRange(node));
+		item.setName(referableModuleName);
+		item.setDetail(node.getClass().getSimpleName());
+		item.setUri(node.referencingToken().filePath().toUri().toString());
 		item.setKind(SymbolKind.Class);
 		return item;
 	}

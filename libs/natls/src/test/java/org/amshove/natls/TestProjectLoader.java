@@ -19,7 +19,6 @@ public class TestProjectLoader
 	 */
 	public static LanguageServerProject loadProjectFromResources(Path destinationDirectory, String projectNameInResources)
 	{
-
 		var packageSubfolder = TestProjectLoader.class.getPackageName().replace(".", "/");
 		var workingDirectory = System.getProperty("user.dir");
 		var resourceProjectPath = Paths.get(workingDirectory, "src", "test", "resources", packageSubfolder, "projects", projectNameInResources);

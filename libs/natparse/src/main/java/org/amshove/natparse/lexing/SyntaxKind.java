@@ -255,4 +255,9 @@ public enum SyntaxKind
 	{
 		return this == TRUE || this == FALSE;
 	}
+
+	public boolean isLiteralOrConst()
+	{
+		return isBoolean() || this == NUMBER || this == STRING;
+	}
 }

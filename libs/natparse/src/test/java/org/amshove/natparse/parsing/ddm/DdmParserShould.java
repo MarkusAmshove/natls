@@ -17,7 +17,7 @@ public class DdmParserShould
 	@Test
 	void parseTheMetadataLine()
 	{
-        var dataDefinitionModule = new DdmParser().parseDdm("DB: 000 FILE: 128 - MY-EXCITING-DDM DEFAULT SEQUENCE: BH");
+		var dataDefinitionModule = new DdmParser().parseDdm("DB: 000 FILE: 128 - MY-EXCITING-DDM DEFAULT SEQUENCE: BH");
 
 		assertThat(dataDefinitionModule.name()).isEqualTo("MY-EXCITING-DDM");
 		assertThat(dataDefinitionModule.fileNumber()).isEqualTo("128");
@@ -43,7 +43,7 @@ public class DdmParserShould
 	@Test
 	void parseACompleteDdm()
 	{
-        var ddm = parseFromResource("CompleteDdm.NSD");
+		var ddm = parseFromResource("CompleteDdm.NSD");
 
 		assertThat(ddm.name()).isEqualTo("COMPLETE-DDM");
 		assertThat(ddm.fileNumber()).isEqualTo("100");
@@ -51,10 +51,10 @@ public class DdmParserShould
 		assertThat(ddm.defaultSequence()).isEqualTo("");
 		assertThat(ddm.type()).isEqualTo(DdmType.ADABAS);
 
-        var fields = ddm.fields();
+		var fields = ddm.fields();
 
 		assertThat(ddm.fields().size()).isEqualTo(10);
-        var topLevelFields = fields.stream().map(IDdmField::name).collect(Collectors.toList());
+		var topLevelFields = fields.stream().map(IDdmField::name).collect(Collectors.toList());
 
 		assertThat(topLevelFields)
 			.containsAll(Lists.newArrayList(
@@ -68,26 +68,26 @@ public class DdmParserShould
 				"ANOTHER-SUPERDESCRIPTOR",
 				"SUPERDESCRIPTOR-WITH-SUBRANGE"));
 
-        var topLevelGroup = findField(ddm, "TOP-LEVEL-GROUP");
-        var topLevelGroupField = assertIsGroupField(topLevelGroup);
+		var topLevelGroup = findField(ddm, "TOP-LEVEL-GROUP");
+		var topLevelGroupField = assertIsGroupField(topLevelGroup);
 		assertThat(topLevelGroupField.level()).isEqualTo(1);
 		assertGroupHasMember(topLevelGroupField, "TOP-LEVEL-GROUP-CHILD", "TOP-LEVEL-GROUP-GROUP");
 
-        var nestedGroup = assertIsGroupField(findGroupMember(topLevelGroupField, "TOP-LEVEL-GROUP-GROUP"));
+		var nestedGroup = assertIsGroupField(findGroupMember(topLevelGroupField, "TOP-LEVEL-GROUP-GROUP"));
 		assertThat(nestedGroup.level()).isEqualTo(2);
 		assertGroupHasMember(nestedGroup, "TOP-LEVEL-GROUP-GROUP-CHILD");
 
-        var aSuperdescriptor = assertIsSuperdescriptor(findField(ddm, "A-SUPERDESCRIPTOR"));
+		var aSuperdescriptor = assertIsSuperdescriptor(findField(ddm, "A-SUPERDESCRIPTOR"));
 		assertThat(aSuperdescriptor.fields()).hasSize(2);
 		assertSuperdescriptorHasField(aSuperdescriptor, "ALPHA-FIELD",1,8);
 		assertSuperdescriptorHasField(aSuperdescriptor, "ANOTHER-NUMBER",1,12);
 
-        var anotherSuperdescriptor = assertIsSuperdescriptor(findField(ddm, "ANOTHER-SUPERDESCRIPTOR"));
+		var anotherSuperdescriptor = assertIsSuperdescriptor(findField(ddm, "ANOTHER-SUPERDESCRIPTOR"));
 		assertThat(anotherSuperdescriptor.fields()).hasSize(2);
 		assertSuperdescriptorHasField(anotherSuperdescriptor, "ALPHA-FIELD",1,8);
 		assertSuperdescriptorHasField(anotherSuperdescriptor, "ANOTHER-NUMBER",1,12);
 
-        var superdescriptorWithSubrange = assertIsSuperdescriptor(findField(ddm, "SUPERDESCRIPTOR-WITH-SUBRANGE"));
+		var superdescriptorWithSubrange = assertIsSuperdescriptor(findField(ddm, "SUPERDESCRIPTOR-WITH-SUBRANGE"));
 		assertThat(superdescriptorWithSubrange.fields()).hasSize(2);
 		assertSuperdescriptorHasField(superdescriptorWithSubrange, "SOME-NUMBER",1,5);
 		assertSuperdescriptorHasField(superdescriptorWithSubrange, "TOP-LEVEL-GROUP-CHILD",5,12);
@@ -96,7 +96,7 @@ public class DdmParserShould
 	@Test
 	void parseAComplexSqlDdm()
 	{
-        var ddm = parseFromResource("ComplexSqlTypeDdm.NSD");
+		var ddm = parseFromResource("ComplexSqlTypeDdm.NSD");
 
 		assertThat(findField(ddm, "ID").descriptor()).isEqualTo(DescriptorType.DESCRIPTOR);
 
@@ -114,15 +114,15 @@ public class DdmParserShould
 	@Test
 	void referneceFieldsFromSuperdescriptorChilds()
 	{
-        var ddm = parseFromResource("SuperdescriptorChildReference.NSD");
+		var ddm = parseFromResource("SuperdescriptorChildReference.NSD");
 
-        var descriptor = assertIsSuperdescriptor(findField(ddm, "A-SUPERDESCRIPTOR"));
+		var descriptor = assertIsSuperdescriptor(findField(ddm, "A-SUPERDESCRIPTOR"));
 
-        var firstField = findField(ddm, "ALPHA-FIELD");
-        var secondField = findField(ddm, "ANOTHER-NUMBER");
+		var firstField = findField(ddm, "ALPHA-FIELD");
+		var secondField = findField(ddm, "ANOTHER-NUMBER");
 
-        var firstChild = findSuperdescriptorChild(descriptor, "ALPHA-FIELD");
-        var secondChild = findSuperdescriptorChild(descriptor, "ANOTHER-NUMBER");
+		var firstChild = findSuperdescriptorChild(descriptor, "ALPHA-FIELD");
+		var secondChild = findSuperdescriptorChild(descriptor, "ANOTHER-NUMBER");
 
 		assertThat(firstChild.field()).isEqualTo(firstField);
 		assertThat(secondChild.field()).isEqualTo(secondField);
@@ -138,7 +138,7 @@ public class DdmParserShould
 
 	private IDataDefinitionModule parseFromResource(String resourceName)
 	{
-        var resourceSource = ResourceHelper.readRelativeResourceFile(resourceName, DdmParserShould.class);
+		var resourceSource = ResourceHelper.readRelativeResourceFile(resourceName, DdmParserShould.class);
 		return new DdmParser().parseDdm(resourceSource);
 	}
 
@@ -175,7 +175,7 @@ public class DdmParserShould
 			.as(String.format("Expected group to have exactly %d members, but had %d", memberNames.length, groupField.members().size()))
 			.hasSize(memberNames.length);
 
-        var nextLevelGroupMembers = groupField.members().stream().map(IDdmField::name).collect(Collectors.toList());
+		var nextLevelGroupMembers = groupField.members().stream().map(IDdmField::name).collect(Collectors.toList());
 		assertThat(nextLevelGroupMembers)
 			.containsAll(Lists.newArrayList(memberNames));
 	}
@@ -189,7 +189,7 @@ public class DdmParserShould
 
 	private void assertSuperdescriptorHasField(ISuperdescriptor superdescriptor, String fieldname, int expectedRangeFrom, int expectedRangeTo)
 	{
-        var child = findSuperdescriptorChild(superdescriptor, fieldname);
+		var child = findSuperdescriptorChild(superdescriptor, fieldname);
 
 		assertThat(child.rangeFrom()).isEqualTo(expectedRangeFrom);
 		assertThat(child.rangeTo()).isEqualTo(expectedRangeTo);
@@ -197,7 +197,7 @@ public class DdmParserShould
 
 	private ISuperdescriptorChild findSuperdescriptorChild(ISuperdescriptor superdescriptor, String fieldname)
 	{
-        var foundChild = superdescriptor.fields().stream().filter(f -> f.name().equals(fieldname)).findFirst();
+		var foundChild = superdescriptor.fields().stream().filter(f -> f.name().equals(fieldname)).findFirst();
 		assertThat(foundChild).isPresent();
 		return foundChild.get();
 	}

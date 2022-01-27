@@ -57,10 +57,10 @@ public class LanguageServerProject
 		return libraries.values();
 	}
 
-    public Stream<LanguageServerFile> provideAllFiles()
+	public Stream<LanguageServerFile> provideAllFiles()
 	{
 		return libraries.values().stream().flatMap(l -> l.files().stream());
-    }
+	}
 
 	public long countAllFiles()
 	{

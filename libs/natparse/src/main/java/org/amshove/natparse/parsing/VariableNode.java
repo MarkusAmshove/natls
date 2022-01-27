@@ -29,6 +29,12 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 	}
 
 	@Override
+	public void removeReference(ISymbolReferenceNode node)
+	{
+		references.remove(node);
+	}
+
+	@Override
 	public SyntaxToken declaration()
 	{
 		return declaration;

@@ -1,7 +1,5 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.IDiagnostic;
-import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
 import org.junit.jupiter.api.DynamicTest;
@@ -11,7 +9,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,8 +17,13 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
-class DefineDataParserShould extends AbstractParserTest
+class DefineDataParserShould extends AbstractParserTest<IDefineData>
 {
+	DefineDataParserShould()
+	{
+		super(DefineDataParser::new);
+		ignoreModuleProvider();
+	}
 
 	@Test
 	void returnADiagnosticWhenNoDefineDataIsFound()
@@ -68,6 +70,25 @@ class DefineDataParserShould extends AbstractParserTest
 		assertThat(defineData.descendants()).isNotNull();
 		assertThat(defineData.localUsings().size()).isEqualTo(1);
 		assertThat(defineData.localUsings().first().target().source()).isEqualTo("SOMELDA");
+	}
+
+	@Test
+	void referenceAUsingTarget()
+	{
+		useStubModuleProvider();
+		var importedLda = newEmptyLda();
+		moduleProvider.addModule("SOMELDA", importedLda);
+
+		var source = """
+			   DEFINE DATA
+			   LOCAL USING SOMELDA
+			   END-DEFINE
+			""";
+
+		var defineData = assertParsesWithoutDiagnostics(source);
+		var using = defineData.localUsings().first();
+		assertThat(using.referencingToken().symbolName()).isEqualTo("SOMELDA");
+		assertThat(using.reference()).isEqualTo(importedLda);
 	}
 
 	@Test
@@ -747,10 +768,10 @@ class DefineDataParserShould extends AbstractParserTest
 			   DEFINE DATA
 			   LOCAL
 			   01 #FIRSTVAR
-			     02 #FIRSTVAR-A (N2) INIT <5>
-			     02 #FIRSTVAR-B (P6) INIT <10>
+				 02 #FIRSTVAR-A (N2) INIT <5>
+				 02 #FIRSTVAR-B (P6) INIT <10>
 			  01 REDEFINE #FIRSTVAR
-			     02 #FIRSTVAR-ALPHA (A6)
+				 02 #FIRSTVAR-ALPHA (A6)
 			   END-DEFINE
 			""";
 
@@ -790,8 +811,8 @@ class DefineDataParserShould extends AbstractParserTest
 			   LOCAL
 			   1 #DATE (N8)
 			   1 REDEFINE #DATE
-			    2 #YEAR (N4)
-			    2 #MONTH (N2)
+				2 #YEAR (N4)
+				2 #MONTH (N2)
 			   END-DEFINE
 			""";
 
@@ -1441,26 +1462,6 @@ class DefineDataParserShould extends AbstractParserTest
 			3 rest (a5)
 			end-define
 			""");
-	}
-
-	private IDefineData assertParsesWithoutDiagnostics(String source)
-	{
-		var lexer = new Lexer();
-		var lexResult = lexer.lex(source, Paths.get("TEST.NSA"));
-		assertThat(lexResult.diagnostics().size())
-			.as(
-				"Expected the source to lex without diagnostics%n%s"
-					.formatted(lexResult.diagnostics().stream().map(IDiagnostic::message).collect(Collectors.joining("\n"))))
-			.isZero();
-		var parser = new DefineDataParser(null);
-		var parseResult = parser.parse(lexResult);
-		assertThat(parseResult.diagnostics().size())
-			.as(
-				"Expected the source to parse without diagnostics%n%s"
-					.formatted(parseResult.diagnostics().stream().map(IDiagnostic::message).collect(Collectors.joining("\n"))))
-			.isZero();
-
-		return parseResult.result();
 	}
 
 	private DynamicTest createTypeTest(String source, DataFormat expectedFormat, double expectedLength, boolean hasDynamicLength)

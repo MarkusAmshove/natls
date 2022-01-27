@@ -68,10 +68,10 @@ class DdmMetadataParserShould
 
 	DdmMetadata parsedMetadata(MetadataField field)
 	{
-        var dbNumber = "001";
-        var fileNumber = "100";
-        var name = "MYDDM";
-        var sequence = "AA";
+		var dbNumber = "001";
+		var fileNumber = "100";
+		var name = "MYDDM";
+		var sequence = "AA";
 
 		if (field instanceof DbNumber)
 		{
@@ -93,7 +93,7 @@ class DdmMetadataParserShould
 			sequence = field.value;
 		}
 
-        var metadataLine = String.format(
+		var metadataLine = String.format(
 			"DB: %s FILE: %s - %s DEFAULT SEQUENCE: %s",
 			dbNumber,
 			fileNumber,

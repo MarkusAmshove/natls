@@ -11,10 +11,20 @@ import java.util.stream.Collectors;
 
 class ParserErrors
 {
+	private static String formatTokenKind(SyntaxToken token)
+	{
+		if(token == null || token.kind() == null)
+		{
+			return SyntaxKind.NONE.toString();
+		}
+
+		return token.kind().toString();
+	}
+
 	public static ParserDiagnostic unexpectedToken(SyntaxKind expectedToken, SyntaxToken invalidToken)
 	{
 		return ParserDiagnostic.create(
-			"Unexpected token <%s>, expected <%s>".formatted(invalidToken.kind(), expectedToken),
+			"Unexpected token <%s>, expected <%s>".formatted(formatTokenKind(invalidToken), expectedToken),
 			invalidToken.offset(),
 			invalidToken.offsetInLine(),
 			invalidToken.line(),
@@ -27,7 +37,7 @@ class ParserErrors
 	public static ParserDiagnostic unexpectedToken(List<SyntaxKind> expectedTokenKinds, SyntaxToken invalidToken)
 	{
 		return ParserDiagnostic.create(
-			"Unexpected token <%s>, expected one of <%s>".formatted(invalidToken.kind(), expectedTokenKinds.stream().map(Enum::toString).collect(Collectors.joining(", "))),
+			"Unexpected token <%s>, expected one of <%s>".formatted(formatTokenKind(invalidToken), expectedTokenKinds.stream().map(Enum::toString).collect(Collectors.joining(", "))),
 			invalidToken.offset(),
 			invalidToken.offsetInLine(),
 			invalidToken.line(),
@@ -276,7 +286,7 @@ class ParserErrors
 	public static IDiagnostic unresolvedImport(ITokenNode importNode)
 	{
 		return ParserDiagnostic.create(
-			"Could not resolve import %s".formatted(importNode.token().symbolName()),
+			"Could not resolve external module %s".formatted(importNode.token().symbolName()),
 			importNode,
 			ParserError.UNRESOLVED_IMPORT
 		);

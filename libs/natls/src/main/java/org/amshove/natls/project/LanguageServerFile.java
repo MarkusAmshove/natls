@@ -3,11 +3,14 @@ package org.amshove.natls.project;
 import org.amshove.natls.DiagnosticTool;
 import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natparse.IDiagnostic;
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.Lexer;
-import org.amshove.natparse.natural.INaturalModule;
+import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
+import org.amshove.natparse.parsing.DefineDataParser;
 import org.amshove.natparse.parsing.IModuleProvider;
+import org.amshove.natparse.parsing.NaturalModule;
 import org.amshove.natparse.parsing.NaturalParser;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.Position;
@@ -138,16 +141,20 @@ public class LanguageServerFile implements IModuleProvider
 	{
 		try
 		{
-			System.err.printf("Parsing %s%n", file.getReferableName());
-			System.err.printf("I have %d dependants%n", incomingReferences.size());
+			if(module != null)
+			{
+				destroyPresentNodes();
+			}
+
 			outgoingReferences.forEach(ref -> ref.removeIncomingReference(this));
-			outgoingReferences.clear(); // Will be added when we let our callers parse again
+			outgoingReferences.clear(); // Will be re-added during parse
 			clearDiagnosticsByTool(DiagnosticTool.NATPARSE);
 
 			var lexer = new Lexer();
 			var tokenList = lexer.lex(source, file.getPath());
 			var parser = new NaturalParser(this);
 
+			var previousCallers = module != null ? module.callers() : ReadOnlyList.<IModuleReferencingNode>from(List.of());
 			module = parser.parse(file, tokenList);
 			for (var diagnostic : module.diagnostics())
 			{
@@ -165,6 +172,13 @@ public class LanguageServerFile implements IModuleProvider
 				// TODO: Add LSP Progress
 				callers.forEach(LanguageServerFile::dependencyChanged);
 			}
+			else
+			{
+				for (var previousCaller : previousCallers)
+				{
+					module.addCaller(previousCaller);
+				}
+			}
 		}
 		catch (Exception e)
 		{
@@ -180,12 +194,62 @@ public class LanguageServerFile implements IModuleProvider
 		}
 	}
 
+	private void destroyPresentNodes()
+	{
+		if(module instanceof IHasDefineData hasDefineData)
+		{
+			hasDefineData.defineData().descendants().forEach(ISyntaxNode::destroy);
+		}
+
+		if(module instanceof IHasBody hasBody)
+		{
+			hasBody.body().destroy();
+		}
+	}
+
 	public INaturalModule module()
 	{
 		if(module == null)
 		{
 			parse(false);
 		}
+		return module;
+	}
+
+	// TODO(cyclic-dependencies):
+	//   Currently necessary for dependency loops which would cause a stack overflow. e.g. MOD1 -> MOD2 -> MOD1 ...
+	//   Solution might be to instantiate modules while indexing, only replacing stuff with the parser
+	private INaturalModule parseDefineDataOnly()
+	{
+		if(module != null)
+		{
+			return module;
+		}
+
+		try
+		{
+			var source = Files.readString(file.getPath());
+			var lexer = new Lexer();
+			var tokenList = lexer.lex(source, file.getPath());
+			var defineDataParser = new DefineDataParser(this);
+			var definedata = defineDataParser.parse(tokenList);
+			var module = new NaturalModule(file);
+			module.setDefineData(definedata.result());
+			this.module = module;
+		}
+		catch (Exception e)
+		{
+			addDiagnostic(DiagnosticTool.NATPARSE,
+				new Diagnostic(
+					new Range(
+						new Position(0, 0),
+						new Position(0, 0)
+					),
+					"Unhandled exception: %s".formatted(e.getMessage())
+				)
+			);
+		}
+
 		return module;
 	}
 
@@ -219,23 +283,33 @@ public class LanguageServerFile implements IModuleProvider
 
 		addOutgoingReference(calledFile);
 		calledFile.addIncomingReference(this);
-		return calledFile.module();
+		return calledFile.parseDefineDataOnly();
 	}
 
-    void addIncomingReference(LanguageServerFile caller)
-    {
-        incomingReferences.add(caller);
-    }
+	void addIncomingReference(LanguageServerFile caller)
+	{
+		incomingReferences.add(caller);
+	}
 
 	private void removeIncomingReference(LanguageServerFile caller)
 	{
+		if(module != null)
+		{
+			for (var callerNode : module.callers())
+			{
+				if(callerNode.referencingToken().filePath().equals(caller.file.getPath()))
+				{
+					module.removeCaller(callerNode);
+				}
+			}
+		}
 		incomingReferences.remove(caller);
 	}
 
-    void addOutgoingReference(LanguageServerFile calledModule)
-    {
-        outgoingReferences.add(calledModule);
-    }
+	void addOutgoingReference(LanguageServerFile calledModule)
+	{
+		outgoingReferences.add(calledModule);
+	}
 
 	private void removeOutgoingReference(LanguageServerFile calledModule)
 	{

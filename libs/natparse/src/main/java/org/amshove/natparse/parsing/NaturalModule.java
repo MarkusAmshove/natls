@@ -8,15 +8,17 @@ import org.amshove.natparse.natural.project.NaturalFile;
 import java.util.ArrayList;
 import java.util.List;
 
-class NaturalModule
+public class NaturalModule
 	// TODO: Clean up once new subclasses happen. Remove public then
 	implements INaturalModule, IExternalSubroutine, IGlobalDataArea, ILocalDataArea, IParameterDataArea, IProgram, ISubprogram
 {
 	private final NaturalFile file;
 	private IDefineData defineData;
 	private final List<IDiagnostic> diagnostics = new ArrayList<>();
+	private final List<IModuleReferencingNode> callers = new ArrayList<>();
+	private IStatementListNode body;
 
-	NaturalModule(NaturalFile file)
+	public NaturalModule(NaturalFile file)
 	{
 		this.file = file;
 	}
@@ -40,12 +42,19 @@ class NaturalModule
 	}
 
 	@Override
+	public ReadOnlyList<IModuleReferencingNode> callers()
+	{
+		return ReadOnlyList.from(callers);
+	}
+
+	@Override
 	public IDefineData defineData()
 	{
 		return defineData;
 	}
 
-	void setDefineData(IDefineData defineData)
+	// TODO(cyclic-dependencies): temporary?
+	public void setDefineData(IDefineData defineData)
 	{
 		this.defineData = defineData;
 	}
@@ -56,5 +65,33 @@ class NaturalModule
 		{
 			this.diagnostics.add(diagnostic);
 		}
+	}
+
+	void addReference(IModuleReferencingNode referencingNode)
+	{
+		callers.add(referencingNode);
+	}
+
+	@Override
+	public IStatementListNode body()
+	{
+		return body;
+	}
+
+	void setBody(IStatementListNode body)
+	{
+		this.body = body;
+	}
+
+	@Override
+	public void removeCaller(IModuleReferencingNode callerNode)
+	{
+		callers.remove(callerNode);
+	}
+
+	@Override
+	public void addCaller(IModuleReferencingNode caller)
+	{
+		callers.add(caller);
 	}
 }

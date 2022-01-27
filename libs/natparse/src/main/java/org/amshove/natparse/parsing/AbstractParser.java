@@ -12,13 +12,18 @@ import java.util.List;
 
 abstract class AbstractParser<T>
 {
-	protected final IModuleProvider moduleProvider;
+	protected IModuleProvider moduleProvider;
 	protected TokenList tokens;
 	private TokenNode previousNode;
 
 	private List<IDiagnostic> diagnostics = new ArrayList<>();
 
 	public AbstractParser(IModuleProvider moduleProvider)
+	{
+		this.moduleProvider = moduleProvider;
+	}
+
+	void setModuleProvider(IModuleProvider moduleProvider)
 	{
 		this.moduleProvider = moduleProvider;
 	}
@@ -35,7 +40,7 @@ abstract class AbstractParser<T>
 
 	protected abstract T parseInternal();
 
-	private INaturalModule sideloadModule(String referableName, ISymbolReferenceNode importNode)
+	protected INaturalModule sideloadModule(String referableName, ITokenNode importNode)
 	{
 		if(moduleProvider == null)
 		{
@@ -44,7 +49,7 @@ abstract class AbstractParser<T>
 
 		var module = moduleProvider.findNaturalModule(referableName);
 
-		if(module == null)
+		if(module == null && !(referableName.startsWith("USR") && referableName.endsWith("N")))
 		{
 			report(ParserErrors.unresolvedImport(importNode));
 		}
@@ -52,11 +57,11 @@ abstract class AbstractParser<T>
 		return module;
 	}
 
-	protected IDefineData sideloadDefineData(ISymbolReferenceNode importNode)
+	protected IHasDefineData sideloadDefineData(ISymbolReferenceNode importNode)
 	{
 		if(sideloadModule(importNode.token().symbolName(), importNode) instanceof IHasDefineData hasDefineData)
 		{
-			return hasDefineData.defineData();
+			return hasDefineData;
 		}
 
 		return null;
@@ -114,6 +119,27 @@ abstract class AbstractParser<T>
 		return tokens.consume(kind);
 	}
 
+	/**
+	 * Consumes either firstKind, secondKind or none.
+	 * This will not add any diagnostics.
+	 * @param node the node to add the token to
+	 * @param firstKind the first possible kind
+	 * @param secondKind the second possible kind
+	 * @return Whether any token was consumed or not
+	 */
+	protected boolean consumeEitherOptionally(BaseSyntaxNode node, SyntaxKind firstKind, SyntaxKind secondKind)
+	{
+		if(!tokens.isAtEnd() && (tokens.peek().kind() == firstKind || tokens.peek().kind() == secondKind))
+		{
+			previousNode = new TokenNode(tokens.peek());
+			node.addNode(previousNode);
+			tokens.advance();
+			return true;
+		}
+
+		return false;
+	}
+
 	protected boolean consume(BaseSyntaxNode node, SyntaxKind kind)
 	{
 		var tokenConsumed = consumeOptionally(node, kind);
@@ -143,7 +169,7 @@ abstract class AbstractParser<T>
 	{
 		if(consumeOptionally(node, kind))
 		{
-			return previous();
+			return previousToken();
 		}
 
 		diagnostics.add(ParserErrors.unexpectedToken(kind, peek()));
@@ -171,22 +197,23 @@ abstract class AbstractParser<T>
 			return lparen;
 		}
 
-		 var literal = consumeAny(List.of(SyntaxKind.NUMBER, SyntaxKind.STRING, SyntaxKind.TRUE, SyntaxKind.FALSE));
-		 previousNode = new TokenNode(literal);
-		 node.addNode(previousNode);
-		 return literal;
+		var literal = consumeAny(List.of(SyntaxKind.NUMBER, SyntaxKind.STRING, SyntaxKind.TRUE, SyntaxKind.FALSE));
+		previousNode = new TokenNode(literal);
+		node.addNode(previousNode);
+		return literal;
 	}
 
 	// TODO: Remove/Change once IDENTIFIER_OR_KEYWORD is no more
 	protected SyntaxToken consumeMandatoryIdentifier(BaseSyntaxNode node) throws ParseError
 	{
 		// TODO(kcheck): This currently allows keywords as identifier
-		if(!isAtEnd())
+		var kind = peek().kind();
+		if(!isAtEnd() && !kind.isLiteralOrConst())
 		{
 			previousNode = new TokenNode(peek());
 			node.addNode(previousNode);
 			tokens.advance();
-			return previous();
+			return previousToken();
 		}
 
 		diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, peek()));
@@ -210,7 +237,12 @@ abstract class AbstractParser<T>
 		return !tokens.isAtEnd() && acceptedKinds.contains(tokens.peek().kind());
 	}
 
-	protected SyntaxToken previous()
+	protected TokenNode previousTokenNode()
+	{
+		return previousNode;
+	}
+
+	protected SyntaxToken previousToken()
 	{
 		return tokens.peek(-1);
 	}

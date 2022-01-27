@@ -31,7 +31,7 @@ public interface IVariableTypeNode
 
 	boolean fitsInto(IVariableTypeNode other);
 
-    default String toShortString()
+	default String toShortString()
 	{
 		var details = "";
 
