@@ -6,11 +6,12 @@ import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.ISyntaxTree;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 class BaseSyntaxNode implements ISyntaxNode
 {
-	private final List<BaseSyntaxNode> nodes = new ArrayList<>();
+	private List<BaseSyntaxNode> nodes = Collections.emptyList();
 	private ISyntaxTree parent;
 
 	public void setParent(ISyntaxTree parent)
@@ -33,6 +34,11 @@ class BaseSyntaxNode implements ISyntaxNode
 		if(node == null)
 		{
 			return;
+		}
+
+		if(nodes.isEmpty())
+		{
+			nodes = new ArrayList<>(); // perf: We reuse an empty list because we expect a lot of nodes to not have descendants.
 		}
 
 		node.setParent(this);

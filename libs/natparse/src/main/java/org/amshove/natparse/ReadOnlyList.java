@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 
 public class ReadOnlyList<T> implements Iterable<T>
 {
-	public static ReadOnlyList EMPTY = ReadOnlyList.from(new ArrayList<>());
+	private static final ReadOnlyList EMPTY = ReadOnlyList.from(Collections.emptyList());
 
 	private final ArrayList<T> collection;
 
@@ -25,6 +25,12 @@ public class ReadOnlyList<T> implements Iterable<T>
 		return new ReadOnlyList<>(collection);
 	}
 
+	@SuppressWarnings("unchecked")
+	public static <T> ReadOnlyList<T> empty()
+	{
+		return (ReadOnlyList<T>) EMPTY;
+	}
+
 	public static <T> ReadOnlyList<T> of(T item)
 	{
 		return ReadOnlyList.from(List.of(item));
@@ -33,6 +39,11 @@ public class ReadOnlyList<T> implements Iterable<T>
 	@SafeVarargs
 	public static <T> ReadOnlyList<T> of(T... items)
 	{
+		if(items.length == 0)
+		{
+			return empty();
+		}
+
 		var includedItems = new ArrayList<T>(items.length);
 		Collections.addAll(includedItems, items);
 		return ReadOnlyList.from(includedItems);
