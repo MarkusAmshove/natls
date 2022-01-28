@@ -34,4 +34,33 @@ public class UnusedVariableAnalyzerShould extends LinterTest
 			end
 			""");
 	}
+
+	@Test
+	void notReportADiagnosticForTheGroupIfAVariableWithinIsUsed()
+	{
+		assertNoDiagnostic(UnusedVariableAnalyzer.UNUSED_VARIABLE, """
+			define data
+			local
+			1 #group
+			  2 #used (n1)
+			end-define
+			write #used
+			end
+			""");
+	}
+
+	@Test
+	void notReportADiagnosticForNestedGroupsIfAVariableWithinIsUsed()
+	{
+		assertNoDiagnostic(UnusedVariableAnalyzer.UNUSED_VARIABLE, """
+			define data
+			local
+			1 #group
+			  2 #group2
+				3 #used (n2)
+			end-define
+			write #used
+			end
+			""");
+	}
 }

@@ -6,6 +6,7 @@ import org.amshove.natlint.api.IAnalyzeContext;
 import org.amshove.natlint.api.ILinterContext;
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.ReadOnlyList;
+import org.amshove.natparse.natural.IGroupNode;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.IVariableNode;
 
@@ -32,9 +33,19 @@ public class UnusedVariableAnalyzer extends AbstractAnalyzer
 	private void analyzeVariable(ISyntaxNode syntaxNode, IAnalyzeContext context)
 	{
 		var variable = (IVariableNode) syntaxNode;
-		if (variable.references().isEmpty())
+		if (computeReferenceCount(variable) == 0)
 		{
 			context.report(UNUSED_VARIABLE.createDiagnostic(variable.position()));
 		}
+	}
+
+	private static int computeReferenceCount(IVariableNode variable)
+	{
+		if (variable instanceof IGroupNode groupNode)
+		{
+			return variable.references().size() + groupNode.variables().stream().mapToInt(UnusedVariableAnalyzer::computeReferenceCount).sum();
+		}
+
+		return variable.references().size();
 	}
 }
