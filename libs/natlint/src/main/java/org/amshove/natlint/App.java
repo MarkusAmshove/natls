@@ -1,7 +1,5 @@
 package org.amshove.natlint;
 
-import org.amshove.natlint.analyzers.UnusedVariableAnalyzer;
-import org.amshove.natlint.linter.LinterContext;
 import org.amshove.natlint.linter.NaturalLinter;
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.IDiagnostic;
@@ -28,8 +26,6 @@ public class App
 	{
 		this.projectFile = projectFile;
 		this.filesystem = filesystem;
-
-		LinterContext.INSTANCE.registerAnalyzer(new UnusedVariableAnalyzer());
 	}
 
 	public static void main(String[] args)

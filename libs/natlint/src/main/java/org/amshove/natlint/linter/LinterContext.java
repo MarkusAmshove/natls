@@ -4,6 +4,7 @@ import org.amshove.natlint.api.AbstractAnalyzer;
 import org.amshove.natlint.api.IAnalyzeContext;
 import org.amshove.natlint.api.ILinterContext;
 import org.amshove.natparse.natural.ISyntaxNode;
+import org.reflections.Reflections;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,10 +17,33 @@ public enum LinterContext implements ILinterContext
 	INSTANCE;
 
 	private boolean initialized = false;
-	private final List<AbstractAnalyzer> registeredAnalyzers = new ArrayList<>();
+	private final List<AbstractAnalyzer> registeredAnalyzers;
 	private final Map<Class<? extends ISyntaxNode>, List<BiConsumer<ISyntaxNode, IAnalyzeContext>>> analyzerFunctions = new HashMap<>();
 
-	public void registerAnalyzer(AbstractAnalyzer analyzer)
+	LinterContext()
+	{
+		var reflections = new Reflections("org.amshove.natlint.analyzers");
+		var analyzers = new ArrayList<AbstractAnalyzer>();
+		for (var analyzerClass : reflections.getSubTypesOf(AbstractAnalyzer.class))
+		{
+			try
+			{
+				var analyzer = analyzerClass.getConstructor().newInstance();
+				analyzers.add(analyzer);
+			}
+			catch (Exception e)
+			{
+				throw new RuntimeException(
+					"Analyzer %s can not be instantiated. Does it have a parameterless constructor?".formatted(analyzerClass.getName()),
+					e
+				);
+			}
+		}
+
+		registeredAnalyzers = analyzers;
+	}
+
+	void registerAnalyzer(AbstractAnalyzer analyzer)
 	{
 		registeredAnalyzers.add(analyzer);
 	}
@@ -45,7 +69,7 @@ public enum LinterContext implements ILinterContext
 
 	void beforeAnalyzing(IAnalyzeContext context)
 	{
-		if(!initialized)
+		if (!initialized)
 		{
 			registeredAnalyzers.forEach(a -> a.initialize(this));
 			initialized = true;

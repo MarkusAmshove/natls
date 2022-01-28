@@ -1,5 +1,6 @@
 package org.amshove.natls.project;
 
+import org.amshove.natlint.linter.NaturalLinter;
 import org.amshove.natls.DiagnosticTool;
 import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natparse.IDiagnostic;
@@ -161,9 +162,13 @@ public class LanguageServerFile implements IModuleProvider
 				addDiagnostic(DiagnosticTool.NATPARSE, diagnostic);
 			}
 
-			// lint
-			// clearByTool NATLINT
-			// add linter diagnostics
+			clearDiagnosticsByTool(DiagnosticTool.NATLINT);
+			var linter = new NaturalLinter();
+			var linterDiagnostics = linter.lint(module);
+			for (var linterDiagnostic : linterDiagnostics)
+			{
+				addDiagnostic(DiagnosticTool.NATLINT, linterDiagnostic);
+			}
 
 			if (reparseCallers)
 			{
