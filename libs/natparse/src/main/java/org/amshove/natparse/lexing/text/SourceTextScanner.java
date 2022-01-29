@@ -103,7 +103,7 @@ public class SourceTextScanner
 
 	public String lexemeText()
 	{
-		return StringPool.get(new String(source, currentLexemeStart, currentOffset - currentLexemeStart));
+		return StringPool.intern(new String(source, currentLexemeStart, currentOffset - currentLexemeStart));
 	}
 
 	public void rollbackCurrentLexeme()
