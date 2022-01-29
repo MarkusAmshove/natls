@@ -1,18 +1,14 @@
 package org.amshove.natparse.lexing.text;
 
-import java.util.HashMap;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 
 class StringPool
 {
-	private static final HashMap<String, String> POOL = new HashMap<>();
+	private static final Interner<String> CACHE = Interners.newWeakInterner();
 
 	static String get(String string)
 	{
-		if(!POOL.containsKey(string))
-		{
-			POOL.put(string, string);
-		}
-
-		return POOL.get(string);
+		return CACHE.intern(string);
 	}
 }
