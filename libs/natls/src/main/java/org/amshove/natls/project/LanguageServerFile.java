@@ -87,7 +87,7 @@ public class LanguageServerFile implements IModuleProvider
 
 	public void open()
 	{
-		if(module == null)
+		if (module == null)
 		{
 			parse(false);
 		}
@@ -95,8 +95,8 @@ public class LanguageServerFile implements IModuleProvider
 
 	public void close()
 	{
-//		module = null;
-//		clearDiagnosticsByTool(DiagnosticTool.NATPARSE);
+		//		module = null;
+		//		clearDiagnosticsByTool(DiagnosticTool.NATPARSE);
 	}
 
 	void dependencyChanged()
@@ -142,7 +142,7 @@ public class LanguageServerFile implements IModuleProvider
 	{
 		try
 		{
-			if(module != null)
+			if (module != null)
 			{
 				destroyPresentNodes();
 			}
@@ -175,7 +175,14 @@ public class LanguageServerFile implements IModuleProvider
 				var callers = new ArrayList<>(incomingReferences);
 				incomingReferences.clear();
 				// TODO: Add LSP Progress
-				callers.forEach(LanguageServerFile::dependencyChanged);
+				callers.forEach(languageServerFile -> {
+					if (languageServerFile == this)
+					{
+						// recursive calls, we don't need to parse ourselves again
+						return;
+					}
+					languageServerFile.dependencyChanged();
+				});
 			}
 			else
 			{
@@ -201,12 +208,12 @@ public class LanguageServerFile implements IModuleProvider
 
 	private void destroyPresentNodes()
 	{
-		if(module instanceof IHasDefineData hasDefineData)
+		if (module instanceof IHasDefineData hasDefineData)
 		{
 			hasDefineData.defineData().descendants().forEach(ISyntaxNode::destroy);
 		}
 
-		if(module instanceof IHasBody hasBody)
+		if (module instanceof IHasBody hasBody)
 		{
 			hasBody.body().destroy();
 		}
@@ -214,7 +221,7 @@ public class LanguageServerFile implements IModuleProvider
 
 	public INaturalModule module()
 	{
-		if(module == null)
+		if (module == null)
 		{
 			parse(false);
 		}
@@ -226,7 +233,7 @@ public class LanguageServerFile implements IModuleProvider
 	//   Solution might be to instantiate modules while indexing, only replacing stuff with the parser
 	private INaturalModule parseDefineDataOnly()
 	{
-		if(module != null)
+		if (module != null)
 		{
 			return module;
 		}
@@ -282,7 +289,8 @@ public class LanguageServerFile implements IModuleProvider
 	public INaturalModule findNaturalModule(String referableName)
 	{
 		var calledFile = library.provideNaturalFile(referableName, true);
-		if(calledFile == null) {
+		if (calledFile == null)
+		{
 			return null;
 		}
 
@@ -298,11 +306,11 @@ public class LanguageServerFile implements IModuleProvider
 
 	private void removeIncomingReference(LanguageServerFile caller)
 	{
-		if(module != null)
+		if (module != null)
 		{
 			for (var callerNode : module.callers())
 			{
-				if(callerNode.referencingToken().filePath().equals(caller.file.getPath()))
+				if (callerNode.referencingToken().filePath().equals(caller.file.getPath()))
 				{
 					module.removeCaller(callerNode);
 				}

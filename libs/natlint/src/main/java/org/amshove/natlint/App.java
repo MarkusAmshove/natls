@@ -11,6 +11,7 @@ import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
 import org.amshove.natparse.parsing.NaturalParser;
 import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -28,7 +29,7 @@ public class App
 		this.filesystem = filesystem;
 	}
 
-	public static void main(String[] args)
+	public static void main(String[] args) throws IOException
 	{
 		var arguments = new ArrayList<>(Arrays.stream(args).toList());
 
@@ -67,6 +68,7 @@ public class App
 			%n""", App.class.getPackage().getImplementationTitle(), App.class.getPackage().getImplementationVersion(), projectFile.get().getFileName());
 
 		new App(projectFile.get(), filesystem).run();
+		System.in.read();
 	}
 
 	private static final Comparator<IDiagnostic> byLineNumber = Comparator.comparingInt(IPosition::line);
