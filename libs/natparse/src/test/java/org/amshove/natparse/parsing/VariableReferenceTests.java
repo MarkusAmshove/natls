@@ -1,6 +1,7 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.ProjectName;
+import org.amshove.natparse.natural.IIncludeNode;
 import org.amshove.natparse.natural.ISubprogram;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.junit.jupiter.api.Test;
@@ -37,5 +38,26 @@ public class VariableReferenceTests extends ParserIntegrationTest
 
 		assertThat(using.reference()).isNotNull();
 		assertThat(using.referencingToken().symbolName()).isEqualTo("MYLDA");
+	}
+
+	@Test
+	void includeNodesShouldAddTheirTreeToTheInclude(@ProjectName("variablereferencetests") NaturalProject project)
+	{
+		var subprogram = assertFileParsesAs(project.findModule("SUBMOD3"), ISubprogram.class);
+		var variable = subprogram.defineData().findVariable("#INSIDE-INCLUDE");
+
+		assertThat(variable).isNotNull();
+		assertThat(variable.references()).hasSize(1);
+	}
+
+
+	@Test
+	void includeShouldAddABidirectionalReference(@ProjectName("variablereferencetests") NaturalProject project)
+	{
+		var subprogram = assertFileParsesAs(project.findModule("SUBMOD3"), ISubprogram.class);
+		var include = subprogram.body().findDescendantOfType(IIncludeNode.class);
+
+		assertThat(include).isNotNull();
+		assertThat(include.reference().callers()).contains(include);
 	}
 }

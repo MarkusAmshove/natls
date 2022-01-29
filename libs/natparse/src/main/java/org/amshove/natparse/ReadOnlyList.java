@@ -22,6 +22,10 @@ public class ReadOnlyList<T> implements Iterable<T>
 
 	public static <T> ReadOnlyList<T> from(Collection<T> collection)
 	{
+		if(collection == null)
+		{
+			return empty();
+		}
 		return new ReadOnlyList<>(collection);
 	}
 
