@@ -208,12 +208,12 @@ public class LanguageServerFile implements IModuleProvider
 
 	private void destroyPresentNodes()
 	{
-		if (module instanceof IHasDefineData hasDefineData)
+		if (module instanceof IHasDefineData hasDefineData && hasDefineData.defineData() != null)
 		{
 			hasDefineData.defineData().descendants().forEach(ISyntaxNode::destroy);
 		}
 
-		if (module instanceof IHasBody hasBody)
+		if (module instanceof IHasBody hasBody && hasBody.body() != null)
 		{
 			hasBody.body().destroy();
 		}
