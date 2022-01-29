@@ -2,6 +2,7 @@ package org.amshove.natlint.linter;
 
 import org.amshove.natlint.api.AbstractAnalyzer;
 import org.amshove.natlint.api.IAnalyzeContext;
+import org.amshove.natlint.api.IAnalyzingFunction;
 import org.amshove.natlint.api.ILinterContext;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.reflections.Reflections;
@@ -10,7 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 
 public enum LinterContext implements ILinterContext
 {
@@ -18,7 +18,7 @@ public enum LinterContext implements ILinterContext
 
 	private boolean initialized = false;
 	private final List<AbstractAnalyzer> registeredAnalyzers;
-	private final Map<Class<? extends ISyntaxNode>, List<BiConsumer<ISyntaxNode, IAnalyzeContext>>> analyzerFunctions = new HashMap<>();
+	private final Map<Class<? extends ISyntaxNode>, List<IAnalyzingFunction>> analyzerFunctions = new HashMap<>();
 
 	LinterContext()
 	{
@@ -49,10 +49,10 @@ public enum LinterContext implements ILinterContext
 	}
 
 	@Override
-	public void registerNodeAnalyzer(Class<? extends ISyntaxNode> nodeType, BiConsumer<ISyntaxNode, IAnalyzeContext> analyzerFunction)
+	public void registerNodeAnalyzer(Class<? extends ISyntaxNode> nodeType, IAnalyzingFunction analyzingFunction)
 	{
 		analyzerFunctions.computeIfAbsent(nodeType, n -> new ArrayList<>())
-			.add(analyzerFunction);
+			.add(analyzingFunction);
 	}
 
 	void analyze(ISyntaxNode syntaxNode, IAnalyzeContext context)
@@ -60,11 +60,11 @@ public enum LinterContext implements ILinterContext
 		var analyzers = analyzerFunctions.get(syntaxNode.getClass());
 		if (analyzers != null)
 		{
-			analyzers.forEach(analyzer -> analyzer.accept(syntaxNode, context));
+			analyzers.forEach(analyzer -> analyzer.analyze(syntaxNode, context));
 		}
 
 		analyzerFunctions.entrySet().stream().filter(e -> e.getKey().isAssignableFrom(syntaxNode.getClass()))
-			.forEach(e -> e.getValue().forEach(a -> a.accept(syntaxNode, context)));
+			.forEach(e -> e.getValue().forEach(a -> a.analyze(syntaxNode, context)));
 	}
 
 	void beforeAnalyzing(IAnalyzeContext context)
