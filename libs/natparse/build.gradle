@@ -4,4 +4,5 @@ dependencies {
     testImplementation libraries.mockito
     testImplementation libraries.archUnit
     testImplementation libraries.slf4j_nop
+    testImplementation project(':testhelpers')
 }

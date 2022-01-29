@@ -1,4 +1,4 @@
-package org.amshove.natparse;
+package org.amshove.testhelpers;
 
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.junit.jupiter.api.extension.*;

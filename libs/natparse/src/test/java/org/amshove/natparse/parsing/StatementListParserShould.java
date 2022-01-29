@@ -1,16 +1,15 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.NaturalProjectResourceResolver;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
+import org.amshove.testhelpers.IntegrationTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-@ExtendWith(NaturalProjectResourceResolver.class)
+@IntegrationTest
 class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 {
 	protected StatementListParserShould()

@@ -1,4 +1,4 @@
-package org.amshove.natparse;
+package org.amshove.testhelpers;
 
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
@@ -19,9 +19,8 @@ public class TestProjectLoader
 	 */
 	public static NaturalProject loadProjectFromResources(Path destinationDirectory, String projectNameInResources)
 	{
-		var packageSubfolder = TestProjectLoader.class.getPackageName().replace(".", "/");
 		var workingDirectory = System.getProperty("user.dir");
-		var resourceProjectPath = Paths.get(workingDirectory, "src", "test", "resources", packageSubfolder, "projects", projectNameInResources);
+		var resourceProjectPath = Paths.get(workingDirectory, "src", "test", "resources", "projects", projectNameInResources);
 
 		copyProjectToTemporaryFolder(destinationDirectory, resourceProjectPath);
 

@@ -1,9 +1,9 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.ProjectName;
 import org.amshove.natparse.natural.IIncludeNode;
 import org.amshove.natparse.natural.ISubprogram;
 import org.amshove.natparse.natural.project.NaturalProject;
+import org.amshove.testhelpers.ProjectName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
