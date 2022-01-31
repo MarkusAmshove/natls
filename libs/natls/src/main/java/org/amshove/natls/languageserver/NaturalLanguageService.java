@@ -695,7 +695,7 @@ public class NaturalLanguageService implements LanguageClientAware
 				monitor.progress("Indexing %s.%s".formatted(library.name(), file.getReferableName()), (int) percentageDone);
 				switch (file.getType())
 				{
-					case PROGRAM, SUBPROGRAM, SUBROUTINE -> parser.parseReferences(file);
+					case PROGRAM, SUBPROGRAM, SUBROUTINE, FUNCTION -> parser.parseReferences(file);
 				}
 				processedFiles++;
 			}
