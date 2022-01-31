@@ -15,7 +15,7 @@ public class UnusedImportAnalyzerShould extends AbstractAnalyzerTest
 	@Test
 	void reportADiagnosticForAnUnusedUsing(@ProjectName("unusedimports")NaturalProject project)
 	{
-		assertDiagnostics(
+		testDiagnostics(
 			project.findModule("SUBTWO"),
 			expectDiagnostic(1, UnusedImportAnalyzer.UNUSED_IMPORT)
 		);
@@ -24,6 +24,6 @@ public class UnusedImportAnalyzerShould extends AbstractAnalyzerTest
 	@Test
 	void reportNoDiagnosticIfAVariableFromUsingIsUsed(@ProjectName("unusedimports")NaturalProject project)
 	{
-		assertNoDiagnostics(project.findModule("SUBONE"), UnusedImportAnalyzer.UNUSED_IMPORT);
+		testDiagnostics(project.findModule("SUBONE"), expectNoDiagnosticOfType(UnusedImportAnalyzer.UNUSED_IMPORT));
 	}
 }

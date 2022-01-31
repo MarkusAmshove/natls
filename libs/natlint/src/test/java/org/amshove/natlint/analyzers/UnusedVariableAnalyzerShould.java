@@ -13,7 +13,7 @@ public class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
 	@Test
 	void reportNoDiagnosticIfAVariableIsUsed()
 	{
-		assertNoDiagnostics("""
+		testDiagnostics("""
 				define data
 				local
 				1 #myvar (a10)
@@ -21,13 +21,13 @@ public class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
 				write #myvar
 				end
 				""",
-			UnusedVariableAnalyzer.UNUSED_VARIABLE);
+			expectNoDiagnostic(2, UnusedVariableAnalyzer.UNUSED_VARIABLE));
 	}
 
 	@Test
 	void reportADiagnosticIfAVariableIsUnused()
 	{
-		assertDiagnostics("""
+		testDiagnostics("""
 				define data
 				local
 				1 #myvar (a10)
@@ -41,7 +41,7 @@ public class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
 	@Test
 	void notReportADiagnosticForTheGroupIfAVariableWithinIsUsed()
 	{
-		assertNoDiagnostics("""
+		testDiagnostics("""
 				define data
 				local
 				1 #group
@@ -50,14 +50,14 @@ public class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
 				write #used
 				end
 				""",
-			UnusedVariableAnalyzer.UNUSED_VARIABLE
+			expectNoDiagnosticOfType(UnusedVariableAnalyzer.UNUSED_VARIABLE)
 		);
 	}
 
 	@Test
 	void notReportADiagnosticForNestedGroupsIfAVariableWithinIsUsed()
 	{
-		assertNoDiagnostics("""
+		testDiagnostics("""
 			define data
 			local
 			1 #group
@@ -67,14 +67,16 @@ public class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
 			write #used
 			end
 			""",
-			UnusedVariableAnalyzer.UNUSED_VARIABLE
+			expectNoDiagnostic(2, UnusedVariableAnalyzer.UNUSED_VARIABLE),
+			expectNoDiagnostic(3, UnusedVariableAnalyzer.UNUSED_VARIABLE),
+			expectNoDiagnostic(4, UnusedVariableAnalyzer.UNUSED_VARIABLE)
 		);
 	}
 
 	@Test
 	void notReportADiagnosticIfTheGroupNameIsReferenced()
 	{
-		assertNoDiagnostics("""
+		testDiagnostics("""
                define data
                local
                1 #group
@@ -83,7 +85,7 @@ public class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
                write #group
                end
             """,
-			UnusedVariableAnalyzer.UNUSED_VARIABLE
+			expectNoDiagnostic(3, UnusedVariableAnalyzer.UNUSED_VARIABLE)
 		);
 	}
 }

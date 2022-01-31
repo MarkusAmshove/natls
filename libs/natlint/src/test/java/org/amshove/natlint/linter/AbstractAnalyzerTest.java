@@ -12,6 +12,7 @@ import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.parsing.NaturalParser;
 import org.amshove.testhelpers.IntegrationTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.io.TempDir;
 
 import javax.annotation.Nullable;
@@ -20,6 +21,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -43,50 +45,34 @@ public abstract class AbstractAnalyzerTest
 		this.analyzerUnderTest = analyzerUnderTest;
 	}
 
-	protected void assertDiagnostics(@Nullable NaturalFile file, ExpectedDiagnostic... expectedDiagnostics)
+	protected void testDiagnostics(@Nullable NaturalFile file, DiagnosticAssertion... diagnosticAssertions)
 	{
-		if(expectedDiagnostics.length == 0)
+		if (diagnosticAssertions.length == 0)
 		{
-			fail("At least one diagnostic has to be expected");
+			fail("At least one diagnostic has to be asserted. Use expectDiagnostic() or expectNoDiagnostic()");
 		}
 
 		var diagnostics = lint(file);
-		for (var expectedDiagnostic : expectedDiagnostics)
+		for (var expectedDiagnostic : diagnosticAssertions)
 		{
-			assertDescriptionIsExported(expectedDiagnostic.description);
+			assertDescriptionIsExported(expectedDiagnostic.description());
 		}
 		assertAll("Expected and unexpected diagnostics",
 			() -> assertAll("Expected Diagostics",
-				Arrays.stream(expectedDiagnostics)
-					.map(e -> () -> assertThat(diagnostics)
-						.as("Expected diagnostic %s to be present but was not", e)
-						.anyMatch(d -> d.id().equals(e.description.getId()) && d.line() == e.line))
+				Arrays.stream(diagnosticAssertions)
+					.map(e -> e.checkAssertion(diagnostics.toList()))
 			),
 			() -> assertAll("Unexpected Diagnostics",
 				diagnostics.stream()
-					.map(d -> () -> assertThat(expectedDiagnostics)
+					.map(d -> () -> assertThat(diagnosticAssertions)
 						.as("Expected diagnostic %s to not be present, but was", d)
-						.anyMatch(e -> e.line == d.line() && e.description.getId().equals(d.id()))))
+						.anyMatch(e -> e.matches(d))))
 		);
 	}
 
-	protected void assertDiagnostics(String source, ExpectedDiagnostic... expectedDiagnostics)
+	protected void testDiagnostics(String source, DiagnosticAssertion... expectedDiagnostics)
 	{
-		assertDiagnostics(testFile(source), expectedDiagnostics);
-	}
-
-	protected void assertNoDiagnostics(@Nullable NaturalFile file, DiagnosticDescription diagnosticDescription)
-	{
-		assertDescriptionIsExported(diagnosticDescription);
-		var diagnostics = lint(file);
-		assertThat(diagnostics)
-			.as("Expected no diagnostic with id %s", diagnosticDescription.getId())
-			.noneMatch(d -> d.id().equals(diagnosticDescription.getId()));
-	}
-
-	protected void assertNoDiagnostics(String source, DiagnosticDescription diagnosticDescription)
-	{
-		assertNoDiagnostics(testFile(source), diagnosticDescription);
+		testDiagnostics(testFile(source), expectedDiagnostics);
 	}
 
 	private void assertDescriptionIsExported(DiagnosticDescription diagnosticDescription)
@@ -144,12 +130,71 @@ public abstract class AbstractAnalyzerTest
 		}
 	}
 
-	protected ExpectedDiagnostic expectDiagnostic(int line, DiagnosticDescription description)
+	protected DiagnosticAssertion expectDiagnostic(int line, DiagnosticDescription description)
 	{
 		return new ExpectedDiagnostic(line, description);
 	}
 
-	protected static record ExpectedDiagnostic(int line, DiagnosticDescription description)
+	protected DiagnosticAssertion expectNoDiagnostic(int line, DiagnosticDescription description)
 	{
+		return new ExpectedNoDiagnostic(line, description);
+	}
+
+	protected DiagnosticAssertion expectNoDiagnosticOfType(DiagnosticDescription description)
+	{
+		return new ExpectedNoDiagnosticOfType(description);
+	}
+
+	protected sealed interface DiagnosticAssertion
+	{
+		int line();
+
+		DiagnosticDescription description();
+
+		Executable checkAssertion(List<LinterDiagnostic> actualDiagnostics);
+
+		default boolean matches(IDiagnostic diagnostic)
+		{
+			return diagnostic.line() == line() && diagnostic.id().equals(description().getId());
+		}
+	}
+
+	protected record ExpectedDiagnostic(int line, DiagnosticDescription description) implements DiagnosticAssertion
+	{
+		@Override
+		public Executable checkAssertion(List<LinterDiagnostic> actualDiagnostics)
+		{
+			return () -> assertThat(actualDiagnostics)
+				.as("Expected diagnostic %s to be present but was not", this)
+				.anyMatch(this::matches);
+		}
+	}
+
+	protected record ExpectedNoDiagnostic(int line, DiagnosticDescription description) implements DiagnosticAssertion
+	{
+		@Override
+		public Executable checkAssertion(List<LinterDiagnostic> actualDiagnostics)
+		{
+			return () -> assertThat(actualDiagnostics)
+				.as("Expected diagnostic %s to not be present", this)
+				.noneMatch(this::matches);
+		}
+	}
+
+	protected record ExpectedNoDiagnosticOfType(DiagnosticDescription description) implements DiagnosticAssertion
+	{
+		@Override
+		public int line()
+		{
+			return 0;
+		}
+
+		@Override
+		public Executable checkAssertion(List<LinterDiagnostic> actualDiagnostics)
+		{
+			return () -> assertThat(actualDiagnostics)
+				.as("Expected no diagnostic with id %s", description.getId())
+				.noneMatch(d -> d.id().equals(description.getId()));
+		}
 	}
 }
