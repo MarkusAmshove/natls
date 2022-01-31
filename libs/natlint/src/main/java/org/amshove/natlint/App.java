@@ -1,8 +1,9 @@
 package org.amshove.natlint;
 
+import org.amshove.natlint.linter.NaturalLinter;
+import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.IPosition;
-import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.infrastructure.IFilesystem;
 import org.amshove.natparse.lexing.Lexer;
@@ -10,12 +11,10 @@ import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
 import org.amshove.natparse.parsing.NaturalParser;
 import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
+import java.util.*;
 
 public class App
 {
@@ -30,7 +29,7 @@ public class App
 		this.filesystem = filesystem;
 	}
 
-	public static void main(String[] args)
+	public static void main(String[] args) throws IOException
 	{
 		var arguments = new ArrayList<>(Arrays.stream(args).toList());
 
@@ -69,6 +68,7 @@ public class App
 			%n""", App.class.getPackage().getImplementationTitle(), App.class.getPackage().getImplementationVersion(), projectFile.get().getFileName());
 
 		new App(projectFile.get(), filesystem).run();
+		System.in.read();
 	}
 
 	private static final Comparator<IDiagnostic> byLineNumber = Comparator.comparingInt(IPosition::line);
@@ -90,6 +90,7 @@ public class App
 
 		var lexer = new Lexer();
 		var parser = new NaturalParser();
+		var linter = new NaturalLinter();
 		var diagnosticsPerType = new HashMap<String, Integer>();
 		var filesChecked = 0;
 		var totalDiagnostics = 0;
@@ -114,15 +115,19 @@ public class App
 				try
 				{
 					var tokens = lexer.lex(filesystem.readFile(filePath), filePath);
+					var allDiagnostics = new ArrayList<>(tokens.diagnostics().toList());
 					var module = parser.parse(file, tokens);
+					allDiagnostics.addAll(module.diagnostics().toList());
+					var linterDiagnostics = linter.lint(module);
+					allDiagnostics.addAll(linterDiagnostics.toList());
 
-					module.diagnostics().forEach(d -> {
+					allDiagnostics.forEach(d -> {
 						var count = diagnosticsPerType.computeIfAbsent(d.message(), (k) -> 0);
 						count++;
 						diagnosticsPerType.replace(d.message(), count);
 					});
-					totalDiagnostics += module.diagnostics().size();
-					printDiagnostics(filePath, module.diagnostics());
+					totalDiagnostics += allDiagnostics.size();
+					printDiagnostics(filePath, allDiagnostics);
 				}
 				catch (Exception e)
 				{
@@ -148,7 +153,12 @@ public class App
 			.forEach(d -> System.out.println(d.message + "|" + d.count));
 	}
 
-	private void printDiagnostics(Path filePath, ReadOnlyList<IDiagnostic> diagnostics)
+	private static final Map<DiagnosticSeverity, String> SEVERITY_COLOR_MAP = Map.of(
+		DiagnosticSeverity.ERROR, "31",
+		DiagnosticSeverity.WARNING, "33"
+	);
+
+	private void printDiagnostics(Path filePath, List<IDiagnostic> diagnostics)
 	{
 		if (diagnostics.isEmpty())
 		{
@@ -173,18 +183,19 @@ public class App
 
 	private String message(IDiagnostic diagnostic)
 	{
+		var severity = diagnostic.severity();
 		var message = new StringBuilder();
 		message.append(" ".repeat(diagnostic.offsetInLine()));
-		message.append(red("|"));
+		message.append(colored("|", severity));
 		message.append(System.lineSeparator());
 		message.append(" ".repeat(diagnostic.offsetInLine()));
-		message.append(red("|"));
+		message.append(colored("|", severity));
 		message.append(System.lineSeparator());
 		message.append(" ".repeat(diagnostic.offsetInLine()));
-		message.append(red("= "));
-		message.append(red(diagnostic.severity().toString()));
-		message.append(red(": "));
-		message.append(red(diagnostic.message()));
+		message.append(colored("= ", severity));
+		message.append(colored(diagnostic.severity().toString(), severity));
+		message.append(colored(": ", severity));
+		message.append(colored(diagnostic.message(), severity));
 		return message.toString();
 	}
 
@@ -204,7 +215,10 @@ public class App
 		{
 			if (i == diagnostic.offsetInLine())
 			{
-				coloredLine.append((char) 27 + "[31m");
+				coloredLine
+					.append((char) 27 + "[")
+					.append(SEVERITY_COLOR_MAP.get(diagnostic.severity()))
+					.append("m");
 			}
 
 			if (i == diagnostic.offsetInLine() + diagnostic.length())
@@ -222,12 +236,12 @@ public class App
 	private String squiggle(IDiagnostic diagnostic)
 	{
 		return " ".repeat(Math.max(0, diagnostic.offsetInLine())) +
-			red("~".repeat(Math.max(0, diagnostic.length())));
+			colored("~".repeat(Math.max(0, diagnostic.length())), diagnostic.severity());
 	}
 
-	private String red(String message)
+	private String colored(String message, DiagnosticSeverity severity)
 	{
-		var coloredMessage = (char) 27 + "[31m";
+		var coloredMessage = (char) 27 + "[" + SEVERITY_COLOR_MAP.get(severity) + "m";
 		coloredMessage += message;
 		coloredMessage += (char) 27 + "[0m";
 		return coloredMessage;

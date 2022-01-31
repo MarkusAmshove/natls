@@ -4,13 +4,13 @@ public class SourceTextScanner
 {
 	public static final char END_CHARACTER = Character.MAX_VALUE;
 
-	private final String source;
+	private final char[] source;
 	private int currentOffset;
 	private int currentLexemeStart;
 
 	public SourceTextScanner(String source)
 	{
-		this.source = source;
+		this.source = source.toCharArray();
 		currentOffset = 0;
 		reset();
 	}
@@ -57,7 +57,7 @@ public class SourceTextScanner
 		{
 			return END_CHARACTER;
 		}
-		return source.charAt(currentOffset);
+		return source[currentOffset];
 	}
 
 	public char peek(int offset)
@@ -66,7 +66,7 @@ public class SourceTextScanner
 		{
 			return END_CHARACTER;
 		}
-		return source.charAt(currentOffset + offset);
+		return source[currentOffset + offset];
 	}
 
 	/**
@@ -103,7 +103,7 @@ public class SourceTextScanner
 
 	public String lexemeText()
 	{
-		return source.substring(currentLexemeStart, currentOffset);
+		return StringPool.intern(new String(source, currentLexemeStart, currentOffset - currentLexemeStart));
 	}
 
 	public void rollbackCurrentLexeme()
@@ -129,11 +129,11 @@ public class SourceTextScanner
 
 	public boolean isAtEnd()
 	{
-		return currentOffset >= source.length();
+		return currentOffset >= source.length;
 	}
 
 	private boolean willPassEnd(int offset)
 	{
-		return currentOffset + offset >= source.length();
+		return currentOffset + offset >= source.length;
 	}
 }

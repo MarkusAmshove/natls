@@ -17,6 +17,7 @@ public class NaturalModule
 	private final List<IDiagnostic> diagnostics = new ArrayList<>();
 	private final List<IModuleReferencingNode> callers = new ArrayList<>();
 	private IStatementListNode body;
+	private ISyntaxTree tree;
 
 	public NaturalModule(NaturalFile file)
 	{
@@ -45,6 +46,12 @@ public class NaturalModule
 	public ReadOnlyList<IModuleReferencingNode> callers()
 	{
 		return ReadOnlyList.from(callers);
+	}
+
+	@Override
+	public ISyntaxTree syntaxTree()
+	{
+		return tree;
 	}
 
 	@Override
@@ -93,5 +100,10 @@ public class NaturalModule
 	public void addCaller(IModuleReferencingNode caller)
 	{
 		callers.add(caller);
+	}
+
+	void setSyntaxTree(ISyntaxTree tree)
+	{
+		this.tree = tree;
 	}
 }

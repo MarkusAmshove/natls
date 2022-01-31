@@ -1,9 +1,6 @@
 package org.amshove.natparse;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -14,7 +11,7 @@ import java.util.stream.Stream;
 
 public class ReadOnlyList<T> implements Iterable<T>
 {
-	public static ReadOnlyList EMPTY = ReadOnlyList.from(new ArrayList<>());
+	private static final ReadOnlyList EMPTY = ReadOnlyList.from(Collections.emptyList());
 
 	private final ArrayList<T> collection;
 
@@ -25,7 +22,35 @@ public class ReadOnlyList<T> implements Iterable<T>
 
 	public static <T> ReadOnlyList<T> from(Collection<T> collection)
 	{
+		if(collection == null)
+		{
+			return empty();
+		}
 		return new ReadOnlyList<>(collection);
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> ReadOnlyList<T> empty()
+	{
+		return (ReadOnlyList<T>) EMPTY;
+	}
+
+	public static <T> ReadOnlyList<T> of(T item)
+	{
+		return ReadOnlyList.from(List.of(item));
+	}
+
+	@SafeVarargs
+	public static <T> ReadOnlyList<T> of(T... items)
+	{
+		if(items.length == 0)
+		{
+			return empty();
+		}
+
+		var includedItems = new ArrayList<T>(items.length);
+		Collections.addAll(includedItems, items);
+		return ReadOnlyList.from(includedItems);
 	}
 
 	@Override
@@ -67,6 +92,11 @@ public class ReadOnlyList<T> implements Iterable<T>
 	public boolean isEmpty()
 	{
 		return collection.isEmpty();
+	}
+
+	public List<T> toList()
+	{
+		return new ArrayList<>(collection);
 	}
 
 	@Override

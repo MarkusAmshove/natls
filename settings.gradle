@@ -1,5 +1,8 @@
 rootProject.name = 'natlint'
 
+include 'tools/testhelpers'
+project(':tools/testhelpers').name = 'testhelpers'
+
 include 'libs/natparse'
 project(':libs/natparse').name = 'natparse'
 

@@ -1,4 +1,4 @@
-package org.amshove.natparse;
+package org.amshove.testhelpers;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

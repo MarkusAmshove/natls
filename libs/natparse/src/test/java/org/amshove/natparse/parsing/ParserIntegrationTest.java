@@ -1,10 +1,9 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.NaturalProjectResourceResolver;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.project.NaturalFile;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.amshove.testhelpers.IntegrationTest;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -12,7 +11,7 @@ import java.nio.file.Files;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-@ExtendWith(NaturalProjectResourceResolver.class)
+@IntegrationTest
 public abstract class ParserIntegrationTest
 {
 	protected INaturalModule parse(NaturalFile file)

@@ -3,7 +3,8 @@ package org.amshove.natls;
 public enum DiagnosticTool
 {
 	NATPARSE("NatParse"),
-	NATUNIT("NatUnit");
+	NATUNIT("NatUnit"),
+	NATLINT("NatLint");
 
 	private final String id;
 

@@ -1,17 +1,18 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.IStatementListNode;
 import org.amshove.natparse.natural.ISymbolReferenceNode;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
 class StatementListParser extends AbstractParser<IStatementListNode>
 {
-
-	private StatementListNode statementList;
-
 	private List<ISymbolReferenceNode> unresolvedReferences;
 
 	StatementListParser(IModuleProvider moduleProvider)
@@ -27,9 +28,13 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	@Override
 	protected IStatementListNode parseInternal()
 	{
-		statementList = new StatementListNode();
 		unresolvedReferences = new ArrayList<>();
+		return statementList();
+	}
 
+	private StatementListNode statementList()
+	{
+		var statementList = new StatementListNode();
 		while (!tokens.isAtEnd())
 		{
 			try
@@ -37,17 +42,17 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 				switch (tokens.peek().kind())
 				{
 					case CALLNAT:
-						callnat();
+						statementList.addStatement(callnat());
 						break;
 					case INCLUDE:
-						include();
+						statementList.addStatement(include());
 						break;
 					case FETCH:
-						fetch();
+						statementList.addStatement(fetch());
 						break;
 					case IDENTIFIER:
 					case IDENTIFIER_OR_KEYWORD:
-						identifierReference();
+						statementList.addStatement(identifierReference());
 						break;
 					default:
 						// While the parser is incomplete, we just skip over everything we don't know yet
@@ -65,18 +70,17 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return statementList;
 	}
 
-	private void identifierReference() throws ParseError
+	private SyntheticVariableStatementNode identifierReference() throws ParseError
 	{
 		var token = identifier();
 		var node = new SymbolReferenceNode(token);
 		unresolvedReferences.add(node);
-		statementList.addStatement(new SyntheticVariableStatementNode(node));
+		return new SyntheticVariableStatementNode(node);
 	}
 
-	private void callnat() throws ParseError
+	private CallnatNode callnat() throws ParseError
 	{
 		var callnat = new CallnatNode();
-		statementList.addStatement(callnat);
 
 		consumeMandatory(callnat, SyntaxKind.CALLNAT);
 
@@ -96,12 +100,13 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			var referencedModule = sideloadModule(callnat.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode());
 			callnat.setReferencedModule((NaturalModule) referencedModule);
 		}
+
+		return callnat;
 	}
 
-	private void include() throws ParseError
+	private IncludeNode include() throws ParseError
 	{
 		var include = new IncludeNode();
-		statementList.addStatement(include);
 
 		consumeMandatory(include, SyntaxKind.INCLUDE);
 
@@ -110,12 +115,34 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		var referencedModule = sideloadModule(referencingToken.symbolName(), previousTokenNode());
 		include.setReferencedModule((NaturalModule) referencedModule);
+
+		if(referencedModule != null)
+		{
+			try
+			{
+				var includedSource = Files.readString(referencedModule.file().getPath());
+				var tokens = new Lexer().lex(includedSource, referencedModule.file().getPath());
+				var nestedParser = new StatementListParser(moduleProvider);
+				var statementList = nestedParser.parse(tokens);
+				for (var diagnostic : statementList.diagnostics())
+				{
+					report(diagnostic);
+				}
+				unresolvedReferences.addAll(nestedParser.unresolvedReferences);
+				include.addNode((StatementListNode) statementList.result());
+			}
+			catch (IOException e)
+			{
+				throw new UncheckedIOException(e);
+			}
+		}
+
+		return include;
 	}
 
-	private void fetch() throws ParseError
+	private FetchNode fetch() throws ParseError
 	{
 		var fetch = new FetchNode();
-		statementList.addStatement(fetch);
 
 		consumeMandatory(fetch, SyntaxKind.FETCH);
 
@@ -137,6 +164,8 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			var referencedModule = sideloadModule(fetch.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode());
 			fetch.setReferencedModule((NaturalModule) referencedModule);
 		}
+
+		return fetch;
 	}
 
 	private boolean isNotCallnatOrFetchModule()

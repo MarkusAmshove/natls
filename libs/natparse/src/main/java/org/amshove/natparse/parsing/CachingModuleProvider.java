@@ -22,7 +22,7 @@ class CachingModuleProvider implements IModuleProvider
 	@Override
 	public INaturalModule findNaturalModule(String referableName)
 	{
-		if(referableName.startsWith("USR") && referableName.endsWith("N"))
+		if (referableName.startsWith("USR") && referableName.endsWith("N"))
 		{
 			return null; // built-in user exits
 		}
@@ -50,13 +50,24 @@ class CachingModuleProvider implements IModuleProvider
 			var result = new DefineDataParser(this).parse(tokens);
 			var module = new NaturalModule(foundModule.file);
 			module.setDefineData(result.result());
-			referableToModule.put(referableName, new ParsedModule(foundModule.file, module));
+			if(shouldCache(foundModule.file))
+			{
+				referableToModule.put(referableName, new ParsedModule(foundModule.file, module));
+			}
 			return module;
 		}
 		catch (Exception e)
 		{
 			return null; // Not found
 		}
+	}
+
+	private boolean shouldCache(NaturalFile file)
+	{
+		return switch (file.getFiletype())
+			{
+				default -> false;
+			};
 	}
 
 	private record ParsedModule(NaturalFile file, INaturalModule module)

@@ -1,9 +1,13 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.INaturalModule;
+import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.project.NaturalFile;
+
+import java.util.ArrayList;
 
 public class NaturalParser
 {
@@ -33,6 +37,7 @@ public class NaturalParser
 
 		var naturalModule = new NaturalModule(file);
 		naturalModule.addDiagnostics(tokens.diagnostics());
+		var topLevelNodes = new ArrayList<ISyntaxNode>();
 
 		if (tokens.peek().kind() == SyntaxKind.DEFINE && tokens.peek(1).kind() == SyntaxKind.DATA)
 		{
@@ -41,6 +46,7 @@ public class NaturalParser
 			naturalModule.addDiagnostics(result.diagnostics());
 			var defineData = result.result();
 			naturalModule.setDefineData(defineData);
+			topLevelNodes.add(defineData);
 		}
 
 		if (file.getFiletype().hasBody())
@@ -50,7 +56,10 @@ public class NaturalParser
 			naturalModule.addDiagnostics(result.diagnostics());
 			naturalModule.setBody(result.result());
 			resolveReferences(statementParser, naturalModule);
+			topLevelNodes.add(result.result());
 		}
+
+		naturalModule.setSyntaxTree(SyntaxTree.create(ReadOnlyList.from(topLevelNodes)));
 
 		return naturalModule;
 	}

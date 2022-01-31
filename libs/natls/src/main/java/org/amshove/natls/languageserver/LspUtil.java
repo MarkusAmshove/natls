@@ -42,10 +42,19 @@ public class LspUtil
 				new Position(diagnostic.line(), diagnostic.offsetInLine() + diagnostic.length())
 			),
 			diagnostic.message(),
-			DiagnosticSeverity.Error,
+			mapSeverity(diagnostic),
 			sourceTool,
 			diagnostic.id()
 		);
+	}
+
+	private static DiagnosticSeverity mapSeverity(IDiagnostic diagnostic)
+	{
+		return switch (diagnostic.severity())
+			{
+				case ERROR -> DiagnosticSeverity.Error;
+				case WARNING -> DiagnosticSeverity.Warning;
+			};
 	}
 
 	public static Range toRange(IPosition position)
@@ -58,7 +67,7 @@ public class LspUtil
 
 	public static Range toRange(SyntaxToken token)
 	{
-		return toRange((IPosition)token);
+		return toRange((IPosition) token);
 	}
 
 	public static Range toRange(ISyntaxNode node)

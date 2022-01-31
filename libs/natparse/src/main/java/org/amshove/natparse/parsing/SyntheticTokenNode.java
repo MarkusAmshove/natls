@@ -3,6 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
+import org.amshove.natparse.lexing.text.StringPool;
 import org.amshove.natparse.natural.ITokenNode;
 
 class SyntheticTokenNode extends BaseSyntaxNode implements ITokenNode
@@ -19,7 +20,7 @@ class SyntheticTokenNode extends BaseSyntaxNode implements ITokenNode
 		var newOffsetInLine = originalToken.offsetInLine() + indexInOriginalSource;
 		var line = originalToken.line();
 
-		newToken = new SyntaxToken(newKind, newOffset, newOffsetInLine, line, newSource, originalToken.filePath());
+		newToken = new SyntaxToken(newKind, newOffset, newOffsetInLine, line, StringPool.intern(newSource), originalToken.filePath());
 	}
 
 	public static SyntheticTokenNode fromToken(SyntaxToken token, SyntaxKind newKind, String newSource)

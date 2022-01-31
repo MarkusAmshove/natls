@@ -1,18 +1,15 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.NaturalProjectResourceResolver;
-import org.amshove.natparse.ProjectName;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
-import org.amshove.natparse.natural.project.NaturalProject;
+import org.amshove.testhelpers.IntegrationTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-@ExtendWith(NaturalProjectResourceResolver.class)
+@IntegrationTest
 class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 {
 	protected StatementListParserShould()
@@ -95,17 +92,6 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
-	void addABidirectionalReferenceForIncludes()
-	{
-		var includedCopycode = new NaturalModule(null);
-		moduleProvider.addModule("L4NLOGIT", includedCopycode);
-
-		var include = assertParsesSingleStatement("INCLUDE L4NLOGIT", IIncludeNode.class);
-		assertThat(include.reference()).isEqualTo(includedCopycode);
-		assertThat(includedCopycode.callers()).contains(include);
-	}
-
-	@Test
 	void parseASimpleFetch()
 	{
 		ignoreModuleProvider();
@@ -173,13 +159,6 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 
 		var fetch = assertParsesSingleStatement("FETCH %s 'PROG'".formatted(fetchSource), IFetchNode.class);
 		assertThat(fetch.reference()).isEqualTo(program);
-	}
-
-	@Test
-	void asd(@ProjectName("variablereferencetests") NaturalProject project)
-	{
-		var file = project.findModule("SUBMOD");
-
 	}
 
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
