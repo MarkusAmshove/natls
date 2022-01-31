@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 public abstract class AbstractAnalyzerTest
 {
 	private final AbstractAnalyzer analyzerUnderTest;
+	private final List<String> allowedParserErrors = new ArrayList<>();
 	@TempDir Path directoryForSyntheticFiles;
 
 	@Test
@@ -103,7 +105,7 @@ public abstract class AbstractAnalyzerTest
 
 			var parser = new NaturalParser();
 			var parseResult = parser.parse(file, tokenList);
-			assertThat(parseResult.diagnostics())
+			assertThat(parseResult.diagnostics().stream().filter(d -> !allowedParserErrors.contains(d.id())))
 				.as("No Parser errors should be present to test an analyzer, but found\n%s", parseResult.diagnostics().stream().map(IDiagnostic::toString).collect(Collectors.joining("\n")))
 				.isEmpty();
 
@@ -118,7 +120,7 @@ public abstract class AbstractAnalyzerTest
 	private NaturalFile testFile(String source)
 	{
 		var syntheticFilePath = directoryForSyntheticFiles.resolve("TESTFILE.NSN");
-		var syntheticFile = new NaturalFile("TESTFILE", syntheticFilePath, NaturalFileType.SUBPROGRAM);
+		var syntheticFile = new SyntheticNaturalFile("TESTFILE", syntheticFilePath, NaturalFileType.SUBPROGRAM);
 		try
 		{
 			Files.writeString(syntheticFilePath, source);
@@ -128,6 +130,11 @@ public abstract class AbstractAnalyzerTest
 		{
 			throw new UncheckedIOException(e);
 		}
+	}
+
+	protected void allowParserError(String id)
+	{
+		allowedParserErrors.add(id);
 	}
 
 	protected DiagnosticAssertion expectDiagnostic(int line, DiagnosticDescription description)
@@ -168,6 +175,15 @@ public abstract class AbstractAnalyzerTest
 				.as("Expected diagnostic %s to be present but was not", this)
 				.anyMatch(this::matches);
 		}
+
+		@Override
+		public String toString()
+		{
+			return "ExpectedDiagnostic{" +
+				"line=" + line +
+				", description=" + description.getId() +
+				'}';
+		}
 	}
 
 	protected record ExpectedNoDiagnostic(int line, DiagnosticDescription description) implements DiagnosticAssertion
@@ -178,6 +194,15 @@ public abstract class AbstractAnalyzerTest
 			return () -> assertThat(actualDiagnostics)
 				.as("Expected diagnostic %s to not be present", this)
 				.noneMatch(this::matches);
+		}
+
+		@Override
+		public String toString()
+		{
+			return "ExpectedNoDiagnostic{" +
+				"line=" + line +
+				", description=" + description.getId() +
+				'}';
 		}
 	}
 
@@ -195,6 +220,14 @@ public abstract class AbstractAnalyzerTest
 			return () -> assertThat(actualDiagnostics)
 				.as("Expected no diagnostic with id %s", description.getId())
 				.noneMatch(d -> d.id().equals(description.getId()));
+		}
+
+		@Override
+		public String toString()
+		{
+			return "ExpectedNoDiagnosticOfType{" +
+				"description=" + description.getId() +
+				'}';
 		}
 	}
 }
