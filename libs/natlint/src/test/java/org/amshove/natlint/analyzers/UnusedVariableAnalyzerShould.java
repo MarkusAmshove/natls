@@ -1,9 +1,9 @@
 package org.amshove.natlint.analyzers;
 
-import org.amshove.natlint.linter.LinterTest;
+import org.amshove.natlint.linter.AbstractAnalyzerTest;
 import org.junit.jupiter.api.Test;
 
-public class UnusedVariableAnalyzerShould extends LinterTest
+public class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
 {
 	protected UnusedVariableAnalyzerShould()
 	{
@@ -13,46 +13,51 @@ public class UnusedVariableAnalyzerShould extends LinterTest
 	@Test
 	void reportNoDiagnosticIfAVariableIsUsed()
 	{
-		assertNoDiagnostic(UnusedVariableAnalyzer.UNUSED_VARIABLE, """
-			define data
-			local
-			1 #myvar (a10)
-			end-define
-			write #myvar
-			end
-			""");
+		assertNoDiagnostics("""
+				define data
+				local
+				1 #myvar (a10)
+				end-define
+				write #myvar
+				end
+				""",
+			UnusedVariableAnalyzer.UNUSED_VARIABLE);
 	}
 
 	@Test
 	void reportADiagnosticIfAVariableIsUnused()
 	{
-		assertDiagnostic(2, UnusedVariableAnalyzer.UNUSED_VARIABLE, """
-			define data
-			local
-			1 #myvar (a10)
-			end-define
-			end
-			""");
+		assertDiagnostics("""
+				define data
+				local
+				1 #myvar (a10)
+				end-define
+				end
+				""",
+			expectDiagnostic(2, UnusedVariableAnalyzer.UNUSED_VARIABLE)
+		);
 	}
 
 	@Test
 	void notReportADiagnosticForTheGroupIfAVariableWithinIsUsed()
 	{
-		assertNoDiagnostic(UnusedVariableAnalyzer.UNUSED_VARIABLE, """
-			define data
-			local
-			1 #group
-			  2 #used (n1)
-			end-define
-			write #used
-			end
-			""");
+		assertNoDiagnostics("""
+				define data
+				local
+				1 #group
+				  2 #used (n1)
+				end-define
+				write #used
+				end
+				""",
+			UnusedVariableAnalyzer.UNUSED_VARIABLE
+		);
 	}
 
 	@Test
 	void notReportADiagnosticForNestedGroupsIfAVariableWithinIsUsed()
 	{
-		assertNoDiagnostic(UnusedVariableAnalyzer.UNUSED_VARIABLE, """
+		assertNoDiagnostics("""
 			define data
 			local
 			1 #group
@@ -61,6 +66,24 @@ public class UnusedVariableAnalyzerShould extends LinterTest
 			end-define
 			write #used
 			end
-			""");
+			""",
+			UnusedVariableAnalyzer.UNUSED_VARIABLE
+		);
+	}
+
+	@Test
+	void notReportADiagnosticIfTheGroupNameIsReferenced()
+	{
+		assertNoDiagnostics("""
+               define data
+               local
+               1 #group
+                 2 #inside (a10) /* this is not referenced directly, but it should not have a diagnostic because its group is used
+               end-define
+               write #group
+               end
+            """,
+			UnusedVariableAnalyzer.UNUSED_VARIABLE
+		);
 	}
 }

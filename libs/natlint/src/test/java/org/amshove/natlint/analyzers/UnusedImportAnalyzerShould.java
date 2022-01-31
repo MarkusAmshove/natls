@@ -1,11 +1,11 @@
 package org.amshove.natlint.analyzers;
 
-import org.amshove.natlint.linter.LinterTest;
+import org.amshove.natlint.linter.AbstractAnalyzerTest;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.testhelpers.ProjectName;
 import org.junit.jupiter.api.Test;
 
-public class UnusedImportAnalyzerShould extends LinterTest
+public class UnusedImportAnalyzerShould extends AbstractAnalyzerTest
 {
 	protected UnusedImportAnalyzerShould()
 	{
@@ -15,12 +15,15 @@ public class UnusedImportAnalyzerShould extends LinterTest
 	@Test
 	void reportADiagnosticForAnUnusedUsing(@ProjectName("unusedimports")NaturalProject project)
 	{
-		assertDiagnostic(1, UnusedImportAnalyzer.UNUSED_IMPORT, project.findModule("SUBTWO"));
+		assertDiagnostics(
+			project.findModule("SUBTWO"),
+			expectDiagnostic(1, UnusedImportAnalyzer.UNUSED_IMPORT)
+		);
 	}
 
 	@Test
 	void reportNoDiagnosticIfAVariableFromUsingIsUsed(@ProjectName("unusedimports")NaturalProject project)
 	{
-		assertNoDiagnostic(UnusedImportAnalyzer.UNUSED_IMPORT, project.findModule("SUBONE"));
+		assertNoDiagnostics(project.findModule("SUBONE"), UnusedImportAnalyzer.UNUSED_IMPORT);
 	}
 }

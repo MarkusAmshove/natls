@@ -19,12 +19,15 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.fail;
 
 @IntegrationTest
-public abstract class LinterTest
+public abstract class AbstractAnalyzerTest
 {
 	private final AbstractAnalyzer analyzerUnderTest;
 	@TempDir Path directoryForSyntheticFiles;
@@ -35,38 +38,55 @@ public abstract class LinterTest
 		assertThat(analyzerUnderTest.getDiagnosticDescriptions()).isNotEmpty();
 	}
 
-	protected LinterTest(AbstractAnalyzer analyzerUnderTest)
+	protected AbstractAnalyzerTest(AbstractAnalyzer analyzerUnderTest)
 	{
 		this.analyzerUnderTest = analyzerUnderTest;
 	}
 
-	protected void assertDiagnostic(int line, DiagnosticDescription diagnosticDescription, @Nullable NaturalFile file)
+	protected void assertDiagnostics(@Nullable NaturalFile file, ExpectedDiagnostic... expectedDiagnostics)
+	{
+		if(expectedDiagnostics.length == 0)
+		{
+			fail("At least one diagnostic has to be expected");
+		}
+
+		var diagnostics = lint(file);
+		for (var expectedDiagnostic : expectedDiagnostics)
+		{
+			assertDescriptionIsExported(expectedDiagnostic.description);
+		}
+		assertAll("Expected and unexpected diagnostics",
+			() -> assertAll("Expected Diagostics",
+				Arrays.stream(expectedDiagnostics)
+					.map(e -> () -> assertThat(diagnostics)
+						.as("Expected diagnostic %s to be present but was not", e)
+						.anyMatch(d -> d.id().equals(e.description.getId()) && d.line() == e.line))
+			),
+			() -> assertAll("Unexpected Diagnostics",
+				diagnostics.stream()
+					.map(d -> () -> assertThat(expectedDiagnostics)
+						.as("Expected diagnostic %s to not be present, but was", d)
+						.anyMatch(e -> e.line == d.line() && e.description.getId().equals(d.id()))))
+		);
+	}
+
+	protected void assertDiagnostics(String source, ExpectedDiagnostic... expectedDiagnostics)
+	{
+		assertDiagnostics(testFile(source), expectedDiagnostics);
+	}
+
+	protected void assertNoDiagnostics(@Nullable NaturalFile file, DiagnosticDescription diagnosticDescription)
 	{
 		assertDescriptionIsExported(diagnosticDescription);
 		var diagnostics = lint(file);
 		assertThat(diagnostics)
-			.anyMatch(d ->
-				d.line() == line
-					&& d.id().equals(diagnosticDescription.getId())
-			);
-	}
-
-	protected void assertDiagnostic(int line, DiagnosticDescription diagnosticDescription, String source)
-	{
-		assertDiagnostic(line, diagnosticDescription, testFile(source));
-	}
-
-	protected void assertNoDiagnostic(DiagnosticDescription diagnosticDescription, @Nullable NaturalFile file)
-	{
-		assertDescriptionIsExported(diagnosticDescription);
-		var diagnostics = lint(file);
-		assertThat(diagnostics)
+			.as("Expected no diagnostic with id %s", diagnosticDescription.getId())
 			.noneMatch(d -> d.id().equals(diagnosticDescription.getId()));
 	}
 
-	protected void assertNoDiagnostic(DiagnosticDescription diagnosticDescription, String source)
+	protected void assertNoDiagnostics(String source, DiagnosticDescription diagnosticDescription)
 	{
-		assertNoDiagnostic(diagnosticDescription, testFile(source));
+		assertNoDiagnostics(testFile(source), diagnosticDescription);
 	}
 
 	private void assertDescriptionIsExported(DiagnosticDescription diagnosticDescription)
@@ -122,5 +142,14 @@ public abstract class LinterTest
 		{
 			throw new UncheckedIOException(e);
 		}
+	}
+
+	protected ExpectedDiagnostic expectDiagnostic(int line, DiagnosticDescription description)
+	{
+		return new ExpectedDiagnostic(line, description);
+	}
+
+	protected static record ExpectedDiagnostic(int line, DiagnosticDescription description)
+	{
 	}
 }

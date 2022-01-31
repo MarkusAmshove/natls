@@ -39,10 +39,35 @@ public class UnusedVariableAnalyzer extends AbstractAnalyzer
 		}
 
 		var variable = (IVariableNode) syntaxNode;
-		if (computeReferenceCount(variable) == 0)
+		if (computeReferenceCount(variable) == 0 && computeParentReferenceCount(variable) == 0)
 		{
 			context.report(UNUSED_VARIABLE.createDiagnostic(variable.position()));
 		}
+	}
+
+	private static int computeParentReferenceCount(IVariableNode variable)
+	{
+		if (variable.level() == 1)
+		{
+			return variable.references().size();
+		}
+
+		var level = variable.level();
+		var references = 0;
+		while(level > 1)
+		{
+			var parent = variable.parent();
+			if(parent == null || !(parent instanceof IVariableNode parentVariable))
+			{
+				break;
+			}
+
+			level = parentVariable.level();
+			references += parentVariable.references().size();
+			variable = parentVariable;
+		}
+
+		return references;
 	}
 
 	private static int computeReferenceCount(IVariableNode variable)
