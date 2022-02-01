@@ -29,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
@@ -776,5 +777,24 @@ public class NaturalLanguageService implements LanguageClientAware
 		item.setUri(node.referencingToken().filePath().toUri().toString());
 		item.setKind(SymbolKind.Class);
 		return item;
+	}
+
+	public List<CodeAction> codeAction(CodeActionParams params)
+	{
+		var file = findNaturalFile(LspUtil.uriToPath(params.getTextDocument().getUri()));
+		return file.allDiagnostics().stream().filter(d -> LspUtil.isInSameLine(d.getRange(), params.getRange()))
+			.map(d -> {
+				var action = new CodeAction("Remove variable");
+				action.setKind(CodeActionKind.QuickFix);
+				action.setDiagnostics(List.of(d));
+				var edit = new WorkspaceEdit();
+				var change = new TextEdit();
+				change.setRange(new Range(new Position(d.getRange().getStart().getLine(), 0), new Position(d.getRange().getEnd().getLine() + 1, 0)));
+				change.setNewText("");
+				edit.setChanges(Map.of(params.getTextDocument().getUri(), List.of(change)));
+				action.setEdit(edit);
+				return action;
+			})
+			.toList();
 	}
 }

@@ -105,4 +105,9 @@ public class LspUtil
 			)
 		);
 	}
+
+	public static boolean isInSameLine(Range first, Range second)
+	{
+		return first.getStart().getLine() == second.getStart().getLine();
+	}
 }

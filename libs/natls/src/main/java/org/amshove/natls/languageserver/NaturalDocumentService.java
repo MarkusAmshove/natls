@@ -138,6 +138,12 @@ public class NaturalDocumentService implements TextDocumentService
 	}
 
 	@Override
+	public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(CodeActionParams params)
+	{
+		return CompletableFuture.supplyAsync(() -> languageService.codeAction(params).stream().map(Either::<Command, CodeAction>forRight).toList());
+	}
+
+	@Override
 	public CompletableFuture<List<CallHierarchyIncomingCall>> callHierarchyIncomingCalls(CallHierarchyIncomingCallsParams params)
 	{
 		return CompletableFuture.supplyAsync(() -> languageService.createCallHierarchyIncomingCalls(params.getItem()));

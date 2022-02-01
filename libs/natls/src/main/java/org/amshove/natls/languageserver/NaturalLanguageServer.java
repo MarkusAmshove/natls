@@ -38,6 +38,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			capabilities.setCodeLensProvider(new CodeLensOptions(true));
 			capabilities.setSignatureHelpProvider(new SignatureHelpOptions()); // Maybe < for Functions?
 			capabilities.setCallHierarchyProvider(true);
+			capabilities.setCodeActionProvider(true);
 
 			var progressMonitor = params.getWorkDoneToken() != null
 				? new WorkDoneProgressMonitor(params.getWorkDoneToken().getLeft(), client)
