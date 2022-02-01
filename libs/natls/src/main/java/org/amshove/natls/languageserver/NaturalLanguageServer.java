@@ -43,6 +43,11 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 				? new WorkDoneProgressMonitor(params.getWorkDoneToken().getLeft(), client)
 				: new MessageProgressMonitor(client);
 
+			if(params.getCapabilities().getWindow().getWorkDoneProgress())
+			{
+				ProgressTasks.setClientProgressType(ClientProgressType.WORK_DONE);
+			}
+
 			if (client != null)
 			{
 				var watchFileMethod = "workspace/didChangeWatchedFiles";
@@ -54,7 +59,6 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 
 			if(params.getWorkDoneToken() != null)
 			{
-				ProgressTasks.setClientProgressType(ClientProgressType.WORK_DONE); // move somewhere else?
 				var begin = new WorkDoneProgressBegin();
 				begin.setTitle("Natural Language Server initializing");
 				begin.setMessage("");
