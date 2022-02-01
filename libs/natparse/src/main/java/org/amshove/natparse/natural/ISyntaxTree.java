@@ -6,7 +6,7 @@ import org.amshove.natparse.lexing.SyntaxKind;
 import javax.annotation.Nullable;
 import java.util.stream.Stream;
 
-public interface ISyntaxTree
+public interface ISyntaxTree extends Iterable<ISyntaxNode>
 {
 	ReadOnlyList<? extends ISyntaxNode> descendants();
 

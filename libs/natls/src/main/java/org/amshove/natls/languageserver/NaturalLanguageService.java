@@ -1,10 +1,13 @@
 package org.amshove.natls.languageserver;
 
+import org.amshove.natls.codeactions.CodeActionContext;
+import org.amshove.natls.codeactions.CodeActionRegistry;
 import org.amshove.natls.progress.IProgressMonitor;
 import org.amshove.natls.progress.ProgressTasks;
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natls.project.LanguageServerProject;
 import org.amshove.natls.project.ModuleReferenceParser;
+import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
@@ -29,7 +32,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
@@ -44,6 +46,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	private LanguageServerProject languageServerProject;
 	private LanguageClient client;
 	private boolean initialized;
+	private CodeActionRegistry codeActionRegistry = new CodeActionRegistry();
 
 	public void indexProject(Path workspaceRoot, IProgressMonitor progressMonitor)
 	{
@@ -782,19 +785,11 @@ public class NaturalLanguageService implements LanguageClientAware
 	public List<CodeAction> codeAction(CodeActionParams params)
 	{
 		var file = findNaturalFile(LspUtil.uriToPath(params.getTextDocument().getUri()));
-		return file.allDiagnostics().stream().filter(d -> LspUtil.isInSameLine(d.getRange(), params.getRange()))
-			.map(d -> {
-				var action = new CodeAction("Remove variable");
-				action.setKind(CodeActionKind.QuickFix);
-				action.setDiagnostics(List.of(d));
-				var edit = new WorkspaceEdit();
-				var change = new TextEdit();
-				change.setRange(new Range(new Position(d.getRange().getStart().getLine(), 0), new Position(d.getRange().getEnd().getLine() + 1, 0)));
-				change.setNewText("");
-				edit.setChanges(Map.of(params.getTextDocument().getUri(), List.of(change)));
-				action.setEdit(edit);
-				return action;
-			})
-			.toList();
+		var token = findTokenAtPosition(file.getPath(), params.getRange().getStart());
+		var node = NodeUtil.findNodeAtPosition(params.getRange().getStart().getLine(), params.getRange().getStart().getCharacter(), file.module());
+
+		var context = new CodeActionContext(params.getTextDocument().getUri(), file.module(), token, node, file.diagnosticsInRange(params.getRange()));
+
+		return codeActionRegistry.createCodeActions(context);
 	}
 }

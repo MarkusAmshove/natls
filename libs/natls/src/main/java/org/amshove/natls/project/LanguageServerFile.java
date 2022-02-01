@@ -336,4 +336,9 @@ public class LanguageServerFile implements IModuleProvider
 		incomingReferences.forEach(ref -> ref.removeOutgoingReference(this));
 		incomingReferences.clear();
 	}
+
+	public List<Diagnostic> diagnosticsInRange(Range range)
+	{
+		return allDiagnostics().stream().filter(d -> LspUtil.isInSameLine(d.getRange(), range)).toList();
+	}
 }

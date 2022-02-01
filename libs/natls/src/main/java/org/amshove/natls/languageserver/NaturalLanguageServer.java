@@ -1,9 +1,11 @@
 package org.amshove.natls.languageserver;
 
+import org.amshove.natls.codeactions.CodeActionRegistry;
 import org.amshove.natls.progress.ClientProgressType;
 import org.amshove.natls.progress.MessageProgressMonitor;
 import org.amshove.natls.progress.ProgressTasks;
 import org.amshove.natls.progress.WorkDoneProgressMonitor;
+import org.amshove.natls.quickfixes.RemoveUnusedVariableQuickfix;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
@@ -77,6 +79,9 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			workspaceService.setLanguageService(languageService);
 			documentService.setLanguageService(languageService);
 			var endTime = System.currentTimeMillis();
+
+			progressMonitor.progress("Registering CodeActions", 50);
+			CodeActionRegistry.register(new RemoveUnusedVariableQuickfix());
 
 			if(params.getWorkDoneToken() != null)
 			{
