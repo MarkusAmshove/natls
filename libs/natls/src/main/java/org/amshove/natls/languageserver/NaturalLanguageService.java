@@ -547,6 +547,12 @@ public class NaturalLanguageService implements LanguageClientAware
 					label += " (%s)".formatted(v.position().fileNameWithoutExtension());
 				}
 
+				item.setSortText(
+					v.position().filePath().equals(filePath)
+					? "1"
+					: "2"
+				);
+
 				item.setLabel(label);
 				item.setDocumentation(new MarkupContent(MarkupKind.MARKDOWN, createHoverMarkdownText(v)));
 
