@@ -7,7 +7,7 @@ import org.eclipse.lsp4j.Diagnostic;
 
 import java.util.List;
 
-public record CodeActionContext(String fileUri, INaturalModule module, SyntaxToken tokenUnderCursor, ISyntaxNode nodeAtPosition, List<Diagnostic> diagnosticsAtPosition)
+public record RefactoringContext(String fileUri, INaturalModule module, SyntaxToken tokenUnderCursor, ISyntaxNode nodeAtPosition, List<Diagnostic> diagnosticsAtPosition)
 {
 
 }

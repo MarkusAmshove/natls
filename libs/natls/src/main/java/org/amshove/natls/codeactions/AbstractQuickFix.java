@@ -1,8 +1,6 @@
-package org.amshove.natls.quickfixes;
+package org.amshove.natls.codeactions;
 
 import org.amshove.natlint.api.DiagnosticDescription;
-import org.amshove.natls.codeactions.CodeActionContext;
-import org.amshove.natls.codeactions.ICodeAction;
 import org.eclipse.lsp4j.CodeAction;
 
 import java.util.ArrayList;
@@ -11,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-public abstract class AbstractQuickFix implements ICodeAction
+public abstract class AbstractQuickFix implements IRefactoring
 {
 	private final Map<String, List<Function<QuickFixContext, CodeAction>>> quickfixes = new HashMap<>();
 
@@ -34,13 +32,13 @@ public abstract class AbstractQuickFix implements ICodeAction
 	}
 
 	@Override
-	public boolean isApplicable(CodeActionContext context)
+	public boolean isApplicable(RefactoringContext context)
 	{
 		return context.diagnosticsAtPosition().stream().anyMatch(d -> quickfixes.containsKey(d.getCode().getLeft()));
 	}
 
 	@Override
-	public List<CodeAction> createCodeAction(CodeActionContext context)
+	public List<CodeAction> createCodeAction(RefactoringContext context)
 	{
 		return context.diagnosticsAtPosition().stream()
 			.filter(d -> quickfixes.containsKey(d.getCode().getLeft()))

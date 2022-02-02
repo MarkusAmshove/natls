@@ -1,6 +1,6 @@
 package org.amshove.natls.languageserver;
 
-import org.amshove.natls.codeactions.CodeActionContext;
+import org.amshove.natls.codeactions.RefactoringContext;
 import org.amshove.natls.codeactions.CodeActionRegistry;
 import org.amshove.natls.progress.IProgressMonitor;
 import org.amshove.natls.progress.ProgressTasks;
@@ -788,7 +788,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var token = findTokenAtPosition(file.getPath(), params.getRange().getStart());
 		var node = NodeUtil.findNodeAtPosition(params.getRange().getStart().getLine(), params.getRange().getStart().getCharacter(), file.module());
 
-		var context = new CodeActionContext(params.getTextDocument().getUri(), file.module(), token, node, file.diagnosticsInRange(params.getRange()));
+		var context = new RefactoringContext(params.getTextDocument().getUri(), file.module(), token, node, file.diagnosticsInRange(params.getRange()));
 
 		return codeActionRegistry.createCodeActions(context);
 	}

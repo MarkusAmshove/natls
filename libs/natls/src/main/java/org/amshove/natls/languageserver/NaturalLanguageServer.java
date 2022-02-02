@@ -81,7 +81,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			var endTime = System.currentTimeMillis();
 
 			progressMonitor.progress("Registering CodeActions", 50);
-			CodeActionRegistry.register(new RemoveUnusedVariableQuickfix());
+			CodeActionRegistry.register(new RemoveUnusedVariableQuickfix()); // TODO: Use Reflection/APT for automatic registration
 
 			if(params.getWorkDoneToken() != null)
 			{

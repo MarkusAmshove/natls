@@ -2,6 +2,8 @@ package org.amshove.natls.quickfixes;
 
 import org.amshove.natlint.analyzers.UnusedImportAnalyzer;
 import org.amshove.natlint.analyzers.UnusedVariableAnalyzer;
+import org.amshove.natls.codeactions.AbstractQuickFix;
+import org.amshove.natls.codeactions.QuickFixContext;
 import org.eclipse.lsp4j.*;
 
 import java.util.List;
