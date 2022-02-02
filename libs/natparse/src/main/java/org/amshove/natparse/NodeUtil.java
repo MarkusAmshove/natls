@@ -13,10 +13,10 @@ public class NodeUtil
 		return module.file().getPath().equals(node.position().filePath());
 	}
 
-    public static ISyntaxNode findNodeAtPosition(int line, int character, INaturalModule module)
+	public static ISyntaxNode findNodeAtPosition(int line, int character, INaturalModule module)
 	{
 		return findNodeAtPosition(line, character, module.syntaxTree());
-    }
+	}
 
 	public static ISyntaxNode findNodeAtPosition(int line, int character, ISyntaxTree syntaxTree)
 	{
