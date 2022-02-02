@@ -1,5 +1,6 @@
 package org.amshove.natls.quickfixes;
 
+import org.amshove.natlint.analyzers.UnusedImportAnalyzer;
 import org.amshove.natlint.analyzers.UnusedVariableAnalyzer;
 import org.eclipse.lsp4j.*;
 
@@ -12,12 +13,24 @@ public class RemoveUnusedVariableQuickfix extends AbstractQuickFix
 	protected void registerQuickfixes()
 	{
 		registerQuickFix(UnusedVariableAnalyzer.UNUSED_VARIABLE, this::fixUnusedVariable);
+		registerQuickFix(UnusedImportAnalyzer.UNUSED_IMPORT, this::fixUnusedImport);
+	}
+
+	private CodeAction fixUnusedImport(QuickFixContext context)
+	{
+		return createRemovedUnused("using", context);
 	}
 
 	private CodeAction fixUnusedVariable(QuickFixContext context)
 	{
+		return createRemovedUnused("variable", context);
+	}
+
+	private CodeAction createRemovedUnused(String name, QuickFixContext context)
+	{
 		var diagnostic = context.diagnostic();
-		var action = new CodeAction("Remove variable");
+		var action = new CodeAction();
+		action.setTitle("Remove unused " + name);
 		action.setKind(CodeActionKind.QuickFix);
 		action.setDiagnostics(List.of(diagnostic));
 		var edit = new WorkspaceEdit();

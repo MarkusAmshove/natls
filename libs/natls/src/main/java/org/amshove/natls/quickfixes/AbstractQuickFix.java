@@ -17,6 +17,11 @@ public abstract class AbstractQuickFix implements ICodeAction
 
 	protected abstract void registerQuickfixes();
 
+	public AbstractQuickFix()
+	{
+		registerQuickfixes();
+	}
+
 	protected void registerQuickFix(DiagnosticDescription description, Function<QuickFixContext, CodeAction> quickFixer)
 	{
 		registerQuickFix(description.getId(), quickFixer);
@@ -24,8 +29,8 @@ public abstract class AbstractQuickFix implements ICodeAction
 
 	protected void registerQuickFix(String diagnosticId, Function<QuickFixContext, CodeAction> quickFixer)
 	{
-		quickfixes.computeIfAbsent(diagnosticId, k -> new ArrayList<>())
-			.add(quickFixer);
+		quickfixes.putIfAbsent(diagnosticId, new ArrayList<>());
+		quickfixes.get(diagnosticId).add(quickFixer);
 	}
 
 	@Override
