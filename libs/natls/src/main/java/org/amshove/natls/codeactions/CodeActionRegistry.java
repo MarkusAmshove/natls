@@ -1,5 +1,6 @@
 package org.amshove.natls.codeactions;
 
+import org.amshove.natls.quickfixes.AbstractQuickFix;
 import org.eclipse.lsp4j.CodeAction;
 
 import java.util.ArrayList;
@@ -14,6 +15,11 @@ public class CodeActionRegistry
 		codeActionProviders.add(codeAction);
 	}
 
+	public static void register(AbstractQuickFix quickFix)
+	{
+		codeActionProviders.add(quickFix);
+	}
+
 	public List<CodeAction> createCodeActions(CodeActionContext context)
 	{
 		var codeActions = new ArrayList<CodeAction>();
@@ -21,7 +27,7 @@ public class CodeActionRegistry
 		{
 			if(codeActionProvider.isApplicable(context))
 			{
-				codeActions.add(codeActionProvider.createCodeAction(context));
+				codeActions.addAll(codeActionProvider.createCodeAction(context));
 			}
 		}
 

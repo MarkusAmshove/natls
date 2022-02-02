@@ -1,24 +1,22 @@
 package org.amshove.natls.quickfixes;
 
-import org.amshove.natls.codeactions.CodeActionContext;
-import org.amshove.natls.codeactions.ICodeAction;
+import org.amshove.natlint.analyzers.UnusedVariableAnalyzer;
 import org.eclipse.lsp4j.*;
 
 import java.util.List;
 import java.util.Map;
 
-public class RemoveUnusedVariableQuickfix implements ICodeAction
+public class RemoveUnusedVariableQuickfix extends AbstractQuickFix
 {
 	@Override
-	public boolean isApplicable(CodeActionContext context)
+	protected void registerQuickfixes()
 	{
-		return context.diagnosticsAtPosition().stream().anyMatch(d -> d.getCode().getLeft().equals("NL001"));
+		registerQuickFix(UnusedVariableAnalyzer.UNUSED_VARIABLE, this::fixUnusedVariable);
 	}
 
-	@Override
-	public CodeAction createCodeAction(CodeActionContext context)
+	private CodeAction fixUnusedVariable(QuickFixContext context)
 	{
-		var diagnostic = context.diagnosticsAtPosition().stream().filter(d -> d.getCode().getLeft().equals("NL001")).findFirst().get();
+		var diagnostic = context.diagnostic();
 		var action = new CodeAction("Remove variable");
 		action.setKind(CodeActionKind.QuickFix);
 		action.setDiagnostics(List.of(diagnostic));

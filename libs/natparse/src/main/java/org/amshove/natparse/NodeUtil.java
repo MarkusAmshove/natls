@@ -6,7 +6,9 @@ import org.amshove.natparse.natural.ISyntaxTree;
 
 public class NodeUtil
 {
-	private NodeUtil(){}
+	private NodeUtil()
+	{
+	}
 
 	public static boolean moduleContainsNode(INaturalModule module, ISyntaxNode node)
 	{
@@ -24,17 +26,17 @@ public class NodeUtil
 
 		for (var node : syntaxTree)
 		{
-			if(node.position().line() == line && node.position().offsetInLine() == character)
+			if (node.position().line() == line && node.position().offsetInLine() == character)
 			{
 				return node;
 			}
 
-			if(node.position().line() == line && node.position().offsetInLine() > character)
+			if (node.position().line() == line && node.position().offsetInLine() > character)
 			{
 				return previousNode;
 			}
 
-			if(node.position().line() > line)
+			if (node.position().line() > line)
 			{
 				return findNodeAtPosition(line, character, previousNode);
 			}
