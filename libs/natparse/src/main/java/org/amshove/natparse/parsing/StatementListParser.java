@@ -54,6 +54,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					case IDENTIFIER_OR_KEYWORD:
 						statementList.addStatement(identifierReference());
 						break;
+					case END:
+						statementList.addStatement(end());
+						break;
 					default:
 						// While the parser is incomplete, we just skip over everything we don't know yet
 						tokens.advance();
@@ -68,6 +71,13 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode end() throws ParseError
+	{
+		var endNode = new EndNode();
+		consumeMandatory(endNode, SyntaxKind.END);
+		return endNode;
 	}
 
 	private SyntheticVariableStatementNode identifierReference() throws ParseError
