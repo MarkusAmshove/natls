@@ -34,4 +34,12 @@ public record CodeActionAssertion(CodeAction action)
 
 		return this;
 	}
+
+	public CodeActionAssertion insertsText(int line, int column, String newText)
+	{
+		assertThat(action.getEdit().getChanges().values().stream().flatMap(Collection::stream))
+			.as("Expected to find a code action inserting %s at line %d and column %d".formatted(newText, line, column))
+			.anyMatch(e -> e.getNewText().equals(newText) && e.getRange().getStart().getLine() == line && e.getRange().getStart().getCharacter() == column);
+		return this;
+	}
 }

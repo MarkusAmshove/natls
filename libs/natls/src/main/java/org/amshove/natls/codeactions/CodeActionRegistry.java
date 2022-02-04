@@ -7,9 +7,9 @@ import java.util.List;
 
 public class CodeActionRegistry
 {
-	private static final List<IRefactoring> codeActionProviders = new ArrayList<>();
+	private static final List<ICodeActionProvider> codeActionProviders = new ArrayList<>();
 
-	public static void register(IRefactoring codeAction)
+	public static void register(ICodeActionProvider codeAction)
 	{
 		codeActionProviders.add(codeAction);
 	}
@@ -19,12 +19,17 @@ public class CodeActionRegistry
 		codeActionProviders.add(quickFix);
 	}
 
+	public static void unregisterAll()
+	{
+		codeActionProviders.clear();
+	}
+
 	public List<CodeAction> createCodeActions(RefactoringContext context)
 	{
 		var codeActions = new ArrayList<CodeAction>();
 		for (var codeActionProvider : codeActionProviders)
 		{
-			if(codeActionProvider.isApplicable(context))
+			if (codeActionProvider.isApplicable(context))
 			{
 				codeActions.addAll(codeActionProvider.createCodeAction(context));
 			}

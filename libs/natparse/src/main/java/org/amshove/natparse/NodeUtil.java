@@ -44,6 +44,14 @@ public class NodeUtil
 			previousNode = node;
 		}
 
+		if (previousNode != null
+			&& previousNode.position().line() == line
+			&& previousNode.position().offsetInLine() < character
+			&& previousNode.position().offsetInLine() + previousNode.position().length() >= character)
+		{
+			return previousNode;
+		}
+
 		return null;
 	}
 }

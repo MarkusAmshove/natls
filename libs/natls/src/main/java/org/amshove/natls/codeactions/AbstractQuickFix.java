@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-public abstract class AbstractQuickFix implements IRefactoring
+public abstract class AbstractQuickFix implements ICodeActionProvider
 {
 	private final Map<String, List<Function<QuickFixContext, CodeAction>>> quickfixes = new HashMap<>();
 

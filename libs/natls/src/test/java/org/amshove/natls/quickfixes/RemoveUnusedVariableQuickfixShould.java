@@ -1,6 +1,7 @@
 package org.amshove.natls.quickfixes;
 
 import org.amshove.natlint.analyzers.UnusedVariableAnalyzer;
+import org.amshove.natls.codeactions.ICodeActionProvider;
 import org.amshove.natls.testlifecycle.CodeActionTest;
 import org.amshove.natls.testlifecycle.LspProjectName;
 import org.amshove.natls.testlifecycle.LspTest;
@@ -17,6 +18,12 @@ public class RemoveUnusedVariableQuickfixShould extends CodeActionTest
 	static void setupProject(@LspProjectName("emptyproject") LspTestContext context)
 	{
 		testContext = context;
+	}
+
+	@Override
+	protected ICodeActionProvider getCodeActionUnderTest()
+	{
+		return new RemoveUnusedVariableQuickfix();
 	}
 
 	@Override
