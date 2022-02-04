@@ -41,7 +41,7 @@ public class NaturalProjectResourceResolver implements ParameterResolver
 		}
 	}
 
-	private static class AutoDeleteTempDirectory implements ExtensionContext.Store.CloseableResource
+	public static class AutoDeleteTempDirectory implements ExtensionContext.Store.CloseableResource
 	{
 		private final Path path;
 
@@ -62,7 +62,12 @@ public class NaturalProjectResourceResolver implements ParameterResolver
 			}
 		}
 
-		AutoDeleteTempDirectory(String directoryName) throws IOException
+		public Path getPath()
+		{
+			return path;
+		}
+
+		public AutoDeleteTempDirectory(String directoryName) throws IOException
 		{
 			path = Files.createTempDirectory(directoryName);
 		}

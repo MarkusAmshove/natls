@@ -6,6 +6,8 @@ dependencies {
     implementation libraries.lsp4j
     implementation project(':natparse')
     implementation project(':natlint')
+
+    testImplementation project(':testhelpers')
 }
 
 shadowJar {

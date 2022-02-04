@@ -109,6 +109,11 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 
 	}
 
+	public NaturalLanguageService getLanguageService()
+	{
+		return languageService;
+	}
+
 	@Override
 	public TextDocumentService getTextDocumentService()
 	{

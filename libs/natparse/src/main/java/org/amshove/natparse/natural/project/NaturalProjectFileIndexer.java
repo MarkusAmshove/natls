@@ -32,10 +32,15 @@ public class NaturalProjectFileIndexer
 		}
 	}
 
-	private NaturalFile toNaturalFile(Path path)
+	public NaturalFile toNaturalFile(Path path, NaturalLibrary library)
 	{
 		var filetype = NaturalFileType.fromExtension(path.getFileName().toString().split("\\.")[1]);
 		return new NaturalFile(getReferableName(path, filetype), path, filetype);
+	}
+
+	private NaturalFile toNaturalFile(Path path)
+	{
+		return toNaturalFile(path, null);
 	}
 
 	private String getReferableName(Path path, NaturalFileType type)

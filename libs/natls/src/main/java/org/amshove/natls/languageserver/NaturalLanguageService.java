@@ -40,7 +40,6 @@ import java.util.stream.Stream;
 
 public class NaturalLanguageService implements LanguageClientAware
 {
-
 	private static final Hover EMPTY_HOVER = new Hover(new MarkupContent(MarkupKind.PLAINTEXT, ""));
 	private NaturalProject project; // TODO: Replace
 	private LanguageServerProject languageServerProject;
@@ -87,6 +86,12 @@ public class NaturalLanguageService implements LanguageClientAware
 	private Stream<SyntaxToken> getVariableDeclarationTokens(TokenList tokens)
 	{
 		return tokens.tokensUntilNext(SyntaxKind.END_DEFINE).stream();
+	}
+
+	public void createdFile(String uri)
+	{
+		var path = LspUtil.uriToPath(uri);
+		languageServerProject.addFile(path);
 	}
 
 	public List<? extends SymbolInformation> findWorkspaceSymbols(String query, CancelChecker cancelChecker)

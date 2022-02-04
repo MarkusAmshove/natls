@@ -341,4 +341,9 @@ public class LanguageServerFile implements IModuleProvider
 	{
 		return allDiagnostics().stream().filter(d -> LspUtil.isInSameLine(d.getRange(), range)).toList();
 	}
+
+	public NaturalFile getNaturalFile()
+	{
+		return file;
+	}
 }

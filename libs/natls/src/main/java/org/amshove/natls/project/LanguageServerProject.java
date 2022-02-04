@@ -2,7 +2,9 @@ package org.amshove.natls.project;
 
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalProject;
+import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
 
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -65,5 +67,12 @@ public class LanguageServerProject
 	public long countAllFiles()
 	{
 		return provideAllFiles().count();
+	}
+
+	public void addFile(Path path)
+	{
+		var library = libraries.values().stream().filter(l -> l.residesInLibrary(path)).findFirst().orElseThrow();
+		var naturalFile = new NaturalProjectFileIndexer().toNaturalFile(path, library.getLibrary());
+		library.addFile(new LanguageServerFile(naturalFile));
 	}
 }

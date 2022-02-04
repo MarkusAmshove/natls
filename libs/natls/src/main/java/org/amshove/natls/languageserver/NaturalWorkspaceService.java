@@ -22,6 +22,15 @@ public class NaturalWorkspaceService implements WorkspaceService
 	}
 
 	@Override
+	public void didCreateFiles(CreateFilesParams params)
+	{
+		for (var file : params.getFiles())
+		{
+			languageService.createdFile(file.getUri());
+		}
+	}
+
+	@Override
 	public void didChangeWatchedFiles(DidChangeWatchedFilesParams params)
 	{
 		// TODO: Handle delete of a module
