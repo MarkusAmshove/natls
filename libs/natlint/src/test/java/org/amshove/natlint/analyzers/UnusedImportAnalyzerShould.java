@@ -13,16 +13,16 @@ public class UnusedImportAnalyzerShould extends AbstractAnalyzerTest
 	}
 
 	@Test
-	void reportADiagnosticForAnUnusedUsing(@ProjectName("unusedimports")NaturalProject project)
+	void reportADiagnosticForAnUnusedUsing(@ProjectName("unusedimports") NaturalProject project)
 	{
 		testDiagnostics(
 			project.findModule("SUBTWO"),
-			expectDiagnostic(1, UnusedImportAnalyzer.UNUSED_IMPORT)
+			expectDiagnostic(1, UnusedImportAnalyzer.UNUSED_IMPORT, "Using MYLDA is unused")
 		);
 	}
 
 	@Test
-	void reportNoDiagnosticIfAVariableFromUsingIsUsed(@ProjectName("unusedimports")NaturalProject project)
+	void reportNoDiagnosticIfAVariableFromUsingIsUsed(@ProjectName("unusedimports") NaturalProject project)
 	{
 		testDiagnostics(project.findModule("SUBONE"), expectNoDiagnosticOfType(UnusedImportAnalyzer.UNUSED_IMPORT));
 	}

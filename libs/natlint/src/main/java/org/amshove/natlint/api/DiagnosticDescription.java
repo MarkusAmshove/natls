@@ -26,6 +26,15 @@ public class DiagnosticDescription
 		return new LinterDiagnostic(id, position, severity, message);
 	}
 
+	/**
+	 *	Create a diagnostic with a formatted message.<br/>
+	 *	The message of the {@link DiagnosticDescription} should have format marks understandable by String.format.
+	 */
+	public LinterDiagnostic createFormattedDiagnostic(IPosition position, Object... formatArgs)
+	{
+		return new LinterDiagnostic(id, position, severity, message.formatted(formatArgs));
+	}
+
 	public String getId()
 	{
 		return id;

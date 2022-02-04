@@ -142,6 +142,11 @@ public abstract class AbstractAnalyzerTest
 		return new ExpectedDiagnostic(line, description);
 	}
 
+	protected DiagnosticAssertion expectDiagnostic(int line, DiagnosticDescription description, String expectedMessage)
+	{
+		return new ExpectedDiagnosticWithMessage(line, description, expectedMessage);
+	}
+
 	protected DiagnosticAssertion expectNoDiagnostic(int line, DiagnosticDescription description)
 	{
 		return new ExpectedNoDiagnostic(line, description);
@@ -183,6 +188,29 @@ public abstract class AbstractAnalyzerTest
 				"line=" + line +
 				", description=" + description.getId() +
 				'}';
+		}
+	}
+
+	protected record ExpectedDiagnosticWithMessage(int line, DiagnosticDescription description, String expectedMessage) implements DiagnosticAssertion
+	{
+		@Override
+		public Executable checkAssertion(List<LinterDiagnostic> actualDiagnostics)
+		{
+			return () -> assertThat(actualDiagnostics)
+				.as("Expected diagnostic %s to be present but was not", this)
+				.anyMatch(this::matches);
+		}
+
+		@Override
+		public boolean matches(IDiagnostic diagnostic)
+		{
+			return DiagnosticAssertion.super.matches(diagnostic) && diagnostic.message().equals(expectedMessage);
+		}
+
+		@Override
+		public String toString()
+		{
+			return "ExpectedDiagnosticWithMessage{line=" + line + ", description=" + description.getId() + ", expectedMessage=" + expectedMessage + "}";
 		}
 	}
 
