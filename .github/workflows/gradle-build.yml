@@ -35,3 +35,14 @@ jobs:
         if: always()
         with:
           files: "**/build/test-results/**/*.xml"
+
+      - name: Run with Coverage
+        run: ./gradlew jacocoRootReport
+        if: matrix.os == 'ubuntu-latest' && github.event_name == 'pull_request'
+
+      - name: Report Coverage
+        uses: madrapps/jacoco-report@v1.2
+        if: matrix.os == 'ubuntu-latest' && github.event_name == 'pull_request'
+        with:
+          paths: ${{ github.workspace }}/build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
