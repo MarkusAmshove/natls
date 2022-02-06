@@ -5,8 +5,6 @@ import org.amshove.natls.progress.ClientProgressType;
 import org.amshove.natls.progress.MessageProgressMonitor;
 import org.amshove.natls.progress.ProgressTasks;
 import org.amshove.natls.progress.WorkDoneProgressMonitor;
-import org.amshove.natls.quickfixes.RemoveUnusedVariableQuickfix;
-import org.amshove.natls.refactorings.CreateRedefineRefactoring;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
@@ -41,7 +39,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			capabilities.setCodeLensProvider(new CodeLensOptions(true));
 			capabilities.setSignatureHelpProvider(new SignatureHelpOptions()); // Maybe < for Functions?
 			capabilities.setCallHierarchyProvider(true);
-			capabilities.setCodeActionProvider(true);
+			capabilities.setCodeActionProvider(CodeActionRegistry.INSTANCE.registeredCodeActionCount() > 0);
 
 			var progressMonitor = params.getWorkDoneToken() != null
 				? new WorkDoneProgressMonitor(params.getWorkDoneToken().getLeft(), client)
@@ -80,10 +78,6 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			workspaceService.setLanguageService(languageService);
 			documentService.setLanguageService(languageService);
 			var endTime = System.currentTimeMillis();
-
-			progressMonitor.progress("Registering CodeActions", 50);
-			CodeActionRegistry.register(new RemoveUnusedVariableQuickfix()); // TODO: Use Reflection/APT for automatic registration
-			CodeActionRegistry.register(new CreateRedefineRefactoring()); // TODO: Use Reflection/APT for automatic registration
 
 			if(params.getWorkDoneToken() != null)
 			{

@@ -45,7 +45,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	private LanguageServerProject languageServerProject;
 	private LanguageClient client;
 	private boolean initialized;
-	private CodeActionRegistry codeActionRegistry = new CodeActionRegistry();
+	private CodeActionRegistry codeActionRegistry = CodeActionRegistry.INSTANCE;
 
 	public void indexProject(Path workspaceRoot, IProgressMonitor progressMonitor)
 	{

@@ -16,8 +16,8 @@ public abstract class CodeActionTest extends LanguageServerTest
 
 	protected List<CodeAction> receiveCodeActions(String library, String name, String sourceWithCursor)
 	{
-		CodeActionRegistry.unregisterAll();
-		CodeActionRegistry.register(getCodeActionUnderTest());
+		CodeActionRegistry.INSTANCE.unregisterAll();
+		CodeActionRegistry.INSTANCE.register(getCodeActionUnderTest());
 		var sourceAndCursor = extractSourceAndCursor(sourceWithCursor);
 		var file = createOrSaveFile(library, name, sourceAndCursor.source());
 		return getContext().languageService().codeAction(new CodeActionParams(file, sourceAndCursor.cursorPosition(), new CodeActionContext()));
