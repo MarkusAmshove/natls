@@ -16,6 +16,12 @@ public class NaturalFile
 		this.filetype = filetype;
 	}
 
+	public NaturalFile(String referableName, Path path, NaturalFileType filetype, NaturalLibrary library)
+	{
+		this(referableName, path, filetype);
+		this.library = library;
+	}
+
 	public String getReferableName()
 	{
 		return referableName;

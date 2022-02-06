@@ -34,7 +34,7 @@ public class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
 				end-define
 				end
 				""",
-			expectDiagnostic(2, UnusedVariableAnalyzer.UNUSED_VARIABLE)
+			expectDiagnostic(2, UnusedVariableAnalyzer.UNUSED_VARIABLE, "Variable #MYVAR is unused")
 		);
 	}
 

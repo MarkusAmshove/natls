@@ -1,10 +1,13 @@
 package org.amshove.natls.languageserver;
 
+import org.amshove.natls.codeactions.RefactoringContext;
+import org.amshove.natls.codeactions.CodeActionRegistry;
 import org.amshove.natls.progress.IProgressMonitor;
 import org.amshove.natls.progress.ProgressTasks;
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natls.project.LanguageServerProject;
 import org.amshove.natls.project.ModuleReferenceParser;
+import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
@@ -37,12 +40,12 @@ import java.util.stream.Stream;
 
 public class NaturalLanguageService implements LanguageClientAware
 {
-
 	private static final Hover EMPTY_HOVER = new Hover(new MarkupContent(MarkupKind.PLAINTEXT, ""));
 	private NaturalProject project; // TODO: Replace
 	private LanguageServerProject languageServerProject;
 	private LanguageClient client;
 	private boolean initialized;
+	private CodeActionRegistry codeActionRegistry = CodeActionRegistry.INSTANCE;
 
 	public void indexProject(Path workspaceRoot, IProgressMonitor progressMonitor)
 	{
@@ -83,6 +86,12 @@ public class NaturalLanguageService implements LanguageClientAware
 	private Stream<SyntaxToken> getVariableDeclarationTokens(TokenList tokens)
 	{
 		return tokens.tokensUntilNext(SyntaxKind.END_DEFINE).stream();
+	}
+
+	public void createdFile(String uri)
+	{
+		var path = LspUtil.uriToPath(uri);
+		languageServerProject.addFile(path);
 	}
 
 	public List<? extends SymbolInformation> findWorkspaceSymbols(String query, CancelChecker cancelChecker)
@@ -547,6 +556,12 @@ public class NaturalLanguageService implements LanguageClientAware
 					label += " (%s)".formatted(v.position().fileNameWithoutExtension());
 				}
 
+				item.setSortText(
+					v.position().filePath().equals(filePath)
+					? "1"
+					: "2"
+				);
+
 				item.setLabel(label);
 				item.setDocumentation(new MarkupContent(MarkupKind.MARKDOWN, createHoverMarkdownText(v)));
 
@@ -770,5 +785,16 @@ public class NaturalLanguageService implements LanguageClientAware
 		item.setUri(node.referencingToken().filePath().toUri().toString());
 		item.setKind(SymbolKind.Class);
 		return item;
+	}
+
+	public List<CodeAction> codeAction(CodeActionParams params)
+	{
+		var file = findNaturalFile(LspUtil.uriToPath(params.getTextDocument().getUri()));
+		var token = findTokenAtPosition(file.getPath(), params.getRange().getStart());
+		var node = NodeUtil.findNodeAtPosition(params.getRange().getStart().getLine(), params.getRange().getStart().getCharacter(), file.module());
+
+		var context = new RefactoringContext(params.getTextDocument().getUri(), file.module(), token, node, file.diagnosticsInRange(params.getRange()));
+
+		return codeActionRegistry.createCodeActions(context);
 	}
 }

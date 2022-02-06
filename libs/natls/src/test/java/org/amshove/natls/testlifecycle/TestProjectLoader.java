@@ -1,4 +1,4 @@
-package org.amshove.natls;
+package org.amshove.natls.testlifecycle;
 
 import org.amshove.natls.project.LanguageServerProject;
 import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
@@ -15,13 +15,12 @@ public class TestProjectLoader
 	/**
 	 * Copies the project folder from test/resources to the destination.
 	 * Make sure to use JUnit TempDir for destinationDirectory
-	 * @param projectNameInResources relative path to the project from test/resources/org/amshove/natls/projects
+	 * @param projectNameInResources relative path to the project from test/resources/projects
 	 */
 	public static LanguageServerProject loadProjectFromResources(Path destinationDirectory, String projectNameInResources)
 	{
-		var packageSubfolder = TestProjectLoader.class.getPackageName().replace(".", "/");
 		var workingDirectory = System.getProperty("user.dir");
-		var resourceProjectPath = Paths.get(workingDirectory, "src", "test", "resources", packageSubfolder, "projects", projectNameInResources);
+		var resourceProjectPath = Paths.get(workingDirectory, "src", "test", "resources", "projects", projectNameInResources);
 
 		copyProjectToTemporaryFolder(destinationDirectory, resourceProjectPath);
 

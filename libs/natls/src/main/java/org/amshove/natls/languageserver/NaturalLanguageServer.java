@@ -1,5 +1,6 @@
 package org.amshove.natls.languageserver;
 
+import org.amshove.natls.codeactions.CodeActionRegistry;
 import org.amshove.natls.progress.ClientProgressType;
 import org.amshove.natls.progress.MessageProgressMonitor;
 import org.amshove.natls.progress.ProgressTasks;
@@ -38,10 +39,16 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			capabilities.setCodeLensProvider(new CodeLensOptions(true));
 			capabilities.setSignatureHelpProvider(new SignatureHelpOptions()); // Maybe < for Functions?
 			capabilities.setCallHierarchyProvider(true);
+			capabilities.setCodeActionProvider(CodeActionRegistry.INSTANCE.registeredCodeActionCount() > 0);
 
 			var progressMonitor = params.getWorkDoneToken() != null
 				? new WorkDoneProgressMonitor(params.getWorkDoneToken().getLeft(), client)
 				: new MessageProgressMonitor(client);
+
+			if(params.getCapabilities().getWindow().getWorkDoneProgress())
+			{
+				ProgressTasks.setClientProgressType(ClientProgressType.WORK_DONE);
+			}
 
 			if (client != null)
 			{
@@ -54,7 +61,6 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 
 			if(params.getWorkDoneToken() != null)
 			{
-				ProgressTasks.setClientProgressType(ClientProgressType.WORK_DONE); // move somewhere else?
 				var begin = new WorkDoneProgressBegin();
 				begin.setTitle("Natural Language Server initializing");
 				begin.setMessage("");
@@ -97,6 +103,11 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 	public void exit()
 	{
 
+	}
+
+	public NaturalLanguageService getLanguageService()
+	{
+		return languageService;
 	}
 
 	@Override

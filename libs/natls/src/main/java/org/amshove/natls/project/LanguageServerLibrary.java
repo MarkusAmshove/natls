@@ -92,4 +92,31 @@ public class LanguageServerLibrary
 			stepLibs.add(libraries.get(stepLib.getName()));
 		}
 	}
+
+	/**
+	 * Checks wether the file is within the library, determined by the Path.
+	 * This can be used for files with haven't been indexed yet or are created
+	 * at runtime.
+	 */
+	boolean residesInLibrary(Path path)
+	{
+		return path.startsWith(this.library.getSourcePath());
+	}
+
+	public void addFile(LanguageServerFile languageServerFile)
+	{
+		files.put(languageServerFile.getReferableName(), languageServerFile);
+		languageServerFile.setLibrary(this);
+		library.addFile(languageServerFile.getNaturalFile());
+	}
+
+	NaturalLibrary getLibrary()
+	{
+		return library;
+	}
+
+	public Path getSourcePath()
+	{
+		return library.getSourcePath();
+	}
 }

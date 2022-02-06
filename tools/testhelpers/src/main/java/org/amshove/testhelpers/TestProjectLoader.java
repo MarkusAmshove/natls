@@ -15,7 +15,7 @@ public class TestProjectLoader
 	/**
 	 * Copies the project folder from test/resources to the destination.
 	 * Make sure to use JUnit TempDir for destinationDirectory
-	 * @param projectNameInResources relative path to the project from test/resources/org/amshove/natparse/projects
+	 * @param projectNameInResources relative path to the project from test/resources/projects
 	 */
 	public static NaturalProject loadProjectFromResources(Path destinationDirectory, String projectNameInResources)
 	{

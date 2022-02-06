@@ -8,6 +8,7 @@ import org.amshove.natparse.natural.ITokenNode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 
 record SyntaxTree(ReadOnlyList<? extends ISyntaxNode> descendants) implements ISyntaxTree
 {
@@ -37,5 +38,12 @@ record SyntaxTree(ReadOnlyList<? extends ISyntaxNode> descendants) implements IS
 	public ReadOnlyList<? extends ISyntaxNode> descendants()
 	{
 		return descendants;
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public Iterator<ISyntaxNode> iterator()
+	{
+		return (Iterator<ISyntaxNode>) descendants.iterator();
 	}
 }

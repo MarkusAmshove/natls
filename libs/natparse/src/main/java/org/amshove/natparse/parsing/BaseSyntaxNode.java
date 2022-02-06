@@ -7,6 +7,7 @@ import org.amshove.natparse.natural.ISyntaxTree;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 class BaseSyntaxNode implements ISyntaxNode
@@ -70,5 +71,12 @@ class BaseSyntaxNode implements ISyntaxNode
 		{
 			descendant.destroy();
 		}
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public Iterator<ISyntaxNode> iterator()
+	{
+		return (Iterator<ISyntaxNode>) descendants().iterator();
 	}
 }

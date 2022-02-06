@@ -42,7 +42,7 @@ class DefineDataNode extends BaseSyntaxNode implements IDefineData
 	{
 		for (var variable : variables)
 		{
-			if(variable.name().equals(symbolName))
+			if(variable.name().equals(symbolName) || variable.qualifiedName().equals(symbolName))
 			{
 				return variable;
 			}

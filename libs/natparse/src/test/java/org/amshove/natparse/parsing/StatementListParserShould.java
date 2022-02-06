@@ -161,6 +161,13 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(fetch.reference()).isEqualTo(program);
 	}
 
+	@Test
+	void parseAnEndNode()
+	{
+		var endNode = assertParsesSingleStatement("END", IEndNode.class);
+		assertThat(endNode.descendants()).isNotEmpty();
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);

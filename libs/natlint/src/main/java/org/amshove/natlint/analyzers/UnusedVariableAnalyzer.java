@@ -15,7 +15,7 @@ public class UnusedVariableAnalyzer extends AbstractAnalyzer
 {
 	public static final DiagnosticDescription UNUSED_VARIABLE = DiagnosticDescription.create(
 		"NL001",
-		"Variable is unused",
+		"Variable %s is unused",
 		DiagnosticSeverity.WARNING
 	);
 
@@ -41,7 +41,7 @@ public class UnusedVariableAnalyzer extends AbstractAnalyzer
 		var variable = (IVariableNode) syntaxNode;
 		if (computeReferenceCount(variable) == 0 && computeParentReferenceCount(variable) == 0)
 		{
-			context.report(UNUSED_VARIABLE.createDiagnostic(variable.position()));
+			context.report(UNUSED_VARIABLE.createFormattedDiagnostic(variable.position(), variable.name()));
 		}
 	}
 
@@ -57,7 +57,7 @@ public class UnusedVariableAnalyzer extends AbstractAnalyzer
 		while(level > 1)
 		{
 			var parent = variable.parent();
-			if(parent == null || !(parent instanceof IVariableNode parentVariable))
+			if(!(parent instanceof IVariableNode parentVariable))
 			{
 				break;
 			}

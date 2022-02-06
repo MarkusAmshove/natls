@@ -14,7 +14,7 @@ public class UnusedImportAnalyzer extends AbstractAnalyzer
 {
 	public static final DiagnosticDescription UNUSED_IMPORT = DiagnosticDescription.create(
 		"NL002",
-		"Import is unused",
+		"Using %s is unused",
 		DiagnosticSeverity.WARNING
 	);
 
@@ -39,7 +39,7 @@ public class UnusedImportAnalyzer extends AbstractAnalyzer
 		}
 		if(using.defineData().variables().stream().flatMap(v -> v.references().stream()).noneMatch(r -> NodeUtil.moduleContainsNode(context.getModule(), r)))
 		{
-			context.report(UNUSED_IMPORT.createDiagnostic(using.target()));
+			context.report(UNUSED_IMPORT.createFormattedDiagnostic(using.target(), using.target().symbolName()));
 		}
 	}
 }
