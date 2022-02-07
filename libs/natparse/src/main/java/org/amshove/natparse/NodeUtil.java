@@ -46,6 +46,11 @@ public class NodeUtil
 				return previousNode instanceof ITokenNode ? (ISyntaxNode) syntaxTree : previousNode;
 			}
 
+			if (node.position().line() == line && node.position().offsetInLine() < character && node.position().endOffset() > character)
+			{
+				return node;
+			}
+
 			if (node.position().line() > line)
 			{
 				return findNodeAtPosition(line, character, previousNode);
@@ -60,6 +65,12 @@ public class NodeUtil
 			&& previousNode.position().offsetInLine() + previousNode.position().length() >= character)
 		{
 			return previousNode;
+		}
+
+		if (previousNode != null
+			&& previousNode.position().line() < line)
+		{
+			return findNodeAtPosition(line, character, previousNode);
 		}
 
 		return null;
