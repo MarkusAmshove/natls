@@ -162,6 +162,12 @@ public class NaturalDocumentService implements TextDocumentService
 		return CompletableFuture.supplyAsync(()->languageService.createCallHierarchyItems(params));
 	}
 
+	@Override
+	public CompletableFuture<WorkspaceEdit> rename(RenameParams params)
+	{
+		return CompletableFuture.supplyAsync(() -> languageService.rename(params));
+	}
+
 	public void setLanguageService(NaturalLanguageService languageService)
 	{
 		this.languageService = languageService;

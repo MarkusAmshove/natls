@@ -27,6 +27,11 @@ public class NodeUtil
 	 */
 	public static ISyntaxNode findNodeAtPosition(int line, int character, ISyntaxTree syntaxTree)
 	{
+		if(syntaxTree == null)
+		{
+			return null;
+		}
+
 		ISyntaxNode previousNode = null;
 
 		for (var node : syntaxTree)

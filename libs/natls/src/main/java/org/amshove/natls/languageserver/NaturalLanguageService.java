@@ -1,7 +1,8 @@
 package org.amshove.natls.languageserver;
 
-import org.amshove.natls.codeactions.RefactoringContext;
 import org.amshove.natls.codeactions.CodeActionRegistry;
+import org.amshove.natls.codeactions.RefactoringContext;
+import org.amshove.natls.codeactions.SymbolRenameComputer;
 import org.amshove.natls.progress.IProgressMonitor;
 import org.amshove.natls.progress.ProgressTasks;
 import org.amshove.natls.project.LanguageServerFile;
@@ -41,11 +42,12 @@ import java.util.stream.Stream;
 public class NaturalLanguageService implements LanguageClientAware
 {
 	private static final Hover EMPTY_HOVER = new Hover(new MarkupContent(MarkupKind.PLAINTEXT, ""));
+	private final CodeActionRegistry codeActionRegistry = CodeActionRegistry.INSTANCE;
 	private NaturalProject project; // TODO: Replace
 	private LanguageServerProject languageServerProject;
 	private LanguageClient client;
 	private boolean initialized;
-	private CodeActionRegistry codeActionRegistry = CodeActionRegistry.INSTANCE;
+	private SymbolRenameComputer renameComputer = new SymbolRenameComputer();
 
 	public void indexProject(Path workspaceRoot, IProgressMonitor progressMonitor)
 	{
@@ -387,7 +389,7 @@ public class NaturalLanguageService implements LanguageClientAware
 			.map(LspUtil::toLocation)
 			.toList();
 
-		if(!matchingVariableDeclarations.isEmpty())
+		if (!matchingVariableDeclarations.isEmpty())
 		{
 			return matchingVariableDeclarations;
 		}
@@ -398,7 +400,7 @@ public class NaturalLanguageService implements LanguageClientAware
 			return List.of();
 		}
 
-		return List.of(new Location(referencedModule.file().getPath().toUri().toString(), new Range(new Position(0,0), new Position(0,0))));
+		return List.of(new Location(referencedModule.file().getPath().toUri().toString(), new Range(new Position(0, 0), new Position(0, 0))));
 	}
 
 	public List<Location> findReferences(ReferenceParams params)
@@ -558,8 +560,8 @@ public class NaturalLanguageService implements LanguageClientAware
 
 				item.setSortText(
 					v.position().filePath().equals(filePath)
-					? "1"
-					: "2"
+						? "1"
+						: "2"
 				);
 
 				item.setLabel(label);
@@ -742,7 +744,7 @@ public class NaturalLanguageService implements LanguageClientAware
 			.map(r -> {
 				var call = new CallHierarchyIncomingCall();
 				call.setFrom(callHierarchyItem(r, findNaturalFile(r.referencingToken().filePath()).getReferableName()));
-				call.setFromRanges(List.of(new Range(new Position(0,0), new Position(0,0))));
+				call.setFromRanges(List.of(new Range(new Position(0, 0), new Position(0, 0))));
 				return call;
 			})
 			.toList();
@@ -754,8 +756,8 @@ public class NaturalLanguageService implements LanguageClientAware
 		// 	If within local subroutine, get the local call hierarchy to that subroutine
 		var file = findNaturalFile(LspUtil.uriToPath(params.getTextDocument().getUri()));
 		var item = new CallHierarchyItem();
-		item.setRange(new Range(new Position(0,0), new Position(0,0)));
-		item.setSelectionRange(new Range(new Position(0,0), new Position(0,0)));
+		item.setRange(new Range(new Position(0, 0), new Position(0, 0)));
+		item.setSelectionRange(new Range(new Position(0, 0), new Position(0, 0)));
 		item.setName(file.getReferableName());
 		item.setDetail(file.getType().toString());
 		item.setUri(params.getTextDocument().getUri());
@@ -766,8 +768,8 @@ public class NaturalLanguageService implements LanguageClientAware
 	private CallHierarchyItem callHierarchyItem(LanguageServerFile file)
 	{
 		var item = new CallHierarchyItem();
-		item.setRange(new Range(new Position(0,0), new Position(0,0)));
-		item.setSelectionRange(new Range(new Position(0,0), new Position(0,0)));
+		item.setRange(new Range(new Position(0, 0), new Position(0, 0)));
+		item.setSelectionRange(new Range(new Position(0, 0), new Position(0, 0)));
 		item.setName(file.getReferableName());
 		item.setDetail(file.getType().toString());
 		item.setUri(file.getPath().toUri().toString());
@@ -792,9 +794,34 @@ public class NaturalLanguageService implements LanguageClientAware
 		var file = findNaturalFile(LspUtil.uriToPath(params.getTextDocument().getUri()));
 		var token = findTokenAtPosition(file.getPath(), params.getRange().getStart());
 		var node = NodeUtil.findNodeAtPosition(params.getRange().getStart().getLine(), params.getRange().getStart().getCharacter(), file.module());
+		if(node == null)
+		{
+			return List.of();
+		}
 
 		var context = new RefactoringContext(params.getTextDocument().getUri(), file.module(), token, node, file.diagnosticsInRange(params.getRange()));
 
 		return codeActionRegistry.createCodeActions(context);
+	}
+
+	public WorkspaceEdit rename(RenameParams params)
+	{
+		var path = LspUtil.uriToPath(params.getTextDocument().getUri());
+		var file = findNaturalFile(path);
+
+		var node = NodeUtil.findNodeAtPosition(params.getPosition().getLine(), params.getPosition().getCharacter(), file.module());
+		System.err.println(node.getClass().getSimpleName());
+		if(node instanceof ISymbolReferenceNode symbolReferenceNode)
+		{
+			System.err.println("SymbolReferenceNode");
+			return renameComputer.rename(symbolReferenceNode, params.getNewName());
+		}
+
+		if(node instanceof IReferencableNode referencableNode)
+		{
+			return renameComputer.rename(referencableNode, params.getNewName());
+		}
+
+		return null;
 	}
 }
