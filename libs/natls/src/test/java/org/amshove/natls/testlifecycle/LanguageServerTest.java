@@ -19,6 +19,11 @@ public abstract class LanguageServerTest
 		return new TextDocumentIdentifier(uri);
 	}
 
+	protected TextDocumentIdentifier createOrSaveFile(String libraryName, String name, SourceWithCursor source)
+	{
+		return createOrSaveFile(libraryName, name, source.source());
+	}
+
 	protected TextDocumentIdentifier createOrSaveFile(String libraryName, String name, String source)
 	{
 		try

@@ -221,7 +221,7 @@ public class LanguageServerFile implements IModuleProvider
 
 	public INaturalModule module()
 	{
-		if (module == null)
+		if (module == null || module.syntaxTree() == null) // TODO: Use parsed flag to determine if its only partial parsed. SyntaxTree is conveniently null currently, but that's not reliable
 		{
 			parse(false);
 		}

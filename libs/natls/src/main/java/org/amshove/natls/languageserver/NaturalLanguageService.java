@@ -2,7 +2,7 @@ package org.amshove.natls.languageserver;
 
 import org.amshove.natls.codeactions.CodeActionRegistry;
 import org.amshove.natls.codeactions.RefactoringContext;
-import org.amshove.natls.codeactions.SymbolRenameComputer;
+import org.amshove.natls.codeactions.RenameSymbolAction;
 import org.amshove.natls.progress.IProgressMonitor;
 import org.amshove.natls.progress.ProgressTasks;
 import org.amshove.natls.project.LanguageServerFile;
@@ -47,7 +47,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	private LanguageServerProject languageServerProject;
 	private LanguageClient client;
 	private boolean initialized;
-	private SymbolRenameComputer renameComputer = new SymbolRenameComputer();
+	private RenameSymbolAction renameComputer = new RenameSymbolAction();
 
 	public void indexProject(Path workspaceRoot, IProgressMonitor progressMonitor)
 	{
@@ -810,10 +810,8 @@ public class NaturalLanguageService implements LanguageClientAware
 		var file = findNaturalFile(path);
 
 		var node = NodeUtil.findNodeAtPosition(params.getPosition().getLine(), params.getPosition().getCharacter(), file.module());
-		System.err.println(node.getClass().getSimpleName());
 		if(node instanceof ISymbolReferenceNode symbolReferenceNode)
 		{
-			System.err.println("SymbolReferenceNode");
 			return renameComputer.rename(symbolReferenceNode, params.getNewName());
 		}
 

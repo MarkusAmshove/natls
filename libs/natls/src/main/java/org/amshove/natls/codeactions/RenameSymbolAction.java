@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class SymbolRenameComputer
+public class RenameSymbolAction
 {
 	public WorkspaceEdit rename(ISymbolReferenceNode referenceNode, String newName)
 	{

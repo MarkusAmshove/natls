@@ -10,6 +10,7 @@ public record SourceWithCursor(String source, Range cursorPosition)
 {
 	private static final String CURSOR_START = "${";
 	private static final String CURSOR_END = "}$";
+
 	/**
 	 * Constructs a {@link SourceWithCursor} from a single source string containing the cursor
 	 * or selection denoted by ${}$. <br/>
@@ -61,5 +62,13 @@ public record SourceWithCursor(String source, Range cursorPosition)
 		}
 
 		return new SourceWithCursor(resultingSource.toString(), cursorPosition);
+	}
+
+	/**
+	 * Returns the Position of the beginning of the cursor.
+	 */
+	public Position toSinglePosition()
+	{
+		return new Position(cursorPosition.getStart().getLine(), cursorPosition.getStart().getCharacter());
 	}
 }

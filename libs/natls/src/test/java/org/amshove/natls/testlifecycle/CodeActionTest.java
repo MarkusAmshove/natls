@@ -19,7 +19,7 @@ public abstract class CodeActionTest extends LanguageServerTest
 		CodeActionRegistry.INSTANCE.unregisterAll();
 		CodeActionRegistry.INSTANCE.register(getCodeActionUnderTest());
 		var sourceAndCursor = extractSourceAndCursor(sourceWithCursor);
-		var file = createOrSaveFile(library, name, sourceAndCursor.source());
+		var file = createOrSaveFile(library, name, sourceAndCursor);
 		return getContext().languageService().codeAction(new CodeActionParams(file, sourceAndCursor.cursorPosition(), new CodeActionContext()));
 	}
 
