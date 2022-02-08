@@ -1,8 +1,10 @@
 package org.amshove.natls.testlifecycle;
 
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceEdit;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
@@ -31,16 +33,23 @@ public record WorkspaceEditAssertion(WorkspaceEdit edit)
 		return this;
 	}
 
-	public WorkspaceEditAssertion changesText(int line, String oldLine, String newLine)
+	public WorkspaceEditAssertion changesText(int line, String oldLine, String newLine, TextDocumentIdentifier file)
 	{
-		var maybeEdit = edit.getChanges()
-			.values()
+		assertThat(edit.getChanges()).as("The following file does not have edits: " + file.getUri()).containsKey(file.getUri());
+		assertThat(edit.getChanges().get(file.getUri())).as("No edits returned for file: " + file.getUri()).isNotEmpty();
+
+		var editsForFile = edit.getChanges().get(file.getUri());
+		var maybeEdit = editsForFile
 			.stream()
-			.flatMap(Collection::stream)
 			.filter(e -> e.getRange().getStart().getLine() == line).findFirst();
 
 		assertThat(maybeEdit)
-			.as("Expected to find a TextEdit in line " + line)
+			.as(
+				"Expected to find a TextEdit in line " + line
+					+ ". There were however edits (or none) in lines "
+					+ editsForFile.stream()
+						.map(e -> Integer.toString(e.getRange().getStart().getLine()))
+					.collect(Collectors.joining(",")))
 			.isPresent();
 
 		var edit = maybeEdit.get();

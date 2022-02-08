@@ -36,8 +36,8 @@ public class RenameSymbolActionShould extends LanguageServerTest
 		var edit = testContext.languageService().rename(new RenameParams(file, source.toSinglePosition(), "#NEWVAR"));
 
 		WorkspaceEditAssertion.assertThatEdit(edit)
-			.changesText(1, "1 #MYVAR (N2)", "1 #NEWVAR (N2)")
-			.changesText(3, "WRITE #MYVAR", "WRITE #NEWVAR");
+			.changesText(1, "1 #MYVAR (N2)", "1 #NEWVAR (N2)", file)
+			.changesText(3, "WRITE #MYVAR", "WRITE #NEWVAR", file);
 	}
 
 	@Test
@@ -55,7 +55,35 @@ public class RenameSymbolActionShould extends LanguageServerTest
 		var edit = testContext.languageService().rename(new RenameParams(file, source.toSinglePosition(), "#NEWVAR"));
 
 		WorkspaceEditAssertion.assertThatEdit(edit)
-			.changesText(1, "1 #MYVAR (N2)", "1 #NEWVAR (N2)")
-			.changesText(3, "WRITE #MYVAR", "WRITE #NEWVAR");
+			.changesText(1, "1 #MYVAR (N2)", "1 #NEWVAR (N2)", file)
+			.changesText(3, "WRITE #MYVAR", "WRITE #NEWVAR", file);
+	}
+
+	@Test
+	void renameAVariableFromADataArea()
+	{
+		var dataArea = """
+			DEFINE DATA
+			LOCAL
+			1 #INLDA (A2)
+			END-DEFINE
+			""";
+
+		var module = SourceWithCursor.fromSourceWithCursor("""
+			DEFINE DATA
+			LOCAL USING MYLDA
+			END-DEFINE
+			WRITE #I${}$NLDA
+			END
+			""");
+
+		var ldaFile = createOrSaveFile("LIBONE", "MYLDA.NSL", dataArea);
+		var moduleFile = createOrSaveFile("LIBONE", "LDATEST.NSN", module);
+
+		var edit = testContext.languageService().rename(new RenameParams(moduleFile, module.toSinglePosition(), "#STILLLDA"));
+
+		WorkspaceEditAssertion.assertThatEdit(edit)
+			.changesText(2, "1 #INLDA (A2)", "1 #STILLLDA (A2)", ldaFile)
+			.changesText(3, "WRITE #INLDA", "WRITE #STILLLDA", moduleFile);
 	}
 }
