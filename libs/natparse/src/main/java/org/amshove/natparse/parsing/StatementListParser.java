@@ -62,6 +62,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						break;
 					case END_SUBROUTINE:
 						return statementList;
+					case IGNORE:
+						statementList.addStatement(ignore());
+						break;
 					default:
 						// While the parser is incomplete, we just skip over everything we don't know yet
 						tokens.advance();
@@ -76,6 +79,13 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode ignore() throws ParseError
+	{
+		var ignore = new IgnoreNode();
+		consumeMandatory(ignore, SyntaxKind.IGNORE);
+		return ignore;
 	}
 
 	private StatementNode subroutine() throws ParseError
