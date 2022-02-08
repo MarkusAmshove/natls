@@ -183,9 +183,70 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
                END-SUBROUTINE
             """, ISubroutineNode.class);
 
-		assertThat(subroutine.name().symbolName()).isEqualTo("MY-SUBROUTINE");
+		assertThat(subroutine.declaration().symbolName()).isEqualTo("MY-SUBROUTINE");
 		assertThat(subroutine.references()).isEmpty();
 		assertThat(subroutine.body().statements()).hasSize(1);
+	}
+
+	@Test
+	void parseInternalPerformNodes()
+	{
+		var perform = assertParsesSingleStatement("PERFORM MY-SUBROUTINE", IInternalPerformNode.class);
+		assertThat(perform.token().symbolName()).isEqualTo("MY-SUBROUTINE");
+		assertThat(perform.reference()).isNull();
+	}
+
+	@Test
+	void parseInternalPerformNodesWithReference()
+	{
+		var statements = assertParsesWithoutDiagnostics("""
+			DEFINE SUBROUTINE MY-SUBROUTINE
+				IGNORE
+			END-SUBROUTINE
+
+			PERFORM MY-SUBROUTINE
+			""");
+
+		assertThat(statements.statements()).hasSize(2);
+		var subroutine = statements.statements().get(0);
+		var perform = assertNodeType(statements.statements().get(1), IInternalPerformNode.class);
+
+		assertThat(perform.token().symbolName()).isEqualTo("MY-SUBROUTINE");
+		assertThat(perform.reference()).isEqualTo(subroutine);
+	}
+
+	@Test
+	void parseInternalPerformNodesWithReferenceWhenSubroutineIsDefinedAfter()
+	{
+		var statements = assertParsesWithoutDiagnostics("""
+			PERFORM MY-SUBROUTINE
+
+			DEFINE SUBROUTINE MY-SUBROUTINE
+				IGNORE
+			END-SUBROUTINE
+			""");
+
+		assertThat(statements.statements()).hasSize(2);
+		var perform = assertNodeType(statements.statements().get(0), IInternalPerformNode.class);
+		var subroutine = statements.statements().get(1);
+
+		assertThat(perform.token().symbolName()).isEqualTo("MY-SUBROUTINE");
+		assertThat(perform.reference()).isEqualTo(subroutine);
+	}
+
+	@Test
+	void notExportResolvedPerformCallsAsUnresolved()
+	{
+		var statements = assertParsesWithoutDiagnostics("""
+			PERFORM MY-SUBROUTINE
+
+			DEFINE SUBROUTINE MY-SUBROUTINE
+				IGNORE
+			END-SUBROUTINE
+			""");
+
+		assertThat(statements.statements()).hasSize(2);
+		assertThat(((StatementListParser) sut).getUnresolvedReferences()).isEmpty();
 	}
 
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)

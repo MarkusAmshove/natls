@@ -29,7 +29,25 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	protected IStatementListNode parseInternal()
 	{
 		unresolvedReferences = new ArrayList<>();
-		return statementList();
+		var statementList = statementList();
+
+		var resolvedReferences = new ArrayList<ISymbolReferenceNode>();
+		for (var statement : statementList.statements())
+		{
+			if (!(statement instanceof SubroutineNode subroutine))
+			{
+				continue;
+			}
+
+			unresolvedReferences.stream().filter(rn -> rn.token().symbolName().equals(subroutine.declaration().symbolName()))
+				.forEach(node -> {
+					subroutine.addReference(node);
+					resolvedReferences.add(node);
+				});
+		}
+
+		unresolvedReferences.removeAll(resolvedReferences);
+		return statementList;
 	}
 
 	private StatementListNode statementList()
@@ -65,6 +83,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					case IGNORE:
 						statementList.addStatement(ignore());
 						break;
+					case PERFORM:
+						statementList.addStatement(perform());
+						break;
 					default:
 						// While the parser is incomplete, we just skip over everything we don't know yet
 						tokens.advance();
@@ -79,6 +100,18 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode perform() throws ParseError
+	{
+		var internalPerform = new InternalPerformNode();
+		unresolvedReferences.add(internalPerform);
+
+		consumeMandatory(internalPerform, SyntaxKind.PERFORM);
+		var symbol = consumeMandatoryIdentifier(internalPerform);
+		internalPerform.setCallToken(symbol);
+
+		return internalPerform;
 	}
 
 	private StatementNode ignore() throws ParseError
@@ -156,7 +189,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var referencedModule = sideloadModule(referencingToken.symbolName(), previousTokenNode());
 		include.setReferencedModule((NaturalModule) referencedModule);
 
-		if(referencedModule != null)
+		if (referencedModule != null)
 		{
 			try
 			{

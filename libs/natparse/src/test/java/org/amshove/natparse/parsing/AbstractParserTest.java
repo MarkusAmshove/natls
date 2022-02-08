@@ -16,7 +16,7 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 public abstract class AbstractParserTest<NodeType>
 {
 	private final Function<IModuleProvider, AbstractParser<NodeType>> sutFactory;
-	private AbstractParser<NodeType> sut;
+	protected AbstractParser<NodeType> sut;
 
 	protected ModuleProviderStub moduleProvider;
 

@@ -1,9 +1,6 @@
 package org.amshove.natparse.natural;
 
-import org.amshove.natparse.lexing.SyntaxToken;
-
-public interface ISubroutineNode extends IStatementNode, IReferencableNode
+public interface ISubroutineNode extends IStatementNode, IReferencableNode, ISymbolNode
 {
-	SyntaxToken name();
 	IStatementListNode body();
 }

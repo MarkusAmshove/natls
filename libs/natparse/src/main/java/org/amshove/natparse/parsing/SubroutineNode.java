@@ -17,7 +17,7 @@ class SubroutineNode extends StatementNode implements ISubroutineNode
 	private SyntaxToken nameToken;
 
 	@Override
-	public SyntaxToken name()
+	public SyntaxToken declaration()
 	{
 		return nameToken;
 	}
@@ -54,5 +54,6 @@ class SubroutineNode extends StatementNode implements ISubroutineNode
 	void addReference(ISymbolReferenceNode node)
 	{
 		references.add(node);
+		((InternalPerformNode) node).setReference(this);
 	}
 }
