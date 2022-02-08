@@ -30,9 +30,14 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		unresolvedReferences = new ArrayList<>();
 		var statementList = statementList();
+		resolveUnresolvedPerforms(statementList);
+		return statementList;
+	}
 
+	private void resolveUnresolvedPerforms(IStatementListNode statementListNode)
+	{
 		var resolvedReferences = new ArrayList<ISymbolReferenceNode>();
-		for (var statement : statementList.statements())
+		for (var statement : statementListNode.statements())
 		{
 			if (!(statement instanceof SubroutineNode subroutine))
 			{
@@ -44,10 +49,11 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					subroutine.addReference(node);
 					resolvedReferences.add(node);
 				});
+
+			resolveUnresolvedPerforms(subroutine.body()); // Subroutines are normally always top level.Except if they are defined in external subroutines
 		}
 
 		unresolvedReferences.removeAll(resolvedReferences);
-		return statementList;
 	}
 
 	private StatementListNode statementList()
