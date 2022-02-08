@@ -191,6 +191,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	@Test
 	void parseInternalPerformNodes()
 	{
+		ignoreModuleProvider();
 		var perform = assertParsesSingleStatement("PERFORM MY-SUBROUTINE", IInternalPerformNode.class);
 		assertThat(perform.token().symbolName()).isEqualTo("MY-SUBROUTINE");
 		assertThat(perform.reference()).isNull();
@@ -247,6 +248,17 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 
 		assertThat(statements.statements()).hasSize(2);
 		assertThat(((StatementListParser) sut).getUnresolvedReferences()).isEmpty();
+	}
+
+	@Test
+	void parseExternalPerformCalls()
+	{
+		var calledSubroutine = new NaturalModule(null);
+		moduleProvider.addModule("EXTERNAL-SUB", calledSubroutine);
+
+		var perform = assertParsesSingleStatement("PERFORM EXTERNAL-SUB", IExternalPerformNode.class);
+		assertThat(perform.reference()).isEqualTo(calledSubroutine);
+		assertThat(calledSubroutine.callers()).contains(perform);
 	}
 
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)

@@ -30,30 +30,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		unresolvedReferences = new ArrayList<>();
 		var statementList = statementList();
-		resolveUnresolvedPerforms(statementList);
+		resolveUnresolvedInternalPerforms(statementList);
+		resolveUnresolvedExternalPerforms();
 		return statementList;
-	}
-
-	private void resolveUnresolvedPerforms(IStatementListNode statementListNode)
-	{
-		var resolvedReferences = new ArrayList<ISymbolReferenceNode>();
-		for (var statement : statementListNode.statements())
-		{
-			if (!(statement instanceof SubroutineNode subroutine))
-			{
-				continue;
-			}
-
-			unresolvedReferences.stream().filter(rn -> rn.token().symbolName().equals(subroutine.declaration().symbolName()))
-				.forEach(node -> {
-					subroutine.addReference(node);
-					resolvedReferences.add(node);
-				});
-
-			resolveUnresolvedPerforms(subroutine.body()); // Subroutines are normally always top level.Except if they are defined in external subroutines
-		}
-
-		unresolvedReferences.removeAll(resolvedReferences);
 	}
 
 	private StatementListNode statementList()
@@ -250,5 +229,52 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	private boolean isNotCallnatOrFetchModule()
 	{
 		return !peekKind(SyntaxKind.STRING) && !peekKind(SyntaxKind.IDENTIFIER) && !peekKind(SyntaxKind.IDENTIFIER_OR_KEYWORD);
+	}
+
+	private void resolveUnresolvedExternalPerforms()
+	{
+		var resolvedReferences = new ArrayList<ISymbolReferenceNode>();
+
+		for (var unresolvedReference : unresolvedReferences)
+		{
+			if(unresolvedReference instanceof InternalPerformNode internalPerformNode)
+			{
+				var foundModule = sideloadModule(unresolvedReference.token().symbolName(), internalPerformNode.tokenNode());
+				if(foundModule != null)
+				{
+					var externalPerform = new ExternalPerformNode(((InternalPerformNode) unresolvedReference));
+					externalPerform.setReference(foundModule);
+					((StatementListNode) unresolvedReference.parent()).replace(internalPerformNode, externalPerform);
+					resolvedReferences.add(unresolvedReference);
+				}
+			}
+		}
+
+		unresolvedReferences.removeAll(resolvedReferences);
+	}
+
+	private void resolveUnresolvedInternalPerforms(IStatementListNode statementListNode)
+	{
+		var resolvedReferences = new ArrayList<ISymbolReferenceNode>();
+		for (var statement : statementListNode.statements())
+		{
+			if (!(statement instanceof SubroutineNode subroutine))
+			{
+				continue;
+			}
+
+			for (var unresolvedReference : unresolvedReferences)
+			{
+				if(unresolvedReference.token().symbolName().equals(subroutine.declaration().symbolName()))
+				{
+					subroutine.addReference(unresolvedReference);
+					resolvedReferences.add(unresolvedReference);
+				}
+			}
+
+			resolveUnresolvedInternalPerforms(subroutine.body()); // Subroutines are normally always top level.Except if they are defined in external subroutines
+		}
+
+		unresolvedReferences.removeAll(resolvedReferences);
 	}
 }

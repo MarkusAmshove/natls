@@ -23,4 +23,10 @@ class StatementListNode extends BaseSyntaxNode implements IStatementListNode
 		addNode(statement);
 		statement.setParent(this);
 	}
+
+	void replace(IStatementNode oldNode, IStatementNode newNode)
+	{
+		var oldIndex = statements.indexOf(oldNode);
+		statements.set(oldIndex, newNode);
+	}
 }
