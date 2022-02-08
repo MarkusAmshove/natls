@@ -168,6 +168,21 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(endNode.descendants()).isNotEmpty();
 	}
 
+	@Test
+	void parseASubroutine()
+	{
+		ignoreModuleProvider();
+		var subroutine = assertParsesSingleStatement("""
+               DEFINE SUBROUTINE MY-SUBROUTINE
+                   CALLNAT 'HELLO'
+               END-SUBROUTINE
+            """, ISubroutineNode.class);
+
+		assertThat(subroutine.name().symbolName()).isEqualTo("MY-SUBROUTINE");
+		assertThat(subroutine.references()).isEmpty();
+		assertThat(subroutine.body().statements()).hasSize(1);
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);

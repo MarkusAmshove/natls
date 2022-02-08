@@ -57,6 +57,11 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					case END:
 						statementList.addStatement(end());
 						break;
+					case DEFINE:
+						statementList.addStatement(subroutine());
+						break;
+					case END_SUBROUTINE:
+						return statementList;
 					default:
 						// While the parser is incomplete, we just skip over everything we don't know yet
 						tokens.advance();
@@ -71,6 +76,21 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode subroutine() throws ParseError
+	{
+		var subroutine = new SubroutineNode();
+		consumeMandatory(subroutine, SyntaxKind.DEFINE);
+		consumeOptionally(subroutine, SyntaxKind.SUBROUTINE);
+		var nameToken = consumeMandatoryIdentifier(subroutine);
+		subroutine.setName(nameToken);
+
+		subroutine.setBody(statementList());
+
+		consumeMandatory(subroutine, SyntaxKind.END_SUBROUTINE);
+
+		return subroutine;
 	}
 
 	private StatementNode end() throws ParseError
