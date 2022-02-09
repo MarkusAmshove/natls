@@ -2,12 +2,11 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.IReferencableNode;
-import org.amshove.natparse.natural.ISymbolNode;
 import org.amshove.natparse.natural.ISymbolReferenceNode;
 
 class SymbolReferenceNode extends TokenNode implements ISymbolReferenceNode
 {
-	private ISymbolNode reference;
+	private IReferencableNode reference;
 
 	public SymbolReferenceNode(SyntaxToken token)
 	{
@@ -20,7 +19,13 @@ class SymbolReferenceNode extends TokenNode implements ISymbolReferenceNode
 		return reference;
 	}
 
-	void setReference(ISymbolNode symbolNode)
+	@Override
+	public SyntaxToken referencingToken()
+	{
+		return super.token();
+	}
+
+	void setReference(IReferencableNode symbolNode)
 	{
 		reference = symbolNode;
 	}

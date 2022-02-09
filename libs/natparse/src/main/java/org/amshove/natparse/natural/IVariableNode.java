@@ -2,7 +2,7 @@ package org.amshove.natparse.natural;
 
 import org.amshove.natparse.ReadOnlyList;
 
-public interface IVariableNode extends ISymbolNode
+public interface IVariableNode extends IReferencableNode
 {
 	VariableScope scope();
 	int level();

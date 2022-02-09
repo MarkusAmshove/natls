@@ -86,4 +86,46 @@ public class RenameSymbolActionShould extends LanguageServerTest
 			.changesText(2, "1 #INLDA (A2)", "1 #STILLLDA (A2)", ldaFile)
 			.changesText(3, "WRITE #INLDA", "WRITE #STILLLDA", moduleFile);
 	}
+
+	@Test
+	void renameAnInternalSubroutineWhenCursorIsOnPerform()
+	{
+		var source = SourceWithCursor.fromSourceWithCursor("""
+			DEFINE DATA LOCAL
+			END-DEFINE
+			DEFINE SUBROUTINE MY-ROUTINE
+			IGNORE
+			END-SUBROUTINE
+			PERFORM MY-ROU${}$TINE
+			END
+			""");
+
+		var file = createOrSaveFile("LIBONE", "RENAMSUB.NSN", source);
+		var edit = testContext.languageService().rename(new RenameParams(file, source.toSinglePosition(), "NEW-SUBROUTINE"));
+
+		WorkspaceEditAssertion.assertThatEdit(edit)
+			.changesText(2, "DEFINE SUBROUTINE MY-ROUTINE", "DEFINE SUBROUTINE NEW-SUBROUTINE", file)
+			.changesText(5, "PERFORM MY-ROUTINE", "PERFORM NEW-SUBROUTINE", file);
+	}
+
+	@Test
+	void renameAnInternalSubroutineWhenCursorIsOnSubroutineDeclaration()
+	{
+		var source = SourceWithCursor.fromSourceWithCursor("""
+			DEFINE DATA LOCAL
+			END-DEFINE
+			DEFINE SUBROUTINE MY-${}$ROUTINE
+			IGNORE
+			END-SUBROUTINE
+			PERFORM MY-ROUTINE
+			END
+			""");
+
+		var file = createOrSaveFile("LIBONE", "RENAMSUB.NSN", source);
+		var edit = testContext.languageService().rename(new RenameParams(file, source.toSinglePosition(), "NEW-SUBROUTINE"));
+
+		WorkspaceEditAssertion.assertThatEdit(edit)
+			.changesText(2, "DEFINE SUBROUTINE MY-ROUTINE", "DEFINE SUBROUTINE NEW-SUBROUTINE", file)
+			.changesText(5, "PERFORM MY-ROUTINE", "PERFORM NEW-SUBROUTINE", file);
+	}
 }

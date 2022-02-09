@@ -93,8 +93,10 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		unresolvedReferences.add(internalPerform);
 
 		consumeMandatory(internalPerform, SyntaxKind.PERFORM);
-		var symbol = consumeMandatoryIdentifier(internalPerform);
-		internalPerform.setCallToken(symbol);
+		var symbolName = identifier();
+		var referenceNode = new SymbolReferenceNode(symbolName);
+		internalPerform.setReferenceNode(referenceNode);
+		internalPerform.addNode(referenceNode);
 
 		return internalPerform;
 	}

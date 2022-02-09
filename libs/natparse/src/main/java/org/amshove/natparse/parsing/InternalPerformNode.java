@@ -8,8 +8,8 @@ import org.amshove.natparse.natural.ITokenNode;
 
 final class InternalPerformNode extends PerformNode implements IInternalPerformNode
 {
-	private SyntaxToken callToken;
 	private IReferencableNode reference;
+	private SymbolReferenceNode referenceNode;
 
 	@Override
 	public IReferencableNode reference()
@@ -18,24 +18,31 @@ final class InternalPerformNode extends PerformNode implements IInternalPerformN
 	}
 
 	@Override
-	public SyntaxToken token()
+	public SyntaxToken referencingToken()
 	{
-		return callToken;
+		return token();
 	}
 
-	void setCallToken(SyntaxToken symbol)
+	@Override
+	public SyntaxToken token()
 	{
-		callToken = symbol;
+		return referenceNode.token();
 	}
 
 	void setReference(IReferencableNode referencableNode)
 	{
 		reference = referencableNode;
+		referenceNode.setReference(referencableNode);
 	}
 
 	ITokenNode tokenNode()
 	{
 		var foundTokenNode = findDescendantToken(SyntaxKind.IDENTIFIER);
 		return foundTokenNode != null ? foundTokenNode : findDescendantToken(SyntaxKind.IDENTIFIER_OR_KEYWORD);
+	}
+
+	void setReferenceNode(SymbolReferenceNode referenceNode)
+	{
+		this.referenceNode = referenceNode;
 	}
 }

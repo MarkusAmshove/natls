@@ -74,6 +74,12 @@ public class NodeUtil
 			return findNodeAtPosition(line, character, previousNode);
 		}
 
+		if (previousNode != null
+			&& previousNode.position().line() == line)
+		{
+			return findNodeAtPosition(line, character, previousNode);
+		}
+
 		return null;
 	}
 }

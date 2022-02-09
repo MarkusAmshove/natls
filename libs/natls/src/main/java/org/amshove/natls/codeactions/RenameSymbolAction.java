@@ -26,12 +26,12 @@ public class RenameSymbolAction
 			var changes = changesPerFile.computeIfAbsent(LspUtil.pathToUri(ref.position().filePath()), k -> new ArrayList<>());
 			var edit = new TextEdit();
 			edit.setNewText(newName);
-			edit.setRange(LspUtil.toRange(ref.position()));
+			edit.setRange(LspUtil.toRange(ref.referencingToken()));
 			changes.add(edit);
 		});
 
 		var declarationEdit = new TextEdit();
-		declarationEdit.setRange(LspUtil.toRange(referencableNode.position()));
+		declarationEdit.setRange(LspUtil.toRange(referencableNode.declaration()));
 		declarationEdit.setNewText(newName);
 		changesPerFile.computeIfAbsent(LspUtil.pathToUri(referencableNode.position().filePath()), k -> new ArrayList<>()).add(declarationEdit);
 

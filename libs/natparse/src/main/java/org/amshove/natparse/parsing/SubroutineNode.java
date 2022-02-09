@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.IPosition;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.IStatementListNode;
@@ -18,6 +19,12 @@ class SubroutineNode extends StatementNode implements ISubroutineNode
 
 	@Override
 	public SyntaxToken declaration()
+	{
+		return nameToken;
+	}
+
+	@Override
+	public IPosition position()
 	{
 		return nameToken;
 	}
