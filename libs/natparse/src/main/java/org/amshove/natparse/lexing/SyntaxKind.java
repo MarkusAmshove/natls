@@ -180,6 +180,7 @@ public enum SyntaxKind
 	PRINT,
 	PRINTER,
 	PROCESS,
+	PROTOTYPE,
 	PROGRAM,
 	QUESTIONMARK,
 	READ,
