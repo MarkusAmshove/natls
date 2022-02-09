@@ -2,10 +2,7 @@ package org.amshove.natls.testlifecycle;
 
 import org.amshove.natls.languageserver.NaturalLanguageServer;
 import org.amshove.testhelpers.NaturalProjectResourceResolver;
-import org.eclipse.lsp4j.ClientCapabilities;
-import org.eclipse.lsp4j.InitializeParams;
-import org.eclipse.lsp4j.WindowClientCapabilities;
-import org.eclipse.lsp4j.WorkspaceFolder;
+import org.eclipse.lsp4j.*;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
@@ -63,6 +60,11 @@ public class LspProjectNameResolver implements ParameterResolver
 		var window = new WindowClientCapabilities();
 		window.setWorkDoneProgress(false);
 		capabilities.setWindow(window);
+		var workspace = new WorkspaceClientCapabilities();
+		var fileOperations = new FileOperationsWorkspaceCapabilities();
+		fileOperations.setDynamicRegistration(false);
+		workspace.setFileOperations(fileOperations);
+		capabilities.setWorkspace(workspace);
 		return capabilities;
 	}
 }

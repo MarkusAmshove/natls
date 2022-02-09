@@ -51,7 +51,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 				ProgressTasks.setClientProgressType(ClientProgressType.WORK_DONE);
 			}
 
-			if (client != null)
+			if (client != null && params.getCapabilities().getWorkspace().getFileOperations().getDynamicRegistration())
 			{
 				var watchFileMethod = "workspace/didChangeWatchedFiles";
 				var natunitWatcher = new FileSystemWatcher("build/test-results/**/*.xml");
