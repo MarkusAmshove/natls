@@ -82,4 +82,19 @@ public class NodeUtil
 
 		return null;
 	}
+
+	public static <T extends ISyntaxNode> T findFirstParentOfType(ISyntaxNode start, Class<T> type)
+	{
+		var current = (ISyntaxNode) start.parent();
+		while(current != null)
+		{
+			if(type.isInstance(current))
+			{
+				return type.cast(current);
+			}
+			current = (ISyntaxNode) current.parent();
+		}
+
+		return null;
+	}
 }

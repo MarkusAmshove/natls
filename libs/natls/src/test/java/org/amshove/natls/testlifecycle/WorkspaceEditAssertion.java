@@ -12,6 +12,9 @@ public record WorkspaceEditAssertion(WorkspaceEdit edit)
 {
 	public static WorkspaceEditAssertion assertThatEdit(WorkspaceEdit edit)
 	{
+		assertThat(edit)
+			.as("No WorkspaceEdit was returned by server")
+			.isNotNull();
 		return new WorkspaceEditAssertion(edit);
 	}
 

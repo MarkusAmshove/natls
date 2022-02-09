@@ -11,7 +11,7 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
-class SubroutineNode extends StatementNode implements ISubroutineNode
+class SubroutineNode extends StatementListNode implements ISubroutineNode
 {
 	private final List<ISymbolReferenceNode> references = new ArrayList<>();
 	private IStatementListNode body;
@@ -42,6 +42,11 @@ class SubroutineNode extends StatementNode implements ISubroutineNode
 
 	void setBody(IStatementListNode statementListNode)
 	{
+		for (var statement : statementListNode.statements())
+		{
+			addNode((BaseSyntaxNode) statement);
+			addStatement((StatementNode) statement);
+		}
 		body = statementListNode;
 	}
 

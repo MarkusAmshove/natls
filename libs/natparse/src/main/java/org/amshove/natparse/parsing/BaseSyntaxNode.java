@@ -83,14 +83,13 @@ class BaseSyntaxNode implements ISyntaxNode
 	protected void copyFrom(BaseSyntaxNode other)
 	{
 		parent = other.parent;
-		((BaseSyntaxNode) parent).replaceChild(other, this);
 		for (var descendant : other.descendants())
 		{
 			addNode((BaseSyntaxNode) descendant);
 		}
 	}
 
-	private void replaceChild(BaseSyntaxNode oldChild, BaseSyntaxNode newChild)
+	protected void replaceChild(BaseSyntaxNode oldChild, BaseSyntaxNode newChild)
 	{
 		var oldIndex = nodes.indexOf(oldChild);
 		nodes.set(oldIndex, newChild);

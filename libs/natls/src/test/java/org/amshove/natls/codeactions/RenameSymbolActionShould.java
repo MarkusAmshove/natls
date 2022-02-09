@@ -128,4 +128,26 @@ public class RenameSymbolActionShould extends LanguageServerTest
 			.changesText(2, "DEFINE SUBROUTINE MY-ROUTINE", "DEFINE SUBROUTINE NEW-SUBROUTINE", file)
 			.changesText(5, "PERFORM MY-ROUTINE", "PERFORM NEW-SUBROUTINE", file);
 	}
+
+	@Test
+	void renameAVariableFromItsUsageWithinAStatementBody()
+	{
+		var source = SourceWithCursor.fromSourceWithCursor("""
+			DEFINE DATA LOCAL
+			1 #MYVAR (A5)
+			END-DEFINE
+			DEFINE SUBROUTINE MY-ROUTINE
+			    WRITE #MY${}$VAR
+			END-SUBROUTINE
+			PERFORM MY-ROUTINE
+			END
+			""");
+
+		var file = createOrSaveFile("LIBONE", "RENAMEINBODY.NSN", source);
+		var edit = testContext.languageService().rename(new RenameParams(file, source.toSinglePosition(), "#NEW-VAR"));
+
+		WorkspaceEditAssertion.assertThatEdit(edit)
+			.changesText(1, "1 #MYVAR (A5)", "1 #NEW-VAR (A5)", file)
+			.changesText(4, "    WRITE #MYVAR", "    WRITE #NEW-VAR", file);
+	}
 }

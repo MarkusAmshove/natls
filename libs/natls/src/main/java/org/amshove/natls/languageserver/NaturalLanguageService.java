@@ -367,40 +367,28 @@ public class NaturalLanguageService implements LanguageClientAware
 	{
 		var fileUri = params.getTextDocument().getUri();
 		var filePath = LspUtil.uriToPath(fileUri);
+		var file = findNaturalFile(filePath);
 		var position = params.getPosition();
 
-		var tokenUnderCursor = findTokenAtPosition(filePath, position); // TODO: Double lexing
-		if (tokenUnderCursor == null)
+		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), file.module());
+		// TOOD: qualified variables
+
+		if(node instanceof ISymbolReferenceNode symbolReferenceNode)
 		{
-			return List.of();
+			return List.of(LspUtil.toLocation(symbolReferenceNode.reference()));
 		}
 
-		var file = findNaturalFile(filePath);
-		var module = file.module();
-		IDefineData defineData;
-		if (!(module instanceof IHasDefineData hasDefineData))
+		if(node instanceof IModuleReferencingNode moduleReferencingNode)
 		{
-			return List.of();
-		}
-		defineData = hasDefineData.defineData();
-		var matchingVariableDeclarations = defineData.variables().stream()
-			.filter(v -> !(v instanceof IRedefinitionNode))
-			.filter(v -> v.name().equals(tokenUnderCursor.symbolName()))
-			.map(LspUtil::toLocation)
-			.toList();
-
-		if (!matchingVariableDeclarations.isEmpty())
-		{
-			return matchingVariableDeclarations;
+			return List.of(LspUtil.toLocation(moduleReferencingNode.reference()));
 		}
 
-		var referencedModule = file.findNaturalModule(tokenUnderCursor.symbolName());
-		if (referencedModule == null)
+		if(node instanceof ITokenNode && node.parent() instanceof IModuleReferencingNode moduleReferencingNode)
 		{
-			return List.of();
+			return List.of(LspUtil.toLocation(moduleReferencingNode.reference()));
 		}
 
-		return List.of(new Location(referencedModule.file().getPath().toUri().toString(), new Range(new Position(0, 0), new Position(0, 0))));
+		return List.of();
 	}
 
 	public List<Location> findReferences(ReferenceParams params)
@@ -816,6 +804,11 @@ public class NaturalLanguageService implements LanguageClientAware
 		}
 
 		if(node instanceof IReferencableNode referencableNode)
+		{
+			return renameComputer.rename(referencableNode, params.getNewName());
+		}
+
+		if(node instanceof ITokenNode && node.parent() instanceof IReferencableNode referencableNode)
 		{
 			return renameComputer.rename(referencableNode, params.getNewName());
 		}

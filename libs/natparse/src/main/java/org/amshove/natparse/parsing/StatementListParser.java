@@ -245,8 +245,8 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 				if(foundModule != null)
 				{
 					var externalPerform = new ExternalPerformNode(((InternalPerformNode) unresolvedReference));
+					((BaseSyntaxNode) unresolvedReference.parent()).replaceChild((BaseSyntaxNode) unresolvedReference, externalPerform);
 					externalPerform.setReference(foundModule);
-					((StatementListNode) unresolvedReference.parent()).replace(internalPerformNode, externalPerform);
 					resolvedReferences.add(unresolvedReference);
 				}
 			}
