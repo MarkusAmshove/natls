@@ -239,6 +239,8 @@ public enum SyntaxKind
 	WHEN,
 	WHILE,
 	WITH_CTE,
+	WINDOW,
+	WORK,
 	WRITE;
 
 	public boolean isIdentifier()

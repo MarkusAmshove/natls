@@ -234,7 +234,12 @@ abstract class AbstractParser<T>
 
 	protected boolean peekAny(List<SyntaxKind> acceptedKinds)
 	{
-		return !tokens.isAtEnd() && acceptedKinds.contains(tokens.peek().kind());
+		return peekAny(0, acceptedKinds);
+	}
+
+	protected boolean peekAny(int offset, List<SyntaxKind> acceptedKinds)
+	{
+		return !tokens.isAtEnd() && acceptedKinds.contains(tokens.peek(offset).kind());
 	}
 
 	protected TokenNode previousTokenNode()

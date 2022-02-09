@@ -210,6 +210,8 @@ public class KeywordTable
 				case "when" -> SyntaxKind.WHEN;
 				case "while" -> SyntaxKind.WHILE;
 				case "with_cte" -> SyntaxKind.WITH_CTE;
+				case "window" -> SyntaxKind.WINDOW;
+				case "work" -> SyntaxKind.WORK;
 				case "write" -> SyntaxKind.WRITE;
 				default -> null;
 			};

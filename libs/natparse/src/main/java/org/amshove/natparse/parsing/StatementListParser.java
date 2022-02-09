@@ -63,6 +63,12 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(end());
 						break;
 					case DEFINE:
+						if(peekAny(1, List.of(SyntaxKind.WINDOW, SyntaxKind.WORK)))
+						{
+							tokens.advance();
+							tokens.advance();
+							break;
+						}
 						statementList.addStatement(subroutine());
 						break;
 					case END_SUBROUTINE:

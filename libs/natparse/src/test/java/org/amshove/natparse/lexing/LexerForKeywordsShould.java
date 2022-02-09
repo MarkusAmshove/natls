@@ -206,6 +206,8 @@ public class LexerForKeywordsShould extends AbstractLexerTest
 			keywordTest("WHEN", SyntaxKind.WHEN),
 			keywordTest("WHILE", SyntaxKind.WHILE),
 			keywordTest("WITH_CTE", SyntaxKind.WITH_CTE),
+			keywordTest("WINDOW", SyntaxKind.WINDOW),
+			keywordTest("WORK", SyntaxKind.WORK),
 			keywordTest("WRITE", SyntaxKind.WRITE));
 	}
 
@@ -713,9 +715,7 @@ public class LexerForKeywordsShould extends AbstractLexerTest
 			keywordTest("VIA", SyntaxKind.IDENTIFIER_OR_KEYWORD),
 			keywordTest("WH", SyntaxKind.IDENTIFIER_OR_KEYWORD),
 			keywordTest("WHERE", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-			keywordTest("WINDOW", SyntaxKind.IDENTIFIER_OR_KEYWORD),
 			keywordTest("WITH", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-			keywordTest("WORK", SyntaxKind.IDENTIFIER_OR_KEYWORD),
 			keywordTest("XML", SyntaxKind.IDENTIFIER_OR_KEYWORD),
 			keywordTest("YEAR", SyntaxKind.IDENTIFIER_OR_KEYWORD),
 			keywordTest("ZD", SyntaxKind.IDENTIFIER_OR_KEYWORD),
