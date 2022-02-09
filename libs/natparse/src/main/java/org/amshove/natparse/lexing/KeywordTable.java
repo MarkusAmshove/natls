@@ -151,6 +151,7 @@ public class KeywordTable
 				case "perform" -> SyntaxKind.PERFORM;
 				case "pos" -> SyntaxKind.POS;
 				case "print" -> SyntaxKind.PRINT;
+				case "printer" -> SyntaxKind.PRINTER;
 				case "process" -> SyntaxKind.PROCESS;
 				case "read" -> SyntaxKind.READ;
 				case "redefine" -> SyntaxKind.REDEFINE;

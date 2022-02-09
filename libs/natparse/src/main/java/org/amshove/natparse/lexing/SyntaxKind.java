@@ -177,6 +177,7 @@ public enum SyntaxKind
 	PERFORM,
 	POS,
 	PRINT,
+	PRINTER,
 	PROCESS,
 	PROGRAM,
 	QUESTIONMARK,
