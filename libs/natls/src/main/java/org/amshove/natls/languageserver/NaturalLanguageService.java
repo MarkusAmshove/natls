@@ -401,35 +401,44 @@ public class NaturalLanguageService implements LanguageClientAware
 		var fileUri = params.getTextDocument().getUri();
 		var filePath = LspUtil.uriToPath(fileUri);
 		var position = params.getPosition();
+		var file = findNaturalFile(filePath);
 
-		var tokenUnderCursor = findTokenAtPosition(filePath, position);
-		if (tokenUnderCursor == null)
+		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), file.module());
+
+		var references = new ArrayList<Location>();
+		// TODO: This should be its own class
+
+		if(node instanceof IReferencableNode referencableNode)
 		{
-			return List.of();
+			references.addAll(resolveReferences(params, referencableNode));
 		}
-		var tokens = lexPath(filePath);
 
-		// TODO: This will be replaced
-		var hackyReferences = tokens.stream()
-			.filter(t -> t.kind().isIdentifier() && t.symbolName().equals(tokenUnderCursor.symbolName()))
-			.map(t -> LspUtil.toLocation(fileUri, t))
-			.toList();
-
-		var references = new ArrayList<>(hackyReferences);
-
-		var module = findNaturalFile(filePath).module();
-		if (module instanceof IHasDefineData hasDefineData)
+		if(node instanceof ISymbolReferenceNode symbolReferenceNode)
 		{
-			references.addAll(
-				hasDefineData
-					.defineData()
-					.findVariable(tokenUnderCursor.symbolName())
-					.references()
-					.stream()
-					.map(ISyntaxNode::position)
-					.map(LspUtil::toLocation)
-					.toList()
+			references.addAll(resolveReferences(params, symbolReferenceNode.reference()));
+		}
+
+		if(node instanceof IModuleReferencingNode moduleReferencingNode)
+		{
+			references.addAll(moduleReferencingNode.reference().callers().stream()
+				.map(caller -> LspUtil.toLocation(caller.referencingToken()))
+				.toList()
 			);
+		}
+
+		return references;
+	}
+
+	private List<Location> resolveReferences(ReferenceParams params, IReferencableNode referencableNode)
+	{
+		var references = new ArrayList<Location>();
+		referencableNode.references().stream()
+			.map(r -> LspUtil.toLocation(r.referencingToken()))
+			.forEach(references::add);
+
+		if(params.getContext().isIncludeDeclaration())
+		{
+			references.add(LspUtil.toLocation(referencableNode.declaration()));
 		}
 
 		return references;
