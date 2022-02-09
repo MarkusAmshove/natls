@@ -383,6 +383,11 @@ public class NaturalLanguageService implements LanguageClientAware
 			return List.of(LspUtil.toLocation(moduleReferencingNode.reference()));
 		}
 
+		if(node instanceof ITokenNode && node.parent() instanceof ISymbolReferenceNode symbolReferenceNode)
+		{
+			return List.of(LspUtil.toLocation(symbolReferenceNode.reference()));
+		}
+
 		if(node instanceof ITokenNode && node.parent() instanceof IModuleReferencingNode moduleReferencingNode)
 		{
 			return List.of(LspUtil.toLocation(moduleReferencingNode.reference()));

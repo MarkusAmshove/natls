@@ -2,6 +2,8 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
+import org.amshove.natparse.natural.IHasBody;
+import org.amshove.natparse.natural.IReferencableNode;
 import org.amshove.natparse.natural.IStatementListNode;
 import org.amshove.natparse.natural.ISymbolReferenceNode;
 
@@ -189,12 +191,18 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					report(diagnostic);
 				}
 				unresolvedReferences.addAll(nestedParser.unresolvedReferences);
-				include.addNode((StatementListNode) statementList.result());
+				include.setBody(statementList.result());
 			}
 			catch (IOException e)
 			{
 				throw new UncheckedIOException(e);
 			}
+		}
+		else
+		{
+			var unresolvedBody = new StatementListNode();
+			unresolvedBody.setParent(include);
+			include.setBody(unresolvedBody);
 		}
 
 		return include;
@@ -260,21 +268,24 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var resolvedReferences = new ArrayList<ISymbolReferenceNode>();
 		for (var statement : statementListNode.statements())
 		{
-			if (!(statement instanceof SubroutineNode subroutine))
+			if(statement instanceof IHasBody hasBody)
+			{
+				resolveUnresolvedInternalPerforms(hasBody.body());
+			}
+
+			if (!(statement instanceof IReferencableNode referencable))
 			{
 				continue;
 			}
 
 			for (var unresolvedReference : unresolvedReferences)
 			{
-				if(unresolvedReference.token().symbolName().equals(subroutine.declaration().symbolName()))
+				if(unresolvedReference.token().symbolName().equals(referencable.declaration().symbolName()))
 				{
-					subroutine.addReference(unresolvedReference);
+					referencable.addReference(unresolvedReference);
 					resolvedReferences.add(unresolvedReference);
 				}
 			}
-
-			resolveUnresolvedInternalPerforms(subroutine.body()); // Subroutines are normally always top level.Except if they are defined in external subroutines
 		}
 
 		unresolvedReferences.removeAll(resolvedReferences);

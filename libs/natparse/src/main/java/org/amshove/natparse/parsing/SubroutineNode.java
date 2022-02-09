@@ -63,7 +63,8 @@ class SubroutineNode extends StatementListNode implements ISubroutineNode
 		references.remove(node);
 	}
 
-	void addReference(ISymbolReferenceNode node)
+	@Override
+	public void addReference(ISymbolReferenceNode node)
 	{
 		references.add(node);
 		((InternalPerformNode) node).setReference(this);
