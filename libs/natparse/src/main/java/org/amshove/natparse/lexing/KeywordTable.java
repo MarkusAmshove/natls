@@ -105,6 +105,7 @@ public class KeywordTable
 				case "format" -> SyntaxKind.FORMAT;
 				case "frac" -> SyntaxKind.FRAC;
 				case "full" -> SyntaxKind.FULL;
+				case "function" -> SyntaxKind.FUNCTION;
 				case "get" -> SyntaxKind.GET;
 				case "global" -> SyntaxKind.GLOBAL;
 				case "histogram" -> SyntaxKind.HISTOGRAM;

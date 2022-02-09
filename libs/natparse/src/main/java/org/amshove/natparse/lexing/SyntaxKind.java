@@ -128,6 +128,7 @@ public enum SyntaxKind
 	FORMAT,
 	FRAC,
 	FULL,
+	FUNCTION,
 	GET,
 	GLOBAL,
 	HISTOGRAM,
