@@ -7,6 +7,7 @@ public interface ISyntaxNode extends ISyntaxTree
 	ISyntaxTree parent();
 
 	IPosition position();
+	IPosition diagnosticPosition();
 
 	/**
 	 * Clean up resources that may leak, like references.

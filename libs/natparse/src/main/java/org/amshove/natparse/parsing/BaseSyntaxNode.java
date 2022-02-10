@@ -65,6 +65,12 @@ class BaseSyntaxNode implements ISyntaxNode
 	}
 
 	@Override
+	public IPosition diagnosticPosition()
+	{
+		return getStart().diagnosticPosition();
+	}
+
+	@Override
 	public void destroy()
 	{
 		for (var descendant : nodes)

@@ -8,9 +8,22 @@ public class NodeUtil
 	{
 	}
 
+	/**
+	 * Checks whether the module contains the given node.
+	 * The comparison is done by the position of the node, comparing its file path to the module file path.
+	 */
 	public static boolean moduleContainsNode(INaturalModule module, ISyntaxNode node)
 	{
 		return module.file().getPath().equals(node.position().filePath());
+	}
+
+	/**
+	 * Checks whether the module contains the given node.
+	 * The comparison is done by the DiagnosticPosition, which is e.g. the copy code name in an INCULDE.
+	 */
+	public static boolean moduleContainsNodeByDiagnosticPosition(INaturalModule module, ISyntaxNode node)
+	{
+		return module.file().getPath().equals(node.diagnosticPosition().filePath());
 	}
 
 	public static ISyntaxNode findNodeAtPosition(int line, int character, INaturalModule module)

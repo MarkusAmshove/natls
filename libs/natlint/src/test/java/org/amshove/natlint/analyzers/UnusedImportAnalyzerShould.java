@@ -32,4 +32,10 @@ public class UnusedImportAnalyzerShould extends AbstractAnalyzerTest
 	{
 		testDiagnostics(project.findModule("MY-SUBROUTINE"), expectNoDiagnosticOfType(UnusedImportAnalyzer.UNUSED_IMPORT));
 	}
+
+	@Test
+	void reportNoDiagnosticIfAVariableFromUsingIsUsedWithinCopyCode(@ProjectName("unusedimports") NaturalProject project)
+	{
+		testDiagnostics(project.findModule("INCC"), expectNoDiagnosticOfType(UnusedImportAnalyzer.UNUSED_IMPORT));
+	}
 }
