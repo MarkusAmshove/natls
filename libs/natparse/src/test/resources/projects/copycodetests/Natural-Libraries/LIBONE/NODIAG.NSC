@@ -1,0 +1,5 @@
+/* No diagnostics should be reported for this file. because we can't figure out if those things are declared.
+
+WRITE #SOMEVAR
+
+PERFORM SOME-SUBROUTINE

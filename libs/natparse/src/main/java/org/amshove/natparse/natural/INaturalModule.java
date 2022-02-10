@@ -10,6 +10,7 @@ public interface INaturalModule
 	NaturalFile file();
 	ReadOnlyList<IDiagnostic> diagnostics();
 	ReadOnlyList<IModuleReferencingNode> callers();
+	boolean isTestCase();
 
 	ISyntaxTree syntaxTree();
 

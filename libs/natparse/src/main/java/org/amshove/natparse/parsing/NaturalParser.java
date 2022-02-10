@@ -4,8 +4,10 @@ import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.INaturalModule;
+import org.amshove.natparse.natural.IStatementListNode;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.project.NaturalFile;
+import org.amshove.natparse.natural.project.NaturalFileType;
 
 import java.util.ArrayList;
 
@@ -53,9 +55,9 @@ public class NaturalParser
 		{
 			var statementParser = new StatementListParser(moduleProviderToUse);
 			var result = statementParser.parse(tokens);
-			naturalModule.addDiagnostics(result.diagnostics());
+			addRelevantParserDiagnostics(naturalModule, result);
 			naturalModule.setBody(result.result());
-			resolveReferences(statementParser, naturalModule);
+			resolveVariableReferences(statementParser, naturalModule);
 			topLevelNodes.add(result.result());
 		}
 
@@ -64,7 +66,37 @@ public class NaturalParser
 		return naturalModule;
 	}
 
-	private void resolveReferences(StatementListParser statementParser, NaturalModule module)
+	private void addRelevantParserDiagnostics(NaturalModule naturalModule, ParseResult<IStatementListNode> result)
+	{
+		for (var diagnostic : result.diagnostics())
+		{
+			if(diagnostic.id().equals(ParserError.UNRESOLVED_IMPORT.id()))
+			{
+				if(naturalModule.isTestCase() && diagnostic.message().contains("module TEARDOWN") || diagnostic.message().contains("module SETUP"))
+				{
+					// Skip these unresolved subroutines.
+					// These are special cases for NatUnit, because it doesn't force you to implement them.
+					// It however calls them if they're present.
+					continue;
+				}
+			}
+
+			if(naturalModule.file().getFiletype() == NaturalFileType.COPYCODE)
+			{
+				if(diagnostic.id().equals(ParserError.UNRESOLVED_IMPORT.id()) || diagnostic.id().equals(ParserError.UNRESOLVED_REFERENCE.id()))
+				{
+					// When parsing a copycode we don't want to report any unresolved references, because we simply don't know
+					// if they are declared where the copycode is used.
+					// They do however get reported in the module including the copycode.
+					continue;
+				}
+			}
+
+			naturalModule.addDiagnostics(result.diagnostics());
+		}
+	}
+
+	private void resolveVariableReferences(StatementListParser statementParser, NaturalModule module)
 	{
 		// This could actually be done in the StatementListParser when encountering
 		// a possible reference. But that would need changes in the architecture, since
@@ -81,7 +113,7 @@ public class NaturalParser
 			var variable = defineData.findVariable(unresolvedReference.token().symbolName());
 			if (variable != null)
 			{
-				((VariableNode) variable).addReference((SymbolReferenceNode) unresolvedReference);
+				variable.addReference(unresolvedReference);
 			}
 			else
 			{
