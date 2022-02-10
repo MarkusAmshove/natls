@@ -1,8 +1,11 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.natural.ISubprogram;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.testhelpers.ProjectName;
 import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 public class CopyCodesShould extends ParserIntegrationTest
 {
@@ -10,5 +13,17 @@ public class CopyCodesShould extends ParserIntegrationTest
 	void notReportDiagnosticsForUnresolvedReferences(@ProjectName("copycodetests") NaturalProject project)
 	{
 		assertParsesWithoutAnyDiagnostics(project.findModule("LIBONE", "NODIAG"));
+	}
+
+	@Test
+	void relocateDiagnosticsFromCopyCodesToTheirIncludeStatement(@ProjectName("copycodetests") NaturalProject project)
+	{
+		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "SUBPROG"), ISubprogram.class);
+		assertThat(subprogram.diagnostics()).hasSize(2);
+		for (var diagnostic : subprogram.diagnostics())
+		{
+			assertThat(diagnostic.line()).as("Line mismatch for: " + diagnostic.message()).isEqualTo(2);
+			assertThat(diagnostic.offsetInLine()).isEqualTo(8);
+		}
 	}
 }

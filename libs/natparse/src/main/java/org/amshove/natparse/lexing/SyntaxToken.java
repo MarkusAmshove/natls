@@ -15,6 +15,7 @@ public class SyntaxToken implements IPosition
 	private final String source;
 	private final Path filePath;
 	private String identifierName = null;
+	private IPosition diagnosticPosition;
 
 	public SyntaxKind kind()
 	{
@@ -49,6 +50,26 @@ public class SyntaxToken implements IPosition
 	public Path filePath()
 	{
 		return filePath;
+	}
+
+	/**
+	 * Returns the position which can be used for Diagnostics.
+	 * The return value only differs from the tokens actual Position
+	 * if the token is used e.g. via INCLUDE.
+	 */
+	public IPosition diagnosticPosition()
+	{
+		if(diagnosticPosition == null)
+		{
+			return this;
+		}
+
+		return diagnosticPosition;
+	}
+
+	public void setDiagnosticPosition(IPosition diagnosticPosition)
+	{
+		this.diagnosticPosition = diagnosticPosition;
 	}
 
 	// TODO: Introduce `LiteralToken`?

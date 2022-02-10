@@ -83,7 +83,7 @@ public class NaturalParser
 
 			if(naturalModule.file().getFiletype() == NaturalFileType.COPYCODE)
 			{
-				if(diagnostic.id().equals(ParserError.UNRESOLVED_IMPORT.id()) || diagnostic.id().equals(ParserError.UNRESOLVED_REFERENCE.id()))
+				if(ParserError.isUnresolvedError(diagnostic.id()))
 				{
 					// When parsing a copycode we don't want to report any unresolved references, because we simply don't know
 					// if they are declared where the copycode is used.
@@ -103,7 +103,7 @@ public class NaturalParser
 		// it does not know about declared variables.
 
 		var defineData = module.defineData();
-		if (defineData == null || defineData.variables().isEmpty())
+		if (defineData == null)
 		{
 			return;
 		}
@@ -117,8 +117,12 @@ public class NaturalParser
 			}
 			else
 			{
-				// It's currently okay to not find a variable, as long as keywords might be IDENTIFIER_OR_KEYWORD
-				// This should add diagnostics in the future.
+				if(unresolvedReference.token().kind() == SyntaxKind.IDENTIFIER)
+				{
+					// We don't handle IDENTIFIER_OR_KEYWORD because we can't be sure if it a variable.
+					// As long as IDENTIFIER_OR_KEYWORD exists as a SyntaxKind, we only report a diagnostic if we're sure that its meant to be a reference.
+					module.addDiagnostic(ParserErrors.unresolvedReference(unresolvedReference));
+				}
 			}
 		}
 	}

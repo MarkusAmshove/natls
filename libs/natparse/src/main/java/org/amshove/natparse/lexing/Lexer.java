@@ -1,5 +1,6 @@
 package org.amshove.natparse.lexing;
 
+import org.amshove.natparse.IPosition;
 import org.amshove.natparse.lexing.text.SourceTextScanner;
 
 import java.nio.file.Path;
@@ -14,6 +15,7 @@ public class Lexer
 	private int line;
 	private int currentLineStartOffset;
 	private Path filePath;
+	private IPosition relocatedDiagnosticPosition;
 
 	private List<LexerDiagnostic> diagnostics;
 
@@ -681,14 +683,28 @@ public class Lexer
 
 	private void addDiagnostic(String message, LexerError error)
 	{
-		diagnostics.add(LexerDiagnostic.create(
-			message,
-			scanner.lexemeStart(),
-			getOffsetInLine(),
-			line,
-			scanner.lexemeLength(),
-			filePath,
-			error));
+		if(relocatedDiagnosticPosition != null)
+		{
+			diagnostics.add(LexerDiagnostic.create(
+				message,
+				relocatedDiagnosticPosition.offset(),
+				relocatedDiagnosticPosition.offsetInLine(),
+				relocatedDiagnosticPosition.line(),
+				relocatedDiagnosticPosition.length(),
+				relocatedDiagnosticPosition.filePath(),
+				error));
+		}
+		else
+		{
+			diagnostics.add(LexerDiagnostic.create(
+				message,
+				scanner.lexemeStart(),
+				getOffsetInLine(),
+				line,
+				scanner.lexemeLength(),
+				filePath,
+				error));
+		}
 	}
 
 	private int findNextNonWhitespaceLookaheadOffset()
@@ -706,5 +722,9 @@ public class Lexer
 	{
 		tokens.add(token);
 		scanner.reset();
+	}
+
+	public void relocateDiagnosticPosition(IPosition diagnosticPosition)
+	{
 	}
 }

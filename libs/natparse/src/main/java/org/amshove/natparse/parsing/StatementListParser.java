@@ -33,7 +33,11 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		unresolvedReferences = new ArrayList<>();
 		var statementList = statementList();
 		resolveUnresolvedInternalPerforms(statementList);
-		resolveUnresolvedExternalPerforms();
+		if(!shouldRelocateDiagnostics())
+		{
+			// If diagnostics should be relocated, we're a copycode. So let the includer resolve it themselves.
+			resolveUnresolvedExternalPerforms();
+		}
 		return statementList;
 	}
 
@@ -189,12 +193,26 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			try
 			{
 				var includedSource = Files.readString(referencedModule.file().getPath());
-				var tokens = new Lexer().lex(includedSource, referencedModule.file().getPath());
-				var nestedParser = new StatementListParser(moduleProvider);
-				var statementList = nestedParser.parse(tokens);
-				for (var diagnostic : statementList.diagnostics())
+				var lexer = new Lexer();
+				lexer.relocateDiagnosticPosition(referencingToken);
+				var tokens = lexer.lex(includedSource, referencedModule.file().getPath());
+
+				for (var diagnostic : tokens.diagnostics())
 				{
 					report(diagnostic);
+				}
+
+				var nestedParser = new StatementListParser(moduleProvider);
+				nestedParser.relocateDiagnosticPosition(referencingToken);
+				var statementList = nestedParser.parse(tokens);
+
+				for (var diagnostic : statementList.diagnostics())
+				{
+					if(ParserError.isUnresolvedError(diagnostic.id()))
+					{
+						// Unresolved references will be resolved by the module including the copycode.
+						report(diagnostic);
+					}
 				}
 				unresolvedReferences.addAll(nestedParser.unresolvedReferences);
 				include.setBody(statementList.result());

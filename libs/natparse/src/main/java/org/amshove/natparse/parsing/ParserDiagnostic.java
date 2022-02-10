@@ -17,6 +17,7 @@ public class ParserDiagnostic implements IDiagnostic
 	private final Path filePath;
 	private final String id;
 	private final DiagnosticSeverity severity;
+	private final ParserError error;
 
 	private ParserDiagnostic(String message, int offset, int offsetInLine, int line, int length, Path filePath, ParserError error)
 	{
@@ -28,6 +29,7 @@ public class ParserDiagnostic implements IDiagnostic
 		this.id = error.id();
 		this.filePath = filePath;
 		severity = DiagnosticSeverity.ERROR;
+		this.error = error;
 	}
 
 	public static ParserDiagnostic create(String message, int offset, int offsetInLine, int line, int length, Path filePath, ParserError error)
@@ -97,5 +99,18 @@ public class ParserDiagnostic implements IDiagnostic
 	public DiagnosticSeverity severity()
 	{
 		return severity;
+	}
+
+	IDiagnostic relocate(IPosition relocatedDiagnosticPosition)
+	{
+		return new ParserDiagnostic(
+			message,
+			relocatedDiagnosticPosition.offset(),
+			relocatedDiagnosticPosition.offsetInLine(),
+			relocatedDiagnosticPosition.line(),
+			relocatedDiagnosticPosition.length(),
+			relocatedDiagnosticPosition.filePath(),
+			error
+		);
 	}
 }
