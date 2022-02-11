@@ -3,6 +3,8 @@ package org.amshove.natparse.lexing;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Arrays;
 
@@ -115,6 +117,21 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 	void safelyAssumeIdentifiersIfTheTokenHasMultipleDashes()
 	{
 		assertTokens("END-DEFINE-DEFINE", token(SyntaxKind.IDENTIFIER));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"R1.", "R.", "R-1.", "#like-a-var.", "another-var.", "A.", "X.", "A123.", "#WAT."
+	})
+	void recognizeJumpLabelsAsLabelIdentifiers(String source)
+	{
+		assertTokens(source, SyntaxKind.LABEL_IDENTIFIER);
+	}
+
+	@Test
+	void addADiagnosticForRecognizedIdentifiersThatEndWithADot()
+	{
+		assertDiagnostic("C*WHODOESTHIS.", assertedDiagnostic(0,0,0,14, LexerError.INVALID_IDENTIFIER));
 	}
 
 	@TestFactory

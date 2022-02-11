@@ -341,7 +341,15 @@ public class Lexer
 			}
 			scanner.advance();
 		}
-		createAndAdd(SyntaxKind.IDENTIFIER);
+
+		if(scanner.peek(-1) == '.')
+		{
+			createAndAdd(SyntaxKind.LABEL_IDENTIFIER);
+		}
+		else
+		{
+			createAndAdd(SyntaxKind.IDENTIFIER);
+		}
 	}
 
 	private boolean isValidIdentifierCharacter(char character)
@@ -413,6 +421,11 @@ public class Lexer
 			{
 				kindHint = SyntaxKind.IDENTIFIER;
 			}
+		}
+
+		if(scanner.peek(-1) == '.')
+		{
+			kindHint = SyntaxKind.LABEL_IDENTIFIER;
 		}
 
 		// Handling for C* count variables
@@ -731,6 +744,14 @@ public class Lexer
 
 	private void addToken(SyntaxToken token)
 	{
+		if(token.kind() == SyntaxKind.IDENTIFIER)
+		{
+			if(token.source().endsWith("."))
+			{
+				addDiagnostic("Identifiers can not end with '.'", LexerError.INVALID_IDENTIFIER);
+			}
+		}
+
 		tokens.add(token);
 		scanner.reset();
 	}

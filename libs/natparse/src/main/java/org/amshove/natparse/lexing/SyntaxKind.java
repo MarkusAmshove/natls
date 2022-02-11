@@ -33,6 +33,7 @@ public enum SyntaxKind
 	STRING,
 	IDENTIFIER_OR_KEYWORD,
 	IDENTIFIER,
+	LABEL_IDENTIFIER,
 	COMMENT,
 
 	// System variables

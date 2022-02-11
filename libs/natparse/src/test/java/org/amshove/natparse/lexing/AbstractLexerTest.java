@@ -47,6 +47,7 @@ public class AbstractLexerTest
 	protected void assertTokens(String source, List<ExpectedSyntaxToken> expectedTokens)
 	{
 		var lexemes = lexSource(source);
+		assertThat(lexemes.diagnostics()).as("Expected the source to lex without diagnostics").isEmpty();
 		for (var i = 0; i < expectedTokens.size(); i++)
 		{
 			var expectedToken = expectedTokens.get(i);
