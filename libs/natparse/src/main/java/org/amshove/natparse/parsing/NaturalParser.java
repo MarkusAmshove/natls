@@ -110,6 +110,11 @@ public class NaturalParser
 
 		for (var unresolvedReference : statementParser.getUnresolvedReferences())
 		{
+			if(unresolvedReference.referencingToken().symbolName().startsWith("&"))
+			{
+				continue;
+			}
+
 			var variable = defineData.findVariable(unresolvedReference.token().symbolName());
 			if (variable != null)
 			{
