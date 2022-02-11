@@ -121,12 +121,6 @@ public class SourceTextScanner
 		currentLexemeStart = -1;
 	}
 
-	public void resetToCurrentLexeme()
-	{
-		currentOffset = currentLexemeStart;
-		reset();
-	}
-
 	public boolean isAtEnd()
 	{
 		return currentOffset >= source.length;

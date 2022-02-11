@@ -342,6 +342,28 @@ public class Lexer
 			scanner.advance();
 		}
 
+		var text = scanner.lexemeText();
+		if(text.startsWith("+"))
+		{
+			// Special case. Starting with + could be an AIV, but +123 is meant arithmetically
+			var onlyDigits = true;
+			for (int i = 1; i < text.length(); i++)
+			{
+				if(!Character.isDigit(text.charAt(i)))
+				{
+					onlyDigits = false;
+					break;
+				}
+			}
+
+			if(onlyDigits)
+			{
+				scanner.rollbackCurrentLexeme();
+				createAndAddCurrentSingleToken(SyntaxKind.PLUS);
+				return;
+			}
+		}
+
 		if(scanner.peek(-1) == '.')
 		{
 			createAndAdd(SyntaxKind.LABEL_IDENTIFIER);

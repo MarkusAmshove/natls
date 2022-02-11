@@ -134,6 +134,12 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 		assertDiagnostic("C*WHODOESTHIS.", assertedDiagnostic(0,0,0,14, LexerError.INVALID_IDENTIFIER));
 	}
 
+	@Test
+	void notRecognizeArithmeticAsVariable()
+	{
+		assertTokens("+123", token(SyntaxKind.PLUS), token(SyntaxKind.NUMBER));
+	}
+
 	@TestFactory
 	Iterable<DynamicTest> recognizeQualifiedVariables()
 	{
