@@ -69,7 +69,7 @@ public class Lexer
 					createAndAddFollowupEquals(SyntaxKind.COLON, SyntaxKind.COLON_EQUALS);
 					continue;
 				case '+':
-					if (isValidIdentifierCharacter(scanner.peek(1)))
+					if (isValidAivStartAfterPlus(scanner.peek(1)))
 					{
 						consumeIdentifier();
 					}
@@ -330,6 +330,11 @@ public class Lexer
 	private void consumeIdentifier()
 	{
 		scanner.start();
+		if(scanner.peek() == '+')
+		{
+			scanner.advance();
+		}
+
 		while (!scanner.isAtEnd() && !isLineEnd() && isNoWhitespace() && isValidIdentifierCharacter(scanner.peek()))
 		{
 			if(scanner.peek() == '/' && scanner.peek(1) == '*')
@@ -376,7 +381,7 @@ public class Lexer
 
 	private boolean isValidIdentifierCharacter(char character)
 	{
-		return Character.isAlphabetic(character) || Character.isDigit(character) || character == '-' || character == '/' || character == '@' || character == '$' || character == '&' || character == '#' || character == '+' || character == '.' || character == '_';
+		return Character.isAlphabetic(character) || Character.isDigit(character) || character == '-' || character == '/' || character == '@' || character == '$' || character == '&' || character == '#' || character == '.' || character == '_';
 	}
 
 	private void consumeIdentifierOrKeyword()
@@ -394,7 +399,6 @@ public class Lexer
 				case '$':
 				case '&':
 				case '#':
-				case '+':
 				case '.':
 					kindHint = SyntaxKind.IDENTIFIER;
 					break;
@@ -781,5 +785,11 @@ public class Lexer
 	public void relocateDiagnosticPosition(IPosition diagnosticPosition)
 	{
 		this.relocatedDiagnosticPosition = diagnosticPosition;
+	}
+
+	private boolean isValidAivStartAfterPlus(char character)
+	{
+		// Every identifier name is allowed after the AIV plus, except for numbers
+		return isValidIdentifierCharacter(character) && !Character.isDigit(character);
 	}
 }

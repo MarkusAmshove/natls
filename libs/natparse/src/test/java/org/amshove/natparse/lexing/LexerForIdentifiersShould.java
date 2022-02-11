@@ -140,6 +140,12 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 		assertTokens("+123", token(SyntaxKind.PLUS), token(SyntaxKind.NUMBER));
 	}
 
+	@Test
+	void recognizeTheStartOfAnArithmeticExpressionWithinAVariableAndBreakIt()
+	{
+		assertTokens("MYVAR+123", token(SyntaxKind.IDENTIFIER_OR_KEYWORD), token(SyntaxKind.PLUS), token(SyntaxKind.NUMBER));
+	}
+
 	@TestFactory
 	Iterable<DynamicTest> recognizeQualifiedVariables()
 	{
