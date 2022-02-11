@@ -697,11 +697,12 @@ public class Lexer
 		{
 			diagnostics.add(LexerDiagnostic.create(
 				message,
-				relocatedDiagnosticPosition.offset(),
-				relocatedDiagnosticPosition.offsetInLine(),
-				relocatedDiagnosticPosition.line(),
-				relocatedDiagnosticPosition.length(),
-				relocatedDiagnosticPosition.filePath(),
+				scanner.lexemeStart(),
+				getOffsetInLine(),
+				line,
+				scanner.lexemeLength(),
+				filePath,
+				relocatedDiagnosticPosition,
 				error));
 		}
 		else
@@ -736,5 +737,6 @@ public class Lexer
 
 	public void relocateDiagnosticPosition(IPosition diagnosticPosition)
 	{
+		this.relocatedDiagnosticPosition = diagnosticPosition;
 	}
 }

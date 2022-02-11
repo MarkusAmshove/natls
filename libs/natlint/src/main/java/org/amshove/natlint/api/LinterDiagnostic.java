@@ -12,13 +12,20 @@ public class LinterDiagnostic implements IDiagnostic
 	private final IPosition position;
 	private final DiagnosticSeverity severity;
 	private final String message;
+	private final IPosition originalPosition;
 
 	public LinterDiagnostic(String id, IPosition position, DiagnosticSeverity severity, String message)
+	{
+		this(id, position, null, severity, message);
+	}
+
+	public LinterDiagnostic(String id, IPosition position, IPosition originalPosition, DiagnosticSeverity severity, String message)
 	{
 		this.id = id;
 		this.position = position;
 		this.severity = severity;
 		this.message = message;
+		this.originalPosition = originalPosition;
 	}
 
 	@Override
@@ -37,6 +44,12 @@ public class LinterDiagnostic implements IDiagnostic
 	public DiagnosticSeverity severity()
 	{
 		return severity;
+	}
+
+	@Override
+	public IPosition originalPosition()
+	{
+		return originalPosition != null ? originalPosition : this;
 	}
 
 	@Override
@@ -69,7 +82,8 @@ public class LinterDiagnostic implements IDiagnostic
 		return position.filePath();
 	}
 
-	@Override public String toString()
+	@Override
+	public String toString()
 	{
 		return "LinterDiagnostic{" +
 			"id='" + id + '\'' +
@@ -77,5 +91,11 @@ public class LinterDiagnostic implements IDiagnostic
 			", message='" + message + '\'' +
 			", position=" + position +
 			'}';
+	}
+
+	@Override
+	public boolean hasOriginalPosition()
+	{
+		return originalPosition != null;
 	}
 }

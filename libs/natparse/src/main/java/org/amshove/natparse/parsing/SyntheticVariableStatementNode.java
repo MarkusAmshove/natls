@@ -59,4 +59,10 @@ class SyntheticVariableStatementNode extends StatementNode implements ISymbolRef
 	{
 		return node.token();
 	}
+
+	@Override
+	public IPosition diagnosticPosition()
+	{
+		return node.diagnosticPosition();
+	}
 }

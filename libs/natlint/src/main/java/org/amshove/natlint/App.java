@@ -68,7 +68,6 @@ public class App
 			%n""", App.class.getPackage().getImplementationTitle(), App.class.getPackage().getImplementationVersion(), projectFile.get().getFileName());
 
 		new App(projectFile.get(), filesystem).run();
-		System.in.read();
 	}
 
 	private static final Comparator<IDiagnostic> byLineNumber = Comparator.comparingInt(IPosition::line);
@@ -169,10 +168,10 @@ public class App
 
 		for (var diagnostic : sortedDiagnostics)
 		{
-			System.out.printf("%s:%d:%d", filePath, diagnostic.line() + 1, diagnostic.offsetInLine());
+			System.out.println(pathWithLineInformation(diagnostic));
 
 			System.out.println();
-			System.out.println(readDiagnosticSourceLine(filePath, diagnostic));
+			System.out.println(readDiagnosticSourceLine(diagnostic));
 			System.out.println(squiggle(diagnostic));
 			System.out.println(message(diagnostic));
 			System.out.println();
@@ -183,15 +182,16 @@ public class App
 
 	private String message(IDiagnostic diagnostic)
 	{
+		var offsetInLine = diagnostic.originalPosition().equals(diagnostic) ? diagnostic.offsetInLine() : diagnostic.offsetInLine() + diagnostic.originalPosition().offsetInLine() + 2;
 		var severity = diagnostic.severity();
 		var message = new StringBuilder();
-		message.append(" ".repeat(diagnostic.offsetInLine()));
+		message.append(" ".repeat(offsetInLine));
 		message.append(colored("|", severity));
 		message.append(System.lineSeparator());
-		message.append(" ".repeat(diagnostic.offsetInLine()));
+		message.append(" ".repeat(offsetInLine));
 		message.append(colored("|", severity));
 		message.append(System.lineSeparator());
-		message.append(" ".repeat(diagnostic.offsetInLine()));
+		message.append(" ".repeat(offsetInLine));
 		message.append(colored("= ", severity));
 		message.append(colored(diagnostic.severity().toString(), severity));
 		message.append(colored(": ", severity));
@@ -199,29 +199,56 @@ public class App
 		return message.toString();
 	}
 
-	private String readDiagnosticSourceLine(Path path, IDiagnostic diagnostic)
+	private String readDiagnosticSourceLine(IDiagnostic diagnostic)
 	{
-		var source = filesystem.readFile(path);
-		var split = source.split("\n");
-
-		if (split.length < diagnostic.line())
+		var diagnosticLocationLine = readSourcePosition(diagnostic, diagnostic.severity());
+		if(!diagnostic.originalPosition().filePath().equals(diagnostic.filePath()))
 		{
-			throw new RuntimeException("File <%s> does not contain line number (0-based): %d".formatted(path, diagnostic.line()));
+			var originalLocationLine = readSourcePosition(diagnostic.originalPosition(), diagnostic.severity());
+			return new StringBuilder()
+				.append(diagnosticLocationLine)
+				.append("\n")
+				.append(" ".repeat(diagnostic.offsetInLine()))
+				.append(colored("^\n", diagnostic.severity()))
+				.append(" ".repeat(diagnostic.offsetInLine()))
+				.append(colored("|\n", diagnostic.severity()))
+				.append(" ".repeat(diagnostic.offsetInLine()))
+				.append(pathWithLineInformation(diagnostic.originalPosition()))
+				.append("\n")
+				.append(" ".repeat(diagnostic.offsetInLine()))
+				.append(colored("|\n", diagnostic.severity()))
+				.append(" ".repeat(diagnostic.offsetInLine()))
+				.append(colored("= ", diagnostic.severity()))
+				.append(originalLocationLine)
+				.toString();
 		}
 
-		var line = split[diagnostic.line()];
+		return diagnosticLocationLine;
+	}
+
+	private String readSourcePosition(IPosition position, DiagnosticSeverity severity)
+	{
+		var source = filesystem.readFile(position.filePath());
+		var split = source.split("\n");
+
+		if (split.length < position.line())
+		{
+			throw new RuntimeException("File <%s> does not contain line number (0-based): %d".formatted(position.filePath(), position.line()));
+		}
+
+		var line = split[position.line()];
 		var coloredLine = new StringBuilder();
 		for (var i = 0; i < line.length(); i++)
 		{
-			if (i == diagnostic.offsetInLine())
+			if (i == position.offsetInLine())
 			{
 				coloredLine
 					.append((char) 27 + "[")
-					.append(SEVERITY_COLOR_MAP.get(diagnostic.severity()))
+					.append(SEVERITY_COLOR_MAP.get(severity))
 					.append("m");
 			}
 
-			if (i == diagnostic.offsetInLine() + diagnostic.length())
+			if (i == position.offsetInLine() + position.length())
 			{
 				coloredLine.append((char) 27 + "[0m");
 			}
@@ -235,8 +262,9 @@ public class App
 
 	private String squiggle(IDiagnostic diagnostic)
 	{
-		return " ".repeat(Math.max(0, diagnostic.offsetInLine())) +
-			colored("~".repeat(Math.max(0, diagnostic.length())), diagnostic.severity());
+		var offsetInLine = diagnostic.originalPosition() == diagnostic ? diagnostic.offsetInLine() : diagnostic.offsetInLine() + diagnostic.originalPosition().offsetInLine() + 2;
+		return " ".repeat(Math.max(0, offsetInLine)) +
+			colored("~".repeat(Math.max(0, diagnostic.originalPosition().length())), diagnostic.severity());
 	}
 
 	private String colored(String message, DiagnosticSeverity severity)
@@ -245,5 +273,10 @@ public class App
 		coloredMessage += message;
 		coloredMessage += (char) 27 + "[0m";
 		return coloredMessage;
+	}
+
+	private String pathWithLineInformation(IPosition position)
+	{
+		return "%s:%d:%d".formatted(position.filePath(), position.line() + 1, position.offsetInLine());
 	}
 }

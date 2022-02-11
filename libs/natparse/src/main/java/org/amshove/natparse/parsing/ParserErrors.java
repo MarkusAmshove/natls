@@ -25,7 +25,7 @@ class ParserErrors
 	{
 		return ParserDiagnostic.create(
 			"Unexpected token <%s>, expected <%s>".formatted(formatTokenKind(invalidToken), expectedToken),
-			invalidToken.diagnosticPosition(),
+			invalidToken,
 			ParserError.UNEXPECTED_TOKEN
 		);
 	}
@@ -34,7 +34,7 @@ class ParserErrors
 	{
 		return ParserDiagnostic.create(
 			"Unexpected token <%s>, expected one of <%s>".formatted(formatTokenKind(invalidToken), expectedTokenKinds.stream().map(Enum::toString).collect(Collectors.joining(", "))),
-			invalidToken.diagnosticPosition(),
+			invalidToken,
 			ParserError.UNEXPECTED_TOKEN
 		);
 	}
@@ -166,7 +166,7 @@ class ParserErrors
 	{
 		return ParserDiagnostic.create(
 			"Unresolved reference: %s".formatted(node.token().source()),
-			node.token().diagnosticPosition(),
+			node.token(),
 			ParserError.UNRESOLVED_REFERENCE
 		);
 	}
@@ -279,7 +279,7 @@ class ParserErrors
 	{
 		return ParserDiagnostic.create(
 			"Could not resolve external module %s".formatted(importNode.token().symbolName()),
-			importNode.token().diagnosticPosition(),
+			importNode.token(),
 			ParserError.UNRESOLVED_IMPORT
 		);
 	}

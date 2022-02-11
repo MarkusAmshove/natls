@@ -35,6 +35,12 @@ class SyntheticTokenNode extends BaseSyntaxNode implements ITokenNode
 	}
 
 	@Override
+	public IPosition diagnosticPosition()
+	{
+		return originalToken.diagnosticPosition();
+	}
+
+	@Override
 	public SyntaxToken token()
 	{
 		return newToken;
