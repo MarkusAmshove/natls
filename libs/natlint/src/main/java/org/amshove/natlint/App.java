@@ -182,7 +182,7 @@ public class App
 
 	private String message(IDiagnostic diagnostic)
 	{
-		var offsetInLine = diagnostic.originalPosition().equals(diagnostic) ? diagnostic.offsetInLine() : diagnostic.offsetInLine() + diagnostic.originalPosition().offsetInLine() + 2;
+		var offsetInLine = diagnostic.originalPosition().isSamePositionAs(diagnostic) ? diagnostic.offsetInLine() : diagnostic.offsetInLine() + diagnostic.originalPosition().offsetInLine() + 2;
 		var severity = diagnostic.severity();
 		var message = new StringBuilder();
 		message.append(" ".repeat(offsetInLine));
@@ -262,7 +262,7 @@ public class App
 
 	private String squiggle(IDiagnostic diagnostic)
 	{
-		var offsetInLine = diagnostic.originalPosition() == diagnostic ? diagnostic.offsetInLine() : diagnostic.offsetInLine() + diagnostic.originalPosition().offsetInLine() + 2;
+		var offsetInLine = diagnostic.originalPosition().isSamePositionAs(diagnostic) ? diagnostic.offsetInLine() : diagnostic.offsetInLine() + diagnostic.originalPosition().offsetInLine() + 2;
 		return " ".repeat(Math.max(0, offsetInLine)) +
 			colored("~".repeat(Math.max(0, diagnostic.originalPosition().length())), diagnostic.severity());
 	}
