@@ -81,6 +81,11 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(ignore());
 						break;
 					case PERFORM:
+						if(peek(1).kind() == SyntaxKind.BREAK)
+						{
+							tokens.advance();
+							break;
+						}
 						statementList.addStatement(perform());
 						break;
 					default:
