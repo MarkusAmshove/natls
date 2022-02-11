@@ -33,7 +33,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		unresolvedReferences = new ArrayList<>();
 		var statementList = statementList();
 		resolveUnresolvedInternalPerforms(statementList);
-		if(!shouldRelocateDiagnostics())
+		if (!shouldRelocateDiagnostics())
 		{
 			// If diagnostics should be relocated, we're a copycode. So let the includer resolve it themselves.
 			resolveUnresolvedExternalPerforms();
@@ -67,7 +67,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(end());
 						break;
 					case DEFINE:
-						if(peekAny(1, List.of(SyntaxKind.WINDOW, SyntaxKind.WORK, SyntaxKind.PRINTER, SyntaxKind.FUNCTION, SyntaxKind.DATA, SyntaxKind.PROTOTYPE)))
+						if (peekAny(1, List.of(SyntaxKind.WINDOW, SyntaxKind.WORK, SyntaxKind.PRINTER, SyntaxKind.FUNCTION, SyntaxKind.DATA, SyntaxKind.PROTOTYPE)))
 						{
 							tokens.advance();
 							tokens.advance();
@@ -203,19 +203,27 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 				}
 
 				var nestedParser = new StatementListParser(moduleProvider);
-				nestedParser.relocateDiagnosticPosition(referencingToken);
+				nestedParser.relocateDiagnosticPosition(
+					shouldRelocateDiagnostics()
+						? relocatedDiagnosticPosition
+						: referencingToken
+				);
 				var statementList = nestedParser.parse(tokens);
 
 				for (var diagnostic : statementList.diagnostics())
 				{
-					if(ParserError.isUnresolvedError(diagnostic.id()))
+					if (ParserError.isUnresolvedError(diagnostic.id()))
 					{
 						// Unresolved references will be resolved by the module including the copycode.
 						report(diagnostic);
 					}
 				}
 				unresolvedReferences.addAll(nestedParser.unresolvedReferences);
-				include.setBody(statementList.result());
+				include.setBody(statementList.result(),
+					shouldRelocateDiagnostics()
+						? relocatedDiagnosticPosition
+						: referencingToken
+				);
 			}
 			catch (IOException e)
 			{
@@ -226,7 +234,11 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			var unresolvedBody = new StatementListNode();
 			unresolvedBody.setParent(include);
-			include.setBody(unresolvedBody);
+			include.setBody(unresolvedBody,
+				shouldRelocateDiagnostics()
+					? relocatedDiagnosticPosition
+					: referencingToken
+			);
 		}
 
 		return include;
@@ -271,10 +283,10 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		for (var unresolvedReference : unresolvedReferences)
 		{
-			if(unresolvedReference instanceof InternalPerformNode internalPerformNode)
+			if (unresolvedReference instanceof InternalPerformNode internalPerformNode)
 			{
 				var foundModule = sideloadModule(unresolvedReference.token().symbolName(), internalPerformNode.tokenNode());
-				if(foundModule != null)
+				if (foundModule != null)
 				{
 					var externalPerform = new ExternalPerformNode(((InternalPerformNode) unresolvedReference));
 					((BaseSyntaxNode) unresolvedReference.parent()).replaceChild((BaseSyntaxNode) unresolvedReference, externalPerform);
@@ -292,7 +304,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var resolvedReferences = new ArrayList<ISymbolReferenceNode>();
 		for (var statement : statementListNode.statements())
 		{
-			if(statement instanceof IHasBody hasBody)
+			if (statement instanceof IHasBody hasBody)
 			{
 				resolveUnresolvedInternalPerforms(hasBody.body());
 			}
@@ -304,12 +316,12 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 			for (var unresolvedReference : unresolvedReferences)
 			{
-				if(!(unresolvedReference instanceof InternalPerformNode))
+				if (!(unresolvedReference instanceof InternalPerformNode))
 				{
 					continue;
 				}
 
-				if(unresolvedReference.token().symbolName().equals(referencable.declaration().symbolName()))
+				if (unresolvedReference.token().symbolName().equals(referencable.declaration().symbolName()))
 				{
 					referencable.addReference(unresolvedReference);
 					resolvedReferences.add(unresolvedReference);

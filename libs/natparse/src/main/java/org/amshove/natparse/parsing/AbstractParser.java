@@ -18,7 +18,7 @@ abstract class AbstractParser<T>
 	private TokenNode previousNode;
 
 	private List<IDiagnostic> diagnostics = new ArrayList<>();
-	private IPosition relocatedDiagnosticPosition;
+	protected IPosition relocatedDiagnosticPosition;
 
 	public AbstractParser(IModuleProvider moduleProvider)
 	{
