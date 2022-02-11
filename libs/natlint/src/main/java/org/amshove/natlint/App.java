@@ -19,6 +19,7 @@ import java.util.*;
 public class App
 {
 	private static String singleFile; // TODO: Implement proper
+	private static boolean noWarn;
 
 	private final Path projectFile;
 	private final IFilesystem filesystem;
@@ -53,6 +54,7 @@ public class App
 		{
 			singleFile = arguments.get(0);
 		}
+		noWarn = arguments.remove("--no-warn");
 
 		System.out.printf("""
 			     .@@@@@@@@@@@@@@@&
@@ -166,8 +168,14 @@ public class App
 
 		var sortedDiagnostics = diagnostics.stream().sorted(byLineNumber).toList();
 
+		var printed = 0;
 		for (var diagnostic : sortedDiagnostics)
 		{
+			if(diagnostic.severity() == DiagnosticSeverity.WARNING && noWarn)
+			{
+				continue;
+			}
+
 			System.out.println(pathWithLineInformation(diagnostic));
 
 			System.out.println();
@@ -175,9 +183,14 @@ public class App
 			System.out.println(squiggle(diagnostic));
 			System.out.println(message(diagnostic));
 			System.out.println();
+
+			printed++;
 		}
 
-		System.out.println();
+		if(printed > 0)
+		{
+			System.out.println();
+		}
 	}
 
 	private String message(IDiagnostic diagnostic)
