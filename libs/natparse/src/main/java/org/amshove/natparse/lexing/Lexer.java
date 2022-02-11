@@ -353,6 +353,7 @@ public class Lexer
 	{
 		SyntaxKind kindHint = null;
 		scanner.start();
+		var dashCount = 0;
 		while (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd() && isValidIdentifierCharacter(scanner.peek()))
 		{
 
@@ -366,6 +367,15 @@ public class Lexer
 				case '+':
 				case '.':
 					kindHint = SyntaxKind.IDENTIFIER;
+					break;
+				case '-':
+					dashCount++;
+					if (dashCount >1)
+					{
+						// This might be removed when IDENTIFIER_OR_KEYWORD is gone
+						kindHint = SyntaxKind.IDENTIFIER;
+					}
+					break;
 			}
 
 			if(scanner.peek() == '/')

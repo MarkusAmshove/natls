@@ -111,6 +111,12 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 		assertTokens("INCLUDE IDEN/*", token(SyntaxKind.INCLUDE), token(SyntaxKind.IDENTIFIER, "IDEN"));
 	}
 
+	@Test
+	void safelyAssumeIdentifiersIfTheTokenHasMultipleDashes()
+	{
+		assertTokens("END-DEFINE-DEFINE", token(SyntaxKind.IDENTIFIER));
+	}
+
 	@TestFactory
 	Iterable<DynamicTest> recognizeQualifiedVariables()
 	{
