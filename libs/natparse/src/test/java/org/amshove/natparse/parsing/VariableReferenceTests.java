@@ -80,4 +80,28 @@ public class VariableReferenceTests extends ParserIntegrationTest
 		assertThat(varThree).isNotNull();
 		assertThat(varThree.references()).isNotEmpty();
 	}
+
+	@Test
+	void addAReferenceToVariablesUsedAsCounter(@ProjectName("variablereferencetests") NaturalProject project)
+	{
+		var subprogram = assertFileParsesAs(project.findModule("CSTAR"), ISubprogram.class);
+
+		assertThat(subprogram.defineData().findVariable("#MYVAR").references()).isNotEmpty();
+	}
+
+	@Test
+	void addAReferenceToVariablesUsedAsPStar(@ProjectName("variablereferencetests") NaturalProject project)
+	{
+		var subprogram = assertFileParsesAs(project.findModule("PSTAR"), ISubprogram.class);
+
+		assertThat(subprogram.defineData().findVariable("#MYVAR").references()).isNotEmpty();
+	}
+
+	@Test
+	void addAReferenceToVariablesUsedAsTStar(@ProjectName("variablereferencetests") NaturalProject project)
+	{
+		var subprogram = assertFileParsesAs(project.findModule("TSTAR"), ISubprogram.class);
+
+		assertThat(subprogram.defineData().findVariable("#MYVAR").references()).isNotEmpty();
+	}
 }

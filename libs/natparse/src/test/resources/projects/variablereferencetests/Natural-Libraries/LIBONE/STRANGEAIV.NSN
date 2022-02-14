@@ -6,4 +6,6 @@ END-DEFINE
 
 #VARTHREE := #VARONE+#VARTWO /* Lexer produces "+#VARTWO" because it could be AIV
 
+WRITE C*#VARONE
+
 END

@@ -3,8 +3,10 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.TokenList;
+import org.amshove.natparse.natural.IDefineData;
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.IStatementListNode;
+import org.amshove.natparse.natural.ISymbolReferenceNode;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
@@ -115,23 +117,39 @@ public class NaturalParser
 				continue;
 			}
 
-			var variable = defineData.findVariable(unresolvedReference.token().symbolName());
-			if (variable != null)
+			if(tryFindAndReference(unresolvedReference.token().symbolName(), unresolvedReference, defineData))
 			{
-				variable.addReference(unresolvedReference);
 				continue;
 			}
 
-			if(unresolvedReference.token().symbolName().startsWith("+"))
+			if(unresolvedReference.token().symbolName().startsWith("+")
+				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(1), unresolvedReference, defineData))
 			{
 				// TODO(hack, expressions): This should be handled when parsing expressions.
-				variable = defineData.findVariable(unresolvedReference.token().symbolName().substring(1));
-				if(variable != null)
-				{
-					variable.addReference(unresolvedReference);
-					continue;
-				}
+				continue;
 			}
+
+
+			if(unresolvedReference.token().symbolName().startsWith("C*")
+				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(2), unresolvedReference, defineData))
+			{
+				continue;
+			}
+
+			if(unresolvedReference.token().symbolName().startsWith("T*")
+				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(2), unresolvedReference, defineData))
+			{
+				// TODO(hack, write-statement): This will be obsolete when the WRITE statement is parsed
+				continue;
+			}
+
+			if(unresolvedReference.token().symbolName().startsWith("P*")
+				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(2), unresolvedReference, defineData))
+			{
+				// TODO(hack, write-statement): This will be obsolete when the WRITE statement is parsed
+				continue;
+			}
+
 
 			if(defineData.findDdmField(unresolvedReference.token().symbolName()) != null)
 			{
@@ -145,5 +163,17 @@ public class NaturalParser
 				module.addDiagnostic(ParserErrors.unresolvedReference(unresolvedReference));
 			}
 		}
+	}
+
+	private boolean tryFindAndReference(String symbolName, ISymbolReferenceNode referenceNode, IDefineData defineData)
+	{
+		var variable = defineData.findVariable(symbolName);
+		if(variable != null)
+		{
+			variable.addReference(referenceNode);
+			return true;
+		}
+
+		return false;
 	}
 }
