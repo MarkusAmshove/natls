@@ -119,19 +119,30 @@ public class NaturalParser
 			if (variable != null)
 			{
 				variable.addReference(unresolvedReference);
+				continue;
 			}
-			else
+
+			if(unresolvedReference.token().symbolName().startsWith("+"))
 			{
-				if(defineData.findDdmField(unresolvedReference.token().symbolName()) != null)
+				// TODO(hack, expressions): This should be handled when parsing expressions.
+				variable = defineData.findVariable(unresolvedReference.token().symbolName().substring(1));
+				if(variable != null)
 				{
+					variable.addReference(unresolvedReference);
 					continue;
 				}
-				if(unresolvedReference.token().kind() == SyntaxKind.IDENTIFIER)
-				{
-					// We don't handle IDENTIFIER_OR_KEYWORD because we can't be sure if it a variable.
-					// As long as IDENTIFIER_OR_KEYWORD exists as a SyntaxKind, we only report a diagnostic if we're sure that its meant to be a reference.
-					module.addDiagnostic(ParserErrors.unresolvedReference(unresolvedReference));
-				}
+			}
+
+			if(defineData.findDdmField(unresolvedReference.token().symbolName()) != null)
+			{
+				continue;
+			}
+
+			if(unresolvedReference.token().kind() == SyntaxKind.IDENTIFIER)
+			{
+				// We don't handle IDENTIFIER_OR_KEYWORD because we can't be sure if it a variable.
+				// As long as IDENTIFIER_OR_KEYWORD exists as a SyntaxKind, we only report a diagnostic if we're sure that its meant to be a reference.
+				module.addDiagnostic(ParserErrors.unresolvedReference(unresolvedReference));
 			}
 		}
 	}

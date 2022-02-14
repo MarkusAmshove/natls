@@ -60,4 +60,24 @@ public class VariableReferenceTests extends ParserIntegrationTest
 		assertThat(include).isNotNull();
 		assertThat(include.reference().callers()).contains(include);
 	}
+
+	@Test
+	void ignorePlusInVariableNameIfItMightNotBeAiv(@ProjectName("variablereferencetests") NaturalProject project)
+	{
+		var subprogram = assertFileParsesAs(project.findModule("STRANGEAIV"), ISubprogram.class);
+
+		assertThat(subprogram.diagnostics()).isEmpty();
+
+		var varOne = subprogram.defineData().findVariable("#VARONE");
+		assertThat(varOne).isNotNull();
+		assertThat(varOne.references()).isNotEmpty();
+
+		var varTwo = subprogram.defineData().findVariable("#VARTWO");
+		assertThat(varTwo).isNotNull();
+		assertThat(varTwo.references()).isNotEmpty();
+
+		var varThree = subprogram.defineData().findVariable("#VARTHREE");
+		assertThat(varThree).isNotNull();
+		assertThat(varThree.references()).isNotEmpty();
+	}
 }
