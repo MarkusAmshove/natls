@@ -1,9 +1,9 @@
 package org.amshove.natparse.parsing.ddm;
 
 import com.google.common.collect.ImmutableList;
-import org.amshove.natparse.natural.ddm.DdmType;
-import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
-import org.amshove.natparse.natural.ddm.IDdmField;
+import org.amshove.natparse.natural.ddm.*;
+
+import java.util.Collection;
 
 class DataDefinitionModule implements IDataDefinitionModule
 {
@@ -61,5 +61,29 @@ class DataDefinitionModule implements IDataDefinitionModule
 	public ImmutableList<IDdmField> fields()
 	{
 		return fields;
+	}
+
+	@Override
+	public IDdmField findField(String name)
+	{
+		return findField(name, fields);
+	}
+
+	private IDdmField findField(String name, Collection<IDdmField> fields)
+	{
+		for (var field : fields)
+		{
+			if(field.name().equalsIgnoreCase(name))
+			{
+				return field;
+			}
+
+			if(field instanceof IGroupField groupField)
+			{
+				return findField(name, groupField.members());
+			}
+		}
+
+		return null;
 	}
 }

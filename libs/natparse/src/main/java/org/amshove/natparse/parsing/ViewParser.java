@@ -37,7 +37,12 @@ class ViewParser extends AbstractParser<ViewNode>
 
 			var targetDdm = consumeMandatoryIdentifier(view);
 			view.setDdmNameToken(targetDdm);
-			// TODO: Find DDM via object provider and parse using DdmParser, save result in attribute
+
+			if(moduleProvider != null)
+			{
+				var ddm = moduleProvider.findDdm(targetDdm.symbolName());
+				view.setDdm(ddm);
+			}
 
 			while (peekKind(SyntaxKind.NUMBER) && peek().intValue() > view.level())
 			{

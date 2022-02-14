@@ -122,6 +122,10 @@ public class NaturalParser
 			}
 			else
 			{
+				if(defineData.findDdmField(unresolvedReference.token().symbolName()) != null)
+				{
+					continue;
+				}
 				if(unresolvedReference.token().kind() == SyntaxKind.IDENTIFIER)
 				{
 					// We don't handle IDENTIFIER_OR_KEYWORD because we can't be sure if it a variable.
