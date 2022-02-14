@@ -3,6 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
+import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 
 import java.util.Arrays;
@@ -21,10 +22,13 @@ class ParserErrors
 		return token.kind().toString();
 	}
 
-	public static ParserDiagnostic unexpectedToken(SyntaxKind expectedToken, SyntaxToken invalidToken)
+	public static ParserDiagnostic unexpectedToken(SyntaxKind expectedToken, TokenList tokens)
 	{
+		var currentToken = tokens.peek();
+		var invalidToken = currentToken != null ? currentToken : tokens.peek(-1);
+		var message = currentToken != null ? "Unexpected token <%s>, expected <%s>" : "Unexpected token after this, expected <%s>";
 		return ParserDiagnostic.create(
-			"Unexpected token <%s>, expected <%s>".formatted(formatTokenKind(invalidToken), expectedToken),
+			message.formatted(formatTokenKind(invalidToken), expectedToken),
 			invalidToken,
 			ParserError.UNEXPECTED_TOKEN
 		);

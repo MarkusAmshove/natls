@@ -975,6 +975,20 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void parseArrayInitialValuesInNestedFields()
+	{
+		assertParsesWithoutDiagnostics("""
+						define data
+						local
+						1 #array-group (1:*)
+						2 #group-inside
+						3 #initialized (I1) INIT <1, 5, 7>
+						end-define
+			""");
+		// TODO(array-initializer): Check values
+	}
+
+	@Test
 	void parseArrayCommaSeparatedInitialValues()
 	{
 		assertParsesWithoutDiagnostics("""

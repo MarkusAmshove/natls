@@ -155,7 +155,7 @@ abstract class AbstractParser<T>
 		var tokenConsumed = consumeOptionally(node, kind);
 		if (!tokenConsumed)
 		{
-			diagnostics.add(ParserErrors.unexpectedToken(kind, tokens.peek()));
+			diagnostics.add(ParserErrors.unexpectedToken(kind, tokens));
 		}
 
 		return tokenConsumed;
@@ -182,7 +182,7 @@ abstract class AbstractParser<T>
 			return previousToken();
 		}
 
-		diagnostics.add(ParserErrors.unexpectedToken(kind, peek()));
+		diagnostics.add(ParserErrors.unexpectedToken(kind, tokens));
 		throw new ParseError(peek());
 	}
 
@@ -226,7 +226,7 @@ abstract class AbstractParser<T>
 			return previousToken();
 		}
 
-		diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, peek()));
+		diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens));
 		throw new ParseError(peek());
 	}
 
