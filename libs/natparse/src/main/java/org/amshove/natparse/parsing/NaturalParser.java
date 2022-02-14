@@ -150,12 +150,6 @@ public class NaturalParser
 				continue;
 			}
 
-
-			if(defineData.findDdmField(unresolvedReference.token().symbolName()) != null)
-			{
-				continue;
-			}
-
 			if(unresolvedReference.token().kind() == SyntaxKind.IDENTIFIER)
 			{
 				// We don't handle IDENTIFIER_OR_KEYWORD because we can't be sure if it a variable.
@@ -174,6 +168,6 @@ public class NaturalParser
 			return true;
 		}
 
-		return false;
+		return defineData.findDdmField(symbolName) != null;
 	}
 }

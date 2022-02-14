@@ -80,7 +80,11 @@ class DataDefinitionModule implements IDataDefinitionModule
 
 			if(field instanceof IGroupField groupField)
 			{
-				return findField(name, groupField.members());
+				var foundInGroup = findField(name, groupField.members());
+				if (foundInGroup != null)
+				{
+					return foundInGroup;
+				}
 			}
 		}
 
