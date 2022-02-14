@@ -427,7 +427,7 @@ public class Lexer
 			scanner.advance();
 		}
 
-		if (scanner.peek() == ',' || scanner.peek() == '.')
+		if ((scanner.peek() == ',' || scanner.peek() == '.') && !isValidIdentifierCharacter(scanner.peek(1)) && !isWhitespace(1))
 		{
 			// TODO(lexermode): This is only needed because the Define Data Parser relies on DataFormats to be identifiers currently.
 			//		With a fitting lexer mode we can build this better.

@@ -146,6 +146,28 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 		assertTokens("MYVAR+123", token(SyntaxKind.IDENTIFIER_OR_KEYWORD), token(SyntaxKind.PLUS), token(SyntaxKind.NUMBER));
 	}
 
+	@Test
+	void notAddCommasToIdentifiers()
+	{
+		assertTokens(
+			"FIRST-IDENTIFIER-HERE,SECOND-IDENTIFIER-HERE",
+			token(SyntaxKind.IDENTIFIER),
+			token(SyntaxKind.COMMA),
+			token(SyntaxKind.IDENTIFIER)
+		);
+	}
+
+	@Test
+	void notAddCommasToIdentifiersWithSpaceAfterComma()
+	{
+		assertTokens(
+			"FIRST-IDENTIFIER-HERE, SECOND-IDENTIFIER-HERE",
+			token(SyntaxKind.IDENTIFIER),
+			token(SyntaxKind.COMMA),
+			token(SyntaxKind.IDENTIFIER)
+		);
+	}
+
 	@TestFactory
 	Iterable<DynamicTest> recognizeQualifiedVariables()
 	{
