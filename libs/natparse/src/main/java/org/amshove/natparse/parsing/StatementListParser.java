@@ -326,7 +326,8 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					continue;
 				}
 
-				if (unresolvedReference.token().symbolName().equals(referencable.declaration().symbolName()))
+				var unresolvedPerformName = unresolvedReference.token().trimmedSymbolName(32);
+				if (unresolvedPerformName.equals(referencable.declaration().trimmedSymbolName(32)))
 				{
 					referencable.addReference(unresolvedReference);
 					resolvedReferences.add(unresolvedReference);

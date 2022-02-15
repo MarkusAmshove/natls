@@ -217,6 +217,26 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void resolveInternalSubroutinesWithLongNames()
+	{
+		var statements = assertParsesWithoutDiagnostics("""
+			DEFINE SUBROUTINE THIS-HAS-MORE-THAN-THIRTY-TWO-CHARACTERS
+				IGNORE
+			END-SUBROUTINE
+
+			PERFORM THIS-HAS-MORE-THAN-THIRTY-TWO-CHARACTERS-BUT-IT-WORKS-I-SHOULD-NEVER-DO-THAT
+			""");
+
+		assertThat(statements.statements()).hasSize(2);
+		var subroutine = statements.statements().get(0);
+		var perform = assertNodeType(statements.statements().get(1), IInternalPerformNode.class);
+
+		assertThat(perform.token().symbolName()).isEqualTo("THIS-HAS-MORE-THAN-THIRTY-TWO-CHARACTERS-BUT-IT-WORKS-I-SHOULD-NEVER-DO-THAT");
+		assertThat(perform.token().trimmedSymbolName(32)).isEqualTo("THIS-HAS-MORE-THAN-THIRTY-TWO-CH");
+		assertThat(perform.reference()).isEqualTo(subroutine);
+	}
+
+	@Test
 	void parseInternalPerformNodesWithReferenceWhenSubroutineIsDefinedAfter()
 	{
 		var statements = assertParsesWithoutDiagnostics("""

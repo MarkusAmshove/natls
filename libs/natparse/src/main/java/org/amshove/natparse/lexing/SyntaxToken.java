@@ -101,6 +101,22 @@ public class SyntaxToken implements IPosition
 		return identifierName;
 	}
 
+	/**
+	 * Returns the token source as symbol name (all uppercase) trimmed to the given length.</br>
+	 * This is useful to compare e.g. subroutine names which only have 32 significant characters.</br>
+	 * The resulting name will not contain trailing space.
+	 */
+	public String trimmedSymbolName(int maxLength)
+	{
+		var name = symbolName();
+		if(name.length() < maxLength)
+		{
+			return name;
+		}
+
+		return name.substring(0, maxLength).trim();
+	}
+
 	public SyntaxToken(SyntaxKind kind, int offset, int lineOffset, int line, String source, Path filePath)
 	{
 		this.kind = kind;
