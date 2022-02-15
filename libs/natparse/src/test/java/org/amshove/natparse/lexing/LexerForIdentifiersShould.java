@@ -168,6 +168,16 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 		);
 	}
 
+	@Test
+	void allowCStarInQualifiedVariables()
+	{
+		assertTokens(
+			"#FIRST-IDENTIFIER-HERE.C*SECOND-IDENTIFIER-HERE END",
+			token(SyntaxKind.IDENTIFIER),
+			token(SyntaxKind.END)
+		);
+	}
+
 	@TestFactory
 	Iterable<DynamicTest> recognizeQualifiedVariables()
 	{

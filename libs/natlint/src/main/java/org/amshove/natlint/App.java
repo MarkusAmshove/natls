@@ -123,6 +123,11 @@ public class App
 					allDiagnostics.addAll(linterDiagnostics.toList());
 
 					allDiagnostics.forEach(d -> {
+						if(noWarn && d.severity() == DiagnosticSeverity.WARNING)
+						{
+							return;
+						}
+
 						var count = diagnosticsPerType.computeIfAbsent(d.message(), (k) -> 0);
 						count++;
 						diagnosticsPerType.replace(d.message(), count);

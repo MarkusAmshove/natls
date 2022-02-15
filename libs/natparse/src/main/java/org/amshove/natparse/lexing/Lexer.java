@@ -339,8 +339,15 @@ public class Lexer
 			scanner.advance();
 		}
 
+		var isQualified = false;
+
 		while (!scanner.isAtEnd() && !isLineEnd() && isNoWhitespace() && isValidIdentifierCharacter(scanner.peek()))
 		{
+			if(scanner.peek() == '.')
+			{
+				isQualified = true;
+			}
+
 			if(scanner.peek() == '/' && scanner.peek(1) == '*')
 			{
 				// Slash is a valid character for identifiers, but an asterisk is not.
@@ -373,6 +380,18 @@ public class Lexer
 			}
 		}
 
+		// Handling for C*, T*, P*
+		var cStarAtStart = scanner.lexemeLength() == 1 && scanner.peek() == '*';
+		var cStarQualified = isQualified && scanner.peek() == '*' && scanner.peek(-2) == '.';
+		if (cStarAtStart || cStarQualified)
+		{
+			scanner.advance();
+			while (!scanner.isAtEnd() && !isLineEnd() && isNoWhitespace() && isValidIdentifierCharacter(scanner.peek()))
+			{
+				scanner.advance();
+			}
+		}
+
 		if(scanner.peek(-1) == '.')
 		{
 			createAndAdd(SyntaxKind.LABEL_IDENTIFIER);
@@ -396,6 +415,7 @@ public class Lexer
 			return;
 		}
 
+		var isQualified = false;
 		SyntaxKind kindHint = null;
 		scanner.start();
 		var dashCount = 0;
@@ -405,11 +425,12 @@ public class Lexer
 			// Characters from which we can be sure that we're dealing with an identifier
 			switch (scanner.peek())
 			{
+				case '.':
+					isQualified = true;
 				case '@':
 				case '$':
 				case '&':
 				case '#':
-				case '.':
 					kindHint = SyntaxKind.IDENTIFIER;
 					break;
 				case '-':
@@ -464,8 +485,10 @@ public class Lexer
 			kindHint = SyntaxKind.LABEL_IDENTIFIER;
 		}
 
-		// Handling for C* count variables
-		if (scanner.lexemeLength() == 1 && scanner.peek() == '*')
+		// Handling for C*, T*, P*
+		var cStarAtStart = scanner.lexemeLength() == 1 && scanner.peek() == '*';
+		var cStarQualified = isQualified && scanner.peek() == '*' && scanner.peek(-2) == '.';
+		if (cStarAtStart || cStarQualified)
 		{
 			scanner.advance();
 			while (!scanner.isAtEnd() && !isLineEnd() && isNoWhitespace() && isValidIdentifierCharacter(scanner.peek()))
