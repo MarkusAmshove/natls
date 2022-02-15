@@ -44,7 +44,6 @@ class SubroutineNode extends StatementListNode implements ISubroutineNode
 	{
 		for (var statement : statementListNode.statements())
 		{
-			addNode((BaseSyntaxNode) statement);
 			addStatement((StatementNode) statement);
 		}
 		body = statementListNode;

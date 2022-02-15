@@ -290,7 +290,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			if (unresolvedReference instanceof InternalPerformNode internalPerformNode)
 			{
-				var foundModule = sideloadModule(unresolvedReference.token().symbolName(), internalPerformNode.tokenNode());
+				var foundModule = sideloadModule(unresolvedReference.token().trimmedSymbolName(32), internalPerformNode.tokenNode());
 				if (foundModule != null)
 				{
 					var externalPerform = new ExternalPerformNode(((InternalPerformNode) unresolvedReference));

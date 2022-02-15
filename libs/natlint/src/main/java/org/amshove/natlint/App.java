@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class App
 {
@@ -213,8 +214,14 @@ public class App
 		message.append(colored("= ", severity));
 		message.append(colored(diagnostic.severity().toString(), severity));
 		message.append(colored(": ", severity));
-		message.append(colored(diagnostic.message(), severity));
+		message.append(colored(splitMessage(diagnostic.message(), offsetInLine), severity));
 		return message.toString();
+	}
+
+	private String splitMessage(String message, int offset)
+	{
+		var splitMessage = message.split("\n");
+		return Arrays.stream(splitMessage).collect(Collectors.joining("\n" + " ".repeat(offset)));
 	}
 
 	private String readDiagnosticSourceLine(IDiagnostic diagnostic)

@@ -72,6 +72,6 @@ public class NaturalProjectFileIndexer
 			throw new RuntimeException("Could not find keyword SUBROUTINE after DEFINE");
 		}
 
-		return lexemes.peek().symbolName();
+		return lexemes.peek().trimmedSymbolName(32);
 	}
 }
