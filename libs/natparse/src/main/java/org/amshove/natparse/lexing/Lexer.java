@@ -462,8 +462,10 @@ public class Lexer
 		{
 			// TODO(lexermode): This is only needed because the Define Data Parser relies on DataFormats to be identifiers currently.
 			//		With a fitting lexer mode we can build this better.
+			var somethingAsideOfCommaOrDotConsumed = false;
 			while (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd() && Character.isDigit(scanner.peek()))
 			{
+				somethingAsideOfCommaOrDotConsumed = true;
 				scanner.advance();
 			}
 			if (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd() && scanner.peek() == '.' || scanner.peek() == ',')
@@ -472,11 +474,17 @@ public class Lexer
 			}
 			while (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd() && Character.isDigit(scanner.peek()))
 			{
+				somethingAsideOfCommaOrDotConsumed = true;
 				scanner.advance();
 			}
 			if (mightBeDataFormat(scanner.lexemeText()))
 			{
 				kindHint = SyntaxKind.IDENTIFIER;
+			}
+
+			if(!somethingAsideOfCommaOrDotConsumed)
+			{
+				scanner.advance(-1); // If we didn't find anything that we need, roll back the ./,
 			}
 		}
 

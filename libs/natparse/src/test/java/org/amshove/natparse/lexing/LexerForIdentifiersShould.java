@@ -178,6 +178,19 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 		);
 	}
 
+	@Test
+	void notIncludeTheCommaInArrayIndexNotation()
+	{
+		assertTokens("LAPDA.LAVARIABLE(I-INDEX-VAR,*)",
+			token(SyntaxKind.IDENTIFIER),
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.IDENTIFIER, "I-INDEX-VAR"),
+			token(SyntaxKind.COMMA),
+			token(SyntaxKind.ASTERISK),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
 	@TestFactory
 	Iterable<DynamicTest> recognizeQualifiedVariables()
 	{
