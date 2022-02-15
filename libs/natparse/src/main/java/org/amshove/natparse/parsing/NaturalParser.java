@@ -114,6 +114,7 @@ public class NaturalParser
 		{
 			if(unresolvedReference.referencingToken().symbolName().startsWith("&"))
 			{
+				// Copycode parameter
 				continue;
 			}
 

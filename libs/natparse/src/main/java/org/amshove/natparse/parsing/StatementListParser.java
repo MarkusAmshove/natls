@@ -296,8 +296,11 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					var externalPerform = new ExternalPerformNode(((InternalPerformNode) unresolvedReference));
 					((BaseSyntaxNode) unresolvedReference.parent()).replaceChild((BaseSyntaxNode) unresolvedReference, externalPerform);
 					externalPerform.setReference(foundModule);
-					resolvedReferences.add(unresolvedReference);
 				}
+
+				// We mark the reference as resolved even though it might not be found.
+				// We do this, because the `sideloadModule` already reports a diagnostic.
+				resolvedReferences.add(unresolvedReference);
 			}
 		}
 
