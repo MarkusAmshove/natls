@@ -66,6 +66,7 @@ class DataDefinitionModule implements IDataDefinitionModule
 	@Override
 	public IDdmField findField(String name)
 	{
+		name = name.contains(".") ? name.substring(name.indexOf(".") + 1) : name;
 		return findField(name, fields);
 	}
 
