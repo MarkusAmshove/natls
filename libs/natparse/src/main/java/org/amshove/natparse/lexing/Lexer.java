@@ -17,6 +17,8 @@ public class Lexer
 	private Path filePath;
 	private IPosition relocatedDiagnosticPosition;
 
+	private boolean inParens;
+
 	private List<LexerDiagnostic> diagnostics;
 
 	public TokenList lex(String source, Path filePath)
@@ -51,9 +53,11 @@ public class Lexer
 					continue;
 
 				case '(':
+					inParens = true;
 					createAndAddCurrentSingleToken(SyntaxKind.LPAREN);
 					continue;
 				case ')':
+					inParens = false;
 					createAndAddCurrentSingleToken(SyntaxKind.RPAREN);
 					continue;
 				case '[':
@@ -386,6 +390,12 @@ public class Lexer
 
 	private void consumeIdentifierOrKeyword()
 	{
+		if(inParens && scanner.peekText("EM="))
+		{
+			editorMask();
+			return;
+		}
+
 		SyntaxKind kindHint = null;
 		scanner.start();
 		var dashCount = 0;
@@ -491,6 +501,29 @@ public class Lexer
 				createAndAdd(SyntaxKind.IDENTIFIER_OR_KEYWORD);
 			}
 		}
+	}
+
+	private void editorMask()
+	{
+		scanner.start();
+		scanner.advance(3); // EM=
+		var isInString = false;
+		while(!scanner.isAtEnd() && scanner.peek() != ')')
+		{
+			if(scanner.peek() == '\'' || scanner.peek() == '"')
+			{
+				isInString = !isInString;
+			}
+
+			if(isWhitespace(0) && !isInString)
+			{
+				break;
+			}
+
+			scanner.advance();
+		}
+
+		createAndAdd(SyntaxKind.EDITOR_MASK);
 	}
 
 	private boolean isNoWhitespace()

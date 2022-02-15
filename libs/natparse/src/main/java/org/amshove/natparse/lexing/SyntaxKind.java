@@ -35,6 +35,7 @@ public enum SyntaxKind
 	IDENTIFIER,
 	LABEL_IDENTIFIER,
 	COMMENT,
+	EDITOR_MASK,
 
 	// System variables
 	TIMX,

@@ -130,4 +130,19 @@ public class SourceTextScanner
 	{
 		return currentOffset + offset >= source.length;
 	}
+
+	public boolean peekText(String text)
+	{
+		for (var i = 0; i < text.length(); i++)
+		{
+			var expected = text.charAt(i);
+			var gotten = source[currentOffset + i];
+			if (willPassEnd(i) || expected != gotten)
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
 }

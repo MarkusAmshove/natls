@@ -69,14 +69,7 @@ public class LexerForStringsShould extends AbstractLexerTest
 			SyntaxKind.IDENTIFIER_OR_KEYWORD,
 			SyntaxKind.TIMX,
 			SyntaxKind.LPAREN,
-			SyntaxKind.IDENTIFIER_OR_KEYWORD, // EM
-			SyntaxKind.EQUALS,
-			SyntaxKind.STRING, // ' '
-			SyntaxKind.IDENTIFIER_OR_KEYWORD, // HH
-			SyntaxKind.STRING, // ':'
-			SyntaxKind.IDENTIFIER_OR_KEYWORD, // II
-			SyntaxKind.STRING, // ':'
-			SyntaxKind.IDENTIFIER_OR_KEYWORD, // SS
+			SyntaxKind.EDITOR_MASK,
 			SyntaxKind.RPAREN,
 			SyntaxKind.IDENTIFIER_OR_KEYWORD, // TO
 			SyntaxKind.IDENTIFIER
