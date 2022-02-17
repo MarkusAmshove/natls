@@ -32,6 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
@@ -492,82 +493,81 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		var file = findNaturalFile(filePath);
 		var module = file.module();
-		IDefineData defineData;
-		if (!(module instanceof IHasDefineData hasDefineData) || hasDefineData.defineData() == null)
-		{
-			return List.of();
-		}
-		defineData = hasDefineData.defineData();
 
-		var token = findPreviousTokenOfPosition(filePath, completionParams.getPosition());
-		if (token != null && token.kind() == SyntaxKind.CALLNAT)
-		{
-			return findNaturalFile(filePath).getLibrary().getModulesOfType(NaturalFileType.SUBPROGRAM, true)
-				.stream()
-				.map(LanguageServerFile::module)
-				.map(calledModule -> {
-					var completionItem = new CompletionItem(calledModule.name());
-					completionItem.setKind(CompletionItemKind.Class);
-					completionItem.setInsertTextFormat(InsertTextFormat.Snippet);
-					var insertText = "'${0:%s}'".formatted(calledModule.name());
-
-					if (!(calledModule instanceof IHasDefineData calledHasDefineData))
-					{
-						return completionItem;
-					}
-
-					var calledDefineData = calledHasDefineData.defineData();
-
-					var parameter = calledDefineData.variables().stream().filter(v -> v.scope() == VariableScope.PARAMETER && v.level() == 1).toList();
-					var parameterIndex = 1;
-					for (var aParameter : parameter)
-					{
-						insertText += " ${%d:%s}".formatted(parameterIndex++, aParameter.name());
-					}
-					completionItem.setInsertText(insertText);
-					return completionItem;
-				})
-				.toList();
-		}
-
-		return defineData.variables().stream()
+		return module.referencableNodes().stream()
 			.filter(v -> !(v instanceof IRedefinitionNode)) // this is the `REDEFINE #VAR`, which results in the variable being doubled in completion
-			.map(v -> {
-				var item = new CompletionItem();
-				item.setKind(CompletionItemKind.Variable);
-
-				var variableName = v.name();
-
-				item.setLabel(variableName);
-				var label = "";
-				if (v instanceof ITypedVariableNode typedNode)
-				{
-					label = variableName + " :" + typedNode.type().toShortString();
-					item.setInsertText(variableName);
-				}
-				if (v instanceof IGroupNode groupNode)
-				{
-					label = variableName + " : Group";
-					item.setInsertText(variableName);
-				}
-
-				if (!v.position().filePath().equals(defineData.position().filePath()))
-				{
-					label += " (%s)".formatted(v.position().fileNameWithoutExtension());
-				}
-
-				item.setSortText(
-					v.position().filePath().equals(filePath)
-						? "1"
-						: "2"
-				);
-
-				item.setLabel(label);
-				item.setDocumentation(new MarkupContent(MarkupKind.MARKDOWN, createHoverMarkdownText(v)));
-
-				return item;
-			})
+			.map(this::createCompletionItem)
+			.filter(Objects::nonNull)
 			.toList();
+	}
+
+	private CompletionItem createCompletionItem(IReferencableNode referencableNode)
+	{
+		try
+		{
+			if (referencableNode instanceof IVariableNode variableNode)
+			{
+				return createCompletionItem(variableNode);
+			}
+
+			if (referencableNode instanceof ISubroutineNode subroutineNode)
+			{
+				return createCompletionItem(subroutineNode);
+			}
+		}
+		catch (Exception e)
+		{
+			client.logMessage(ClientMessage.error(e.getMessage()));
+		}
+
+		return null;
+	}
+
+	private CompletionItem createCompletionItem(IVariableNode variableNode)
+	{
+		var item = new CompletionItem();
+		var variableName = variableNode.name();
+
+		item.setLabel(variableName);
+		var label = "";
+		if (variableNode instanceof ITypedVariableNode typedNode)
+		{
+			label = variableName + " :" + typedNode.type().toShortString();
+			item.setInsertText(variableName);
+		}
+		if (variableNode instanceof IGroupNode)
+		{
+			label = variableName + " : Group";
+			item.setInsertText(variableName);
+		}
+
+		var isImported = NodeUtil.findFirstParentOfType(variableNode, IUsingNode.class) != null;
+
+		if (isImported)
+		{
+			label += " (%s)".formatted(variableNode.position().fileNameWithoutExtension());
+		}
+
+		item.setSortText(
+			isImported
+				? "1"
+				: "2"
+		);
+
+		item.setLabel(label);
+		item.setDocumentation(new MarkupContent(MarkupKind.MARKDOWN, createHoverMarkdownText(variableNode)));
+
+		return item;
+	}
+
+	private CompletionItem createCompletionItem(ISubroutineNode subroutineNode)
+	{
+		var item = new CompletionItem();
+		item.setKind(CompletionItemKind.Method);
+		item.setInsertText(subroutineNode.declaration().trimmedSymbolName(32));
+		item.setLabel(subroutineNode.declaration().symbolName());
+
+		return item;
 	}
 
 	public LanguageServerFile findNaturalFile(String library, String name)
