@@ -71,7 +71,7 @@ public class SubroutineNameMismatchAnalyzerShould extends AbstractAnalyzerTest
 	{
 		testDiagnostics(
 			project.findModule("SUB2"),
-			expectNoDiagnosticOfType(SubroutineNameMismatchAnalyzer.SUBROUTINE_NAME_MISMATCH)
+			expectDiagnostic(2, SubroutineNameMismatchAnalyzer.SUBROUTINE_NAME_MISMATCH)
 		);
 	}
 }

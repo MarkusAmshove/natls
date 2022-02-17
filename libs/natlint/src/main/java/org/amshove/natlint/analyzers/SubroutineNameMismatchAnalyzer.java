@@ -7,9 +7,7 @@ import org.amshove.natlint.api.ILinterContext;
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.ReadOnlyList;
-import org.amshove.natparse.natural.IExternalPerformNode;
-import org.amshove.natparse.natural.IInternalPerformNode;
-import org.amshove.natparse.natural.ISyntaxNode;
+import org.amshove.natparse.natural.*;
 
 public class SubroutineNameMismatchAnalyzer extends AbstractAnalyzer
 {
@@ -57,12 +55,13 @@ public class SubroutineNameMismatchAnalyzer extends AbstractAnalyzer
 	{
 		var performNode = (IExternalPerformNode)syntaxNode;
 
-		if(performNode.reference() == null)
+		var reference = performNode.reference();
+		if(reference == null)
 		{
 			return;
 		}
 
-		analyze(performNode.referencingToken(), performNode.referencingToken().symbolName(), performNode.reference().file().getReferableName(), context);
+		analyze(performNode.referencingToken(), performNode.referencingToken().symbolName(), reference.file().getOriginalName(), context);
 	}
 
 	private void analyze(IPosition reportPosition, String callerName, String definitionName, IAnalyzeContext context)
