@@ -2,7 +2,6 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
-import org.amshove.natparse.natural.IHasBody;
 import org.amshove.natparse.natural.IReferencableNode;
 import org.amshove.natparse.natural.IStatementListNode;
 import org.amshove.natparse.natural.ISymbolReferenceNode;
@@ -16,6 +15,12 @@ import java.util.List;
 class StatementListParser extends AbstractParser<IStatementListNode>
 {
 	private List<ISymbolReferenceNode> unresolvedReferences;
+	private List<IReferencableNode> referencableNodes;
+
+	public List<IReferencableNode> getReferencableNodes()
+	{
+		return referencableNodes;
+	}
 
 	StatementListParser(IModuleProvider moduleProvider)
 	{
@@ -31,8 +36,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	protected IStatementListNode parseInternal()
 	{
 		unresolvedReferences = new ArrayList<>();
+		referencableNodes = new ArrayList<>();
 		var statementList = statementList();
-		resolveUnresolvedInternalPerforms(statementList);
+		resolveUnresolvedInternalPerforms();
 		if (!shouldRelocateDiagnostics())
 		{
 			// If diagnostics should be relocated, we're a copycode. So let the includer resolve it themselves.
@@ -137,6 +143,8 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		consumeMandatory(subroutine, SyntaxKind.END_SUBROUTINE);
 
+		referencableNodes.add(subroutine);
+
 		return subroutine;
 	}
 
@@ -224,6 +232,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					}
 				}
 				unresolvedReferences.addAll(nestedParser.unresolvedReferences);
+				referencableNodes.addAll(nestedParser.referencableNodes);
 				include.setBody(statementList.result(),
 					shouldRelocateDiagnostics()
 						? relocatedDiagnosticPosition
@@ -307,21 +316,11 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		unresolvedReferences.removeAll(resolvedReferences);
 	}
 
-	private void resolveUnresolvedInternalPerforms(IStatementListNode statementListNode)
+	private void resolveUnresolvedInternalPerforms()
 	{
 		var resolvedReferences = new ArrayList<ISymbolReferenceNode>();
-		for (var statement : statementListNode.statements())
+		for (var referencableNode : referencableNodes)
 		{
-			if (statement instanceof IHasBody hasBody)
-			{
-				resolveUnresolvedInternalPerforms(hasBody.body());
-			}
-
-			if (!(statement instanceof IReferencableNode referencable))
-			{
-				continue;
-			}
-
 			for (var unresolvedReference : unresolvedReferences)
 			{
 				if (!(unresolvedReference instanceof InternalPerformNode))
@@ -330,9 +329,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 				}
 
 				var unresolvedPerformName = unresolvedReference.token().trimmedSymbolName(32);
-				if (unresolvedPerformName.equals(referencable.declaration().trimmedSymbolName(32)))
+				if (unresolvedPerformName.equals(referencableNode.declaration().trimmedSymbolName(32)))
 				{
-					referencable.addReference(unresolvedReference);
+					referencableNode.addReference(unresolvedReference);
 					resolvedReferences.add(unresolvedReference);
 				}
 			}

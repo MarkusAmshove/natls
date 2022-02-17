@@ -1,0 +1,6 @@
+define data local
+end-define
+
+INCLUDE DECLSUB
+
+end

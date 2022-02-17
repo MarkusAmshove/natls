@@ -1,6 +1,7 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.natural.ISubprogram;
+import org.amshove.natparse.natural.ISubroutineNode;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.testhelpers.ProjectName;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,13 @@ public class CopyCodesShould extends ParserIntegrationTest
 	void notReportDiagnosticsForUnresolvedReferences(@ProjectName("copycodetests") NaturalProject project)
 	{
 		assertParsesWithoutAnyDiagnostics(project.findModule("LIBONE", "NODIAG"));
+	}
+
+	@Test
+	void exportDeclaredSubroutinesUpToTheIncludingModule(@ProjectName("copycodetests") NaturalProject project)
+	{
+		var module = assertParsesWithoutAnyDiagnostics(project.findModule("LIBONE", "USEDECL"));
+		assertThat(module.referencableNodes()).anyMatch(n -> n instanceof ISubroutineNode subroutine && subroutine.declaration().symbolName().equals("INSIDE-CCODE"));
 	}
 
 	@Test

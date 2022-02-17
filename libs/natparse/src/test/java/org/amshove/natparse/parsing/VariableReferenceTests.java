@@ -2,6 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.natural.IIncludeNode;
 import org.amshove.natparse.natural.ISubprogram;
+import org.amshove.natparse.natural.IVariableNode;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.testhelpers.ProjectName;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,13 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 public class VariableReferenceTests extends ParserIntegrationTest
 {
+	@Test
+	void referencableVariablesShouldBeExported(@ProjectName("variablereferencetests") NaturalProject project)
+	{
+		var subprogram = assertFileParsesAs(project.findModule("SUBMOD"), ISubprogram.class);
+		assertThat(subprogram.referencableNodes()).anyMatch(r -> r instanceof IVariableNode variableNode && variableNode.name().equals("#LOCALVAR"));
+	}
+
 	@Test
 	void localVariablesShouldBeReferenced(@ProjectName("variablereferencetests") NaturalProject project)
 	{

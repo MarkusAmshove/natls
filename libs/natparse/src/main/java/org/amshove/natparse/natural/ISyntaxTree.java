@@ -43,7 +43,7 @@ public interface ISyntaxTree extends Iterable<ISyntaxNode>
 	}
 
 	@SuppressWarnings("unchecked")
-	default <T extends ISyntaxNode> Stream<T> descendantsOfType(Class<T> type)
+	default <T extends ISyntaxNode> Stream<T> directDescendantsOfType(Class<T> type)
 	{
 		return descendants().stream()
 			.filter(n -> type.isAssignableFrom(n.getClass()))

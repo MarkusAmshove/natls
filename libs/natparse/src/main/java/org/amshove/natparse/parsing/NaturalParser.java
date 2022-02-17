@@ -3,11 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.TokenList;
-import org.amshove.natparse.natural.IDefineData;
-import org.amshove.natparse.natural.INaturalModule;
-import org.amshove.natparse.natural.IStatementListNode;
-import org.amshove.natparse.natural.ISymbolReferenceNode;
-import org.amshove.natparse.natural.ISyntaxNode;
+import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
 
@@ -51,12 +47,14 @@ public class NaturalParser
 			var defineData = result.result();
 			naturalModule.setDefineData(defineData);
 			topLevelNodes.add(defineData);
+			naturalModule.addReferencableNodes(defineData.variables().stream().map(n -> (IReferencableNode)n).toList());
 		}
 
 		if (file.getFiletype().hasBody())
 		{
 			var statementParser = new StatementListParser(moduleProviderToUse);
 			var result = statementParser.parse(tokens);
+			naturalModule.addReferencableNodes(statementParser.getReferencableNodes());
 			addRelevantParserDiagnostics(naturalModule, result);
 			naturalModule.setBody(result.result());
 			resolveVariableReferences(statementParser, naturalModule);

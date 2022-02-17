@@ -17,6 +17,7 @@ public class NaturalModule
 	private IDefineData defineData;
 	private final List<IDiagnostic> diagnostics = new ArrayList<>();
 	private final List<IModuleReferencingNode> callers = new ArrayList<>();
+	private final List<IReferencableNode> referencableNodes = new ArrayList<>();
 	private IStatementListNode body;
 	private ISyntaxTree tree;
 
@@ -118,5 +119,15 @@ public class NaturalModule
 	void setSyntaxTree(ISyntaxTree tree)
 	{
 		this.tree = tree;
+	}
+
+	void addReferencableNodes(List<IReferencableNode> nodes)
+	{
+		referencableNodes.addAll(nodes);
+	}
+
+	public ReadOnlyList<IReferencableNode> referencableNodes()
+	{
+		return ReadOnlyList.from(referencableNodes);
 	}
 }

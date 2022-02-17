@@ -19,7 +19,7 @@ class IncludeNode extends ModuleReferencingNode implements IIncludeNode
 	{
 		addNode((StatementListNode) body);
 		this.body = body;
-		body.descendantsOfType(ITokenNode.class).forEach(tokenNode -> {
+		body.directDescendantsOfType(ITokenNode.class).forEach(tokenNode -> {
 			tokenNode.token().setDiagnosticPosition(diagnosticPosition);
 		});
 	}

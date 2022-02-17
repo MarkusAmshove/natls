@@ -23,7 +23,6 @@ import org.amshove.natparse.parsing.DefineDataParser;
 import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 
@@ -65,23 +64,20 @@ public class NaturalLanguageService implements LanguageClientAware
 		initialized = true;
 	}
 
-	public List<Either<SymbolInformation, DocumentSymbol>> findSymbolsInFile(TextDocumentIdentifier textDocument)
+	public List<SymbolInformation> findSymbolsInFile(TextDocumentIdentifier textDocument)
 	{
 		var filepath = LspUtil.uriToPath(textDocument.getUri());
-		var tokens = lexPath(filepath);
-		var defineData = parseDefineData(tokens);
-		if (defineData != null)
-		{
-			return defineData.variables().stream()
-				.map(variable -> convertToSymbolInformation(variable.declaration(), filepath))
-				.map(Either::<SymbolInformation, DocumentSymbol>forLeft)
-				.toList();
-		}
+		var module = findNaturalFile(filepath).module();
+		var referencableNodes = module.referencableNodes();
 
-		return getVariableDeclarationTokens(tokens)
-			.filter(t -> t.kind() == SyntaxKind.IDENTIFIER_OR_KEYWORD || t.kind() == SyntaxKind.IDENTIFIER)
-			.map(token -> convertToSymbolInformation(token, filepath))
-			.map(Either::<SymbolInformation, DocumentSymbol>forLeft)
+		return referencableNodes
+			.stream()
+			.map(n -> new SymbolInformation(
+				n.declaration().symbolName(),
+				n instanceof IVariableNode ? SymbolKind.Variable : SymbolKind.Method,
+				LspUtil.toLocation(n),
+				n.position().fileNameWithoutExtension()
+			))
 			.toList();
 	}
 

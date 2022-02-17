@@ -13,6 +13,7 @@ public interface INaturalModule
 	boolean isTestCase();
 
 	ISyntaxTree syntaxTree();
+	ReadOnlyList<IReferencableNode> referencableNodes();
 
 	void removeCaller(IModuleReferencingNode node);
 	void addCaller(IModuleReferencingNode caller);
