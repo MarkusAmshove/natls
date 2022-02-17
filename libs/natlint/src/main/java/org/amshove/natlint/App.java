@@ -21,6 +21,8 @@ public class App
 {
 	private static String singleFile; // TODO: Implement proper
 	private static boolean noWarn;
+	private static boolean printStatistic;
+	private static String onlyDiagId;
 
 	private final Path projectFile;
 	private final IFilesystem filesystem;
@@ -51,11 +53,28 @@ public class App
 			throw new RuntimeException("Project root could not be determined. .natural or _naturalBuild file not found");
 		}
 
+		var singleIndex = arguments.indexOf("--single");
 		if(arguments.remove("--single"))
 		{
-			singleFile = arguments.get(0);
+			singleFile = arguments.get(singleIndex);
+			arguments.remove(singleIndex);
 		}
 		noWarn = arguments.remove("--no-warn");
+		printStatistic = arguments.remove("--statistic");
+
+		var diagIdIndex = arguments.indexOf("--diag");
+		if(arguments.remove("--diag"))
+		{
+			onlyDiagId = arguments.get(diagIdIndex);
+			arguments.remove(diagIdIndex);
+		}
+
+		if(!arguments.isEmpty())
+		{
+			System.out.println("Dangling arguments:");
+			arguments.forEach(System.out::println);
+			System.exit(1);
+		}
 
 		System.out.printf("""
 			     .@@@@@@@@@@@@@@@&
@@ -129,6 +148,11 @@ public class App
 							return;
 						}
 
+						if(onlyDiagId != null && !d.id().equalsIgnoreCase(onlyDiagId))
+						{
+							return;
+						}
+
 						var count = diagnosticsPerType.computeIfAbsent(d.message(), (k) -> 0);
 						count++;
 						diagnosticsPerType.replace(d.message(), count);
@@ -155,9 +179,13 @@ public class App
 		System.out.println("Files checked: " + filesChecked);
 		System.out.println("Total diagnostics: " + totalDiagnostics);
 		System.out.println();
-		diagnosticsPerType.entrySet().stream().map((entry) -> new DiagnosticByCount(entry.getKey(), entry.getValue())).sorted(Comparator.comparingInt(DiagnosticByCount::count))
-			.toList()
-			.forEach(d -> System.out.println(d.message + "|" + d.count));
+
+		if(printStatistic)
+		{
+			diagnosticsPerType.entrySet().stream().map((entry) -> new DiagnosticByCount(entry.getKey(), entry.getValue())).sorted(Comparator.comparingInt(DiagnosticByCount::count))
+				.toList()
+				.forEach(d -> System.out.println(d.message + "|" + d.count));
+		}
 	}
 
 	private static final Map<DiagnosticSeverity, String> SEVERITY_COLOR_MAP = Map.of(
@@ -178,6 +206,11 @@ public class App
 		for (var diagnostic : sortedDiagnostics)
 		{
 			if(diagnostic.severity() == DiagnosticSeverity.WARNING && noWarn)
+			{
+				continue;
+			}
+
+			if(onlyDiagId != null && !diagnostic.id().equalsIgnoreCase(onlyDiagId))
 			{
 				continue;
 			}
