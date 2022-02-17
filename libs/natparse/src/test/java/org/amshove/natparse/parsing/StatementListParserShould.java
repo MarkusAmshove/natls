@@ -168,6 +168,119 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(endNode.descendants()).isNotEmpty();
 	}
 
+	@Test
+	void parseIgnore()
+	{
+		assertParsesSingleStatement("IGNORE", IIgnoreNode.class);
+	}
+
+	@Test
+	void parseASubroutine()
+	{
+		var subroutine = assertParsesSingleStatement("""
+               DEFINE SUBROUTINE MY-SUBROUTINE
+                   IGNORE
+               END-SUBROUTINE
+            """, ISubroutineNode.class);
+
+		assertThat(subroutine.declaration().symbolName()).isEqualTo("MY-SUBROUTINE");
+		assertThat(subroutine.references()).isEmpty();
+		assertThat(subroutine.body().statements()).hasSize(1);
+	}
+
+	@Test
+	void parseInternalPerformNodes()
+	{
+		ignoreModuleProvider();
+		var perform = assertParsesSingleStatement("PERFORM MY-SUBROUTINE", IInternalPerformNode.class);
+		assertThat(perform.token().symbolName()).isEqualTo("MY-SUBROUTINE");
+		assertThat(perform.reference()).isNull();
+	}
+
+	@Test
+	void parseInternalPerformNodesWithReference()
+	{
+		var statements = assertParsesWithoutDiagnostics("""
+			DEFINE SUBROUTINE MY-SUBROUTINE
+				IGNORE
+			END-SUBROUTINE
+
+			PERFORM MY-SUBROUTINE
+			""");
+
+		assertThat(statements.statements()).hasSize(2);
+		var subroutine = statements.statements().get(0);
+		var perform = assertNodeType(statements.statements().get(1), IInternalPerformNode.class);
+
+		assertThat(perform.token().symbolName()).isEqualTo("MY-SUBROUTINE");
+		assertThat(perform.reference()).isEqualTo(subroutine);
+	}
+
+	@Test
+	void resolveInternalSubroutinesWithLongNames()
+	{
+		var statements = assertParsesWithoutDiagnostics("""
+			DEFINE SUBROUTINE THIS-HAS-MORE-THAN-THIRTY-TWO-CHARACTERS
+				IGNORE
+			END-SUBROUTINE
+
+			PERFORM THIS-HAS-MORE-THAN-THIRTY-TWO-CHARACTERS-BUT-IT-WORKS-I-SHOULD-NEVER-DO-THAT
+			""");
+
+		assertThat(statements.statements()).hasSize(2);
+		var subroutine = statements.statements().get(0);
+		var perform = assertNodeType(statements.statements().get(1), IInternalPerformNode.class);
+
+		assertThat(perform.token().symbolName()).isEqualTo("THIS-HAS-MORE-THAN-THIRTY-TWO-CHARACTERS-BUT-IT-WORKS-I-SHOULD-NEVER-DO-THAT");
+		assertThat(perform.token().trimmedSymbolName(32)).isEqualTo("THIS-HAS-MORE-THAN-THIRTY-TWO-CH");
+		assertThat(perform.reference()).isEqualTo(subroutine);
+	}
+
+	@Test
+	void parseInternalPerformNodesWithReferenceWhenSubroutineIsDefinedAfter()
+	{
+		var statements = assertParsesWithoutDiagnostics("""
+			PERFORM MY-SUBROUTINE
+
+			DEFINE SUBROUTINE MY-SUBROUTINE
+				IGNORE
+			END-SUBROUTINE
+			""");
+
+		assertThat(statements.statements()).hasSize(2);
+		var perform = assertNodeType(statements.statements().get(0), IInternalPerformNode.class);
+		var subroutine = statements.statements().get(1);
+
+		assertThat(perform.token().symbolName()).isEqualTo("MY-SUBROUTINE");
+		assertThat(perform.reference()).isEqualTo(subroutine);
+	}
+
+	@Test
+	void notExportResolvedPerformCallsAsUnresolved()
+	{
+		var statements = assertParsesWithoutDiagnostics("""
+			PERFORM MY-SUBROUTINE
+
+			DEFINE SUBROUTINE MY-SUBROUTINE
+				IGNORE
+			END-SUBROUTINE
+			""");
+
+		assertThat(statements.statements()).hasSize(2);
+		assertThat(((StatementListParser) sut).getUnresolvedReferences()).isEmpty();
+	}
+
+	@Test
+	void parseExternalPerformCalls()
+	{
+		var calledSubroutine = new NaturalModule(null);
+		moduleProvider.addModule("EXTERNAL-SUB", calledSubroutine);
+
+		var perform = assertParsesSingleStatement("PERFORM EXTERNAL-SUB", IExternalPerformNode.class);
+		assertThat(perform.reference()).isEqualTo(calledSubroutine);
+		assertThat(calledSubroutine.callers()).contains(perform);
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);

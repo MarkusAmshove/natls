@@ -105,6 +105,7 @@ public class KeywordTable
 				case "format" -> SyntaxKind.FORMAT;
 				case "frac" -> SyntaxKind.FRAC;
 				case "full" -> SyntaxKind.FULL;
+				case "function" -> SyntaxKind.FUNCTION;
 				case "get" -> SyntaxKind.GET;
 				case "global" -> SyntaxKind.GLOBAL;
 				case "histogram" -> SyntaxKind.HISTOGRAM;
@@ -151,7 +152,9 @@ public class KeywordTable
 				case "perform" -> SyntaxKind.PERFORM;
 				case "pos" -> SyntaxKind.POS;
 				case "print" -> SyntaxKind.PRINT;
+				case "printer" -> SyntaxKind.PRINTER;
 				case "process" -> SyntaxKind.PROCESS;
+				case "prototype" -> SyntaxKind.PROTOTYPE;
 				case "read" -> SyntaxKind.READ;
 				case "redefine" -> SyntaxKind.REDEFINE;
 				case "reduce" -> SyntaxKind.REDUCE;
@@ -210,6 +213,8 @@ public class KeywordTable
 				case "when" -> SyntaxKind.WHEN;
 				case "while" -> SyntaxKind.WHILE;
 				case "with_cte" -> SyntaxKind.WITH_CTE;
+				case "window" -> SyntaxKind.WINDOW;
+				case "work" -> SyntaxKind.WORK;
 				case "write" -> SyntaxKind.WRITE;
 				default -> null;
 			};

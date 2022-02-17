@@ -47,23 +47,29 @@ public class AbstractLexerTest
 	protected void assertTokens(String source, List<ExpectedSyntaxToken> expectedTokens)
 	{
 		var lexemes = lexSource(source);
+		assertThat(lexemes.diagnostics()).as("Expected the source to lex without diagnostics").isEmpty();
+
+		var allTokens = lexemes.allTokens().stream().map(t -> t.kind().toString()).collect(Collectors.joining(", "));
+		var allTokensMessage = "All tokens: (%s)".formatted(allTokens);
+
 		for (var i = 0; i < expectedTokens.size(); i++)
 		{
 			var expectedToken = expectedTokens.get(i);
 			var actualToken = lexemes.peek();
 
 			assertThat(actualToken.kind())
-				.as("Expected Token %d to be [%s] but was [%s]: '%s'",
+				.as("Expected Token %d to be [%s] but was [%s]: '%s'. %s",
 					i + 1,
 					expectedToken.kind,
 					actualToken.kind(),
-					actualToken.source())
+					actualToken.source(),
+					allTokensMessage)
 				.isEqualTo(expectedToken.kind);
 
 			if (expectedToken.source != null)
 			{
 				assertThat(actualToken.source())
-					.as("Expected source [%s] but was [%s]", expectedToken.source(), actualToken.source())
+					.as("Expected source [%s] but was [%s]. %s", expectedToken.source(), actualToken.source(), allTokensMessage)
 					.isEqualTo(expectedToken.source);
 			}
 

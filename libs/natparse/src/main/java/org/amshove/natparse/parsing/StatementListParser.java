@@ -2,6 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
+import org.amshove.natparse.natural.IReferencableNode;
 import org.amshove.natparse.natural.IStatementListNode;
 import org.amshove.natparse.natural.ISymbolReferenceNode;
 
@@ -14,6 +15,12 @@ import java.util.List;
 class StatementListParser extends AbstractParser<IStatementListNode>
 {
 	private List<ISymbolReferenceNode> unresolvedReferences;
+	private List<IReferencableNode> referencableNodes;
+
+	public List<IReferencableNode> getReferencableNodes()
+	{
+		return referencableNodes;
+	}
 
 	StatementListParser(IModuleProvider moduleProvider)
 	{
@@ -29,7 +36,15 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	protected IStatementListNode parseInternal()
 	{
 		unresolvedReferences = new ArrayList<>();
-		return statementList();
+		referencableNodes = new ArrayList<>();
+		var statementList = statementList();
+		resolveUnresolvedInternalPerforms();
+		if (!shouldRelocateDiagnostics())
+		{
+			// If diagnostics should be relocated, we're a copycode. So let the includer resolve it themselves.
+			resolveUnresolvedExternalPerforms();
+		}
+		return statementList;
 	}
 
 	private StatementListNode statementList()
@@ -57,6 +72,28 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					case END:
 						statementList.addStatement(end());
 						break;
+					case DEFINE:
+						if (peekAny(1, List.of(SyntaxKind.WINDOW, SyntaxKind.WORK, SyntaxKind.PRINTER, SyntaxKind.FUNCTION, SyntaxKind.DATA, SyntaxKind.PROTOTYPE)))
+						{
+							tokens.advance();
+							tokens.advance();
+							break;
+						}
+						statementList.addStatement(subroutine());
+						break;
+					case END_SUBROUTINE:
+						return statementList;
+					case IGNORE:
+						statementList.addStatement(ignore());
+						break;
+					case PERFORM:
+						if(peek(1).kind() == SyntaxKind.BREAK)
+						{
+							tokens.advance();
+							break;
+						}
+						statementList.addStatement(perform());
+						break;
 					default:
 						// While the parser is incomplete, we just skip over everything we don't know yet
 						tokens.advance();
@@ -71,6 +108,44 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode perform() throws ParseError
+	{
+		var internalPerform = new InternalPerformNode();
+		unresolvedReferences.add(internalPerform);
+
+		consumeMandatory(internalPerform, SyntaxKind.PERFORM);
+		var symbolName = identifier();
+		var referenceNode = new SymbolReferenceNode(symbolName);
+		internalPerform.setReferenceNode(referenceNode);
+		internalPerform.addNode(referenceNode);
+
+		return internalPerform;
+	}
+
+	private StatementNode ignore() throws ParseError
+	{
+		var ignore = new IgnoreNode();
+		consumeMandatory(ignore, SyntaxKind.IGNORE);
+		return ignore;
+	}
+
+	private StatementNode subroutine() throws ParseError
+	{
+		var subroutine = new SubroutineNode();
+		consumeMandatory(subroutine, SyntaxKind.DEFINE);
+		consumeOptionally(subroutine, SyntaxKind.SUBROUTINE);
+		var nameToken = consumeMandatoryIdentifier(subroutine);
+		subroutine.setName(nameToken);
+
+		subroutine.setBody(statementList());
+
+		consumeMandatory(subroutine, SyntaxKind.END_SUBROUTINE);
+
+		referencableNodes.add(subroutine);
+
+		return subroutine;
 	}
 
 	private StatementNode end() throws ParseError
@@ -126,25 +201,58 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var referencedModule = sideloadModule(referencingToken.symbolName(), previousTokenNode());
 		include.setReferencedModule((NaturalModule) referencedModule);
 
-		if(referencedModule != null)
+		if (referencedModule != null)
 		{
 			try
 			{
 				var includedSource = Files.readString(referencedModule.file().getPath());
-				var tokens = new Lexer().lex(includedSource, referencedModule.file().getPath());
-				var nestedParser = new StatementListParser(moduleProvider);
-				var statementList = nestedParser.parse(tokens);
-				for (var diagnostic : statementList.diagnostics())
+				var lexer = new Lexer();
+				lexer.relocateDiagnosticPosition(referencingToken);
+				var tokens = lexer.lex(includedSource, referencedModule.file().getPath());
+
+				for (var diagnostic : tokens.diagnostics())
 				{
 					report(diagnostic);
 				}
+
+				var nestedParser = new StatementListParser(moduleProvider);
+				nestedParser.relocateDiagnosticPosition(
+					shouldRelocateDiagnostics()
+						? relocatedDiagnosticPosition
+						: referencingToken
+				);
+				var statementList = nestedParser.parse(tokens);
+
+				for (var diagnostic : statementList.diagnostics())
+				{
+					if (ParserError.isUnresolvedError(diagnostic.id()))
+					{
+						// Unresolved references will be resolved by the module including the copycode.
+						report(diagnostic);
+					}
+				}
 				unresolvedReferences.addAll(nestedParser.unresolvedReferences);
-				include.addNode((StatementListNode) statementList.result());
+				referencableNodes.addAll(nestedParser.referencableNodes);
+				include.setBody(statementList.result(),
+					shouldRelocateDiagnostics()
+						? relocatedDiagnosticPosition
+						: referencingToken
+				);
 			}
 			catch (IOException e)
 			{
 				throw new UncheckedIOException(e);
 			}
+		}
+		else
+		{
+			var unresolvedBody = new StatementListNode();
+			unresolvedBody.setParent(include);
+			include.setBody(unresolvedBody,
+				shouldRelocateDiagnostics()
+					? relocatedDiagnosticPosition
+					: referencingToken
+			);
 		}
 
 		return include;
@@ -181,5 +289,54 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	private boolean isNotCallnatOrFetchModule()
 	{
 		return !peekKind(SyntaxKind.STRING) && !peekKind(SyntaxKind.IDENTIFIER) && !peekKind(SyntaxKind.IDENTIFIER_OR_KEYWORD);
+	}
+
+	private void resolveUnresolvedExternalPerforms()
+	{
+		var resolvedReferences = new ArrayList<ISymbolReferenceNode>();
+
+		for (var unresolvedReference : unresolvedReferences)
+		{
+			if (unresolvedReference instanceof InternalPerformNode internalPerformNode)
+			{
+				var foundModule = sideloadModule(unresolvedReference.token().trimmedSymbolName(32), internalPerformNode.tokenNode());
+				if (foundModule != null)
+				{
+					var externalPerform = new ExternalPerformNode(((InternalPerformNode) unresolvedReference));
+					((BaseSyntaxNode) unresolvedReference.parent()).replaceChild((BaseSyntaxNode) unresolvedReference, externalPerform);
+					externalPerform.setReference(foundModule);
+				}
+
+				// We mark the reference as resolved even though it might not be found.
+				// We do this, because the `sideloadModule` already reports a diagnostic.
+				resolvedReferences.add(unresolvedReference);
+			}
+		}
+
+		unresolvedReferences.removeAll(resolvedReferences);
+	}
+
+	private void resolveUnresolvedInternalPerforms()
+	{
+		var resolvedReferences = new ArrayList<ISymbolReferenceNode>();
+		for (var referencableNode : referencableNodes)
+		{
+			for (var unresolvedReference : unresolvedReferences)
+			{
+				if (!(unresolvedReference instanceof InternalPerformNode))
+				{
+					continue;
+				}
+
+				var unresolvedPerformName = unresolvedReference.token().trimmedSymbolName(32);
+				if (unresolvedPerformName.equals(referencableNode.declaration().trimmedSymbolName(32)))
+				{
+					referencableNode.addReference(unresolvedReference);
+					resolvedReferences.add(unresolvedReference);
+				}
+			}
+		}
+
+		unresolvedReferences.removeAll(resolvedReferences);
 	}
 }

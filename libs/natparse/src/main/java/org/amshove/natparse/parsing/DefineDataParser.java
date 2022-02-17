@@ -233,6 +233,15 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			currentRedefineNode = redefine;
 		}
 
+		if(variable.dimensions().hasItems())
+		{
+			for (var dimension : variable.dimensions())
+			{
+				groupNode.addDimension((ArrayDimension) dimension);
+			}
+		}
+
+
 		if (previousToken().kind() == SyntaxKind.LPAREN)
 		{
 			addArrayDimensions(groupNode);

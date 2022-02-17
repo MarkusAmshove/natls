@@ -7,7 +7,7 @@ import org.amshove.natparse.natural.IStatementNode;
 import java.util.ArrayList;
 import java.util.List;
 
-class StatementListNode extends BaseSyntaxNode implements IStatementListNode
+class StatementListNode extends StatementNode implements IStatementListNode
 {
 	private final List<IStatementNode> statements = new ArrayList<>();
 
@@ -22,5 +22,20 @@ class StatementListNode extends BaseSyntaxNode implements IStatementListNode
 		statements.add(statement);
 		addNode(statement);
 		statement.setParent(this);
+	}
+
+	@Override
+	protected void replaceChild(BaseSyntaxNode oldChild, BaseSyntaxNode newChild)
+	{
+		super.replaceChild(oldChild, newChild);
+		if(oldChild instanceof StatementNode oldStatement && newChild instanceof StatementNode newStatement)
+		{
+			var oldIndex = statements.indexOf(oldStatement);
+			if(oldIndex < 0)
+			{
+				return;
+			}
+			statements.set(oldIndex, newStatement);
+		}
 	}
 }

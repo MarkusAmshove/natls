@@ -42,4 +42,13 @@ public enum ParserError
 	{
 		return id;
 	}
+
+	/**
+	 * Returns whether the given id belongs to a ParserError that indicates that a symbol
+	 * or module could not be resolved.
+	 */
+	public static boolean isUnresolvedError(String id)
+	{
+		return id.equals(ParserError.UNRESOLVED_IMPORT.id) || id.equals(ParserError.UNRESOLVED_REFERENCE.id);
+	}
 }

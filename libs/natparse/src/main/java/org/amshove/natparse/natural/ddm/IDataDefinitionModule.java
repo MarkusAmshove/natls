@@ -20,4 +20,6 @@ public interface IDataDefinitionModule
 	 * @return List of {@link IDdmField} on level 1
 	 */
 	ImmutableList<IDdmField> fields();
+
+	IDdmField findField(String name);
 }

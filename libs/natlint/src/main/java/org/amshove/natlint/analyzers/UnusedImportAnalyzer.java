@@ -37,7 +37,7 @@ public class UnusedImportAnalyzer extends AbstractAnalyzer
 		{
 			return;
 		}
-		if(using.defineData().variables().stream().flatMap(v -> v.references().stream()).noneMatch(r -> NodeUtil.moduleContainsNode(context.getModule(), r)))
+		if(using.defineData().variables().stream().flatMap(v -> v.references().stream()).noneMatch(r -> NodeUtil.moduleContainsNodeByDiagnosticPosition(context.getModule(), r)))
 		{
 			context.report(UNUSED_IMPORT.createFormattedDiagnostic(using.target(), using.target().symbolName()));
 		}

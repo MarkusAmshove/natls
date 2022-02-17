@@ -37,6 +37,13 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 	}
 
 	@Override
+	public void addReference(ISymbolReferenceNode node)
+	{
+		references.add(node);
+		((SymbolReferenceNode) node).setReference(this);
+	}
+
+	@Override
 	public SyntaxToken declaration()
 	{
 		return declaration;
@@ -121,12 +128,6 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 	{
 		dimensions.add(dimension);
 		addNode(dimension);
-	}
-
-	void addReference(SymbolReferenceNode tokenNode)
-	{
-		references.add(tokenNode);
-		tokenNode.setReference(this);
 	}
 
 	void useQualifiedName()

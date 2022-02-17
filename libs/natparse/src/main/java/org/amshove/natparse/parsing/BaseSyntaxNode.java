@@ -65,6 +65,12 @@ class BaseSyntaxNode implements ISyntaxNode
 	}
 
 	@Override
+	public IPosition diagnosticPosition()
+	{
+		return getStart().diagnosticPosition();
+	}
+
+	@Override
 	public void destroy()
 	{
 		for (var descendant : nodes)
@@ -78,5 +84,20 @@ class BaseSyntaxNode implements ISyntaxNode
 	public Iterator<ISyntaxNode> iterator()
 	{
 		return (Iterator<ISyntaxNode>) descendants().iterator();
+	}
+
+	protected void copyFrom(BaseSyntaxNode other)
+	{
+		parent = other.parent;
+		for (var descendant : other.descendants())
+		{
+			addNode((BaseSyntaxNode) descendant);
+		}
+	}
+
+	protected void replaceChild(BaseSyntaxNode oldChild, BaseSyntaxNode newChild)
+	{
+		var oldIndex = nodes.indexOf(oldChild);
+		nodes.set(oldIndex, newChild);
 	}
 }

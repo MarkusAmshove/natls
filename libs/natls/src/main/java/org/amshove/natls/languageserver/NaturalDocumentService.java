@@ -122,7 +122,7 @@ public class NaturalDocumentService implements TextDocumentService
 	@Override
 	public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbol(DocumentSymbolParams params)
 	{
-		return CompletableFuture.supplyAsync(() -> languageService.findSymbolsInFile(params.getTextDocument()));
+		return CompletableFuture.supplyAsync(() -> languageService.findSymbolsInFile(params.getTextDocument()).stream().map(Either::<SymbolInformation, DocumentSymbol>forLeft).toList());
 	}
 
 	@Override
@@ -160,6 +160,12 @@ public class NaturalDocumentService implements TextDocumentService
 	public CompletableFuture<List<CallHierarchyItem>> prepareCallHierarchy(CallHierarchyPrepareParams params)
 	{
 		return CompletableFuture.supplyAsync(()->languageService.createCallHierarchyItems(params));
+	}
+
+	@Override
+	public CompletableFuture<WorkspaceEdit> rename(RenameParams params)
+	{
+		return CompletableFuture.supplyAsync(() -> languageService.rename(params));
 	}
 
 	public void setLanguageService(NaturalLanguageService languageService)

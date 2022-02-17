@@ -2,9 +2,13 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.natural.INaturalModule;
+import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalLibrary;
+import org.amshove.natparse.parsing.ddm.DdmParser;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,6 +21,25 @@ class CachingModuleProvider implements IModuleProvider
 	CachingModuleProvider(NaturalFile caller)
 	{
 		this.caller = caller;
+	}
+
+	@Override
+	public IDataDefinitionModule findDdm(String referableName)
+	{
+		var calledFile = caller.getLibrary().findFileByReferableName(referableName, true);
+		if(calledFile == null)
+		{
+			return null;
+		}
+
+		try
+		{
+			return new DdmParser().parseDdm(Files.readString(calledFile.getPath()));
+		}
+		catch (IOException e)
+		{
+			throw new UncheckedIOException(e);
+		}
 	}
 
 	@Override

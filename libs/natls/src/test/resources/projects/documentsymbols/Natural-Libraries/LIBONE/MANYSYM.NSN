@@ -1,0 +1,18 @@
+define data local
+1 #first (n1)
+1 #second (n1)
+1 #third (n1)
+1 #fourth (n1)
+1 #fifth (n1)
+1 #sixth (n1)
+1 #seventh (n1)
+end-define
+
+define subroutine first-sub
+ignore
+end-subroutine
+define subroutine second-sub
+ignore
+end-subroutine
+
+end

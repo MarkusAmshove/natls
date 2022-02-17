@@ -94,6 +94,11 @@ public class ReadOnlyList<T> implements Iterable<T>
 		return collection.isEmpty();
 	}
 
+	public boolean hasItems()
+	{
+		return !isEmpty();
+	}
+
 	public List<T> toList()
 	{
 		return new ArrayList<>(collection);

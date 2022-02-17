@@ -1,7 +1,8 @@
 package org.amshove.natls.languageserver;
 
-import org.amshove.natls.codeactions.RefactoringContext;
 import org.amshove.natls.codeactions.CodeActionRegistry;
+import org.amshove.natls.codeactions.RefactoringContext;
+import org.amshove.natls.codeactions.RenameSymbolAction;
 import org.amshove.natls.progress.IProgressMonitor;
 import org.amshove.natls.progress.ProgressTasks;
 import org.amshove.natls.project.LanguageServerFile;
@@ -22,7 +23,6 @@ import org.amshove.natparse.parsing.DefineDataParser;
 import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 
@@ -32,6 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
@@ -41,11 +42,12 @@ import java.util.stream.Stream;
 public class NaturalLanguageService implements LanguageClientAware
 {
 	private static final Hover EMPTY_HOVER = new Hover(new MarkupContent(MarkupKind.PLAINTEXT, ""));
+	private final CodeActionRegistry codeActionRegistry = CodeActionRegistry.INSTANCE;
 	private NaturalProject project; // TODO: Replace
 	private LanguageServerProject languageServerProject;
 	private LanguageClient client;
 	private boolean initialized;
-	private CodeActionRegistry codeActionRegistry = CodeActionRegistry.INSTANCE;
+	private RenameSymbolAction renameComputer = new RenameSymbolAction();
 
 	public void indexProject(Path workspaceRoot, IProgressMonitor progressMonitor)
 	{
@@ -63,23 +65,20 @@ public class NaturalLanguageService implements LanguageClientAware
 		initialized = true;
 	}
 
-	public List<Either<SymbolInformation, DocumentSymbol>> findSymbolsInFile(TextDocumentIdentifier textDocument)
+	public List<SymbolInformation> findSymbolsInFile(TextDocumentIdentifier textDocument)
 	{
 		var filepath = LspUtil.uriToPath(textDocument.getUri());
-		var tokens = lexPath(filepath);
-		var defineData = parseDefineData(tokens);
-		if (defineData != null)
-		{
-			return defineData.variables().stream()
-				.map(variable -> convertToSymbolInformation(variable.declaration(), filepath))
-				.map(Either::<SymbolInformation, DocumentSymbol>forLeft)
-				.toList();
-		}
+		var module = findNaturalFile(filepath).module();
+		var referencableNodes = module.referencableNodes();
 
-		return getVariableDeclarationTokens(tokens)
-			.filter(t -> t.kind() == SyntaxKind.IDENTIFIER_OR_KEYWORD || t.kind() == SyntaxKind.IDENTIFIER)
-			.map(token -> convertToSymbolInformation(token, filepath))
-			.map(Either::<SymbolInformation, DocumentSymbol>forLeft)
+		return referencableNodes
+			.stream()
+			.map(n -> new SymbolInformation(
+				n.declaration().symbolName(),
+				n instanceof IVariableNode ? SymbolKind.Variable : SymbolKind.Method,
+				LspUtil.toLocation(n),
+				n.position().fileNameWithoutExtension()
+			))
 			.toList();
 	}
 
@@ -365,40 +364,33 @@ public class NaturalLanguageService implements LanguageClientAware
 	{
 		var fileUri = params.getTextDocument().getUri();
 		var filePath = LspUtil.uriToPath(fileUri);
+		var file = findNaturalFile(filePath);
 		var position = params.getPosition();
 
-		var tokenUnderCursor = findTokenAtPosition(filePath, position); // TODO: Double lexing
-		if (tokenUnderCursor == null)
+		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), file.module());
+		// TOOD: qualified variables
+
+		if(node instanceof ISymbolReferenceNode symbolReferenceNode)
 		{
-			return List.of();
+			return List.of(LspUtil.toLocation(symbolReferenceNode.reference()));
 		}
 
-		var file = findNaturalFile(filePath);
-		var module = file.module();
-		IDefineData defineData;
-		if (!(module instanceof IHasDefineData hasDefineData))
+		if(node instanceof IModuleReferencingNode moduleReferencingNode)
 		{
-			return List.of();
-		}
-		defineData = hasDefineData.defineData();
-		var matchingVariableDeclarations = defineData.variables().stream()
-			.filter(v -> !(v instanceof IRedefinitionNode))
-			.filter(v -> v.name().equals(tokenUnderCursor.symbolName()))
-			.map(LspUtil::toLocation)
-			.toList();
-
-		if(!matchingVariableDeclarations.isEmpty())
-		{
-			return matchingVariableDeclarations;
+			return List.of(LspUtil.toLocation(moduleReferencingNode.reference()));
 		}
 
-		var referencedModule = file.findNaturalModule(tokenUnderCursor.symbolName());
-		if (referencedModule == null)
+		if(node instanceof ITokenNode && node.parent() instanceof ISymbolReferenceNode symbolReferenceNode)
 		{
-			return List.of();
+			return List.of(LspUtil.toLocation(symbolReferenceNode.reference()));
 		}
 
-		return List.of(new Location(referencedModule.file().getPath().toUri().toString(), new Range(new Position(0,0), new Position(0,0))));
+		if(node instanceof ITokenNode && node.parent() instanceof IModuleReferencingNode moduleReferencingNode)
+		{
+			return List.of(LspUtil.toLocation(moduleReferencingNode.reference()));
+		}
+
+		return List.of();
 	}
 
 	public List<Location> findReferences(ReferenceParams params)
@@ -406,35 +398,44 @@ public class NaturalLanguageService implements LanguageClientAware
 		var fileUri = params.getTextDocument().getUri();
 		var filePath = LspUtil.uriToPath(fileUri);
 		var position = params.getPosition();
+		var file = findNaturalFile(filePath);
 
-		var tokenUnderCursor = findTokenAtPosition(filePath, position);
-		if (tokenUnderCursor == null)
+		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), file.module());
+
+		var references = new ArrayList<Location>();
+		// TODO: This should be its own class
+
+		if(node instanceof IReferencableNode referencableNode)
 		{
-			return List.of();
+			references.addAll(resolveReferences(params, referencableNode));
 		}
-		var tokens = lexPath(filePath);
 
-		// TODO: This will be replaced
-		var hackyReferences = tokens.stream()
-			.filter(t -> t.kind().isIdentifier() && t.symbolName().equals(tokenUnderCursor.symbolName()))
-			.map(t -> LspUtil.toLocation(fileUri, t))
-			.toList();
-
-		var references = new ArrayList<>(hackyReferences);
-
-		var module = findNaturalFile(filePath).module();
-		if (module instanceof IHasDefineData hasDefineData)
+		if(node instanceof ISymbolReferenceNode symbolReferenceNode)
 		{
-			references.addAll(
-				hasDefineData
-					.defineData()
-					.findVariable(tokenUnderCursor.symbolName())
-					.references()
-					.stream()
-					.map(ISyntaxNode::position)
-					.map(LspUtil::toLocation)
-					.toList()
+			references.addAll(resolveReferences(params, symbolReferenceNode.reference()));
+		}
+
+		if(node instanceof IModuleReferencingNode moduleReferencingNode)
+		{
+			references.addAll(moduleReferencingNode.reference().callers().stream()
+				.map(caller -> LspUtil.toLocation(caller.referencingToken()))
+				.toList()
 			);
+		}
+
+		return references;
+	}
+
+	private List<Location> resolveReferences(ReferenceParams params, IReferencableNode referencableNode)
+	{
+		var references = new ArrayList<Location>();
+		referencableNode.references().stream()
+			.map(r -> LspUtil.toLocation(r.referencingToken()))
+			.forEach(references::add);
+
+		if(params.getContext().isIncludeDeclaration())
+		{
+			references.add(LspUtil.toLocation(referencableNode.declaration()));
 		}
 
 		return references;
@@ -492,82 +493,82 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		var file = findNaturalFile(filePath);
 		var module = file.module();
-		IDefineData defineData;
-		if (!(module instanceof IHasDefineData hasDefineData) || hasDefineData.defineData() == null)
-		{
-			return List.of();
-		}
-		defineData = hasDefineData.defineData();
 
-		var token = findPreviousTokenOfPosition(filePath, completionParams.getPosition());
-		if (token != null && token.kind() == SyntaxKind.CALLNAT)
-		{
-			return findNaturalFile(filePath).getLibrary().getModulesOfType(NaturalFileType.SUBPROGRAM, true)
-				.stream()
-				.map(LanguageServerFile::module)
-				.map(calledModule -> {
-					var completionItem = new CompletionItem(calledModule.name());
-					completionItem.setKind(CompletionItemKind.Class);
-					completionItem.setInsertTextFormat(InsertTextFormat.Snippet);
-					var insertText = "'${0:%s}'".formatted(calledModule.name());
-
-					if (!(calledModule instanceof IHasDefineData calledHasDefineData))
-					{
-						return completionItem;
-					}
-
-					var calledDefineData = calledHasDefineData.defineData();
-
-					var parameter = calledDefineData.variables().stream().filter(v -> v.scope() == VariableScope.PARAMETER && v.level() == 1).toList();
-					var parameterIndex = 1;
-					for (var aParameter : parameter)
-					{
-						insertText += " ${%d:%s}".formatted(parameterIndex++, aParameter.name());
-					}
-					completionItem.setInsertText(insertText);
-					return completionItem;
-				})
-				.toList();
-		}
-
-		return defineData.variables().stream()
+		return module.referencableNodes().stream()
 			.filter(v -> !(v instanceof IRedefinitionNode)) // this is the `REDEFINE #VAR`, which results in the variable being doubled in completion
-			.map(v -> {
-				var item = new CompletionItem();
-				item.setKind(CompletionItemKind.Variable);
-
-				var variableName = v.name();
-
-				item.setLabel(variableName);
-				var label = "";
-				if (v instanceof ITypedVariableNode typedNode)
-				{
-					label = variableName + " :" + typedNode.type().toShortString();
-					item.setInsertText(variableName);
-				}
-				if (v instanceof IGroupNode groupNode)
-				{
-					label = variableName + " : Group";
-					item.setInsertText(variableName);
-				}
-
-				if (!v.position().filePath().equals(defineData.position().filePath()))
-				{
-					label += " (%s)".formatted(v.position().fileNameWithoutExtension());
-				}
-
-				item.setSortText(
-					v.position().filePath().equals(filePath)
-					? "1"
-					: "2"
-				);
-
-				item.setLabel(label);
-				item.setDocumentation(new MarkupContent(MarkupKind.MARKDOWN, createHoverMarkdownText(v)));
-
-				return item;
-			})
+			.map(this::createCompletionItem)
+			.filter(Objects::nonNull)
 			.toList();
+	}
+
+	private CompletionItem createCompletionItem(IReferencableNode referencableNode)
+	{
+		try
+		{
+			if (referencableNode instanceof IVariableNode variableNode)
+			{
+				return createCompletionItem(variableNode);
+			}
+
+			if (referencableNode instanceof ISubroutineNode subroutineNode)
+			{
+				return createCompletionItem(subroutineNode);
+			}
+		}
+		catch (Exception e)
+		{
+			client.logMessage(ClientMessage.error(e.getMessage()));
+		}
+
+		return null;
+	}
+
+	private CompletionItem createCompletionItem(IVariableNode variableNode)
+	{
+		var item = new CompletionItem();
+		var variableName = variableNode.name();
+
+		item.setLabel(variableName);
+		var label = "";
+		if (variableNode instanceof ITypedVariableNode typedNode)
+		{
+			label = variableName + " :" + typedNode.type().toShortString();
+			item.setInsertText(variableName);
+		}
+		if (variableNode instanceof IGroupNode)
+		{
+			label = variableName + " : Group";
+			item.setInsertText(variableName);
+		}
+
+		var isImported = NodeUtil.findFirstParentOfType(variableNode, IUsingNode.class) != null;
+
+		if (isImported)
+		{
+			label += " (%s)".formatted(variableNode.position().fileNameWithoutExtension());
+		}
+
+		item.setSortText(
+			isImported
+				? "2"
+				: "3"
+		);
+
+		item.setLabel(label);
+		item.setDocumentation(new MarkupContent(MarkupKind.MARKDOWN, createHoverMarkdownText(variableNode)));
+
+		return item;
+	}
+
+	private CompletionItem createCompletionItem(ISubroutineNode subroutineNode)
+	{
+		var item = new CompletionItem();
+		item.setKind(CompletionItemKind.Method);
+		item.setInsertText(subroutineNode.declaration().trimmedSymbolName(32));
+		item.setLabel(subroutineNode.declaration().symbolName());
+		item.setSortText("1");
+
+		return item;
 	}
 
 	public LanguageServerFile findNaturalFile(String library, String name)
@@ -742,7 +743,7 @@ public class NaturalLanguageService implements LanguageClientAware
 			.map(r -> {
 				var call = new CallHierarchyIncomingCall();
 				call.setFrom(callHierarchyItem(r, findNaturalFile(r.referencingToken().filePath()).getReferableName()));
-				call.setFromRanges(List.of(new Range(new Position(0,0), new Position(0,0))));
+				call.setFromRanges(List.of(new Range(new Position(0, 0), new Position(0, 0))));
 				return call;
 			})
 			.toList();
@@ -754,8 +755,8 @@ public class NaturalLanguageService implements LanguageClientAware
 		// 	If within local subroutine, get the local call hierarchy to that subroutine
 		var file = findNaturalFile(LspUtil.uriToPath(params.getTextDocument().getUri()));
 		var item = new CallHierarchyItem();
-		item.setRange(new Range(new Position(0,0), new Position(0,0)));
-		item.setSelectionRange(new Range(new Position(0,0), new Position(0,0)));
+		item.setRange(new Range(new Position(0, 0), new Position(0, 0)));
+		item.setSelectionRange(new Range(new Position(0, 0), new Position(0, 0)));
 		item.setName(file.getReferableName());
 		item.setDetail(file.getType().toString());
 		item.setUri(params.getTextDocument().getUri());
@@ -766,8 +767,8 @@ public class NaturalLanguageService implements LanguageClientAware
 	private CallHierarchyItem callHierarchyItem(LanguageServerFile file)
 	{
 		var item = new CallHierarchyItem();
-		item.setRange(new Range(new Position(0,0), new Position(0,0)));
-		item.setSelectionRange(new Range(new Position(0,0), new Position(0,0)));
+		item.setRange(new Range(new Position(0, 0), new Position(0, 0)));
+		item.setSelectionRange(new Range(new Position(0, 0), new Position(0, 0)));
 		item.setName(file.getReferableName());
 		item.setDetail(file.getType().toString());
 		item.setUri(file.getPath().toUri().toString());
@@ -792,9 +793,37 @@ public class NaturalLanguageService implements LanguageClientAware
 		var file = findNaturalFile(LspUtil.uriToPath(params.getTextDocument().getUri()));
 		var token = findTokenAtPosition(file.getPath(), params.getRange().getStart());
 		var node = NodeUtil.findNodeAtPosition(params.getRange().getStart().getLine(), params.getRange().getStart().getCharacter(), file.module());
+		if(node == null)
+		{
+			return List.of();
+		}
 
 		var context = new RefactoringContext(params.getTextDocument().getUri(), file.module(), token, node, file.diagnosticsInRange(params.getRange()));
 
 		return codeActionRegistry.createCodeActions(context);
+	}
+
+	public WorkspaceEdit rename(RenameParams params)
+	{
+		var path = LspUtil.uriToPath(params.getTextDocument().getUri());
+		var file = findNaturalFile(path);
+
+		var node = NodeUtil.findNodeAtPosition(params.getPosition().getLine(), params.getPosition().getCharacter(), file.module());
+		if(node instanceof ISymbolReferenceNode symbolReferenceNode)
+		{
+			return renameComputer.rename(symbolReferenceNode, params.getNewName());
+		}
+
+		if(node instanceof IReferencableNode referencableNode)
+		{
+			return renameComputer.rename(referencableNode, params.getNewName());
+		}
+
+		if(node instanceof ITokenNode && node.parent() instanceof IReferencableNode referencableNode)
+		{
+			return renameComputer.rename(referencableNode, params.getNewName());
+		}
+
+		return null;
 	}
 }

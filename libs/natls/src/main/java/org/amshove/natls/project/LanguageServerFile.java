@@ -7,16 +7,20 @@ import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.parsing.DefineDataParser;
 import org.amshove.natparse.parsing.IModuleProvider;
 import org.amshove.natparse.parsing.NaturalModule;
 import org.amshove.natparse.parsing.NaturalParser;
+import org.amshove.natparse.parsing.ddm.DdmParser;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -221,7 +225,7 @@ public class LanguageServerFile implements IModuleProvider
 
 	public INaturalModule module()
 	{
-		if (module == null)
+		if (module == null || module.syntaxTree() == null) // TODO: Use parsed flag to determine if its only partial parsed. SyntaxTree is conveniently null currently, but that's not reliable
 		{
 			parse(false);
 		}
@@ -297,6 +301,25 @@ public class LanguageServerFile implements IModuleProvider
 		addOutgoingReference(calledFile);
 		calledFile.addIncomingReference(this);
 		return calledFile.parseDefineDataOnly();
+	}
+
+	@Override
+	public IDataDefinitionModule findDdm(String referableName)
+	{
+		var calledFile = library.provideNaturalFile(referableName, true);
+		if(calledFile == null)
+		{
+			return null;
+		}
+
+		try
+		{
+			return new DdmParser().parseDdm(Files.readString(calledFile.getPath()));
+		}
+		catch (IOException e)
+		{
+			throw new UncheckedIOException(e);
+		}
 	}
 
 	void addIncomingReference(LanguageServerFile caller)

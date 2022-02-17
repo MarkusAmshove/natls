@@ -20,7 +20,7 @@ class SyntaxTreeShould
 	{
 		var tree = SyntaxTree.create(new BaseSyntaxNode(), new TokenNode(null), new VariableNode());
 
-		var descendants = tree.descendantsOfType(TokenNode.class).toList();
+		var descendants = tree.directDescendantsOfType(TokenNode.class).toList();
 		assertThat(descendants).hasSize(1);
 		assertThat(descendants.get(0).getClass()).isEqualTo(TokenNode.class);
 	}

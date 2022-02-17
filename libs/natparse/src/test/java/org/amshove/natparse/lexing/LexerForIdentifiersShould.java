@@ -3,6 +3,8 @@ package org.amshove.natparse.lexing;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Arrays;
 
@@ -109,6 +111,84 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 	void stopIdentifierWhenACommentIsFollowingWithWhitespace()
 	{
 		assertTokens("INCLUDE IDEN/*", token(SyntaxKind.INCLUDE), token(SyntaxKind.IDENTIFIER, "IDEN"));
+	}
+
+	@Test
+	void safelyAssumeIdentifiersIfTheTokenHasMultipleDashes()
+	{
+		assertTokens("END-DEFINE-DEFINE", token(SyntaxKind.IDENTIFIER));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"R1.", "R.", "R-1.", "#like-a-var.", "another-var.", "A.", "X.", "A123.", "#WAT."
+	})
+	void recognizeJumpLabelsAsLabelIdentifiers(String source)
+	{
+		assertTokens(source, SyntaxKind.LABEL_IDENTIFIER);
+	}
+
+	@Test
+	void addADiagnosticForRecognizedIdentifiersThatEndWithADot()
+	{
+		assertDiagnostic("C*WHODOESTHIS.", assertedDiagnostic(0,0,0,14, LexerError.INVALID_IDENTIFIER));
+	}
+
+	@Test
+	void notRecognizeArithmeticAsVariable()
+	{
+		assertTokens("+123", token(SyntaxKind.PLUS), token(SyntaxKind.NUMBER));
+	}
+
+	@Test
+	void recognizeTheStartOfAnArithmeticExpressionWithinAVariableAndBreakIt()
+	{
+		assertTokens("MYVAR+123", token(SyntaxKind.IDENTIFIER_OR_KEYWORD), token(SyntaxKind.PLUS), token(SyntaxKind.NUMBER));
+	}
+
+	@Test
+	void notAddCommasToIdentifiers()
+	{
+		assertTokens(
+			"FIRST-IDENTIFIER-HERE,SECOND-IDENTIFIER-HERE",
+			token(SyntaxKind.IDENTIFIER),
+			token(SyntaxKind.COMMA),
+			token(SyntaxKind.IDENTIFIER)
+		);
+	}
+
+	@Test
+	void notAddCommasToIdentifiersWithSpaceAfterComma()
+	{
+		assertTokens(
+			"FIRST-IDENTIFIER-HERE, SECOND-IDENTIFIER-HERE",
+			token(SyntaxKind.IDENTIFIER),
+			token(SyntaxKind.COMMA),
+			token(SyntaxKind.IDENTIFIER)
+		);
+	}
+
+	@Test
+	void allowCStarInQualifiedVariables()
+	{
+		assertTokens(
+			"#FIRST-IDENTIFIER-HERE.C*SECOND-IDENTIFIER-HERE END",
+			token(SyntaxKind.IDENTIFIER),
+			token(SyntaxKind.END)
+		);
+	}
+
+	@Test
+	void notIncludeTheCommaInArrayIndexNotation()
+	{
+		assertTokens("LAPDA.LAVARIABLE(I-INDEX-VAR,*)",
+			token(SyntaxKind.IDENTIFIER),
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.IDENTIFIER, "I-INDEX-VAR"),
+			token(SyntaxKind.COMMA),
+			token(SyntaxKind.ASTERISK),
+			token(SyntaxKind.RPAREN)
+		);
 	}
 
 	@TestFactory

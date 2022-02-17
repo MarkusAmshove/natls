@@ -25,6 +25,12 @@ class SyntheticVariableStatementNode extends StatementNode implements ISymbolRef
 	}
 
 	@Override
+	public SyntaxToken referencingToken()
+	{
+		return node.token();
+	}
+
+	@Override
 	public ISyntaxTree parent()
 	{
 		return node.parent();
@@ -52,5 +58,11 @@ class SyntheticVariableStatementNode extends StatementNode implements ISymbolRef
 	public SyntaxToken token()
 	{
 		return node.token();
+	}
+
+	@Override
+	public IPosition diagnosticPosition()
+	{
+		return node.diagnosticPosition();
 	}
 }

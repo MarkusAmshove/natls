@@ -121,12 +121,6 @@ public class SourceTextScanner
 		currentLexemeStart = -1;
 	}
 
-	public void resetToCurrentLexeme()
-	{
-		currentOffset = currentLexemeStart;
-		reset();
-	}
-
 	public boolean isAtEnd()
 	{
 		return currentOffset >= source.length;
@@ -135,5 +129,20 @@ public class SourceTextScanner
 	private boolean willPassEnd(int offset)
 	{
 		return currentOffset + offset >= source.length;
+	}
+
+	public boolean peekText(String text)
+	{
+		for (var i = 0; i < text.length(); i++)
+		{
+			var expected = text.charAt(i);
+			var gotten = source[currentOffset + i];
+			if (willPassEnd(i) || expected != gotten)
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 }

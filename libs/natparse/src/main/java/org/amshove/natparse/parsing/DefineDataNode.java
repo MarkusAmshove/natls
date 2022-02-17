@@ -2,6 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.ddm.IDdmField;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -45,6 +46,25 @@ class DefineDataNode extends BaseSyntaxNode implements IDefineData
 			if(variable.name().equals(symbolName) || variable.qualifiedName().equals(symbolName))
 			{
 				return variable;
+			}
+		}
+
+		return null;
+	}
+
+	@Nullable
+	@Override
+	public IDdmField findDdmField(String symbolName)
+	{
+		for (var variable : variables)
+		{
+			if(variable instanceof IViewNode viewNode)
+			{
+				var field = viewNode.ddm().findField(symbolName);
+				if(field != null)
+				{
+					return field;
+				}
 			}
 		}
 

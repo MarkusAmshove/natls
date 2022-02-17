@@ -4,6 +4,7 @@ import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFile;
+import org.amshove.natparse.natural.project.NaturalFileType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +17,7 @@ public class NaturalModule
 	private IDefineData defineData;
 	private final List<IDiagnostic> diagnostics = new ArrayList<>();
 	private final List<IModuleReferencingNode> callers = new ArrayList<>();
+	private final List<IReferencableNode> referencableNodes = new ArrayList<>();
 	private IStatementListNode body;
 	private ISyntaxTree tree;
 
@@ -49,6 +51,13 @@ public class NaturalModule
 	}
 
 	@Override
+	public boolean isTestCase()
+	{
+		return file.getFiletype() == NaturalFileType.SUBPROGRAM &&
+			(file.getReferableName().startsWith("TC") || file.getReferableName().startsWith("TS"));
+	}
+
+	@Override
 	public ISyntaxTree syntaxTree()
 	{
 		return tree;
@@ -66,11 +75,16 @@ public class NaturalModule
 		this.defineData = defineData;
 	}
 
+	void addDiagnostic(IDiagnostic diagnostic)
+	{
+		this.diagnostics.add(diagnostic);
+	}
+
 	void addDiagnostics(ReadOnlyList<IDiagnostic> diagnostics)
 	{
 		for (var diagnostic : diagnostics)
 		{
-			this.diagnostics.add(diagnostic);
+			addDiagnostic(diagnostic);
 		}
 	}
 
@@ -105,5 +119,15 @@ public class NaturalModule
 	void setSyntaxTree(ISyntaxTree tree)
 	{
 		this.tree = tree;
+	}
+
+	void addReferencableNodes(List<IReferencableNode> nodes)
+	{
+		referencableNodes.addAll(nodes);
+	}
+
+	public ReadOnlyList<IReferencableNode> referencableNodes()
+	{
+		return ReadOnlyList.from(referencableNodes);
 	}
 }

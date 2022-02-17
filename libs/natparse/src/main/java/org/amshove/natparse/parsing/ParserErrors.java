@@ -3,6 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
+import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 
 import java.util.Arrays;
@@ -21,15 +22,14 @@ class ParserErrors
 		return token.kind().toString();
 	}
 
-	public static ParserDiagnostic unexpectedToken(SyntaxKind expectedToken, SyntaxToken invalidToken)
+	public static ParserDiagnostic unexpectedToken(SyntaxKind expectedToken, TokenList tokens)
 	{
+		var currentToken = tokens.peek();
+		var invalidToken = currentToken != null ? currentToken : tokens.peek(-1);
+		var message = currentToken != null ? "Unexpected token <%s>, expected <%s>" : "Unexpected token after this, expected <%s>";
 		return ParserDiagnostic.create(
-			"Unexpected token <%s>, expected <%s>".formatted(formatTokenKind(invalidToken), expectedToken),
-			invalidToken.offset(),
-			invalidToken.offsetInLine(),
-			invalidToken.line(),
-			invalidToken.length(),
-			invalidToken.filePath(),
+			message.formatted(formatTokenKind(invalidToken), expectedToken),
+			invalidToken,
 			ParserError.UNEXPECTED_TOKEN
 		);
 	}
@@ -38,11 +38,7 @@ class ParserErrors
 	{
 		return ParserDiagnostic.create(
 			"Unexpected token <%s>, expected one of <%s>".formatted(formatTokenKind(invalidToken), expectedTokenKinds.stream().map(Enum::toString).collect(Collectors.joining(", "))),
-			invalidToken.offset(),
-			invalidToken.offsetInLine(),
-			invalidToken.line(),
-			invalidToken.length(),
-			invalidToken.filePath(),
+			invalidToken,
 			ParserError.UNEXPECTED_TOKEN
 		);
 	}
@@ -174,7 +170,7 @@ class ParserErrors
 	{
 		return ParserDiagnostic.create(
 			"Unresolved reference: %s".formatted(node.token().source()),
-			node,
+			node.token(),
 			ParserError.UNRESOLVED_REFERENCE
 		);
 	}
@@ -287,7 +283,7 @@ class ParserErrors
 	{
 		return ParserDiagnostic.create(
 			"Could not resolve external module %s".formatted(importNode.token().symbolName()),
-			importNode,
+			importNode.token(),
 			ParserError.UNRESOLVED_IMPORT
 		);
 	}

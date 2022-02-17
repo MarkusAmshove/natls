@@ -10,8 +10,10 @@ public interface INaturalModule
 	NaturalFile file();
 	ReadOnlyList<IDiagnostic> diagnostics();
 	ReadOnlyList<IModuleReferencingNode> callers();
+	boolean isTestCase();
 
 	ISyntaxTree syntaxTree();
+	ReadOnlyList<IReferencableNode> referencableNodes();
 
 	void removeCaller(IModuleReferencingNode node);
 	void addCaller(IModuleReferencingNode caller);

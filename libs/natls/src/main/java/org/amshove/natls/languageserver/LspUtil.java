@@ -3,6 +3,7 @@ package org.amshove.natls.languageserver;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.lexing.SyntaxToken;
+import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.eclipse.lsp4j.*;
 
@@ -109,5 +110,16 @@ public class LspUtil
 	public static boolean isInSameLine(Range first, Range second)
 	{
 		return first.getStart().getLine() == second.getStart().getLine();
+	}
+
+	public static Location toLocation(INaturalModule module)
+	{
+		return new Location(
+			module.file().getPath().toUri().toString(),
+			new Range(
+				new Position(0, 0),
+				new Position(0, 0)
+			)
+		);
 	}
 }

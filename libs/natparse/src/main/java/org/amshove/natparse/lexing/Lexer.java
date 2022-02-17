@@ -1,5 +1,6 @@
 package org.amshove.natparse.lexing;
 
+import org.amshove.natparse.IPosition;
 import org.amshove.natparse.lexing.text.SourceTextScanner;
 
 import java.nio.file.Path;
@@ -14,6 +15,9 @@ public class Lexer
 	private int line;
 	private int currentLineStartOffset;
 	private Path filePath;
+	private IPosition relocatedDiagnosticPosition;
+
+	private boolean inParens;
 
 	private List<LexerDiagnostic> diagnostics;
 
@@ -49,9 +53,11 @@ public class Lexer
 					continue;
 
 				case '(':
+					inParens = true;
 					createAndAddCurrentSingleToken(SyntaxKind.LPAREN);
 					continue;
 				case ')':
+					inParens = false;
 					createAndAddCurrentSingleToken(SyntaxKind.RPAREN);
 					continue;
 				case '[':
@@ -67,7 +73,7 @@ public class Lexer
 					createAndAddFollowupEquals(SyntaxKind.COLON, SyntaxKind.COLON_EQUALS);
 					continue;
 				case '+':
-					if (isValidIdentifierCharacter(scanner.peek(1)))
+					if (isValidAivStartAfterPlus(scanner.peek(1)))
 					{
 						consumeIdentifier();
 					}
@@ -328,8 +334,20 @@ public class Lexer
 	private void consumeIdentifier()
 	{
 		scanner.start();
+		if(scanner.peek() == '+')
+		{
+			scanner.advance();
+		}
+
+		var isQualified = false;
+
 		while (!scanner.isAtEnd() && !isLineEnd() && isNoWhitespace() && isValidIdentifierCharacter(scanner.peek()))
 		{
+			if(scanner.peek() == '.')
+			{
+				isQualified = true;
+			}
+
 			if(scanner.peek() == '/' && scanner.peek(1) == '*')
 			{
 				// Slash is a valid character for identifiers, but an asterisk is not.
@@ -339,31 +357,90 @@ public class Lexer
 			}
 			scanner.advance();
 		}
-		createAndAdd(SyntaxKind.IDENTIFIER);
+
+		var text = scanner.lexemeText();
+		if(text.startsWith("+"))
+		{
+			// Special case. Starting with + could be an AIV, but +123 is meant arithmetically
+			var onlyDigits = true;
+			for (int i = 1; i < text.length(); i++)
+			{
+				if(!Character.isDigit(text.charAt(i)))
+				{
+					onlyDigits = false;
+					break;
+				}
+			}
+
+			if(onlyDigits)
+			{
+				scanner.rollbackCurrentLexeme();
+				createAndAddCurrentSingleToken(SyntaxKind.PLUS);
+				return;
+			}
+		}
+
+		// Handling for C*, T*, P*
+		var cStarAtStart = scanner.lexemeLength() == 1 && scanner.peek() == '*';
+		var cStarQualified = isQualified && scanner.peek() == '*' && scanner.peek(-2) == '.';
+		if (cStarAtStart || cStarQualified)
+		{
+			scanner.advance();
+			while (!scanner.isAtEnd() && !isLineEnd() && isNoWhitespace() && isValidIdentifierCharacter(scanner.peek()))
+			{
+				scanner.advance();
+			}
+		}
+
+		if(scanner.peek(-1) == '.')
+		{
+			createAndAdd(SyntaxKind.LABEL_IDENTIFIER);
+		}
+		else
+		{
+			createAndAdd(SyntaxKind.IDENTIFIER);
+		}
 	}
 
 	private boolean isValidIdentifierCharacter(char character)
 	{
-		return Character.isAlphabetic(character) || Character.isDigit(character) || character == '-' || character == '/' || character == '@' || character == '$' || character == '&' || character == '#' || character == '+' || character == '.' || character == '_';
+		return Character.isAlphabetic(character) || Character.isDigit(character) || character == '-' || character == '/' || character == '@' || character == '$' || character == '&' || character == '#' || character == '.' || character == '_';
 	}
 
 	private void consumeIdentifierOrKeyword()
 	{
+		if(inParens && scanner.peekText("EM="))
+		{
+			editorMask();
+			return;
+		}
+
+		var isQualified = false;
 		SyntaxKind kindHint = null;
 		scanner.start();
+		var dashCount = 0;
 		while (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd() && isValidIdentifierCharacter(scanner.peek()))
 		{
 
 			// Characters from which we can be sure that we're dealing with an identifier
 			switch (scanner.peek())
 			{
+				case '.':
+					isQualified = true;
 				case '@':
 				case '$':
 				case '&':
 				case '#':
-				case '+':
-				case '.':
 					kindHint = SyntaxKind.IDENTIFIER;
+					break;
+				case '-':
+					dashCount++;
+					if (dashCount >1)
+					{
+						// This might be removed when IDENTIFIER_OR_KEYWORD is gone
+						kindHint = SyntaxKind.IDENTIFIER;
+					}
+					break;
 			}
 
 			if(scanner.peek() == '/')
@@ -381,12 +458,14 @@ public class Lexer
 			scanner.advance();
 		}
 
-		if (scanner.peek() == ',' || scanner.peek() == '.')
+		if ((scanner.peek() == ',' || scanner.peek() == '.') && !isValidIdentifierCharacter(scanner.peek(1)) && !isWhitespace(1))
 		{
 			// TODO(lexermode): This is only needed because the Define Data Parser relies on DataFormats to be identifiers currently.
 			//		With a fitting lexer mode we can build this better.
+			var somethingAsideOfCommaOrDotConsumed = false;
 			while (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd() && Character.isDigit(scanner.peek()))
 			{
+				somethingAsideOfCommaOrDotConsumed = true;
 				scanner.advance();
 			}
 			if (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd() && scanner.peek() == '.' || scanner.peek() == ',')
@@ -395,16 +474,29 @@ public class Lexer
 			}
 			while (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd() && Character.isDigit(scanner.peek()))
 			{
+				somethingAsideOfCommaOrDotConsumed = true;
 				scanner.advance();
 			}
 			if (mightBeDataFormat(scanner.lexemeText()))
 			{
 				kindHint = SyntaxKind.IDENTIFIER;
 			}
+
+			if(!somethingAsideOfCommaOrDotConsumed)
+			{
+				scanner.advance(-1); // If we didn't find anything that we need, roll back the ./,
+			}
 		}
 
-		// Handling for C* count variables
-		if (scanner.lexemeLength() == 1 && scanner.peek() == '*')
+		if(scanner.peek(-1) == '.')
+		{
+			kindHint = SyntaxKind.LABEL_IDENTIFIER;
+		}
+
+		// Handling for C*, T*, P*
+		var cStarAtStart = scanner.lexemeLength() == 1 && scanner.peek() == '*';
+		var cStarQualified = isQualified && scanner.peek() == '*' && scanner.peek(-2) == '.';
+		if (cStarAtStart || cStarQualified)
 		{
 			scanner.advance();
 			while (!scanner.isAtEnd() && !isLineEnd() && isNoWhitespace() && isValidIdentifierCharacter(scanner.peek()))
@@ -440,6 +532,29 @@ public class Lexer
 				createAndAdd(SyntaxKind.IDENTIFIER_OR_KEYWORD);
 			}
 		}
+	}
+
+	private void editorMask()
+	{
+		scanner.start();
+		scanner.advance(3); // EM=
+		var isInString = false;
+		while(!scanner.isAtEnd() && scanner.peek() != ')')
+		{
+			if(scanner.peek() == '\'' || scanner.peek() == '"')
+			{
+				isInString = !isInString;
+			}
+
+			if(isWhitespace(0) && !isInString)
+			{
+				break;
+			}
+
+			scanner.advance();
+		}
+
+		createAndAdd(SyntaxKind.EDITOR_MASK);
 	}
 
 	private boolean isNoWhitespace()
@@ -681,14 +796,29 @@ public class Lexer
 
 	private void addDiagnostic(String message, LexerError error)
 	{
-		diagnostics.add(LexerDiagnostic.create(
-			message,
-			scanner.lexemeStart(),
-			getOffsetInLine(),
-			line,
-			scanner.lexemeLength(),
-			filePath,
-			error));
+		if(relocatedDiagnosticPosition != null)
+		{
+			diagnostics.add(LexerDiagnostic.create(
+				message,
+				scanner.lexemeStart(),
+				getOffsetInLine(),
+				line,
+				scanner.lexemeLength(),
+				filePath,
+				relocatedDiagnosticPosition,
+				error));
+		}
+		else
+		{
+			diagnostics.add(LexerDiagnostic.create(
+				message,
+				scanner.lexemeStart(),
+				getOffsetInLine(),
+				line,
+				scanner.lexemeLength(),
+				filePath,
+				error));
+		}
 	}
 
 	private int findNextNonWhitespaceLookaheadOffset()
@@ -704,7 +834,26 @@ public class Lexer
 
 	private void addToken(SyntaxToken token)
 	{
+		if(token.kind() == SyntaxKind.IDENTIFIER)
+		{
+			if(token.source().endsWith("."))
+			{
+				addDiagnostic("Identifiers can not end with '.'", LexerError.INVALID_IDENTIFIER);
+			}
+		}
+
 		tokens.add(token);
 		scanner.reset();
+	}
+
+	public void relocateDiagnosticPosition(IPosition diagnosticPosition)
+	{
+		this.relocatedDiagnosticPosition = diagnosticPosition;
+	}
+
+	private boolean isValidAivStartAfterPlus(char character)
+	{
+		// Every identifier name is allowed after the AIV plus, except for numbers
+		return isValidIdentifierCharacter(character) && !Character.isDigit(character);
 	}
 }

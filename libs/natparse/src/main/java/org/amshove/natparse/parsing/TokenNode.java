@@ -26,6 +26,12 @@ class TokenNode extends BaseSyntaxNode implements ITokenNode
 	}
 
 	@Override
+	public IPosition diagnosticPosition()
+	{
+		return token.diagnosticPosition();
+	}
+
+	@Override
 	public String toString()
 	{
 		return "TokenNode{token=%s}".formatted(token);

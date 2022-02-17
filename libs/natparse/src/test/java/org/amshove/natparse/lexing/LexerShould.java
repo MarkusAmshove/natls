@@ -27,7 +27,7 @@ public class LexerShould extends AbstractLexerTest
 
 	@ParameterizedTest
 	@CsvSource(
-	{ "abc,3", "bbbbcda,7" })
+		{ "abc,3", "bbbbcda,7" })
 	void storeTheLengthOfTokens(String source, int expectedLength)
 	{
 		var token = lexSingle(source);
@@ -38,7 +38,7 @@ public class LexerShould extends AbstractLexerTest
 
 	@ParameterizedTest
 	@CsvSource(
-	{ "abc,0,0", "abc cba,1,4" })
+		{ "abc,0,0", "abc cba,1,4" })
 	void storeTheOffsetOfTokens(String source, int nthIndex, int expectedOffset)
 	{
 		var token = lexSingle(source, nthIndex);
@@ -72,4 +72,22 @@ public class LexerShould extends AbstractLexerTest
 			assertedDiagnostic(13, 2, 1, 1, LexerError.UNKNOWN_CHARACTER)
 		);
 	}
+
+	@Test
+	void storeTheCorrectOffsetInLine()
+	{
+		var source = """
+			DEFINE DATA
+			LOCAL
+			1 #INLDA (A2)
+			END-DEFINE
+			""";
+
+		var tokens = lexSource(source);
+		assertThat(tokens.advanceAfterNext(SyntaxKind.NUMBER)).isTrue();
+		var identifier = tokens.peek();
+		assertThat(identifier.line()).isEqualTo(2);
+		assertThat(identifier.offsetInLine()).isEqualTo(2);
+	}
+
 }

@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @IntegrationTest
 public abstract class ParserIntegrationTest
@@ -26,6 +26,13 @@ public abstract class ParserIntegrationTest
 		{
 			throw new UncheckedIOException(e);
 		}
+	}
+
+	protected INaturalModule assertParsesWithoutAnyDiagnostics(NaturalFile file)
+	{
+		var module = parse(file);
+		assertThat(module.diagnostics()).isEmpty();
+		return module;
 	}
 
 	@SuppressWarnings("unchecked")

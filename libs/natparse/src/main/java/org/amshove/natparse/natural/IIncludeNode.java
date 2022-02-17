@@ -1,5 +1,5 @@
 package org.amshove.natparse.natural;
 
-public interface IIncludeNode extends IStatementNode, IModuleReferencingNode
+public interface IIncludeNode extends IStatementNode, IModuleReferencingNode, IHasBody
 {
 }

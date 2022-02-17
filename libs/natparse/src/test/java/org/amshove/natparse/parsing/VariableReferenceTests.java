@@ -2,6 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.natural.IIncludeNode;
 import org.amshove.natparse.natural.ISubprogram;
+import org.amshove.natparse.natural.IVariableNode;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.testhelpers.ProjectName;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,13 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 public class VariableReferenceTests extends ParserIntegrationTest
 {
+	@Test
+	void referencableVariablesShouldBeExported(@ProjectName("variablereferencetests") NaturalProject project)
+	{
+		var subprogram = assertFileParsesAs(project.findModule("SUBMOD"), ISubprogram.class);
+		assertThat(subprogram.referencableNodes()).anyMatch(r -> r instanceof IVariableNode variableNode && variableNode.name().equals("#LOCALVAR"));
+	}
+
 	@Test
 	void localVariablesShouldBeReferenced(@ProjectName("variablereferencetests") NaturalProject project)
 	{
@@ -59,5 +67,49 @@ public class VariableReferenceTests extends ParserIntegrationTest
 
 		assertThat(include).isNotNull();
 		assertThat(include.reference().callers()).contains(include);
+	}
+
+	@Test
+	void ignorePlusInVariableNameIfItMightNotBeAiv(@ProjectName("variablereferencetests") NaturalProject project)
+	{
+		var subprogram = assertFileParsesAs(project.findModule("STRANGEAIV"), ISubprogram.class);
+
+		assertThat(subprogram.diagnostics()).isEmpty();
+
+		var varOne = subprogram.defineData().findVariable("#VARONE");
+		assertThat(varOne).isNotNull();
+		assertThat(varOne.references()).isNotEmpty();
+
+		var varTwo = subprogram.defineData().findVariable("#VARTWO");
+		assertThat(varTwo).isNotNull();
+		assertThat(varTwo.references()).isNotEmpty();
+
+		var varThree = subprogram.defineData().findVariable("#VARTHREE");
+		assertThat(varThree).isNotNull();
+		assertThat(varThree.references()).isNotEmpty();
+	}
+
+	@Test
+	void addAReferenceToVariablesUsedAsCounter(@ProjectName("variablereferencetests") NaturalProject project)
+	{
+		var subprogram = assertFileParsesAs(project.findModule("CSTAR"), ISubprogram.class);
+
+		assertThat(subprogram.defineData().findVariable("#MYVAR").references()).isNotEmpty();
+	}
+
+	@Test
+	void addAReferenceToVariablesUsedAsPStar(@ProjectName("variablereferencetests") NaturalProject project)
+	{
+		var subprogram = assertFileParsesAs(project.findModule("PSTAR"), ISubprogram.class);
+
+		assertThat(subprogram.defineData().findVariable("#MYVAR").references()).isNotEmpty();
+	}
+
+	@Test
+	void addAReferenceToVariablesUsedAsTStar(@ProjectName("variablereferencetests") NaturalProject project)
+	{
+		var subprogram = assertFileParsesAs(project.findModule("TSTAR"), ISubprogram.class);
+
+		assertThat(subprogram.defineData().findVariable("#MYVAR").references()).isNotEmpty();
 	}
 }

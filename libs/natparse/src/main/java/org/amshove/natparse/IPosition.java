@@ -21,4 +21,14 @@ public interface IPosition
 		var extensionIndex = fileName.lastIndexOf('.');
 		return fileName.substring(0, extensionIndex);
 	}
+
+	default int endOffset()
+	{
+		return offsetInLine() + length();
+	}
+
+	default boolean isSamePositionAs(IPosition other)
+	{
+		return offset() == other.offset() && offsetInLine() == other.offsetInLine() && line() == other.line() && length() == other.length() && filePath().equals(other.filePath());
+	}
 }

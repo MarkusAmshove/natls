@@ -33,7 +33,9 @@ public enum SyntaxKind
 	STRING,
 	IDENTIFIER_OR_KEYWORD,
 	IDENTIFIER,
+	LABEL_IDENTIFIER,
 	COMMENT,
+	EDITOR_MASK,
 
 	// System variables
 	TIMX,
@@ -128,6 +130,7 @@ public enum SyntaxKind
 	FORMAT,
 	FRAC,
 	FULL,
+	FUNCTION,
 	GET,
 	GLOBAL,
 	HISTOGRAM,
@@ -177,7 +180,9 @@ public enum SyntaxKind
 	PERFORM,
 	POS,
 	PRINT,
+	PRINTER,
 	PROCESS,
+	PROTOTYPE,
 	PROGRAM,
 	QUESTIONMARK,
 	READ,
@@ -239,6 +244,8 @@ public enum SyntaxKind
 	WHEN,
 	WHILE,
 	WITH_CTE,
+	WINDOW,
+	WORK,
 	WRITE;
 
 	public boolean isIdentifier()

@@ -15,6 +15,7 @@ public class SyntaxToken implements IPosition
 	private final String source;
 	private final Path filePath;
 	private String identifierName = null;
+	private IPosition diagnosticPosition;
 
 	public SyntaxKind kind()
 	{
@@ -51,6 +52,26 @@ public class SyntaxToken implements IPosition
 		return filePath;
 	}
 
+	/**
+	 * Returns the position which can be used for Diagnostics.
+	 * The return value only differs from the tokens actual Position
+	 * if the token is used e.g. via INCLUDE.
+	 */
+	public IPosition diagnosticPosition()
+	{
+		if(diagnosticPosition == null)
+		{
+			return this;
+		}
+
+		return diagnosticPosition;
+	}
+
+	public void setDiagnosticPosition(IPosition diagnosticPosition)
+	{
+		this.diagnosticPosition = diagnosticPosition;
+	}
+
 	// TODO: Introduce `LiteralToken`?
 	public int intValue()
 	{
@@ -78,6 +99,22 @@ public class SyntaxToken implements IPosition
 		}
 		identifierName = source.toUpperCase();
 		return identifierName;
+	}
+
+	/**
+	 * Returns the token source as symbol name (all uppercase) trimmed to the given length.</br>
+	 * This is useful to compare e.g. subroutine names which only have 32 significant characters.</br>
+	 * The resulting name will not contain trailing space.
+	 */
+	public String trimmedSymbolName(int maxLength)
+	{
+		var name = symbolName();
+		if(name.length() < maxLength)
+		{
+			return name;
+		}
+
+		return name.substring(0, maxLength).trim();
 	}
 
 	public SyntaxToken(SyntaxKind kind, int offset, int lineOffset, int line, String source, Path filePath)

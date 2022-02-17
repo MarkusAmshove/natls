@@ -1,6 +1,7 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.IDiagnostic;
+import org.amshove.natparse.IPosition;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
@@ -17,6 +18,7 @@ abstract class AbstractParser<T>
 	private TokenNode previousNode;
 
 	private List<IDiagnostic> diagnostics = new ArrayList<>();
+	protected IPosition relocatedDiagnosticPosition;
 
 	public AbstractParser(IModuleProvider moduleProvider)
 	{
@@ -40,16 +42,21 @@ abstract class AbstractParser<T>
 
 	protected abstract T parseInternal();
 
+	protected boolean shouldRelocateDiagnostics()
+	{
+		return relocatedDiagnosticPosition != null;
+	}
+
 	protected INaturalModule sideloadModule(String referableName, ITokenNode importNode)
 	{
-		if(moduleProvider == null)
+		if (moduleProvider == null)
 		{
 			return null;
 		}
 
 		var module = moduleProvider.findNaturalModule(referableName);
 
-		if(module == null && !(referableName.startsWith("USR") && referableName.endsWith("N")))
+		if (module == null && !(referableName.startsWith("USR") && referableName.endsWith("N")))
 		{
 			report(ParserErrors.unresolvedImport(importNode));
 		}
@@ -59,7 +66,7 @@ abstract class AbstractParser<T>
 
 	protected IHasDefineData sideloadDefineData(ISymbolReferenceNode importNode)
 	{
-		if(sideloadModule(importNode.token().symbolName(), importNode) instanceof IHasDefineData hasDefineData)
+		if (sideloadModule(importNode.token().symbolName(), importNode) instanceof IHasDefineData hasDefineData)
 		{
 			return hasDefineData;
 		}
@@ -84,11 +91,12 @@ abstract class AbstractParser<T>
 
 	/**
 	 * Consumes the next token.
+	 *
 	 * @param node to add to
 	 */
 	protected void consume(BaseSyntaxNode node)
 	{
-		if(!isAtEnd())
+		if (!isAtEnd())
 		{
 			var token = tokens.advance();
 			previousNode = new TokenNode(token);
@@ -104,13 +112,14 @@ abstract class AbstractParser<T>
 	/**
 	 * Consumes the current token only if the kind matches.
 	 * This will not add any diagnostics.
+	 *
 	 * @param node the node to add the token to
 	 * @param kind the kind of the token that should be consumed
 	 * @return Whether the token was consumed or not
 	 */
 	protected boolean consumeOptionally(BaseSyntaxNode node, SyntaxKind kind)
 	{
-		if(!tokens.isAtEnd() && tokens.peek().kind() == kind)
+		if (!tokens.isAtEnd() && tokens.peek().kind() == kind)
 		{
 			previousNode = new TokenNode(tokens.peek());
 			node.addNode(previousNode);
@@ -122,14 +131,15 @@ abstract class AbstractParser<T>
 	/**
 	 * Consumes either firstKind, secondKind or none.
 	 * This will not add any diagnostics.
-	 * @param node the node to add the token to
-	 * @param firstKind the first possible kind
+	 *
+	 * @param node       the node to add the token to
+	 * @param firstKind  the first possible kind
 	 * @param secondKind the second possible kind
 	 * @return Whether any token was consumed or not
 	 */
 	protected boolean consumeEitherOptionally(BaseSyntaxNode node, SyntaxKind firstKind, SyntaxKind secondKind)
 	{
-		if(!tokens.isAtEnd() && (tokens.peek().kind() == firstKind || tokens.peek().kind() == secondKind))
+		if (!tokens.isAtEnd() && (tokens.peek().kind() == firstKind || tokens.peek().kind() == secondKind))
 		{
 			previousNode = new TokenNode(tokens.peek());
 			node.addNode(previousNode);
@@ -143,9 +153,9 @@ abstract class AbstractParser<T>
 	protected boolean consume(BaseSyntaxNode node, SyntaxKind kind)
 	{
 		var tokenConsumed = consumeOptionally(node, kind);
-		if(!tokenConsumed)
+		if (!tokenConsumed)
 		{
-			diagnostics.add(ParserErrors.unexpectedToken(kind, tokens.peek()));
+			diagnostics.add(ParserErrors.unexpectedToken(kind, tokens));
 		}
 
 		return tokenConsumed;
@@ -154,11 +164,11 @@ abstract class AbstractParser<T>
 	protected SyntaxToken identifier() throws ParseError
 	{
 		// TODO(kcheck): This currently allows keywords as identifier
-//		if(tokens.isAtEnd() || !tokens.peek().kind().isIdentifier())
-//		{
-//			diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens.peek()));
-//			throw new ParseError(peek());
-//		}
+		//		if(tokens.isAtEnd() || !tokens.peek().kind().isIdentifier())
+		//		{
+		//			diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens.peek()));
+		//			throw new ParseError(peek());
+		//		}
 
 		var token = tokens.peek();
 		tokens.advance();
@@ -167,18 +177,18 @@ abstract class AbstractParser<T>
 
 	protected SyntaxToken consumeMandatory(BaseSyntaxNode node, SyntaxKind kind) throws ParseError
 	{
-		if(consumeOptionally(node, kind))
+		if (consumeOptionally(node, kind))
 		{
 			return previousToken();
 		}
 
-		diagnostics.add(ParserErrors.unexpectedToken(kind, peek()));
+		diagnostics.add(ParserErrors.unexpectedToken(kind, tokens));
 		throw new ParseError(peek());
 	}
 
 	protected SyntaxToken consumeLiteral(BaseSyntaxNode node) throws ParseError
 	{
-		if(peek().kind().isSystemVariable())
+		if (peek().kind().isSystemVariable())
 		{
 			var systemVariable = peek();
 			node.addNode(new SystemVariableNode(systemVariable));
@@ -186,7 +196,7 @@ abstract class AbstractParser<T>
 			return systemVariable;
 		}
 
-		if(peek().kind() == SyntaxKind.LPAREN) // Attributes
+		if (peek().kind() == SyntaxKind.LPAREN) // Attributes
 		{
 			var lparen = peek(); // TODO(attributes): This is not correct but good for now.
 			while (!isAtEnd() && peek().kind() != SyntaxKind.RPAREN && peek().kind() != SyntaxKind.END_DEFINE)
@@ -208,7 +218,7 @@ abstract class AbstractParser<T>
 	{
 		// TODO(kcheck): This currently allows keywords as identifier
 		var kind = peek().kind();
-		if(!isAtEnd() && !kind.isLiteralOrConst())
+		if (!isAtEnd() && !kind.isLiteralOrConst())
 		{
 			previousNode = new TokenNode(peek());
 			node.addNode(previousNode);
@@ -216,14 +226,13 @@ abstract class AbstractParser<T>
 			return previousToken();
 		}
 
-		diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, peek()));
+		diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens));
 		throw new ParseError(peek());
 	}
 
-
 	protected SyntaxToken consumeAny(List<SyntaxKind> acceptedKinds) throws ParseError
 	{
-		if(tokens.isAtEnd() || !acceptedKinds.contains(tokens.peek().kind()))
+		if (tokens.isAtEnd() || !acceptedKinds.contains(tokens.peek().kind()))
 		{
 			diagnostics.add(ParserErrors.unexpectedToken(acceptedKinds, tokens.peek()));
 			throw new ParseError(peek());
@@ -234,7 +243,12 @@ abstract class AbstractParser<T>
 
 	protected boolean peekAny(List<SyntaxKind> acceptedKinds)
 	{
-		return !tokens.isAtEnd() && acceptedKinds.contains(tokens.peek().kind());
+		return peekAny(0, acceptedKinds);
+	}
+
+	protected boolean peekAny(int offset, List<SyntaxKind> acceptedKinds)
+	{
+		return !tokens.isAtEnd() && acceptedKinds.contains(tokens.peek(offset).kind());
 	}
 
 	protected TokenNode previousTokenNode()
@@ -254,9 +268,16 @@ abstract class AbstractParser<T>
 
 	protected void report(IDiagnostic diagnostic)
 	{
-		if(diagnostic != null)
+		if (diagnostic != null)
 		{
-			diagnostics.add(diagnostic);
+			if (shouldRelocateDiagnostics() && diagnostic instanceof ParserDiagnostic parserDiagnostic)
+			{
+				diagnostics.add(parserDiagnostic.relocate(relocatedDiagnosticPosition));
+			}
+			else
+			{
+				diagnostics.add(diagnostic);
+			}
 		}
 	}
 
@@ -274,7 +295,7 @@ abstract class AbstractParser<T>
 	{
 		var offset = 0;
 		var currentLine = peek().line();
-		while(!tokens.isAtEnd(offset) && peek(offset).line() == currentLine)
+		while (!tokens.isAtEnd(offset) && peek(offset).line() == currentLine)
 		{
 			offset++;
 		}
@@ -302,4 +323,8 @@ abstract class AbstractParser<T>
 		}
 	}
 
+	protected void relocateDiagnosticPosition(IPosition relocatedDiagnosticPosition)
+	{
+		this.relocatedDiagnosticPosition = relocatedDiagnosticPosition;
+	}
 }
