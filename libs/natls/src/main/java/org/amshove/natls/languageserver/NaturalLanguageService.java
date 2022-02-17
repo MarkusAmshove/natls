@@ -550,8 +550,8 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		item.setSortText(
 			isImported
-				? "1"
-				: "2"
+				? "2"
+				: "3"
 		);
 
 		item.setLabel(label);
@@ -566,6 +566,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		item.setKind(CompletionItemKind.Method);
 		item.setInsertText(subroutineNode.declaration().trimmedSymbolName(32));
 		item.setLabel(subroutineNode.declaration().symbolName());
+		item.setSortText("1");
 
 		return item;
 	}
