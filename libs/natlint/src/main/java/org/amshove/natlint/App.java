@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 public class App
 {
 	private static String singleFile; // TODO: Implement proper
+	private static String singleFolder;
 	private static boolean noWarn;
 	private static boolean printStatistic;
 	private static String onlyDiagId;
@@ -51,6 +52,13 @@ public class App
 		if (workingDirectory.getRoot().equals(workingDirectory) || projectFile.isEmpty())
 		{
 			throw new RuntimeException("Project root could not be determined. .natural or _naturalBuild file not found");
+		}
+
+		var folderIndex = arguments.indexOf("--folder");
+		if(arguments.remove("--folder"))
+		{
+			singleFolder = arguments.get(folderIndex);
+			arguments.remove(folderIndex);
 		}
 
 		var singleIndex = arguments.indexOf("--single");
@@ -102,6 +110,11 @@ public class App
 	{
 		var singleLib = singleFile != null ? singleFile.split("\\.")[0] : null; // TODO: Implement proper
 		var singleModule = singleFile != null ? singleFile.split("\\.")[1] : null; // TODO: Implement proper
+		if(singleFolder != null)
+		{
+			singleLib = singleFolder.split("\\.")[0];
+			singleFolder = singleFolder.split("\\.")[1];
+		}
 
 		var startIndex = System.currentTimeMillis();
 		var project = new BuildFileProjectReader(filesystem).getNaturalProject(projectFile);
@@ -127,6 +140,11 @@ public class App
 			for (var file : library.files().stream().filter(f -> f.getFiletype().hasDefineData()).toList())
 			{
 				if(singleModule != null && !singleModule.equalsIgnoreCase(file.getFilenameWithoutExtension()))
+				{
+					continue;
+				}
+
+				if(singleFolder != null && !file.getPath().toString().contains(singleFolder))
 				{
 					continue;
 				}
