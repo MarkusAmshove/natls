@@ -1,5 +1,7 @@
 package org.amshove.natls.languageserver;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.amshove.natls.codeactions.CodeActionRegistry;
 import org.amshove.natls.codeactions.RefactoringContext;
 import org.amshove.natls.codeactions.RenameSymbolAction;
@@ -144,7 +146,8 @@ public class NaturalLanguageService implements LanguageClientAware
 	{
 
 		var filepath = LspUtil.uriToPath(textDocument.getUri());
-		if (findNaturalFile(filepath).getType() == NaturalFileType.COPYCODE)
+		var file = findNaturalFile(filepath);
+		if (file.getType() == NaturalFileType.COPYCODE)
 		{
 			return EMPTY_HOVER;
 		}
@@ -160,7 +163,7 @@ public class NaturalLanguageService implements LanguageClientAware
 			return hoverCallnat(symbolToSearchFor);
 		}
 
-		var module = findNaturalFile(filepath).module();
+		var module = file.module();
 		if (!(module instanceof IHasDefineData hasDefineData))
 		{
 			return EMPTY_HOVER;
@@ -177,7 +180,7 @@ public class NaturalLanguageService implements LanguageClientAware
 				new Hover(
 					new MarkupContent(
 						MarkupKind.MARKDOWN,
-						createHoverMarkdownText(v)
+						createHoverMarkdownText(v, module)
 					)
 				)
 			)
@@ -270,10 +273,49 @@ public class NaturalLanguageService implements LanguageClientAware
 		return tokens.peek(-2); // TODO: Sometimes -1..
 	}
 
-	private String createHoverMarkdownText(IVariableNode v)
+	private String getLineComment(int line, Path filePath)
+	{
+		return getLineComment(line, findNaturalFile(filePath));
+	}
+
+	private String getLineComment(int line, LanguageServerFile file)
+	{
+		return file.comments().stream()
+			.filter(t -> t.line() == line)
+			.map(SyntaxToken::source)
+			.findFirst()
+			.orElse(null);
+	}
+
+	private String createHoverMarkdownText(IVariableNode v, INaturalModule originalModule)
 	{
 		var hoverText = formatVariableHover(v);
 		hoverText += "\n";
+
+		var hasUsingComment = false;
+		if(!originalModule.file().getPath().equals(v.position().filePath()))
+		{
+			// This is an imported variable
+			var importedFile = findNaturalFile(v.position().filePath());
+			var importedModule = importedFile.module();
+			var using = ((IHasDefineData)originalModule).defineData().usings().stream().filter(u -> u.target().symbolName().equals(importedModule.name())).findFirst().orElse(null);
+			if(using != null)
+			{
+				var usingComment = getLineComment(using.position().line(), using.position().filePath());
+				if (usingComment != null)
+				{
+					hasUsingComment = true;
+					hoverText += "\n*using comment:*\n ```natural\n " + usingComment + "\n```\n";
+				}
+			}
+		}
+
+		var originalPositionComment = getLineComment(v.position().line(), v.position().filePath());
+		if (originalPositionComment != null)
+		{
+			var commentTitle = hasUsingComment ? "origin comment" : "comment";
+			hoverText += "%n*%s*:%n```natural%n ".formatted(commentTitle) + originalPositionComment + "\n```\n";
+		}
 
 		if (v.level() > 1)
 		{
@@ -498,7 +540,40 @@ public class NaturalLanguageService implements LanguageClientAware
 			.filter(v -> !(v instanceof IRedefinitionNode)) // this is the `REDEFINE #VAR`, which results in the variable being doubled in completion
 			.map(this::createCompletionItem)
 			.filter(Objects::nonNull)
+			.peek(i -> {
+				if(i.getKind() == CompletionItemKind.Variable)
+				{
+					i.setData(new UnresolvedCompletionInfo((String) i.getData(), filePath.toUri().toString()));
+				}
+			})
 			.toList();
+	}
+
+	public CompletionItem resolveComplete(CompletionItem item)
+	{
+		if(item.getKind() != CompletionItemKind.Variable)
+		{
+			System.err.println("Raus weil kind nicht var, sondern: " + item.getKind());
+			return item;
+		}
+
+		var jsonData = (JsonObject)item.getData();
+		var info = new Gson().fromJson(jsonData, UnresolvedCompletionInfo.class);
+		var module = findNaturalFile(LspUtil.uriToPath(info.getUri())).module();
+		if(!(module instanceof IHasDefineData hasDefineData))
+		{
+			return item;
+		}
+
+		var variableNode = hasDefineData.defineData().variables().stream().filter(v -> v.qualifiedName().equals(info.getQualifiedName())).findFirst().orElse(null);
+		if(variableNode == null)
+		{
+			System.err.println("Raus weil keine Variable");
+			return item;
+		}
+
+		item.setDocumentation(new MarkupContent(MarkupKind.MARKDOWN, createHoverMarkdownText(variableNode, module)));
+		return item;
 	}
 
 	private CompletionItem createCompletionItem(IReferencableNode referencableNode)
@@ -528,6 +603,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var item = new CompletionItem();
 		var variableName = variableNode.name();
 
+		item.setKind(CompletionItemKind.Variable);
 		item.setLabel(variableName);
 		var label = "";
 		if (variableNode instanceof ITypedVariableNode typedNode)
@@ -555,7 +631,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		);
 
 		item.setLabel(label);
-		item.setDocumentation(new MarkupContent(MarkupKind.MARKDOWN, createHoverMarkdownText(variableNode)));
+		item.setData(variableNode.qualifiedName());
 
 		return item;
 	}

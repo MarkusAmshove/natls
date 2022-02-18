@@ -20,6 +20,12 @@ public class NaturalDocumentService implements TextDocumentService
 	}
 
 	@Override
+	public CompletableFuture<CompletionItem> resolveCompletionItem(CompletionItem unresolved)
+	{
+		return CompletableFuture.supplyAsync(() -> languageService.resolveComplete(unresolved));
+	}
+
+	@Override
 	public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> definition(
 		DefinitionParams params)
 	{

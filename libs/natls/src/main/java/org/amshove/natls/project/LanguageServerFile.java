@@ -6,6 +6,7 @@ import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.Lexer;
+import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
 import org.amshove.natparse.natural.project.NaturalFile;
@@ -33,6 +34,7 @@ public class LanguageServerFile implements IModuleProvider
 	private LanguageServerLibrary library;
 	private final List<LanguageServerFile> outgoingReferences = new ArrayList<>();
 	private final List<LanguageServerFile> incomingReferences = new ArrayList<>();
+	private final List<SyntaxToken> comments = new ArrayList<>();
 
 	public LanguageServerFile(NaturalFile file)
 	{
@@ -157,6 +159,8 @@ public class LanguageServerFile implements IModuleProvider
 
 			var lexer = new Lexer();
 			var tokenList = lexer.lex(source, file.getPath());
+			comments.clear();
+			comments.addAll(tokenList.comments().toList());
 			var parser = new NaturalParser(this);
 
 			var previousCallers = module != null ? module.callers() : ReadOnlyList.<IModuleReferencingNode>from(List.of());
@@ -368,5 +372,10 @@ public class LanguageServerFile implements IModuleProvider
 	public NaturalFile getNaturalFile()
 	{
 		return file;
+	}
+
+	public ReadOnlyList<SyntaxToken> comments()
+	{
+		return ReadOnlyList.from(comments);
 	}
 }
