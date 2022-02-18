@@ -110,7 +110,9 @@ public class NaturalParser
 
 		for (var unresolvedReference : statementParser.getUnresolvedReferences())
 		{
-			if(unresolvedReference.referencingToken().symbolName().startsWith("&"))
+			if(unresolvedReference.referencingToken().symbolName().startsWith("&")
+				|| (unresolvedReference.referencingToken().symbolName().contains(".")
+					&& unresolvedReference.referencingToken().symbolName().split("\\.")[1].startsWith("&")))
 			{
 				// Copycode parameter
 				continue;

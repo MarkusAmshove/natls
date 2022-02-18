@@ -36,6 +36,13 @@ public class CopyCodesShould extends ParserIntegrationTest
 	}
 
 	@Test
+	void notReportDiagnosticsForCopycodeParameterThatAreQualified(@ProjectName("copycodetests") NaturalProject project)
+	{
+		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "USEQVAR"), ISubprogram.class);
+		assertThat(subprogram.diagnostics()).hasSize(0);
+	}
+
+	@Test
 	void relocateDiagnosticLocationsForCopyCodeNodesThatAreNestedMultipleTimes(@ProjectName("copycodetests") NaturalProject project)
 	{
 		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "SUBPROG2"), ISubprogram.class);
