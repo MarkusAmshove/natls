@@ -538,7 +538,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		return module.referencableNodes().stream()
 			.filter(v -> !(v instanceof IRedefinitionNode)) // this is the `REDEFINE #VAR`, which results in the variable being doubled in completion
-			.map(this::createCompletionItem)
+			.map(n -> createCompletionItem(n, file))
 			.filter(Objects::nonNull)
 			.peek(i -> {
 				if(i.getKind() == CompletionItemKind.Variable)
@@ -553,7 +553,6 @@ public class NaturalLanguageService implements LanguageClientAware
 	{
 		if(item.getKind() != CompletionItemKind.Variable)
 		{
-			System.err.println("Raus weil kind nicht var, sondern: " + item.getKind());
 			return item;
 		}
 
@@ -568,7 +567,6 @@ public class NaturalLanguageService implements LanguageClientAware
 		var variableNode = hasDefineData.defineData().variables().stream().filter(v -> v.qualifiedName().equals(info.getQualifiedName())).findFirst().orElse(null);
 		if(variableNode == null)
 		{
-			System.err.println("Raus weil keine Variable");
 			return item;
 		}
 
@@ -576,13 +574,13 @@ public class NaturalLanguageService implements LanguageClientAware
 		return item;
 	}
 
-	private CompletionItem createCompletionItem(IReferencableNode referencableNode)
+	private CompletionItem createCompletionItem(IReferencableNode referencableNode, LanguageServerFile openFile)
 	{
 		try
 		{
 			if (referencableNode instanceof IVariableNode variableNode)
 			{
-				return createCompletionItem(variableNode);
+				return createCompletionItem(variableNode, openFile);
 			}
 
 			if (referencableNode instanceof ISubroutineNode subroutineNode)
@@ -598,7 +596,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		return null;
 	}
 
-	private CompletionItem createCompletionItem(IVariableNode variableNode)
+	private CompletionItem createCompletionItem(IVariableNode variableNode, LanguageServerFile openFile)
 	{
 		var item = new CompletionItem();
 		var variableName = variableNode.name();
@@ -617,7 +615,7 @@ public class NaturalLanguageService implements LanguageClientAware
 			item.setInsertText(variableName);
 		}
 
-		var isImported = NodeUtil.findFirstParentOfType(variableNode, IUsingNode.class) != null;
+		var isImported = variableNode.position().filePath().equals(openFile.getPath());
 
 		if (isImported)
 		{
