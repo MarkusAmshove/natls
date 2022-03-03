@@ -11,7 +11,7 @@ public enum CodeActionRegistry
 {
 	INSTANCE;
 
-	private List<ICodeActionProvider> codeActionProviders;
+	private final List<ICodeActionProvider> codeActionProviders;
 
 	CodeActionRegistry()
 	{

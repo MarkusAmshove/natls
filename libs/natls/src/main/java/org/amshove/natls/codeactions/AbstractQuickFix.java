@@ -34,14 +34,14 @@ public abstract class AbstractQuickFix implements ICodeActionProvider
 	@Override
 	public boolean isApplicable(RefactoringContext context)
 	{
-		return context.diagnosticsAtPosition().stream().anyMatch(d -> quickfixes.containsKey(d.getCode().getLeft()));
+		return context.diagnosticsAtPosition().stream().anyMatch(d -> d.getCode() != null && d.getCode().isLeft() && quickfixes.containsKey(d.getCode().getLeft()));
 	}
 
 	@Override
 	public List<CodeAction> createCodeAction(RefactoringContext context)
 	{
 		return context.diagnosticsAtPosition().stream()
-			.filter(d -> quickfixes.containsKey(d.getCode().getLeft()))
+			.filter(d -> d.getCode() != null && d.getCode().isLeft() && quickfixes.containsKey(d.getCode().getLeft()))
 			.flatMap(d -> quickfixes.get(d.getCode().getLeft()).stream().map(qf -> qf.apply(QuickFixContext.fromCodeActionContext(context, d))))
 			.toList();
 	}
