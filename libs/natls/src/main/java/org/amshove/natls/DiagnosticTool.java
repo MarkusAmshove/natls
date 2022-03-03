@@ -4,7 +4,8 @@ public enum DiagnosticTool
 {
 	NATPARSE("NatParse"),
 	NATUNIT("NatUnit"),
-	NATLINT("NatLint");
+	NATLINT("NatLint"),
+	CATALOG("Natural");
 
 	private final String id;
 

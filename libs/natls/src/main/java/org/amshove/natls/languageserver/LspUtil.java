@@ -122,4 +122,18 @@ public class LspUtil
 			)
 		);
 	}
+
+	public static Range toSingleRange(int line, int column)
+	{
+		var position = new Position(line, column);
+		return new Range(position, position);
+	}
+
+	public static Range lineRange(int line)
+	{
+		return new Range(
+			new Position(line, 0),
+			new Position(line + 1, 0)
+		);
+	}
 }

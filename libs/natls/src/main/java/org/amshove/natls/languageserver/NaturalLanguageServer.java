@@ -39,7 +39,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			capabilities.setDefinitionProvider(true);
 			capabilities.setReferencesProvider(true);
 			capabilities.setCompletionProvider(new CompletionOptions(true, List.of(".")));
-			capabilities.setCodeLensProvider(new CodeLensOptions(true));
+			capabilities.setCodeLensProvider(new CodeLensOptions(false)); // Temporary
 			capabilities.setSignatureHelpProvider(new SignatureHelpOptions()); // Maybe < for Functions?
 			capabilities.setCallHierarchyProvider(true);
 			capabilities.setCodeActionProvider(CodeActionRegistry.INSTANCE.registeredCodeActionCount() > 0);
@@ -57,9 +57,10 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			if (client != null)
 			{
 				var watchFileMethod = "workspace/didChangeWatchedFiles";
-				var natunitWatcher = new FileSystemWatcher("build/test-results/**/*.xml");
-				var sourceWatcher = new FileSystemWatcher("Natural-Libraries/**/*.*");
-				var watchChangesRegistrationOption = new DidChangeWatchedFilesRegistrationOptions(List.of(natunitWatcher, sourceWatcher));
+				var natunitWatcher = new FileSystemWatcher("**/build/test-results/**/*.xml");
+				var stowWatcher = new FileSystemWatcher("**/build/stow.log");
+				var sourceWatcher = new FileSystemWatcher("**/Natural-Libraries/**/*.*");
+				var watchChangesRegistrationOption = new DidChangeWatchedFilesRegistrationOptions(List.of(natunitWatcher, sourceWatcher, stowWatcher));
 				client.registerCapability(new RegistrationParams(List.of(new Registration(UUID.randomUUID().toString(), watchFileMethod, watchChangesRegistrationOption))));
 			}
 

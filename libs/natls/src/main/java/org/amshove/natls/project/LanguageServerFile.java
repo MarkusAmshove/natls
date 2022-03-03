@@ -156,6 +156,7 @@ public class LanguageServerFile implements IModuleProvider
 			outgoingReferences.forEach(ref -> ref.removeIncomingReference(this));
 			outgoingReferences.clear(); // Will be re-added during parse
 			clearDiagnosticsByTool(DiagnosticTool.NATPARSE);
+			clearDiagnosticsByTool(DiagnosticTool.CATALOG);
 
 			var lexer = new Lexer();
 			var tokenList = lexer.lex(source, file.getPath());
