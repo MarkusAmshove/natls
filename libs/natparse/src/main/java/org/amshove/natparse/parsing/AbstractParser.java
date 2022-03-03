@@ -64,7 +64,7 @@ abstract class AbstractParser<T>
 		return module;
 	}
 
-	protected IHasDefineData sideloadDefineData(ISymbolReferenceNode importNode)
+	protected IHasDefineData sideloadDefineData(TokenNode importNode)
 	{
 		if (sideloadModule(importNode.token().symbolName(), importNode) instanceof IHasDefineData hasDefineData)
 		{

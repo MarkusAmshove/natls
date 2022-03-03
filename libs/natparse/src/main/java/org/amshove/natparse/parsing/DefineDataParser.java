@@ -504,8 +504,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		var identifier = identifier();
 		using.setUsingTarget(identifier);
-		var identifierReference = new SymbolReferenceNode(identifier);
-		using.addNode(identifierReference);
+		var identifierTokenNode = new TokenNode(identifier);
+		using.addNode(identifierTokenNode);
 
 		for (var presentUsing : defineData.usings())
 		{
@@ -516,7 +516,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 
 
-		var defineDataModule = sideloadDefineData(identifierReference);
+		var defineDataModule = sideloadDefineData(identifierTokenNode);
 		if(defineDataModule != null)
 		{
 			using.setReferencingModule((NaturalModule)defineDataModule);
