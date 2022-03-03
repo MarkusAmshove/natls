@@ -2,6 +2,7 @@ package org.amshove.natls.languageserver;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import org.amshove.natls.DiagnosticTool;
 import org.amshove.natls.codeactions.CodeActionRegistry;
 import org.amshove.natls.codeactions.RefactoringContext;
 import org.amshove.natls.codeactions.RenameSymbolAction;
@@ -666,7 +667,15 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	private void publishDiagnosticsOfFile(LanguageServerFile file)
 	{
-		client.publishDiagnostics(new PublishDiagnosticsParams(file.getUri(), file.allDiagnostics()));
+		var allDiagnostics = file.allDiagnostics();
+		var shouldIncludeLinterDiagnostics = switch (file.getType()) {
+			case LDA, GDA, PDA, MAP, DDM -> false;
+			default -> true;
+		};
+
+		var diagnosticsToReport = shouldIncludeLinterDiagnostics ? allDiagnostics
+			: allDiagnostics.stream().filter(d -> !d.getSource().equals(DiagnosticTool.NATLINT.getId())).toList();
+		client.publishDiagnostics(new PublishDiagnosticsParams(file.getUri(), diagnosticsToReport));
 	}
 
 	@Override

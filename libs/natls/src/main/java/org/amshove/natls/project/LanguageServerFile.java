@@ -112,6 +112,7 @@ public class LanguageServerFile implements IModuleProvider
 
 	public void changed(String newSource)
 	{
+		clearDiagnosticsByTool(DiagnosticTool.CATALOG);
 		// Tuning: Reduce the load if the module has too many dependants.
 		// 	Its fair enough to reparse the dependants on save only when changing
 		//  a central module
@@ -121,6 +122,7 @@ public class LanguageServerFile implements IModuleProvider
 
 	public void save()
 	{
+		clearDiagnosticsByTool(DiagnosticTool.CATALOG);
 		parse(true);
 	}
 
@@ -156,7 +158,6 @@ public class LanguageServerFile implements IModuleProvider
 			outgoingReferences.forEach(ref -> ref.removeIncomingReference(this));
 			outgoingReferences.clear(); // Will be re-added during parse
 			clearDiagnosticsByTool(DiagnosticTool.NATPARSE);
-			clearDiagnosticsByTool(DiagnosticTool.CATALOG);
 
 			var lexer = new Lexer();
 			var tokenList = lexer.lex(source, file.getPath());
