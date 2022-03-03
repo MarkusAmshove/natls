@@ -842,6 +842,7 @@ public class Lexer
 			}
 		}
 
+		token.setDiagnosticPosition(relocatedDiagnosticPosition);
 		tokens.add(token);
 		scanner.reset();
 	}

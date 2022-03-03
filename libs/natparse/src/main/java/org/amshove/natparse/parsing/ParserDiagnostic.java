@@ -55,9 +55,9 @@ public class ParserDiagnostic implements IDiagnostic
 		return create(message, token.diagnosticPosition(), token, error);
 	}
 
-	public static ParserDiagnostic create(String message, IPosition position, IPosition originalPosition, ParserError error)
+	public static ParserDiagnostic create(String message, IPosition diagnosticPosition, IPosition originalPosition, ParserError error)
 	{
-		return new ParserDiagnostic(message, position.offset(), position.offsetInLine(), position.line(), position.length(), position.filePath(), originalPosition, error);
+		return new ParserDiagnostic(message, diagnosticPosition.offset(), diagnosticPosition.offsetInLine(), diagnosticPosition.line(), diagnosticPosition.length(), diagnosticPosition.filePath(), originalPosition, error);
 	}
 
 	@Override
