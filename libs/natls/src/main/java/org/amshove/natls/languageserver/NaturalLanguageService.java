@@ -364,6 +364,12 @@ public class NaturalLanguageService implements LanguageClientAware
 				hoverText += "%s>".formatted(typedVariable.type().initialValue().source());
 			}
 		}
+
+		if(v.findDescendantToken(SyntaxKind.OPTIONAL) != null)
+		{
+			hoverText += " OPTIONAL";
+		}
+
 		hoverText += "\n```";
 		if (v.isArray())
 		{
