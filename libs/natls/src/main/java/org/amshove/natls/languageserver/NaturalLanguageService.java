@@ -535,6 +535,10 @@ public class NaturalLanguageService implements LanguageClientAware
 		// var position = completionParams.getPosition();
 
 		var file = findNaturalFile(filePath);
+		if(!file.getType().hasBody())
+		{
+			return List.of();
+		}
 		var module = file.module();
 
 		return module.referencableNodes().stream()
