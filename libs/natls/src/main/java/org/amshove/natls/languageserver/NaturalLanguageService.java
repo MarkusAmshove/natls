@@ -12,6 +12,7 @@ import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natls.project.LanguageServerProject;
 import org.amshove.natls.project.ModuleReferenceParser;
 import org.amshove.natparse.NodeUtil;
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
@@ -161,7 +162,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		if (symbolToSearchFor.kind() == SyntaxKind.STRING)
 		{
-			return hoverCallnat(symbolToSearchFor);
+			return hoverExternalModule(symbolToSearchFor);
 		}
 
 		var module = file.module();
@@ -189,7 +190,7 @@ public class NaturalLanguageService implements LanguageClientAware
 			.orElse(EMPTY_HOVER);
 	}
 
-	private Hover hoverCallnat(SyntaxToken symbolToSearchFor)
+	private Hover hoverExternalModule(SyntaxToken symbolToSearchFor)
 	{
 		var module = project.findModule(symbolToSearchFor.stringValue());
 		if (module == null)
@@ -197,7 +198,6 @@ public class NaturalLanguageService implements LanguageClientAware
 			return EMPTY_HOVER;
 		}
 
-		// TODO: Use LanguageServerFile
 		var tokens = lexPath(module.getPath());
 		var defineData = parseDefineData(tokens);
 		if (defineData == null)
@@ -206,17 +206,27 @@ public class NaturalLanguageService implements LanguageClientAware
 		}
 
 		var hoverText = "**%s.%s**".formatted(module.getLibrary().getName(), module.getReferableName());
+
+		var documentation = extractDocumentation(tokens.comments(), tokens.subrange(0, 0).first().line());
+		if(documentation != null && !documentation.isEmpty())
+		{
+			hoverText += "\n```natural\n";
+			hoverText += "\n" + documentation;
+			hoverText += "\n```";
+		}
+
 		hoverText += "\n\nParameter:\n```natural\n";
 
 		// TODO: Order is not correct. DefineData should have .parameter() which have USINGs and non-USINGS
 		//  mixed in definition order
 		hoverText += defineData.parameterUsings().stream()
-			.map(using -> "PARAMETER USING %s".formatted(using.target().source())) // TODO: Maybe add the PDA content nested?
+			.map(using -> "PARAMETER USING %s %s".formatted(using.target().source(), extractLineComment(tokens.comments(), using.position().line())).trim())
 			.collect(Collectors.joining("\n"));
 		hoverText += "\n```\n";
 		hoverText += defineData.variables().stream()
 			.filter(v -> v.scope() == VariableScope.PARAMETER)
-			.map(this::formatVariableHover).collect(Collectors.joining("\n"));
+			.map(v -> "%s %s%n```".formatted(formatVariableHover(v, false), extractLineComment(tokens.comments(), v.position().line())).trim())
+			.collect(Collectors.joining("\n"));
 
 		return new Hover(
 			new MarkupContent(
@@ -224,6 +234,29 @@ public class NaturalLanguageService implements LanguageClientAware
 				hoverText
 			)
 		);
+	}
+
+	private String extractLineComment(ReadOnlyList<SyntaxToken> comments, int line)
+	{
+		return comments.stream().filter(t -> t.line() == line)
+			.findFirst()
+			.map(SyntaxToken::source)
+			.orElse("");
+	}
+
+	private String extractDocumentation(ReadOnlyList<SyntaxToken> comments, int firstLineOfCode)
+	{
+		if(comments.isEmpty())
+		{
+			return null;
+		}
+
+		return comments.stream()
+			.takeWhile(t -> t.line() < firstLineOfCode)
+			.map(SyntaxToken::source)
+			.filter(l -> !l.startsWith("* >") && !l.startsWith("* <") && !l.startsWith("* :"))
+			.filter(l -> !l.trim().endsWith("*"))
+			.collect(Collectors.joining(System.lineSeparator()));
 	}
 
 	private SyntaxToken findTokenAtPosition(Path filePath, Position position)
@@ -248,30 +281,6 @@ public class NaturalLanguageService implements LanguageClientAware
 		}
 
 		return tokens.peek();
-	}
-
-	private SyntaxToken findPreviousTokenOfPosition(Path filePath, Position position)
-	{
-		var tokens = lexPath(filePath);
-
-		while (!tokens.isAtEnd())
-		{
-			var token = tokens.peek();
-			if (token.line() < position.getLine())
-			{
-				tokens.advance();
-				continue;
-			}
-
-			if (token.offsetInLine() <= position.getCharacter() && token.offsetInLine() + token.length() >= position.getCharacter())
-			{
-				break;
-			}
-
-			tokens.advance();
-		}
-
-		return tokens.peek(-2); // TODO: Sometimes -1..
 	}
 
 	private String getLineComment(int line, Path filePath)
@@ -338,6 +347,11 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	private String formatVariableHover(IVariableNode v)
 	{
+		return formatVariableHover(v, true);
+	}
+
+	private String formatVariableHover(IVariableNode v, boolean closeMarkdown)
+	{
 		var hoverText = "```natural%n%s %d %s".formatted(v.scope().name(), v.level(), v.name());
 		if (v instanceof ITypedVariableNode typedVariable)
 		{
@@ -370,7 +384,11 @@ public class NaturalLanguageService implements LanguageClientAware
 			hoverText += " OPTIONAL";
 		}
 
-		hoverText += "\n```";
+		if(closeMarkdown)
+		{
+			hoverText += "\n```";
+		}
+
 		if (v.isArray())
 		{
 			hoverText += "\n\n*dimensions:*";
