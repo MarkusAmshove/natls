@@ -165,6 +165,12 @@ public class NaturalLanguageService implements LanguageClientAware
 			return hoverExternalModule(symbolToSearchFor);
 		}
 
+		var externalSubroutineHover = hoverExternalModule(symbolToSearchFor);
+		if(externalSubroutineHover != EMPTY_HOVER)
+		{
+			return externalSubroutineHover;
+		}
+
 		var module = file.module();
 		if (!(module instanceof IHasDefineData hasDefineData))
 		{
@@ -192,7 +198,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	private Hover hoverExternalModule(SyntaxToken symbolToSearchFor)
 	{
-		var module = project.findModule(symbolToSearchFor.stringValue());
+		var module = project.findModule(symbolToSearchFor.kind().isIdentifier() ? symbolToSearchFor.symbolName() : symbolToSearchFor.stringValue());
 		if (module == null)
 		{
 			return EMPTY_HOVER;
@@ -206,6 +212,10 @@ public class NaturalLanguageService implements LanguageClientAware
 		}
 
 		var hoverText = "**%s.%s**".formatted(module.getLibrary().getName(), module.getReferableName());
+		if(!module.getFilenameWithoutExtension().equals(module.getReferableName()))
+		{
+			hoverText += " (%s)".formatted(module.getFilenameWithoutExtension());
+		}
 
 		var documentation = extractDocumentation(tokens.comments(), tokens.subrange(0, 0).first().line());
 		if(documentation != null && !documentation.isEmpty())
@@ -215,18 +225,22 @@ public class NaturalLanguageService implements LanguageClientAware
 			hoverText += "\n```";
 		}
 
-		hoverText += "\n\nParameter:\n```natural\n";
+		if(module.getFiletype() == NaturalFileType.SUBROUTINE || module.getFiletype() == NaturalFileType.SUBPROGRAM || module.getFiletype() == NaturalFileType.PROGRAM)
+		{
+			// TODO: Hover level 1 variables for *DAs
+			hoverText += "\n\nParameter:\n```natural\n";
 
-		// TODO: Order is not correct. DefineData should have .parameter() which have USINGs and non-USINGS
-		//  mixed in definition order
-		hoverText += defineData.parameterUsings().stream()
-			.map(using -> "PARAMETER USING %s %s".formatted(using.target().source(), extractLineComment(tokens.comments(), using.position().line())).trim())
-			.collect(Collectors.joining("\n"));
-		hoverText += "\n```\n";
-		hoverText += defineData.variables().stream()
-			.filter(v -> v.scope() == VariableScope.PARAMETER)
-			.map(v -> "%s %s%n```".formatted(formatVariableHover(v, false), extractLineComment(tokens.comments(), v.position().line())).trim())
-			.collect(Collectors.joining("\n"));
+			// TODO: Order is not correct. DefineData should have .parameter() which have USINGs and non-USINGS
+			//  mixed in definition order
+			hoverText += defineData.parameterUsings().stream()
+				.map(using -> "PARAMETER USING %s %s".formatted(using.target().source(), extractLineComment(tokens.comments(), using.position().line())).trim())
+				.collect(Collectors.joining("\n"));
+			hoverText += "\n```\n";
+			hoverText += defineData.variables().stream()
+				.filter(v -> v.scope() == VariableScope.PARAMETER)
+				.map(v -> "%s %s%n```".formatted(formatVariableHover(v, false), extractLineComment(tokens.comments(), v.position().line())).trim())
+				.collect(Collectors.joining("\n"));
+		}
 
 		return new Hover(
 			new MarkupContent(
