@@ -58,6 +58,14 @@ public class LspUtil
 			};
 	}
 
+	public static Range toRange(Position position)
+	{
+		return new Range(
+				position,
+				position
+		);
+	}
+
 	public static Range toRange(IPosition position)
 	{
 		return new Range(
