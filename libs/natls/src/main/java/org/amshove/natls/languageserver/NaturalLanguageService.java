@@ -527,7 +527,7 @@ public class NaturalLanguageService implements LanguageClientAware
 			}
 			else
 			{
-				languageServerProject.provideAllFiles().filter(f -> f.getOutgoingReferences().contains(file)).forEach(f -> f.parse(false));
+				languageServerProject.provideAllFiles().filter(f -> f.getOutgoingReferences().contains(file)).forEach(f -> f.parse());
 				references.addAll(
 					file.module().callers().stream().filter(n -> n != null).map(n -> LspUtil.toLocation(n.referencingToken())).toList()
 				);
@@ -829,7 +829,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 				var percentage = (int) (filesParsed * 100 / fileCount);
 				monitor.progress(qualifiedName, percentage);
-				file.parse(false);
+				file.parse();
 				publishDiagnostics(file);
 				filesParsed++;
 			}

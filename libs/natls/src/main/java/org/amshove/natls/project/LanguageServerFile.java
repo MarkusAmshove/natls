@@ -22,8 +22,10 @@ import org.eclipse.lsp4j.Range;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
 import java.util.*;
 
 public class LanguageServerFile implements IModuleProvider
@@ -35,6 +37,8 @@ public class LanguageServerFile implements IModuleProvider
 	private final List<LanguageServerFile> outgoingReferences = new ArrayList<>();
 	private final List<LanguageServerFile> incomingReferences = new ArrayList<>();
 	private final List<SyntaxToken> comments = new ArrayList<>();
+
+	private byte[] defineDataHash;
 
 	public LanguageServerFile(NaturalFile file)
 	{
@@ -95,7 +99,7 @@ public class LanguageServerFile implements IModuleProvider
 	{
 		if (module == null)
 		{
-			parse(false);
+			parse();
 		}
 	}
 
@@ -107,30 +111,26 @@ public class LanguageServerFile implements IModuleProvider
 
 	void dependencyChanged()
 	{
-		parse(true);
+		parse();
 	}
 
 	public void changed(String newSource)
 	{
 		clearDiagnosticsByTool(DiagnosticTool.CATALOG);
-		// Tuning: Reduce the load if the module has too many dependants.
-		// 	Its fair enough to reparse the dependants on save only when changing
-		//  a central module
-		var reparseDependants = incomingReferences.size() < 20;
-		parseInternal(newSource, reparseDependants);
+		parseInternal(newSource);
 	}
 
 	public void save()
 	{
 		clearDiagnosticsByTool(DiagnosticTool.CATALOG);
-		parse(true);
+		parse();
 	}
 
-	public void parse(boolean reparseCallers)
+	public void parse()
 	{
 		try
 		{
-			parseInternal(Files.readString(file.getPath()), reparseCallers);
+			parseInternal(Files.readString(file.getPath()));
 		}
 		catch (Exception e)
 		{
@@ -146,7 +146,18 @@ public class LanguageServerFile implements IModuleProvider
 		}
 	}
 
-	private void parseInternal(String source, boolean reparseCallers)
+	private boolean hasToReparseCallers(String newSource)
+	{
+		var newDefineDataHash = hashDefineData(newSource);
+		var defineDataChanged = !Arrays.equals(newDefineDataHash, defineDataHash);
+		defineDataHash = newDefineDataHash;
+		var tooManyCallers = incomingReferences.size() > 20;
+		// TODO: Add trace log?
+
+		return !tooManyCallers && defineDataChanged;
+	}
+
+	private void parseInternal(String source)
 	{
 		try
 		{
@@ -180,7 +191,7 @@ public class LanguageServerFile implements IModuleProvider
 				addDiagnostic(DiagnosticTool.NATLINT, linterDiagnostic);
 			}
 
-			if (reparseCallers)
+			if (hasToReparseCallers(source))
 			{
 				var callers = new ArrayList<>(incomingReferences);
 				incomingReferences.clear();
@@ -233,7 +244,7 @@ public class LanguageServerFile implements IModuleProvider
 	{
 		if (module == null || module.syntaxTree() == null) // TODO: Use parsed flag to determine if its only partial parsed. SyntaxTree is conveniently null currently, but that's not reliable
 		{
-			parse(false);
+			parse();
 		}
 		return module;
 	}
@@ -379,5 +390,21 @@ public class LanguageServerFile implements IModuleProvider
 	public ReadOnlyList<SyntaxToken> comments()
 	{
 		return ReadOnlyList.from(comments);
+	}
+
+	private byte[] hashDefineData(String source)
+	{
+		try
+		{
+			var md5 = MessageDigest.getInstance("MD5");
+			var defineDataStartIndex = source.indexOf("DEFINE DATA");
+			var defineDataEndIndex = source.indexOf("END-DEFINE");
+			var defineData = source.substring(defineDataStartIndex, defineDataEndIndex);
+			return md5.digest(defineData.getBytes(StandardCharsets.UTF_8));
+		}
+		catch (Exception e)
+		{
+			return new byte[0];
+		}
 	}
 }
