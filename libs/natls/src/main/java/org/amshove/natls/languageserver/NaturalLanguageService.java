@@ -482,6 +482,10 @@ public class NaturalLanguageService implements LanguageClientAware
 		var file = findNaturalFile(filePath);
 
 		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), file.module());
+		if(node instanceof ITokenNode && node.parent() instanceof ISubroutineNode)
+		{
+			node = (ISyntaxNode) node.parent();
+		}
 
 		var references = new ArrayList<Location>();
 
