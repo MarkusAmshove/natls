@@ -51,7 +51,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	private LanguageServerProject languageServerProject;
 	private LanguageClient client;
 	private boolean initialized;
-	private RenameSymbolAction renameComputer = new RenameSymbolAction();
+	private final RenameSymbolAction renameComputer = new RenameSymbolAction();
 
 	public void indexProject(Path workspaceRoot, IProgressMonitor progressMonitor)
 	{
