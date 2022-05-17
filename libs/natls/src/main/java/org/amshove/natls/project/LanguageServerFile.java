@@ -34,8 +34,8 @@ public class LanguageServerFile implements IModuleProvider
 	private final Map<String, List<Diagnostic>> diagnosticsByTool = new HashMap<>();
 	private INaturalModule module;
 	private LanguageServerLibrary library;
-	private final List<LanguageServerFile> outgoingReferences = new ArrayList<>();
-	private final List<LanguageServerFile> incomingReferences = new ArrayList<>();
+	private final Set<LanguageServerFile> outgoingReferences = new HashSet<>();
+	private final Set<LanguageServerFile> incomingReferences = new HashSet<>();
 	private final List<SyntaxToken> comments = new ArrayList<>();
 
 	private byte[] defineDataHash;
@@ -55,12 +55,12 @@ public class LanguageServerFile implements IModuleProvider
 		return diagnosticsByTool.values().stream().flatMap(Collection::stream).toList();
 	}
 
-	public List<LanguageServerFile> getOutgoingReferences()
+	public Set<LanguageServerFile> getOutgoingReferences()
 	{
 		return outgoingReferences;
 	}
 
-	public List<LanguageServerFile> getIncomingReferences()
+	public Set<LanguageServerFile> getIncomingReferences()
 	{
 		return incomingReferences;
 	}
