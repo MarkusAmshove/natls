@@ -96,8 +96,8 @@ public class DiagramGenerator
 		appendPlant("@enduml");
 		try
 		{
-			Files.writeString(Path.of("D:", "mermaid.txt"), mermaidDiagram.toString());
-			Files.writeString(Path.of("D:", "plant.txt"), plantumlDiagram.toString());
+			Files.writeString(Path.of("mermaid.txt"), mermaidDiagram.toString());
+			Files.writeString(Path.of("plant.txt"), plantumlDiagram.toString());
 		}
 		catch (IOException e)
 		{
