@@ -33,6 +33,17 @@ public class UnusedVariableAnalyzer extends AbstractAnalyzer
 
 	private void analyzeVariable(ISyntaxNode syntaxNode, IAnalyzeContext context)
 	{
+		switch (context.getModule().file().getFiletype())
+		{
+			case LDA:
+			case DDM:
+			case PDA:
+			case GDA:
+			case MAP:
+			case COPYCODE:
+				return;
+		}
+
 		if(!NodeUtil.moduleContainsNode(context.getModule(), syntaxNode))
 		{
 			return;
