@@ -2,6 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
+import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.IReferencableNode;
 import org.amshove.natparse.natural.IStatementListNode;
 import org.amshove.natparse.natural.ISymbolReferenceNode;
@@ -155,12 +156,40 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return endNode;
 	}
 
-	private SyntheticVariableStatementNode identifierReference() throws ParseError
+	private StatementNode identifierReference() throws ParseError
 	{
 		var token = identifier();
+		if(peekKind( SyntaxKind.LPAREN)
+				&& peekKind(1, SyntaxKind.LESSER) || peekKind(1, SyntaxKind.LESSER_GREATER))
+		{
+			return functionCall(token);
+		}
+
 		var node = new SymbolReferenceNode(token);
 		unresolvedReferences.add(node);
 		return new SyntheticVariableStatementNode(node);
+	}
+
+	private FunctionCallNode functionCall(SyntaxToken token) throws ParseError
+	{
+		var node = new FunctionCallNode();
+
+		var functionName = new TokenNode(token);
+		node.setReferencingToken(token);
+		var module = sideloadModule(token.symbolName(), functionName);
+		node.setReferencedModule((NaturalModule) module);
+
+		consumeMandatory(node, SyntaxKind.LPAREN);
+
+		while(!peekKind(SyntaxKind.RPAREN))
+		{
+			// TODO: Actually do stuff with parameter
+			consume(node);
+		}
+
+		consumeMandatory(node, SyntaxKind.RPAREN);
+
+		return node;
 	}
 
 	private CallnatNode callnat() throws ParseError

@@ -84,9 +84,14 @@ abstract class AbstractParser<T>
 		return tokens.peek();
 	}
 
+	protected boolean peekKind(int offset, SyntaxKind kind)
+	{
+		return peek(offset) != null && peek(offset).kind() == kind;
+	}
+
 	protected boolean peekKind(SyntaxKind kind)
 	{
-		return !isAtEnd() && peek().kind() == kind;
+		return peekKind(0, kind);
 	}
 
 	/**
