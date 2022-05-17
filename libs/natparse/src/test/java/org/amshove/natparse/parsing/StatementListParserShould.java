@@ -281,6 +281,28 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(calledSubroutine.callers()).contains(perform);
 	}
 
+	@Test
+	void parseAFunctionCallWithoutParameter()
+	{
+		var calledFunction = new NaturalModule(null);
+		moduleProvider.addModule("ISSTH", calledFunction);
+
+		var call = assertParsesSingleStatement("ISSTH(<>)", IFunctionCallNode.class);
+		assertThat(call.reference()).isEqualTo(calledFunction);
+		assertThat(calledFunction.callers()).contains(call);
+	}
+
+	@Test
+	void parseAFunctionCallWithParameter()
+	{
+		var calledFunction = new NaturalModule(null);
+		moduleProvider.addModule("ISSTH", calledFunction);
+
+		var call = assertParsesSingleStatement("ISSTH(<5>)", IFunctionCallNode.class);
+		assertThat(call.reference()).isEqualTo(calledFunction);
+		assertThat(calledFunction.callers()).contains(call);
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);
