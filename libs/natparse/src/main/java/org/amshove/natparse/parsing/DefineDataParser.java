@@ -540,7 +540,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private static void advanceToDefineData(TokenList tokens)
 	{
-		while (!tokens.isAtEnd() && tokens.peek().kind() != SyntaxKind.DEFINE)
+		while (!tokens.isAtEnd(1) && !(tokens.peek().kind() == SyntaxKind.DEFINE && tokens.peek(1).kind() == SyntaxKind.DATA))
 		{
 			tokens.advance();
 		}

@@ -77,7 +77,7 @@ public class TokenList
 	public SyntaxToken peek(int offset)
 	{
 		var index = currentOffset + offset;
-		if(isAtEnd(index))
+		if(exceedsEnd(index))
 		{
 			return null;
 		}
@@ -104,12 +104,22 @@ public class TokenList
 
 	public boolean isAtEnd()
 	{
-		return isAtEnd(currentOffset);
+		return exceedsEnd(currentOffset);
 	}
 
+	/**
+	 * Checks if the given offset relative to the current offset is out of bounds.
+	 * @param offset - The offset added to the current position
+	 * @return true if end is passed, false if in bounds
+	 */
 	public boolean isAtEnd(int offset)
 	{
-		return offset >= tokens.size();
+		return exceedsEnd(currentOffset + offset);
+	}
+
+	private boolean exceedsEnd(int totalOffset)
+	{
+		return totalOffset >= tokens.size();
 	}
 
 	public int size()

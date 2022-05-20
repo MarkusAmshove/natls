@@ -86,7 +86,7 @@ abstract class AbstractParser<T>
 
 	protected boolean peekKind(int offset, SyntaxKind kind)
 	{
-		return peek(offset) != null && peek(offset).kind() == kind;
+		return !isAtEnd(offset) && peek(offset).kind() == kind;
 	}
 
 	protected boolean peekKind(SyntaxKind kind)
@@ -269,6 +269,11 @@ abstract class AbstractParser<T>
 	protected boolean isAtEnd()
 	{
 		return tokens.isAtEnd();
+	}
+
+	protected boolean isAtEnd(int offset)
+	{
+		return tokens.isAtEnd(offset);
 	}
 
 	protected void report(IDiagnostic diagnostic)

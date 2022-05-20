@@ -45,7 +45,7 @@ import java.util.stream.Stream;
 
 public class NaturalLanguageService implements LanguageClientAware
 {
-	private static final Hover EMPTY_HOVER = new Hover(new MarkupContent(MarkupKind.PLAINTEXT, ""));
+	private static final Hover EMPTY_HOVER = null; // This should be done according to the spec
 	private final CodeActionRegistry codeActionRegistry = CodeActionRegistry.INSTANCE;
 	private NaturalProject project; // TODO: Replace
 	private LanguageServerProject languageServerProject;
@@ -225,7 +225,10 @@ public class NaturalLanguageService implements LanguageClientAware
 			hoverText += "\n```";
 		}
 
-		if(module.getFiletype() == NaturalFileType.SUBROUTINE || module.getFiletype() == NaturalFileType.SUBPROGRAM || module.getFiletype() == NaturalFileType.PROGRAM)
+		if(module.getFiletype() == NaturalFileType.SUBROUTINE
+			|| module.getFiletype() == NaturalFileType.SUBPROGRAM
+			|| module.getFiletype() == NaturalFileType.PROGRAM
+			|| module.getFiletype() == NaturalFileType.FUNCTION)
 		{
 			// TODO: Hover level 1 variables for *DAs
 			hoverText += "\n\nParameter:\n```natural\n";
