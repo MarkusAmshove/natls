@@ -176,6 +176,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		var functionName = new TokenNode(token);
 		node.setReferencingToken(token);
+		node.addNode(functionName);
 		var module = sideloadModule(token.symbolName(), functionName);
 		node.setReferencedModule((NaturalModule) module);
 

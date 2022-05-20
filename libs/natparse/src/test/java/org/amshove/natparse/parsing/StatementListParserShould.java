@@ -301,6 +301,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		var call = assertParsesSingleStatement("ISSTH(<5>)", IFunctionCallNode.class);
 		assertThat(call.reference()).isEqualTo(calledFunction);
 		assertThat(calledFunction.callers()).contains(call);
+		assertThat(call.position().offsetInLine()).isEqualTo(0);
 	}
 
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
