@@ -53,6 +53,12 @@ public class PlaintextContentBuilder implements IMarkupContentBuilder
 	}
 
 	@Override
+	public IMarkupContentBuilder appendItalic(String content)
+	{
+		return append(content);
+	}
+
+	@Override
 	public MarkupContent build()
 	{
 		return new MarkupContent(

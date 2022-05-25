@@ -11,6 +11,7 @@ public interface IMarkupContentBuilder
 	IMarkupContentBuilder append(String content);
 	IMarkupContentBuilder append(String format, Object... objects);
 	IMarkupContentBuilder appendStrong(String content);
+	IMarkupContentBuilder appendItalic(String content);
 
 	MarkupContent build();
 }

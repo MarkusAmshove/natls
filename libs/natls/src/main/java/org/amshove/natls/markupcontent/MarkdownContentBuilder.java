@@ -59,6 +59,12 @@ public class MarkdownContentBuilder implements IMarkupContentBuilder
 	}
 
 	@Override
+	public IMarkupContentBuilder appendItalic(String content)
+	{
+		return append("*%s*", content);
+	}
+
+	@Override
 	public MarkupContent build()
 	{
 		return new MarkupContent(

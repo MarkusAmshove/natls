@@ -41,6 +41,8 @@ public class MarkdownContentBuilderShould extends MarkupContentBuilderTest
 	{
 		assertContent(
 			sut.appendParagraph("Lorem Ipsum")
+				.appendItalic("This is some italic text")
+				.appendNewline()
 				.appendStrong("This is some strong text")
 				.appendNewline()
 				.append("%d + %d = %d", 5, 5, 10)
@@ -50,6 +52,8 @@ public class MarkdownContentBuilderShould extends MarkupContentBuilderTest
 				.appendInlineCode("DEFINE DATA"),
 			"""
 				Lorem Ipsum
+
+				*This is some italic text*
 
 				**This is some strong text**
 
