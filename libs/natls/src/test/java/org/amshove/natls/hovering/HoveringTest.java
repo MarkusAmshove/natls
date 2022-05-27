@@ -1,11 +1,10 @@
 package org.amshove.natls.hovering;
 
 import org.amshove.natls.testlifecycle.LanguageServerTest;
-import org.amshove.natls.testlifecycle.LspTestContext;
 import org.amshove.natls.testlifecycle.SourceWithCursor;
-import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.HoverParams;
 
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public abstract class HoveringTest extends LanguageServerTest
 {
@@ -13,8 +12,19 @@ public abstract class HoveringTest extends LanguageServerTest
 	{
 		var sourceAndCursor = SourceWithCursor.fromSourceWithCursor(sourceWithCursor);
 		var file = createOrSaveFile("LIBONE", "SUB.NSN", sourceAndCursor);
-		var hover = getContext().languageService().hoverSymbol(file, sourceAndCursor.toSinglePosition());
 
-		assertThat(hover.getContents().getRight().getValue()).isEqualTo(expectedHoverText);
+		var params = new HoverParams();
+		params.setPosition(sourceAndCursor.toSinglePosition());
+		params.setTextDocument(file);
+
+		try
+		{
+			var hover = getContext().server().getTextDocumentService().hover(params).get();
+			assertThat(hover.getContents().getRight().getValue()).isEqualTo(expectedHoverText);
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 }
