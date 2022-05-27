@@ -43,7 +43,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			capabilities.setSignatureHelpProvider(new SignatureHelpOptions()); // Maybe < for Functions?
 			capabilities.setCallHierarchyProvider(true);
 			capabilities.setCodeActionProvider(CodeActionRegistry.INSTANCE.registeredCodeActionCount() > 0);
-			capabilities.setRenameProvider(true);
+			capabilities.setRenameProvider(new RenameOptions(true));
 
 			var progressMonitor = params.getWorkDoneToken() != null
 				? new WorkDoneProgressMonitor(params.getWorkDoneToken().getLeft(), client)

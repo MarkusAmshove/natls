@@ -27,6 +27,8 @@ import org.amshove.natparse.parsing.DefineDataParser;
 import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
+import org.eclipse.lsp4j.jsonrpc.ResponseErrorException;
+import org.eclipse.lsp4j.jsonrpc.messages.ResponseError;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 
@@ -965,6 +967,40 @@ public class NaturalLanguageService implements LanguageClientAware
 		return codeActionRegistry.createCodeActions(context);
 	}
 
+	public PrepareRenameResult prepareRename(PrepareRenameParams params)
+	{
+		var path = LspUtil.uriToPath(params.getTextDocument().getUri());
+		var file = findNaturalFile(path);
+
+		var node = NodeUtil.findNodeAtPosition(params.getPosition().getLine(), params.getPosition().getCharacter(), file.module());
+
+		String placeholder = null;
+		if(node instanceof ISymbolReferenceNode symbolReferenceNode)
+		{
+			placeholder = symbolReferenceNode.reference().declaration().symbolName();
+		}
+
+		if(node instanceof IReferencableNode rNode)
+		{
+			placeholder = rNode.declaration().symbolName();
+		}
+
+		if(placeholder == null)
+		{
+			// Nothing we can rename
+			throw new ResponseErrorException(new ResponseError(1, "Can't rename %s".formatted(node.getClass().getSimpleName()), null));
+		}
+
+		assertCanRenameInFile(file);
+
+		file.reparseCallers(); // TODO: This should be some kind of "light" parse that doesn't add diagnostics
+
+		var result = new PrepareRenameResult();
+		result.setRange(LspUtil.toRange(node.position()));
+		result.setPlaceholder(placeholder);
+		return result;
+	}
+
 	public WorkspaceEdit rename(RenameParams params)
 	{
 		var path = LspUtil.uriToPath(params.getTextDocument().getUri());
@@ -987,5 +1023,14 @@ public class NaturalLanguageService implements LanguageClientAware
 		}
 
 		return null;
+	}
+
+	private void assertCanRenameInFile(LanguageServerFile file)
+	{
+		var referenceLimit = 300; // Some arbitrary tested value
+		if(file.getIncomingReferences().size() > referenceLimit)
+		{
+			throw new ResponseErrorException(new ResponseError(1, "Won't rename inside %s because it has more than %d referrers (%d)".formatted(file.getReferableName(), referenceLimit, file.getIncomingReferences().size()), null));
+		}
 	}
 }

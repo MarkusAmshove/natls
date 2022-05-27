@@ -193,17 +193,7 @@ public class LanguageServerFile implements IModuleProvider
 
 			if (hasToReparseCallers(source))
 			{
-				var callers = new ArrayList<>(incomingReferences);
-				incomingReferences.clear();
-				// TODO: Add LSP Progress
-				callers.forEach(languageServerFile -> {
-					if (languageServerFile == this)
-					{
-						// recursive calls, we don't need to parse ourselves again
-						return;
-					}
-					languageServerFile.dependencyChanged();
-				});
+				reparseCallers();
 			}
 			else
 			{
@@ -225,6 +215,21 @@ public class LanguageServerFile implements IModuleProvider
 				)
 			);
 		}
+	}
+
+	public void reparseCallers()
+	{
+		var callers = new ArrayList<>(incomingReferences);
+		incomingReferences.clear();
+		// TODO: Add LSP Progress
+		callers.forEach(languageServerFile -> {
+			if (languageServerFile == this)
+			{
+				// recursive calls, we don't need to parse ourselves again
+				return;
+			}
+			languageServerFile.dependencyChanged();
+		});
 	}
 
 	private void destroyPresentNodes()
