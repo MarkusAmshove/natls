@@ -7,7 +7,10 @@ import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.eclipse.lsp4j.*;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -15,6 +18,18 @@ public class LspUtil
 {
 	private LspUtil()
 	{
+	}
+
+	public static String readUnchecked(Path filepath)
+	{
+		try
+		{
+			return Files.readString(filepath);
+		}
+		catch (IOException e)
+		{
+			throw new UncheckedIOException(e);
+		}
 	}
 
 	public static Path uriToPath(String uri)

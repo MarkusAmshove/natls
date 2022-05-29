@@ -993,7 +993,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		assertCanRenameInFile(file);
 
-		file.reparseCallers(); // TODO: This should be some kind of "light" parse that doesn't add diagnostics
+		file.reanalyzeCallers(); // TODO: This should be some kind of "light" parse that doesn't add diagnostics
 
 		var result = new PrepareRenameResult();
 		result.setRange(LspUtil.toRange(node.position()));

@@ -147,15 +147,17 @@ public class LanguageServerFile implements IModuleProvider
 		}
 	}
 
-	private boolean hasToReparseCallers(String newSource)
+	private boolean hasToReanalyzeCallers(String newSource)
 	{
 		var newDefineDataHash = hashDefineData(newSource);
 		var defineDataChanged = !Arrays.equals(newDefineDataHash, defineDataHash);
 		defineDataHash = newDefineDataHash;
-		var tooManyCallers = incomingReferences.size() > 20;
-		// TODO: Add trace log?
+		var tooManyCallers = incomingReferences.size() > 50;
+		var hasToReanalyze = !tooManyCallers && defineDataChanged;
 
-		return !tooManyCallers && defineDataChanged;
+		System.err.printf("  reanalyze callers of %s? %s (tooManyCallers: %s; defineDataChanged: %s)%n", getReferableName(), hasToReanalyze, tooManyCallers, defineDataChanged);
+
+		return hasToReanalyze;
 	}
 
 	private void parseAndAnalyze(String source)
@@ -166,11 +168,10 @@ public class LanguageServerFile implements IModuleProvider
 			reparseWithoutAnalyzing(source);
 
 			analyze();
-			hasBeenAnalyzed = true;
 
-			if (hasToReparseCallers(source))
+			if (hasToReanalyzeCallers(source))
 			{
-				reparseCallers();
+				reanalyzeCallers();
 			}
 			else
 			{
@@ -196,6 +197,14 @@ public class LanguageServerFile implements IModuleProvider
 
 	private void analyze()
 	{
+		if(module == null)
+		{
+			reparseWithoutAnalyzing();
+		}
+
+		// TODO: Call destroy references
+		// TODO: Call ReferenceResolver here (factor out of StatementListParser)
+
 		var start = System.currentTimeMillis();
 		var log = "Analyzing %s".formatted(getReferableName());
 		clearDiagnosticsByTool(DiagnosticTool.NATLINT);
@@ -208,9 +217,11 @@ public class LanguageServerFile implements IModuleProvider
 		var end = System.currentTimeMillis();
 		log += " took %dms".formatted(end - start);
 		System.err.println(log);
+
+		hasBeenAnalyzed = true;
 	}
 
-	public void reparseCallers()
+	public void reanalyzeCallers()
 	{
 		var callers = new ArrayList<>(incomingReferences);
 		incomingReferences.clear();
@@ -223,7 +234,8 @@ public class LanguageServerFile implements IModuleProvider
 			}
 			try
 			{
-				languageServerFile.reparseWithoutAnalyzing();
+				languageServerFile.hasBeenAnalyzed = false;
+				languageServerFile.analyze();
 			}
 			catch (Exception e)
 			{
@@ -240,9 +252,9 @@ public class LanguageServerFile implements IModuleProvider
 		});
 	}
 
-	private void reparseWithoutAnalyzing() throws IOException
+	private void reparseWithoutAnalyzing()
 	{
-		reparseWithoutAnalyzing(Files.readString(file.getPath()));
+		reparseWithoutAnalyzing(LspUtil.readUnchecked(file.getPath()));
 	}
 
 	private void reparseWithoutAnalyzing(String source)
@@ -255,7 +267,6 @@ public class LanguageServerFile implements IModuleProvider
 			destroyPresentNodes();
 			log += " (destroyed previous nodes)";
 		}
-		System.err.println(log);
 
 		outgoingReferences.forEach(ref -> ref.removeIncomingReference(this));
 		outgoingReferences.clear(); // Will be re-added during parse
@@ -273,7 +284,8 @@ public class LanguageServerFile implements IModuleProvider
 			addDiagnostic(DiagnosticTool.NATPARSE, diagnostic);
 		}
 		var end = System.currentTimeMillis();
-		System.err.printf("Took %dms%n", end - start);
+		log += " took %dms".formatted(end - start);
+		System.err.println(log);
 	}
 
 	private void destroyPresentNodes()
