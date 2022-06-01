@@ -4,6 +4,7 @@ import org.amshove.natlint.api.AbstractAnalyzer;
 import org.amshove.natlint.api.IAnalyzeContext;
 import org.amshove.natlint.api.IAnalyzingFunction;
 import org.amshove.natlint.api.ILinterContext;
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.reflections.Reflections;
 
@@ -88,5 +89,10 @@ public enum LinterContext implements ILinterContext
 		registeredAnalyzers.clear();
 		analyzerFunctions.clear();
 		initialized = false;
+	}
+
+	/* package */ ReadOnlyList<AbstractAnalyzer> registeredAnalyzers()
+	{
+		return ReadOnlyList.from(registeredAnalyzers);
 	}
 }
