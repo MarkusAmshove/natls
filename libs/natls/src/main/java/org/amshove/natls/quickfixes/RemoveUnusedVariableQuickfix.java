@@ -30,6 +30,7 @@ public class RemoveUnusedVariableQuickfix extends AbstractQuickFix
 
 	private CodeAction createRemovedUnused(String name, QuickFixContext context)
 	{
+		// TODO: Duplicate code with subroutines. Simplify
 		var diagnostic = context.diagnostic();
 		var action = new CodeAction();
 		action.setTitle("Remove unused " + name);

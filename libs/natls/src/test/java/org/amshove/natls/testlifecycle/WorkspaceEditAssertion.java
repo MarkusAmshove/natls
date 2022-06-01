@@ -27,6 +27,15 @@ public record WorkspaceEditAssertion(WorkspaceEdit edit)
 		return this;
 	}
 
+	public WorkspaceEditAssertion deletesLines(int startLine, int endLine)
+	{
+		assertThat(edit.getChanges().values().stream().flatMap(Collection::stream))
+			.as("Expected at least one TextEdit to delete lines %d to %d\nThis can be done with a Range at character 0 at the first line it should delete and the last character last line".formatted(startLine, endLine))
+			.anyMatch(e -> e.getRange().getStart().getLine() == startLine && e.getRange().getStart().getCharacter() == 0 && e.getRange().getEnd().getLine() == endLine);
+
+		return this;
+	}
+
 	public WorkspaceEditAssertion insertsText(int line, int column, String newText)
 	{
 		assertThat(edit.getChanges().values().stream().flatMap(Collection::stream))

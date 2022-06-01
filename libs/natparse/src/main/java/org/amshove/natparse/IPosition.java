@@ -31,4 +31,9 @@ public interface IPosition
 	{
 		return offset() == other.offset() && offsetInLine() == other.offsetInLine() && line() == other.line() && length() == other.length() && filePath().equals(other.filePath());
 	}
+
+	default boolean isSameFileAs(IPosition other)
+	{
+		return filePath().equals(other.filePath());
+	}
 }

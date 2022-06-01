@@ -81,9 +81,11 @@ public class LspUtil
 
 	public static Range toRange(ISyntaxNode node)
 	{
+		var firstNode = node.descendants().first();
+		var lastNode = node.descendants().last();
 		return new Range(
-			new Position(node.position().line(), node.position().offsetInLine()),
-			new Position(node.descendants().last().position().line(), node.descendants().last().position().offsetInLine())
+			new Position(firstNode.position().line(), firstNode.position().offsetInLine()),
+			new Position(lastNode.position().line(), lastNode.position().offsetInLine() + lastNode.position().length())
 		);
 	}
 

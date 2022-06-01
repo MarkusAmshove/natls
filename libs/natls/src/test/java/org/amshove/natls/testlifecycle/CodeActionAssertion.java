@@ -22,6 +22,13 @@ public record CodeActionAssertion(CodeAction action)
 		return this;
 	}
 
+	public CodeActionAssertion deletesLines(int startLine, int endLine)
+	{
+		WorkspaceEditAssertion.assertThatEdit(action.getEdit()).deletesLines(startLine, endLine);
+
+		return this;
+	}
+
 	public CodeActionAssertion fixes(String diagnosticId)
 	{
 		assertThat(action.getDiagnostics())
