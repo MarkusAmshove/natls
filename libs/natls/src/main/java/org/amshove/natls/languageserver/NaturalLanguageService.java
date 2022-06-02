@@ -30,7 +30,6 @@ import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.ResponseErrorException;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseError;
 import org.eclipse.lsp4j.services.LanguageClient;
-import org.eclipse.lsp4j.services.LanguageClientAware;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -45,7 +44,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class NaturalLanguageService implements LanguageClientAware
+public class NaturalLanguageService
 {
 	private static final Hover EMPTY_HOVER = null; // This should be done according to the spec
 	private final CodeActionRegistry codeActionRegistry = CodeActionRegistry.INSTANCE;
@@ -759,7 +758,6 @@ public class NaturalLanguageService implements LanguageClientAware
 		client.publishDiagnostics(new PublishDiagnosticsParams(file.getUri(), diagnosticsToReport));
 	}
 
-	@Override
 	public void connect(LanguageClient client)
 	{
 		this.client = client;
@@ -880,6 +878,7 @@ public class NaturalLanguageService implements LanguageClientAware
 				processedFiles++;
 			}
 		}
+		monitor.progress("Project indexing done", 100);
 	}
 
 	public boolean isInitialized()
@@ -1032,5 +1031,10 @@ public class NaturalLanguageService implements LanguageClientAware
 		{
 			throw new ResponseErrorException(new ResponseError(1, "Won't rename inside %s because it has more than %d referrers (%d)".formatted(file.getReferableName(), referenceLimit, file.getIncomingReferences().size()), null));
 		}
+	}
+
+	public LanguageServerProject getProject()
+	{
+		return languageServerProject;
 	}
 }
