@@ -32,6 +32,12 @@ public class UnusedLocalSubroutineAnalyzer extends AbstractAnalyzer
 	private void analyzeSubroutine(ISyntaxNode node, IAnalyzeContext context)
 	{
 		var routine = (ISubroutineNode) node;
+		if(context.getModule().name().equals(routine.declaration().symbolName()))
+		{
+			// External Subroutine
+			return;
+		}
+
 		if(!routine.declaration().isSameFileAs(routine.diagnosticPosition()))
 		{
 			// Declared in Copycode

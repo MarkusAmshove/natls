@@ -99,4 +99,22 @@ public class UnusedLocalSubroutineAnalyzerShould extends AbstractAnalyzerTest
 			expectNoDiagnosticOfType(UnusedLocalSubroutineAnalyzer.UNUSED_SUBROUTINE)
 		);
 	}
+
+	@Test
+	void notReportAnExternalSubroutineAsLocallyUnused(@ProjectName("unusedsubroutines")NaturalProject project)
+	{
+		testDiagnostics(
+			project.findModule("EXTERNAL-SUBROUTINE"),
+			expectNoDiagnosticOfType(UnusedLocalSubroutineAnalyzer.UNUSED_SUBROUTINE)
+		);
+	}
+
+	@Test
+	void reportADiagnosticForUnusedLocalSubroutinesWithinExternalSubroutines(@ProjectName("unusedsubroutines")NaturalProject project)
+	{
+		testDiagnostics(
+			project.findModule("EXTERNAL-WITH-LOCAL"),
+			expectDiagnostic(5, UnusedLocalSubroutineAnalyzer.UNUSED_SUBROUTINE)
+		);
+	}
 }
