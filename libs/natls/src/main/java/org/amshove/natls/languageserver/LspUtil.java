@@ -55,6 +55,7 @@ public class LspUtil
 			{
 				case ERROR -> DiagnosticSeverity.Error;
 				case WARNING -> DiagnosticSeverity.Warning;
+				case INFO -> DiagnosticSeverity.Information;
 			};
 	}
 

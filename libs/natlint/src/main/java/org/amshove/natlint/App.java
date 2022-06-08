@@ -208,7 +208,8 @@ public class App
 
 	private static final Map<DiagnosticSeverity, String> SEVERITY_COLOR_MAP = Map.of(
 		DiagnosticSeverity.ERROR, "31",
-		DiagnosticSeverity.WARNING, "33"
+		DiagnosticSeverity.WARNING, "33",
+		DiagnosticSeverity.INFO, "34"
 	);
 
 	private void printDiagnostics(Path filePath, List<IDiagnostic> diagnostics)

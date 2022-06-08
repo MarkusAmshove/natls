@@ -4,6 +4,7 @@ import org.amshove.natlint.api.LinterDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.ISyntaxTree;
+import org.amshove.natparse.natural.ITokenNode;
 
 import java.util.ArrayList;
 
@@ -29,7 +30,10 @@ public class NaturalLinter
 		for (var descendant : syntaxTree.descendants())
 		{
 			linterContext.analyze(descendant, analyzeContext);
-			analyze(descendant, analyzeContext, linterContext);
+			if(!(descendant instanceof ITokenNode)) // perf: TokenNodes don't have descendants
+			{
+				analyze(descendant, analyzeContext, linterContext);
+			}
 		}
 	}
 }

@@ -96,8 +96,10 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(perform());
 						break;
 					default:
-						// While the parser is incomplete, we just skip over everything we don't know yet
-						tokens.advance();
+						// While the parser is incomplete, we just add a node for every token
+						var tokenStatementNode = new SyntheticTokenStatementNode();
+						consume(tokenStatementNode);
+						statementList.addStatement(tokenStatementNode);
 				}
 			}
 			catch (ParseError e)
