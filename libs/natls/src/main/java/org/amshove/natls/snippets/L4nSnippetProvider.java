@@ -16,10 +16,10 @@ INCLUDE L4NLOGIT${0}
 		""";
 
 	private static final List<NaturalSnippet> LOG_SNIPPETS = List.of(
-		createSnippet("enterleave", "ENTER-LEAVE"),
+		createSnippet("enter-leave", "ENTER-LEAVE"),
 		createSnippet("debug", "DEBUG"),
 		createSnippet("info", "INFO"),
-		createSnippet("warn", "WARNING"),
+		createSnippet("warning", "WARNING"),
 		createSnippet("error", "ERROR"),
 		createSnippet("fatal", "FATAL")
 	);
