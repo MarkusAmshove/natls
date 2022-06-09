@@ -304,6 +304,18 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(call.position().offsetInLine()).isEqualTo(0);
 	}
 
+	@Test
+	void distinguishBetweenArrayAccessAndFunctionCallInIfCondition()
+	{
+		var statementList = assertParsesWithoutDiagnostics("""
+               IF #THE-ARRAY(#THE-VARIABLE) <> 5
+               IGNORE
+               END-IF
+            """);
+
+		assertThat(statementList.statements()).noneMatch(s -> s instanceof IFunctionCallNode);
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);

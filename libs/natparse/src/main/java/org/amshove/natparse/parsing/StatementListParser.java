@@ -162,7 +162,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		var token = identifier();
 		if(peekKind( SyntaxKind.LPAREN)
-				&& peekKind(1, SyntaxKind.LESSER) || peekKind(1, SyntaxKind.LESSER_GREATER))
+				&& (peekKind(1, SyntaxKind.LESSER) || peekKind(1, SyntaxKind.LESSER_GREATER)))
 		{
 			return functionCall(token);
 		}
