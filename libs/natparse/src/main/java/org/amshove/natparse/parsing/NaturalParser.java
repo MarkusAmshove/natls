@@ -45,9 +45,12 @@ public class NaturalParser
 			var result = defineDataParser.parse(tokens);
 			naturalModule.addDiagnostics(result.diagnostics());
 			var defineData = result.result();
-			naturalModule.setDefineData(defineData);
-			topLevelNodes.add(defineData);
-			naturalModule.addReferencableNodes(defineData.variables().stream().map(n -> (IReferencableNode)n).toList());
+			if(defineData != null)
+			{
+				naturalModule.setDefineData(defineData);
+				topLevelNodes.add(defineData);
+				naturalModule.addReferencableNodes(defineData.variables().stream().map(n -> (IReferencableNode) n).toList());
+			}
 		}
 
 		if (file.getFiletype().hasBody())
