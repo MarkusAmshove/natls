@@ -16,6 +16,8 @@ public class KeywordTable
 				case "ge" -> SyntaxKind.GE;
 				case "lt" -> SyntaxKind.LT;
 				case "le" -> SyntaxKind.LE;
+				case "and" -> SyntaxKind.AND;
+				case "or" -> SyntaxKind.OR;
 
 				case "abs" -> SyntaxKind.ABS;
 				case "accept" -> SyntaxKind.ACCEPT;
