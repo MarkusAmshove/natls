@@ -137,7 +137,7 @@ public class App
 				continue;
 			}
 
-			for (var file : library.files().stream().filter(f -> f.getFiletype().hasDefineData()).toList())
+			for (var file : library.files().stream().filter(f -> f.getFiletype().canHaveDefineData()).toList())
 			{
 				if(singleModule != null && !singleModule.equalsIgnoreCase(file.getFilenameWithoutExtension()))
 				{

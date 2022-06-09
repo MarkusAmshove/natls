@@ -11,6 +11,7 @@ import org.amshove.natls.progress.ProgressTasks;
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natls.project.LanguageServerProject;
 import org.amshove.natls.project.ModuleReferenceParser;
+import org.amshove.natls.snippets.L4nSnippetProvider;
 import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
@@ -612,13 +613,17 @@ public class NaturalLanguageService implements LanguageClientAware
 		// var position = completionParams.getPosition();
 
 		var file = findNaturalFile(filePath);
-		if(!file.getType().hasBody())
+		if(!file.getType().canHaveBody())
 		{
 			return List.of();
 		}
 		var module = file.module();
 
-		return module.referencableNodes().stream()
+		var completionItems = new ArrayList<CompletionItem>();
+
+		completionItems.addAll(new L4nSnippetProvider().provideSnippets(file));
+
+		completionItems.addAll(module.referencableNodes().stream()
 			.filter(v -> !(v instanceof IRedefinitionNode)) // this is the `REDEFINE #VAR`, which results in the variable being doubled in completion
 			.map(n -> createCompletionItem(n, file))
 			.filter(Objects::nonNull)
@@ -628,7 +633,9 @@ public class NaturalLanguageService implements LanguageClientAware
 					i.setData(new UnresolvedCompletionInfo((String) i.getData(), filePath.toUri().toString()));
 				}
 			})
-			.toList();
+			.toList());
+
+		return completionItems;
 	}
 
 	public CompletionItem resolveComplete(CompletionItem item)
@@ -832,7 +839,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		{
 			for (var file : lib.files())
 			{
-				if (!file.getType().hasDefineData())
+				if (!file.getType().canHaveDefineData())
 				{
 					filesParsed++;
 					continue;
