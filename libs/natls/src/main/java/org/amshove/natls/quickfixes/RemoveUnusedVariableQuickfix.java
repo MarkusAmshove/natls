@@ -2,12 +2,13 @@ package org.amshove.natls.quickfixes;
 
 import org.amshove.natlint.analyzers.UnusedImportAnalyzer;
 import org.amshove.natlint.analyzers.UnusedVariableAnalyzer;
+import org.amshove.natls.WorkspaceEditBuilder;
 import org.amshove.natls.codeactions.AbstractQuickFix;
 import org.amshove.natls.codeactions.QuickFixContext;
-import org.eclipse.lsp4j.*;
-
-import java.util.List;
-import java.util.Map;
+import org.eclipse.lsp4j.CodeAction;
+import org.eclipse.lsp4j.CodeActionKind;
+import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.Range;
 
 public class RemoveUnusedVariableQuickfix extends AbstractQuickFix
 {
@@ -30,18 +31,11 @@ public class RemoveUnusedVariableQuickfix extends AbstractQuickFix
 
 	private CodeAction createRemovedUnused(String name, QuickFixContext context)
 	{
-		// TODO: Duplicate code with subroutines. Simplify
 		var diagnostic = context.diagnostic();
-		var action = new CodeAction();
-		action.setTitle("Remove unused " + name);
-		action.setKind(CodeActionKind.QuickFix);
-		action.setDiagnostics(List.of(diagnostic));
-		var edit = new WorkspaceEdit();
-		var change = new TextEdit();
-		change.setRange(new Range(new Position(diagnostic.getRange().getStart().getLine(), 0), new Position(diagnostic.getRange().getEnd().getLine() + 1, 0)));
-		change.setNewText("");
-		edit.setChanges(Map.of(context.fileUri(), List.of(change)));
-		action.setEdit(edit);
-		return action;
+		return new CodeActionBuilder("Remove unused %s".formatted(name), CodeActionKind.QuickFix)
+			.fixesDiagnostic(diagnostic)
+			.appliesWorkspaceEdit(new WorkspaceEditBuilder()
+				.removesLine(context.fileUri(), new Range(new Position(diagnostic.getRange().getStart().getLine(), 0), new Position(diagnostic.getRange().getEnd().getLine() + 1, 0))).build())
+			.build();
 	}
 }
