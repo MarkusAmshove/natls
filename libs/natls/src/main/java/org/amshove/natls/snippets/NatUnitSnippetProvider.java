@@ -78,6 +78,19 @@ public class NatUnitSnippetProvider implements ISnippetProvider // TODO: unteste
 				.needsParameterUsing("NUTESTP")
 			);
 		}
+
+		snippets.add(new NaturalSnippet("TestCase")
+			.insertsText("""
+				/***********************************************************************
+				IF NUTESTP.TEST = '${1:Testcase name}'
+				/***********************************************************************
+				${0:IGNORE}
+				END-IF
+				""")
+			.needsLocalUsing("NUASSP")
+			.needsLocalUsing("NUCONST")
+			.needsParameterUsing("NUTESTP")
+		);
 	}
 
 	@Override
