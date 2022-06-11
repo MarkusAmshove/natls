@@ -19,7 +19,7 @@ public class BooleanOperatorAnalyzer extends AbstractAnalyzer
 		DiagnosticSeverity.INFO
 	);
 
-	private static final Map<SyntaxKind, String> PREFERRED_OPERATORS = Map.of(
+	public static final Map<SyntaxKind, String> PREFERRED_OPERATORS = Map.of(
 		SyntaxKind.GT, ">",
 		SyntaxKind.LT, "<",
 		SyntaxKind.EQ, "=",
