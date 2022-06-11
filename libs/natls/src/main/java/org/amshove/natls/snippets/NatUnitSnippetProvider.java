@@ -42,34 +42,10 @@ public class NatUnitSnippetProvider implements ISnippetProvider // TODO: unteste
 				.map(IVariableNode::name)
 				.filter(name -> !name.equals("NUASSP"))
 				.toList();
-			var placeholderPosition = 1;
-			var parameterPlaceholder = new StringBuilder();
-			for (var name : parameter)
-			{
-				parameterPlaceholder.append("${%d:%s} ".formatted(placeholderPosition, name));
-				placeholderPosition++;
-			}
 
-			var snippetName = new StringBuilder(assertionName.substring(0, 1));
-			var nextUpper = false;
-			for (var i = 1; i < assertionName.length(); i++)
-			{
-				if (assertionName.charAt(i) == '-')
-				{
-					nextUpper = true;
-					continue;
-				}
+			var parameterPlaceholder = createPlaceholderForParameter(parameter);
 
-				if (nextUpper)
-				{
-					snippetName.append(assertionName.charAt(i));
-					nextUpper = false;
-				}
-				else
-				{
-					snippetName.append(Character.toLowerCase(assertionName.charAt(i)));
-				}
-			}
+			var snippetName = createSnippetLabel(assertionName);
 
 			snippets.add(new NaturalSnippet(snippetName.toString())
 				.insertsText("ASSERT-LINE := *LINE; PERFORM %s NUASSP %s%n${0}".formatted(assertionName, parameterPlaceholder))
@@ -91,6 +67,44 @@ public class NatUnitSnippetProvider implements ISnippetProvider // TODO: unteste
 			.needsLocalUsing("NUCONST")
 			.needsParameterUsing("NUTESTP")
 		);
+	}
+
+	private static String createPlaceholderForParameter(List<String> parameter)
+	{
+		var parameterPlaceholder = new StringBuilder();
+		var placeholderPosition = 1;
+		for (var name : parameter)
+		{
+			parameterPlaceholder.append("${%d:%s} ".formatted(placeholderPosition, name));
+			placeholderPosition++;
+		}
+		return parameterPlaceholder.toString();
+	}
+
+	private static String createSnippetLabel(String assertionName)
+	{
+		var snippetName = new StringBuilder(assertionName.substring(0, 1));
+		var nextUpper = false;
+		for (var i = 1; i < assertionName.length(); i++)
+		{
+			if (assertionName.charAt(i) == '-')
+			{
+				nextUpper = true;
+				continue;
+			}
+
+			if (nextUpper)
+			{
+				snippetName.append(assertionName.charAt(i));
+				nextUpper = false;
+			}
+			else
+			{
+				snippetName.append(Character.toLowerCase(assertionName.charAt(i)));
+			}
+		}
+
+		return snippetName.toString();
 	}
 
 	@Override

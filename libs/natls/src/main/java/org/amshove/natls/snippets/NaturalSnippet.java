@@ -96,7 +96,10 @@ public class NaturalSnippet
 		}
 
 		documentationBuilder.append("%n%s%n```%n".formatted(textToInsert));
-		item.setDocumentation(new MarkupContent(MarkupKind.MARKDOWN, documentationBuilder.toString()));
+		var documentation = documentationBuilder.toString()
+			.replace("${", "") // replace placeholders
+			.replace("}", "");
+		item.setDocumentation(new MarkupContent(MarkupKind.MARKDOWN, documentation));
 
 		return item;
 	}
