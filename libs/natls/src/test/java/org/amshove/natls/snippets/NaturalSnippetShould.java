@@ -84,7 +84,7 @@ public class NaturalSnippetShould
 	{
 		var completion = new NaturalSnippet("mylabel")
 			.insertsText("WRITE SNIPLDA")
-			.needsUsing("SNIPLDA")
+			.needsLocalUsing("SNIPLDA")
 			.createCompletion(testFile);
 
 		var usingInsert = completion.getAdditionalTextEdits().get(0);
@@ -98,7 +98,7 @@ public class NaturalSnippetShould
 	{
 		var completion = new NaturalSnippet("mylabel")
 			.insertsText("WRITE SNIPLDA")
-			.needsUsing("MYLDA")
+			.needsLocalUsing("MYLDA")
 			.createCompletion(testFile);
 
 		assertThat(completion.getAdditionalTextEdits()).isNull();
@@ -109,8 +109,21 @@ public class NaturalSnippetShould
 	{
 		var completion = new NaturalSnippet("mylabel")
 			.insertsText("WRITE SNIPLDA")
-			.needsUsing("MYLDA")
+			.needsLocalUsing("MYLDA")
 			.createCompletion(testContext.project().findFileByReferableName("SUB2"));
+
+		var insert = completion.getAdditionalTextEdits().get(0);
+		assertThat(insert.getRange().getStart().getLine()).isEqualTo(1);
+		assertThat(insert.getRange().getStart().getCharacter()).isEqualTo(0);
+	}
+
+	@Test
+	void findAFittingUsingPositionIfNoVariable()
+	{
+		var completion = new NaturalSnippet("mylabel")
+			.insertsText("WRITE SNIPLDA")
+			.needsLocalUsing("MYLDA")
+			.createCompletion(testContext.project().findFileByReferableName("EMPTDEF"));
 
 		var insert = completion.getAdditionalTextEdits().get(0);
 		assertThat(insert.getRange().getStart().getLine()).isEqualTo(1);
@@ -122,7 +135,7 @@ public class NaturalSnippetShould
 	{
 		var snippet = new NaturalSnippet("mylabel")
 			.insertsText("hi")
-			.needsUsing("SOMELDA");
+			.needsLocalUsing("SOMELDA");
 
 		assertThatThrownBy(()-> snippet.createCompletion(testContext.project().findFileByReferableName("PROG3")))
 			.isInstanceOf(ResponseErrorException.class)

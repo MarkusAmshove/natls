@@ -2,21 +2,23 @@ package org.amshove.natls.snippets;
 
 import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natls.project.LanguageServerFile;
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.IHasDefineData;
+import org.amshove.natparse.natural.IUsingNode;
 import org.amshove.natparse.natural.VariableScope;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.ResponseErrorException;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseError;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class NaturalSnippet
 {
 	private final String label;
-	private final List<String> neededUsings = new ArrayList<>();
+	private final List<UsingToAdd> neededLocalUsings = new ArrayList<>();
+	private final List<UsingToAdd> neededParameterUsings = new ArrayList<>();
 	private final List<Predicate<LanguageServerFile>> fileConstraints = new ArrayList<>();
 	private final List<NaturalFileType> fileTypeConstraints = new ArrayList<>();
 	private String textToInsert = null;
@@ -37,9 +39,15 @@ public class NaturalSnippet
 		return this;
 	}
 
-	public NaturalSnippet needsUsing(String using)
+	public NaturalSnippet needsLocalUsing(String using)
 	{
-		neededUsings.add(using);
+		neededLocalUsings.add(new UsingToAdd(using, VariableScope.LOCAL));
+		return this;
+	}
+
+	public NaturalSnippet needsParameterUsing(String using)
+	{
+		neededParameterUsings.add(new UsingToAdd(using, VariableScope.PARAMETER));
 		return this;
 	}
 
@@ -61,7 +69,7 @@ public class NaturalSnippet
 			return null;
 		}
 
-		if(!neededUsings.isEmpty() && file.module() instanceof IHasDefineData hasDefineData && hasDefineData.defineData() == null)
+		if((!neededLocalUsings.isEmpty() || !neededParameterUsings.isEmpty())&& file.module() instanceof IHasDefineData hasDefineData && hasDefineData.defineData() == null)
 		{
 			throw new ResponseErrorException(new ResponseError(1, "Can't complete snippet because no DEFINE DATA was found", null));
 		}
@@ -72,63 +80,77 @@ public class NaturalSnippet
 		item.setInsertTextFormat(textToInsert.contains("${") ? InsertTextFormat.Snippet : InsertTextFormat.PlainText);
 
 		// TODO: Use IMarkupContentBuilder once hoverprovider is merged
-		var documentation = "```natural";
+		StringBuilder documentationBuilder = new StringBuilder("```natural");
 		if(file.getType().canHaveDefineData())
 		{
 			var additionalEdits = new ArrayList<TextEdit>();
-			for (var neededUsing : neededUsings)
-			{
-				if(alreadyHasUsing(neededUsing, file))
-				{
-					continue;
-				}
 
-				var usingInsert = createUsingInsert(neededUsing, file);
-				additionalEdits.add(usingInsert);
-				documentation += "%n%s".formatted(usingInsert.getNewText());
-			}
+			additionalEdits.addAll(addUsings(file, neededParameterUsings, documentationBuilder)); // this order is important. parameter first
+			additionalEdits.addAll(addUsings(file, neededLocalUsings, documentationBuilder));
 
 			if(!additionalEdits.isEmpty())
 			{
 				item.setAdditionalTextEdits(additionalEdits);
-				documentation += "%n```%n---%n```natural".formatted();
+				documentationBuilder.append("%n```%n---%n```natural".formatted());
 			}
 		}
 
-		documentation += "%n%s%n```%n".formatted(textToInsert);
-		item.setDocumentation(new MarkupContent(MarkupKind.MARKDOWN, documentation));
+		documentationBuilder.append("%n%s%n```%n".formatted(textToInsert));
+		item.setDocumentation(new MarkupContent(MarkupKind.MARKDOWN, documentationBuilder.toString()));
 
 		return item;
 	}
 
-	private static TextEdit createUsingInsert(String using, LanguageServerFile file)
+	private static List<TextEdit> addUsings(LanguageServerFile file, List<UsingToAdd> usings, StringBuilder documentationBuilder)
+	{
+		var additionalEdits = new ArrayList<TextEdit>();
+		for (var neededUsing : usings)
+		{
+			if(alreadyHasUsing(neededUsing.name, file))
+			{
+				continue;
+			}
+
+			var usingInsert = createUsingInsert(neededUsing, file);
+			additionalEdits.add(usingInsert);
+			documentationBuilder.append("%n%s".formatted(usingInsert.getNewText()));
+		}
+
+		return additionalEdits;
+	}
+
+	private static TextEdit createUsingInsert(UsingToAdd using, LanguageServerFile file)
 	{
 		var edit = new TextEdit();
-		var range = findRangeToInsertUsing(file);
+		var range = findRangeToInsertUsing(file, using.scope);
 
 		edit.setRange(range);
-		edit.setNewText("LOCAL USING %s%n".formatted(using));
+		edit.setNewText("%s USING %s%n".formatted(using.scope, using.name));
 		return edit;
 	}
 
-	private static Range findRangeToInsertUsing(LanguageServerFile file)
+	private static Range findRangeToInsertUsing(LanguageServerFile file, VariableScope scope)
 	{
 		var defineData = ((IHasDefineData) file.module()).defineData();
-		if(defineData.localUsings().hasItems())
+		ReadOnlyList<IUsingNode> usings = scope == VariableScope.PARAMETER
+			? defineData.parameterUsings()
+			: defineData.localUsings();
+
+		if(usings.hasItems())
 		{
-			var firstUsing = defineData.localUsings().first();
+			var firstUsing = usings.first();
 			return LspUtil.toSingleRange(firstUsing.position().line(), 0);
 		}
 
-		if(defineData.variables().hasItems())
+		if(defineData.variables().hasItems() && defineData.variables().stream().anyMatch(v -> v.scope() == scope && v.position().filePath().equals(file.getPath())))
 		{
-			return defineData.variables().stream().filter(v -> v.scope() == VariableScope.LOCAL)
+			return defineData.variables().stream().filter(v -> v.scope() == scope)
 				.findFirst()
 				.map(v -> LspUtil.toSingleRange(v.position().line(), 0))
-				.orElseThrow(() -> new RuntimeException("Could not deduce position to insert using by looking for the first variable"));
+				.orElseThrow(() -> new RuntimeException("Could not deduce position to insert using by looking for the first variable with scope %s".formatted(scope)));
 		}
 
-		throw new RuntimeException("Could deduce position to insert using");
+		return LspUtil.toSingleRange(defineData.descendants().get(0).position().line() + 1, 0);
 	}
 
 	private static boolean alreadyHasUsing(String using, LanguageServerFile file)
@@ -138,10 +160,9 @@ public class NaturalSnippet
 
 	public NaturalSnippet applicableInFiletypes(NaturalFileType... fileTypes)
 	{
-		for (var fileType : fileTypes)
-		{
-			fileTypeConstraints.add(fileType);
-		}
+		fileTypeConstraints.addAll(Arrays.asList(fileTypes));
 		return this;
 	}
+
+	private record UsingToAdd(String name, VariableScope scope){}
 }

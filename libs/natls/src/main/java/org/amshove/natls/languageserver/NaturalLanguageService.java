@@ -11,7 +11,7 @@ import org.amshove.natls.progress.ProgressTasks;
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natls.project.LanguageServerProject;
 import org.amshove.natls.project.ModuleReferenceParser;
-import org.amshove.natls.snippets.L4nSnippetProvider;
+import org.amshove.natls.snippets.SnippetEngine;
 import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
@@ -55,6 +55,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	private LanguageClient client;
 	private boolean initialized;
 	private RenameSymbolAction renameComputer = new RenameSymbolAction();
+	private SnippetEngine snippetEngine;
 
 	public void indexProject(Path workspaceRoot, IProgressMonitor progressMonitor)
 	{
@@ -69,6 +70,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		this.project = project;
 		languageServerProject = LanguageServerProject.fromProject(project);
 		parseFileReferences(progressMonitor);
+		snippetEngine = new SnippetEngine(languageServerProject);
 		initialized = true;
 	}
 
@@ -621,7 +623,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		var completionItems = new ArrayList<CompletionItem>();
 
-		completionItems.addAll(new L4nSnippetProvider().provideSnippets(file));
+		completionItems.addAll(snippetEngine.provideSnippets(file));
 
 		completionItems.addAll(module.referencableNodes().stream()
 			.filter(v -> !(v instanceof IRedefinitionNode)) // this is the `REDEFINE #VAR`, which results in the variable being doubled in completion

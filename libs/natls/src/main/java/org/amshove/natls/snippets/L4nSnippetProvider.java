@@ -28,8 +28,8 @@ INCLUDE L4NLOGIT${0}
 	{
 		return new NaturalSnippet("log%s".formatted(label))
 			.insertsText(LOG_CODE.formatted(logLevel))
-			.needsUsing("L4NPARAM")
-			.needsUsing("L4NCONST")
+			.needsLocalUsing("L4NPARAM")
+			.needsLocalUsing("L4NCONST")
 			.applicableWhen(f -> f.getType().canHaveBody());
 	}
 
