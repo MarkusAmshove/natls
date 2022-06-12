@@ -10,13 +10,13 @@ import java.util.Objects;
 
 public class SnippetEngine
 {
-	// TODO: Reflection
 	private static final List<ISnippetProvider> snippetProvider = new ArrayList<>();
 
 	public SnippetEngine(LanguageServerProject project)
 	{
 		snippetProvider.add(new L4nSnippetProvider());
 		snippetProvider.add(new NatUnitSnippetProvider(project));
+		snippetProvider.add(new StatementSnippetProvider());
 	}
 
 	public List<CompletionItem> provideSnippets(LanguageServerFile file)
