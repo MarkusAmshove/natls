@@ -1,5 +1,6 @@
 package org.amshove.natls.languageserver;
 
+import org.amshove.natls.App;
 import org.amshove.natls.codeactions.CodeActionRegistry;
 import org.amshove.natls.progress.ClientProgressType;
 import org.amshove.natls.progress.MessageProgressMonitor;
@@ -94,7 +95,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			{
 				progressMonitor.progress("Initialization done in %dms".formatted(endTime - startTime), 100);
 			}
-			return new InitializeResult(capabilities);
+			return new InitializeResult(capabilities, new ServerInfo(App.class.getPackage().getImplementationTitle(), App.class.getPackage().getImplementationVersion()));
 		});
 	}
 
