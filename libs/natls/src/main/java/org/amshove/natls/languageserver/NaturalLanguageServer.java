@@ -95,7 +95,10 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			{
 				progressMonitor.progress("Initialization done in %dms".formatted(endTime - startTime), 100);
 			}
-			return new InitializeResult(capabilities, new ServerInfo(App.class.getPackage().getImplementationTitle(), App.class.getPackage().getImplementationVersion()));
+
+			var lspName = App.class.getPackage().getImplementationTitle();
+			var lspVersion = App.class.getPackage().getImplementationVersion();
+			return new InitializeResult(capabilities, new ServerInfo(lspName != null ? lspName : "natls", lspVersion != null ? lspVersion : "dev"));
 		});
 	}
 
