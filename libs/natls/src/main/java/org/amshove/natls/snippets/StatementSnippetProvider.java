@@ -8,6 +8,13 @@ import java.util.Objects;
 
 public class StatementSnippetProvider implements ISnippetProvider
 {
+	private static final NaturalSnippet SOURCE_HEADER = new NaturalSnippet("sourceHeader")
+		.insertsText("""
+			* >Natural Source Header 000000
+			* :Mode S
+			* :CP
+			* <Natural Source Header
+			""");
 	private static final NaturalSnippet SUBROUTINE = new NaturalSnippet("subr")
 		.applicableWhen(f -> f.getType().canHaveBody())
 		.insertsText("""
@@ -76,7 +83,8 @@ public class StatementSnippetProvider implements ISnippetProvider
 		DECIDE_FOR_FIRST_CONDITION,
 		DECIDE_ON_FIRST_VALUE,
 		DECIDE_ON_EVERY_VALUE,
-		FOR
+		FOR,
+		SOURCE_HEADER
 	);
 
 	@Override

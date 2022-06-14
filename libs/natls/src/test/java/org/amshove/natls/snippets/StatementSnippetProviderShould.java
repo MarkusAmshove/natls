@@ -27,7 +27,7 @@ public class StatementSnippetProviderShould extends LanguageServerTest
 	private final StatementSnippetProvider sut = new StatementSnippetProvider();
 
 	private static final List<String> EXPECTED_SNIPPETS = List.of(
-		"subr", "if", "decideForFirstCondition", "decideOnFirstValue", "decideOnEveryValue", "for"
+		"subr", "if", "decideForFirstCondition", "decideOnFirstValue", "decideOnEveryValue", "for", "sourceHeader"
 	);
 
 	@BeforeAll
