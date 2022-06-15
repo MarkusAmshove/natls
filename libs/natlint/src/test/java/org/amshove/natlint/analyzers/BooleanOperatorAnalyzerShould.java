@@ -1,6 +1,9 @@
 package org.amshove.natlint.analyzers;
 
 import org.amshove.natlint.linter.AbstractAnalyzerTest;
+import org.amshove.natparse.natural.project.NaturalProject;
+import org.amshove.testhelpers.ProjectName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -45,5 +48,23 @@ public class BooleanOperatorAnalyzerShould extends AbstractAnalyzerTest
 			END
 			""".formatted(operator),
 			expectDiagnostic(3, BooleanOperatorAnalyzer.DISCOURAGED_BOOLEAN_OPERATOR));
+	}
+
+	@Test
+	void notEnforceEqualsOverEqForNatUnitTests(@ProjectName("natunit")NaturalProject project)
+	{
+		testDiagnostics(
+			project.findModule("TCEQTEST"),
+			expectNoDiagnosticOfType(BooleanOperatorAnalyzer.DISCOURAGED_BOOLEAN_OPERATOR)
+		);
+	}
+
+	@Test
+	void enforceEqOverEqualsForNatUnitTests(@ProjectName("natunit")NaturalProject project)
+	{
+		testDiagnostics(
+			project.findModule("TCTEST"),
+			expectDiagnostic(4, BooleanOperatorAnalyzer.INVALID_NATUNIT_COMPARISON_OPERATOR)
+		);
 	}
 }
