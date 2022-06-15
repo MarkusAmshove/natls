@@ -186,8 +186,14 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		while(!peekKind(SyntaxKind.RPAREN))
 		{
-			// TODO: Actually do stuff with parameter
-			consume(node);
+			if(peekKind(SyntaxKind.IDENTIFIER_OR_KEYWORD) || peekKind(SyntaxKind.IDENTIFIER))
+			{
+				node.addNode(identifierReference());
+			}
+			else
+			{
+				consume(node);
+			}
 		}
 
 		consumeMandatory(node, SyntaxKind.RPAREN);
