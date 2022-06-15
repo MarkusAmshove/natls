@@ -1,10 +1,10 @@
 package org.amshove.natlint.linter;
 
-import org.amshove.natlint.api.AbstractAnalyzer;
-import org.amshove.natlint.api.IAnalyzeContext;
-import org.amshove.natlint.api.IAnalyzingFunction;
-import org.amshove.natlint.api.ILinterContext;
+import org.amshove.natlint.api.*;
+import org.amshove.natparse.ReadOnlyList;
+import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.ISyntaxNode;
+import org.amshove.natparse.natural.ITokenNode;
 import org.reflections.Reflections;
 
 import java.util.ArrayList;
@@ -17,10 +17,16 @@ public enum LinterContext implements ILinterContext
 	INSTANCE;
 
 	private boolean initialized = false;
-	private final List<AbstractAnalyzer> registeredAnalyzers;
-	private final Map<Class<? extends ISyntaxNode>, List<IAnalyzingFunction>> analyzerFunctions = new HashMap<>();
+	private List<AbstractAnalyzer> registeredAnalyzers;
+	private final Map<Class<? extends ISyntaxNode>, List<INodeAnalyzingFunction>> nodeAnalyzerFunctions = new HashMap<>();
+	private final Map<SyntaxKind, List<ITokenAnalyzingFunction>> tokenAnalyzerFunctions = new HashMap<>();
 
 	LinterContext()
+	{
+		reinitialize();
+	}
+
+	void reinitialize() // used for tests only :(
 	{
 		var reflections = new Reflections("org.amshove.natlint.analyzers");
 		var analyzers = new ArrayList<AbstractAnalyzer>();
@@ -49,21 +55,37 @@ public enum LinterContext implements ILinterContext
 	}
 
 	@Override
-	public void registerNodeAnalyzer(Class<? extends ISyntaxNode> nodeType, IAnalyzingFunction analyzingFunction)
+	public void registerNodeAnalyzer(Class<? extends ISyntaxNode> nodeType, INodeAnalyzingFunction analyzingFunction)
 	{
-		analyzerFunctions.computeIfAbsent(nodeType, n -> new ArrayList<>())
+		nodeAnalyzerFunctions.computeIfAbsent(nodeType, n -> new ArrayList<>())
+			.add(analyzingFunction);
+	}
+
+	@Override
+	public void registerTokenAnalyzer(SyntaxKind kind, ITokenAnalyzingFunction analyzingFunction)
+	{
+		tokenAnalyzerFunctions.computeIfAbsent(kind, k -> new ArrayList<>())
 			.add(analyzingFunction);
 	}
 
 	void analyze(ISyntaxNode syntaxNode, IAnalyzeContext context)
 	{
-		var analyzers = analyzerFunctions.get(syntaxNode.getClass());
+		var analyzers = nodeAnalyzerFunctions.get(syntaxNode.getClass());
 		if (analyzers != null)
 		{
 			analyzers.forEach(analyzer -> analyzer.analyze(syntaxNode, context));
 		}
 
-		analyzerFunctions.entrySet().stream().filter(e -> e.getKey().isAssignableFrom(syntaxNode.getClass()))
+		if(syntaxNode instanceof ITokenNode tokenNode)
+		{
+			var tokenAnalyzer = tokenAnalyzerFunctions.get(tokenNode.token().kind());
+			if(tokenAnalyzer != null)
+			{
+				tokenAnalyzer.forEach(a -> a.analyze(tokenNode.token(), context));
+			}
+		}
+
+		nodeAnalyzerFunctions.entrySet().stream().filter(e -> e.getKey().isAssignableFrom(syntaxNode.getClass()))
 			.forEach(e -> e.getValue().forEach(a -> a.analyze(syntaxNode, context)));
 	}
 
@@ -86,7 +108,12 @@ public enum LinterContext implements ILinterContext
 	void reset()
 	{
 		registeredAnalyzers.clear();
-		analyzerFunctions.clear();
+		nodeAnalyzerFunctions.clear();
 		initialized = false;
+	}
+
+	/* package */ ReadOnlyList<AbstractAnalyzer> registeredAnalyzers()
+	{
+		return ReadOnlyList.from(registeredAnalyzers);
 	}
 }

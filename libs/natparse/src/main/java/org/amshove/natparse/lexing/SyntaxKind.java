@@ -27,6 +27,8 @@ public enum SyntaxKind
 	GE,
 	EQ,
 	NE,
+	OR,
+	AND,
 	LESSER,
 	NUMBER,
 	LESSER_GREATER,

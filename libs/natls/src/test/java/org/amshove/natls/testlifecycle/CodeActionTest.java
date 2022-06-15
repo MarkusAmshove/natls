@@ -45,6 +45,7 @@ public abstract class CodeActionTest extends LanguageServerTest
 	protected void assertContainsCodeAction(String title, List<CodeAction> codeActions)
 	{
 		assertThat(codeActions)
+			.as("Could not find code action with title '%s'".formatted(title))
 			.anyMatch(c -> c.getTitle().equals(title));
 	}
 

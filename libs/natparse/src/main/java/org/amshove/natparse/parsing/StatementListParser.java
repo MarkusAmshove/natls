@@ -82,6 +82,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						}
 						statementList.addStatement(subroutine());
 						break;
+					case END_IF:
 					case END_SUBROUTINE:
 						return statementList;
 					case IGNORE:
@@ -95,9 +96,14 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						}
 						statementList.addStatement(perform());
 						break;
+					case IF:
+						statementList.addStatement(ifStatement());
+						break;
 					default:
-						// While the parser is incomplete, we just skip over everything we don't know yet
-						tokens.advance();
+						// While the parser is incomplete, we just add a node for every token
+						var tokenStatementNode = new SyntheticTokenStatementNode();
+						consume(tokenStatementNode);
+						statementList.addStatement(tokenStatementNode);
 				}
 			}
 			catch (ParseError e)
@@ -160,7 +166,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		var token = identifier();
 		if(peekKind( SyntaxKind.LPAREN)
-				&& peekKind(1, SyntaxKind.LESSER) || peekKind(1, SyntaxKind.LESSER_GREATER))
+				&& (peekKind(1, SyntaxKind.LESSER) || peekKind(1, SyntaxKind.LESSER_GREATER)))
 		{
 			return functionCall(token);
 		}
@@ -184,8 +190,14 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		while(!peekKind(SyntaxKind.RPAREN))
 		{
-			// TODO: Actually do stuff with parameter
-			consume(node);
+			if(peekKind(SyntaxKind.IDENTIFIER_OR_KEYWORD) || peekKind(SyntaxKind.IDENTIFIER))
+			{
+				node.addNode(identifierReference());
+			}
+			else
+			{
+				consume(node);
+			}
 		}
 
 		consumeMandatory(node, SyntaxKind.RPAREN);
@@ -314,6 +326,19 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return fetch;
+	}
+
+	private IfStatementNode ifStatement() throws ParseError
+	{
+		var ifStatement = new IfStatementNode();
+
+		consumeMandatory(ifStatement, SyntaxKind.IF);
+
+		ifStatement.setBody(statementList());
+
+		consumeMandatory(ifStatement, SyntaxKind.END_IF);
+
+		return ifStatement;
 	}
 
 	private boolean isNotCallnatOrFetchModule()
