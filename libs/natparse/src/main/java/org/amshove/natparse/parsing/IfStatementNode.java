@@ -2,9 +2,8 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.natural.IIfStatementNode;
 import org.amshove.natparse.natural.IStatementListNode;
-import org.amshove.natparse.natural.IStatementNode;
 
-public class IfStatementNode extends StatementListNode implements IIfStatementNode
+class IfStatementNode extends StatementListNode implements IIfStatementNode
 {
 	private StatementListNode body;
 

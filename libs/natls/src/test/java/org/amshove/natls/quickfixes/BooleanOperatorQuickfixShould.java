@@ -7,6 +7,7 @@ import org.amshove.natls.testlifecycle.LspProjectName;
 import org.amshove.natls.testlifecycle.LspTest;
 import org.amshove.natls.testlifecycle.LspTestContext;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -62,5 +63,26 @@ public class BooleanOperatorQuickfixShould extends CodeActionTest
 		assertSingleCodeAction(actions)
 			.insertsText(2, 8, preferredOperator)
 			.fixes(BooleanOperatorAnalyzer.DISCOURAGED_BOOLEAN_OPERATOR.getId());
+	}
+
+	@Test
+	void recognizeTheQuickFixForInvalidNatUnitTestComparison()
+	{
+		var actions = receiveCodeActions("LIBONE", "TCTEST.NSN", """
+			DEFINE DATA
+			LOCAL USING NUTESTP
+			END-DEFINE
+			DEFINE SUBROUTINE TEST
+			IF NUTESTP.TEST ${}$= 'My test'
+			IGNORE
+			END-IF
+			END-SUBROUTINE
+			END
+			""");
+
+		assertContainsCodeAction("Change operator to EQ", actions);
+
+		assertSingleCodeAction(actions)
+			.insertsText(4, 16, "EQ");
 	}
 }

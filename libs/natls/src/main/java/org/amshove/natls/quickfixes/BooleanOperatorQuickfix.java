@@ -14,6 +14,17 @@ public class BooleanOperatorQuickfix extends AbstractQuickFix
 	protected void registerQuickfixes()
 	{
 		registerQuickFix(BooleanOperatorAnalyzer.DISCOURAGED_BOOLEAN_OPERATOR, this::fixOperator);
+		registerQuickFix(BooleanOperatorAnalyzer.INVALID_NATUNIT_COMPARISON_OPERATOR, this::fixNatUnitComparison);
+	}
+
+	private CodeAction fixNatUnitComparison(QuickFixContext quickFixContext)
+	{
+		var diagnostic = quickFixContext.diagnostic();
+		return new CodeActionBuilder("Change operator to EQ", CodeActionKind.QuickFix)
+			.fixesDiagnostic(diagnostic)
+			.appliesWorkspaceEdit(new WorkspaceEditBuilder()
+				.changesText(quickFixContext.fileUri(), diagnostic.getRange(), "EQ"))
+			.build();
 	}
 
 	private CodeAction fixOperator(QuickFixContext quickFixContext)
@@ -24,7 +35,6 @@ public class BooleanOperatorQuickfix extends AbstractQuickFix
 		var discouragedOperator = message.split(" ")[1];
 
 		var preferredOperator = BooleanOperatorAnalyzer.PREFERRED_OPERATORS.get(SyntaxKind.valueOf(discouragedOperator));
-		var node = quickFixContext.nodeAtPosition();
 
 		return new CodeActionBuilder(
 			"Change operator to %s".formatted(preferredOperator),
