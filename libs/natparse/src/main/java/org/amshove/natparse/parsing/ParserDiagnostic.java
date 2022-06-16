@@ -105,7 +105,7 @@ public class ParserDiagnostic implements IDiagnostic
 	@Override
 	public String toString()
 	{
-		return "ParserDiagnostic{" + id + ":" + message + '}';
+		return "ParserDiagnostic{%s:%s;line=%d;offsetInLine=%d}".formatted(id, message, line, offsetInLine);
 	}
 
 	@Override

@@ -51,7 +51,7 @@ class SyntheticVariableStatementNode extends StatementNode implements ISymbolRef
 	@Override
 	public ReadOnlyList<? extends ISyntaxNode> descendants()
 	{
-		return node.descendants();
+		return ReadOnlyList.of(node);
 	}
 
 	@Override

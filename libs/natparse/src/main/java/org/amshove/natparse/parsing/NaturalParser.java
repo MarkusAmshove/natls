@@ -60,7 +60,8 @@ public class NaturalParser
 			naturalModule.addReferencableNodes(statementParser.getReferencableNodes());
 			addRelevantParserDiagnostics(naturalModule, result);
 			naturalModule.setBody(result.result());
-			resolveVariableReferences(statementParser, naturalModule);
+
+			new ReferenceResolver().resolveReferences(naturalModule);
 			topLevelNodes.add(result.result());
 		}
 
@@ -97,81 +98,5 @@ public class NaturalParser
 
 			naturalModule.addDiagnostics(result.diagnostics());
 		}
-	}
-
-	private void resolveVariableReferences(StatementListParser statementParser, NaturalModule module)
-	{
-		// This could actually be done in the StatementListParser when encountering
-		// a possible reference. But that would need changes in the architecture, since
-		// it does not know about declared variables.
-
-		var defineData = module.defineData();
-		if (defineData == null)
-		{
-			return;
-		}
-
-		for (var unresolvedReference : statementParser.getUnresolvedReferences())
-		{
-			if(unresolvedReference.referencingToken().symbolName().startsWith("&")
-				|| (unresolvedReference.referencingToken().symbolName().contains(".")
-					&& unresolvedReference.referencingToken().symbolName().split("\\.")[1].startsWith("&")))
-			{
-				// Copycode parameter
-				continue;
-			}
-
-			if(tryFindAndReference(unresolvedReference.token().symbolName(), unresolvedReference, defineData))
-			{
-				continue;
-			}
-
-			if(unresolvedReference.token().symbolName().startsWith("+")
-				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(1), unresolvedReference, defineData))
-			{
-				// TODO(hack, expressions): This should be handled when parsing expressions.
-				continue;
-			}
-
-
-			if(unresolvedReference.token().symbolName().startsWith("C*")
-				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(2), unresolvedReference, defineData))
-			{
-				continue;
-			}
-
-			if(unresolvedReference.token().symbolName().startsWith("T*")
-				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(2), unresolvedReference, defineData))
-			{
-				// TODO(hack, write-statement): This will be obsolete when the WRITE statement is parsed
-				continue;
-			}
-
-			if(unresolvedReference.token().symbolName().startsWith("P*")
-				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(2), unresolvedReference, defineData))
-			{
-				// TODO(hack, write-statement): This will be obsolete when the WRITE statement is parsed
-				continue;
-			}
-
-			if(unresolvedReference.token().kind() == SyntaxKind.IDENTIFIER)
-			{
-				// We don't handle IDENTIFIER_OR_KEYWORD because we can't be sure if it a variable.
-				// As long as IDENTIFIER_OR_KEYWORD exists as a SyntaxKind, we only report a diagnostic if we're sure that its meant to be a reference.
-				module.addDiagnostic(ParserErrors.unresolvedReference(unresolvedReference));
-			}
-		}
-	}
-
-	private boolean tryFindAndReference(String symbolName, ISymbolReferenceNode referenceNode, IDefineData defineData)
-	{
-		var variable = defineData.findVariable(symbolName);
-		if(variable != null)
-		{
-			variable.addReference(referenceNode);
-			return true;
-		}
-
-		return defineData.findDdmField(symbolName) != null;
 	}
 }
