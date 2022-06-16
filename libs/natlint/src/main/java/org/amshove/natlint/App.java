@@ -12,8 +12,7 @@ import org.amshove.natparse.parsing.NaturalParser;
 import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,6 +23,7 @@ public class App
 	private static boolean noWarn;
 	private static boolean printStatistic;
 	private static String onlyDiagId;
+	private static PathMatcher globPattern;
 
 	private final Path projectFile;
 	private final IFilesystem filesystem;
@@ -75,6 +75,13 @@ public class App
 		{
 			onlyDiagId = arguments.get(diagIdIndex);
 			arguments.remove(diagIdIndex);
+		}
+
+		var globIndex = arguments.indexOf("--glob");
+		if(arguments.remove("--glob"))
+		{
+			globPattern = FileSystems.getDefault().getPathMatcher("glob:"+arguments.get(globIndex));
+			arguments.remove(globIndex);
 		}
 
 		if(!arguments.isEmpty())
@@ -139,6 +146,11 @@ public class App
 
 			for (var file : library.files().stream().filter(f -> f.getFiletype().hasDefineData()).toList())
 			{
+				if(globPattern != null && !globPattern.matches(file.getPath()))
+				{
+					continue;
+				}
+
 				if(singleModule != null && !singleModule.equalsIgnoreCase(file.getFilenameWithoutExtension()))
 				{
 					continue;
@@ -175,13 +187,20 @@ public class App
 						count++;
 						diagnosticsPerType.replace(d.message(), count);
 					});
-					totalDiagnostics += allDiagnostics.size();
+					if(onlyDiagId != null)
+					{
+						totalDiagnostics += allDiagnostics.stream().filter(d -> d.id().equalsIgnoreCase(onlyDiagId)).count();
+					}
+					else
+					{
+						totalDiagnostics += allDiagnostics.size();
+					}
 					printDiagnostics(filePath, allDiagnostics);
 				}
 				catch (Exception e)
 				{
 					System.err.println(filePath);
-					throw e;
+					e.printStackTrace();
 				}
 			}
 		}
