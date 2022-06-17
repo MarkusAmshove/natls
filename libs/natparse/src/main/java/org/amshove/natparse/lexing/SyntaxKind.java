@@ -25,7 +25,6 @@ public enum SyntaxKind
 	NUMBER_LITERAL,
 	LESSER_GREATER,
 	STRING_LITERAL,
-	IDENTIFIER_OR_KEYWORD,
 	IDENTIFIER,
 	LABEL_IDENTIFIER,
 	COMMENT,
@@ -647,9 +646,11 @@ public enum SyntaxKind
 	ZD,
 	ZP;
 
+
+	@Deprecated(since="Directly test against IDENTIFIER", forRemoval=true)
 	public boolean isIdentifier()
 	{
-		return this == IDENTIFIER || this == IDENTIFIER_OR_KEYWORD; // TODO: Keyword temporary
+		return this == IDENTIFIER;
 	}
 
 	public boolean isSystemVariable()

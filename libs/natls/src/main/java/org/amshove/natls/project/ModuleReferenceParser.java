@@ -64,7 +64,7 @@ public class ModuleReferenceParser
 				case CALLNAT -> calledModules.add(processCallnat(tokens));
 				case FETCH -> calledModules.add(processFetch(tokens));
 				case INCLUDE -> calledModules.add(processCopycode(tokens));
-				case IDENTIFIER, IDENTIFIER_OR_KEYWORD ->
+				case IDENTIFIER ->
 					{
 						if(tokens.peek(1).kind() == SyntaxKind.LPAREN && tokens.peek(2).kind() == SyntaxKind.LESSER_SIGN)
 						{

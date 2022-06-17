@@ -67,7 +67,6 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(fetch());
 						break;
 					case IDENTIFIER:
-					case IDENTIFIER_OR_KEYWORD:
 						statementList.addStatement(identifierReference());
 						break;
 					case END:
@@ -190,7 +189,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		while(!peekKind(SyntaxKind.RPAREN))
 		{
-			if(peekKind(SyntaxKind.IDENTIFIER_OR_KEYWORD) || peekKind(SyntaxKind.IDENTIFIER))
+			if(peekKind(SyntaxKind.IDENTIFIER))
 			{
 				node.addNode(identifierReference());
 			}
@@ -216,7 +215,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.IDENTIFIER), peek()));
 		}
 
-		if (consumeEitherOptionally(callnat, SyntaxKind.IDENTIFIER, SyntaxKind.IDENTIFIER_OR_KEYWORD))
+		if (consumeOptionally(callnat, SyntaxKind.IDENTIFIER))
 		{
 			callnat.setReferencingToken(previousToken());
 		}
@@ -313,7 +312,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.IDENTIFIER), peek()));
 		}
 
-		if (consumeEitherOptionally(fetch, SyntaxKind.IDENTIFIER, SyntaxKind.IDENTIFIER_OR_KEYWORD))
+		if (consumeOptionally(fetch, SyntaxKind.IDENTIFIER))
 		{
 			fetch.setReferencingToken(previousToken());
 		}
@@ -343,7 +342,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private boolean isNotCallnatOrFetchModule()
 	{
-		return !peekKind(SyntaxKind.STRING_LITERAL) && !peekKind(SyntaxKind.IDENTIFIER) && !peekKind(SyntaxKind.IDENTIFIER_OR_KEYWORD);
+		return !peekKind(SyntaxKind.STRING_LITERAL) && !peekKind(SyntaxKind.IDENTIFIER);
 	}
 
 	private void resolveUnresolvedExternalPerforms()
