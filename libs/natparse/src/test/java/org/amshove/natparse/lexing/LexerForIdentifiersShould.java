@@ -200,4 +200,10 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 			dynamicTest("with hyphen in variable", () -> assertTokens("QUALIFIER.VARI-ABLE", token(SyntaxKind.IDENTIFIER, "QUALIFIER.VARI-ABLE"))),
 			dynamicTest("with hypen in both", () -> assertTokens("QUALI-FIER.VARI-ABLE", token(SyntaxKind.IDENTIFIER, "QUALI-FIER.VARI-ABLE"))));
 	}
+
+	@Test
+	void recogniceAVariableStartingWithPfAsIdentifier()
+	{
+		assertTokens("PFAD", token(SyntaxKind.IDENTIFIER));
+	}
 }

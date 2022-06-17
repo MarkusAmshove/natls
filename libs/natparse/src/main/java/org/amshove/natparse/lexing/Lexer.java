@@ -288,6 +288,8 @@ public class Lexer
 			case 'D':
 			case 'e':
 			case 'E':
+			case 'i':
+			case 'I':
 			case 'l':
 			case 'L':
 			case 'm':
@@ -344,6 +346,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.TIMX);
 			return;
 		}
+		if (scanner.advanceIf("TIMN"))
+		{
+			createAndAdd(SyntaxKind.TIMN);
+			return;
+		}
 		if (scanner.advanceIf("DATX"))
 		{
 			createAndAdd(SyntaxKind.DATX);
@@ -352,6 +359,11 @@ public class Lexer
 		if (scanner.advanceIf("DATN"))
 		{
 			createAndAdd(SyntaxKind.DATN);
+			return;
+		}
+		if (scanner.advanceIf("DATD"))
+		{
+			createAndAdd(SyntaxKind.DATD);
 			return;
 		}
 		if (scanner.advanceIf("LANGUAGE"))
@@ -384,6 +396,21 @@ public class Lexer
 			createAndAdd(SyntaxKind.CURS_LINE);
 			return;
 		}
+		if (scanner.advanceIf("ERROR-TA"))
+		{
+			createAndAdd(SyntaxKind.ERROR_TA);
+			return;
+		}
+		if (scanner.advanceIf("INIT-USER"))
+		{
+			createAndAdd(SyntaxKind.INIT_USER);
+			return;
+		}
+		if (scanner.advanceIf("COUNTER"))
+		{
+			createAndAdd(SyntaxKind.COUNTER);
+			return;
+		}
 		if (scanner.advanceIf("PF-KEY"))
 		{
 			createAndAdd(SyntaxKind.PF_KEY);
@@ -399,7 +426,21 @@ public class Lexer
 			createAndAdd(SyntaxKind.MINVAL);
 			return;
 		}
-
+		if (scanner.advanceIf("DEVICE"))
+		{
+			createAndAdd(SyntaxKind.DEVICE);
+			return;
+		}
+		if (scanner.advanceIf("OPSYS"))
+		{
+			createAndAdd(SyntaxKind.OPSYS);
+			return;
+		}
+		if (scanner.advanceIf("TPSYS"))
+		{
+			createAndAdd(SyntaxKind.TPSYS);
+			return;
+		}
 		scanner.rollbackCurrentLexeme();
 		createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
 	}
@@ -498,7 +539,7 @@ public class Lexer
 		SyntaxKind kindHint = null;
 		scanner.start();
 
-		if (scanner.advanceIf("PF"))
+		if (scanner.advanceIf("PF") && Character.isDigit(scanner.peek()))
 		{
 			while(!scanner.isAtEnd() && Character.isDigit(scanner.peek()))
 			{

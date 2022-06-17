@@ -79,6 +79,24 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 	}
 
 	@Test
+	void lexErrorTa()
+	{
+		assertTokens("*ERROR-TA", token(SyntaxKind.ERROR_TA, "*ERROR-TA"));
+	}
+
+	@Test
+	void lexInitUser()
+	{
+		assertTokens("*INIT-USER", token(SyntaxKind.INIT_USER, "*INIT-USER"));
+	}
+
+	@Test
+	void lexCounter()
+	{
+		assertTokens("*COUNTER", token(SyntaxKind.COUNTER, "*COUNTER"));
+	}
+
+	@Test
 	void lexLine()
 	{
 		assertTokens("*LINE", token(SyntaxKind.LINE, "*LINE"));
@@ -119,5 +137,35 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 	void lexPfKey()
 	{
 		assertTokens("*PF-KEY", token(SyntaxKind.PF_KEY, "*PF-KEY"));
+	}
+
+	@Test
+	void lexDevice()
+	{
+		assertTokens("*DEVICE", token(SyntaxKind.DEVICE, "*DEVICE"));
+	}
+
+	@Test
+	void lexDatD()
+	{
+		assertTokens("*DATD", token(SyntaxKind.DATD, "*DATD"));
+	}
+
+	@Test
+	void lexTimN()
+	{
+		assertTokens("*TIMN", token(SyntaxKind.TIMN, "*TIMN"));
+	}
+
+	@Test
+	void lexOpSys()
+	{
+		assertTokens("*OPSYS", token(SyntaxKind.OPSYS, "*OPSYS"));
+	}
+
+	@Test
+	void lexTpSys()
+	{
+		assertTokens("*TPSYS", token(SyntaxKind.TPSYS, "*TPSYS"));
 	}
 }

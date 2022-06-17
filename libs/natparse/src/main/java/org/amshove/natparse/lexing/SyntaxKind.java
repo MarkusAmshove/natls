@@ -33,6 +33,8 @@ public enum SyntaxKind
 
 	// System variables and functions
 	TIMX,
+	TIMN,
+	DATD,
 	DATX,
 	DATN,
 	LIBRARY_ID,
@@ -41,12 +43,18 @@ public enum SyntaxKind
 	OCC,
 	ERROR_NR,
 	ERROR_LINE,
+	ERROR_TA,
 	LINE,
 	TRIM,
 	MAXVAL,
 	MINVAL,
 	CURS_LINE,
 	PF_KEY,
+	INIT_USER,
+	COUNTER,
+	DEVICE,
+	OPSYS,
+	TPSYS,
 
 	// Natural reserved keywords
 	ABS,
