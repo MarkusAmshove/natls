@@ -62,7 +62,7 @@ public class NatUnitTestNameAnalyzer extends AbstractAnalyzer
 		}
 
 		var possibleTestName = ifStatement.descendants().get(3);
-		if (!(possibleTestName instanceof ITokenNode nameToken) || nameToken.token().kind() != SyntaxKind.STRING)
+		if (!(possibleTestName instanceof ITokenNode nameToken) || nameToken.token().kind() != SyntaxKind.STRING_LITERAL)
 		{
 			return;
 		}

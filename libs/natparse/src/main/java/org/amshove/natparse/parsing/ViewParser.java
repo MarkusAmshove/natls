@@ -24,7 +24,7 @@ class ViewParser extends AbstractParser<ViewNode>
 		try
 		{
 			var viewVariable = new VariableNode();
-			var level = consumeMandatory(viewVariable, SyntaxKind.NUMBER).intValue();
+			var level = consumeMandatory(viewVariable, SyntaxKind.NUMBER_LITERAL).intValue();
 			viewVariable.setLevel(level);
 
 			var identifier = consumeMandatoryIdentifier(viewVariable);
@@ -44,7 +44,7 @@ class ViewParser extends AbstractParser<ViewNode>
 				view.setDdm(ddm);
 			}
 
-			while (peekKind(SyntaxKind.NUMBER) && peek().intValue() > view.level())
+			while (peekKind(SyntaxKind.NUMBER_LITERAL) && peek().intValue() > view.level())
 			{
 				try
 				{
@@ -71,7 +71,7 @@ class ViewParser extends AbstractParser<ViewNode>
 	private VariableNode variable() throws ParseError
 	{
 		var variable = new VariableNode();
-		var level = consumeMandatory(variable, SyntaxKind.NUMBER);
+		var level = consumeMandatory(variable, SyntaxKind.NUMBER_LITERAL);
 		variable.setLevel(level.intValue());
 
 		if (consumeOptionally(variable, SyntaxKind.REDEFINE))
@@ -85,16 +85,16 @@ class ViewParser extends AbstractParser<ViewNode>
 		if(consumeOptionally(variable, SyntaxKind.LPAREN))
 		{
 			// Maybe Group Array
-			if(peek().kind() == SyntaxKind.ASTERISK || peek().kind() == SyntaxKind.NUMBER)
+			if(peek().kind() == SyntaxKind.ASTERISK || peek().kind() == SyntaxKind.NUMBER_LITERAL)
 			{
 				var firstTokenInNextLine = peekNextLine();
-				if(firstTokenInNextLine.kind() == SyntaxKind.NUMBER && firstTokenInNextLine.intValue() > variable.level())
+				if(firstTokenInNextLine.kind() == SyntaxKind.NUMBER_LITERAL && firstTokenInNextLine.intValue() > variable.level())
 				{
 					return group(variable);
 				}
 			}
 
-			if(peek().kind() == SyntaxKind.NUMBER || (peek().kind().isIdentifier() && isVariableDeclared(peek().symbolName())))
+			if(peek().kind() == SyntaxKind.NUMBER_LITERAL || (peek().kind().isIdentifier() && isVariableDeclared(peek().symbolName())))
 			{
 				addArrayDimension(variable);
 				var typedDdmArrayVariable = typedVariableFromDdm(variable);
@@ -105,7 +105,7 @@ class ViewParser extends AbstractParser<ViewNode>
 			return typedVariable(variable);
 		}
 
-		if(peek().kind() == SyntaxKind.NUMBER && peek().intValue() > level.intValue())
+		if(peek().kind() == SyntaxKind.NUMBER_LITERAL && peek().intValue() > level.intValue())
 		{
 			return group(variable);
 		}
@@ -140,7 +140,7 @@ class ViewParser extends AbstractParser<ViewNode>
 		// N12.7 results in Tokens <IDENTIFIER (N12), DOT, NUMBER>
 		if (consumeOptionally(typedVariable, SyntaxKind.COMMA) || consumeOptionally(typedVariable, SyntaxKind.DOT))
 		{
-			var number = consumeMandatory(typedVariable, SyntaxKind.NUMBER);
+			var number = consumeMandatory(typedVariable, SyntaxKind.NUMBER_LITERAL);
 			length = getLengthFromDataType(dataType + "." + number.source());
 		}
 		type.setLength(length);
@@ -183,7 +183,7 @@ class ViewParser extends AbstractParser<ViewNode>
 			consumeMandatory(group, SyntaxKind.RPAREN);
 		}
 
-		while (peekKind(SyntaxKind.NUMBER))
+		while (peekKind(SyntaxKind.NUMBER_LITERAL))
 		{
 			if (peek().intValue() <= group.level())
 			{
@@ -252,13 +252,13 @@ class ViewParser extends AbstractParser<ViewNode>
 		var workaroundNextDimension = false;
 		if (consumeOptionally(dimension, SyntaxKind.COLON))
 		{
-			if (peekKind(SyntaxKind.NUMBER) && peek().source().contains(","))
+			if (peekKind(SyntaxKind.NUMBER_LITERAL) && peek().source().contains(","))
 			{
 				// Workaround for (T/1:10,50:*) where 10,50 gets recognized as a number
 				var numbers = peek().source().split(",");
 				var relevantNumber = numbers[0];
 
-				var firstNumberToken = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER, relevantNumber);
+				var firstNumberToken = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER_LITERAL, relevantNumber);
 				upperBound = extractArrayBound(firstNumberToken, dimension);
 				variable.addNode(firstNumberToken);
 				// we now also have to handle the next dimension, because our current
@@ -279,7 +279,7 @@ class ViewParser extends AbstractParser<ViewNode>
 			lowerBound = 1;
 		}
 
-		if (!peekKind(SyntaxKind.RPAREN) && !peekKind(SyntaxKind.NUMBER) && !peekKind(SyntaxKind.COMMA)) // special case for (*)
+		if (!peekKind(SyntaxKind.RPAREN) && !peekKind(SyntaxKind.NUMBER_LITERAL) && !peekKind(SyntaxKind.COMMA)) // special case for (*)
 		{
 			consume(dimension);
 		}
@@ -297,7 +297,7 @@ class ViewParser extends AbstractParser<ViewNode>
 
 	private int extractArrayBound(ITokenNode token, ArrayDimension dimension)
 	{
-		if (token.token().kind() == SyntaxKind.NUMBER)
+		if (token.token().kind() == SyntaxKind.NUMBER_LITERAL)
 		{
 			return token.token().intValue();
 		}
@@ -356,7 +356,7 @@ class ViewParser extends AbstractParser<ViewNode>
 		typedVariable.addNode(slashToken);
 
 		var boundTokenKind = relevantSource.substring(1).matches("\\d+")
-			? SyntaxKind.NUMBER
+			? SyntaxKind.NUMBER_LITERAL
 			: SyntaxKind.IDENTIFIER; // when the bound is a reference to a variable
 
 		var boundToken = SyntheticTokenNode.fromToken(identifierToken, boundTokenKind, relevantSource.substring(1));
@@ -377,13 +377,13 @@ class ViewParser extends AbstractParser<ViewNode>
 		var workaroundNextDimension = false;
 		if (consumeOptionally(dimension, SyntaxKind.COLON))
 		{
-			if (peekKind(SyntaxKind.NUMBER) && peek().source().contains(","))
+			if (peekKind(SyntaxKind.NUMBER_LITERAL) && peek().source().contains(","))
 			{
 				// Workaround for (T/1:10,50:*) where 10,50 gets recognized as a number
 				var numbers = peek().source().split(",");
 				var relevantNumber = numbers[0];
 
-				var firstNumberToken = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER, relevantNumber);
+				var firstNumberToken = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER_LITERAL, relevantNumber);
 				upperBound = extractArrayBound(firstNumberToken, dimension);
 				typedVariable.addNode(firstNumberToken);
 				// we now also have to handle the next dimension, because our current
@@ -445,7 +445,7 @@ class ViewParser extends AbstractParser<ViewNode>
 
 		var lowerBoundNumber = numbers[1];
 
-		var syntheticLowerBound = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER, lowerBoundNumber);
+		var syntheticLowerBound = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER_LITERAL, lowerBoundNumber);
 
 		var dimension = new ArrayDimension();
 		dimension.addNode(syntheticLowerBound);
@@ -457,13 +457,13 @@ class ViewParser extends AbstractParser<ViewNode>
 		var workaroundNextDimension = false;
 		if (consumeOptionally(dimension, SyntaxKind.COLON))
 		{
-			if (peekKind(SyntaxKind.NUMBER) && peek().source().contains(","))
+			if (peekKind(SyntaxKind.NUMBER_LITERAL) && peek().source().contains(","))
 			{
 				// Workaround for (T/1:10,50:*) where 10,50 gets recognized as a number
 				numbers = peek().source().split(",");
 				var relevantNumber = numbers[0];
 
-				var firstNumberToken = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER, relevantNumber);
+				var firstNumberToken = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER_LITERAL, relevantNumber);
 				upperBound = extractArrayBound(firstNumberToken, dimension);
 				variable.addNode(firstNumberToken);
 				// we now also have to handle the next dimension, because our current

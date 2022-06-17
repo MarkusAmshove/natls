@@ -98,15 +98,15 @@ public class Lexer
 					createAndAddCurrentSingleToken(SyntaxKind.SEMICOLON);
 					continue;
 				case '>':
-					createAndAddFollowupEquals(SyntaxKind.GREATER, SyntaxKind.GREATER_EQUALS);
+					createAndAddFollowupEquals(SyntaxKind.GREATER_SIGN, SyntaxKind.GREATER_EQUALS_SIGN);
 					continue;
 				case '<':
-					if (tryCreateIfFollowedBy('=', SyntaxKind.LESSER_EQUALS)
+					if (tryCreateIfFollowedBy('=', SyntaxKind.LESSER_EQUALS_SIGN)
 						|| tryCreateIfFollowedBy('>', SyntaxKind.LESSER_GREATER))
 					{
 						continue;
 					}
-					createAndAddCurrentSingleToken(SyntaxKind.LESSER);
+					createAndAddCurrentSingleToken(SyntaxKind.LESSER_SIGN);
 					continue;
 				case '.':
 					createAndAddCurrentSingleToken(SyntaxKind.DOT);
@@ -237,7 +237,7 @@ public class Lexer
 		var lookaheadIndex = findNextNonWhitespaceLookaheadOffset();
 		var lookahead = scanner.peek(lookaheadIndex);
 		var previousToken = previous();
-		var isStringConcatenation = previousToken != null && previousToken.kind() == SyntaxKind.STRING && (lookahead == '\'' || lookahead == '"');
+		var isStringConcatenation = previousToken != null && previousToken.kind() == SyntaxKind.STRING_LITERAL && (lookahead == '\'' || lookahead == '"');
 		if (isStringConcatenation)
 		{
 			var previousString = previous();
@@ -251,7 +251,7 @@ public class Lexer
 				tokens.subList(previousStringIndex, currentStringIndex + 1).clear();
 			}
 			addToken(SyntaxTokenFactory.create(
-				SyntaxKind.STRING,
+				SyntaxKind.STRING_LITERAL,
 				previousString.offset(),
 				previousString.offsetInLine(),
 				previousString.line(),
@@ -269,7 +269,7 @@ public class Lexer
 			{
 				scanner.advance();
 			}
-			createAndAdd(SyntaxKind.NUMBER);
+			createAndAdd(SyntaxKind.NUMBER_LITERAL);
 		}
 		else
 		{
@@ -521,16 +521,7 @@ public class Lexer
 		}
 		else
 		{
-			// WITH_CTE is the only Keyword that contains an underscore, if we're
-			// this far, and it contains an underscore, it's an identifier
-			if (lexeme.contains("_"))
-			{
-				createAndAdd(SyntaxKind.IDENTIFIER);
-			}
-			else
-			{
-				createAndAdd(SyntaxKind.IDENTIFIER_OR_KEYWORD);
-			}
+			createAndAdd(SyntaxKind.IDENTIFIER);
 		}
 	}
 
@@ -684,7 +675,7 @@ public class Lexer
 		{
 			scanner.advance();
 		}
-		createAndAdd(SyntaxKind.NUMBER);
+		createAndAdd(SyntaxKind.NUMBER_LITERAL);
 	}
 
 	private void consumeHexString()
@@ -707,14 +698,14 @@ public class Lexer
 			addDiagnostic("Unterminated String literal, expecting closing [']", LexerError.UNTERMINATED_STRING);
 
 			// We can still produce a valid token, although it is unterminated
-			createAndAdd(SyntaxKind.STRING);
+			createAndAdd(SyntaxKind.STRING_LITERAL);
 			return;
 		}
 
 		// We don't evaluate the content. Is it worth it? We could convert it to the actual characters.
 
 		scanner.advance();
-		createAndAdd(SyntaxKind.STRING);
+		createAndAdd(SyntaxKind.STRING_LITERAL);
 	}
 
 	private void consumeString(char c)
@@ -737,14 +728,14 @@ public class Lexer
 			addDiagnostic("Unterminated String literal, expecting closing [%c]".formatted(c), LexerError.UNTERMINATED_STRING);
 
 			// We can still produce a valid token, although it is unterminated
-			createAndAdd(SyntaxKind.STRING);
+			createAndAdd(SyntaxKind.STRING_LITERAL);
 			return;
 		}
 
 		// The current character is the terminating string literal (' or "), therefore it needs to be consumed
 		// to be included.
 		scanner.advance();
-		createAndAdd(SyntaxKind.STRING);
+		createAndAdd(SyntaxKind.STRING_LITERAL);
 	}
 
 	private void createAndAdd(SyntaxKind kind)

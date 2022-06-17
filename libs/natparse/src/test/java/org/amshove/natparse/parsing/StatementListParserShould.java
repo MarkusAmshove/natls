@@ -22,7 +22,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	{
 		ignoreModuleProvider();
 		var callnat = assertParsesSingleStatement("CALLNAT 'MODULE'", ICallnatNode.class);
-		assertThat(callnat.referencingToken().kind()).isEqualTo(SyntaxKind.STRING);
+		assertThat(callnat.referencingToken().kind()).isEqualTo(SyntaxKind.STRING_LITERAL);
 		assertThat(callnat.referencingToken().stringValue()).isEqualTo("MODULE");
 	}
 
@@ -81,7 +81,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	{
 		ignoreModuleProvider();
 		var include = assertParsesSingleStatement("INCLUDE L4NLOGIT", IIncludeNode.class);
-		assertThat(include.referencingToken().kind()).isEqualTo(SyntaxKind.IDENTIFIER_OR_KEYWORD);
+		assertThat(include.referencingToken().kind()).isEqualTo(SyntaxKind.IDENTIFIER);
 		assertThat(include.referencingToken().symbolName()).isEqualTo("L4NLOGIT");
 	}
 
@@ -96,7 +96,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	{
 		ignoreModuleProvider();
 		var fetch = assertParsesSingleStatement("FETCH 'PROG'", IFetchNode.class);
-		assertThat(fetch.referencingToken().kind()).isEqualTo(SyntaxKind.STRING);
+		assertThat(fetch.referencingToken().kind()).isEqualTo(SyntaxKind.STRING_LITERAL);
 		assertThat(fetch.referencingToken().stringValue()).isEqualTo("PROG");
 	}
 
@@ -105,7 +105,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	{
 		ignoreModuleProvider();
 		var fetch = assertParsesSingleStatement("FETCH RETURN 'PROG'", IFetchNode.class);
-		assertThat(fetch.referencingToken().kind()).isEqualTo(SyntaxKind.STRING);
+		assertThat(fetch.referencingToken().kind()).isEqualTo(SyntaxKind.STRING_LITERAL);
 		assertThat(fetch.referencingToken().stringValue()).isEqualTo("PROG");
 	}
 
@@ -114,7 +114,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	{
 		ignoreModuleProvider();
 		var fetch = assertParsesSingleStatement("FETCH REPEAT 'PROG'", IFetchNode.class);
-		assertThat(fetch.referencingToken().kind()).isEqualTo(SyntaxKind.STRING);
+		assertThat(fetch.referencingToken().kind()).isEqualTo(SyntaxKind.STRING_LITERAL);
 		assertThat(fetch.referencingToken().stringValue()).isEqualTo("PROG");
 	}
 

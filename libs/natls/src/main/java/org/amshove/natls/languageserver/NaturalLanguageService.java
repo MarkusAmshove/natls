@@ -162,7 +162,7 @@ public class NaturalLanguageService implements LanguageClientAware
 			return EMPTY_HOVER;
 		}
 
-		if (symbolToSearchFor.kind() == SyntaxKind.STRING)
+		if (symbolToSearchFor.kind() == SyntaxKind.STRING_LITERAL)
 		{
 			return hoverExternalModule(symbolToSearchFor);
 		}
@@ -566,7 +566,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var filePath = LspUtil.uriToPath(textDocument.getUri());
 
 		var token = findTokenAtPosition(filePath, position);
-		if (token == null || token.kind() != SyntaxKind.STRING)
+		if (token == null || token.kind() != SyntaxKind.STRING_LITERAL)
 		{
 			return null;
 		}

@@ -166,7 +166,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		var token = identifier();
 		if(peekKind( SyntaxKind.LPAREN)
-				&& (peekKind(1, SyntaxKind.LESSER) || peekKind(1, SyntaxKind.LESSER_GREATER)))
+				&& (peekKind(1, SyntaxKind.LESSER_SIGN) || peekKind(1, SyntaxKind.LESSER_GREATER)))
 		{
 			return functionCall(token);
 		}
@@ -213,7 +213,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		if (isNotCallnatOrFetchModule())
 		{
-			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING, SyntaxKind.IDENTIFIER), peek()));
+			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.IDENTIFIER), peek()));
 		}
 
 		if (consumeEitherOptionally(callnat, SyntaxKind.IDENTIFIER, SyntaxKind.IDENTIFIER_OR_KEYWORD))
@@ -221,7 +221,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			callnat.setReferencingToken(previousToken());
 		}
 
-		if (consumeOptionally(callnat, SyntaxKind.STRING))
+		if (consumeOptionally(callnat, SyntaxKind.STRING_LITERAL))
 		{
 			callnat.setReferencingToken(previousToken());
 			var referencedModule = sideloadModule(callnat.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode());
@@ -310,7 +310,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		if (isNotCallnatOrFetchModule())
 		{
-			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING, SyntaxKind.IDENTIFIER), peek()));
+			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.IDENTIFIER), peek()));
 		}
 
 		if (consumeEitherOptionally(fetch, SyntaxKind.IDENTIFIER, SyntaxKind.IDENTIFIER_OR_KEYWORD))
@@ -318,7 +318,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			fetch.setReferencingToken(previousToken());
 		}
 
-		if (consumeOptionally(fetch, SyntaxKind.STRING))
+		if (consumeOptionally(fetch, SyntaxKind.STRING_LITERAL))
 		{
 			fetch.setReferencingToken(previousToken());
 			var referencedModule = sideloadModule(fetch.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode());
@@ -343,7 +343,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private boolean isNotCallnatOrFetchModule()
 	{
-		return !peekKind(SyntaxKind.STRING) && !peekKind(SyntaxKind.IDENTIFIER) && !peekKind(SyntaxKind.IDENTIFIER_OR_KEYWORD);
+		return !peekKind(SyntaxKind.STRING_LITERAL) && !peekKind(SyntaxKind.IDENTIFIER) && !peekKind(SyntaxKind.IDENTIFIER_OR_KEYWORD);
 	}
 
 	private void resolveUnresolvedExternalPerforms()
