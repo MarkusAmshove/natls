@@ -207,7 +207,7 @@ public class LanguageServerFile implements IModuleProvider
 		}
 		var end = System.currentTimeMillis();
 		log += " took %dms".formatted(end - start);
-		System.err.println(log);
+//		System.err.println(log);
 	}
 
 	public void reparseCallers()
@@ -255,7 +255,7 @@ public class LanguageServerFile implements IModuleProvider
 			destroyPresentNodes();
 			log += " (destroyed previous nodes)";
 		}
-		System.err.println(log);
+//		System.err.println(log);
 
 		outgoingReferences.forEach(ref -> ref.removeIncomingReference(this));
 		outgoingReferences.clear(); // Will be re-added during parse
@@ -273,7 +273,7 @@ public class LanguageServerFile implements IModuleProvider
 			addDiagnostic(DiagnosticTool.NATPARSE, diagnostic);
 		}
 		var end = System.currentTimeMillis();
-		System.err.printf("Took %dms%n", end - start);
+//		System.err.printf("Took %dms%n", end - start);
 	}
 
 	private void destroyPresentNodes()
@@ -301,7 +301,8 @@ public class LanguageServerFile implements IModuleProvider
 	// TODO(cyclic-dependencies):
 	//   Currently necessary for dependency loops which would cause a stack overflow. e.g. MOD1 -> MOD2 -> MOD1 ...
 	//   Solution might be to instantiate modules while indexing, only replacing stuff with the parser
-	private INaturalModule parseDefineDataOnly()
+	// TODO(lightweight-parse): now also used by natdoc which only needs DEFINE DATA and comments
+	public INaturalModule parseDefineDataOnly()
 	{
 		if (module != null)
 		{
@@ -314,9 +315,11 @@ public class LanguageServerFile implements IModuleProvider
 			var lexer = new Lexer();
 			var tokenList = lexer.lex(source, file.getPath());
 			var defineDataParser = new DefineDataParser(this);
-			var definedata = defineDataParser.parse(tokenList);
+			var defineData = defineDataParser.parse(tokenList);
 			var module = new NaturalModule(file);
-			module.setDefineData(definedata.result());
+			module.setDefineData(defineData.result());
+			comments.clear();
+			comments.addAll(tokenList.comments().toList());
 			this.module = module;
 		}
 		catch (Exception e)
