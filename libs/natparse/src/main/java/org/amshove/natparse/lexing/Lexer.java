@@ -488,6 +488,12 @@ public class Lexer
 			return;
 		}
 
+		if(inParens && scanner.peekText("AD="))
+		{
+			attributeDefinition();
+			return;
+		}
+
 		var isQualified = false;
 		SyntaxKind kindHint = null;
 		scanner.start();
@@ -629,7 +635,19 @@ public class Lexer
 			scanner.advance();
 		}
 
-		createAndAdd(SyntaxKind.EDITOR_MASK);
+		createAndAdd(SyntaxKind.EM);
+	}
+
+	private void attributeDefinition()
+	{
+		scanner.start();
+		scanner.advance(3); // AD=
+		while(!scanner.isAtEnd() && isNoWhitespace() && scanner.peek() != ')')
+		{
+			scanner.advance();
+		}
+
+		createAndAdd(SyntaxKind.AD);
 	}
 
 	private boolean isNoWhitespace()

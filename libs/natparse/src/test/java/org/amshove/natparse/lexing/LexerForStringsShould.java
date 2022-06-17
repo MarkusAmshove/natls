@@ -69,7 +69,7 @@ public class LexerForStringsShould extends AbstractLexerTest
 			SyntaxKind.EDITED,
 			SyntaxKind.TIMX,
 			SyntaxKind.LPAREN,
-			SyntaxKind.EDITOR_MASK,
+			SyntaxKind.EM,
 			SyntaxKind.RPAREN,
 			SyntaxKind.TO,
 			SyntaxKind.IDENTIFIER

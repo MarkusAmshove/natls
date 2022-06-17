@@ -28,7 +28,6 @@ public enum SyntaxKind
 	IDENTIFIER,
 	LABEL_IDENTIFIER,
 	COMMENT,
-	EDITOR_MASK,
 	PERCENT,
 	QUESTIONMARK,
 
@@ -55,7 +54,7 @@ public enum SyntaxKind
 	ACCEPT,
 	ACTION,
 	ACTIVATION,
-	AD,
+	AD, // Attribute Definition
 	ADD,
 	AFTER,
 	AL,
@@ -181,7 +180,7 @@ public enum SyntaxKind
 	EJ,
 	EJECT,
 	ELSE,
-	EM,
+	EM, // EDITOR MASK
 	ENCODED,
 	END,
 	END_ALL,
