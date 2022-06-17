@@ -37,6 +37,17 @@ public enum SyntaxKind
 	DATX,
 	DATN,
 	LIBRARY_ID,
+	LINEX,
+	CURRENT_UNIT,
+	OCC,
+	ERROR_NR,
+	ERROR_LINE,
+	LINE,
+	TRIM,
+	MAXVAL,
+	MINVAL,
+	CURS_LINE,
+	PF_KEY,
 
 	// Natural reserved keywords
 	ABS,

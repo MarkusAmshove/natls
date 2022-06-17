@@ -282,12 +282,20 @@ public class Lexer
 		var lookahead = scanner.peek(1);
 		switch (lookahead)
 		{
+			case 'c':
+			case 'C':
 			case 'd':
 			case 'D':
+			case 'e':
+			case 'E':
 			case 'l':
 			case 'L':
+			case 'm':
+			case 'M':
 			case 't':
 			case 'T':
+			case 'o':
+			case 'O':
 			case 'p':
 			case 'P':
 			case 'u':
@@ -301,34 +309,99 @@ public class Lexer
 
 		scanner.start();
 		scanner.advance();
+		if (scanner.advanceIf("OCC"))
+		{
+			createAndAdd(SyntaxKind.OCC);
+			return;
+		}
+		if (scanner.advanceIf("LINEX"))
+		{
+			createAndAdd(SyntaxKind.LINEX);
+			return;
+		}
+		if (scanner.advanceIf("TRIM"))
+		{
+			createAndAdd(SyntaxKind.TRIM);
+			return;
+		}
+		if (scanner.advanceIf("ERROR-NR"))
+		{
+			createAndAdd(SyntaxKind.ERROR_NR);
+			return;
+		}
+		if (scanner.advanceIf("ERROR-LINE"))
+		{
+			createAndAdd(SyntaxKind.ERROR_LINE);
+			return;
+		}
+		if (scanner.advanceIf("LINE"))
+		{
+			createAndAdd(SyntaxKind.LINE);
+			return;
+		}
 		if (scanner.advanceIf("TIMX"))
 		{
 			createAndAdd(SyntaxKind.TIMX);
+			return;
 		}
 		if (scanner.advanceIf("DATX"))
 		{
 			createAndAdd(SyntaxKind.DATX);
+			return;
 		}
 		if (scanner.advanceIf("DATN"))
 		{
 			createAndAdd(SyntaxKind.DATN);
+			return;
 		}
 		if (scanner.advanceIf("LANGUAGE"))
 		{
 			createAndAdd(SyntaxKind.LANGUAGE);
+			return;
 		}
 		if (scanner.advanceIf("LIBRARY-ID"))
 		{
 			createAndAdd(SyntaxKind.LIBRARY_ID);
+			return;
 		}
 		if (scanner.advanceIf("PROGRAM"))
 		{
 			createAndAdd(SyntaxKind.PROGRAM);
+			return;
 		}
 		if (scanner.advanceIf("USER"))
 		{
 			createAndAdd(SyntaxKind.USER);
+			return;
 		}
+		if (scanner.advanceIf("CURRENT-UNIT"))
+		{
+			createAndAdd(SyntaxKind.CURRENT_UNIT);
+			return;
+		}
+		if (scanner.advanceIf("CURS-LINE"))
+		{
+			createAndAdd(SyntaxKind.CURS_LINE);
+			return;
+		}
+		if (scanner.advanceIf("PF-KEY"))
+		{
+			createAndAdd(SyntaxKind.PF_KEY);
+			return;
+		}
+		if (scanner.advanceIf("MAXVAL"))
+		{
+			createAndAdd(SyntaxKind.MAXVAL);
+			return;
+		}
+		if (scanner.advanceIf("MINVAL"))
+		{
+			createAndAdd(SyntaxKind.MINVAL);
+			return;
+		}
+
+		scanner.rollbackCurrentLexeme();
+		createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
 	}
 
 	private void consumeIdentifier()
@@ -418,6 +491,17 @@ public class Lexer
 		var isQualified = false;
 		SyntaxKind kindHint = null;
 		scanner.start();
+
+		if (scanner.advanceIf("PF"))
+		{
+			while(!scanner.isAtEnd() && Character.isDigit(scanner.peek()))
+			{
+				scanner.advance();
+			}
+			createAndAdd(SyntaxKind.PF);
+			return;
+		}
+
 		var dashCount = 0;
 		while (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd() && isValidIdentifierCharacter(scanner.peek()))
 		{
