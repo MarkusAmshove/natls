@@ -41,6 +41,7 @@ public enum SyntaxKind
 	LINEX,
 	CURRENT_UNIT,
 	OCC,
+	OCCURENCE,
 	ERROR_NR,
 	ERROR_LINE,
 	ERROR_TA,

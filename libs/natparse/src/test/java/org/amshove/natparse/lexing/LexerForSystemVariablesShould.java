@@ -67,6 +67,12 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 	}
 
 	@Test
+	void lexOccurence()
+	{
+		assertTokens("*OCCURENCE", token(SyntaxKind.OCC, "*OCCURENCE"));
+	}
+
+	@Test
 	void lexErrorNr()
 	{
 		assertTokens("*ERROR-NR", token(SyntaxKind.ERROR_NR, "*ERROR-NR"));
