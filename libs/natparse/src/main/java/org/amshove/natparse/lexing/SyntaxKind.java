@@ -93,7 +93,7 @@ public enum SyntaxKind
 	BACKOUT,
 	BACKWARD,
 	BASE,
-	BEFORE,
+	// BEFORE, sadly this is used my natunit as a subroutine name :(
 	BETWEEN,
 	BLOCK,
 	BOT,
@@ -374,7 +374,7 @@ public enum SyntaxKind
 	LISTED,
 	LOCAL,
 	LOCKS,
-	LOG,
+	// LOG, sadly this is used my natunit as a subroutine name :(
 	LOG_LS,
 	LOG_PS,
 	LOGICAL,
