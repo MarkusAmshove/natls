@@ -823,7 +823,15 @@ public class Lexer
 		{
 			scanner.advance();
 		}
-		createAndAdd(SyntaxKind.NUMBER_LITERAL);
+		if(scanner.peek() == 'X' || scanner.peek() == 'x')
+		{
+			scanner.advance();
+			createAndAdd(SyntaxKind.OPERAND_SKIP);
+		}
+		else
+		{
+			createAndAdd(SyntaxKind.NUMBER_LITERAL);
+		}
 	}
 
 	private void consumeHexString()

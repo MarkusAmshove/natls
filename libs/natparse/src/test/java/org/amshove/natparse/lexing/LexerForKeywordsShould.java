@@ -386,7 +386,7 @@ public class LexerForKeywordsShould extends AbstractLexerTest
 				keywordTest("NOTITLE", SyntaxKind.NOTITLE),
 				keywordTest("NULL", SyntaxKind.NULL),
 				keywordTest("NULL-HANDLE", SyntaxKind.NULL_HANDLE),
-				keywordTest("NUMBER", SyntaxKind.NUMBER),
+				keywordTest("NUMBER", SyntaxKind.KW_NUMBER),
 				keywordTest("NUMERIC", SyntaxKind.NUMERIC),
 				keywordTest("OBJECT", SyntaxKind.OBJECT),
 				keywordTest("OBTAIN", SyntaxKind.OBTAIN),

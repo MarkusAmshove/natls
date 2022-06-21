@@ -255,23 +255,23 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				break;
 			}
 
-			if (peek(1).kind() == SyntaxKind.FILLER
-				&& peek(2).kind() == SyntaxKind.NUMBER_LITERAL
-				&& currentRedefineNode != null)
+			if (peek(1).kind() == SyntaxKind.FILLER && currentRedefineNode != null)
 			{
-				parseRedefineFiller(currentRedefineNode);
-			}
-			else
-			{
-				var nestedVariable = variable(groupNode.getDimensions());
-				groupNode.addVariable(nestedVariable);
-
-				if (peek().line() == previousToken().line()
-					&& peek().kind() != SyntaxKind.NUMBER_LITERAL) // multiple variables declared in the same line...
+				if(mightBeFillerBytes(peek(1), peek(2)))
 				{
-					// Error handling for trailing stuff that shouldn't be there
-					skipToNextLineReportingEveryToken();
+					parseRedefineFiller(currentRedefineNode);
+					continue;
 				}
+			}
+
+			var nestedVariable = variable(groupNode.getDimensions());
+			groupNode.addVariable(nestedVariable);
+
+			if (peek().line() == previousToken().line()
+				&& peek().kind() != SyntaxKind.NUMBER_LITERAL) // multiple variables declared in the same line...
+			{
+				// Error handling for trailing stuff that shouldn't be there
+				skipToNextLineReportingEveryToken();
 			}
 		}
 
@@ -285,23 +285,38 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		return groupNode;
 	}
 
-	private void parseRedefineFiller(RedefinitionNode redefinitionNode) throws ParseError
+	private boolean mightBeFillerBytes(SyntaxToken fillerToken, SyntaxToken maybeFillerBytes)
+	{
+		return maybeFillerBytes.kind() == SyntaxKind.OPERAND_SKIP
+			// This happens when it's e.g.
+			// 2 FILLER 5
+			// the user forgot the X but meant to write a filler, because the number is in the same line.
+			// we can use this information to raise a better diagnostic message.
+			|| (maybeFillerBytes.kind() == SyntaxKind.NUMBER_LITERAL && maybeFillerBytes.line() == fillerToken.line());
+	}
+
+	private void parseRedefineFiller(RedefinitionNode redefinitionNode)
 	{
 		consume(redefinitionNode, SyntaxKind.NUMBER_LITERAL); // Level
 		consume(redefinitionNode, SyntaxKind.FILLER);
-		var fillerBytes = consumeMandatory(redefinitionNode, SyntaxKind.NUMBER_LITERAL);
-		redefinitionNode.addFillerBytes(fillerBytes.intValue());
-
-		if (!peek().kind().isIdentifier())
+		var fillerToken = previousToken();
+		var errored = false;
+		if(!consumeOptionally(redefinitionNode, SyntaxKind.OPERAND_SKIP))
 		{
-			report(ParserErrors.fillerMustHaveXKeyword(fillerBytes));
-			return;
+			report(ParserErrors.fillerMustHaveXKeyword(fillerToken));
+			consume(redefinitionNode, SyntaxKind.NUMBER_LITERAL);
+			errored = true;
 		}
 
-		var x = consumeMandatoryIdentifier(redefinitionNode); // the X
-		if (!x.symbolName().equals("X"))
+		var fillerBytesToken = previousToken();
+		var fillerBytes = fillerBytesToken.kind() == SyntaxKind.KW_NUMBER
+			? fillerBytesToken.intValue()
+			: Integer.parseInt(fillerBytesToken.source().substring(0, fillerBytesToken.length() - 1));
+		redefinitionNode.addFillerBytes(fillerBytes);
+
+		if(errored)
 		{
-			report(ParserErrors.fillerMustHaveXKeyword(fillerBytes));
+			skipToNextLineAsRecovery(fillerToken.line());
 		}
 	}
 
@@ -309,6 +324,12 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	{
 		var typedVariable = new TypedVariableNode(variable);
 		var type = new VariableTypeNode();
+
+		if(peekKind(SyntaxKind.RPAREN))
+		{
+			report(ParserErrors.incompleteArrayDefinition(variable));
+			throw new ParseError(peek());
+		}
 
 		var dataType = consumeMandatoryIdentifier(typedVariable).source(); // DataTypes like A10 get recognized as identifier
 

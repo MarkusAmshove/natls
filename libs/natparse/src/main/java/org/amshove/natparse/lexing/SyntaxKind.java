@@ -30,6 +30,7 @@ public enum SyntaxKind
 	COMMENT,
 	PERCENT,
 	QUESTIONMARK,
+	OPERAND_SKIP,
 
 	// System variables and functions
 	TIMX,
@@ -430,7 +431,7 @@ public enum SyntaxKind
 	NOTITLE,
 	NULL,
 	NULL_HANDLE,
-	NUMBER,
+	KW_NUMBER,
 	NUMERIC,
 	OBJECT,
 	OBTAIN,
@@ -685,5 +686,216 @@ public enum SyntaxKind
 	public boolean isLiteralOrConst()
 	{
 		return isBoolean() || this == NUMBER_LITERAL || this == STRING_LITERAL;
+	}
+
+	public boolean canBeIdentifier()
+	{
+		switch (this)
+		{
+			case ABS:
+			case ACCEPT:
+			case ADD:
+			case ALL:
+			case ANY:
+			case ASSIGN:
+			case AT:
+			case ATN:
+			case AVER:
+			case BACKOUT:
+				//case BEFORE:
+			case BREAK:
+			case BROWSE:
+			case CALL:
+			case CALLDBPROC:
+			case CALLNAT:
+			case CLOSE:
+			case COMMIT:
+			case COMPOSE:
+			case COMPRESS:
+			case COMPUTE:
+			case COPY:
+			case COS:
+			case COUNT:
+			case DECIDE:
+			case DEFINE:
+			case DELETE:
+			case DISPLAY:
+			case DIVIDE:
+			case DLOGOFF:
+			case DLOGON:
+			case DNATIVE:
+			case DO:
+			case DOEND:
+			case DOWNLOAD:
+			case EJECT:
+			case ELSE:
+			case END:
+			case END_ALL:
+			case END_BEFORE:
+			case END_BREAK:
+			case END_BROWSE:
+			case END_DECIDE:
+			case END_ENDDATA:
+			case END_ENDFILE:
+			case END_ENDPAGE:
+			case END_ERROR:
+			case END_FILE:
+			case END_FIND:
+			case END_FOR:
+			case END_FUNCTION:
+			case END_HISTOGRAM:
+			case ENDHOC:
+			case END_IF:
+			case END_LOOP:
+			case END_NOREC:
+			case END_PARSE:
+			case END_PROCESS:
+			case END_READ:
+			case END_REPEAT:
+			case END_RESULT:
+			case END_SELECT:
+			case END_SORT:
+			case END_START:
+			case END_SUBROUTINE:
+			case END_TOPPAGE:
+			case END_WORK:
+			case ENTIRE:
+			case ESCAPE:
+			case EXAMINE:
+			case EXP:
+			case EXPAND:
+			case EXPORT:
+			case FALSE:
+			case FETCH:
+			case FIND:
+			case FOR:
+			case FORMAT:
+			case FRAC:
+			case GET:
+			case HISTOGRAM:
+			case IF:
+			case IGNORE:
+			case IMPORT:
+			case INCCONT:
+			case INCDIC:
+			case INCDIR:
+			case INCLUDE:
+			case INCMAC:
+			case INPUT:
+			case INSERT:
+			case INT:
+			case INVESTIGATE:
+			case LIMIT:
+			// case LOG:
+			case LOOP:
+			case MAP:
+			case MAX:
+			case MIN:
+			case MOVE:
+			case MULTIPLY:
+			case NAVER:
+			case NCOUNT:
+			case NEWPAGE:
+			case NMIN:
+			case NONE:
+			case NULL_HANDLE:
+			case OBTAIN:
+			case OLD:
+			case ON:
+			case OPEN:
+			case OPTIONS:
+			case PARSE:
+			case PASSW:
+			case PERFORM:
+			case POS:
+			case PRINT:
+			case PROCESS:
+			case READ:
+			case REDEFINE:
+			case REDUCE:
+			case REINPUT:
+			case REJECT:
+			case RELEASE:
+			case REPEAT:
+			case REQUEST:
+			case RESET:
+			case RESIZE:
+			case RESTORE:
+			case RET:
+			case RETRY:
+			case RETURN:
+			case ROLLBACK:
+			case ROUNDED:
+			case RULEVAR:
+			case RUN:
+			case SELECT:
+			case SEND:
+			case SEPARATE:
+			case SET:
+			case SETTIME:
+			case SGN:
+			case SHOW:
+			case SIN:
+			case SKIP:
+			case SORT:
+			case SORTKEY:
+			case SQRT:
+			case STACK:
+			case START:
+			case STOP:
+			case STORE:
+			case SUBSTR:
+			case SUBSTRING:
+			case SUBTRACT:
+			case SUM:
+			case SUSPEND:
+			case TAN:
+			case TERMINATE:
+			case TOP:
+			case TOTAL:
+			case TRANSFER:
+			case TRUE:
+			case UNTIL:
+			case UPDATE:
+			case UPLOAD:
+			case VAL:
+			case VALUE:
+			case VALUES:
+			case WHEN:
+			case WHILE:
+			case WITH_CTE:
+			case WRITE:
+			case LBRACKET:
+			case RBRACKET:
+			case LPAREN:
+			case RPAREN:
+			case EQUALS:
+			case COLON:
+			case COLON_EQUALS:
+			case DOT:
+			case CARET:
+			case COMMA:
+			case PLUS:
+			case MINUS:
+			case ASTERISK:
+			case SLASH:
+			case BACKSLASH:
+			case SEMICOLON:
+			case GREATER_SIGN:
+			case GREATER_EQUALS_SIGN:
+			case LESSER_SIGN:
+			case LESSER_EQUALS_SIGN:
+			case NUMBER_LITERAL:
+			case LESSER_GREATER:
+			case STRING_LITERAL:
+			case LABEL_IDENTIFIER:
+			case COMMENT:
+			case PERCENT:
+			case QUESTIONMARK:
+			case OPERAND_SKIP:
+				return false;
+			default:
+				return true;
+		}
 	}
 }

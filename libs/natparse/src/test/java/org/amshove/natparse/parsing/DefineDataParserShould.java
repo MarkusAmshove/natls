@@ -829,9 +829,9 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			2 DDM-FIELD (A15)
 			2 THE-SUPERDESCRIPTOR (N8)
 			2 REDEFINE THE-SUPERDESCRIPTOR
-			3 YEAR (N4)
-			3 MONTH (N2)
-			3 DAY (N2)
+			3 #YEAR (N4)
+			3 #MONTH (N2)
+			3 #DAY (N2)
 			END-DEFINE
 			""";
 

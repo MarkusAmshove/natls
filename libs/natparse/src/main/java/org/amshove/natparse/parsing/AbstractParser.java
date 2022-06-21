@@ -169,13 +169,13 @@ abstract class AbstractParser<T>
 	protected SyntaxToken identifier() throws ParseError
 	{
 		// TODO(kcheck): This currently allows keywords as identifier
-		//		if(tokens.isAtEnd() || !tokens.peek().kind().isIdentifier())
-		//		{
-		//			diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens.peek()));
-		//			throw new ParseError(peek());
-		//		}
+		if(tokens.isAtEnd() || (tokens.peek().kind() != SyntaxKind.IDENTIFIER && !tokens.peek().kind().canBeIdentifier()))
+		{
+			diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens));
+			throw new ParseError(peek());
+		}
 
-		var token = tokens.peek();
+		var token = tokens.peek().withKind(SyntaxKind.IDENTIFIER);
 		tokens.advance();
 		return token;
 	}
@@ -221,18 +221,17 @@ abstract class AbstractParser<T>
 	// TODO: Remove/Change once IDENTIFIER_OR_KEYWORD is no more
 	protected SyntaxToken consumeMandatoryIdentifier(BaseSyntaxNode node) throws ParseError
 	{
-		// TODO(kcheck): This currently allows keywords as identifier
-		var kind = peek().kind();
-		if (!isAtEnd() && !kind.isLiteralOrConst())
+		if(tokens.isAtEnd() || (tokens.peek().kind() != SyntaxKind.IDENTIFIER && !tokens.peek().kind().canBeIdentifier()))
 		{
-			previousNode = new TokenNode(peek());
-			node.addNode(previousNode);
-			tokens.advance();
-			return previousToken();
+			diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens));
+			throw new ParseError(peek());
 		}
 
-		diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens));
-		throw new ParseError(peek());
+		var identifierToken = peek().withKind(SyntaxKind.IDENTIFIER);
+		previousNode = new TokenNode(identifierToken);
+		node.addNode(previousNode);
+		tokens.advance();
+		return identifierToken;
 	}
 
 	protected SyntaxToken consumeAny(List<SyntaxKind> acceptedKinds) throws ParseError
@@ -317,6 +316,15 @@ abstract class AbstractParser<T>
 	{
 		// Skip to next line or END-DEFINE to recover
 		while (!tokens.isAtEnd() && peek().line() == e.getErrorToken().line() && peek().kind() != SyntaxKind.END_DEFINE)
+		{
+			tokens.advance();
+		}
+	}
+
+	protected void skipToNextLineAsRecovery(int currentLine)
+	{
+		// Skip to next line or END-DEFINE to recover
+		while (!tokens.isAtEnd() && peek().line() == currentLine && peek().kind() != SyntaxKind.END_DEFINE)
 		{
 			tokens.advance();
 		}

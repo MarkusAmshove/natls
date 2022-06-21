@@ -381,7 +381,7 @@ public class KeywordTable
 				case "notitle" -> SyntaxKind.NOTITLE;
 				case "null" -> SyntaxKind.NULL;
 				case "null-handle" -> SyntaxKind.NULL_HANDLE;
-				case "number" -> SyntaxKind.NUMBER;
+				case "number" -> SyntaxKind.KW_NUMBER;
 				case "numeric" -> SyntaxKind.NUMERIC;
 				case "object" -> SyntaxKind.OBJECT;
 				case "obtain" -> SyntaxKind.OBTAIN;
