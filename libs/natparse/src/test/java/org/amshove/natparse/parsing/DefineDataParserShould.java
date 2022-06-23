@@ -1454,14 +1454,15 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	@Test
 	void allowFillerToBeAVariableNameInRedefine()
 	{
-		assertParsesWithoutDiagnostics("""
+		assertDiagnostic("""
 			define data local
 			1 #var1 (A10)
 			1 redefine #var1
 			2 filler (a2)
 			2 rest (a8)
 			end-define
-			""");
+			""",
+			ParserError.KEYWORD_USED_AS_IDENTIFIER);
 	}
 
 	@Test

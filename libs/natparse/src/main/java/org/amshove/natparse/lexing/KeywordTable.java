@@ -45,7 +45,7 @@ public class KeywordTable
 				case "backout" -> SyntaxKind.BACKOUT;
 				case "backward" -> SyntaxKind.BACKWARD;
 				case "base" -> SyntaxKind.BASE;
-				case "before" -> SyntaxKind.IDENTIFIER; // sadly this is used my natunit as a subroutine name :(
+				case "before" -> SyntaxKind.BEFORE;
 				case "between" -> SyntaxKind.BETWEEN;
 				case "block" -> SyntaxKind.BLOCK;
 				case "bot" -> SyntaxKind.BOT;
@@ -326,7 +326,7 @@ public class KeywordTable
 				case "listed" -> SyntaxKind.LISTED;
 				case "local" -> SyntaxKind.LOCAL;
 				case "locks" -> SyntaxKind.LOCKS;
-				case "log" -> SyntaxKind.IDENTIFIER; // sadly this is used my natunit as a subroutine name :(
+				case "log" -> SyntaxKind.LOG;
 				case "log-ls" -> SyntaxKind.LOG_LS;
 				case "log-ps" -> SyntaxKind.LOG_PS;
 				case "logical" -> SyntaxKind.LOGICAL;

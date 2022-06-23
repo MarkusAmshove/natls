@@ -679,7 +679,11 @@ public enum SyntaxKind
 	}
 
 
-	@Deprecated(since="Directly test against IDENTIFIER", forRemoval=true)
+	/**
+	 * @deprecated
+	 * Directly test against {@link SyntaxKind#IDENTIFIER}
+	 */
+	@Deprecated(forRemoval=true)
 	public boolean isIdentifier()
 	{
 		return this == IDENTIFIER;

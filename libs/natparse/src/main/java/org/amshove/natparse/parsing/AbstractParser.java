@@ -166,20 +166,6 @@ abstract class AbstractParser<T>
 		return tokenConsumed;
 	}
 
-	protected SyntaxToken identifier() throws ParseError
-	{
-		// TODO(kcheck): This currently allows keywords as identifier
-		if(tokens.isAtEnd() || (tokens.peek().kind() != SyntaxKind.IDENTIFIER && !tokens.peek().kind().canBeIdentifier()))
-		{
-			diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens));
-			throw new ParseError(peek());
-		}
-
-		var token = tokens.peek().withKind(SyntaxKind.IDENTIFIER);
-		tokens.advance();
-		return token;
-	}
-
 	protected SyntaxToken consumeMandatory(BaseSyntaxNode node, SyntaxKind kind) throws ParseError
 	{
 		if (consumeOptionally(node, kind))
@@ -218,19 +204,37 @@ abstract class AbstractParser<T>
 		return literal;
 	}
 
-	// TODO: Remove/Change once IDENTIFIER_OR_KEYWORD is no more
-	protected SyntaxToken consumeMandatoryIdentifier(BaseSyntaxNode node) throws ParseError
+	/**
+	 * @deprecated
+	 * You probably wanted to use {@link AbstractParser#consumeMandatoryIdentifier(BaseSyntaxNode)}, because that already creates a TokenNode.</br>
+	 * If not, remove the Deprecated annotation
+	 */
+	@Deprecated(forRemoval = true)
+	protected SyntaxToken identifier() throws ParseError
 	{
-		if(tokens.isAtEnd() || (tokens.peek().kind() != SyntaxKind.IDENTIFIER && !tokens.peek().kind().canBeIdentifier()))
+		// TODO(kcheck): This currently allows keywords as identifier
+		var currentToken = tokens.peek();
+		if(tokens.isAtEnd() || (currentToken.kind() != SyntaxKind.IDENTIFIER && !currentToken.kind().canBeIdentifier()))
 		{
 			diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens));
 			throw new ParseError(peek());
 		}
 
-		var identifierToken = peek().withKind(SyntaxKind.IDENTIFIER);
+		if(currentToken.kind() != SyntaxKind.IDENTIFIER)
+		{
+			diagnostics.add(ParserErrors.keywordUsedAsIdentifier(currentToken));
+		}
+
+		var token = currentToken.withKind(SyntaxKind.IDENTIFIER);
+		tokens.advance();
+		return token;
+	}
+
+	protected SyntaxToken consumeMandatoryIdentifier(BaseSyntaxNode node) throws ParseError
+	{
+		var identifierToken = identifier();
 		previousNode = new TokenNode(identifierToken);
 		node.addNode(previousNode);
-		tokens.advance();
 		return identifierToken;
 	}
 
