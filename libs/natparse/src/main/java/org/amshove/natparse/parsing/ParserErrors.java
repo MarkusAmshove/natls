@@ -313,7 +313,7 @@ class ParserErrors
 	public static IDiagnostic keywordUsedAsIdentifier(SyntaxToken currentToken)
 	{
 		return ParserDiagnostic.create(
-			"Keywords used as identifier are discouraged. Keyword used here: %s".formatted(currentToken.kind()),
+			"Keywords used as identifier are discouraged. Consider prefixing it with a #".formatted(currentToken.kind()),
 			currentToken,
 			ParserError.KEYWORD_USED_AS_IDENTIFIER,
 			DiagnosticSeverity.WARNING
