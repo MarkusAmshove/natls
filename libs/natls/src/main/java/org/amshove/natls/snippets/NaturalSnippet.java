@@ -4,6 +4,7 @@ import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.IHasDefineData;
+import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.IUsingNode;
 import org.amshove.natparse.natural.VariableScope;
 import org.amshove.natparse.natural.project.NaturalFileType;
@@ -149,6 +150,7 @@ public class NaturalSnippet
 		{
 			return defineData.variables().stream().filter(v -> v.scope() == scope)
 				.findFirst()
+				.map(v -> (ISyntaxNode)v.parent()) // Scope node
 				.map(v -> LspUtil.toSingleRange(v.position().line(), 0))
 				.orElseThrow(() -> new RuntimeException("Could not deduce position to insert using by looking for the first variable with scope %s".formatted(scope)));
 		}
