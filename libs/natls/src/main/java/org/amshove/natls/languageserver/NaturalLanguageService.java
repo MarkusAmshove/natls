@@ -56,9 +56,11 @@ public class NaturalLanguageService implements LanguageClientAware
 	private boolean initialized;
 	private RenameSymbolAction renameComputer = new RenameSymbolAction();
 	private SnippetEngine snippetEngine;
+	private Path workspaceRoot;
 
 	public void indexProject(Path workspaceRoot, IProgressMonitor progressMonitor)
 	{
+		this.workspaceRoot = workspaceRoot;
 		var projectFile = new ActualFilesystem().findNaturalProjectFile(workspaceRoot);
 		if (projectFile.isEmpty())
 		{
@@ -165,7 +167,7 @@ public class NaturalLanguageService implements LanguageClientAware
 			return EMPTY_HOVER;
 		}
 
-		if (symbolToSearchFor.kind() == SyntaxKind.STRING)
+		if (symbolToSearchFor.kind() == SyntaxKind.STRING_LITERAL)
 		{
 			return hoverExternalModule(symbolToSearchFor);
 		}
@@ -569,7 +571,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var filePath = LspUtil.uriToPath(textDocument.getUri());
 
 		var token = findTokenAtPosition(filePath, position);
-		if (token == null || token.kind() != SyntaxKind.STRING)
+		if (token == null || token.kind() != SyntaxKind.STRING_LITERAL)
 		{
 			return null;
 		}
@@ -1043,6 +1045,30 @@ public class NaturalLanguageService implements LanguageClientAware
 		if(file.getIncomingReferences().size() > referenceLimit)
 		{
 			throw new ResponseErrorException(new ResponseError(1, "Won't rename inside %s because it has more than %d referrers (%d)".formatted(file.getReferableName(), referenceLimit, file.getIncomingReferences().size()), null));
+		}
+	}
+
+	public void invalidateStowCache(LanguageServerFile file)
+	{
+		var cacheFile = workspaceRoot.resolve("cache_deploy_Incr_VERSIS.properties");
+		try(var lines = Files.lines(cacheFile))
+		{
+			var newLines = lines.map(l -> {
+				System.err.println(file.getPath().toString());
+				if(l.startsWith(file.getPath().toString()))
+				{
+					return file.getPath().toString() + "=";
+				}
+
+				return l;
+			})
+			.collect(Collectors.joining(System.lineSeparator()));
+
+			Files.writeString(cacheFile, newLines);
+		}
+		catch(IOException e)
+		{
+			throw new UncheckedIOException(e);
 		}
 	}
 }

@@ -98,15 +98,15 @@ public class Lexer
 					createAndAddCurrentSingleToken(SyntaxKind.SEMICOLON);
 					continue;
 				case '>':
-					createAndAddFollowupEquals(SyntaxKind.GREATER, SyntaxKind.GREATER_EQUALS);
+					createAndAddFollowupEquals(SyntaxKind.GREATER_SIGN, SyntaxKind.GREATER_EQUALS_SIGN);
 					continue;
 				case '<':
-					if (tryCreateIfFollowedBy('=', SyntaxKind.LESSER_EQUALS)
+					if (tryCreateIfFollowedBy('=', SyntaxKind.LESSER_EQUALS_SIGN)
 						|| tryCreateIfFollowedBy('>', SyntaxKind.LESSER_GREATER))
 					{
 						continue;
 					}
-					createAndAddCurrentSingleToken(SyntaxKind.LESSER);
+					createAndAddCurrentSingleToken(SyntaxKind.LESSER_SIGN);
 					continue;
 				case '.':
 					createAndAddCurrentSingleToken(SyntaxKind.DOT);
@@ -237,7 +237,7 @@ public class Lexer
 		var lookaheadIndex = findNextNonWhitespaceLookaheadOffset();
 		var lookahead = scanner.peek(lookaheadIndex);
 		var previousToken = previous();
-		var isStringConcatenation = previousToken != null && previousToken.kind() == SyntaxKind.STRING && (lookahead == '\'' || lookahead == '"');
+		var isStringConcatenation = previousToken != null && previousToken.kind() == SyntaxKind.STRING_LITERAL && (lookahead == '\'' || lookahead == '"');
 		if (isStringConcatenation)
 		{
 			var previousString = previous();
@@ -251,7 +251,7 @@ public class Lexer
 				tokens.subList(previousStringIndex, currentStringIndex + 1).clear();
 			}
 			addToken(SyntaxTokenFactory.create(
-				SyntaxKind.STRING,
+				SyntaxKind.STRING_LITERAL,
 				previousString.offset(),
 				previousString.offsetInLine(),
 				previousString.line(),
@@ -269,7 +269,16 @@ public class Lexer
 			{
 				scanner.advance();
 			}
-			createAndAdd(SyntaxKind.NUMBER);
+			if(scanner.peek() == 'E')
+			{
+				scanner.advance(); // E
+				scanner.advance(); // + or -
+				while(Character.isDigit(scanner.peek()))
+				{
+					scanner.advance();
+				}
+			}
+			createAndAdd(SyntaxKind.NUMBER_LITERAL);
 		}
 		else
 		{
@@ -282,16 +291,32 @@ public class Lexer
 		var lookahead = scanner.peek(1);
 		switch (lookahead)
 		{
+			case 'a':
+			case 'A':
+			case 'c':
+			case 'C':
 			case 'd':
 			case 'D':
+			case 'e':
+			case 'E':
+			case 'i':
+			case 'I':
 			case 'l':
 			case 'L':
+			case 'm':
+			case 'M':
 			case 't':
 			case 'T':
+			case 'o':
+			case 'O':
 			case 'p':
 			case 'P':
+			case 's':
+			case 'S':
 			case 'u':
 			case 'U':
+			case 'w':
+			case 'W':
 				break;
 			default:
 				createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
@@ -301,34 +326,168 @@ public class Lexer
 
 		scanner.start();
 		scanner.advance();
+		if (scanner.advanceIf("OCCURENCE"))
+		{
+			createAndAdd(SyntaxKind.OCC);
+			return;
+		}
+		if (scanner.advanceIf("OCC"))
+		{
+			createAndAdd(SyntaxKind.OCC);
+			return;
+		}
+		if (scanner.advanceIf("LINEX"))
+		{
+			createAndAdd(SyntaxKind.LINEX);
+			return;
+		}
+		if (scanner.advanceIf("TRIM"))
+		{
+			createAndAdd(SyntaxKind.TRIM);
+			return;
+		}
+		if (scanner.advanceIf("ERROR-NR"))
+		{
+			createAndAdd(SyntaxKind.ERROR_NR);
+			return;
+		}
+		if (scanner.advanceIf("ERROR-LINE"))
+		{
+			createAndAdd(SyntaxKind.ERROR_LINE);
+			return;
+		}
+		if (scanner.advanceIf("LINE"))
+		{
+			createAndAdd(SyntaxKind.LINE);
+			return;
+		}
 		if (scanner.advanceIf("TIMX"))
 		{
 			createAndAdd(SyntaxKind.TIMX);
+			return;
+		}
+		if (scanner.advanceIf("TIMN"))
+		{
+			createAndAdd(SyntaxKind.TIMN);
+			return;
 		}
 		if (scanner.advanceIf("DATX"))
 		{
 			createAndAdd(SyntaxKind.DATX);
+			return;
 		}
 		if (scanner.advanceIf("DATN"))
 		{
 			createAndAdd(SyntaxKind.DATN);
+			return;
+		}
+		if (scanner.advanceIf("DATD"))
+		{
+			createAndAdd(SyntaxKind.DATD);
+			return;
 		}
 		if (scanner.advanceIf("LANGUAGE"))
 		{
 			createAndAdd(SyntaxKind.LANGUAGE);
+			return;
 		}
 		if (scanner.advanceIf("LIBRARY-ID"))
 		{
 			createAndAdd(SyntaxKind.LIBRARY_ID);
+			return;
 		}
 		if (scanner.advanceIf("PROGRAM"))
 		{
 			createAndAdd(SyntaxKind.PROGRAM);
+			return;
 		}
 		if (scanner.advanceIf("USER"))
 		{
 			createAndAdd(SyntaxKind.USER);
+			return;
 		}
+		if (scanner.advanceIf("CURRENT-UNIT"))
+		{
+			createAndAdd(SyntaxKind.CURRENT_UNIT);
+			return;
+		}
+		if (scanner.advanceIf("CURS-LINE"))
+		{
+			createAndAdd(SyntaxKind.CURS_LINE);
+			return;
+		}
+		if (scanner.advanceIf("ERROR-TA"))
+		{
+			createAndAdd(SyntaxKind.ERROR_TA);
+			return;
+		}
+		if (scanner.advanceIf("INIT-USER"))
+		{
+			createAndAdd(SyntaxKind.INIT_USER);
+			return;
+		}
+		if (scanner.advanceIf("COUNTER"))
+		{
+			createAndAdd(SyntaxKind.COUNTER);
+			return;
+		}
+		if (scanner.advanceIf("PF-KEY"))
+		{
+			createAndAdd(SyntaxKind.PF_KEY);
+			return;
+		}
+		if (scanner.advanceIf("MAXVAL"))
+		{
+			createAndAdd(SyntaxKind.MAXVAL);
+			return;
+		}
+		if (scanner.advanceIf("MINVAL"))
+		{
+			createAndAdd(SyntaxKind.MINVAL);
+			return;
+		}
+		if (scanner.advanceIf("DEVICE"))
+		{
+			createAndAdd(SyntaxKind.DEVICE);
+			return;
+		}
+		if (scanner.advanceIf("OPSYS"))
+		{
+			createAndAdd(SyntaxKind.OPSYS);
+			return;
+		}
+		if (scanner.advanceIf("TPSYS"))
+		{
+			createAndAdd(SyntaxKind.TPSYS);
+			return;
+		}
+		if (scanner.advanceIf("APPLIC-ID"))
+		{
+			createAndAdd(SyntaxKind.APPLIC_ID);
+			return;
+		}
+		if (scanner.advanceIf("STARTUP"))
+		{
+			createAndAdd(SyntaxKind.STARTUP);
+			return;
+		}
+		if (scanner.advanceIf("STEPLIB"))
+		{
+			createAndAdd(SyntaxKind.STEPLIB);
+			return;
+		}
+		if (scanner.advanceIf("PAGE-NUMBER"))
+		{
+			createAndAdd(SyntaxKind.PAGE_NUMBER);
+			return;
+		}
+		if (scanner.advanceIf("WINDOW-PS"))
+		{
+			createAndAdd(SyntaxKind.WINDOW_PS);
+			return;
+		}
+		scanner.rollbackCurrentLexeme();
+		createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
 	}
 
 	private void consumeIdentifier()
@@ -415,9 +574,26 @@ public class Lexer
 			return;
 		}
 
+		if(inParens && scanner.peekText("AD="))
+		{
+			attributeDefinition();
+			return;
+		}
+
 		var isQualified = false;
 		SyntaxKind kindHint = null;
 		scanner.start();
+
+		if (scanner.advanceIf("PF") && Character.isDigit(scanner.peek()))
+		{
+			while(!scanner.isAtEnd() && Character.isDigit(scanner.peek()))
+			{
+				scanner.advance();
+			}
+			createAndAdd(SyntaxKind.PF);
+			return;
+		}
+
 		var dashCount = 0;
 		while (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd() && isValidIdentifierCharacter(scanner.peek()))
 		{
@@ -521,16 +697,7 @@ public class Lexer
 		}
 		else
 		{
-			// WITH_CTE is the only Keyword that contains an underscore, if we're
-			// this far, and it contains an underscore, it's an identifier
-			if (lexeme.contains("_"))
-			{
-				createAndAdd(SyntaxKind.IDENTIFIER);
-			}
-			else
-			{
-				createAndAdd(SyntaxKind.IDENTIFIER_OR_KEYWORD);
-			}
+			createAndAdd(SyntaxKind.IDENTIFIER);
 		}
 	}
 
@@ -554,7 +721,19 @@ public class Lexer
 			scanner.advance();
 		}
 
-		createAndAdd(SyntaxKind.EDITOR_MASK);
+		createAndAdd(SyntaxKind.EM);
+	}
+
+	private void attributeDefinition()
+	{
+		scanner.start();
+		scanner.advance(3); // AD=
+		while(!scanner.isAtEnd() && isNoWhitespace() && scanner.peek() != ')')
+		{
+			scanner.advance();
+		}
+
+		createAndAdd(SyntaxKind.AD);
 	}
 
 	private boolean isNoWhitespace()
@@ -684,7 +863,32 @@ public class Lexer
 		{
 			scanner.advance();
 		}
-		createAndAdd(SyntaxKind.NUMBER);
+
+		if(scanner.peek() == 'X' || scanner.peek() == 'x')
+		{
+			scanner.advance();
+			createAndAdd(SyntaxKind.OPERAND_SKIP);
+			return;
+		}
+
+		if(scanner.peek() == 'T')
+		{
+			scanner.advance();
+			createAndAdd(SyntaxKind.TAB_SETTING);
+			return;
+		}
+
+		if(scanner.peek() == 'E')
+		{
+			scanner.advance(); // E
+			scanner.advance(); // + or -
+			while(Character.isDigit(scanner.peek()))
+			{
+				scanner.advance();
+			}
+		}
+
+		createAndAdd(SyntaxKind.NUMBER_LITERAL);
 	}
 
 	private void consumeHexString()
@@ -707,14 +911,14 @@ public class Lexer
 			addDiagnostic("Unterminated String literal, expecting closing [']", LexerError.UNTERMINATED_STRING);
 
 			// We can still produce a valid token, although it is unterminated
-			createAndAdd(SyntaxKind.STRING);
+			createAndAdd(SyntaxKind.STRING_LITERAL);
 			return;
 		}
 
 		// We don't evaluate the content. Is it worth it? We could convert it to the actual characters.
 
 		scanner.advance();
-		createAndAdd(SyntaxKind.STRING);
+		createAndAdd(SyntaxKind.STRING_LITERAL);
 	}
 
 	private void consumeString(char c)
@@ -737,14 +941,14 @@ public class Lexer
 			addDiagnostic("Unterminated String literal, expecting closing [%c]".formatted(c), LexerError.UNTERMINATED_STRING);
 
 			// We can still produce a valid token, although it is unterminated
-			createAndAdd(SyntaxKind.STRING);
+			createAndAdd(SyntaxKind.STRING_LITERAL);
 			return;
 		}
 
 		// The current character is the terminating string literal (' or "), therefore it needs to be consumed
 		// to be included.
 		scanner.advance();
-		createAndAdd(SyntaxKind.STRING);
+		createAndAdd(SyntaxKind.STRING_LITERAL);
 	}
 
 	private void createAndAdd(SyntaxKind kind)

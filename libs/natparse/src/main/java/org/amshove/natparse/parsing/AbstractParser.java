@@ -166,20 +166,6 @@ abstract class AbstractParser<T>
 		return tokenConsumed;
 	}
 
-	protected SyntaxToken identifier() throws ParseError
-	{
-		// TODO(kcheck): This currently allows keywords as identifier
-		//		if(tokens.isAtEnd() || !tokens.peek().kind().isIdentifier())
-		//		{
-		//			diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens.peek()));
-		//			throw new ParseError(peek());
-		//		}
-
-		var token = tokens.peek();
-		tokens.advance();
-		return token;
-	}
-
 	protected SyntaxToken consumeMandatory(BaseSyntaxNode node, SyntaxKind kind) throws ParseError
 	{
 		if (consumeOptionally(node, kind))
@@ -212,27 +198,44 @@ abstract class AbstractParser<T>
 			return lparen;
 		}
 
-		var literal = consumeAny(List.of(SyntaxKind.NUMBER, SyntaxKind.STRING, SyntaxKind.TRUE, SyntaxKind.FALSE));
+		var literal = consumeAny(List.of(SyntaxKind.NUMBER_LITERAL, SyntaxKind.STRING_LITERAL, SyntaxKind.TRUE, SyntaxKind.FALSE));
 		previousNode = new TokenNode(literal);
 		node.addNode(previousNode);
 		return literal;
 	}
 
-	// TODO: Remove/Change once IDENTIFIER_OR_KEYWORD is no more
-	protected SyntaxToken consumeMandatoryIdentifier(BaseSyntaxNode node) throws ParseError
+	/**
+	 * @deprecated
+	 * You probably wanted to use {@link AbstractParser#consumeMandatoryIdentifier(BaseSyntaxNode)}, because that already creates a TokenNode.</br>
+	 * If not, remove the Deprecated annotation
+	 */
+	@Deprecated(forRemoval = true)
+	protected SyntaxToken identifier() throws ParseError
 	{
 		// TODO(kcheck): This currently allows keywords as identifier
-		var kind = peek().kind();
-		if (!isAtEnd() && !kind.isLiteralOrConst())
+		var currentToken = tokens.peek();
+		if(tokens.isAtEnd() || (currentToken.kind() != SyntaxKind.IDENTIFIER && !currentToken.kind().canBeIdentifier()))
 		{
-			previousNode = new TokenNode(peek());
-			node.addNode(previousNode);
-			tokens.advance();
-			return previousToken();
+			diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens));
+			throw new ParseError(peek());
 		}
 
-		diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens));
-		throw new ParseError(peek());
+		if(currentToken.kind() != SyntaxKind.IDENTIFIER)
+		{
+			diagnostics.add(ParserErrors.keywordUsedAsIdentifier(currentToken));
+		}
+
+		var token = currentToken.withKind(SyntaxKind.IDENTIFIER);
+		tokens.advance();
+		return token;
+	}
+
+	protected SyntaxToken consumeMandatoryIdentifier(BaseSyntaxNode node) throws ParseError
+	{
+		var identifierToken = identifier();
+		previousNode = new TokenNode(identifierToken);
+		node.addNode(previousNode);
+		return identifierToken;
 	}
 
 	protected SyntaxToken consumeAny(List<SyntaxKind> acceptedKinds) throws ParseError
@@ -317,6 +320,15 @@ abstract class AbstractParser<T>
 	{
 		// Skip to next line or END-DEFINE to recover
 		while (!tokens.isAtEnd() && peek().line() == e.getErrorToken().line() && peek().kind() != SyntaxKind.END_DEFINE)
+		{
+			tokens.advance();
+		}
+	}
+
+	protected void skipToNextLineAsRecovery(int currentLine)
+	{
+		// Skip to next line or END-DEFINE to recover
+		while (!tokens.isAtEnd() && peek().line() == currentLine && peek().kind() != SyntaxKind.END_DEFINE)
 		{
 			tokens.advance();
 		}

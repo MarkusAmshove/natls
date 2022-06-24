@@ -13,8 +13,10 @@ public abstract class AbstractAnalyzer
 	public abstract void initialize(ILinterContext context);
 
 	/**
-	 * This method gets called before the analyzer is run.
-	 * It can be used to initialized stuff based on the context.
+	 * This method gets called before the analyzer is run for a module.
+	 * An instance of an Analyzer is always shared between all runs, therefor
+	 * any state that is saved should be identifiable with the module.
+	 * It can happen that an Analyzer instance might analyze two modules in parallel.
 	 */
 	public void beforeAnalyzing(IAnalyzeContext context)
 	{
@@ -23,7 +25,7 @@ public abstract class AbstractAnalyzer
 
 	/**
 	 * This method gets called after a module has been fully analyzed.
-	 * It can be used for clean up and aggregating stuff.
+	 * It can be used for e.g. clean up and aggregating metrics.
 	 */
 	public void afterAnalyzing(IAnalyzeContext context)
 	{

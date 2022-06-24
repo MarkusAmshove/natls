@@ -74,7 +74,7 @@ public class BooleanOperatorAnalyzer extends AbstractAnalyzer
 		}
 
 		var node = NodeUtil.findNodeAtPosition(syntaxToken.line(), syntaxToken.offsetInLine(), context.getModule());
-		if(!(node.parent() instanceof IIfStatementNode ifStatement))
+		if(node == null || !(node.parent() instanceof IIfStatementNode ifStatement))
 		{
 			return;
 		}

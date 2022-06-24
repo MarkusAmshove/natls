@@ -7,13 +7,13 @@ public class LexerForStringsShould extends AbstractLexerTest
 	@Test
 	void lexSingleQuoteStrings()
 	{
-		assertTokens("'Hello World!'", token(SyntaxKind.STRING, "'Hello World!'"));
+		assertTokens("'Hello World!'", token(SyntaxKind.STRING_LITERAL, "'Hello World!'"));
 	}
 
 	@Test
 	void lexDoubleQuoteStrings()
 	{
-		assertTokens("\"Hello World!\"", token(SyntaxKind.STRING, "\"Hello World!\""));
+		assertTokens("\"Hello World!\"", token(SyntaxKind.STRING_LITERAL, "\"Hello World!\""));
 	}
 
 	@Test
@@ -51,13 +51,13 @@ public class LexerForStringsShould extends AbstractLexerTest
 			assertedDiagnostic(8, 8, 0, 21, LexerError.UNTERMINATED_STRING)
 		);
 
-		assertTokensInOrder(tokens, SyntaxKind.IDENTIFIER, SyntaxKind.COLON_EQUALS, SyntaxKind.STRING, SyntaxKind.WRITE, SyntaxKind.IDENTIFIER);
+		assertTokensInOrder(tokens, SyntaxKind.IDENTIFIER, SyntaxKind.COLON_EQUALS, SyntaxKind.STRING_LITERAL, SyntaxKind.WRITE, SyntaxKind.IDENTIFIER);
 	}
 
 	@Test
 	void lexHexStrings()
 	{
-		assertTokens("H'00'", token(SyntaxKind.STRING, "H'00'"));
+		assertTokens("H'00'", token(SyntaxKind.STRING_LITERAL, "H'00'"));
 	}
 
 	@Test
@@ -66,12 +66,12 @@ public class LexerForStringsShould extends AbstractLexerTest
 		assertTokens(
 			"MOVE EDITED *TIMX(EM=' 'HH':'II':'SS) TO #RIGHT-PROMPT ",
 			SyntaxKind.MOVE,
-			SyntaxKind.IDENTIFIER_OR_KEYWORD,
+			SyntaxKind.EDITED,
 			SyntaxKind.TIMX,
 			SyntaxKind.LPAREN,
-			SyntaxKind.EDITOR_MASK,
+			SyntaxKind.EM,
 			SyntaxKind.RPAREN,
-			SyntaxKind.IDENTIFIER_OR_KEYWORD, // TO
+			SyntaxKind.TO,
 			SyntaxKind.IDENTIFIER
 		);
 	}
@@ -87,7 +87,7 @@ public class LexerForStringsShould extends AbstractLexerTest
 				 WRITE
 				""",
 			token(SyntaxKind.INPUT),
-			token(SyntaxKind.STRING, "'Hello World!'"),
+			token(SyntaxKind.STRING_LITERAL, "'Hello World!'"),
 			token(SyntaxKind.WRITE)
 		);
 	}
