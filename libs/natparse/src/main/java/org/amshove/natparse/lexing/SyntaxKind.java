@@ -58,6 +58,7 @@ public enum SyntaxKind
 	DEVICE(false),
 	OPSYS(false),
 	TPSYS(false),
+	APPLIC_ID(false),
 
 	// Kcheck reserved keywords
 	ABS(false),

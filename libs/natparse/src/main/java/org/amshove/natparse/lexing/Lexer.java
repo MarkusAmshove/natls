@@ -282,6 +282,8 @@ public class Lexer
 		var lookahead = scanner.peek(1);
 		switch (lookahead)
 		{
+			case 'a':
+			case 'A':
 			case 'c':
 			case 'C':
 			case 'd':
@@ -444,6 +446,11 @@ public class Lexer
 		if (scanner.advanceIf("TPSYS"))
 		{
 			createAndAdd(SyntaxKind.TPSYS);
+			return;
+		}
+		if (scanner.advanceIf("APPLIC-ID"))
+		{
+			createAndAdd(SyntaxKind.APPLIC_ID);
 			return;
 		}
 		scanner.rollbackCurrentLexeme();

@@ -174,4 +174,10 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 	{
 		assertTokens("*TPSYS", token(SyntaxKind.TPSYS, "*TPSYS"));
 	}
+
+	@Test
+	void lexApplicId()
+	{
+		assertTokens("*APPLIC-ID", token(SyntaxKind.APPLIC_ID, "*APPLIC-ID"));
+	}
 }
