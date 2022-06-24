@@ -269,6 +269,15 @@ public class Lexer
 			{
 				scanner.advance();
 			}
+			if(scanner.peek() == 'E')
+			{
+				scanner.advance(); // E
+				scanner.advance(); // + or -
+				while(Character.isDigit(scanner.peek()))
+				{
+					scanner.advance();
+				}
+			}
 			createAndAdd(SyntaxKind.NUMBER_LITERAL);
 		}
 		else
@@ -867,6 +876,16 @@ public class Lexer
 			scanner.advance();
 			createAndAdd(SyntaxKind.TAB_SETTING);
 			return;
+		}
+
+		if(scanner.peek() == 'E')
+		{
+			scanner.advance(); // E
+			scanner.advance(); // + or -
+			while(Character.isDigit(scanner.peek()))
+			{
+				scanner.advance();
+			}
 		}
 
 		createAndAdd(SyntaxKind.NUMBER_LITERAL);

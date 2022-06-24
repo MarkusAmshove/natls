@@ -83,14 +83,21 @@ public class LexerForNumbersShould extends AbstractLexerTest
 	@ValueSource(strings = {"5X", "2x"})
 	void recognizeSkipPatterns(String skip)
 	{
-		assertTokens(skip, token(SyntaxKind.OPERAND_SKIP));
+		assertTokens(skip, token(SyntaxKind.OPERAND_SKIP, skip));
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = {"5T", "25T"})
 	void recognizeTabSettings(String setting)
 	{
-		assertTokens(setting, token(SyntaxKind.TAB_SETTING));
+		assertTokens(setting, token(SyntaxKind.TAB_SETTING, setting));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"1.5E+5", "0.2E-15", "-0.22E+1"})
+	void recognizeFloatingFormats(String format)
+	{
+		assertTokens(format, token(SyntaxKind.NUMBER_LITERAL, format));
 	}
 
 }
