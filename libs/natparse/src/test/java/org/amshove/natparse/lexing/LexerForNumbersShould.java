@@ -2,6 +2,8 @@ package org.amshove.natparse.lexing;
 
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Arrays;
 
@@ -76,4 +78,19 @@ public class LexerForNumbersShould extends AbstractLexerTest
 			dynamicTest("-1.2", () -> assertTokens("-1.2", token(SyntaxKind.NUMBER_LITERAL, "-1.2")))
 		);
 	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"5X", "2x"})
+	void recognizeSkipPatterns(String skip)
+	{
+		assertTokens(skip, token(SyntaxKind.OPERAND_SKIP));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"5T", "25T"})
+	void recognizeTabSettings(String setting)
+	{
+		assertTokens(setting, token(SyntaxKind.TAB_SETTING));
+	}
+
 }

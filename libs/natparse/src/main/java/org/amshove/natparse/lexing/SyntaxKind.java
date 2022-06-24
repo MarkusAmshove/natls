@@ -31,6 +31,7 @@ public enum SyntaxKind
 	PERCENT(false),
 	QUESTIONMARK(false),
 	OPERAND_SKIP(false),
+	TAB_SETTING(false),
 
 	// System variables and functions
 	TIMX(false),
