@@ -167,6 +167,7 @@ public class NaturalWorkspaceService implements WorkspaceService
 					catalogResult.text().split(" ")[0]
 				));
 				languageService.publishDiagnostics(file);
+				languageService.invalidateStowCache(file);
 			}
 		}
 		catch (IOException e)

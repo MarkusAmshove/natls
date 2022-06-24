@@ -9,7 +9,7 @@ public class LexerForAttributeControlsShould extends AbstractLexerTest
 	{
 		assertTokens("(EM=YYYY-MM-DD)",
 			token(SyntaxKind.LPAREN),
-			token(SyntaxKind.EDITOR_MASK, "EM=YYYY-MM-DD"),
+			token(SyntaxKind.EM, "EM=YYYY-MM-DD"),
 			token(SyntaxKind.RPAREN)
 		);
 	}
@@ -20,7 +20,18 @@ public class LexerForAttributeControlsShould extends AbstractLexerTest
 		assertTokens("#FIRST-VAR-LEVEL.SECOND-LEVEL(EM=YY-MM-DD)",
 			token(SyntaxKind.IDENTIFIER, "#FIRST-VAR-LEVEL.SECOND-LEVEL"),
 			token(SyntaxKind.LPAREN),
-			token(SyntaxKind.EDITOR_MASK),
+			token(SyntaxKind.EM),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
+	void consumeAttributeDefinition()
+	{
+		assertTokens("#PAGE(AD=MI)",
+			token(SyntaxKind.IDENTIFIER, "#PAGE"),
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.AD),
 			token(SyntaxKind.RPAREN)
 		);
 	}

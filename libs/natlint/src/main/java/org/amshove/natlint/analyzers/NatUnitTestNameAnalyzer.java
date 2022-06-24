@@ -7,13 +7,10 @@ import org.amshove.natlint.api.ILinterContext;
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
-import org.amshove.natparse.natural.IIfStatementNode;
-import org.amshove.natparse.natural.ISymbolReferenceNode;
-import org.amshove.natparse.natural.ISyntaxNode;
-import org.amshove.natparse.natural.ITokenNode;
+import org.amshove.natparse.natural.*;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class NatUnitTestNameAnalyzer extends AbstractAnalyzer
 {
@@ -23,7 +20,7 @@ public class NatUnitTestNameAnalyzer extends AbstractAnalyzer
 		DiagnosticSeverity.ERROR
 	);
 
-	private Map<String, Integer> definedTestCases;
+	private Map<INaturalModule, Map<String, Integer>> definedTestCases;
 
 	@Override
 	public ReadOnlyList<DiagnosticDescription> getDiagnosticDescriptions()
@@ -40,8 +37,13 @@ public class NatUnitTestNameAnalyzer extends AbstractAnalyzer
 	@Override
 	public void beforeAnalyzing(IAnalyzeContext context)
 	{
-		// TODO: Is this actually safe with all the requests/cancellations going on in a LSP?
-		definedTestCases = new HashMap<>();
+		definedTestCases = new ConcurrentHashMap<>();
+	}
+
+	@Override
+	public void afterAnalyzing(IAnalyzeContext context)
+	{
+		definedTestCases.remove(context.getModule());
 	}
 
 	private void analyzeTestName(ISyntaxNode node, IAnalyzeContext context)
@@ -60,19 +62,26 @@ public class NatUnitTestNameAnalyzer extends AbstractAnalyzer
 		}
 
 		var possibleTestName = ifStatement.descendants().get(3);
-		if (!(possibleTestName instanceof ITokenNode nameToken) || nameToken.token().kind() != SyntaxKind.STRING)
+		if (!(possibleTestName instanceof ITokenNode nameToken) || nameToken.token().kind() != SyntaxKind.STRING_LITERAL)
 		{
 			return;
 		}
 
 		var testName = nameToken.token().stringValue();
-		if (definedTestCases.containsKey(testName))
+		if (definedTestCases.containsKey(context.getModule()) && definedTestCases.get(context.getModule()).containsKey(testName))
 		{
-			context.report(DUPLICATED_TEST_NAME.createFormattedDiagnostic(nameToken.token(), definedTestCases.get(testName)));
+			var line = definedTestCases.get(context.getModule()).get(testName);
+			context.report(DUPLICATED_TEST_NAME.createFormattedDiagnostic(nameToken.token(), line));
 		}
 		else
 		{
-			definedTestCases.put(testName, nameToken.token().line());
+			markTest(context.getModule(), testName, nameToken.token().line());
 		}
+	}
+
+	private void markTest(INaturalModule module, String testName, int line)
+	{
+		var testCasesInModule = definedTestCases.computeIfAbsent(module, m -> new ConcurrentHashMap<>());
+		testCasesInModule.put(testName, line);
 	}
 }

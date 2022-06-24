@@ -67,13 +67,13 @@ public class LexerForSingleCharacterTokensShould extends AbstractLexerTest
 	@Test
 	void lexGreater()
 	{
-		assertTokens(">", token(SyntaxKind.GREATER, ">"));
+		assertTokens(">", token(SyntaxKind.GREATER_SIGN, ">"));
 	}
 
 	@Test
 	void lexLesser()
 	{
-		assertTokens("<", token(SyntaxKind.LESSER, "<"));
+		assertTokens("<", token(SyntaxKind.LESSER_SIGN, "<"));
 	}
 
 	@Test

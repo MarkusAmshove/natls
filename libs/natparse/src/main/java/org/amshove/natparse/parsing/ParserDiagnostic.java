@@ -23,10 +23,15 @@ public class ParserDiagnostic implements IDiagnostic
 
 	private ParserDiagnostic(String message, int offset, int offsetInLine, int line, int length, Path filePath, ParserError error)
 	{
-		this(message, offset, offsetInLine, line, length, filePath, null, error);
+		this(message, offset, offsetInLine, line, length, filePath, null, error, DiagnosticSeverity.ERROR);
 	}
 
-	private ParserDiagnostic(String message, int offset, int offsetInLine, int line, int length, Path filePath, IPosition originalPosition, ParserError error)
+	private ParserDiagnostic(String message, int offset, int offsetInLine, int line, int length, Path filePath, ParserError error, DiagnosticSeverity severity)
+	{
+		this(message, offset, offsetInLine, line, length, filePath, null, error, severity);
+	}
+
+	private ParserDiagnostic(String message, int offset, int offsetInLine, int line, int length, Path filePath, IPosition originalPosition, ParserError error, DiagnosticSeverity severity)
 	{
 		this.message = message;
 		this.offset = offset;
@@ -35,7 +40,7 @@ public class ParserDiagnostic implements IDiagnostic
 		this.length = length;
 		this.id = error.id();
 		this.filePath = filePath;
-		severity = DiagnosticSeverity.ERROR;
+		this.severity = severity;
 		this.error = error;
 		this.originalPosition = originalPosition;
 	}
@@ -57,7 +62,12 @@ public class ParserDiagnostic implements IDiagnostic
 
 	public static ParserDiagnostic create(String message, IPosition diagnosticPosition, IPosition originalPosition, ParserError error)
 	{
-		return new ParserDiagnostic(message, diagnosticPosition.offset(), diagnosticPosition.offsetInLine(), diagnosticPosition.line(), diagnosticPosition.length(), diagnosticPosition.filePath(), originalPosition, error);
+		return new ParserDiagnostic(message, diagnosticPosition.offset(), diagnosticPosition.offsetInLine(), diagnosticPosition.line(), diagnosticPosition.length(), diagnosticPosition.filePath(), originalPosition, error, DiagnosticSeverity.ERROR);
+	}
+
+	public static IDiagnostic create(String message, IPosition diagnosticPosition, ParserError error, DiagnosticSeverity severity)
+	{
+		return new ParserDiagnostic(message, diagnosticPosition.offset(), diagnosticPosition.offsetInLine(), diagnosticPosition.line(), diagnosticPosition.length(), diagnosticPosition.filePath(), error, severity);
 	}
 
 	@Override

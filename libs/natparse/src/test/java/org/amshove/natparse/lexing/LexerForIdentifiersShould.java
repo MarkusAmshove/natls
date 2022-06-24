@@ -51,7 +51,7 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 	@Test
 	void recognizeHyphensInNames()
 	{
-		assertTokens("MY-VAR", token(SyntaxKind.IDENTIFIER_OR_KEYWORD, "MY-VAR"));
+		assertTokens("MY-VAR", token(SyntaxKind.IDENTIFIER, "MY-VAR"));
 	}
 
 	@Test
@@ -82,9 +82,9 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 	void notAllowCountAsteriskToBeAtAnotherLocationThan2()
 	{
 		assertTokens("CN*AMES",
-			token(SyntaxKind.IDENTIFIER_OR_KEYWORD, "CN"),
+			token(SyntaxKind.IDENTIFIER, "CN"),
 			token(SyntaxKind.ASTERISK),
-			token(SyntaxKind.IDENTIFIER_OR_KEYWORD, "AMES")
+			token(SyntaxKind.IDENTIFIER, "AMES")
 		);
 	}
 
@@ -97,7 +97,7 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 	@Test
 	void stopIdentifiersWhenANonIdentifierCharacterIsFound()
 	{
-		assertTokens("#DATE'test'", token(SyntaxKind.IDENTIFIER, "#DATE"), token(SyntaxKind.STRING));
+		assertTokens("#DATE'test'", token(SyntaxKind.IDENTIFIER, "#DATE"), token(SyntaxKind.STRING_LITERAL));
 	}
 
 	@Test
@@ -137,13 +137,13 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 	@Test
 	void notRecognizeArithmeticAsVariable()
 	{
-		assertTokens("+123", token(SyntaxKind.PLUS), token(SyntaxKind.NUMBER));
+		assertTokens("+123", token(SyntaxKind.PLUS), token(SyntaxKind.NUMBER_LITERAL));
 	}
 
 	@Test
 	void recognizeTheStartOfAnArithmeticExpressionWithinAVariableAndBreakIt()
 	{
-		assertTokens("MYVAR+123", token(SyntaxKind.IDENTIFIER_OR_KEYWORD), token(SyntaxKind.PLUS), token(SyntaxKind.NUMBER));
+		assertTokens("MYVAR+123", token(SyntaxKind.IDENTIFIER), token(SyntaxKind.PLUS), token(SyntaxKind.NUMBER_LITERAL));
 	}
 
 	@Test
@@ -199,5 +199,11 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 			dynamicTest("with hyphen in qualifier", () -> assertTokens("QUALIFIED-VARIABLE.VARI", token(SyntaxKind.IDENTIFIER, "QUALIFIED-VARIABLE.VARI"))),
 			dynamicTest("with hyphen in variable", () -> assertTokens("QUALIFIER.VARI-ABLE", token(SyntaxKind.IDENTIFIER, "QUALIFIER.VARI-ABLE"))),
 			dynamicTest("with hypen in both", () -> assertTokens("QUALI-FIER.VARI-ABLE", token(SyntaxKind.IDENTIFIER, "QUALI-FIER.VARI-ABLE"))));
+	}
+
+	@Test
+	void recogniceAVariableStartingWithPfAsIdentifier()
+	{
+		assertTokens("PFAD", token(SyntaxKind.IDENTIFIER));
 	}
 }

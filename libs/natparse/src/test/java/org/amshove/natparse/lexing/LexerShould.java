@@ -84,7 +84,7 @@ public class LexerShould extends AbstractLexerTest
 			""";
 
 		var tokens = lexSource(source);
-		assertThat(tokens.advanceAfterNext(SyntaxKind.NUMBER)).isTrue();
+		assertThat(tokens.advanceAfterNext(SyntaxKind.NUMBER_LITERAL)).isTrue();
 		var identifier = tokens.peek();
 		assertThat(identifier.line()).isEqualTo(2);
 		assertThat(identifier.offsetInLine()).isEqualTo(2);

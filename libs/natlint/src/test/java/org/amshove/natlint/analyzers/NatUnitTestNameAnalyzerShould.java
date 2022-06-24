@@ -5,9 +5,9 @@ import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.testhelpers.ProjectName;
 import org.junit.jupiter.api.Test;
 
-public class NatUnitTestAnalyzerShould extends AbstractAnalyzerTest
+public class NatUnitTestNameAnalyzerShould extends AbstractAnalyzerTest
 {
-	protected NatUnitTestAnalyzerShould()
+	protected NatUnitTestNameAnalyzerShould()
 	{
 		super(new NatUnitTestNameAnalyzer());
 	}
