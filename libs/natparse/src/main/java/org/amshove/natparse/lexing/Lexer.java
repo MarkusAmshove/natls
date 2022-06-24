@@ -460,6 +460,16 @@ public class Lexer
 			createAndAdd(SyntaxKind.STARTUP);
 			return;
 		}
+		if (scanner.advanceIf("STEPLIB"))
+		{
+			createAndAdd(SyntaxKind.STEPLIB);
+			return;
+		}
+		if (scanner.advanceIf("PAGE-NUMBER"))
+		{
+			createAndAdd(SyntaxKind.PAGE_NUMBER);
+			return;
+		}
 		scanner.rollbackCurrentLexeme();
 		createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
 	}

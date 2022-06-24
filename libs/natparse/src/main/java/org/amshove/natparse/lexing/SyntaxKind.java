@@ -40,6 +40,8 @@ public enum SyntaxKind
 	DATX(false),
 	DATN(false),
 	STARTUP(false),
+	STEPLIB(false),
+	PAGE_NUMBER(false),
 	LIBRARY_ID(false),
 	LINEX(false),
 	CURRENT_UNIT(false),

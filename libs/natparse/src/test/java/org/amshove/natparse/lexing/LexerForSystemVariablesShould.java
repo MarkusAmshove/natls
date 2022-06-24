@@ -186,4 +186,16 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 	{
 		assertTokens("*STARTUP", token(SyntaxKind.STARTUP, "*STARTUP"));
 	}
+
+	@Test
+	void lexSteplib()
+	{
+		assertTokens("*STEPLIB", token(SyntaxKind.STEPLIB, "*STEPLIB"));
+	}
+
+	@Test
+	void lexPageNumber()
+	{
+		assertTokens("*PAGE-NUMBER", token(SyntaxKind.PAGE_NUMBER, "*PAGE-NUMBER"));
+	}
 }
