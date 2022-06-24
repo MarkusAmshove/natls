@@ -306,6 +306,8 @@ public class Lexer
 			case 'S':
 			case 'u':
 			case 'U':
+			case 'w':
+			case 'W':
 				break;
 			default:
 				createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
@@ -468,6 +470,11 @@ public class Lexer
 		if (scanner.advanceIf("PAGE-NUMBER"))
 		{
 			createAndAdd(SyntaxKind.PAGE_NUMBER);
+			return;
+		}
+		if (scanner.advanceIf("WINDOW-PS"))
+		{
+			createAndAdd(SyntaxKind.WINDOW_PS);
 			return;
 		}
 		scanner.rollbackCurrentLexeme();

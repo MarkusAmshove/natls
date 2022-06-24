@@ -42,6 +42,7 @@ public enum SyntaxKind
 	STARTUP(false),
 	STEPLIB(false),
 	PAGE_NUMBER(false),
+	WINDOW_PS(false),
 	LIBRARY_ID(false),
 	LINEX(false),
 	CURRENT_UNIT(false),

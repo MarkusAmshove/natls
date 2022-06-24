@@ -198,4 +198,10 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 	{
 		assertTokens("*PAGE-NUMBER", token(SyntaxKind.PAGE_NUMBER, "*PAGE-NUMBER"));
 	}
+
+	@Test
+	void lexWindowPs()
+	{
+		assertTokens("*WINDOW-PS", token(SyntaxKind.WINDOW_PS, "*WINDOW-PS"));
+	}
 }
