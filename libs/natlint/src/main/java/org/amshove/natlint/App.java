@@ -173,7 +173,7 @@ public class App
 					allDiagnostics.addAll(linterDiagnostics.toList());
 
 					allDiagnostics.forEach(d -> {
-						if(noWarn && d.severity() == DiagnosticSeverity.WARNING)
+						if(noWarn && (d.severity() == DiagnosticSeverity.WARNING || d.severity() == DiagnosticSeverity.INFO))
 						{
 							return;
 						}
@@ -243,7 +243,7 @@ public class App
 		var printed = 0;
 		for (var diagnostic : sortedDiagnostics)
 		{
-			if(diagnostic.severity() == DiagnosticSeverity.WARNING && noWarn)
+			if((diagnostic.severity() == DiagnosticSeverity.WARNING || diagnostic.severity() == DiagnosticSeverity.INFO) && noWarn)
 			{
 				continue;
 			}
