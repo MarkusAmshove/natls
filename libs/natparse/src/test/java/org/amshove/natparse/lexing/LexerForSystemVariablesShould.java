@@ -180,4 +180,10 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 	{
 		assertTokens("*APPLIC-ID", token(SyntaxKind.APPLIC_ID, "*APPLIC-ID"));
 	}
+
+	@Test
+	void lexStartup()
+	{
+		assertTokens("*STARTUP", token(SyntaxKind.STARTUP, "*STARTUP"));
+	}
 }

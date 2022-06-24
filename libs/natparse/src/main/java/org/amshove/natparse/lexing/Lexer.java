@@ -302,6 +302,8 @@ public class Lexer
 			case 'O':
 			case 'p':
 			case 'P':
+			case 's':
+			case 'S':
 			case 'u':
 			case 'U':
 				break;
@@ -451,6 +453,11 @@ public class Lexer
 		if (scanner.advanceIf("APPLIC-ID"))
 		{
 			createAndAdd(SyntaxKind.APPLIC_ID);
+			return;
+		}
+		if (scanner.advanceIf("STARTUP"))
+		{
+			createAndAdd(SyntaxKind.STARTUP);
 			return;
 		}
 		scanner.rollbackCurrentLexeme();

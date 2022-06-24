@@ -39,6 +39,7 @@ public enum SyntaxKind
 	DATD(false),
 	DATX(false),
 	DATN(false),
+	STARTUP(false),
 	LIBRARY_ID(false),
 	LINEX(false),
 	CURRENT_UNIT(false),
