@@ -144,7 +144,7 @@ public class App
 				continue;
 			}
 
-			for (var file : library.files().stream().filter(f -> f.getFiletype().hasDefineData()).toList())
+			for (var file : library.files().stream().filter(f -> f.getFiletype().canHaveDefineData()).toList())
 			{
 				if(globPattern != null && !globPattern.matches(file.getPath()))
 				{
