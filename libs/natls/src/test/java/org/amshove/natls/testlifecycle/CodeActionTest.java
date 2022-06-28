@@ -31,6 +31,11 @@ public abstract class CodeActionTest extends LanguageServerTest
 		return new CodeActionAssertion(codeActions.get(0));
 	}
 
+	protected CodeActionAssertion assertCodeAction(CodeAction codeAction)
+	{
+		return new CodeActionAssertion(codeAction);
+	}
+
 	protected void assertNoCodeAction(String library, String module, String source)
 	{
 		assertThat(receiveCodeActions(library, module, source)).isEmpty();

@@ -122,6 +122,6 @@ public class VariableReferenceTests extends ParserIntegrationTest
 			.hasSize(1);
 		assertThat(subprogram.diagnostics())
 			.as("The expected diagnostic id differs")
-			.allMatch(d -> d.id().equals(ParserError.VARIABLE_NEEDS_QUALIFICATION.id()));
+			.allMatch(d -> d.id().equals(ParserError.AMBIGUOUS_VARIABLE_REFERENCE.id()));
 	}
 }

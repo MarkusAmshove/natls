@@ -175,7 +175,7 @@ public class NaturalParser
 				possibleQualifications.append(foundVariable.qualifiedName()).append(" ");
 			}
 
-			module.addDiagnostic(ParserErrors.variableNeedsQualification(referenceNode, possibleQualifications.toString()));
+			module.addDiagnostic(ParserErrors.ambiguousSymbolReference(referenceNode, possibleQualifications.toString()));
 		}
 
 		if(!foundVariables.isEmpty())

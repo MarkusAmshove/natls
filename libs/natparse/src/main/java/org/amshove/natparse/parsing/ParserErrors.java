@@ -313,19 +313,19 @@ class ParserErrors
 	public static IDiagnostic keywordUsedAsIdentifier(SyntaxToken currentToken)
 	{
 		return ParserDiagnostic.create(
-			"Keywords used as identifier are discouraged. Consider prefixing it with a #".formatted(currentToken.kind()),
+			"Keywords used as identifier are discouraged. Consider prefixing it with a #: %s".formatted(currentToken.kind()),
 			currentToken,
 			ParserError.KEYWORD_USED_AS_IDENTIFIER,
 			DiagnosticSeverity.WARNING
 		);
 	}
 
-	public static IDiagnostic variableNeedsQualification(ISymbolReferenceNode symbolReferenceNode, String possibleQualifications)
+	public static IDiagnostic ambiguousSymbolReference(ISymbolReferenceNode symbolReferenceNode, String possibleQualifications)
 	{
 		return ParserDiagnostic.create(
-			"Reference %s is ambiguous and needs to be qualified. Ambiguous with: %s".formatted(symbolReferenceNode.referencingToken().symbolName(), possibleQualifications),
+			"Reference %s is ambiguous and needs to be qualified. Ambiguous with: %s".formatted(symbolReferenceNode.referencingToken().symbolName(), possibleQualifications.trim()),
 			symbolReferenceNode,
-			ParserError.VARIABLE_NEEDS_QUALIFICATION
+			ParserError.AMBIGUOUS_VARIABLE_REFERENCE
 		);
 	}
 }
