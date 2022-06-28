@@ -124,6 +124,8 @@ public class LanguageServerFile implements IModuleProvider
 	public void save()
 	{
 		clearDiagnosticsByTool(DiagnosticTool.CATALOG);
+		clearDiagnosticsByTool(DiagnosticTool.NATLINT);
+		clearDiagnosticsByTool(DiagnosticTool.NATPARSE);
 		parse();
 	}
 
