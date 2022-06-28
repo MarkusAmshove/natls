@@ -124,4 +124,19 @@ class DefineDataNode extends BaseSyntaxNode implements IDefineData
 			}
 		}
 	}
+
+	List<IVariableNode> findVariablesWithName(String symbolName)
+	{
+		var foundVariables = new ArrayList<IVariableNode>();
+		for (var variable : variables)
+		{
+			if((variable.name().equals(symbolName) || variable.qualifiedName().equals(symbolName))
+				&& !(variable instanceof IRedefinitionNode))
+			{
+				foundVariables.add(variable);
+			}
+		}
+
+		return foundVariables;
+	}
 }

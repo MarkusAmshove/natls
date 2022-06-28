@@ -319,4 +319,13 @@ class ParserErrors
 			DiagnosticSeverity.WARNING
 		);
 	}
+
+	public static IDiagnostic variableNeedsQualification(ISymbolReferenceNode symbolReferenceNode, String possibleQualifications)
+	{
+		return ParserDiagnostic.create(
+			"Reference %s is ambiguous and needs to be qualified. Ambiguous with: %s".formatted(symbolReferenceNode.referencingToken().symbolName(), possibleQualifications),
+			symbolReferenceNode,
+			ParserError.VARIABLE_NEEDS_QUALIFICATION
+		);
+	}
 }
