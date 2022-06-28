@@ -629,7 +629,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		completionItems.addAll(module.referencableNodes().stream()
 			.filter(v -> !(v instanceof IRedefinitionNode)) // this is the `REDEFINE #VAR`, which results in the variable being doubled in completion
-			.map(n -> createCompletionItem(n, file))
+			.map(n -> createCompletionItem(n, file, module.referencableNodes()))
 			.filter(Objects::nonNull)
 			.peek(i -> {
 				if(i.getKind() == CompletionItemKind.Variable)
@@ -667,13 +667,13 @@ public class NaturalLanguageService implements LanguageClientAware
 		return item;
 	}
 
-	private CompletionItem createCompletionItem(IReferencableNode referencableNode, LanguageServerFile openFile)
+	private CompletionItem createCompletionItem(IReferencableNode referencableNode, LanguageServerFile openFile, ReadOnlyList<IReferencableNode> referencableNodes)
 	{
 		try
 		{
 			if (referencableNode instanceof IVariableNode variableNode)
 			{
-				return createCompletionItem(variableNode, openFile);
+				return createCompletionItem(variableNode, openFile, referencableNodes);
 			}
 
 			if (referencableNode instanceof ISubroutineNode subroutineNode)
@@ -689,10 +689,15 @@ public class NaturalLanguageService implements LanguageClientAware
 		return null;
 	}
 
-	private CompletionItem createCompletionItem(IVariableNode variableNode, LanguageServerFile openFile)
+	private CompletionItem createCompletionItem(IVariableNode variableNode, LanguageServerFile openFile, ReadOnlyList<IReferencableNode> referencableNodes)
 	{
 		var item = new CompletionItem();
 		var variableName = variableNode.name();
+
+		if(referencableNodes.stream().filter(n -> n.declaration().symbolName().equals(variableNode.name())).count() > 1)
+		{
+			variableName = variableNode.qualifiedName();
+		}
 
 		item.setKind(CompletionItemKind.Variable);
 		item.setLabel(variableName);

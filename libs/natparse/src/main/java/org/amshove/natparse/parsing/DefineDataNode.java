@@ -130,6 +130,11 @@ class DefineDataNode extends BaseSyntaxNode implements IDefineData
 		var foundVariables = new ArrayList<IVariableNode>();
 		for (var variable : variables)
 		{
+			if(variable.name() == null)
+			{
+				continue; // There was a parse error with that variable name
+			}
+
 			if((variable.name().equals(symbolName) || variable.qualifiedName().equals(symbolName))
 				&& !(variable instanceof IRedefinitionNode))
 			{
