@@ -248,7 +248,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			{
 				var includedSource = Files.readString(referencedModule.file().getPath());
 				var lexer = new Lexer();
-				lexer.relocateDiagnosticPosition(referencingToken);
+				lexer.relocateDiagnosticPosition(shouldRelocateDiagnostics() ? relocatedDiagnosticPosition : referencingToken);
 				var tokens = lexer.lex(includedSource, referencedModule.file().getPath());
 
 				for (var diagnostic : tokens.diagnostics())
