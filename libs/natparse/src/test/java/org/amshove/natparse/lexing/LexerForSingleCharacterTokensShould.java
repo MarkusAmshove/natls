@@ -19,7 +19,7 @@ public class LexerForSingleCharacterTokensShould extends AbstractLexerTest
 	@Test
 	void lexEqualsSign()
 	{
-		assertTokens("=", token(SyntaxKind.EQUALS, "="));
+		assertTokens("=", token(SyntaxKind.EQUALS_SIGN, "="));
 	}
 
 	@Test

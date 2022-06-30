@@ -249,6 +249,32 @@ abstract class AbstractParser<T>
 		return tokens.advance();
 	}
 
+	protected void consumeOperand(BaseSyntaxNode node) throws ParseError
+	{
+		if(peekKind(SyntaxKind.IDENTIFIER))
+		{
+			consumeMandatoryIdentifier(node);
+		}
+		else
+		{
+			consumeLiteral(node);
+		}
+	}
+
+	protected void consumeAnyMandatory(BaseSyntaxNode node, List<SyntaxKind> acceptedKinds) throws ParseError
+	{
+		for (SyntaxKind acceptedKind : acceptedKinds)
+		{
+			if(consumeOptionally(node, acceptedKind))
+			{
+				return;
+			}
+		}
+
+		diagnostics.add(ParserErrors.unexpectedToken(acceptedKinds, tokens.peek()));
+		throw new ParseError(peek());
+	}
+
 	protected boolean peekAny(List<SyntaxKind> acceptedKinds)
 	{
 		return peekAny(0, acceptedKinds);

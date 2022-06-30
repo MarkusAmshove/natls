@@ -13,7 +13,7 @@ public class LexerForMultiCharacterOperatorsShould extends AbstractLexerTest
 	@Test
 	void lexColonEqualsAssign()
 	{
-		assertTokens(":=", token(SyntaxKind.COLON_EQUALS, ":="));
+		assertTokens(":=", token(SyntaxKind.COLON_EQUALS_SIGN, ":="));
 	}
 
 	@Test

@@ -48,7 +48,7 @@ public class BooleanOperatorAnalyzer extends AbstractAnalyzer
 	public void initialize(ILinterContext context)
 	{
 		PREFERRED_OPERATORS.keySet().forEach(sk -> context.registerTokenAnalyzer(sk, this::analyzeToken));
-		context.registerTokenAnalyzer(SyntaxKind.EQUALS, this::analyzeEquals);
+		context.registerTokenAnalyzer(SyntaxKind.EQUALS_SIGN, this::analyzeEquals);
 	}
 
 	private void analyzeToken(SyntaxToken syntaxToken, IAnalyzeContext context)
@@ -82,7 +82,7 @@ public class BooleanOperatorAnalyzer extends AbstractAnalyzer
 		var possibleTestReference = ifStatement.descendants().get(1);
 		var possibleTestComparisonOperator = ifStatement.descendants().get(2);
 
-		if (syntaxToken.kind() == SyntaxKind.EQUALS
+		if (syntaxToken.kind() == SyntaxKind.EQUALS_SIGN
 			&& possibleTestReference instanceof ISymbolReferenceNode symbolReferenceNode && symbolReferenceNode.referencingToken().symbolName().equals("NUTESTP.TEST")
 			&& possibleTestComparisonOperator instanceof ITokenNode tokenNode && tokenNode.token() == syntaxToken)
 		{

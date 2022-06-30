@@ -321,11 +321,64 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	{
 		var ifStatement = assertParsesSingleStatement("""
 			IF #TEST = 5
-			    WRITE #TEST
+			    IGNORE
 			END-IF
 			""", IIfStatementNode.class);
 
-		assertThat(ifStatement.descendants()).hasSize(7);
+		assertThat(ifStatement.body().statements()).hasSize(4); // TODO(logical-expressions)
+		assertThat(ifStatement.descendants()).hasSize(6);
+	}
+
+	@Test
+	void rudimentaryParseForColonEqualsToStatements()
+	{
+		var forLoopNode = assertParsesSingleStatement("""
+			FOR #I := 1 TO 10
+			    IGNORE
+			END-FOR
+			""", IForLoopNode.class);
+
+		assertThat(forLoopNode.body().statements()).hasSize(1);
+		assertThat(forLoopNode.descendants()).hasSize(8);
+	}
+
+	@Test
+	void rudimentaryParseForEqToStatements()
+	{
+		var forLoopNode = assertParsesSingleStatement("""
+			FOR #I EQ 1 TO 10
+			    IGNORE
+			END-FOR
+			""", IForLoopNode.class);
+
+		assertThat(forLoopNode.body().statements()).hasSize(1);
+		assertThat(forLoopNode.descendants()).hasSize(8);
+	}
+
+	@Test
+	void rudimentaryParseForFromToStatementsStep()
+	{
+		var forLoopNode = assertParsesSingleStatement("""
+			FOR #I FROM 5 TO 10 STEP 2
+			    IGNORE
+			END-FOR
+			""", IForLoopNode.class);
+
+		assertThat(forLoopNode.body().statements()).hasSize(1);
+		assertThat(forLoopNode.descendants()).hasSize(10);
+	}
+
+	@Test
+	void rudimentaryParseForFromThruStatementsStep()
+	{
+		var forLoopNode = assertParsesSingleStatement("""
+			FOR #I FROM 5 THRU 10 STEP 5
+			    IGNORE
+			END-FOR
+			""", IForLoopNode.class);
+
+		assertThat(forLoopNode.body().statements()).hasSize(1);
+		assertThat(forLoopNode.descendants()).hasSize(10);
 	}
 
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)

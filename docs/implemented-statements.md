@@ -2,7 +2,7 @@
 
 This document tracks the implementation status of Natural statements.
 
-Implemented: 8/121
+Implemented: 9/121
 
 Legend:
 
@@ -59,7 +59,7 @@ Legend:
 | EXPAND | :x: |
 | FETCH | :white_check_mark: |
 | FIND | :x: |
-| FOR | :x: |
+| FOR | :white_check_mark: |
 | FORMAT | :x: |
 | GET | :x: |
 | GET SAME | :x: |

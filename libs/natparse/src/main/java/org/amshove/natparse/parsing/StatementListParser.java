@@ -83,6 +83,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						break;
 					case END_IF:
 					case END_SUBROUTINE:
+					case END_FOR:
 						return statementList;
 					case IGNORE:
 						statementList.addStatement(ignore());
@@ -98,6 +99,8 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					case IF:
 						statementList.addStatement(ifStatement());
 						break;
+					case FOR:
+						statementList.addStatement(forLoop());
 					default:
 						// While the parser is incomplete, we just add a node for every token
 						var tokenStatementNode = new SyntheticTokenStatementNode();
@@ -114,6 +117,27 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode forLoop() throws ParseError
+	{
+		var loopNode = new ForLoopNode();
+
+		consumeMandatory(loopNode, SyntaxKind.FOR);
+		consumeMandatoryIdentifier(loopNode);
+		consumeAnyMandatory(loopNode, List.of(SyntaxKind.COLON_EQUALS_SIGN, SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.FROM));
+		consumeOperand(loopNode); // TODO(arithmetic-expression): Could also be arithmetic expression
+		consumeAnyMandatory(loopNode, List.of(SyntaxKind.TO, SyntaxKind.THRU));
+		consumeOperand(loopNode); // TODO(arithmetic-expression): Could also be arithmetic expression
+		if(consumeOptionally(loopNode, SyntaxKind.STEP))
+		{
+			consumeOperand(loopNode);
+		}
+
+		loopNode.setBody(statementList());
+		consumeMandatory(loopNode, SyntaxKind.END_FOR);
+
+		return loopNode;
 	}
 
 	private StatementNode perform() throws ParseError

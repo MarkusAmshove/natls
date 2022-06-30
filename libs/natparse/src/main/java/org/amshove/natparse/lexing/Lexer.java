@@ -67,10 +67,10 @@ public class Lexer
 					createAndAddCurrentSingleToken(SyntaxKind.RBRACKET);
 					continue;
 				case '=':
-					createAndAddCurrentSingleToken(SyntaxKind.EQUALS);
+					createAndAddCurrentSingleToken(SyntaxKind.EQUALS_SIGN);
 					continue;
 				case ':':
-					createAndAddFollowupEquals(SyntaxKind.COLON, SyntaxKind.COLON_EQUALS);
+					createAndAddFollowupEquals(SyntaxKind.COLON, SyntaxKind.COLON_EQUALS_SIGN);
 					continue;
 				case '+':
 					if (isValidAivStartAfterPlus(scanner.peek(1)))
