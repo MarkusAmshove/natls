@@ -2,8 +2,7 @@
 
 This document tracks the implementation status of Natural statements.
 
-Implemented: 8
-Not implemented: 113
+Implemented: 8/121
 
 Legend:
 
