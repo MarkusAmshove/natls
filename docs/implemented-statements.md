@@ -24,7 +24,7 @@ Legend:
 | CALL FILE | :x: |
 | CALL LOOP | :x: |
 | CALLDBPROC (SQL) | :x: |
-| CALLNAT | :x: |
+| CALLNAT | :white_check_mark: |
 | CLOSE CONVERSATION | :x: |
 | CLOSE PC FILE | :x: |
 | CLOSE PRINTER | :x: |
@@ -50,12 +50,12 @@ Legend:
 | DO/DOEND | :x: |
 | DOWNLOAD PC FILE | :x: |
 | EJECT | :x: |
-| END | :x: |
+| END | :white_check_mark: |
 | END TRANSACTION | :x: |
 | ESCAPE | :x: |
 | EXAMINE | :x: |
 | EXPAND | :x: |
-| FETCH | :x: |
+| FETCH | :white_check_mark: |
 | FIND | :x: |
 | FOR | :x: |
 | FORMAT | :x: |
@@ -65,8 +65,8 @@ Legend:
 | HISTOGRAM | :x: |
 | IF | :white_check_mark: |
 | IF SELECTION | :x: |
-| IGNORE | :x: |
-| INCLUDE | :x: |
+| IGNORE | :white_check_mark: |
+| INCLUDE | :white_check_mark: |
 | INPUT | :x: |
 | INSERT (SQL) | :x: |
 | INTERFACE | :x: |
@@ -83,7 +83,7 @@ Legend:
 | OPTIONS | :x: |
 | PARSE XML | :x: |
 | PASSW | :x: |
-| PERFORM | :x: |
+| PERFORM | :white_check_mark: |
 | PERFORM BREAK PROCESSING | :x: |
 | PRINT | :x: |
 | PROCESS | :x: |
