@@ -50,11 +50,21 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private StatementListNode statementList()
 	{
+		return statementList(null);
+	}
+
+	private StatementListNode statementList(SyntaxKind endTokenKind)
+	{
 		var statementList = new StatementListNode();
 		while (!tokens.isAtEnd())
 		{
 			try
 			{
+				if(tokens.peek().kind() == endTokenKind)
+				{
+					break;
+				}
+
 				switch (tokens.peek().kind())
 				{
 					case CALLNAT:
@@ -81,10 +91,6 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						}
 						statementList.addStatement(subroutine());
 						break;
-					case END_IF:
-					case END_SUBROUTINE:
-					case END_FOR:
-						return statementList;
 					case IGNORE:
 						statementList.addStatement(ignore());
 						break;
@@ -134,7 +140,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			consumeOperand(loopNode);
 		}
 
-		loopNode.setBody(statementList());
+		loopNode.setBody(statementList(SyntaxKind.END_FOR));
 		consumeMandatory(loopNode, SyntaxKind.END_FOR);
 
 		return loopNode;
@@ -169,7 +175,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var nameToken = consumeMandatoryIdentifier(subroutine);
 		subroutine.setName(nameToken);
 
-		subroutine.setBody(statementList());
+		subroutine.setBody(statementList(SyntaxKind.END_SUBROUTINE));
 
 		consumeMandatory(subroutine, SyntaxKind.END_SUBROUTINE);
 
@@ -357,7 +363,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		consumeMandatory(ifStatement, SyntaxKind.IF);
 
-		ifStatement.setBody(statementList());
+		ifStatement.setBody(statementList(SyntaxKind.END_IF));
 
 		consumeMandatory(ifStatement, SyntaxKind.END_IF);
 
