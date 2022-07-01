@@ -95,7 +95,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(ignore());
 						break;
 					case PERFORM:
-						if(peek(1).kind() == SyntaxKind.BREAK)
+						if (peek(1).kind() == SyntaxKind.BREAK)
 						{
 							tokens.advance();
 							break;
@@ -103,10 +103,21 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(perform());
 						break;
 					case IF:
-						statementList.addStatement(ifStatement());
-						break;
+						if (peek(-1) == null || peek(-1).kind() != SyntaxKind.REJECT && peek(-1).kind() != SyntaxKind.ACCEPT) // TODO: until ACCEPT/REJECT IF
+						{
+							statementList.addStatement(ifStatement());
+							break;
+						}
+						// FALLTHROUGH TO DEFAULT INTENDED
 					case FOR:
-						statementList.addStatement(forLoop());
+						if(peek(-1) == null || (peek(1).kind() == SyntaxKind.IDENTIFIER && peek(-1).kind() != SyntaxKind.REJECT && peek(-1).kind() != SyntaxKind.ACCEPT))
+							// TODO: until we support EXAMINE, DECIDE, ...
+							//      just.. implement them already and don't try to understand the conditions
+						{
+							statementList.addStatement(forLoop());
+							break;
+						}
+						// FALLTHROUGH TO DEFAULT INTENDED
 					default:
 						// While the parser is incomplete, we just add a node for every token
 						var tokenStatementNode = new SyntheticTokenStatementNode();
