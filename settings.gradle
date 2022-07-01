@@ -1,4 +1,4 @@
-rootProject.name = 'natlint'
+rootProject.name = 'natls'
 
 include 'tools/testhelpers'
 project(':tools/testhelpers').name = 'testhelpers'
