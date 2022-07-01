@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Predicate;
 
-@CommandLine.Command(name = "analyze", description = "Analyze the Natural project in the current working directory")
+@CommandLine.Command(name = "analyze", description = "Analyze the Natural project in the current working directory", mixinStandardHelpOptions = true)
 public class AnalyzeCommand implements Callable<Integer>
 {
 	@CommandLine.Option(names = { "-f", "--file" }, description = "Only analyze modules matching any of the qualified module name in the form of LIBRARY.MODULENAME (e.g. LIB1.SUBPROG)")
@@ -32,6 +32,9 @@ public class AnalyzeCommand implements Callable<Integer>
 
 	@CommandLine.Option(names = { "-d", "--diagnostic" }, description = "Filter out every diagnostic that does not match the given id. Example: --diagnostic NLP011")
 	List<String> diagnosticIds;
+
+	@CommandLine.Option(names = { "--sink" }, description = "Sets the output sink where the diagnostics are printed to. Defaults to STDOUT. Valid values: ${COMPLETION-CANDIDATES}", defaultValue = "STDOUT")
+	DiagnosticSinkType sinkType;
 
 	private static final List<Predicate<NaturalFile>> DEFAULT_MODULE_PREDICATES = List.of(f -> true);
 	private static final List<Predicate<IDiagnostic>> DEFAULT_DIAGNOSTIC_PREDICATES = List.of(d -> true);
@@ -77,8 +80,8 @@ public class AnalyzeCommand implements Callable<Integer>
 				.forEach(id -> diagnosticPredicates.add(d -> d.id().equals(id)));
 		}
 
-
 		var analyzer = new CliAnalyzer(
+			sinkType.createSink(),
 			modulePredicates.isEmpty() ? DEFAULT_MODULE_PREDICATES : modulePredicates,
 			diagnosticPredicates.isEmpty() ? DEFAULT_DIAGNOSTIC_PREDICATES : diagnosticPredicates
 		);

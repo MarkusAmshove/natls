@@ -23,12 +23,12 @@ public class CliAnalyzer
 	private final ActualFilesystem filesystem;
 	private final IDiagnosticSink diagnosticSink;
 
-	public CliAnalyzer(List<Predicate<NaturalFile>> filePredicates, List<Predicate<IDiagnostic>> diagnosticPredicates)
+	public CliAnalyzer(IDiagnosticSink sink, List<Predicate<NaturalFile>> filePredicates, List<Predicate<IDiagnostic>> diagnosticPredicates)
 	{
 		this.filePredicates = filePredicates;
 		this.diagnosticPredicates = diagnosticPredicates;
 		filesystem = new ActualFilesystem();
-		diagnosticSink = new AnsiDiagnosticSink();
+		diagnosticSink = sink;
 	}
 
 	public int run()
