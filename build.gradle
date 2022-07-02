@@ -72,7 +72,7 @@ subprojects {
 	test {
 		useJUnitPlatform()
 		testLogging {
-			events "skipped", "failed"
+			events "skipped", "failed", "passed"
 			testLogging.showStandardStreams = true
 			testLogging.exceptionFormat = 'full'
 		}
