@@ -60,6 +60,14 @@ public class WorkspaceEditBuilder
 		return this;
 	}
 
+	public WorkspaceEditBuilder addsVariable(LanguageServerFile file, String name, String type, VariableScope scope)
+	{
+		var edits = textEdits.computeIfAbsent(file.getUri(), u -> new ArrayList<>());
+
+		edits.add(TextEdits.addVariable(file, name, type, scope));
+		return this;
+	}
+
 	public WorkspaceEdit build()
 	{
 		var edit = new WorkspaceEdit();

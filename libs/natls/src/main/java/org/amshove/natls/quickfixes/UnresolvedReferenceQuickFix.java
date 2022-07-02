@@ -3,23 +3,20 @@ package org.amshove.natls.quickfixes;
 import org.amshove.natls.WorkspaceEditBuilder;
 import org.amshove.natls.codeactions.AbstractQuickFix;
 import org.amshove.natls.codeactions.QuickFixContext;
-import org.amshove.natls.languageserver.LspUtil;
-import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natls.project.LanguageServerLibrary;
 import org.amshove.natls.project.ParseStrategy;
-import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.IHasDefineData;
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.IVariableNode;
+import org.amshove.natparse.natural.VariableScope;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.parsing.ParserError;
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionKind;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
+import java.util.stream.Stream;
 
 public class UnresolvedReferenceQuickFix extends AbstractQuickFix
 {
@@ -32,13 +29,32 @@ public class UnresolvedReferenceQuickFix extends AbstractQuickFix
 	private List<CodeAction> fixUnresolvedReference(QuickFixContext context)
 	{
 		var tokenUnderCursor = context.tokenUnderCursor();
-		if(tokenUnderCursor == null)
+		if (tokenUnderCursor == null)
 		{
 			return List.of();
 		}
 
 		var unresolvedReference = tokenUnderCursor.symbolName();
 
+		return Stream.concat(
+				createUsingImportCandidates(context, unresolvedReference),
+				Stream.of(createDeclareVariableEdit(context, unresolvedReference))
+			)
+			.toList();
+	}
+
+	private CodeAction createDeclareVariableEdit(QuickFixContext context, String unresolvedReference)
+	{
+		return new CodeActionBuilder("Declare variable %s".formatted(unresolvedReference), CodeActionKind.QuickFix)
+			.fixesDiagnostic(context.diagnostic())
+			.appliesWorkspaceEdit(new WorkspaceEditBuilder()
+				.addsVariable(context.file(), unresolvedReference, "(A) DYNAMIC", VariableScope.LOCAL)
+			)
+			.build();
+	}
+
+	private Stream<CodeAction> createUsingImportCandidates(QuickFixContext context, String unresolvedReference)
+	{
 		var residingLibrary = context.file().getLibrary();
 
 		var candidates = new HashSet<>(findVariableCandidatesInLibrary(unresolvedReference, residingLibrary));
@@ -50,8 +66,7 @@ public class UnresolvedReferenceQuickFix extends AbstractQuickFix
 				.appliesWorkspaceEdit(new WorkspaceEditBuilder()
 					.addsUsing(context.file(), c.module.name())
 				)
-				.build())
-			.toList();
+				.build());
 	}
 
 	private List<VariableCandidate> findVariableCandidatesInLibrary(String variableName, LanguageServerLibrary library)
@@ -74,11 +89,12 @@ public class UnresolvedReferenceQuickFix extends AbstractQuickFix
 			.toList();
 	}
 
-	private record VariableCandidate(INaturalModule module, IVariableNode variableNode) {
+	private record VariableCandidate(INaturalModule module, IVariableNode variableNode)
+	{
 		@Override
 		public boolean equals(Object obj)
 		{
-			if(!(obj instanceof VariableCandidate other))
+			if (!(obj instanceof VariableCandidate other))
 			{
 				return false;
 			}

@@ -9,8 +9,18 @@ import org.amshove.natparse.natural.VariableScope;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
 
+import java.util.Optional;
+
 public class TextEdits
 {
+	public static TextEdit addVariable(LanguageServerFile file, String variableName, String variableType, VariableScope scope)
+	{
+		var variableInsert = deduceVariableInsertPosition(file, scope);
+		var edit = new TextEdit();
+		edit.setRange(variableInsert.range);
+		edit.setNewText("%s%d %s %s%n".formatted(variableInsert.insertPrefix(), 1, variableName, variableType));
+		return edit;
+	}
 
 	public static TextEdit addUsing(LanguageServerFile file, UsingToAdd neededUsing)
 	{
@@ -45,20 +55,37 @@ public class TextEdits
 			return LspUtil.toSingleRange(firstUsing.position().line(), 0);
 		}
 
-		if(defineData.variables().hasItems() && defineData.variables().stream().anyMatch(v -> v.scope() == scope && v.position().filePath().equals(file.getPath())))
+		return findRangeOfFirstVariableWithScope(file, scope)
+			.orElse(LspUtil.toSingleRange(defineData.descendants().get(0).position().line() + 1, 0));
+	}
+
+	private static VariableInsert deduceVariableInsertPosition(LanguageServerFile file, VariableScope scope)
+	{
+		var defineData = ((IHasDefineData) file.module()).defineData();
+		return findRangeOfFirstVariableWithScope(file, scope)
+			.map(r -> new VariableInsert("", r))
+			.orElse(new VariableInsert("%s%n".formatted(scope.toString()), LspUtil.toSingleRange(defineData.descendants().get(0).position().line() + 1, 0)));
+	}
+
+	private static Optional<Range> findRangeOfFirstVariableWithScope(LanguageServerFile file, VariableScope scope)
+	{
+		var defineData = ((IHasDefineData) file.module()).defineData();
+		if(defineData.variables().hasItems())
 		{
 			return defineData.variables().stream().filter(v -> v.scope() == scope)
+				.filter(v -> v.position().filePath().equals(file.getPath()))
 				.findFirst()
 				.map(v -> (ISyntaxNode)v.parent()) // Scope node
-				.map(v -> LspUtil.toSingleRange(v.position().line(), 0))
-				.orElseThrow(() -> new RuntimeException("Could not deduce position to insert using by looking for the first variable with scope %s".formatted(scope)));
+				.map(v -> LspUtil.toSingleRange(v.position().line() + 1, 0));
 		}
 
-		return LspUtil.toSingleRange(defineData.descendants().get(0).position().line() + 1, 0);
+		return Optional.empty();
 	}
 
 	private static boolean alreadyHasUsing(String using, LanguageServerFile file)
 	{
 		return ((IHasDefineData) file.module()).defineData().usings().stream().anyMatch(u -> u.target().symbolName().equals(using));
 	}
+
+	private record VariableInsert(String insertPrefix, Range range) {}
 }
