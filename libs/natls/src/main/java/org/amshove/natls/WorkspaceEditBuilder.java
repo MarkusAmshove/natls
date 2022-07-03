@@ -1,7 +1,12 @@
 package org.amshove.natls;
 
 import org.amshove.natls.languageserver.LspUtil;
+import org.amshove.natls.languageserver.TextEdits;
+import org.amshove.natls.languageserver.UsingToAdd;
+import org.amshove.natls.project.LanguageServerFile;
+import org.amshove.natls.quickfixes.CodeActionBuilder;
 import org.amshove.natparse.natural.ISyntaxNode;
+import org.amshove.natparse.natural.VariableScope;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.WorkspaceEdit;
@@ -44,6 +49,22 @@ public class WorkspaceEditBuilder
 		edit.setNewText(newText);
 
 		edits.add(edit);
+		return this;
+	}
+
+	public WorkspaceEditBuilder addsUsing(LanguageServerFile file, String using)
+	{
+		var edits = textEdits.computeIfAbsent(file.getUri(), u -> new ArrayList<>());
+
+		edits.add(TextEdits.addUsing(file, new UsingToAdd(using, VariableScope.LOCAL)));
+		return this;
+	}
+
+	public WorkspaceEditBuilder addsVariable(LanguageServerFile file, String name, String type, VariableScope scope)
+	{
+		var edits = textEdits.computeIfAbsent(file.getUri(), u -> new ArrayList<>());
+
+		edits.add(TextEdits.addVariable(file, name, type, scope));
 		return this;
 	}
 

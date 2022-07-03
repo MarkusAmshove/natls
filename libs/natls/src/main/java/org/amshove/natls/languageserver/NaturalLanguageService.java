@@ -8,9 +8,7 @@ import org.amshove.natls.codeactions.RefactoringContext;
 import org.amshove.natls.codeactions.RenameSymbolAction;
 import org.amshove.natls.progress.IProgressMonitor;
 import org.amshove.natls.progress.ProgressTasks;
-import org.amshove.natls.project.LanguageServerFile;
-import org.amshove.natls.project.LanguageServerProject;
-import org.amshove.natls.project.ModuleReferenceParser;
+import org.amshove.natls.project.*;
 import org.amshove.natls.snippets.SnippetEngine;
 import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
@@ -72,6 +70,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		this.project = project;
 		languageServerProject = LanguageServerProject.fromProject(project);
 		parseFileReferences(progressMonitor);
+		preParseDataAreas(progressMonitor);
 		snippetEngine = new SnippetEngine(languageServerProject);
 		initialized = true;
 	}
@@ -871,6 +870,15 @@ public class NaturalLanguageService implements LanguageClientAware
 		return ProgressTasks.startNew("Parsing file references", client, this::parseFileReferences);
 	}
 
+	private void preParseDataAreas(IProgressMonitor monitor)
+	{
+		monitor.progress("Preparsing data areas", 0);
+		languageServerProject.libraries().stream().flatMap(l -> l.files().stream().filter(f -> f.getType() == NaturalFileType.LDA || f.getType() == NaturalFileType.PDA))
+			.parallel()
+			.peek(f -> monitor.progress(f.getReferableName(), 0))
+			.forEach(f -> f.parse(ParseStrategy.WITHOUT_CALLERS));
+	}
+
 	private void parseFileReferences(IProgressMonitor monitor)
 	{
 		monitor.progress("Clearing current references", 0);
@@ -981,7 +989,7 @@ public class NaturalLanguageService implements LanguageClientAware
 			return List.of();
 		}
 
-		var context = new RefactoringContext(params.getTextDocument().getUri(), file.module(), token, node, file.diagnosticsInRange(params.getRange()));
+		var context = new RefactoringContext(params.getTextDocument().getUri(), file.module(), file, token, node, file.diagnosticsInRange(params.getRange()));
 
 		return codeActionRegistry.createCodeActions(context);
 	}
