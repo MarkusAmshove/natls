@@ -2,10 +2,7 @@ package org.amshove.natls.languageserver;
 
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natparse.ReadOnlyList;
-import org.amshove.natparse.natural.IHasDefineData;
-import org.amshove.natparse.natural.ISyntaxNode;
-import org.amshove.natparse.natural.IUsingNode;
-import org.amshove.natparse.natural.VariableScope;
+import org.amshove.natparse.natural.*;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
 
@@ -55,8 +52,17 @@ public class TextEdits
 			return LspUtil.toSingleRange(firstUsing.position().line(), 0);
 		}
 
-		return findRangeOfFirstVariableWithScope(file, scope)
+		return findRangeOfFirstScope(file, scope) // TODO: findfirstscope
 			.orElse(LspUtil.toSingleRange(defineData.descendants().get(0).position().line() + 1, 0));
+	}
+
+	private static Optional<Range> findRangeOfFirstScope(LanguageServerFile file, VariableScope scope)
+	{
+		var defineData = ((IHasDefineData) file.module()).defineData();
+		return defineData.directDescendantsOfType(IScopeNode.class)
+			.filter(n -> n.scope() == scope && n.position().filePath().equals(file.getPath()))
+			.map(n -> LspUtil.toSingleRange(n.position().line(), 0))
+			.findFirst();
 	}
 
 	private static VariableInsert deduceVariableInsertPosition(LanguageServerFile file, VariableScope scope)
