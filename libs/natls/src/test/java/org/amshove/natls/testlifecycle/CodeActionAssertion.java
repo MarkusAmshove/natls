@@ -51,7 +51,7 @@ public record CodeActionAssertion(CodeAction action)
 		var applier = new TextEditApplier();
 		var edit = action.getEdit().getChanges().values().stream().flatMap(Collection::stream).toList().get(0); // TODO: Handle all edits
 		assertThat(applier.apply(edit, previousSource))
-			.isEqualTo(expectedSource);
+			.isEqualToNormalizingNewlines(expectedSource);
 
 		return this;
 	}

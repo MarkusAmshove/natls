@@ -49,15 +49,15 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 		assertSingleCodeAction(actions)
 			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
 			.resultsApplied(result.savedSource(), """
-			DEFINE DATA
-			LOCAL
-			1 #NAME (A) DYNAMIC
-			END-DEFINE
+				DEFINE DATA
+				LOCAL
+				1 #NAME (A) DYNAMIC
+				END-DEFINE
 
-			WRITE #NAME
+				WRITE #NAME
 
-			END
-			""");
+				END
+				""");
 	}
 
 	@Test
@@ -80,17 +80,16 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 		assertSingleCodeAction(actions)
 			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
 			.resultsApplied(result.savedSource(), """
-			DEFINE DATA
-			LOCAL
-			1 #NAME (A) DYNAMIC
-			END-DEFINE
+				DEFINE DATA
+				LOCAL
+				1 #NAME (A) DYNAMIC
+				END-DEFINE
 
-			WRITE #NAME
+				WRITE #NAME
 
-			END
-			""");
+				END
+				""");
 	}
-
 
 	@Test
 	void addAVariableToDefineDataWhenAnotherVariableIsAlreadyPresent()
@@ -113,27 +112,27 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 		assertSingleCodeAction(actions)
 			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
 			.resultsApplied(result.savedSource(), """
-			DEFINE DATA
-			LOCAL
-			1 #NAME (A) DYNAMIC
-			1 #ANOTHERVAR (A10)
-			END-DEFINE
+				DEFINE DATA
+				LOCAL
+				1 #NAME (A) DYNAMIC
+				1 #ANOTHERVAR (A10)
+				END-DEFINE
 
-			WRITE #NAME
+				WRITE #NAME
 
-			END
-			""");
+				END
+				""");
 	}
 
 	@Test
 	void addAUsingIfAnUnresolvedVariableCanBeFoundInADataAreaAndAScopeIsAlreadyPresent()
 	{
 		createOrSaveFile("LIBONE", "DATAAREA.NSA", """
-		DEFINE DATA
-		LOCAL
-		1 #IN-LDA (A5)
-		END-DEFINE
-		""");
+			DEFINE DATA
+			LOCAL
+			1 #IN-LDA (A5)
+			END-DEFINE
+			""");
 
 		var result = receiveCodeActions("LIBONE", "MEINS.NSN", """
 			DEFINE DATA
@@ -152,26 +151,26 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 		assertCodeAction(actions.get(0))
 			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
 			.resultsApplied(result.savedSource(), """
-			DEFINE DATA
-			LOCAL USING DATAAREA
-			LOCAL
-			END-DEFINE
+				DEFINE DATA
+				LOCAL USING DATAAREA
+				LOCAL
+				END-DEFINE
 
-			WRITE #IN-LDA
+				WRITE #IN-LDA
 
-			END
-			""");
+				END
+				""");
 	}
 
 	@Test
 	void addAUsingIfAnUnresolvedVariableCanBeFoundInADataAreaAndNoScopeIsPresent()
 	{
 		createOrSaveFile("LIBONE", "DATAAREA.NSA", """
-		DEFINE DATA
-		LOCAL
-		1 #IN-LDA (A5)
-		END-DEFINE
-		""");
+			DEFINE DATA
+			LOCAL
+			1 #IN-LDA (A5)
+			END-DEFINE
+			""");
 
 		var result = receiveCodeActions("LIBONE", "MEINS.NSN", """
 			DEFINE DATA
@@ -189,13 +188,13 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 		assertCodeAction(actions.get(0))
 			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
 			.resultsApplied(result.savedSource(), """
-			DEFINE DATA
-			LOCAL USING DATAAREA
-			END-DEFINE
+				DEFINE DATA
+				LOCAL USING DATAAREA
+				END-DEFINE
 
-			WRITE #IN-LDA
+				WRITE #IN-LDA
 
-			END
-			""");
+				END
+				""");
 	}
 }
