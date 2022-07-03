@@ -10,7 +10,7 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 class TextEditApplierShould
 {
-	private TextEditApplier sut = new TextEditApplier();
+	private final TextEditApplier sut = new TextEditApplier();
 
 	@Test
 	void applyAnInsertEdit()

@@ -7,7 +7,8 @@ public class TextEditApplier
 
 	public String apply(TextEdit edit, String source)
 	{
-		var lines = source.split(System.lineSeparator());
+		source = source.replaceAll("\\r\\n?", "\n"); // Test files have linux line ending in the repository. Java text blocks use the source line endings, not platform
+		var lines = source.split("\n");
 		var resultingSource = new StringBuilder();
 
 		var startLine = edit.getRange().getStart().getLine();
@@ -19,7 +20,7 @@ public class TextEditApplier
 		{
 			if(lineNumber < startLine || lineNumber > endLine)
 			{
-				resultingSource.append("%s%n".formatted(lines[lineNumber]));
+				resultingSource.append("%s\n".formatted(lines[lineNumber]));
 				continue;
 			}
 
@@ -49,7 +50,7 @@ public class TextEditApplier
 
 			if(lineNumber >= endLine)
 			{
-				resultingSource.append(System.lineSeparator());
+				resultingSource.append("\n");
 			}
 		}
 
