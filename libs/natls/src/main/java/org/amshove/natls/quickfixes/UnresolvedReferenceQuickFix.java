@@ -61,7 +61,7 @@ public class UnresolvedReferenceQuickFix extends AbstractQuickFix
 		residingLibrary.getStepLibs().stream().map(l -> findVariableCandidatesInLibrary(unresolvedReference, l)).forEach(candidates::addAll);
 
 		return candidates.stream()
-			.map(c -> new CodeActionBuilder("Add USING to %s (from %s)".formatted(c.module.name(), c.module.file().getPath()), CodeActionKind.QuickFix)
+			.map(c -> new CodeActionBuilder("Add USING to %s (from %s)".formatted(c.module.name(), c.module.file().getLibrary().getName()), CodeActionKind.QuickFix)
 				.fixesDiagnostic(context.diagnostic())
 				.appliesWorkspaceEdit(new WorkspaceEditBuilder()
 					.addsUsing(context.file(), c.module.name())

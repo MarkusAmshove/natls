@@ -3,6 +3,7 @@ package org.amshove.natls.languageserver;
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.*;
+import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
 
@@ -52,7 +53,7 @@ public class TextEdits
 			return LspUtil.toSingleRange(firstUsing.position().line(), 0);
 		}
 
-		return findRangeOfFirstScope(file, scope) // TODO: findfirstscope
+		return findRangeOfFirstScope(file, scope)
 			.orElse(LspUtil.toSingleRange(defineData.descendants().get(0).position().line() + 1, 0));
 	}
 
@@ -70,6 +71,7 @@ public class TextEdits
 		var defineData = ((IHasDefineData) file.module()).defineData();
 		return findRangeOfFirstVariableWithScope(file, scope)
 			.map(r -> new VariableInsert("", r))
+			.or(() -> findRangeOfFirstScope(file, scope).map(r -> new VariableInsert("", moveOneDown(r))))
 			.orElse(new VariableInsert("%s%n".formatted(scope.toString()), LspUtil.toSingleRange(defineData.descendants().get(0).position().line() + 1, 0)));
 	}
 
@@ -91,6 +93,14 @@ public class TextEdits
 	private static boolean alreadyHasUsing(String using, LanguageServerFile file)
 	{
 		return ((IHasDefineData) file.module()).defineData().usings().stream().anyMatch(u -> u.target().symbolName().equals(using));
+	}
+
+	private static Range moveOneDown(Range range)
+	{
+		return new Range(
+			new Position(range.getStart().getLine() + 1, range.getStart().getCharacter()),
+			new Position(range.getEnd().getLine() + 1, range.getEnd().getCharacter())
+		);
 	}
 
 	private record VariableInsert(String insertPrefix, Range range) {}
