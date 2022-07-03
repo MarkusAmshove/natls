@@ -48,14 +48,14 @@ public class AmbiguousReferenceQuickFixShould extends CodeActionTest
 			   END
 			""");
 
-		assertContainsCodeAction("Use #AGROUP.#THEVAR", actions);
-		assertContainsCodeAction("Use #TWOGROUP.#THEVAR", actions);
+		assertContainsCodeAction("Use #AGROUP.#THEVAR", actions.codeActions());
+		assertContainsCodeAction("Use #TWOGROUP.#THEVAR", actions.codeActions());
 	}
 
 	@Test
 	void applyTheQuickfixes()
 	{
-		var actions = receiveCodeActions("LIBONE", "MEINS.NSN", """
+		var source = """
 			   DEFINE DATA
 			   LOCAL
 			   1 #AGROUP
@@ -66,16 +66,43 @@ public class AmbiguousReferenceQuickFixShould extends CodeActionTest
 
 			   WRITE #THEV${}$AR
 			   END
+			""";
+
+		var result = receiveCodeActions("LIBONE", "MEINS.NSN", source);
+
+		assertContainsCodeAction("Use #AGROUP.#THEVAR", result.codeActions());
+		assertContainsCodeAction("Use #TWOGROUP.#THEVAR", result.codeActions());
+
+		assertCodeAction(result.codeActions().get(0))
+			.fixes(ParserError.AMBIGUOUS_VARIABLE_REFERENCE.id())
+			.insertsText(8, 9, "#AGROUP.#THEVAR")
+			.resultsApplied(result.savedSource(), """
+			   DEFINE DATA
+			   LOCAL
+			   1 #AGROUP
+			   2 #THEVAR (A5)
+			   1 #TWOGROUP
+			   2 #THEVAR (A5)
+			   END-DEFINE
+
+			   WRITE #AGROUP.#THEVAR
+			   END
 			""");
 
-		assertContainsCodeAction("Use #AGROUP.#THEVAR", actions);
-		assertContainsCodeAction("Use #TWOGROUP.#THEVAR", actions);
+		assertCodeAction(result.codeActions().get(1))
+			.fixes(ParserError.AMBIGUOUS_VARIABLE_REFERENCE.id())
+			.insertsText(8, 9, "#TWOGROUP.#THEVAR")
+			.resultsApplied(result.savedSource(), """
+			   DEFINE DATA
+			   LOCAL
+			   1 #AGROUP
+			   2 #THEVAR (A5)
+			   1 #TWOGROUP
+			   2 #THEVAR (A5)
+			   END-DEFINE
 
-		assertCodeAction(actions.get(0))
-			.fixes(ParserError.AMBIGUOUS_VARIABLE_REFERENCE.id())
-			.insertsText(7, 9, "#AGROUP.#THEVAR");
-		assertCodeAction(actions.get(1))
-			.fixes(ParserError.AMBIGUOUS_VARIABLE_REFERENCE.id())
-			.insertsText(7, 9, "#TWOGROUP.#THEVAR");
+			   WRITE #TWOGROUP.#THEVAR
+			   END
+			""");
 	}
 }

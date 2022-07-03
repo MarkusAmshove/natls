@@ -35,13 +35,15 @@ public class RemoveUnusedVariableQuickfixShould extends CodeActionTest
 	@Test
 	void recognizeTheQuickfix()
 	{
-		var actions = receiveCodeActions("LIBONE", "MEINS.NSN", """
+		var result = receiveCodeActions("LIBONE", "MEINS.NSN", """
 			   DEFINE DATA
 			   LOCAL
 			   01 #U${}$NUSED (A10)
 			   END-DEFINE
 			   END
 			""");
+
+		var actions = result.codeActions();
 
 		assertContainsCodeAction("Remove unused variable", actions);
 
@@ -53,13 +55,15 @@ public class RemoveUnusedVariableQuickfixShould extends CodeActionTest
 	@Test
 	void deleteTheLineWithTheUnusedVariable()
 	{
-		var actions = receiveCodeActions("LIBONE", "DELETE.NSN", """
+		var result = receiveCodeActions("LIBONE", "DELETE.NSN", """
 			   DEFINE DATA
 			   LOCAL
 			   01 #U${NUS}$ED (A10)
 			   END-DEFINE
 			   END
 			""");
+
+		var actions = result.codeActions();
 
 		assertSingleCodeAction(actions)
 			.deletesLine(2)
