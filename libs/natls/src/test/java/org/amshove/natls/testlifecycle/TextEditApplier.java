@@ -36,13 +36,9 @@ public class TextEditApplier
 				if(lineNumber == startLine && charIndex == startLineOffset)
 				{
 					resultingSource.append(edit.getNewText());
-					if(lineNumber == endLine && charIndex >= endLineOffset)
-					{
-						resultingSource.append(line.charAt(charIndex));
-					}
 				}
 
-				if(lineNumber == endLine && charIndex > endLineOffset)
+				if(lineNumber == endLine && charIndex >= endLineOffset)
 				{
 					resultingSource.append(line.charAt(charIndex));
 				}

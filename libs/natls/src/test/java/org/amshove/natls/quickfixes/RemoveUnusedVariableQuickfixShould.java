@@ -49,7 +49,13 @@ public class RemoveUnusedVariableQuickfixShould extends CodeActionTest
 
 		assertSingleCodeAction(actions)
 			.deletesLine(2)
-			.fixes(UnusedVariableAnalyzer.UNUSED_VARIABLE.getId());
+			.fixes(UnusedVariableAnalyzer.UNUSED_VARIABLE.getId())
+			.resultsApplied(result.savedSource(), """
+			   DEFINE DATA
+			   LOCAL
+			   END-DEFINE
+			   END
+			""");
 	}
 
 	@Test

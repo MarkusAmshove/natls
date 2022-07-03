@@ -64,7 +64,15 @@ public class BooleanOperatorQuickfixShould extends CodeActionTest
 
 		assertSingleCodeAction(actions)
 			.insertsText(2, 8, preferredOperator)
-			.fixes(BooleanOperatorAnalyzer.DISCOURAGED_BOOLEAN_OPERATOR.getId());
+			.fixes(BooleanOperatorAnalyzer.DISCOURAGED_BOOLEAN_OPERATOR.getId())
+			.resultsApplied(result.savedSource(), """
+			   DEFINE DATA LOCAL
+			   END-DEFINE
+			   IF 5 %s 2
+			   IGNORE
+			   END-IF
+			   END
+			""".formatted(preferredOperator));
 	}
 
 	@Test
@@ -87,6 +95,17 @@ public class BooleanOperatorQuickfixShould extends CodeActionTest
 		assertContainsCodeAction("Change operator to EQ", actions);
 
 		assertSingleCodeAction(actions)
-			.insertsText(4, 16, "EQ");
+			.insertsText(4, 16, "EQ")
+			.resultsApplied(result.savedSource(), """
+			DEFINE DATA
+			LOCAL USING NUTESTP
+			END-DEFINE
+			DEFINE SUBROUTINE TEST
+			IF NUTESTP.TEST EQ 'My test'
+			IGNORE
+			END-IF
+			END-SUBROUTINE
+			END
+			""");
 	}
 }
