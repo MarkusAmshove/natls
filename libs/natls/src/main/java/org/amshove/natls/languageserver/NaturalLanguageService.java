@@ -204,6 +204,10 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	private Hover hoverExternalModule(SyntaxToken symbolToSearchFor)
 	{
+		if(symbolToSearchFor.kind() != SyntaxKind.STRING_LITERAL && symbolToSearchFor.kind() != SyntaxKind.IDENTIFIER)
+		{
+			return EMPTY_HOVER;
+		}
 		var module = project.findModule(symbolToSearchFor.kind().isIdentifier() ? symbolToSearchFor.symbolName() : symbolToSearchFor.stringValue());
 		if (module == null)
 		{
