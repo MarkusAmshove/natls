@@ -34,6 +34,7 @@ public enum SyntaxKind
 	TAB_SETTING(false),
 
 	// System variables and functions
+	INIT_ID(false),
 	TIMX(false),
 	TIMN(false),
 	DATD(false),

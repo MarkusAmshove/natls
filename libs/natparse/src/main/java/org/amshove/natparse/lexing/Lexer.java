@@ -426,6 +426,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.INIT_USER);
 			return;
 		}
+		if (scanner.advanceIf("INIT-ID"))
+		{
+			createAndAdd(SyntaxKind.INIT_ID);
+			return;
+		}
 		if (scanner.advanceIf("COUNTER"))
 		{
 			createAndAdd(SyntaxKind.COUNTER);
