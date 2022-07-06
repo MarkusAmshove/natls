@@ -178,10 +178,10 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	void parseASubroutine()
 	{
 		var subroutine = assertParsesSingleStatement("""
-               DEFINE SUBROUTINE MY-SUBROUTINE
-                   IGNORE
-               END-SUBROUTINE
-            """, ISubroutineNode.class);
+			   DEFINE SUBROUTINE MY-SUBROUTINE
+			       IGNORE
+			   END-SUBROUTINE
+			""", ISubroutineNode.class);
 
 		assertThat(subroutine.declaration().symbolName()).isEqualTo("MY-SUBROUTINE");
 		assertThat(subroutine.references()).isEmpty();
@@ -308,10 +308,10 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	void distinguishBetweenArrayAccessAndFunctionCallInIfCondition()
 	{
 		var statementList = assertParsesWithoutDiagnostics("""
-               IF #THE-ARRAY(#THE-VARIABLE) <> 5
-               IGNORE
-               END-IF
-            """);
+			   IF #THE-ARRAY(#THE-VARIABLE) <> 5
+			   IGNORE
+			   END-IF
+			""");
 
 		assertThat(statementList.statements()).noneMatch(s -> s instanceof IFunctionCallNode);
 	}
@@ -379,6 +379,15 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 
 		assertThat(forLoopNode.body().statements()).hasSize(1);
 		assertThat(forLoopNode.descendants()).hasSize(10);
+	}
+
+	@Test
+	void reportADiagnosticForNotClosedIfStatements()
+	{
+		assertDiagnostic("""
+			IF 5 > 2
+			    IGNORE
+			""", ParserError.UNCLOSED_STATEMENT);
 	}
 
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)

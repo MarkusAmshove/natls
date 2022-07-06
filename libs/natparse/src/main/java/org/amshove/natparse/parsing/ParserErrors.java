@@ -23,13 +23,22 @@ class ParserErrors
 		return token.kind().toString();
 	}
 
+	public static ParserDiagnostic missingClosingToken(SyntaxKind expectedClosingToken, SyntaxToken openingToken)
+	{
+		return ParserDiagnostic.create(
+			"Missing closing %s for %s".formatted(expectedClosingToken, formatTokenKind(openingToken)),
+			openingToken,
+			ParserError.UNCLOSED_STATEMENT
+		);
+	}
+
 	public static ParserDiagnostic unexpectedToken(SyntaxKind expectedToken, TokenList tokens)
 	{
 		var currentToken = tokens.peek();
 		var invalidToken = currentToken != null ? currentToken : tokens.peek(-1);
-		var message = currentToken != null ? "Unexpected token <%s>, expected <%s>" : "Unexpected token after this, expected <%s>";
+		var message = currentToken != null ? "Unexpected token <%s>, expected <%s>".formatted(formatTokenKind(invalidToken), expectedToken) : "Unexpected token after this, expected <%s>".formatted(expectedToken);
 		return ParserDiagnostic.create(
-			message.formatted(formatTokenKind(invalidToken), expectedToken),
+			message,
 			invalidToken,
 			ParserError.UNEXPECTED_TOKEN
 		);

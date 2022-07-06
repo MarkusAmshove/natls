@@ -140,7 +140,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		var loopNode = new ForLoopNode();
 
-		consumeMandatory(loopNode, SyntaxKind.FOR);
+		var opening = consumeMandatory(loopNode, SyntaxKind.FOR);
 		consumeMandatoryIdentifier(loopNode);
 		consumeAnyMandatory(loopNode, List.of(SyntaxKind.COLON_EQUALS_SIGN, SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.FROM));
 		consumeOperand(loopNode); // TODO(arithmetic-expression): Could also be arithmetic expression
@@ -152,7 +152,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		loopNode.setBody(statementList(SyntaxKind.END_FOR));
-		consumeMandatory(loopNode, SyntaxKind.END_FOR);
+		consumeMandatoryClosing(loopNode, SyntaxKind.END_FOR, opening);
 
 		return loopNode;
 	}
@@ -181,14 +181,14 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	private StatementNode subroutine() throws ParseError
 	{
 		var subroutine = new SubroutineNode();
-		consumeMandatory(subroutine, SyntaxKind.DEFINE);
+		var opening = consumeMandatory(subroutine, SyntaxKind.DEFINE);
 		consumeOptionally(subroutine, SyntaxKind.SUBROUTINE);
 		var nameToken = consumeMandatoryIdentifier(subroutine);
 		subroutine.setName(nameToken);
 
 		subroutine.setBody(statementList(SyntaxKind.END_SUBROUTINE));
 
-		consumeMandatory(subroutine, SyntaxKind.END_SUBROUTINE);
+		consumeMandatoryClosing(subroutine, SyntaxKind.END_SUBROUTINE, opening);
 
 		referencableNodes.add(subroutine);
 
@@ -372,11 +372,11 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		var ifStatement = new IfStatementNode();
 
-		consumeMandatory(ifStatement, SyntaxKind.IF);
+		var opening = consumeMandatory(ifStatement, SyntaxKind.IF);
 
 		ifStatement.setBody(statementList(SyntaxKind.END_IF));
 
-		consumeMandatory(ifStatement, SyntaxKind.END_IF);
+		consumeMandatoryClosing(ifStatement, SyntaxKind.END_IF, opening);
 
 		return ifStatement;
 	}

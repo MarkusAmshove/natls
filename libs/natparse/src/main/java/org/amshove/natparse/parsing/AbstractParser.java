@@ -177,6 +177,17 @@ abstract class AbstractParser<T>
 		throw new ParseError(peek());
 	}
 
+	protected SyntaxToken consumeMandatoryClosing(BaseSyntaxNode node, SyntaxKind closingTokenType, SyntaxToken openingToken) throws ParseError
+	{
+		if(!consumeOptionally(node, closingTokenType))
+		{
+			diagnostics.add(ParserErrors.missingClosingToken(closingTokenType, openingToken));
+			throw new ParseError(peek());
+		}
+
+		return previousToken();
+	}
+
 	protected SyntaxToken consumeLiteral(BaseSyntaxNode node) throws ParseError
 	{
 		if (peek().kind().isSystemVariable())
