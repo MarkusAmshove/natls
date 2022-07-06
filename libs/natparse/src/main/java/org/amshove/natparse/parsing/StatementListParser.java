@@ -102,6 +102,13 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						}
 						statementList.addStatement(perform());
 						break;
+					case SET:
+						if(peek(1).kind() == SyntaxKind.KEY)
+						{
+							statementList.addStatement(setKey());
+							break;
+						}
+						// FALLTHROUGH TO DEFAULT INTENDED
 					case IF:
 						if (peek(-1) == null || peek(-1).kind() != SyntaxKind.REJECT && peek(-1).kind() != SyntaxKind.ACCEPT) // TODO: until ACCEPT/REJECT IF
 						{
@@ -398,6 +405,23 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		statement.setBody(statementList(SyntaxKind.END_NOREC));
 
 		consumeMandatoryClosing(statement, SyntaxKind.END_NOREC, opening);
+
+		return statement;
+	}
+
+	private SetKeyStatementNode setKey() throws ParseError
+	{
+		var statement = new SetKeyStatementNode();
+
+		consumeMandatory(statement, SyntaxKind.SET);
+		consumeMandatory(statement, SyntaxKind.KEY);
+
+		while(peekKind(SyntaxKind.PF))
+		{
+			consumeMandatory(statement, SyntaxKind.PF);
+			consumeMandatory(statement, SyntaxKind.EQUALS_SIGN);
+			consumeAnyMandatory(statement, List.of(SyntaxKind.HELP, SyntaxKind.PROGRAM));
+		}
 
 		return statement;
 	}

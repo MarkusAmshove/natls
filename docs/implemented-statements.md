@@ -11,7 +11,7 @@ Legend:
 :white_check_mark: - implemented
 
 | Statement | Status |
-| --- | --- |
+| --- | -- |
 | ACCEPT/REJECT | :x: |
 | ADD | :x: |
 | ASSIGN | :x: |
@@ -114,7 +114,7 @@ Legend:
 | SEPARATE | :x: |
 | SET CONTROL | :x: |
 | SET GLOBALS | :x: |
-| SET KEY | :x: |
+| SET KEY | partial |
 | SET TIME | :x: |
 | SET WINDOW | :x: |
 | SKIP | :x: |

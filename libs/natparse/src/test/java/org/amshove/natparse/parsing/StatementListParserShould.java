@@ -429,6 +429,16 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(noRecNode.descendants()).hasSize(5);
 	}
 
+	@Test
+	void parseSetKey()
+	{
+		var setKey = assertParsesSingleStatement("""
+			SET KEY PF1=HELP PF2=PROGRAM
+			""", ISetKeyNode.class);
+
+		assertThat(setKey.descendants()).hasSize(8);
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);

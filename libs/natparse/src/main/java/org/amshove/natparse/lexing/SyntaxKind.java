@@ -403,6 +403,7 @@ public enum SyntaxKind
 	HD(true),
 	HE(true),
 	HEADER(true),
+	HELP(true),
 	HEX(true),
 	HOLD(true),
 	HORIZ(true),
