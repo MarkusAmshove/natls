@@ -390,6 +390,45 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 			""", ParserError.UNCLOSED_STATEMENT);
 	}
 
+	@Test
+	void parseIfNoRecord()
+	{
+		var noRecNode = assertParsesSingleStatement("""
+			IF NO RECORDS FOUND
+			    IGNORE
+			END-NOREC
+			""", IIfNoRecordNode.class);
+
+		assertThat(noRecNode.body().statements()).hasSize(1);
+		assertThat(noRecNode.descendants()).hasSize(6);
+	}
+
+	@Test
+	void parseIfNoRecordWithoutOptionalTokens()
+	{
+		var noRecNode = assertParsesSingleStatement("""
+			IF NO
+			    IGNORE
+			END-NOREC
+			""", IIfNoRecordNode.class);
+
+		assertThat(noRecNode.body().statements()).hasSize(1);
+		assertThat(noRecNode.descendants()).hasSize(4);
+	}
+
+	@Test
+	void parseIfNoRecordWithoutFoundToken()
+	{
+		var noRecNode = assertParsesSingleStatement("""
+			IF NO RECORDS
+			    IGNORE
+			END-NOREC
+			""", IIfNoRecordNode.class);
+
+		assertThat(noRecNode.body().statements()).hasSize(1);
+		assertThat(noRecNode.descendants()).hasSize(5);
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);

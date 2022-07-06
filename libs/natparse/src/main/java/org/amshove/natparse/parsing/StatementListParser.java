@@ -368,8 +368,13 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return fetch;
 	}
 
-	private IfStatementNode ifStatement() throws ParseError
+	private StatementNode ifStatement() throws ParseError
 	{
+		if(peek(1).kind() == SyntaxKind.NO)
+		{
+			return ifNoRecord();
+		}
+
 		var ifStatement = new IfStatementNode();
 
 		var opening = consumeMandatory(ifStatement, SyntaxKind.IF);
@@ -379,6 +384,22 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatoryClosing(ifStatement, SyntaxKind.END_IF, opening);
 
 		return ifStatement;
+	}
+
+	private IfNoRecordNode ifNoRecord() throws ParseError
+	{
+		var statement = new IfNoRecordNode();
+
+		var opening = consumeMandatory(statement, SyntaxKind.IF);
+		consumeMandatory(statement, SyntaxKind.NO);
+		consumeOptionally(statement, SyntaxKind.RECORDS);
+		consumeOptionally(statement, SyntaxKind.FOUND);
+
+		statement.setBody(statementList(SyntaxKind.END_NOREC));
+
+		consumeMandatoryClosing(statement, SyntaxKind.END_NOREC, opening);
+
+		return statement;
 	}
 
 	private boolean isNotCallnatOrFetchModule()
