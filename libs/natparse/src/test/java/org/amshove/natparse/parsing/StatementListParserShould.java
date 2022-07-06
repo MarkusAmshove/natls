@@ -439,6 +439,46 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(setKey.descendants()).hasSize(8);
 	}
 
+	@Test
+	void parseFind()
+	{
+		var findStatement = assertParsesSingleStatement("""
+			FIND THE-VIEW WITH THE-DESCRIPTOR = 'Asd'
+			    IGNORE
+			END-FIND
+			""", IFindNode.class);
+
+		assertThat(findStatement.viewReference()).isNotNull();
+		assertThat(findStatement.descendants()).anyMatch(n -> n instanceof IDescriptorNode);
+		assertThat(findStatement.descendants()).hasSize(8);
+	}
+
+	@Test
+	void parseFindWithNumberLimit()
+	{
+		var findStatement = assertParsesSingleStatement("""
+			FIND (5) THE-VIEW WITH THE-DESCRIPTOR = 'Asd'
+			IGNORE
+			END-FIND
+			""", IFindNode.class);
+
+		assertThat(findStatement.viewReference()).isNotNull();
+		assertThat(findStatement.descendants()).anyMatch(n -> n instanceof IDescriptorNode);
+		assertThat(findStatement.descendants()).hasSize(11);
+	}
+
+	@Test
+	void parseFindWithoutBody()
+	{
+		var findStatement = assertParsesSingleStatement("""
+			FIND FIRST THE-VIEW WITH THE-DESCRIPTOR = 'Asd'
+			""", IFindNode.class);
+
+		assertThat(findStatement.viewReference()).isNotNull();
+		assertThat(findStatement.descendants()).anyMatch(n -> n instanceof IDescriptorNode);
+		assertThat(findStatement.descendants()).hasSize(5);
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);
