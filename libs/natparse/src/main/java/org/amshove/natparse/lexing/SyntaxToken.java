@@ -131,7 +131,7 @@ public class SyntaxToken implements IPosition
 	@Pure
 	public SyntaxToken withKind(SyntaxKind newKind)
 	{
-		return new SyntaxToken(
+		var newToken = new SyntaxToken(
 			newKind,
 			offset,
 			offsetInLine,
@@ -139,6 +139,8 @@ public class SyntaxToken implements IPosition
 			source,
 			filePath
 		);
+		newToken.setDiagnosticPosition(diagnosticPosition);
+		return newToken;
 	}
 
 	@Override
