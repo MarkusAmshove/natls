@@ -197,4 +197,34 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 				END
 				""");
 	}
+
+	@Test
+	void addAVariableNeededByACopyCodeWhenTheCursorIsOnTheInclude()
+	{
+		createOrSaveFile("LIBONE", "THECC.NSC", """
+			WRITE #THE-VAR-I-NEED
+			""");
+
+		var result = receiveCodeActions("LIBONE", "SUB.NSN", """
+			DEFINE DATA
+			LOCAL
+			END-DEFINE
+			   
+			INCLUDE TH${}$ECC
+			END
+			""");
+
+		assertCodeAction(result.codeActions().get(0))
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.hasTitle("Declare variable #THE-VAR-I-NEED")
+			.resultsApplied(result.savedSource(), """
+				DEFINE DATA
+				LOCAL
+				1 #THE-VAR-I-NEED (A) DYNAMIC
+				END-DEFINE
+				   
+				INCLUDE THECC
+				END
+					""");
+	}
 }

@@ -28,13 +28,7 @@ public class UnresolvedReferenceQuickFix extends AbstractQuickFix
 
 	private List<CodeAction> fixUnresolvedReference(QuickFixContext context)
 	{
-		var tokenUnderCursor = context.tokenUnderCursor();
-		if (tokenUnderCursor == null)
-		{
-			return List.of();
-		}
-
-		var unresolvedReference = tokenUnderCursor.symbolName();
+		var unresolvedReference = context.diagnostic().getMessage().replace("Unresolved reference:", "").trim().toUpperCase();
 
 		return Stream.concat(
 				createUsingImportCandidates(context, unresolvedReference),
