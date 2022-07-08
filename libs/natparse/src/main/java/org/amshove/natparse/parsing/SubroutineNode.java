@@ -3,7 +3,6 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxToken;
-import org.amshove.natparse.natural.IStatementListNode;
 import org.amshove.natparse.natural.ISubroutineNode;
 import org.amshove.natparse.natural.ISymbolReferenceNode;
 
@@ -11,10 +10,9 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
-class SubroutineNode extends StatementListNode implements ISubroutineNode
+class SubroutineNode extends StatementWithBodyNode implements ISubroutineNode
 {
 	private final List<ISymbolReferenceNode> references = new ArrayList<>();
-	private IStatementListNode body;
 	private SyntaxToken nameToken;
 
 	@Override
@@ -29,24 +27,9 @@ class SubroutineNode extends StatementListNode implements ISubroutineNode
 		return nameToken;
 	}
 
-	@Override
-	public IStatementListNode body()
-	{
-		return body;
-	}
-
 	void setName(SyntaxToken nameToken)
 	{
 		this.nameToken = nameToken;
-	}
-
-	void setBody(IStatementListNode statementListNode)
-	{
-		for (var statement : statementListNode.statements())
-		{
-			addStatement((StatementNode) statement);
-		}
-		body = statementListNode;
 	}
 
 	@Nonnull

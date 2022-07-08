@@ -82,6 +82,14 @@ class TokenListShould
 		assertThat(tokenList.peek().kind()).isEqualTo(SyntaxKind.USING);
 	}
 
+	@Test
+	void returnNullOnPeekingBelowIndexZero()
+	{
+		var tokenList = createTokenList(SyntaxKind.LOCAL);
+
+		assertThat(tokenList.peek(-1)).isNull();
+	}
+
 	private TokenList createTokenList(SyntaxToken... tokens)
 	{
 		return TokenList.fromTokens(Paths.get("TOKENLISTSHOULD.NSN"), Arrays.stream(tokens).toList());

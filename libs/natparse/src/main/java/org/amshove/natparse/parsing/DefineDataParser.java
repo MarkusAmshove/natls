@@ -1184,8 +1184,6 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				declaredVariables.remove(variable.name());
 				declaredVariables.put(alreadyDefined.qualifiedName(), alreadyDefined);
 				declaredVariables.put(variable.qualifiedName(), variable);
-				alreadyDefined.useQualifiedName();
-				variable.useQualifiedName();
 			}
 			else
 			{

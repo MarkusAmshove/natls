@@ -119,7 +119,7 @@ public class TokenList
 
 	private boolean exceedsEnd(int totalOffset)
 	{
-		return totalOffset >= tokens.size();
+		return totalOffset >= tokens.size() || totalOffset < 0;
 	}
 
 	public int size()

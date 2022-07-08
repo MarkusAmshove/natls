@@ -58,7 +58,7 @@ public enum NaturalFileType
 		return path.getFileName().toString().endsWith("." + extension);
 	}
 
-	public boolean hasDefineData()
+	public boolean canHaveDefineData()
 	{
 		return switch (this)
 			{
@@ -67,7 +67,7 @@ public enum NaturalFileType
 			};
 	}
 
-	public boolean hasBody()
+	public boolean canHaveBody()
 	{
 		return switch (this)
 			{

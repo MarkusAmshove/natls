@@ -51,7 +51,7 @@ public class LexerForStringsShould extends AbstractLexerTest
 			assertedDiagnostic(8, 8, 0, 21, LexerError.UNTERMINATED_STRING)
 		);
 
-		assertTokensInOrder(tokens, SyntaxKind.IDENTIFIER, SyntaxKind.COLON_EQUALS, SyntaxKind.STRING_LITERAL, SyntaxKind.WRITE, SyntaxKind.IDENTIFIER);
+		assertTokensInOrder(tokens, SyntaxKind.IDENTIFIER, SyntaxKind.COLON_EQUALS_SIGN, SyntaxKind.STRING_LITERAL, SyntaxKind.WRITE, SyntaxKind.IDENTIFIER);
 	}
 
 	@Test

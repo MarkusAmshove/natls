@@ -26,7 +26,7 @@ public enum LinterContext implements ILinterContext
 		reinitialize();
 	}
 
-	void reinitialize() // used for tests only :(
+	void reinitialize()
 	{
 		var reflections = new Reflections("org.amshove.natlint.analyzers");
 		var analyzers = new ArrayList<AbstractAnalyzer>();
@@ -47,11 +47,7 @@ public enum LinterContext implements ILinterContext
 		}
 
 		registeredAnalyzers = analyzers;
-	}
-
-	void registerAnalyzer(AbstractAnalyzer analyzer)
-	{
-		registeredAnalyzers.add(analyzer);
+		initialiazeAnalyzers();
 	}
 
 	@Override
@@ -76,10 +72,10 @@ public enum LinterContext implements ILinterContext
 			analyzers.forEach(analyzer -> analyzer.analyze(syntaxNode, context));
 		}
 
-		if(syntaxNode instanceof ITokenNode tokenNode)
+		if (syntaxNode instanceof ITokenNode tokenNode)
 		{
 			var tokenAnalyzer = tokenAnalyzerFunctions.get(tokenNode.token().kind());
-			if(tokenAnalyzer != null)
+			if (tokenAnalyzer != null)
 			{
 				tokenAnalyzer.forEach(a -> a.analyze(tokenNode.token(), context));
 			}
@@ -91,12 +87,6 @@ public enum LinterContext implements ILinterContext
 
 	void beforeAnalyzing(IAnalyzeContext context)
 	{
-		if (!initialized)
-		{
-			registeredAnalyzers.forEach(a -> a.initialize(this));
-			initialized = true;
-		}
-
 		registeredAnalyzers.forEach(a -> a.beforeAnalyzing(context));
 	}
 
@@ -105,15 +95,29 @@ public enum LinterContext implements ILinterContext
 		registeredAnalyzers.forEach(a -> a.afterAnalyzing(context));
 	}
 
-	void reset()
+	/* test */ void reset()
 	{
 		registeredAnalyzers.clear();
 		nodeAnalyzerFunctions.clear();
 		initialized = false;
 	}
 
-	/* package */ ReadOnlyList<AbstractAnalyzer> registeredAnalyzers()
+	/* test */ void initialiazeAnalyzers()
+	{
+		if (!initialized)
+		{
+			registeredAnalyzers.forEach(a -> a.initialize(this));
+			initialized = true;
+		}
+	}
+
+	/* test */ ReadOnlyList<AbstractAnalyzer> registeredAnalyzers()
 	{
 		return ReadOnlyList.from(registeredAnalyzers);
+	}
+
+	/* test */ void registerAnalyzer(AbstractAnalyzer analyzer)
+	{
+		registeredAnalyzers.add(analyzer);
 	}
 }

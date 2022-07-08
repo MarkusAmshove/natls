@@ -1,7 +1,5 @@
 package org.amshove.natparse.natural;
 
-public interface IIfStatementNode extends IStatementNode
+public interface IIfStatementNode extends IStatementWithBodyNode
 {
-	// TODO: Conditions not separated yet
-	IStatementListNode body();
 }

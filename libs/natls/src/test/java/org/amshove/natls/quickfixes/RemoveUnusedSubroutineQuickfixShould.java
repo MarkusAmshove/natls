@@ -35,23 +35,35 @@ public class RemoveUnusedSubroutineQuickfixShould extends CodeActionTest
 	@Test
 	void recognizeTheQuickfix()
 	{
-		var actions = receiveCodeActions("LIBONE", "MEINS.NSN", """
+		var result = receiveCodeActions("LIBONE", "MEINS.NSN", """
 		DEFINE DATA
 		LOCAL
 		END-DEFINE
-		  
+
 		DEFINE SUBROUTINE M${}$Y-SUB
-	    IGNORE
-	    WRITE 'A'
-	    IGNORE
+		IGNORE
+		WRITE 'A'
+		IGNORE
 		END-SUBROUTINE
-		   
-		END""");
+
+		END
+		""");
+
+		var actions = result.codeActions();
 
 		assertContainsCodeAction("Remove unused subroutine", actions);
 
 		assertSingleCodeAction(actions)
-			.deletesLines(3, 7)
-			.fixes(UnusedLocalSubroutineAnalyzer.UNUSED_SUBROUTINE.getId());
+			.deletesLines(4, 8)
+			.fixes(UnusedLocalSubroutineAnalyzer.UNUSED_SUBROUTINE.getId())
+			.resultsApplied(result.savedSource(), """
+				DEFINE DATA
+				LOCAL
+				END-DEFINE
+
+
+
+				END
+				""");
 	}
 }

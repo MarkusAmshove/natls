@@ -1,0 +1,52 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '7.1.0'
+}
+
+dependencies {
+    implementation libraries.sonarqube_api
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release.set(11)
+}
+
+jar {
+    manifest {
+        def buildDate = new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        attributes(
+                'Build-Time': buildDate,
+                'Plugin-BuildDate': buildDate,
+                'Plugin-ChildFirstClassLoader': 'false',
+                'Plugin-Class': 'org.amshove.natqube.NaturalPlugin',
+                'Plugin-Description': 'Natural language integration for SonarQube, featuring static code analasys',
+                'Plugin-Developers': 'Markus Amshove',
+                'Plugin-Display-Version': version,
+                'Plugin-Homepage': 'https://github.com/MarkusAmshove/NatLS',
+                'Plugin-IssueTrackerUrl': 'https://github.com/MarkusAmshove/NatLS',
+                'Plugin-Key': 'natural',
+                'Plugin-License': 'MIT',
+                'Plugin-Name': 'NatQube',
+                'Plugin-SourcesUrl': 'https://github.com/MarkusAmshove/NatLS',
+                'Plugin-Version': version,
+                'Sonar-Version': "${SONAR_VERSION}",
+                'SonarLint-Supported': 'false',
+                'Version': "${version}",
+        )
+    }
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+shadowJar {
+    baseName = 'natqube'
+    classifier = null
+    exclude 'META-INF/**/*'
+    dependencies {
+        exclude(dependency('org.sonarsource.sonarqube:sonar-plugin-api'))
+        exclude(dependency('org.codehaus.woodstox:.*'))
+        exclude(dependency('org.codehaus.staxmate:.*'))
+    }
+}

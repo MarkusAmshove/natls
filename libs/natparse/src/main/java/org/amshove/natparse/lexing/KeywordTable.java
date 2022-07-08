@@ -249,6 +249,7 @@ public class KeywordTable
 				case "hd" -> SyntaxKind.HD;
 				case "he" -> SyntaxKind.HE;
 				case "header" -> SyntaxKind.HEADER;
+				case "help" -> SyntaxKind.HELP;
 				case "hex" -> SyntaxKind.HEX;
 				case "histogram" -> SyntaxKind.HISTOGRAM;
 				case "hold" -> SyntaxKind.HOLD;

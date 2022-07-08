@@ -112,4 +112,16 @@ public class VariableReferenceTests extends ParserIntegrationTest
 
 		assertThat(subprogram.defineData().findVariable("#MYVAR").references()).isNotEmpty();
 	}
+
+	@Test
+	void ambiguousVariableReferencesShouldBeAnnotated(@ProjectName("variablereferencetests") NaturalProject project)
+	{
+		var subprogram = assertFileParsesAs(project.findModule("AMBIG"), ISubprogram.class);
+		assertThat(subprogram.diagnostics())
+			.as("Expected only one diagnostic")
+			.hasSize(1);
+		assertThat(subprogram.diagnostics())
+			.as("The expected diagnostic id differs")
+			.allMatch(d -> d.id().equals(ParserError.AMBIGUOUS_VARIABLE_REFERENCE.id()));
+	}
 }

@@ -67,10 +67,10 @@ public class Lexer
 					createAndAddCurrentSingleToken(SyntaxKind.RBRACKET);
 					continue;
 				case '=':
-					createAndAddCurrentSingleToken(SyntaxKind.EQUALS);
+					createAndAddCurrentSingleToken(SyntaxKind.EQUALS_SIGN);
 					continue;
 				case ':':
-					createAndAddFollowupEquals(SyntaxKind.COLON, SyntaxKind.COLON_EQUALS);
+					createAndAddFollowupEquals(SyntaxKind.COLON, SyntaxKind.COLON_EQUALS_SIGN);
 					continue;
 				case '+':
 					if (isValidAivStartAfterPlus(scanner.peek(1)))
@@ -424,6 +424,11 @@ public class Lexer
 		if (scanner.advanceIf("INIT-USER"))
 		{
 			createAndAdd(SyntaxKind.INIT_USER);
+			return;
+		}
+		if (scanner.advanceIf("INIT-ID"))
+		{
+			createAndAdd(SyntaxKind.INIT_ID);
 			return;
 		}
 		if (scanner.advanceIf("COUNTER"))

@@ -21,7 +21,8 @@ public record SourceWithCursor(String source, Range cursorPosition)
 	public static SourceWithCursor fromSourceWithCursor(String annotatedSource)
 	{
 		var resultingSource = new StringBuilder();
-		var lines = annotatedSource.split("[\\r\\n]+");
+		annotatedSource = annotatedSource.replaceAll("\\r\\n?", "\n"); // Test files have linux line ending in the repository. Java text blocks use the source line endings, not platform
+		var lines = annotatedSource.split("\\n");
 		Range cursorPosition = null; // TODO: Currently no multiline selection is handled
 		for (int i = 0, linesLength = lines.length; i < linesLength; i++)
 		{

@@ -204,4 +204,10 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 	{
 		assertTokens("*WINDOW-PS", token(SyntaxKind.WINDOW_PS, "*WINDOW-PS"));
 	}
+
+	@Test
+	void lexInitId()
+	{
+		assertTokens("*INIT-ID", token(SyntaxKind.INIT_ID, "*INIT-ID"));
+	}
 }

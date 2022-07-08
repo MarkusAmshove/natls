@@ -118,20 +118,22 @@ public class LanguageServerFile implements IModuleProvider
 	public void changed(String newSource)
 	{
 		clearDiagnosticsByTool(DiagnosticTool.CATALOG);
-		parseAndAnalyze(newSource);
+		parseAndAnalyze(newSource, ParseStrategy.WITH_CALLERS);
 	}
 
 	public void save()
 	{
 		clearDiagnosticsByTool(DiagnosticTool.CATALOG);
+		clearDiagnosticsByTool(DiagnosticTool.NATLINT);
+		clearDiagnosticsByTool(DiagnosticTool.NATPARSE);
 		parse();
 	}
 
-	public void parse()
+	public void parse(ParseStrategy strategy)
 	{
 		try
 		{
-			parseAndAnalyze(Files.readString(file.getPath()));
+			parseAndAnalyze(Files.readString(file.getPath()), strategy);
 		}
 		catch (Exception e)
 		{
@@ -147,7 +149,12 @@ public class LanguageServerFile implements IModuleProvider
 		}
 	}
 
-	private boolean hasToReanalyzeCallers(String newSource)
+	public void parse()
+	{
+		parse(ParseStrategy.WITH_CALLERS);
+	}
+
+	private boolean hasToReparseCallers(String newSource)
 	{
 		var newDefineDataHash = hashDefineData(newSource);
 		var defineDataChanged = !Arrays.equals(newDefineDataHash, defineDataHash);
@@ -160,7 +167,7 @@ public class LanguageServerFile implements IModuleProvider
 		return hasToReanalyze;
 	}
 
-	private void parseAndAnalyze(String source)
+	private void parseAndAnalyze(String source, ParseStrategy strategy)
 	{
 		try
 		{
@@ -169,7 +176,7 @@ public class LanguageServerFile implements IModuleProvider
 
 			analyze();
 
-			if (hasToReanalyzeCallers(source))
+			if (strategy != ParseStrategy.WITHOUT_CALLERS && hasToReparseCallers(source))
 			{
 				reanalyzeCallers();
 			}
@@ -301,13 +308,18 @@ public class LanguageServerFile implements IModuleProvider
 		}
 	}
 
-	public INaturalModule module()
+	public INaturalModule module(ParseStrategy strategy)
 	{
 		if (module == null || module.syntaxTree() == null) // TODO: Use parsed flag to determine if its only partial parsed. SyntaxTree is conveniently null currently, but that's not reliable
 		{
-			parse();
+			parse(strategy);
 		}
 		return module;
+	}
+
+	public INaturalModule module()
+	{
+		return module(ParseStrategy.WITH_CALLERS);
 	}
 
 	// TODO(cyclic-dependencies):

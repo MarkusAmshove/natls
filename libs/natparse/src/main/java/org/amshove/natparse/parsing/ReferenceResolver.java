@@ -39,12 +39,23 @@ public class ReferenceResolver
 
 	private void resolveSymbolReference(SymbolReferenceNode unresolvedSymbol, NaturalModule module)
 	{
+		if(unresolvedSymbol.parent() instanceof IInternalPerformNode internalPerform)
+		{
+			if(module.isTestCase() 
+				&& (internalPerform.referencingToken().symbolName().equals("TEARDOWN")
+					|| internalPerform.referencingToken().symbolName().equals("SETUP")))
+			{
+				// Skip these unresolved subroutines.
+				// These are special cases for NatUnit, because it doesn't force you to implement them.
+				// It however calls them if they're present.
+				return;
+			}
+		}
+
 		if(module.defineData() == null)
 		{
 			module.addDiagnostic(ParserErrors.unresolvedReference(unresolvedSymbol));
 		}
-
-		var defineData = module.defineData();
 
 		if(unresolvedSymbol.referencingToken().symbolName().startsWith("&")
 			|| (unresolvedSymbol.referencingToken().symbolName().contains(".")
@@ -54,13 +65,13 @@ public class ReferenceResolver
 			return;
 		}
 
-		if(tryFindAndReference(unresolvedSymbol.token().symbolName(), unresolvedSymbol, defineData))
+		if(tryFindAndReference(unresolvedSymbol.token().symbolName(), unresolvedSymbol, module))
 		{
 			return;
 		}
 
 		if(unresolvedSymbol.token().symbolName().startsWith("+")
-			&& tryFindAndReference(unresolvedSymbol.token().symbolName().substring(1), unresolvedSymbol, defineData))
+			&& tryFindAndReference(unresolvedSymbol.token().symbolName().substring(1), unresolvedSymbol, module))
 		{
 			// TODO(hack, expressions): This should be handled when parsing expressions.
 			return;
@@ -68,39 +79,53 @@ public class ReferenceResolver
 
 
 		if(unresolvedSymbol.token().symbolName().startsWith("C*")
-			&& tryFindAndReference(unresolvedSymbol.token().symbolName().substring(2), unresolvedSymbol, defineData))
+			&& tryFindAndReference(unresolvedSymbol.token().symbolName().substring(2), unresolvedSymbol, module))
 		{
 			return;
 		}
 
 		if(unresolvedSymbol.token().symbolName().startsWith("T*")
-			&& tryFindAndReference(unresolvedSymbol.token().symbolName().substring(2), unresolvedSymbol, defineData))
+			&& tryFindAndReference(unresolvedSymbol.token().symbolName().substring(2), unresolvedSymbol, module))
 		{
 			// TODO(hack, write-statement): This will be obsolete when the WRITE statement is parsed
 			return;
 		}
 
 		if(unresolvedSymbol.token().symbolName().startsWith("P*")
-			&& tryFindAndReference(unresolvedSymbol.token().symbolName().substring(2), unresolvedSymbol, defineData))
+			&& tryFindAndReference(unresolvedSymbol.token().symbolName().substring(2), unresolvedSymbol, module))
 		{
 			// TODO(hack, write-statement): This will be obsolete when the WRITE statement is parsed
 			return;
 		}
 
-		if(unresolvedSymbol.token().kind() == SyntaxKind.IDENTIFIER)
-		{
-			// We don't handle IDENTIFIER_OR_KEYWORD because we can't be sure if it a variable.
-			// As long as IDENTIFIER_OR_KEYWORD exists as a SyntaxKind, we only report a diagnostic if we're sure that its meant to be a reference.
-			module.addDiagnostic(ParserErrors.unresolvedReference(unresolvedSymbol));
-		}
+		module.addDiagnostic(ParserErrors.unresolvedReference(unresolvedSymbol));
 	}
 
-	private boolean tryFindAndReference(String symbolName, ISymbolReferenceNode referenceNode, IDefineData defineData)
+	private boolean tryFindAndReference(String symbolName, ISymbolReferenceNode referenceNode, NaturalModule module)
 	{
-		var variable = defineData.findVariable(symbolName);
-		if(variable != null)
+		var defineData = ((DefineDataNode)((IHasDefineData)module).defineData());
+		var foundVariables = ((DefineDataNode)defineData).findVariablesWithName(symbolName);
+
+		if(foundVariables.size() > 1)
 		{
-			variable.addReference(referenceNode);
+			var possibleQualifications = new StringBuilder();
+			for (var foundVariable : foundVariables)
+			{
+				possibleQualifications.append(foundVariable.qualifiedName()).append(" ");
+			}
+
+			if(defineData.findDdmField(symbolName) != null) // TODO(read-statement): Currently only necessary here because we don't parse FIND and READ yet
+			{
+				return true;
+			}
+
+			module.addDiagnostic(ParserErrors.ambiguousSymbolReference(referenceNode, possibleQualifications.toString()));
+		}
+
+
+		if(!foundVariables.isEmpty())
+		{
+			foundVariables.get(0).addReference(referenceNode);
 			return true;
 		}
 

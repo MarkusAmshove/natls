@@ -53,7 +53,7 @@ public class NaturalParser
 			}
 		}
 
-		if (file.getFiletype().hasBody())
+		if (file.getFiletype().canHaveBody())
 		{
 			var statementParser = new StatementListParser(moduleProviderToUse);
 			var result = statementParser.parse(tokens);

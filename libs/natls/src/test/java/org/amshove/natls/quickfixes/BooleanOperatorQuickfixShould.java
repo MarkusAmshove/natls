@@ -49,7 +49,7 @@ public class BooleanOperatorQuickfixShould extends CodeActionTest
 		var discouragedOperator = operators.split(",")[0];
 		var preferredOperator = operators.split(",")[1];
 
-		var actions = receiveCodeActions("LIBONE", "MEINS.NSN", """
+		var result = receiveCodeActions("LIBONE", "MEINS.NSN", """
 			   DEFINE DATA LOCAL
 			   END-DEFINE
 			   IF 5 ${}$%s 2
@@ -58,17 +58,27 @@ public class BooleanOperatorQuickfixShould extends CodeActionTest
 			   END
 			""".formatted(discouragedOperator));
 
+		var actions = result.codeActions();
+
 		assertContainsCodeAction("Change operator to %s".formatted(preferredOperator), actions);
 
 		assertSingleCodeAction(actions)
 			.insertsText(2, 8, preferredOperator)
-			.fixes(BooleanOperatorAnalyzer.DISCOURAGED_BOOLEAN_OPERATOR.getId());
+			.fixes(BooleanOperatorAnalyzer.DISCOURAGED_BOOLEAN_OPERATOR.getId())
+			.resultsApplied(result.savedSource(), """
+			   DEFINE DATA LOCAL
+			   END-DEFINE
+			   IF 5 %s 2
+			   IGNORE
+			   END-IF
+			   END
+			""".formatted(preferredOperator));
 	}
 
 	@Test
 	void recognizeTheQuickFixForInvalidNatUnitTestComparison()
 	{
-		var actions = receiveCodeActions("LIBONE", "TCTEST.NSN", """
+		var result = receiveCodeActions("LIBONE", "TCTEST.NSN", """
 			DEFINE DATA
 			LOCAL USING NUTESTP
 			END-DEFINE
@@ -80,9 +90,22 @@ public class BooleanOperatorQuickfixShould extends CodeActionTest
 			END
 			""");
 
+		var actions = result.codeActions();
+
 		assertContainsCodeAction("Change operator to EQ", actions);
 
 		assertSingleCodeAction(actions)
-			.insertsText(4, 16, "EQ");
+			.insertsText(4, 16, "EQ")
+			.resultsApplied(result.savedSource(), """
+			DEFINE DATA
+			LOCAL USING NUTESTP
+			END-DEFINE
+			DEFINE SUBROUTINE TEST
+			IF NUTESTP.TEST EQ 'My test'
+			IGNORE
+			END-IF
+			END-SUBROUTINE
+			END
+			""");
 	}
 }

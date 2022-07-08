@@ -6,9 +6,9 @@ public enum SyntaxKind
 	RBRACKET(false),
 	LPAREN(false),
 	RPAREN(false),
-	EQUALS(false),
+	EQUALS_SIGN(false),
 	COLON(false),
-	COLON_EQUALS(false),
+	COLON_EQUALS_SIGN(false),
 	DOT(false),
 	CARET(false),
 	COMMA(false),
@@ -34,6 +34,7 @@ public enum SyntaxKind
 	TAB_SETTING(false),
 
 	// System variables and functions
+	INIT_ID(false),
 	TIMX(false),
 	TIMN(false),
 	DATD(false),
@@ -402,6 +403,7 @@ public enum SyntaxKind
 	HD(true),
 	HE(true),
 	HEADER(true),
+	HELP(true),
 	HEX(true),
 	HOLD(true),
 	HORIZ(true),

@@ -256,6 +256,7 @@ public class LexerForKeywordsShould extends AbstractLexerTest
 				keywordTest("HEADER", SyntaxKind.HEADER),
 				keywordTest("HEX", SyntaxKind.HEX),
 				keywordTest("HISTOGRAM", SyntaxKind.HISTOGRAM),
+				keywordTest("HELP", SyntaxKind.HELP),
 				keywordTest("HOLD", SyntaxKind.HOLD),
 				keywordTest("HORIZ", SyntaxKind.HORIZ),
 				keywordTest("HORIZONTALLY", SyntaxKind.HORIZONTALLY),
