@@ -38,14 +38,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		unresolvedReferences = new ArrayList<>();
 		referencableNodes = new ArrayList<>();
-		var statementList = statementList();
-		resolveUnresolvedInternalPerforms();
-		if (!shouldRelocateDiagnostics())
-		{
-			// If diagnostics should be relocated, we're a copycode. So let the includer resolve it themselves.
-			resolveUnresolvedExternalPerforms();
-		}
-		return statementList;
+		return statementList();
 	}
 
 	private StatementListNode statementList()
@@ -484,54 +477,5 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	private boolean isNotCallnatOrFetchModule()
 	{
 		return !peekKind(SyntaxKind.STRING_LITERAL) && !peekKind(SyntaxKind.IDENTIFIER);
-	}
-
-	private void resolveUnresolvedExternalPerforms()
-	{
-		var resolvedReferences = new ArrayList<ISymbolReferenceNode>();
-
-		for (var unresolvedReference : unresolvedReferences)
-		{
-			if (unresolvedReference instanceof InternalPerformNode internalPerformNode)
-			{
-				var foundModule = sideloadModule(unresolvedReference.token().trimmedSymbolName(32), internalPerformNode.tokenNode());
-				if (foundModule != null)
-				{
-					var externalPerform = new ExternalPerformNode(((InternalPerformNode) unresolvedReference));
-					((BaseSyntaxNode) unresolvedReference.parent()).replaceChild((BaseSyntaxNode) unresolvedReference, externalPerform);
-					externalPerform.setReference(foundModule);
-				}
-
-				// We mark the reference as resolved even though it might not be found.
-				// We do this, because the `sideloadModule` already reports a diagnostic.
-				resolvedReferences.add(unresolvedReference);
-			}
-		}
-
-		unresolvedReferences.removeAll(resolvedReferences);
-	}
-
-	private void resolveUnresolvedInternalPerforms()
-	{
-		var resolvedReferences = new ArrayList<ISymbolReferenceNode>();
-		for (var referencableNode : referencableNodes)
-		{
-			for (var unresolvedReference : unresolvedReferences)
-			{
-				if (!(unresolvedReference instanceof InternalPerformNode))
-				{
-					continue;
-				}
-
-				var unresolvedPerformName = unresolvedReference.token().trimmedSymbolName(32);
-				if (unresolvedPerformName.equals(referencableNode.declaration().trimmedSymbolName(32)))
-				{
-					referencableNode.addReference(unresolvedReference);
-					resolvedReferences.add(unresolvedReference);
-				}
-			}
-		}
-
-		unresolvedReferences.removeAll(resolvedReferences);
 	}
 }

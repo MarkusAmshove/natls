@@ -27,7 +27,7 @@ public class CopyCodesShould extends ParserIntegrationTest
 	void relocateDiagnosticsFromCopyCodesToTheirIncludeStatement(@ProjectName("copycodetests") NaturalProject project)
 	{
 		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "SUBPROG"), ISubprogram.class);
-		assertThat(subprogram.diagnostics()).hasSize(3);
+		assertThat(subprogram.diagnostics()).hasSize(2);
 		for (var diagnostic : subprogram.diagnostics())
 		{
 			assertThat(diagnostic.line()).as("Line mismatch for: " + diagnostic.message()).isEqualTo(2);
@@ -39,7 +39,7 @@ public class CopyCodesShould extends ParserIntegrationTest
 	void relocateDiagnosticsFromDeeplyNestedCopyCodesToTheirIncludeStatement(@ProjectName("copycodetests") NaturalProject project)
 	{
 		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "DANEST"), ISubprogram.class);
-		assertThat(subprogram.diagnostics()).hasSize(3);
+		assertThat(subprogram.diagnostics()).hasSize(2);
 		for (var diagnostic : subprogram.diagnostics())
 		{
 			assertThat(diagnostic.line()).as("Line mismatch for: " + diagnostic.message()).isEqualTo(4);
@@ -58,7 +58,7 @@ public class CopyCodesShould extends ParserIntegrationTest
 	void relocateDiagnosticLocationsForCopyCodeNodesThatAreNestedMultipleTimes(@ProjectName("copycodetests") NaturalProject project)
 	{
 		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "SUBPROG2"), ISubprogram.class);
-		assertThat(subprogram.diagnostics()).hasSize(3);
+		assertThat(subprogram.diagnostics()).hasSize(2);
 		for (var diagnostic : subprogram.diagnostics())
 		{
 			assertThat(diagnostic.line()).as("Line mismatch for: " + diagnostic.message()).isEqualTo(2);

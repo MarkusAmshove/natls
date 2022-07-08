@@ -61,7 +61,7 @@ public class NaturalParser
 			addRelevantParserDiagnostics(naturalModule, result);
 			naturalModule.setBody(result.result());
 
-			new ReferenceResolver().resolveReferences(naturalModule);
+			new ReferenceResolver(moduleProviderToUse).resolveReferences(naturalModule);
 			topLevelNodes.add(result.result());
 		}
 

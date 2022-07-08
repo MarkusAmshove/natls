@@ -1,12 +1,19 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
-import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFileType;
 
 public class ReferenceResolver
 {
+	private final IModuleProvider moduleProvider;
+
+	public ReferenceResolver(IModuleProvider moduleProvider)
+	{
+		this.moduleProvider = moduleProvider;
+	}
+
 	public void resolveReferences(NaturalModule naturalModule)
 	{
 		if(naturalModule.body() != null)
@@ -21,7 +28,6 @@ public class ReferenceResolver
 		{
 			if(syntaxNode instanceof SymbolReferenceNode unresolvedSymbol
 				&& module.file().getFiletype() != NaturalFileType.COPYCODE
-				&& unresolvedSymbol.reference() == null // TODO: Remove when this class also references subroutines.
 				&& !isExternalSubroutineName(unresolvedSymbol))
 			{
 				resolveSymbolReference(unresolvedSymbol, module);
@@ -41,15 +47,8 @@ public class ReferenceResolver
 	{
 		if(unresolvedSymbol.parent() instanceof IInternalPerformNode internalPerform)
 		{
-			if(module.isTestCase() 
-				&& (internalPerform.referencingToken().symbolName().equals("TEARDOWN")
-					|| internalPerform.referencingToken().symbolName().equals("SETUP")))
-			{
-				// Skip these unresolved subroutines.
-				// These are special cases for NatUnit, because it doesn't force you to implement them.
-				// It however calls them if they're present.
-				return;
-			}
+			resolvePerform(unresolvedSymbol, module, (InternalPerformNode) internalPerform);
+			return;
 		}
 
 		if(module.defineData() == null)
@@ -101,10 +100,43 @@ public class ReferenceResolver
 		module.addDiagnostic(ParserErrors.unresolvedReference(unresolvedSymbol));
 	}
 
+	private void resolvePerform(SymbolReferenceNode unresolvedSymbol, NaturalModule module, InternalPerformNode internalPerform)
+	{
+		var declaredSubroutines = NodeUtil.findStatementsOfType(module.body(), ISubroutineNode.class);
+		for (var declaredSubroutine : declaredSubroutines)
+		{
+			if(declaredSubroutine.declaration().trimmedSymbolName(32).equals(unresolvedSymbol.referencingToken().trimmedSymbolName(32)))
+			{
+				declaredSubroutine.addReference(internalPerform);
+				return;
+			}
+		}
+
+		if(module.isTestCase()
+			&& (internalPerform.referencingToken().symbolName().equals("TEARDOWN")
+				|| internalPerform.referencingToken().symbolName().equals("SETUP")))
+		{
+			// Skip these unresolved subroutines.
+			// These are special cases for NatUnit, because it doesn't force you to implement them.
+			// It however calls them if they're present.
+			return;
+		}
+
+		var externalModule = moduleProvider.findNaturalModule(unresolvedSymbol.referencingToken().trimmedSymbolName(32));
+		if(externalModule != null)
+		{
+			var externalPerform = new ExternalPerformNode(internalPerform);
+			((BaseSyntaxNode) internalPerform.parent()).replaceChild(internalPerform, externalPerform);
+			externalPerform.setReference(externalModule);
+			return;
+		}
+		module.addDiagnostic(ParserErrors.unresolvedReference(unresolvedSymbol));
+	}
+
 	private boolean tryFindAndReference(String symbolName, ISymbolReferenceNode referenceNode, NaturalModule module)
 	{
 		var defineData = ((DefineDataNode)((IHasDefineData)module).defineData());
-		var foundVariables = ((DefineDataNode)defineData).findVariablesWithName(symbolName);
+		var foundVariables = defineData.findVariablesWithName(symbolName);
 
 		if(foundVariables.size() > 1)
 		{

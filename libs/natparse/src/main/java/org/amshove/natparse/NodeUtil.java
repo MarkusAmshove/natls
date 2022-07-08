@@ -3,6 +3,8 @@ package org.amshove.natparse;
 import org.amshove.natparse.natural.*;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class NodeUtil
 {
@@ -39,7 +41,7 @@ public class NodeUtil
 	 */
 	public static @Nullable ISyntaxNode findNodeAtPosition(int line, int character, ISyntaxTree syntaxTree)
 	{
-		if(syntaxTree == null)
+		if (syntaxTree == null)
 		{
 			return null;
 		}
@@ -60,7 +62,7 @@ public class NodeUtil
 
 			if (node.position().line() == line && node.position().offsetInLine() < character && node.position().endOffset() > character)
 			{
-				if(node instanceof IStatementListNode)
+				if (node instanceof IStatementListNode)
 				{
 					return findNodeAtPosition(line, character, node);
 				}
@@ -101,9 +103,9 @@ public class NodeUtil
 	public static <T extends ISyntaxNode> T findFirstParentOfType(ISyntaxNode start, Class<T> type)
 	{
 		var current = (ISyntaxNode) start.parent();
-		while(current != null)
+		while (current != null)
 		{
-			if(type.isInstance(current))
+			if (type.isInstance(current))
 			{
 				return type.cast(current);
 			}
@@ -111,5 +113,33 @@ public class NodeUtil
 		}
 
 		return null;
+	}
+
+	public static <T extends IStatementNode> List<T> findStatementsOfType(IStatementListNode statementListNode, Class<T> statementType)
+	{
+		if(statementListNode.statements().isEmpty())
+		{
+			return List.of();
+		}
+
+		var statements = new ArrayList<T>();
+		for (var statement : statementListNode.statements())
+		{
+			if(statementType.isAssignableFrom(statement.getClass()))
+			{
+				statements.add(statementType.cast(statement));
+			}
+
+			if(statement instanceof IStatementListNode statementList)
+			{
+				statements.addAll(findStatementsOfType(statementList, statementType));
+			}
+			else if(statement instanceof IHasBody hasBody)
+			{
+				statements.addAll(findStatementsOfType(hasBody.body(), statementType));
+			}
+		}
+
+		return statements;
 	}
 }
