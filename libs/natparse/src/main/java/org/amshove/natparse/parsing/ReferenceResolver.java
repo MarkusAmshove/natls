@@ -16,7 +16,7 @@ public class ReferenceResolver
 
 	public void resolveReferences(NaturalModule naturalModule)
 	{
-		if(naturalModule.body() != null)
+		if(naturalModule.body() != null && naturalModule.file().getFiletype() != NaturalFileType.COPYCODE)
 		{
 			resolveReferences(naturalModule, naturalModule.body().descendants());
 		}
@@ -26,9 +26,7 @@ public class ReferenceResolver
 	{
 		for (var syntaxNode : nodes)
 		{
-			if(syntaxNode instanceof SymbolReferenceNode unresolvedSymbol
-				&& module.file().getFiletype() != NaturalFileType.COPYCODE
-				&& !isExternalSubroutineName(unresolvedSymbol))
+			if(syntaxNode instanceof SymbolReferenceNode unresolvedSymbol)
 			{
 				resolveSymbolReference(unresolvedSymbol, module);
 			}
