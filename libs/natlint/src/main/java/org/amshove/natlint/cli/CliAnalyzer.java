@@ -81,6 +81,7 @@ public class CliAnalyzer
 		var linter = new NaturalLinter();
 		var filesChecked = 0;
 		var totalDiagnostics = 0;
+		var exceptions = 0;
 
 		var startCheck = System.currentTimeMillis();
 		for (var library : project.getLibraries())
@@ -131,6 +132,7 @@ public class CliAnalyzer
 				}
 				catch (Exception e)
 				{
+					exceptions++;
 					System.err.println(filePath);
 					e.printStackTrace();
 				}
@@ -146,9 +148,10 @@ public class CliAnalyzer
 		System.out.println("Done.");
 		System.out.println("Index time: " + indexTime + " ms");
 		System.out.println("Check time: " + checkTime + " ms");
-		System.out.println("Total: " + (indexTime + checkTime) + " ms");
+		System.out.println("Total: " + (indexTime + checkTime) + " ms (" + (indexTime + checkTime / 1000) + "s)");
 		System.out.println("Files checked: " + filesChecked);
 		System.out.println("Total diagnostics: " + totalDiagnostics);
+		System.out.println("Exceptions: " + exceptions);
 		System.out.println("Slowest lexed module: " + slowestLexedModule);
 		System.out.println("Slowest parsed module: " + slowestParsedModule);
 		System.out.println("Slowest linted module: " + slowestLintedModule);
