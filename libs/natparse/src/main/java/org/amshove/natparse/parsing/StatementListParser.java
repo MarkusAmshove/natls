@@ -170,7 +170,6 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	private StatementNode perform() throws ParseError
 	{
 		var internalPerform = new InternalPerformNode();
-		unresolvedReferences.add(internalPerform);
 
 		consumeMandatory(internalPerform, SyntaxKind.PERFORM);
 		var symbolName = identifier();
@@ -178,6 +177,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		internalPerform.setReferenceNode(referenceNode);
 		internalPerform.addNode(referenceNode);
 
+		unresolvedReferences.add(internalPerform);
 		return internalPerform;
 	}
 
