@@ -95,7 +95,7 @@ public class NaturalParser
 				}
 			}
 
-			naturalModule.addDiagnostics(result.diagnostics());
+			naturalModule.addDiagnostic(diagnostic);
 		}
 	}
 
