@@ -1,6 +1,7 @@
 package org.amshove.natparse.lexing;
 
 import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -100,4 +101,9 @@ public class LexerForNumbersShould extends AbstractLexerTest
 		assertTokens(format, token(SyntaxKind.NUMBER_LITERAL, format));
 	}
 
+	@Test
+	void notAddACommaIfNoNumberFollows()
+	{
+		assertTokens("5,#HI", token(SyntaxKind.NUMBER_LITERAL), token(SyntaxKind.COMMA), token(SyntaxKind.IDENTIFIER));
+	}
 }

@@ -369,6 +369,22 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void allowSystemFunctionsAsUpperBound()
+	{
+		var forLoopNode = assertParsesSingleStatement("""
+			FOR #I FROM 5 TO *OCC(#ARR)
+			    IGNORE
+			END-FOR
+			""", IForLoopNode.class);
+
+		var upperBound = assertNodeType(forLoopNode.upperBound(), ISystemFunctionNode.class);
+		assertThat(upperBound.systemFunction()).isEqualTo(SyntaxKind.OCC);
+		assertThat(upperBound.parameter()).isInstanceOf(IVariableReferenceNode.class);
+		assertThat(forLoopNode.body().statements()).hasSize(1);
+		assertThat(forLoopNode.descendants()).hasSize(8);
+	}
+
+	@Test
 	void rudimentaryParseForFromThruStatementsStep()
 	{
 		var forLoopNode = assertParsesSingleStatement("""
@@ -477,6 +493,20 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(findStatement.viewReference()).isNotNull();
 		assertThat(findStatement.descendants()).anyMatch(n -> n instanceof IDescriptorNode);
 		assertThat(findStatement.descendants()).hasSize(5);
+	}
+
+	@Test
+	void parseResetStatements()
+	{
+		var reset = assertParsesSingleStatement("RESET #THEVAR", IResetStatementNode.class);
+		assertThat(reset.operands()).hasSize(1);
+	}
+
+	@Test
+	void parseResetInitialStatements()
+	{
+		var reset = assertParsesSingleStatement("RESET INITIAL #THEVAR #THEOTHERVAR", IResetStatementNode.class);
+		assertThat(reset.operands()).hasSize(2);
 	}
 
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)

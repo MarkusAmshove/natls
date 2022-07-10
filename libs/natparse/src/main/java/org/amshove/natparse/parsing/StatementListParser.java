@@ -105,6 +105,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						}
 						statementList.addStatement(perform());
 						break;
+					case RESET:
+						statementList.addStatement(resetStatement());
+						break;
 					case SET:
 						if (peek(1).kind() == SyntaxKind.KEY)
 						{
@@ -153,12 +156,13 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var opening = consumeMandatory(loopNode, SyntaxKind.FOR);
 		consumeMandatoryIdentifier(loopNode);
 		consumeAnyMandatory(loopNode, List.of(SyntaxKind.COLON_EQUALS_SIGN, SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.FROM));
-		consumeOperand(loopNode); // TODO(arithmetic-expression): Could also be arithmetic expression
+		consumeOperandNode(loopNode); // TODO(arithmetic-expression): Could also be arithmetic expression
 		consumeAnyMandatory(loopNode, List.of(SyntaxKind.TO, SyntaxKind.THRU));
-		consumeOperand(loopNode); // TODO(arithmetic-expression): Could also be arithmetic expression
+		var upperBound = consumeOperandNode(loopNode); // TODO(arithmetic-expression): Could also be arithmetic expression
+		loopNode.setUpperBound(upperBound);
 		if (consumeOptionally(loopNode, SyntaxKind.STEP))
 		{
-			consumeOperand(loopNode);
+			consumeOperandNode(loopNode);
 		}
 
 		loopNode.setBody(statementList(SyntaxKind.END_FOR));
@@ -444,7 +448,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeOptionally(find, SyntaxKind.ALL);
 		if(consumeOptionally(find, SyntaxKind.LPAREN))
 		{
-			consumeOperand(find);
+			consumeOperandNode(find);
 			consumeMandatory(find, SyntaxKind.RPAREN);
 		}
 		if (consumeOptionally(find, SyntaxKind.MULTI_FETCH))
@@ -479,6 +483,34 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return find;
+	}
+
+	private ResetStatementNode resetStatement() throws ParseError
+	{
+		var resetNode = new ResetStatementNode();
+		consumeMandatory(resetNode, SyntaxKind.RESET);
+		consumeOptionally(resetNode, SyntaxKind.INITIAL);
+
+		while(isOperand())
+		{
+			resetNode.addOperand(consumeOperandNode(resetNode));
+		}
+
+		return resetNode;
+	}
+
+	private boolean isOperand()
+	{
+		if(isAtEnd())
+		{
+			return false; // readability
+		}
+
+		return
+			(peekKind(SyntaxKind.IDENTIFIER) && !isAtEnd(1) && peek(1).kind() != SyntaxKind.COLON_EQUALS_SIGN)
+			|| peek().kind().isSystemFunction()
+			|| peek().kind().isSystemVariable()
+			|| peek().kind().canBeIdentifier(); // this should hopefully catch the begin of statements
 	}
 
 	private boolean isNotCallnatOrFetchModule()
