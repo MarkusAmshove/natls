@@ -1,8 +1,6 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.natural.IIncludeNode;
-import org.amshove.natparse.natural.ISubprogram;
-import org.amshove.natparse.natural.IVariableNode;
+import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.testhelpers.ProjectName;
 import org.junit.jupiter.api.Test;
@@ -123,5 +121,25 @@ public class VariableReferenceTests extends ParserIntegrationTest
 		assertThat(subprogram.diagnostics())
 			.as("The expected diagnostic id differs")
 			.allMatch(d -> d.id().equals(ParserError.AMBIGUOUS_VARIABLE_REFERENCE.id()));
+	}
+
+	@Test
+	void addReferenceToVariableOperand(@ProjectName("variablereferencetests") NaturalProject project)
+	{
+		var subprogram = assertFileParsesAs(project.findModule("OPER"), ISubprogram.class);
+		var forStatement = (IForLoopNode) subprogram.body().statements().first();
+		assertThat(forStatement.upperBound()).isInstanceOf(IVariableReferenceNode.class);
+		assertThat(((IVariableReferenceNode) forStatement.upperBound()).reference()).isNotNull();
+	}
+
+	@Test
+	void addReferenceToVariableSystemFunctionParameterOperand(@ProjectName("variablereferencetests") NaturalProject project)
+	{
+		var subprogram = assertFileParsesAs(project.findModule("OPER"), ISubprogram.class);
+		var forStatement = (IForLoopNode) subprogram.body().statements().get(1);
+		assertThat(forStatement.upperBound()).isInstanceOf(ISystemFunctionNode.class);
+		var parameter = ((ISystemFunctionNode) forStatement.upperBound()).parameter();
+		assertThat(parameter).isInstanceOf(IVariableReferenceNode.class);
+		assertThat(((IVariableReferenceNode) parameter).reference()).isNotNull();
 	}
 }

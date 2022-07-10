@@ -866,6 +866,10 @@ public class Lexer
 		scanner.start();
 		while (Character.isDigit(scanner.peek()) || scanner.peek() == ',' || scanner.peek() == '.')
 		{
+			if(scanner.peek() == ',' && !Character.isDigit(scanner.peek(1)))
+			{
+				break;
+			}
 			scanner.advance();
 		}
 

@@ -416,8 +416,15 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				else
 				{
 					consumeMandatory(typedVariable, SyntaxKind.LESSER_SIGN);
-					var literal = consumeLiteral(typedVariable);
-					type.setInitialValue(literal);
+					if(peek().kind().isSystemVariable())
+					{
+						type.setInitialValue(consumeSystemVariableNode(typedVariable).token());
+					}
+					else
+					{
+						var literal = consumeLiteralNode(typedVariable);
+						type.setInitialValue(literal.token());
+					}
 					consumeMandatory(typedVariable, SyntaxKind.GREATER_SIGN);
 				}
 			}

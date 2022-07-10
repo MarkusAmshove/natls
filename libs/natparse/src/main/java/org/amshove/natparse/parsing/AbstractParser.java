@@ -15,6 +15,7 @@ abstract class AbstractParser<T>
 {
 	protected IModuleProvider moduleProvider;
 	protected TokenList tokens;
+	protected List<ISymbolReferenceNode> unresolvedReferences;
 	private TokenNode previousNode;
 
 	private List<IDiagnostic> diagnostics = new ArrayList<>();
@@ -188,6 +189,28 @@ abstract class AbstractParser<T>
 		return previousToken();
 	}
 
+	protected ILiteralNode consumeLiteralNode(BaseSyntaxNode node) throws ParseError
+	{
+		if(peekKind(SyntaxKind.LPAREN))
+		{
+			var attribute = new AttributeNode(peek());
+			node.addNode(attribute);
+			consumeMandatory(node, SyntaxKind.LPAREN);
+			while (!isAtEnd() && peek().kind() != SyntaxKind.RPAREN && peek().kind() != SyntaxKind.END_DEFINE)
+			{
+				// TODO(attributes): Look for the actual value after the '=' as initial value token
+				consume(attribute);
+			}
+			consumeMandatory(node, SyntaxKind.RPAREN);
+			return attribute;
+		}
+
+		var literal = consumeAny(List.of(SyntaxKind.NUMBER_LITERAL, SyntaxKind.STRING_LITERAL, SyntaxKind.TRUE, SyntaxKind.FALSE, SyntaxKind.ASTERISK));
+		var literalNode = new LiteralNode(literal);
+		node.addNode(literalNode);
+		return literalNode;
+	}
+
 	protected SyntaxToken consumeLiteral(BaseSyntaxNode node) throws ParseError
 	{
 		if (peek().kind().isSystemVariable())
@@ -260,16 +283,65 @@ abstract class AbstractParser<T>
 		return tokens.advance();
 	}
 
-	protected void consumeOperand(BaseSyntaxNode node) throws ParseError
+	protected IOperandNode consumeOperandNode(BaseSyntaxNode node) throws ParseError
 	{
 		if(peekKind(SyntaxKind.IDENTIFIER))
 		{
-			consumeMandatoryIdentifier(node);
+			return consumeVariableReferenceNode(node);
 		}
-		else
+		if(peek().kind().isSystemVariable())
 		{
-			consumeLiteral(node);
+			return consumeSystemVariableNode(node);
 		}
+		if(peek().kind().isSystemFunction())
+		{
+			return consumeSystemFunctionNode(node);
+		}
+
+		return consumeLiteralNode(node);
+	}
+
+	protected ISystemFunctionNode consumeSystemFunctionNode(BaseSyntaxNode node) throws ParseError
+	{
+		var systemFunction = new SystemFunctionNode();
+		systemFunction.setSystemFunction(peek().kind());
+		consume(systemFunction);
+		consumeMandatory(systemFunction, SyntaxKind.LPAREN);
+		systemFunction.setParameter(consumeOperandNode(systemFunction));
+		consumeMandatory(systemFunction, SyntaxKind.RPAREN);
+		node.addNode(systemFunction);
+		return systemFunction;
+	}
+
+	protected IVariableReferenceNode consumeVariableReferenceNode(BaseSyntaxNode node) throws ParseError
+	{
+		var identifierToken = identifier();
+		var reference = new VariableReferenceNode(identifierToken);
+		reference.addNode(new TokenNode(identifierToken));
+		previousNode = reference;
+		node.addNode(reference);
+
+		if(consumeOptionally(reference, SyntaxKind.LPAREN))
+		{
+			reference.addDimension(consumeOperandNode(reference));
+			while(peekKind(SyntaxKind.COMMA))
+			{
+				consume(reference);
+				reference.addDimension(consumeOperandNode(reference));
+			}
+			consumeMandatory(reference, SyntaxKind.RPAREN);
+		}
+
+		unresolvedReferences.add(reference);
+		return reference;
+	}
+
+	protected ISystemVariableNode consumeSystemVariableNode(BaseSyntaxNode node)
+	{
+		var systemVariableNode = new SystemVariableNode(peek());
+		consume(node);
+		node.addNode(systemVariableNode);
+		return systemVariableNode;
 	}
 
 	protected void consumeAnyMandatory(BaseSyntaxNode node, List<SyntaxKind> acceptedKinds) throws ParseError
