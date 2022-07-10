@@ -15,6 +15,7 @@ abstract class AbstractParser<T>
 {
 	protected IModuleProvider moduleProvider;
 	protected TokenList tokens;
+	protected List<ISymbolReferenceNode> unresolvedReferences;
 	private TokenNode previousNode;
 
 	private List<IDiagnostic> diagnostics = new ArrayList<>();
@@ -204,7 +205,7 @@ abstract class AbstractParser<T>
 			return attribute;
 		}
 
-		var literal = consumeAny(List.of(SyntaxKind.NUMBER_LITERAL, SyntaxKind.STRING_LITERAL, SyntaxKind.TRUE, SyntaxKind.FALSE));
+		var literal = consumeAny(List.of(SyntaxKind.NUMBER_LITERAL, SyntaxKind.STRING_LITERAL, SyntaxKind.TRUE, SyntaxKind.FALSE, SyntaxKind.ASTERISK));
 		var literalNode = new LiteralNode(literal);
 		node.addNode(literalNode);
 		return literalNode;
@@ -331,6 +332,7 @@ abstract class AbstractParser<T>
 			consumeMandatory(reference, SyntaxKind.RPAREN);
 		}
 
+		unresolvedReferences.add(reference);
 		return reference;
 	}
 

@@ -71,6 +71,16 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseArrayWithAsteriskAccess()
+	{
+		var operand = parseOperands("#THEVAR(*)").first();
+		var reference = assertNodeType(operand, IVariableReferenceNode.class);
+		assertThat(reference.dimensions()).hasSize(1);
+		var firstDimension = assertNodeType(reference.dimensions().first(), ILiteralNode.class);
+		assertThat(firstDimension.token().source()).isEqualTo("*");
+	}
+
+	@Test
 	void parseMultilineOperands()
 	{
 		var operand = parseOperands("""

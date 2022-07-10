@@ -15,7 +15,6 @@ import java.util.List;
 
 class StatementListParser extends AbstractParser<IStatementListNode>
 {
-	private List<ISymbolReferenceNode> unresolvedReferences;
 	private List<IReferencableNode> referencableNodes;
 
 	public List<IReferencableNode> getReferencableNodes()
