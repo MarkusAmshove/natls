@@ -16,7 +16,9 @@ public class NodeUtil
 	 */
 	public static boolean moduleContainsNode(INaturalModule module, ISyntaxNode node)
 	{
-		return module.file().getPath().equals(node.position().filePath());
+		return node.position() != null
+			&& node.position().filePath() != null
+			&& module.file().getPath().equals(node.position().filePath());
 	}
 
 	/**
@@ -25,7 +27,9 @@ public class NodeUtil
 	 */
 	public static boolean moduleContainsNodeByDiagnosticPosition(INaturalModule module, ISyntaxNode node)
 	{
-		return module.file().getPath().equals(node.diagnosticPosition().filePath());
+		return node.position() != null
+			&& node.position().filePath() != null
+			&& module.file().getPath().equals(node.diagnosticPosition().filePath());
 	}
 
 	public static @Nullable ISyntaxNode findNodeAtPosition(int line, int character, INaturalModule module)

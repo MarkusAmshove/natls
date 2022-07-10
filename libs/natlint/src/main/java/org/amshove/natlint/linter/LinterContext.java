@@ -66,23 +66,30 @@ public enum LinterContext implements ILinterContext
 
 	void analyze(ISyntaxNode syntaxNode, IAnalyzeContext context)
 	{
-		var analyzers = nodeAnalyzerFunctions.get(syntaxNode.getClass());
-		if (analyzers != null)
+		try
 		{
-			analyzers.forEach(analyzer -> analyzer.analyze(syntaxNode, context));
-		}
-
-		if (syntaxNode instanceof ITokenNode tokenNode)
-		{
-			var tokenAnalyzer = tokenAnalyzerFunctions.get(tokenNode.token().kind());
-			if (tokenAnalyzer != null)
+			var analyzers = nodeAnalyzerFunctions.get(syntaxNode.getClass());
+			if (analyzers != null)
 			{
-				tokenAnalyzer.forEach(a -> a.analyze(tokenNode.token(), context));
+				analyzers.forEach(analyzer -> analyzer.analyze(syntaxNode, context));
 			}
-		}
 
-		nodeAnalyzerFunctions.entrySet().stream().filter(e -> e.getKey().isAssignableFrom(syntaxNode.getClass()))
-			.forEach(e -> e.getValue().forEach(a -> a.analyze(syntaxNode, context)));
+			if (syntaxNode instanceof ITokenNode tokenNode)
+			{
+				var tokenAnalyzer = tokenAnalyzerFunctions.get(tokenNode.token().kind());
+				if (tokenAnalyzer != null)
+				{
+					tokenAnalyzer.forEach(a -> a.analyze(tokenNode.token(), context));
+				}
+			}
+
+			nodeAnalyzerFunctions.entrySet().stream().filter(e -> e.getKey().isAssignableFrom(syntaxNode.getClass()))
+				.forEach(e -> e.getValue().forEach(a -> a.analyze(syntaxNode, context)));
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	void beforeAnalyzing(IAnalyzeContext context)
