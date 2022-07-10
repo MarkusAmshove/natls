@@ -69,4 +69,18 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		var secondDimension = assertNodeType(reference.dimensions().get(1), IVariableReferenceNode.class);
 		assertThat(secondDimension.token().symbolName()).isEqualTo("#OTHER-VAR");
 	}
+
+	@Test
+	void parseMultilineOperands()
+	{
+		var operand = parseOperands("""
+			#THEVAR
+			OTHERVAR
+			""");
+		var firstReference = assertNodeType(operand.get(0), IVariableReferenceNode.class);
+		assertThat(firstReference.referencingToken().symbolName()).isEqualTo("#THEVAR");
+
+		var secondReference = assertNodeType(operand.get(1), IVariableReferenceNode.class);
+		assertThat(secondReference.referencingToken().symbolName()).isEqualTo("OTHERVAR");
+	}
 }
