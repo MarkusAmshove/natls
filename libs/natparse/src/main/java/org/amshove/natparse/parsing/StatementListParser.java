@@ -113,16 +113,16 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 							statementList.addStatement(setKey());
 							break;
 						}
-						// FALLTHROUGH TO DEFAULT INTENDED
+						// FALLTHROUGH TO DEFAULT INTENDED - SET CONTROL etc. not implemented
 					case IF:
-						if (peek(-1) == null || peek(-1).kind() != SyntaxKind.REJECT && peek(-1).kind() != SyntaxKind.ACCEPT) // TODO: until ACCEPT/REJECT IF
+						if (peekKind(SyntaxKind.IF) && (peek(-1) == null || peek(-1).kind() != SyntaxKind.REJECT && peek(-1).kind() != SyntaxKind.ACCEPT)) // TODO: until ACCEPT/REJECT IF
 						{
 							statementList.addStatement(ifStatement());
 							break;
 						}
 						// FALLTHROUGH TO DEFAULT INTENDED
 					case FOR:
-						if (peek(-1) == null || (peek(1).kind() == SyntaxKind.IDENTIFIER && peek(-1).kind() != SyntaxKind.REJECT && peek(-1).kind() != SyntaxKind.ACCEPT))
+						if (peekKind(SyntaxKind.FOR) && (peek(-1) == null || (peek(1).kind() == SyntaxKind.IDENTIFIER && peek(-1).kind() != SyntaxKind.REJECT && peek(-1).kind() != SyntaxKind.ACCEPT)))
 						// TODO: until we support EXAMINE, DECIDE, ...
 						//      just.. implement them already and don't try to understand the conditions
 						{
