@@ -65,6 +65,7 @@ public enum SyntaxKind
 	DEVICE(false, true, false),
 	OPSYS(false, true, false),
 	TPSYS(false, true, false),
+	PROGRAM(false, true, false),
 
 	// Kcheck reserved keywords
 	ABS(false, false, false),
@@ -552,7 +553,6 @@ public enum SyntaxKind
 	PRINTER(true, false, false),
 	PROCESSING(true, false, false),
 	PROFILE(true, false, false),
-	PROGRAM(true, false, false),
 	PROPERTY(true, false, false),
 	PROTOTYPE(true, false, false),
 	PRTY(true, false, false),
