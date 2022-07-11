@@ -10,6 +10,7 @@ import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.IForLoopNode;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.ISystemFunctionNode;
+import org.amshove.natparse.natural.project.NaturalFileType;
 
 public class ForLoopAnalyzer extends AbstractAnalyzer
 {
@@ -33,6 +34,16 @@ public class ForLoopAnalyzer extends AbstractAnalyzer
 
 	private void analyzeFor(ISyntaxNode iSyntaxNode, IAnalyzeContext context)
 	{
+		if(context.getModule().file().getFiletype() == NaturalFileType.COPYCODE)
+		{
+			return;
+		}
+
+		if(!iSyntaxNode.diagnosticPosition().isSameFileAs(iSyntaxNode.position()))
+		{
+			return;
+		}
+
 		var forLoop = (IForLoopNode) iSyntaxNode;
 
 		var upperBound = forLoop.upperBound();
@@ -48,7 +59,7 @@ public class ForLoopAnalyzer extends AbstractAnalyzer
 
 		if(sysFuncNode.systemFunction() == SyntaxKind.OCC || sysFuncNode.systemFunction() == SyntaxKind.OCCURENCE)
 		{
-			context.report(UPPER_BOUND_OCC.createDiagnostic(sysFuncNode.position()));
+			context.report(UPPER_BOUND_OCC.createDiagnostic(sysFuncNode));
 		}
 	}
 }
