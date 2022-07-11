@@ -428,11 +428,37 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(statement, SyntaxKind.SET);
 		consumeMandatory(statement, SyntaxKind.KEY);
 
+		if(consumeOptionally(statement, SyntaxKind.NAMED))
+		{
+			consumeMandatory(statement, SyntaxKind.OFF);
+		}
+
 		while (peekKind(SyntaxKind.PF))
 		{
 			consumeMandatory(statement, SyntaxKind.PF);
-			consumeMandatory(statement, SyntaxKind.EQUALS_SIGN);
-			consumeAnyMandatory(statement, List.of(SyntaxKind.HELP, SyntaxKind.PROGRAM));
+			if(consumeOptionally(statement, SyntaxKind.EQUALS_SIGN))
+			{
+				if(consumeOptionally(statement, SyntaxKind.DATA))
+				{
+					consumeMandatory(statement, SyntaxKind.STRING_LITERAL);
+				}
+				else if(peekKind(SyntaxKind.IDENTIFIER))
+				{
+					consumeOperandNode(statement);
+				}
+				else
+				{
+					consumeAnyMandatory(statement, List.of(SyntaxKind.HELP, SyntaxKind.PROGRAM, SyntaxKind.PGM, SyntaxKind.ON, SyntaxKind.OFF, SyntaxKind.STRING_LITERAL, SyntaxKind.COMMAND, SyntaxKind.DISABLED));
+				}
+			}
+
+			if(consumeOptionally(statement, SyntaxKind.NAMED))
+			{
+				if(!consumeOptionally(statement, SyntaxKind.OFF))
+				{
+					consumeOperandNode(statement);
+				}
+			}
 		}
 
 		return statement;

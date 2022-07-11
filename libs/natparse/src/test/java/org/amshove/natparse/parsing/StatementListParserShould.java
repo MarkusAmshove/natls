@@ -456,6 +456,54 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseSetKeyNamedOff()
+	{
+		assertParsesSingleStatement("""
+			SET KEY NAMED OFF
+			""", ISetKeyNode.class);
+	}
+
+	@Test
+	void parseSetKeyNamed()
+	{
+		assertParsesSingleStatement("""
+			SET KEY PF1 NAMED '-'
+			""", ISetKeyNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"SET KEY ALL",
+		"SET KEY PF2",
+		"SET KEY PF2=PGM",
+		"SET KEY OFF",
+		"SET KEY ON",
+		"SET KEY PF2=OFF",
+		"SET KEY PF2=ON",
+		"SET KEY PF4='SAVE'",
+		"SET KEY PF4=#XYX",
+		"SET KEY PF6='LIST MAP *'",
+		"SET KEY PF2='%%'",
+		"SET KEY PF9=' '",
+		"SET KEY PF12=DATA 'YES'",
+		"SET KEY PF4=COMMAND OFF",
+		"SET KEY PF4=COMMAND ON",
+		"SET KEY COMMAND OFF",
+		"SET KEY COMMAND ON",
+		"SET KEY PF1=HELP",
+		"SET KEY PF10=DISABLED",
+		"SET KEY ENTR NAMED 'EXEC'",
+		"SET KEY PF3 NAMED 'EXIT'",
+		"SET KEY PF3 NAMED OFF",
+		"SET KEY NAMED OFF",
+		"SET KEY PF4='AP1' NAMED 'APPL1'"
+	})
+	void parseSetKeyExamples(String statement)
+	{
+		assertParsesSingleStatement(statement, ISetKeyNode.class);
+	}
+
+	@Test
 	void parseFind()
 	{
 		var findStatement = assertParsesSingleStatement("""
