@@ -20,6 +20,25 @@ public class VariableHoverTests extends HoveringTest
 ```natural
 LOCAL 1 #MYVAR (A10)
 ```
+
+""");
+	}
+
+	@Test
+	void levelOneVariablesShouldBeHoveredCorrectlyEvenWhenHoveringTheReference()
+	{
+		assertHover("""
+			DEFINE DATA
+			LOCAL 1 #MYVAR (A10)
+			END-DEFINE
+			WRITE #MY${}$VAR
+			END
+			""",
+			"""
+```natural
+LOCAL 1 #MYVAR (A10)
+```
+
 """);
 	}
 
@@ -37,10 +56,11 @@ LOCAL 1 #MYVAR (A10)
 				LOCAL 1 #MYVAR (A10)
 				```
 
-				*comment*:
+				*comment:*
 				```natural
-				 /* Inline comment
+				/* Inline comment
 				```
+
 				""");
 	}
 
@@ -67,7 +87,8 @@ LOCAL 1 #MYVAR (A10)
 ```
 
 *source:*
-- MYLDA.NSL""");
+
+- LIBONE.MYLDA""");
 	}
 
 	@Test
@@ -83,13 +104,16 @@ LOCAL 1 #MYVAR (A10)
 			""",
 			"""
 ```natural
-LOCAL 1 #VARINGROUP (N4)
+LOCAL 2 #VARINGROUP (N4)
 ```
 
 *member of:*
+
 ```natural
 LOCAL 1 #MYGROUP
-```""");
+```
+
+""");
 	}
 
 	private static LspTestContext testContext;

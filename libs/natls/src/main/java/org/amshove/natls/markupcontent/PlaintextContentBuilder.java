@@ -3,6 +3,8 @@ package org.amshove.natls.markupcontent;
 import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MarkupKind;
 
+import java.util.function.Consumer;
+
 public class PlaintextContentBuilder implements IMarkupContentBuilder
 {
 	private final StringBuilder builder = new StringBuilder();
@@ -56,6 +58,17 @@ public class PlaintextContentBuilder implements IMarkupContentBuilder
 	public IMarkupContentBuilder appendItalic(String content)
 	{
 		return append(content);
+	}
+
+	@Override
+	public IMarkupContentBuilder appendSection(String heading, Consumer<IMarkupContentBuilder> nestedBuilder)
+	{
+		var nested = new PlaintextContentBuilder();
+		appendItalic("%s:".formatted(heading));
+		appendNewline();
+		nestedBuilder.accept(nested);
+		append(nested.builder.toString());
+		return this;
 	}
 
 	@Override

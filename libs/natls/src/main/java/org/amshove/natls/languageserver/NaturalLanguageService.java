@@ -6,6 +6,8 @@ import org.amshove.natls.DiagnosticTool;
 import org.amshove.natls.codeactions.CodeActionRegistry;
 import org.amshove.natls.codeactions.RefactoringContext;
 import org.amshove.natls.codeactions.RenameSymbolAction;
+import org.amshove.natls.hover.HoverContext;
+import org.amshove.natls.hover.HoverProvider;
 import org.amshove.natls.progress.IProgressMonitor;
 import org.amshove.natls.progress.ProgressTasks;
 import org.amshove.natls.project.*;
@@ -48,6 +50,7 @@ public class NaturalLanguageService implements LanguageClientAware
 {
 	private static final Hover EMPTY_HOVER = null; // This should be done according to the spec
 	private final CodeActionRegistry codeActionRegistry = CodeActionRegistry.INSTANCE;
+	private HoverProvider hoverProvider;
 	private NaturalProject project; // TODO: Replace
 	private LanguageServerProject languageServerProject;
 	private LanguageClient client;
@@ -73,6 +76,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		preParseDataAreas(progressMonitor);
 		snippetEngine = new SnippetEngine(languageServerProject);
 		initialized = true;
+		hoverProvider = new HoverProvider(languageServerProject);
 	}
 
 	public List<SymbolInformation> findSymbolsInFile(TextDocumentIdentifier textDocument)
@@ -152,13 +156,22 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	public Hover hoverSymbol(TextDocumentIdentifier textDocument, Position position)
 	{
-
 		var filepath = LspUtil.uriToPath(textDocument.getUri());
 		var file = findNaturalFile(filepath);
 		if (file.getType() == NaturalFileType.COPYCODE)
 		{
 			return EMPTY_HOVER;
 		}
+
+		var module = file.module();
+		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), module);
+		var providedHover = hoverProvider.createHover(new HoverContext(node, file));
+		if(providedHover != null)
+		{
+			return providedHover;
+		}
+
+
 		var symbolToSearchFor = findTokenAtPosition(filepath, position); // TODO: Actually look for a node, could be ISymbolReferenceNode
 		if (symbolToSearchFor == null)
 		{
@@ -177,7 +190,6 @@ public class NaturalLanguageService implements LanguageClientAware
 			return externalSubroutineHover;
 		}
 
-		var module = file.module();
 		if (!(module instanceof IHasDefineData hasDefineData))
 		{
 			return EMPTY_HOVER;

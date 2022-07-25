@@ -20,7 +20,7 @@ public abstract class HoveringTest extends LanguageServerTest
 		try
 		{
 			var hover = getContext().server().getTextDocumentService().hover(params).get();
-			assertThat(hover.getContents().getRight().getValue()).isEqualTo(expectedHoverText);
+			assertThat(hover.getContents().getRight().getValue()).isEqualToNormalizingNewlines(expectedHoverText);
 		}
 		catch (Exception e)
 		{

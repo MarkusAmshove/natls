@@ -43,7 +43,7 @@ public class NodeUtil
 	 */
 	public static @Nullable ISyntaxNode findNodeAtPosition(int line, int character, ISyntaxTree syntaxTree)
 	{
-		if(syntaxTree == null)
+		if (syntaxTree == null)
 		{
 			return null;
 		}
@@ -64,7 +64,7 @@ public class NodeUtil
 
 			if (node.position().line() == line && node.position().offsetInLine() < character && node.position().endOffset() > character)
 			{
-				if(node instanceof IStatementListNode)
+				if (node instanceof IStatementListNode)
 				{
 					return findNodeAtPosition(line, character, node);
 				}
@@ -105,9 +105,9 @@ public class NodeUtil
 	public static <T extends ISyntaxNode> T findFirstParentOfType(ISyntaxNode start, Class<T> type)
 	{
 		var current = (ISyntaxNode) start.parent();
-		while(current != null)
+		while (current != null)
 		{
-			if(type.isInstance(current))
+			if (type.isInstance(current))
 			{
 				return type.cast(current);
 			}
@@ -115,5 +115,16 @@ public class NodeUtil
 		}
 
 		return null;
+	}
+
+	public static IVariableNode findLevelOneParentOf(IVariableNode variable)
+	{
+		var owner = variable.parent();
+		while (!(owner instanceof IGroupNode group) || ((IGroupNode) owner).level() > 1)
+		{
+			owner = ((ISyntaxNode) owner).parent();
+		}
+
+		return (IVariableNode) owner;
 	}
 }

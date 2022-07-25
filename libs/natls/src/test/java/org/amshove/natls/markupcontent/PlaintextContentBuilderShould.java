@@ -36,6 +36,21 @@ public class PlaintextContentBuilderShould extends MarkupContentBuilderTest
 	}
 
 	@Test
+	void appendASection()
+	{
+		assertContent(
+			sut.appendSection("the heading", nested ->
+				nested
+					.appendCode("Code")
+					.append("Text")),
+			"""
+				the heading:
+				Code
+				Text"""
+		);
+	}
+
+	@Test
 	void buildACompleteText()
 	{
 		assertContent(

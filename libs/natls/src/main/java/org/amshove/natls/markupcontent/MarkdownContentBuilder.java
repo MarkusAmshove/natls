@@ -1,6 +1,9 @@
 package org.amshove.natls.markupcontent;
+
 import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MarkupKind;
+
+import java.util.function.Consumer;
 
 public class MarkdownContentBuilder implements IMarkupContentBuilder
 {
@@ -62,6 +65,17 @@ public class MarkdownContentBuilder implements IMarkupContentBuilder
 	public IMarkupContentBuilder appendItalic(String content)
 	{
 		return append("*%s*", content);
+	}
+
+	@Override
+	public IMarkupContentBuilder appendSection(String heading, Consumer<IMarkupContentBuilder> nestedBuilder)
+	{
+		var nested = new MarkdownContentBuilder();
+		appendItalic("%s:".formatted(heading));
+		append(System.lineSeparator());
+		nestedBuilder.accept(nested);
+		append(nested.builder.toString());
+		return this;
 	}
 
 	@Override
