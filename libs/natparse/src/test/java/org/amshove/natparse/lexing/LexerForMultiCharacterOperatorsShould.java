@@ -13,13 +13,13 @@ public class LexerForMultiCharacterOperatorsShould extends AbstractLexerTest
 	@Test
 	void lexColonEqualsAssign()
 	{
-		assertTokens(":=", token(SyntaxKind.COLON_EQUALS, ":="));
+		assertTokens(":=", token(SyntaxKind.COLON_EQUALS_SIGN, ":="));
 	}
 
 	@Test
 	void lexGreaterEqualsWithSigns()
 	{
-		assertTokens(">=", token(SyntaxKind.GREATER_EQUALS, ">="));
+		assertTokens(">=", token(SyntaxKind.GREATER_EQUALS_SIGN, ">="));
 	}
 
 	@TestFactory
@@ -45,7 +45,7 @@ public class LexerForMultiCharacterOperatorsShould extends AbstractLexerTest
 	@Test
 	void lexLessEqualsWithSigns()
 	{
-		assertTokens("<=", token(SyntaxKind.LESSER_EQUALS, "<="));
+		assertTokens("<=", token(SyntaxKind.LESSER_EQUALS_SIGN, "<="));
 	}
 
 	@TestFactory

@@ -64,9 +64,9 @@ public class ModuleReferenceParser
 				case CALLNAT -> calledModules.add(processCallnat(tokens));
 				case FETCH -> calledModules.add(processFetch(tokens));
 				case INCLUDE -> calledModules.add(processCopycode(tokens));
-				case IDENTIFIER, IDENTIFIER_OR_KEYWORD ->
+				case IDENTIFIER ->
 					{
-						if(tokens.peek(1).kind() == SyntaxKind.LPAREN && tokens.peek(2).kind() == SyntaxKind.LESSER)
+						if(tokens.peek(1).kind() == SyntaxKind.LPAREN && tokens.peek(2).kind() == SyntaxKind.LESSER_SIGN)
 						{
 							calledModules.add(processFunction(tokens));
 						}
@@ -112,7 +112,7 @@ public class ModuleReferenceParser
 	{
 		tokens.advance(); // fetch
 		tokens.advance(); // repeat/return
-		if (tokens.peek().kind() == SyntaxKind.STRING)
+		if (tokens.peek().kind() == SyntaxKind.STRING_LITERAL)
 		{
 			return tokens.peek().stringValue().toUpperCase();
 		}
@@ -122,7 +122,7 @@ public class ModuleReferenceParser
 	private String processCallnat(TokenList tokens)
 	{
 		tokens.advance(); // callnat
-		if (tokens.peek().kind() == SyntaxKind.STRING)
+		if (tokens.peek().kind() == SyntaxKind.STRING_LITERAL)
 		{
 			return tokens.peek().stringValue().toUpperCase();
 		}

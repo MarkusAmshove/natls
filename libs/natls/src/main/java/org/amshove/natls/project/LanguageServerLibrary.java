@@ -52,7 +52,7 @@ public class LanguageServerLibrary
 		var filesOfType = files.values().stream().filter(f -> f.getType() == type).collect(Collectors.toCollection(ArrayList::new));
 		if(includeStepLibs)
 		{
-			// TODO: Include steplibs
+			stepLibs.forEach(l -> filesOfType.addAll(l.getModulesOfType(type, false)));
 		}
 
 		return filesOfType;
@@ -91,6 +91,11 @@ public class LanguageServerLibrary
 		{
 			stepLibs.add(libraries.get(stepLib.getName()));
 		}
+	}
+
+	public List<LanguageServerLibrary> getStepLibs()
+	{
+		return stepLibs;
 	}
 
 	/**

@@ -3,13 +3,10 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxToken;
-import org.amshove.natparse.natural.IReferencableNode;
-import org.amshove.natparse.natural.ISymbolReferenceNode;
-import org.amshove.natparse.natural.ISyntaxNode;
-import org.amshove.natparse.natural.ISyntaxTree;
+import org.amshove.natparse.natural.*;
 
 // TODO: Only exists until all statements are parse-able
-class SyntheticVariableStatementNode extends StatementNode implements ISymbolReferenceNode
+class SyntheticVariableStatementNode extends StatementNode implements ISymbolReferenceNode, IVariableReferenceNode
 {
 	private final SymbolReferenceNode node;
 
@@ -64,5 +61,11 @@ class SyntheticVariableStatementNode extends StatementNode implements ISymbolRef
 	public IPosition diagnosticPosition()
 	{
 		return node.diagnosticPosition();
+	}
+
+	@Override
+	public ReadOnlyList<IOperandNode> dimensions()
+	{
+		return ReadOnlyList.of(); // TODO: Do something
 	}
 }

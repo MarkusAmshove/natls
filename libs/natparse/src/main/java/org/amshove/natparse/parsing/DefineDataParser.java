@@ -114,7 +114,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		scopeNode.addNode(new TokenNode(scope));
 		scopeNode.setScope(currentScope);
 
-		while (peekKind(SyntaxKind.NUMBER)) // level
+		while (peekKind(SyntaxKind.NUMBER_LITERAL)) // level
 		{
 			try
 			{
@@ -174,7 +174,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				}
 			}
 
-			var level = consumeMandatory(variable, SyntaxKind.NUMBER).intValue();
+			var level = consumeMandatory(variable, SyntaxKind.NUMBER_LITERAL).intValue();
 			variable.setLevel(level);
 
 			if (consumeOptionally(variable, SyntaxKind.REDEFINE))
@@ -186,7 +186,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			variable.setDeclaration(identifier);
 
 			if (consumeOptionally(variable, SyntaxKind.LPAREN)
-				&& (peek().kind() != SyntaxKind.ASTERISK && peek().kind() != SyntaxKind.NUMBER)) // group array
+				&& (peek().kind() != SyntaxKind.ASTERISK && peek().kind() != SyntaxKind.NUMBER_LITERAL)) // group array
 			{
 				variable = typedVariable(variable);
 				if (variable instanceof TypedVariableNode typedVariableNode)
@@ -248,30 +248,30 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			consumeMandatory(groupNode, SyntaxKind.RPAREN);
 		}
 
-		while (peekKind(SyntaxKind.NUMBER))
+		while (peekKind(SyntaxKind.NUMBER_LITERAL))
 		{
 			if (peek().intValue() <= groupNode.level())
 			{
 				break;
 			}
 
-			if (peek(1).kind() == SyntaxKind.FILLER
-				&& peek(2).kind() == SyntaxKind.NUMBER
-				&& currentRedefineNode != null)
+			if (peek(1).kind() == SyntaxKind.FILLER && currentRedefineNode != null)
 			{
-				parseRedefineFiller(currentRedefineNode);
-			}
-			else
-			{
-				var nestedVariable = variable(groupNode.getDimensions());
-				groupNode.addVariable(nestedVariable);
-
-				if (peek().line() == previousToken().line()
-					&& peek().kind() != SyntaxKind.NUMBER) // multiple variables declared in the same line...
+				if(mightBeFillerBytes(peek(1), peek(2)))
 				{
-					// Error handling for trailing stuff that shouldn't be there
-					skipToNextLineReportingEveryToken();
+					parseRedefineFiller(currentRedefineNode);
+					continue;
 				}
+			}
+
+			var nestedVariable = variable(groupNode.getDimensions());
+			groupNode.addVariable(nestedVariable);
+
+			if (peek().line() == previousToken().line()
+				&& peek().kind() != SyntaxKind.NUMBER_LITERAL) // multiple variables declared in the same line...
+			{
+				// Error handling for trailing stuff that shouldn't be there
+				skipToNextLineReportingEveryToken();
 			}
 		}
 
@@ -285,23 +285,38 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		return groupNode;
 	}
 
-	private void parseRedefineFiller(RedefinitionNode redefinitionNode) throws ParseError
+	private boolean mightBeFillerBytes(SyntaxToken fillerToken, SyntaxToken maybeFillerBytes)
 	{
-		consume(redefinitionNode, SyntaxKind.NUMBER); // Level
-		consume(redefinitionNode, SyntaxKind.FILLER);
-		var fillerBytes = consumeMandatory(redefinitionNode, SyntaxKind.NUMBER);
-		redefinitionNode.addFillerBytes(fillerBytes.intValue());
+		return maybeFillerBytes.kind() == SyntaxKind.OPERAND_SKIP
+			// This happens when it's e.g.
+			// 2 FILLER 5
+			// the user forgot the X but meant to write a filler, because the number is in the same line.
+			// we can use this information to raise a better diagnostic message.
+			|| (maybeFillerBytes.kind() == SyntaxKind.NUMBER_LITERAL && maybeFillerBytes.line() == fillerToken.line());
+	}
 
-		if (!peek().kind().isIdentifier())
+	private void parseRedefineFiller(RedefinitionNode redefinitionNode)
+	{
+		consume(redefinitionNode, SyntaxKind.NUMBER_LITERAL); // Level
+		consume(redefinitionNode, SyntaxKind.FILLER);
+		var fillerToken = previousToken();
+		var errored = false;
+		if(!consumeOptionally(redefinitionNode, SyntaxKind.OPERAND_SKIP))
 		{
-			report(ParserErrors.fillerMustHaveXKeyword(fillerBytes));
-			return;
+			report(ParserErrors.fillerMustHaveXKeyword(fillerToken));
+			consume(redefinitionNode, SyntaxKind.NUMBER_LITERAL);
+			errored = true;
 		}
 
-		var x = consumeMandatoryIdentifier(redefinitionNode); // the X
-		if (!x.symbolName().equals("X"))
+		var fillerBytesToken = previousToken();
+		var fillerBytes = fillerBytesToken.kind() == SyntaxKind.KW_NUMBER
+			? fillerBytesToken.intValue()
+			: Integer.parseInt(fillerBytesToken.source().substring(0, fillerBytesToken.length() - 1));
+		redefinitionNode.addFillerBytes(fillerBytes);
+
+		if(errored)
 		{
-			report(ParserErrors.fillerMustHaveXKeyword(fillerBytes));
+			skipToNextLineAsRecovery(fillerToken.line());
 		}
 	}
 
@@ -309,6 +324,12 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	{
 		var typedVariable = new TypedVariableNode(variable);
 		var type = new VariableTypeNode();
+
+		if(peekKind(SyntaxKind.RPAREN))
+		{
+			report(ParserErrors.incompleteArrayDefinition(variable));
+			throw new ParseError(peek());
+		}
 
 		var dataType = consumeMandatoryIdentifier(typedVariable).source(); // DataTypes like A10 get recognized as identifier
 
@@ -339,7 +360,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		// N12.7 results in Tokens <IDENTIFIER (N12), DOT, NUMBER>
 		if (consumeOptionally(typedVariable, SyntaxKind.COMMA) || consumeOptionally(typedVariable, SyntaxKind.DOT))
 		{
-			var number = consumeMandatory(typedVariable, SyntaxKind.NUMBER);
+			var number = consumeMandatory(typedVariable, SyntaxKind.NUMBER_LITERAL);
 			length = getLengthFromDataType(dataType + "." + number.source());
 		}
 		type.setLength(length);
@@ -378,7 +399,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 			if (consumeOptionally(typedVariable, SyntaxKind.LENGTH))
 			{
-				consumeMandatory(typedVariable, SyntaxKind.NUMBER);
+				consumeMandatory(typedVariable, SyntaxKind.NUMBER_LITERAL);
 			}
 
 			if (consumeOptionally(typedVariable, SyntaxKind.LESSER_GREATER))
@@ -394,10 +415,17 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				}
 				else
 				{
-					consumeMandatory(typedVariable, SyntaxKind.LESSER);
-					var literal = consumeLiteral(typedVariable);
-					type.setInitialValue(literal);
-					consumeMandatory(typedVariable, SyntaxKind.GREATER);
+					consumeMandatory(typedVariable, SyntaxKind.LESSER_SIGN);
+					if(peek().kind().isSystemVariable())
+					{
+						type.setInitialValue(consumeSystemVariableNode(typedVariable).token());
+					}
+					else
+					{
+						var literal = consumeLiteralNode(typedVariable);
+						type.setInitialValue(literal.token());
+					}
+					consumeMandatory(typedVariable, SyntaxKind.GREATER_SIGN);
 				}
 			}
 		}
@@ -452,7 +480,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		{
 			consumeOptionally(typedVariable, SyntaxKind.LENGTH);
 		}
-		consumeOptionally(typedVariable, SyntaxKind.NUMBER);
+		consumeOptionally(typedVariable, SyntaxKind.NUMBER_LITERAL);
 
 		if (peekKind(SyntaxKind.LPAREN))
 		{
@@ -464,11 +492,11 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 		}
 
-		if (peekKind(SyntaxKind.LESSER))
+		if (peekKind(SyntaxKind.LESSER_SIGN))
 		{
-			consumeMandatory(typedVariable, SyntaxKind.LESSER);
+			consumeMandatory(typedVariable, SyntaxKind.LESSER_SIGN);
 
-			while (!consumeOptionally(typedVariable, SyntaxKind.GREATER) && peek().kind() != SyntaxKind.END_DEFINE)
+			while (!consumeOptionally(typedVariable, SyntaxKind.GREATER_SIGN) && peek().kind() != SyntaxKind.END_DEFINE)
 			{
 				consume(typedVariable);
 			}
@@ -651,7 +679,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 					{
 						break;
 					}
-					expectInitialValueType(variable, SyntaxKind.STRING, SyntaxKind.NUMBER);
+					expectInitialValueType(variable, SyntaxKind.STRING_LITERAL, SyntaxKind.NUMBER_LITERAL);
 					break;
 
 				case BINARY:
@@ -667,7 +695,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				case NUMERIC:
 				case PACKED:
 				case INTEGER:
-					expectInitialValueType(variable, SyntaxKind.NUMBER);
+					expectInitialValueType(variable, SyntaxKind.NUMBER_LITERAL);
 					break;
 
 				case LOGIC:
@@ -722,13 +750,13 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		var workaroundNextDimension = false;
 		if (consumeOptionally(dimension, SyntaxKind.COLON))
 		{
-			if (peekKind(SyntaxKind.NUMBER) && peek().source().contains(","))
+			if (peekKind(SyntaxKind.NUMBER_LITERAL) && peek().source().contains(","))
 			{
 				// Workaround for (T/1:10,50:*) where 10,50 gets recognized as a number
 				var numbers = peek().source().split(",");
 				var relevantNumber = numbers[0];
 
-				var firstNumberToken = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER, relevantNumber);
+				var firstNumberToken = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER_LITERAL, relevantNumber);
 				upperBound = extractArrayBound(firstNumberToken, dimension);
 				variable.addNode(firstNumberToken);
 				// we now also have to handle the next dimension, because our current
@@ -749,7 +777,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			lowerBound = 1;
 		}
 
-		if (!peekKind(SyntaxKind.RPAREN) && !peekKind(SyntaxKind.NUMBER) && !peekKind(SyntaxKind.COMMA)) // special case for (*)
+		if (!peekKind(SyntaxKind.RPAREN) && !peekKind(SyntaxKind.NUMBER_LITERAL) && !peekKind(SyntaxKind.COMMA)) // special case for (*)
 		{
 			consume(dimension);
 		}
@@ -767,7 +795,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private int extractArrayBound(ITokenNode token, ArrayDimension dimension)
 	{
-		if (token.token().kind() == SyntaxKind.NUMBER)
+		if (token.token().kind() == SyntaxKind.NUMBER_LITERAL)
 		{
 			return token.token().source().contains(",")
 				? Integer.parseInt(token.token().source().split(",")[0])
@@ -835,7 +863,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		typedVariable.addNode(slashToken);
 
 		var boundTokenKind = relevantSource.substring(1).matches("\\d+,?\\d*")
-			? SyntaxKind.NUMBER
+			? SyntaxKind.NUMBER_LITERAL
 			: SyntaxKind.IDENTIFIER; // when the bound is a reference to a variable
 
 		var boundToken = SyntheticTokenNode.fromToken(identifierToken, boundTokenKind, relevantSource.substring(1));
@@ -849,7 +877,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		var dimension = new ArrayDimension();
 		dimension.addNode(boundToken);
 
-		if (boundTokenKind == SyntaxKind.NUMBER && boundToken.token().source().contains(",") && peekKind(SyntaxKind.RPAREN))
+		if (boundTokenKind == SyntaxKind.NUMBER_LITERAL && boundToken.token().source().contains(",") && peekKind(SyntaxKind.RPAREN))
 		{
 			// We're here because we found something like: (A10/5,10)
 			// At this position, boundToken has 5,10 which is two dimensions: 1:5 and 1:10
@@ -876,13 +904,13 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		var workaroundNextDimension = false;
 		if (consumeOptionally(dimension, SyntaxKind.COLON))
 		{
-			if (peekKind(SyntaxKind.NUMBER) && peek().source().contains(","))
+			if (peekKind(SyntaxKind.NUMBER_LITERAL) && peek().source().contains(","))
 			{
 				// Workaround for (T/1:10,50:*) where 10,50 gets recognized as a number
 				var numbers = peek().source().split(",");
 				var relevantNumber = numbers[0];
 
-				var firstNumberToken = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER, relevantNumber);
+				var firstNumberToken = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER_LITERAL, relevantNumber);
 				upperBound = extractArrayBound(firstNumberToken, dimension);
 				typedVariable.addNode(firstNumberToken);
 				// we now also have to handle the next dimension, because our current
@@ -958,7 +986,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		var lowerBoundNumber = numbers[1];
 
-		var syntheticLowerBound = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER, lowerBoundNumber);
+		var syntheticLowerBound = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER_LITERAL, lowerBoundNumber);
 
 		var dimension = new ArrayDimension();
 		dimension.addNode(syntheticLowerBound);
@@ -970,13 +998,13 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		var workaroundNextDimension = false;
 		if (consumeOptionally(dimension, SyntaxKind.COLON))
 		{
-			if (peekKind(SyntaxKind.NUMBER) && peek().source().contains(","))
+			if (peekKind(SyntaxKind.NUMBER_LITERAL) && peek().source().contains(","))
 			{
 				// Workaround for (T/1:10,50:*) where 10,50 gets recognized as a number
 				numbers = peek().source().split(",");
 				var relevantNumber = numbers[0];
 
-				var firstNumberToken = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER, relevantNumber);
+				var firstNumberToken = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER_LITERAL, relevantNumber);
 				upperBound = extractArrayBound(firstNumberToken, dimension);
 				variable.addNode(firstNumberToken);
 				// we now also have to handle the next dimension, because our current
@@ -1163,8 +1191,6 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				declaredVariables.remove(variable.name());
 				declaredVariables.put(alreadyDefined.qualifiedName(), alreadyDefined);
 				declaredVariables.put(variable.qualifiedName(), variable);
-				alreadyDefined.useQualifiedName();
-				variable.useQualifiedName();
 			}
 			else
 			{

@@ -1,6 +1,7 @@
 package org.amshove.natparse.lexing;
 
 import org.amshove.natparse.IPosition;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.nio.file.Path;
 import java.util.Objects;
@@ -125,6 +126,21 @@ public class SyntaxToken implements IPosition
 		this.line = line;
 		this.source = source;
 		this.filePath = filePath;
+	}
+
+	@Pure
+	public SyntaxToken withKind(SyntaxKind newKind)
+	{
+		var newToken = new SyntaxToken(
+			newKind,
+			offset,
+			offsetInLine,
+			line,
+			source,
+			filePath
+		);
+		newToken.setDiagnosticPosition(diagnosticPosition);
+		return newToken;
 	}
 
 	@Override

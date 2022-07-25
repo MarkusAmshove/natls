@@ -8,9 +8,8 @@ import org.amshove.natls.codeactions.RefactoringContext;
 import org.amshove.natls.codeactions.RenameSymbolAction;
 import org.amshove.natls.progress.IProgressMonitor;
 import org.amshove.natls.progress.ProgressTasks;
-import org.amshove.natls.project.LanguageServerFile;
-import org.amshove.natls.project.LanguageServerProject;
-import org.amshove.natls.project.ModuleReferenceParser;
+import org.amshove.natls.project.*;
+import org.amshove.natls.snippets.SnippetEngine;
 import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
@@ -27,6 +26,8 @@ import org.amshove.natparse.parsing.DefineDataParser;
 import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
+import org.eclipse.lsp4j.jsonrpc.ResponseErrorException;
+import org.eclipse.lsp4j.jsonrpc.messages.ResponseError;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 
@@ -52,9 +53,12 @@ public class NaturalLanguageService implements LanguageClientAware
 	private LanguageClient client;
 	private boolean initialized;
 	private RenameSymbolAction renameComputer = new RenameSymbolAction();
+	private SnippetEngine snippetEngine;
+	private Path workspaceRoot;
 
 	public void indexProject(Path workspaceRoot, IProgressMonitor progressMonitor)
 	{
+		this.workspaceRoot = workspaceRoot;
 		var projectFile = new ActualFilesystem().findNaturalProjectFile(workspaceRoot);
 		if (projectFile.isEmpty())
 		{
@@ -66,6 +70,8 @@ public class NaturalLanguageService implements LanguageClientAware
 		this.project = project;
 		languageServerProject = LanguageServerProject.fromProject(project);
 		parseFileReferences(progressMonitor);
+		preParseDataAreas(progressMonitor);
+		snippetEngine = new SnippetEngine(languageServerProject);
 		initialized = true;
 	}
 
@@ -160,7 +166,7 @@ public class NaturalLanguageService implements LanguageClientAware
 			return EMPTY_HOVER;
 		}
 
-		if (symbolToSearchFor.kind() == SyntaxKind.STRING)
+		if (symbolToSearchFor.kind() == SyntaxKind.STRING_LITERAL)
 		{
 			return hoverExternalModule(symbolToSearchFor);
 		}
@@ -198,6 +204,10 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	private Hover hoverExternalModule(SyntaxToken symbolToSearchFor)
 	{
+		if(symbolToSearchFor.kind() != SyntaxKind.STRING_LITERAL && symbolToSearchFor.kind() != SyntaxKind.IDENTIFIER)
+		{
+			return EMPTY_HOVER;
+		}
 		var module = project.findModule(symbolToSearchFor.kind().isIdentifier() ? symbolToSearchFor.symbolName() : symbolToSearchFor.stringValue());
 		if (module == null)
 		{
@@ -564,7 +574,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var filePath = LspUtil.uriToPath(textDocument.getUri());
 
 		var token = findTokenAtPosition(filePath, position);
-		if (token == null || token.kind() != SyntaxKind.STRING)
+		if (token == null || token.kind() != SyntaxKind.STRING_LITERAL)
 		{
 			return null;
 		}
@@ -610,15 +620,19 @@ public class NaturalLanguageService implements LanguageClientAware
 		// var position = completionParams.getPosition();
 
 		var file = findNaturalFile(filePath);
-		if(!file.getType().hasBody())
+		if(!file.getType().canHaveBody())
 		{
 			return List.of();
 		}
 		var module = file.module();
 
-		return module.referencableNodes().stream()
+		var completionItems = new ArrayList<CompletionItem>();
+
+		completionItems.addAll(snippetEngine.provideSnippets(file));
+
+		completionItems.addAll(module.referencableNodes().stream()
 			.filter(v -> !(v instanceof IRedefinitionNode)) // this is the `REDEFINE #VAR`, which results in the variable being doubled in completion
-			.map(n -> createCompletionItem(n, file))
+			.map(n -> createCompletionItem(n, file, module.referencableNodes()))
 			.filter(Objects::nonNull)
 			.peek(i -> {
 				if(i.getKind() == CompletionItemKind.Variable)
@@ -626,7 +640,9 @@ public class NaturalLanguageService implements LanguageClientAware
 					i.setData(new UnresolvedCompletionInfo((String) i.getData(), filePath.toUri().toString()));
 				}
 			})
-			.toList();
+			.toList());
+
+		return completionItems;
 	}
 
 	public CompletionItem resolveComplete(CompletionItem item)
@@ -654,13 +670,13 @@ public class NaturalLanguageService implements LanguageClientAware
 		return item;
 	}
 
-	private CompletionItem createCompletionItem(IReferencableNode referencableNode, LanguageServerFile openFile)
+	private CompletionItem createCompletionItem(IReferencableNode referencableNode, LanguageServerFile openFile, ReadOnlyList<IReferencableNode> referencableNodes)
 	{
 		try
 		{
 			if (referencableNode instanceof IVariableNode variableNode)
 			{
-				return createCompletionItem(variableNode, openFile);
+				return createCompletionItem(variableNode, openFile, referencableNodes);
 			}
 
 			if (referencableNode instanceof ISubroutineNode subroutineNode)
@@ -676,10 +692,15 @@ public class NaturalLanguageService implements LanguageClientAware
 		return null;
 	}
 
-	private CompletionItem createCompletionItem(IVariableNode variableNode, LanguageServerFile openFile)
+	private CompletionItem createCompletionItem(IVariableNode variableNode, LanguageServerFile openFile, ReadOnlyList<IReferencableNode> referencableNodes)
 	{
 		var item = new CompletionItem();
 		var variableName = variableNode.name();
+
+		if(referencableNodes.stream().filter(n -> n.declaration().symbolName().equals(variableNode.name())).count() > 1)
+		{
+			variableName = variableNode.qualifiedName();
+		}
 
 		item.setKind(CompletionItemKind.Variable);
 		item.setLabel(variableName);
@@ -808,8 +829,11 @@ public class NaturalLanguageService implements LanguageClientAware
 			return;
 		}
 
+		var start = System.currentTimeMillis();
 		file.changed(newSource);
 		publishDiagnostics(file);
+		var end = System.currentTimeMillis();
+		System.err.printf("fileChanged took %dms%n", end - start);
 	}
 
 	public void parseAll(IProgressMonitor monitor)
@@ -827,7 +851,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		{
 			for (var file : lib.files())
 			{
-				if (!file.getType().hasDefineData())
+				if (!file.getType().canHaveDefineData())
 				{
 					filesParsed++;
 					continue;
@@ -848,6 +872,15 @@ public class NaturalLanguageService implements LanguageClientAware
 	public CompletableFuture<Void> parseFileReferences()
 	{
 		return ProgressTasks.startNew("Parsing file references", client, this::parseFileReferences);
+	}
+
+	private void preParseDataAreas(IProgressMonitor monitor)
+	{
+		monitor.progress("Preparsing data areas", 0);
+		languageServerProject.libraries().stream().flatMap(l -> l.files().stream().filter(f -> f.getType() == NaturalFileType.LDA || f.getType() == NaturalFileType.PDA))
+			.parallel()
+			.peek(f -> monitor.progress(f.getReferableName(), 0))
+			.forEach(f -> f.parse(ParseStrategy.WITHOUT_CALLERS));
 	}
 
 	private void parseFileReferences(IProgressMonitor monitor)
@@ -960,9 +993,43 @@ public class NaturalLanguageService implements LanguageClientAware
 			return List.of();
 		}
 
-		var context = new RefactoringContext(params.getTextDocument().getUri(), file.module(), token, node, file.diagnosticsInRange(params.getRange()));
+		var context = new RefactoringContext(params.getTextDocument().getUri(), file.module(), file, token, node, file.diagnosticsInRange(params.getRange()));
 
 		return codeActionRegistry.createCodeActions(context);
+	}
+
+	public PrepareRenameResult prepareRename(PrepareRenameParams params)
+	{
+		var path = LspUtil.uriToPath(params.getTextDocument().getUri());
+		var file = findNaturalFile(path);
+
+		var node = NodeUtil.findNodeAtPosition(params.getPosition().getLine(), params.getPosition().getCharacter(), file.module());
+
+		String placeholder = null;
+		if(node instanceof ISymbolReferenceNode symbolReferenceNode)
+		{
+			placeholder = symbolReferenceNode.reference().declaration().symbolName();
+		}
+
+		if(node instanceof IReferencableNode rNode)
+		{
+			placeholder = rNode.declaration().symbolName();
+		}
+
+		if(placeholder == null)
+		{
+			// Nothing we can rename
+			throw new ResponseErrorException(new ResponseError(1, "Can't rename %s".formatted(node.getClass().getSimpleName()), null));
+		}
+
+		assertCanRenameInFile(file);
+
+		file.reparseCallers(); // TODO: This should be some kind of "light" parse that doesn't add diagnostics
+
+		var result = new PrepareRenameResult();
+		result.setRange(LspUtil.toRange(node.position()));
+		result.setPlaceholder(placeholder);
+		return result;
 	}
 
 	public WorkspaceEdit rename(RenameParams params)
@@ -987,5 +1054,38 @@ public class NaturalLanguageService implements LanguageClientAware
 		}
 
 		return null;
+	}
+
+	private void assertCanRenameInFile(LanguageServerFile file)
+	{
+		var referenceLimit = 300; // Some arbitrary tested value
+		if(file.getIncomingReferences().size() > referenceLimit)
+		{
+			throw new ResponseErrorException(new ResponseError(1, "Won't rename inside %s because it has more than %d referrers (%d)".formatted(file.getReferableName(), referenceLimit, file.getIncomingReferences().size()), null));
+		}
+	}
+
+	public void invalidateStowCache(LanguageServerFile file)
+	{
+		var cacheFile = workspaceRoot.resolve("cache_deploy_Incr_VERSIS.properties");
+		try(var lines = Files.lines(cacheFile))
+		{
+			var newLines = lines.map(l -> {
+				System.err.println(file.getPath().toString());
+				if(l.startsWith(file.getPath().toString()))
+				{
+					return file.getPath().toString() + "=";
+				}
+
+				return l;
+			})
+			.collect(Collectors.joining(System.lineSeparator()));
+
+			Files.writeString(cacheFile, newLines);
+		}
+		catch(IOException e)
+		{
+			throw new UncheckedIOException(e);
+		}
 	}
 }

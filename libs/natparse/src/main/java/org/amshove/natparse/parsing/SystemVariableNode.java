@@ -5,12 +5,13 @@ import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.ISystemVariableNode;
 
-class SystemVariableNode extends BaseSyntaxNode implements ISystemVariableNode
+class SystemVariableNode extends TokenNode implements ISystemVariableNode
 {
 	private final SyntaxToken declaration;
 
 	SystemVariableNode(SyntaxToken declaration)
 	{
+		super(declaration);
 		this.declaration = declaration;
 		addNode(new TokenNode(declaration));
 	}

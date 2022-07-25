@@ -1,4 +1,4 @@
-rootProject.name = 'natlint'
+rootProject.name = 'natls'
 
 include 'tools/testhelpers'
 project(':tools/testhelpers').name = 'testhelpers'
@@ -11,3 +11,6 @@ project(':libs/natlint').name = 'natlint'
 
 include 'libs/natls'
 project(':libs/natls').name = 'natls'
+
+include 'libs/natqube'
+project(':libs/natqube').name = 'natqube'

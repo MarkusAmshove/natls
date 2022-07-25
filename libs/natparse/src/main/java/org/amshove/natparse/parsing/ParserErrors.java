@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
@@ -22,13 +23,22 @@ class ParserErrors
 		return token.kind().toString();
 	}
 
+	public static ParserDiagnostic missingClosingToken(SyntaxKind expectedClosingToken, SyntaxToken openingToken)
+	{
+		return ParserDiagnostic.create(
+			"Missing closing %s for %s".formatted(expectedClosingToken, formatTokenKind(openingToken)),
+			openingToken,
+			ParserError.UNCLOSED_STATEMENT
+		);
+	}
+
 	public static ParserDiagnostic unexpectedToken(SyntaxKind expectedToken, TokenList tokens)
 	{
 		var currentToken = tokens.peek();
 		var invalidToken = currentToken != null ? currentToken : tokens.peek(-1);
-		var message = currentToken != null ? "Unexpected token <%s>, expected <%s>" : "Unexpected token after this, expected <%s>";
+		var message = currentToken != null ? "Unexpected token <%s>, expected <%s>".formatted(formatTokenKind(invalidToken), expectedToken) : "Unexpected token after this, expected <%s>".formatted(expectedToken);
 		return ParserDiagnostic.create(
-			message.formatted(formatTokenKind(invalidToken), expectedToken),
+			message,
 			invalidToken,
 			ParserError.UNEXPECTED_TOKEN
 		);
@@ -306,6 +316,25 @@ class ParserErrors
 			"Import with name %s is already defined".formatted(identifier.symbolName()),
 			identifier,
 			ParserError.DUPLICATED_IMPORT
+		);
+	}
+
+	public static IDiagnostic keywordUsedAsIdentifier(SyntaxToken currentToken)
+	{
+		return ParserDiagnostic.create(
+			"Keywords used as identifier are discouraged. Consider prefixing it with a #: %s".formatted(currentToken.kind()),
+			currentToken,
+			ParserError.KEYWORD_USED_AS_IDENTIFIER,
+			DiagnosticSeverity.WARNING
+		);
+	}
+
+	public static IDiagnostic ambiguousSymbolReference(ISymbolReferenceNode symbolReferenceNode, String possibleQualifications)
+	{
+		return ParserDiagnostic.create(
+			"Reference %s is ambiguous and needs to be qualified. Ambiguous with: %s".formatted(symbolReferenceNode.referencingToken().symbolName(), possibleQualifications.trim()),
+			symbolReferenceNode,
+			ParserError.AMBIGUOUS_VARIABLE_REFERENCE
 		);
 	}
 }

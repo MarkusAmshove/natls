@@ -16,7 +16,6 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 	private String name;
 	private SyntaxToken declaration;
 	private VariableScope scope;
-	private boolean needsQualifiedName = false;
 	private final List<ISymbolReferenceNode> references = new ArrayList<>();
 
 	protected final List<IArrayDimension> dimensions = new ArrayList<>();
@@ -52,7 +51,7 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 	@Override
 	public String name()
 	{
-		return needsQualifiedName ? qualifiedName() : name;
+		return name;
 	}
 
 	@Override
@@ -115,7 +114,7 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 
 	void setDeclaration(SyntaxToken token)
 	{
-		name = token.source().toUpperCase(); // Natural is case-insensitive, as that it considers everything upper case
+		name = token.symbolName();
 		declaration = token;
 	}
 
@@ -128,10 +127,5 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 	{
 		dimensions.add(dimension);
 		addNode(dimension);
-	}
-
-	void useQualifiedName()
-	{
-		needsQualifiedName = true;
 	}
 }

@@ -38,4 +38,10 @@ public class UnusedImportAnalyzerShould extends AbstractAnalyzerTest
 	{
 		testDiagnostics(project.findModule("INCC"), expectNoDiagnosticOfType(UnusedImportAnalyzer.UNUSED_IMPORT));
 	}
+
+	@Test
+	void reportNoDiagnosticIfAVariableFromUsingIsUsedQualifiedWithinSubroutineInCopyCode(@ProjectName("unusedimports") NaturalProject project)
+	{
+		testDiagnostics(project.findModule("QINCC"), expectNoDiagnosticOfType(UnusedImportAnalyzer.UNUSED_IMPORT));
+	}
 }

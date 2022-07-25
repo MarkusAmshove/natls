@@ -22,7 +22,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	{
 		ignoreModuleProvider();
 		var callnat = assertParsesSingleStatement("CALLNAT 'MODULE'", ICallnatNode.class);
-		assertThat(callnat.referencingToken().kind()).isEqualTo(SyntaxKind.STRING);
+		assertThat(callnat.referencingToken().kind()).isEqualTo(SyntaxKind.STRING_LITERAL);
 		assertThat(callnat.referencingToken().stringValue()).isEqualTo("MODULE");
 	}
 
@@ -81,7 +81,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	{
 		ignoreModuleProvider();
 		var include = assertParsesSingleStatement("INCLUDE L4NLOGIT", IIncludeNode.class);
-		assertThat(include.referencingToken().kind()).isEqualTo(SyntaxKind.IDENTIFIER_OR_KEYWORD);
+		assertThat(include.referencingToken().kind()).isEqualTo(SyntaxKind.IDENTIFIER);
 		assertThat(include.referencingToken().symbolName()).isEqualTo("L4NLOGIT");
 	}
 
@@ -96,7 +96,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	{
 		ignoreModuleProvider();
 		var fetch = assertParsesSingleStatement("FETCH 'PROG'", IFetchNode.class);
-		assertThat(fetch.referencingToken().kind()).isEqualTo(SyntaxKind.STRING);
+		assertThat(fetch.referencingToken().kind()).isEqualTo(SyntaxKind.STRING_LITERAL);
 		assertThat(fetch.referencingToken().stringValue()).isEqualTo("PROG");
 	}
 
@@ -105,7 +105,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	{
 		ignoreModuleProvider();
 		var fetch = assertParsesSingleStatement("FETCH RETURN 'PROG'", IFetchNode.class);
-		assertThat(fetch.referencingToken().kind()).isEqualTo(SyntaxKind.STRING);
+		assertThat(fetch.referencingToken().kind()).isEqualTo(SyntaxKind.STRING_LITERAL);
 		assertThat(fetch.referencingToken().stringValue()).isEqualTo("PROG");
 	}
 
@@ -114,7 +114,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	{
 		ignoreModuleProvider();
 		var fetch = assertParsesSingleStatement("FETCH REPEAT 'PROG'", IFetchNode.class);
-		assertThat(fetch.referencingToken().kind()).isEqualTo(SyntaxKind.STRING);
+		assertThat(fetch.referencingToken().kind()).isEqualTo(SyntaxKind.STRING_LITERAL);
 		assertThat(fetch.referencingToken().stringValue()).isEqualTo("PROG");
 	}
 
@@ -178,10 +178,10 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	void parseASubroutine()
 	{
 		var subroutine = assertParsesSingleStatement("""
-               DEFINE SUBROUTINE MY-SUBROUTINE
-                   IGNORE
-               END-SUBROUTINE
-            """, ISubroutineNode.class);
+			   DEFINE SUBROUTINE MY-SUBROUTINE
+			       IGNORE
+			   END-SUBROUTINE
+			""", ISubroutineNode.class);
 
 		assertThat(subroutine.declaration().symbolName()).isEqualTo("MY-SUBROUTINE");
 		assertThat(subroutine.references()).isEmpty();
@@ -302,6 +302,259 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(call.reference()).isEqualTo(calledFunction);
 		assertThat(calledFunction.callers()).contains(call);
 		assertThat(call.position().offsetInLine()).isEqualTo(0);
+	}
+
+	@Test
+	void distinguishBetweenArrayAccessAndFunctionCallInIfCondition()
+	{
+		var statementList = assertParsesWithoutDiagnostics("""
+			   IF #THE-ARRAY(#THE-VARIABLE) <> 5
+			   IGNORE
+			   END-IF
+			""");
+
+		assertThat(statementList.statements()).noneMatch(s -> s instanceof IFunctionCallNode);
+	}
+
+	@Test
+	void rudimentaryParseIfStatements()
+	{
+		var ifStatement = assertParsesSingleStatement("""
+			IF #TEST = 5
+			    IGNORE
+			END-IF
+			""", IIfStatementNode.class);
+
+		assertThat(ifStatement.body().statements()).hasSize(4); // TODO(logical-expressions)
+		assertThat(ifStatement.descendants()).hasSize(6);
+	}
+
+	@Test
+	void rudimentaryParseForColonEqualsToStatements()
+	{
+		var forLoopNode = assertParsesSingleStatement("""
+			FOR #I := 1 TO 10
+			    IGNORE
+			END-FOR
+			""", IForLoopNode.class);
+
+		assertThat(forLoopNode.body().statements()).hasSize(1);
+		assertThat(forLoopNode.descendants()).hasSize(8);
+	}
+
+	@Test
+	void rudimentaryParseForEqToStatements()
+	{
+		var forLoopNode = assertParsesSingleStatement("""
+			FOR #I EQ 1 TO 10
+			    IGNORE
+			END-FOR
+			""", IForLoopNode.class);
+
+		assertThat(forLoopNode.body().statements()).hasSize(1);
+		assertThat(forLoopNode.descendants()).hasSize(8);
+	}
+
+	@Test
+	void rudimentaryParseForFromToStatementsStep()
+	{
+		var forLoopNode = assertParsesSingleStatement("""
+			FOR #I FROM 5 TO 10 STEP 2
+			    IGNORE
+			END-FOR
+			""", IForLoopNode.class);
+
+		assertThat(forLoopNode.body().statements()).hasSize(1);
+		assertThat(forLoopNode.descendants()).hasSize(10);
+	}
+
+	@Test
+	void allowSystemFunctionsAsUpperBound()
+	{
+		var forLoopNode = assertParsesSingleStatement("""
+			FOR #I FROM 5 TO *OCC(#ARR)
+			    IGNORE
+			END-FOR
+			""", IForLoopNode.class);
+
+		var upperBound = assertNodeType(forLoopNode.upperBound(), ISystemFunctionNode.class);
+		assertThat(upperBound.systemFunction()).isEqualTo(SyntaxKind.OCC);
+		assertThat(upperBound.parameter()).isInstanceOf(IVariableReferenceNode.class);
+		assertThat(forLoopNode.body().statements()).hasSize(1);
+		assertThat(forLoopNode.descendants()).hasSize(8);
+	}
+
+	@Test
+	void rudimentaryParseForFromThruStatementsStep()
+	{
+		var forLoopNode = assertParsesSingleStatement("""
+			FOR #I FROM 5 THRU 10 STEP 5
+			    IGNORE
+			END-FOR
+			""", IForLoopNode.class);
+
+		assertThat(forLoopNode.body().statements()).hasSize(1);
+		assertThat(forLoopNode.descendants()).hasSize(10);
+	}
+
+	@Test
+	void reportADiagnosticForNotClosedIfStatements()
+	{
+		assertDiagnostic("""
+			IF 5 > 2
+			    IGNORE
+			""", ParserError.UNCLOSED_STATEMENT);
+	}
+
+	@Test
+	void parseIfNoRecord()
+	{
+		var noRecNode = assertParsesSingleStatement("""
+			IF NO RECORDS FOUND
+			    IGNORE
+			END-NOREC
+			""", IIfNoRecordNode.class);
+
+		assertThat(noRecNode.body().statements()).hasSize(1);
+		assertThat(noRecNode.descendants()).hasSize(6);
+	}
+
+	@Test
+	void parseIfNoRecordWithoutOptionalTokens()
+	{
+		var noRecNode = assertParsesSingleStatement("""
+			IF NO
+			    IGNORE
+			END-NOREC
+			""", IIfNoRecordNode.class);
+
+		assertThat(noRecNode.body().statements()).hasSize(1);
+		assertThat(noRecNode.descendants()).hasSize(4);
+	}
+
+	@Test
+	void parseIfNoRecordWithoutFoundToken()
+	{
+		var noRecNode = assertParsesSingleStatement("""
+			IF NO RECORDS
+			    IGNORE
+			END-NOREC
+			""", IIfNoRecordNode.class);
+
+		assertThat(noRecNode.body().statements()).hasSize(1);
+		assertThat(noRecNode.descendants()).hasSize(5);
+	}
+
+	@Test
+	void parseSetKey()
+	{
+		var setKey = assertParsesSingleStatement("""
+			SET KEY PF1=HELP PF2=PROGRAM
+			""", ISetKeyNode.class);
+
+		assertThat(setKey.descendants()).hasSize(8);
+	}
+
+	@Test
+	void parseSetKeyNamedOff()
+	{
+		assertParsesSingleStatement("""
+			SET KEY NAMED OFF
+			""", ISetKeyNode.class);
+	}
+
+	@Test
+	void parseSetKeyNamed()
+	{
+		assertParsesSingleStatement("""
+			SET KEY PF1 NAMED '-'
+			""", ISetKeyNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"SET KEY ALL",
+		"SET KEY PF2",
+		"SET KEY PF2=PGM",
+		"SET KEY OFF",
+		"SET KEY ON",
+		"SET KEY PF2=OFF",
+		"SET KEY PF2=ON",
+		"SET KEY PF4='SAVE'",
+		"SET KEY PF4=#XYX",
+		"SET KEY PF6='LIST MAP *'",
+		"SET KEY PF2='%%'",
+		"SET KEY PF9=' '",
+		"SET KEY PF12=DATA 'YES'",
+		"SET KEY PF4=COMMAND OFF",
+		"SET KEY PF4=COMMAND ON",
+		"SET KEY COMMAND OFF",
+		"SET KEY COMMAND ON",
+		"SET KEY PF1=HELP",
+		"SET KEY PF10=DISABLED",
+		"SET KEY ENTR NAMED 'EXEC'",
+		"SET KEY PF3 NAMED 'EXIT'",
+		"SET KEY PF3 NAMED OFF",
+		"SET KEY NAMED OFF",
+		"SET KEY PF4='AP1' NAMED 'APPL1'"
+	})
+	void parseSetKeyExamples(String statement)
+	{
+		assertParsesSingleStatement(statement, ISetKeyNode.class);
+	}
+
+	@Test
+	void parseFind()
+	{
+		var findStatement = assertParsesSingleStatement("""
+			FIND THE-VIEW WITH THE-DESCRIPTOR = 'Asd'
+			    IGNORE
+			END-FIND
+			""", IFindNode.class);
+
+		assertThat(findStatement.viewReference()).isNotNull();
+		assertThat(findStatement.descendants()).anyMatch(n -> n instanceof IDescriptorNode);
+		assertThat(findStatement.descendants()).hasSize(8);
+	}
+
+	@Test
+	void parseFindWithNumberLimit()
+	{
+		var findStatement = assertParsesSingleStatement("""
+			FIND (5) THE-VIEW WITH THE-DESCRIPTOR = 'Asd'
+			IGNORE
+			END-FIND
+			""", IFindNode.class);
+
+		assertThat(findStatement.viewReference()).isNotNull();
+		assertThat(findStatement.descendants()).anyMatch(n -> n instanceof IDescriptorNode);
+		assertThat(findStatement.descendants()).hasSize(11);
+	}
+
+	@Test
+	void parseFindWithoutBody()
+	{
+		var findStatement = assertParsesSingleStatement("""
+			FIND FIRST THE-VIEW WITH THE-DESCRIPTOR = 'Asd'
+			""", IFindNode.class);
+
+		assertThat(findStatement.viewReference()).isNotNull();
+		assertThat(findStatement.descendants()).anyMatch(n -> n instanceof IDescriptorNode);
+		assertThat(findStatement.descendants()).hasSize(5);
+	}
+
+	@Test
+	void parseResetStatements()
+	{
+		var reset = assertParsesSingleStatement("RESET #THEVAR", IResetStatementNode.class);
+		assertThat(reset.operands()).hasSize(1);
+	}
+
+	@Test
+	void parseResetInitialStatements()
+	{
+		var reset = assertParsesSingleStatement("RESET INITIAL #THEVAR #THEOTHERVAR", IResetStatementNode.class);
+		assertThat(reset.operands()).hasSize(2);
 	}
 
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)

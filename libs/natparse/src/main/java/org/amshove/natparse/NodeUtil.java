@@ -2,6 +2,8 @@ package org.amshove.natparse;
 
 import org.amshove.natparse.natural.*;
 
+import javax.annotation.Nullable;
+
 public class NodeUtil
 {
 	private NodeUtil()
@@ -14,7 +16,9 @@ public class NodeUtil
 	 */
 	public static boolean moduleContainsNode(INaturalModule module, ISyntaxNode node)
 	{
-		return module.file().getPath().equals(node.position().filePath());
+		return node.position() != null
+			&& node.position().filePath() != null
+			&& module.file().getPath().equals(node.position().filePath());
 	}
 
 	/**
@@ -23,10 +27,12 @@ public class NodeUtil
 	 */
 	public static boolean moduleContainsNodeByDiagnosticPosition(INaturalModule module, ISyntaxNode node)
 	{
-		return module.file().getPath().equals(node.diagnosticPosition().filePath());
+		return node.position() != null
+			&& node.position().filePath() != null
+			&& module.file().getPath().equals(node.diagnosticPosition().filePath());
 	}
 
-	public static ISyntaxNode findNodeAtPosition(int line, int character, INaturalModule module)
+	public static @Nullable ISyntaxNode findNodeAtPosition(int line, int character, INaturalModule module)
 	{
 		return findNodeAtPosition(line, character, module.syntaxTree());
 	}
@@ -35,7 +41,7 @@ public class NodeUtil
 	 * Tries to find the node at the given position.
 	 * It does try to not return an {@link ITokenNode}, but the node that contains the {@link ITokenNode}.
 	 */
-	public static ISyntaxNode findNodeAtPosition(int line, int character, ISyntaxTree syntaxTree)
+	public static @Nullable ISyntaxNode findNodeAtPosition(int line, int character, ISyntaxTree syntaxTree)
 	{
 		if(syntaxTree == null)
 		{

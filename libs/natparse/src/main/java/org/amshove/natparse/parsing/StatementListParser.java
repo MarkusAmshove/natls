@@ -15,7 +15,6 @@ import java.util.List;
 
 class StatementListParser extends AbstractParser<IStatementListNode>
 {
-	private List<ISymbolReferenceNode> unresolvedReferences;
 	private List<IReferencableNode> referencableNodes;
 
 	public List<IReferencableNode> getReferencableNodes()
@@ -50,11 +49,21 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private StatementListNode statementList()
 	{
+		return statementList(null);
+	}
+
+	private StatementListNode statementList(SyntaxKind endTokenKind)
+	{
 		var statementList = new StatementListNode();
 		while (!tokens.isAtEnd())
 		{
 			try
 			{
+				if (tokens.peek().kind() == endTokenKind)
+				{
+					break;
+				}
+
 				switch (tokens.peek().kind())
 				{
 					case CALLNAT:
@@ -67,7 +76,6 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(fetch());
 						break;
 					case IDENTIFIER:
-					case IDENTIFIER_OR_KEYWORD:
 						statementList.addStatement(identifierReference());
 						break;
 					case END:
@@ -82,28 +90,56 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						}
 						statementList.addStatement(subroutine());
 						break;
-					case END_SUBROUTINE:
-						return statementList;
 					case IGNORE:
 						statementList.addStatement(ignore());
 						break;
+					case FIND:
+						statementList.addStatement(find());
+						break;
 					case PERFORM:
-						if(peek(1).kind() == SyntaxKind.BREAK)
+						if (peek(1).kind() == SyntaxKind.BREAK)
 						{
 							tokens.advance();
 							break;
 						}
 						statementList.addStatement(perform());
 						break;
+					case RESET:
+						statementList.addStatement(resetStatement());
+						break;
+					case SET:
+						if (peek(1).kind() == SyntaxKind.KEY)
+						{
+							statementList.addStatement(setKey());
+							break;
+						}
+						// FALLTHROUGH TO DEFAULT INTENDED - SET CONTROL etc. not implemented
+					case IF:
+						if (peekKind(SyntaxKind.IF) && (peek(-1) == null || peek(-1).kind() != SyntaxKind.REJECT && peek(-1).kind() != SyntaxKind.ACCEPT)) // TODO: until ACCEPT/REJECT IF
+						{
+							statementList.addStatement(ifStatement());
+							break;
+						}
+						// FALLTHROUGH TO DEFAULT INTENDED
+					case FOR:
+						if (peekKind(SyntaxKind.FOR) && (peek(-1) == null || (peek(1).kind() == SyntaxKind.IDENTIFIER && peek(-1).kind() != SyntaxKind.REJECT && peek(-1).kind() != SyntaxKind.ACCEPT)))
+						// TODO: until we support EXAMINE, DECIDE, ...
+						//      just.. implement them already and don't try to understand the conditions
+						{
+							statementList.addStatement(forLoop());
+							break;
+						}
+						// FALLTHROUGH TO DEFAULT INTENDED
 					default:
-						// While the parser is incomplete, we just skip over everything we don't know yet
-						tokens.advance();
+						// While the parser is incomplete, we just add a node for every token
+						var tokenStatementNode = new SyntheticTokenStatementNode();
+						consume(tokenStatementNode);
+						statementList.addStatement(tokenStatementNode);
 				}
 			}
 			catch (ParseError e)
 			{
-				// Currently just skip over the token
-				// TODO: Add a diagnostic. For this move the method from DefineDataParser up into AbstractParser
+				// TODO: Add a ErrorRecoveryNode which eats every token until `isStatementStart()` returns true?
 				tokens.advance();
 			}
 		}
@@ -111,10 +147,31 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return statementList;
 	}
 
+	private StatementNode forLoop() throws ParseError
+	{
+		var loopNode = new ForLoopNode();
+
+		var opening = consumeMandatory(loopNode, SyntaxKind.FOR);
+		consumeVariableReferenceNode(loopNode);
+		consumeAnyMandatory(loopNode, List.of(SyntaxKind.COLON_EQUALS_SIGN, SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.FROM));
+		consumeOperandNode(loopNode); // TODO(arithmetic-expression): Could also be arithmetic expression
+		consumeAnyMandatory(loopNode, List.of(SyntaxKind.TO, SyntaxKind.THRU));
+		var upperBound = consumeOperandNode(loopNode); // TODO(arithmetic-expression): Could also be arithmetic expression
+		loopNode.setUpperBound(upperBound);
+		if (consumeOptionally(loopNode, SyntaxKind.STEP))
+		{
+			consumeOperandNode(loopNode);
+		}
+
+		loopNode.setBody(statementList(SyntaxKind.END_FOR));
+		consumeMandatoryClosing(loopNode, SyntaxKind.END_FOR, opening);
+
+		return loopNode;
+	}
+
 	private StatementNode perform() throws ParseError
 	{
 		var internalPerform = new InternalPerformNode();
-		unresolvedReferences.add(internalPerform);
 
 		consumeMandatory(internalPerform, SyntaxKind.PERFORM);
 		var symbolName = identifier();
@@ -122,6 +179,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		internalPerform.setReferenceNode(referenceNode);
 		internalPerform.addNode(referenceNode);
 
+		unresolvedReferences.add(internalPerform);
 		return internalPerform;
 	}
 
@@ -135,14 +193,14 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	private StatementNode subroutine() throws ParseError
 	{
 		var subroutine = new SubroutineNode();
-		consumeMandatory(subroutine, SyntaxKind.DEFINE);
+		var opening = consumeMandatory(subroutine, SyntaxKind.DEFINE);
 		consumeOptionally(subroutine, SyntaxKind.SUBROUTINE);
 		var nameToken = consumeMandatoryIdentifier(subroutine);
 		subroutine.setName(nameToken);
 
-		subroutine.setBody(statementList());
+		subroutine.setBody(statementList(SyntaxKind.END_SUBROUTINE));
 
-		consumeMandatory(subroutine, SyntaxKind.END_SUBROUTINE);
+		consumeMandatoryClosing(subroutine, SyntaxKind.END_SUBROUTINE, opening);
 
 		referencableNodes.add(subroutine);
 
@@ -159,15 +217,21 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	private StatementNode identifierReference() throws ParseError
 	{
 		var token = identifier();
-		if(peekKind( SyntaxKind.LPAREN)
-				&& peekKind(1, SyntaxKind.LESSER) || peekKind(1, SyntaxKind.LESSER_GREATER))
+		if (peekKind(SyntaxKind.LPAREN)
+			&& (peekKind(1, SyntaxKind.LESSER_SIGN) || peekKind(1, SyntaxKind.LESSER_GREATER)))
 		{
 			return functionCall(token);
 		}
 
+		var node = symbolReferenceNode(token);
+		return new SyntheticVariableStatementNode(node);
+	}
+
+	private SymbolReferenceNode symbolReferenceNode(SyntaxToken token)
+	{
 		var node = new SymbolReferenceNode(token);
 		unresolvedReferences.add(node);
-		return new SyntheticVariableStatementNode(node);
+		return node;
 	}
 
 	private FunctionCallNode functionCall(SyntaxToken token) throws ParseError
@@ -182,10 +246,16 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		consumeMandatory(node, SyntaxKind.LPAREN);
 
-		while(!peekKind(SyntaxKind.RPAREN))
+		while (!peekKind(SyntaxKind.RPAREN))
 		{
-			// TODO: Actually do stuff with parameter
-			consume(node);
+			if (peekKind(SyntaxKind.IDENTIFIER))
+			{
+				node.addNode(identifierReference());
+			}
+			else
+			{
+				consume(node);
+			}
 		}
 
 		consumeMandatory(node, SyntaxKind.RPAREN);
@@ -201,15 +271,15 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		if (isNotCallnatOrFetchModule())
 		{
-			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING, SyntaxKind.IDENTIFIER), peek()));
+			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.IDENTIFIER), peek()));
 		}
 
-		if (consumeEitherOptionally(callnat, SyntaxKind.IDENTIFIER, SyntaxKind.IDENTIFIER_OR_KEYWORD))
+		if (consumeOptionally(callnat, SyntaxKind.IDENTIFIER))
 		{
 			callnat.setReferencingToken(previousToken());
 		}
 
-		if (consumeOptionally(callnat, SyntaxKind.STRING))
+		if (consumeOptionally(callnat, SyntaxKind.STRING_LITERAL))
 		{
 			callnat.setReferencingToken(previousToken());
 			var referencedModule = sideloadModule(callnat.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode());
@@ -237,7 +307,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			{
 				var includedSource = Files.readString(referencedModule.file().getPath());
 				var lexer = new Lexer();
-				lexer.relocateDiagnosticPosition(referencingToken);
+				lexer.relocateDiagnosticPosition(shouldRelocateDiagnostics() ? relocatedDiagnosticPosition : referencingToken);
 				var tokens = lexer.lex(includedSource, referencedModule.file().getPath());
 
 				for (var diagnostic : tokens.diagnostics())
@@ -298,15 +368,15 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		if (isNotCallnatOrFetchModule())
 		{
-			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING, SyntaxKind.IDENTIFIER), peek()));
+			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.IDENTIFIER), peek()));
 		}
 
-		if (consumeEitherOptionally(fetch, SyntaxKind.IDENTIFIER, SyntaxKind.IDENTIFIER_OR_KEYWORD))
+		if (consumeOptionally(fetch, SyntaxKind.IDENTIFIER))
 		{
 			fetch.setReferencingToken(previousToken());
 		}
 
-		if (consumeOptionally(fetch, SyntaxKind.STRING))
+		if (consumeOptionally(fetch, SyntaxKind.STRING_LITERAL))
 		{
 			fetch.setReferencingToken(previousToken());
 			var referencedModule = sideloadModule(fetch.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode());
@@ -316,9 +386,160 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return fetch;
 	}
 
+	private StatementNode ifStatement() throws ParseError
+	{
+		if (peek(1).kind() == SyntaxKind.NO)
+		{
+			return ifNoRecord();
+		}
+
+		var ifStatement = new IfStatementNode();
+
+		var opening = consumeMandatory(ifStatement, SyntaxKind.IF);
+
+		ifStatement.setBody(statementList(SyntaxKind.END_IF));
+
+		consumeMandatoryClosing(ifStatement, SyntaxKind.END_IF, opening);
+
+		return ifStatement;
+	}
+
+	private IfNoRecordNode ifNoRecord() throws ParseError
+	{
+		var statement = new IfNoRecordNode();
+
+		var opening = consumeMandatory(statement, SyntaxKind.IF);
+		consumeMandatory(statement, SyntaxKind.NO);
+		consumeOptionally(statement, SyntaxKind.RECORDS);
+		consumeOptionally(statement, SyntaxKind.FOUND);
+
+		statement.setBody(statementList(SyntaxKind.END_NOREC));
+
+		consumeMandatoryClosing(statement, SyntaxKind.END_NOREC, opening);
+
+		return statement;
+	}
+
+	private SetKeyStatementNode setKey() throws ParseError
+	{
+		var statement = new SetKeyStatementNode();
+
+		consumeMandatory(statement, SyntaxKind.SET);
+		consumeMandatory(statement, SyntaxKind.KEY);
+
+		if(consumeOptionally(statement, SyntaxKind.NAMED))
+		{
+			consumeMandatory(statement, SyntaxKind.OFF);
+		}
+
+		while (peekKind(SyntaxKind.PF))
+		{
+			consumeMandatory(statement, SyntaxKind.PF);
+			if(consumeOptionally(statement, SyntaxKind.EQUALS_SIGN))
+			{
+				if(consumeOptionally(statement, SyntaxKind.DATA))
+				{
+					consumeMandatory(statement, SyntaxKind.STRING_LITERAL);
+				}
+				else if(peekKind(SyntaxKind.IDENTIFIER))
+				{
+					consumeOperandNode(statement);
+				}
+				else
+				{
+					consumeAnyMandatory(statement, List.of(SyntaxKind.HELP, SyntaxKind.PROGRAM, SyntaxKind.PGM, SyntaxKind.ON, SyntaxKind.OFF, SyntaxKind.STRING_LITERAL, SyntaxKind.COMMAND, SyntaxKind.DISABLED));
+				}
+			}
+
+			if(consumeOptionally(statement, SyntaxKind.NAMED))
+			{
+				if(!consumeOptionally(statement, SyntaxKind.OFF))
+				{
+					consumeOperandNode(statement);
+				}
+			}
+		}
+
+		return statement;
+	}
+
+	private FindNode find() throws ParseError
+	{
+		var find = new FindNode();
+
+		var open = consumeMandatory(find, SyntaxKind.FIND);
+		var hasNoBody = consumeOptionally(find, SyntaxKind.FIRST) || consumeOptionally(find, SyntaxKind.KW_NUMBER) || consumeOptionally(find, SyntaxKind.UNIQUE);
+		consumeOptionally(find, SyntaxKind.ALL);
+		if(consumeOptionally(find, SyntaxKind.LPAREN))
+		{
+			consumeOperandNode(find);
+			consumeMandatory(find, SyntaxKind.RPAREN);
+		}
+		if (consumeOptionally(find, SyntaxKind.MULTI_FETCH))
+		{
+			consumeAnyMandatory(find, List.of(SyntaxKind.ON, SyntaxKind.OFF));
+		}
+
+		consumeEitherOptionally(find, SyntaxKind.RECORDS, SyntaxKind.RECORD);
+		consumeOptionally(find, SyntaxKind.IN);
+		consumeOptionally(find, SyntaxKind.FILE);
+
+		var viewName = symbolReferenceNode(identifier());
+		find.setView(viewName);
+
+		if(consumeOptionally(find, SyntaxKind.WITH))
+		{
+			if(consumeOptionally(find, SyntaxKind.LIMIT))
+			{
+				consumeLiteral(find);
+			}
+
+			var descriptor = identifier(); // TODO(expressions): Must be ISearchCriteriaNode
+			var descriptorNode = new DescriptorNode(descriptor);
+			find.addNode(descriptorNode);
+		}
+
+		if(!hasNoBody)
+		{
+			find.setBody(statementList(SyntaxKind.END_FIND));
+
+			consumeMandatoryClosing(find, SyntaxKind.END_FIND, open);
+		}
+
+		return find;
+	}
+
+	private ResetStatementNode resetStatement() throws ParseError
+	{
+		var resetNode = new ResetStatementNode();
+		consumeMandatory(resetNode, SyntaxKind.RESET);
+		consumeOptionally(resetNode, SyntaxKind.INITIAL);
+
+		while(isOperand())
+		{
+			resetNode.addOperand(consumeOperandNode(resetNode));
+		}
+
+		return resetNode;
+	}
+
+	private boolean isOperand()
+	{
+		if(isAtEnd())
+		{
+			return false; // readability
+		}
+
+		return
+			(peekKind(SyntaxKind.IDENTIFIER) && !isAtEnd(1) && peek(1).kind() != SyntaxKind.COLON_EQUALS_SIGN)
+			|| peek().kind().isSystemFunction()
+			|| peek().kind().isSystemVariable()
+			|| peek().kind().canBeIdentifier(); // this should hopefully catch the begin of statements
+	}
+
 	private boolean isNotCallnatOrFetchModule()
 	{
-		return !peekKind(SyntaxKind.STRING) && !peekKind(SyntaxKind.IDENTIFIER) && !peekKind(SyntaxKind.IDENTIFIER_OR_KEYWORD);
+		return !peekKind(SyntaxKind.STRING_LITERAL) && !peekKind(SyntaxKind.IDENTIFIER);
 	}
 
 	private void resolveUnresolvedExternalPerforms()
@@ -368,5 +589,32 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		unresolvedReferences.removeAll(resolvedReferences);
+	}
+
+	@SuppressWarnings({"unused"}) // TODO: use this for error recovery
+	private boolean isStatementStart()
+	{
+		if(tokens.isAtEnd())
+		{
+			return false;
+		}
+
+		var currentKind = tokens.peek().kind();
+		if(currentKind.canBeIdentifier() && peekKind(1, SyntaxKind.COLON_EQUALS_SIGN))
+		{
+			return true;
+		}
+
+		return switch(currentKind) {
+			case ACCEPT, ADD, ASSIGN, CALL, CALLNAT, CLOSE, COMMIT, COMPRESS, COMPUTE, DECIDE, DEFINE, DELETE, DISPLAY, DIVIDE, DO, DOEND, DOWNLOAD, EJECT, END, ESCAPE, EXAMINE, EXPAND, FETCH, FIND, FOR, FORMAT, GET, HISTOGRAM, IF, IGNORE, INCLUDE, INPUT, INSERT, INTERFACE, LIMIT, LOOP, METHOD, MOVE, MULTIPLY, NEWPAGE, OBTAIN, OPTIONS, PASSW, PERFORM, PRINT, PROCESS, PROPERTY, READ, REDEFINE, REDUCE, REINPUT, REJECT, RELEASE, REPEAT, RESET, RESIZE, RETRY, ROLLBACK, RUN, SELECT, SEPARATE, SET, SKIP, SORT, STACK, STOP, STORE, SUBTRACT, TERMINATE, UPDATE, WRITE -> true;
+			case ON -> peekKind(1, SyntaxKind.ERROR);
+			case OPEN -> peekKind(1, SyntaxKind.CONVERSATION);
+			case PARSE -> peekKind(1, SyntaxKind.XML);
+			case REQUEST -> peekKind(1, SyntaxKind.DOCUMENT);
+			case SEND -> peekKind(1, SyntaxKind.METHOD);
+			case SUSPEND -> peekKind(1, SyntaxKind.IDENTICAL) && peekKind(2, SyntaxKind.SUPPRESS);
+			case UPLOAD -> peekKind(1, SyntaxKind.PC) && peekKind(2, SyntaxKind.FILE);
+			default -> false;
+		};
 	}
 }

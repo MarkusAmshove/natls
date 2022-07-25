@@ -4,6 +4,7 @@ import org.amshove.natparse.ReadOnlyList;
 
 public interface IVariableNode extends IReferencableNode
 {
+	// TODO: Might need "effectiveScope"? Beacuse when LOCAL USING a PDA this returns parameter
 	VariableScope scope();
 	int level();
 	String name();

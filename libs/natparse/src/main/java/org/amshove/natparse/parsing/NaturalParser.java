@@ -45,12 +45,15 @@ public class NaturalParser
 			var result = defineDataParser.parse(tokens);
 			naturalModule.addDiagnostics(result.diagnostics());
 			var defineData = result.result();
-			naturalModule.setDefineData(defineData);
-			topLevelNodes.add(defineData);
-			naturalModule.addReferencableNodes(defineData.variables().stream().map(n -> (IReferencableNode)n).toList());
+			if(defineData != null)
+			{
+				naturalModule.setDefineData(defineData);
+				topLevelNodes.add(defineData);
+				naturalModule.addReferencableNodes(defineData.variables().stream().map(n -> (IReferencableNode) n).toList());
+			}
 		}
 
-		if (file.getFiletype().hasBody())
+		if (file.getFiletype().canHaveBody())
 		{
 			var statementParser = new StatementListParser(moduleProviderToUse);
 			var result = statementParser.parse(tokens);
@@ -92,7 +95,7 @@ public class NaturalParser
 				}
 			}
 
-			naturalModule.addDiagnostics(result.diagnostics());
+			naturalModule.addDiagnostic(diagnostic);
 		}
 	}
 
@@ -118,13 +121,13 @@ public class NaturalParser
 				continue;
 			}
 
-			if(tryFindAndReference(unresolvedReference.token().symbolName(), unresolvedReference, defineData))
+			if(tryFindAndReference(unresolvedReference.token().symbolName(), unresolvedReference, defineData, module))
 			{
 				continue;
 			}
 
 			if(unresolvedReference.token().symbolName().startsWith("+")
-				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(1), unresolvedReference, defineData))
+				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(1), unresolvedReference, defineData, module))
 			{
 				// TODO(hack, expressions): This should be handled when parsing expressions.
 				continue;
@@ -132,20 +135,20 @@ public class NaturalParser
 
 
 			if(unresolvedReference.token().symbolName().startsWith("C*")
-				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(2), unresolvedReference, defineData))
+				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(2), unresolvedReference, defineData, module))
 			{
 				continue;
 			}
 
 			if(unresolvedReference.token().symbolName().startsWith("T*")
-				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(2), unresolvedReference, defineData))
+				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(2), unresolvedReference, defineData, module))
 			{
 				// TODO(hack, write-statement): This will be obsolete when the WRITE statement is parsed
 				continue;
 			}
 
 			if(unresolvedReference.token().symbolName().startsWith("P*")
-				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(2), unresolvedReference, defineData))
+				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(2), unresolvedReference, defineData, module))
 			{
 				// TODO(hack, write-statement): This will be obsolete when the WRITE statement is parsed
 				continue;
@@ -160,12 +163,28 @@ public class NaturalParser
 		}
 	}
 
-	private boolean tryFindAndReference(String symbolName, ISymbolReferenceNode referenceNode, IDefineData defineData)
+	private boolean tryFindAndReference(String symbolName, ISymbolReferenceNode referenceNode, IDefineData defineData, NaturalModule module)
 	{
-		var variable = defineData.findVariable(symbolName);
-		if(variable != null)
+		var foundVariables = ((DefineDataNode)defineData).findVariablesWithName(symbolName);
+
+		if(foundVariables.size() > 1)
 		{
-			variable.addReference(referenceNode);
+			var possibleQualifications = new StringBuilder();
+			for (var foundVariable : foundVariables)
+			{
+				possibleQualifications.append(foundVariable.qualifiedName()).append(" ");
+			}
+
+			if(defineData.findDdmField(symbolName) != null) // TODO: Currently only necessary here because we don't parse FIND or READ yet
+			{
+				return true;
+			}
+			module.addDiagnostic(ParserErrors.ambiguousSymbolReference(referenceNode, possibleQualifications.toString()));
+		}
+
+		if(!foundVariables.isEmpty())
+		{
+			foundVariables.get(0).addReference(referenceNode);
 			return true;
 		}
 

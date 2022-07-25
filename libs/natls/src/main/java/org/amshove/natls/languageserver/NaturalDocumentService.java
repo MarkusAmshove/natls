@@ -169,6 +169,12 @@ public class NaturalDocumentService implements TextDocumentService
 	}
 
 	@Override
+	public CompletableFuture<Either<Range, PrepareRenameResult>> prepareRename(PrepareRenameParams params)
+	{
+		return CompletableFuture.supplyAsync(() -> Either.forRight(languageService.prepareRename(params)));
+	}
+
+	@Override
 	public CompletableFuture<WorkspaceEdit> rename(RenameParams params)
 	{
 		return CompletableFuture.supplyAsync(() -> languageService.rename(params));

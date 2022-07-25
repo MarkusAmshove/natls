@@ -49,6 +49,11 @@ public abstract class AbstractAnalyzerTest
 
 	protected void testDiagnostics(@Nullable NaturalFile file, DiagnosticAssertion... diagnosticAssertions)
 	{
+		if(file == null)
+		{
+			throw new RuntimeException("Natural file could not be found");
+		}
+
 		if (diagnosticAssertions.length == 0)
 		{
 			fail("At least one diagnostic has to be asserted. Use expectDiagnostic() or expectNoDiagnostic()");
@@ -89,6 +94,7 @@ public abstract class AbstractAnalyzerTest
 		var module = parse(file);
 		LinterContext.INSTANCE.reset();
 		LinterContext.INSTANCE.registerAnalyzer(analyzerUnderTest);
+		LinterContext.INSTANCE.initialiazeAnalyzers();
 		var linter = new NaturalLinter();
 		return linter.lint(module);
 	}

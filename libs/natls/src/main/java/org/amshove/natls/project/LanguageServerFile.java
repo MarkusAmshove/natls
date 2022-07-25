@@ -39,6 +39,7 @@ public class LanguageServerFile implements IModuleProvider
 	private final List<SyntaxToken> comments = new ArrayList<>();
 
 	private byte[] defineDataHash;
+	private boolean hasBeenAnalyzed;
 
 	public LanguageServerFile(NaturalFile file)
 	{
@@ -101,6 +102,11 @@ public class LanguageServerFile implements IModuleProvider
 		{
 			parse();
 		}
+
+		if(!hasBeenAnalyzed)
+		{
+			analyze();
+		}
 	}
 
 	public void close()
@@ -109,28 +115,25 @@ public class LanguageServerFile implements IModuleProvider
 		//		clearDiagnosticsByTool(DiagnosticTool.NATPARSE);
 	}
 
-	void dependencyChanged()
-	{
-		parse();
-	}
-
 	public void changed(String newSource)
 	{
 		clearDiagnosticsByTool(DiagnosticTool.CATALOG);
-		parseInternal(newSource);
+		parseAndAnalyze(newSource, ParseStrategy.WITH_CALLERS);
 	}
 
 	public void save()
 	{
 		clearDiagnosticsByTool(DiagnosticTool.CATALOG);
+		clearDiagnosticsByTool(DiagnosticTool.NATLINT);
+		clearDiagnosticsByTool(DiagnosticTool.NATPARSE);
 		parse();
 	}
 
-	public void parse()
+	public void parse(ParseStrategy strategy)
 	{
 		try
 		{
-			parseInternal(Files.readString(file.getPath()));
+			parseAndAnalyze(Files.readString(file.getPath()), strategy);
 		}
 		catch (Exception e)
 		{
@@ -146,6 +149,11 @@ public class LanguageServerFile implements IModuleProvider
 		}
 	}
 
+	public void parse()
+	{
+		parse(ParseStrategy.WITH_CALLERS);
+	}
+
 	private boolean hasToReparseCallers(String newSource)
 	{
 		var newDefineDataHash = hashDefineData(newSource);
@@ -157,53 +165,19 @@ public class LanguageServerFile implements IModuleProvider
 		return !tooManyCallers && defineDataChanged;
 	}
 
-	private void parseInternal(String source)
+	private void parseAndAnalyze(String source, ParseStrategy strategy)
 	{
 		try
 		{
-			if (module != null)
-			{
-				destroyPresentNodes();
-			}
-
-			outgoingReferences.forEach(ref -> ref.removeIncomingReference(this));
-			outgoingReferences.clear(); // Will be re-added during parse
-			clearDiagnosticsByTool(DiagnosticTool.NATPARSE);
-
-			var lexer = new Lexer();
-			var tokenList = lexer.lex(source, file.getPath());
-			comments.clear();
-			comments.addAll(tokenList.comments().toList());
-			var parser = new NaturalParser(this);
-
 			var previousCallers = module != null ? module.callers() : ReadOnlyList.<IModuleReferencingNode>from(List.of());
-			module = parser.parse(file, tokenList);
-			for (var diagnostic : module.diagnostics())
-			{
-				addDiagnostic(DiagnosticTool.NATPARSE, diagnostic);
-			}
+			reparseWithoutAnalyzing(source);
 
-			clearDiagnosticsByTool(DiagnosticTool.NATLINT);
-			var linter = new NaturalLinter();
-			var linterDiagnostics = linter.lint(module);
-			for (var linterDiagnostic : linterDiagnostics)
-			{
-				addDiagnostic(DiagnosticTool.NATLINT, linterDiagnostic);
-			}
+			analyze();
+			hasBeenAnalyzed = true;
 
-			if (hasToReparseCallers(source))
+			if (strategy != ParseStrategy.WITHOUT_CALLERS && hasToReparseCallers(source))
 			{
-				var callers = new ArrayList<>(incomingReferences);
-				incomingReferences.clear();
-				// TODO: Add LSP Progress
-				callers.forEach(languageServerFile -> {
-					if (languageServerFile == this)
-					{
-						// recursive calls, we don't need to parse ourselves again
-						return;
-					}
-					languageServerFile.dependencyChanged();
-				});
+				reparseCallers();
 			}
 			else
 			{
@@ -227,6 +201,88 @@ public class LanguageServerFile implements IModuleProvider
 		}
 	}
 
+	private void analyze()
+	{
+		var start = System.currentTimeMillis();
+		var log = "Analyzing %s".formatted(getReferableName());
+		clearDiagnosticsByTool(DiagnosticTool.NATLINT);
+		var linter = new NaturalLinter();
+		var linterDiagnostics = linter.lint(module);
+		for (var linterDiagnostic : linterDiagnostics)
+		{
+			addDiagnostic(DiagnosticTool.NATLINT, linterDiagnostic);
+		}
+		var end = System.currentTimeMillis();
+		log += " took %dms".formatted(end - start);
+		System.err.println(log);
+	}
+
+	public void reparseCallers()
+	{
+		var callers = new ArrayList<>(incomingReferences);
+		incomingReferences.clear();
+		// TODO: Add LSP Progress
+		callers.forEach(languageServerFile -> {
+			if (languageServerFile == this)
+			{
+				// recursive calls, we don't need to parse ourselves again
+				return;
+			}
+			try
+			{
+				languageServerFile.reparseWithoutAnalyzing();
+			}
+			catch (Exception e)
+			{
+				addDiagnostic(DiagnosticTool.NATPARSE,
+					new Diagnostic(
+						new Range(
+							new Position(0, 0),
+							new Position(0, 0)
+						),
+						"Unhandled exception: %s".formatted(e.getMessage())
+					)
+				);
+			}
+		});
+	}
+
+	private void reparseWithoutAnalyzing() throws IOException
+	{
+		reparseWithoutAnalyzing(Files.readString(file.getPath()));
+	}
+
+	private void reparseWithoutAnalyzing(String source)
+	{
+		hasBeenAnalyzed = false;
+		var start = System.currentTimeMillis();
+		var log = "Parsing %s".formatted(getReferableName());
+		if (module != null)
+		{
+			destroyPresentNodes();
+			log += " (destroyed previous nodes)";
+		}
+		System.err.println(log);
+
+		outgoingReferences.forEach(ref -> ref.removeIncomingReference(this));
+		outgoingReferences.clear(); // Will be re-added during parse
+		clearDiagnosticsByTool(DiagnosticTool.NATPARSE);
+
+		var lexer = new Lexer();
+		var tokenList = lexer.lex(source, file.getPath());
+		comments.clear();
+		comments.addAll(tokenList.comments().toList());
+		var parser = new NaturalParser(this);
+
+		module = parser.parse(file, tokenList);
+		for (var diagnostic : module.diagnostics())
+		{
+			addDiagnostic(DiagnosticTool.NATPARSE, diagnostic);
+		}
+		var end = System.currentTimeMillis();
+		System.err.printf("Took %dms%n", end - start);
+	}
+
 	private void destroyPresentNodes()
 	{
 		if (module instanceof IHasDefineData hasDefineData && hasDefineData.defineData() != null)
@@ -240,13 +296,18 @@ public class LanguageServerFile implements IModuleProvider
 		}
 	}
 
-	public INaturalModule module()
+	public INaturalModule module(ParseStrategy strategy)
 	{
 		if (module == null || module.syntaxTree() == null) // TODO: Use parsed flag to determine if its only partial parsed. SyntaxTree is conveniently null currently, but that's not reliable
 		{
-			parse();
+			parse(strategy);
 		}
 		return module;
+	}
+
+	public INaturalModule module()
+	{
+		return module(ParseStrategy.WITH_CALLERS);
 	}
 
 	// TODO(cyclic-dependencies):

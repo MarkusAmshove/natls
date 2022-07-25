@@ -15,6 +15,7 @@ abstract class AbstractParser<T>
 {
 	protected IModuleProvider moduleProvider;
 	protected TokenList tokens;
+	protected List<ISymbolReferenceNode> unresolvedReferences;
 	private TokenNode previousNode;
 
 	private List<IDiagnostic> diagnostics = new ArrayList<>();
@@ -166,20 +167,6 @@ abstract class AbstractParser<T>
 		return tokenConsumed;
 	}
 
-	protected SyntaxToken identifier() throws ParseError
-	{
-		// TODO(kcheck): This currently allows keywords as identifier
-		//		if(tokens.isAtEnd() || !tokens.peek().kind().isIdentifier())
-		//		{
-		//			diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens.peek()));
-		//			throw new ParseError(peek());
-		//		}
-
-		var token = tokens.peek();
-		tokens.advance();
-		return token;
-	}
-
 	protected SyntaxToken consumeMandatory(BaseSyntaxNode node, SyntaxKind kind) throws ParseError
 	{
 		if (consumeOptionally(node, kind))
@@ -189,6 +176,39 @@ abstract class AbstractParser<T>
 
 		diagnostics.add(ParserErrors.unexpectedToken(kind, tokens));
 		throw new ParseError(peek());
+	}
+
+	protected SyntaxToken consumeMandatoryClosing(BaseSyntaxNode node, SyntaxKind closingTokenType, SyntaxToken openingToken) throws ParseError
+	{
+		if(!consumeOptionally(node, closingTokenType))
+		{
+			diagnostics.add(ParserErrors.missingClosingToken(closingTokenType, openingToken));
+			throw new ParseError(peek());
+		}
+
+		return previousToken();
+	}
+
+	protected ILiteralNode consumeLiteralNode(BaseSyntaxNode node) throws ParseError
+	{
+		if(peekKind(SyntaxKind.LPAREN))
+		{
+			var attribute = new AttributeNode(peek());
+			node.addNode(attribute);
+			consumeMandatory(node, SyntaxKind.LPAREN);
+			while (!isAtEnd() && peek().kind() != SyntaxKind.RPAREN && peek().kind() != SyntaxKind.END_DEFINE)
+			{
+				// TODO(attributes): Look for the actual value after the '=' as initial value token
+				consume(attribute);
+			}
+			consumeMandatory(node, SyntaxKind.RPAREN);
+			return attribute;
+		}
+
+		var literal = consumeAny(List.of(SyntaxKind.NUMBER_LITERAL, SyntaxKind.STRING_LITERAL, SyntaxKind.TRUE, SyntaxKind.FALSE, SyntaxKind.ASTERISK));
+		var literalNode = new LiteralNode(literal);
+		node.addNode(literalNode);
+		return literalNode;
 	}
 
 	protected SyntaxToken consumeLiteral(BaseSyntaxNode node) throws ParseError
@@ -212,27 +232,44 @@ abstract class AbstractParser<T>
 			return lparen;
 		}
 
-		var literal = consumeAny(List.of(SyntaxKind.NUMBER, SyntaxKind.STRING, SyntaxKind.TRUE, SyntaxKind.FALSE));
+		var literal = consumeAny(List.of(SyntaxKind.NUMBER_LITERAL, SyntaxKind.STRING_LITERAL, SyntaxKind.TRUE, SyntaxKind.FALSE));
 		previousNode = new TokenNode(literal);
 		node.addNode(previousNode);
 		return literal;
 	}
 
-	// TODO: Remove/Change once IDENTIFIER_OR_KEYWORD is no more
-	protected SyntaxToken consumeMandatoryIdentifier(BaseSyntaxNode node) throws ParseError
+	/**
+	 * @deprecated
+	 * You probably wanted to use {@link AbstractParser#consumeMandatoryIdentifier(BaseSyntaxNode)}, because that already creates a TokenNode.</br>
+	 * If not, remove the Deprecated annotation
+	 */
+	@Deprecated(forRemoval = true)
+	protected SyntaxToken identifier() throws ParseError
 	{
 		// TODO(kcheck): This currently allows keywords as identifier
-		var kind = peek().kind();
-		if (!isAtEnd() && !kind.isLiteralOrConst())
+		var currentToken = tokens.peek();
+		if(tokens.isAtEnd() || (currentToken.kind() != SyntaxKind.IDENTIFIER && !currentToken.kind().canBeIdentifier()))
 		{
-			previousNode = new TokenNode(peek());
-			node.addNode(previousNode);
-			tokens.advance();
-			return previousToken();
+			diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens));
+			throw new ParseError(peek());
 		}
 
-		diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens));
-		throw new ParseError(peek());
+		if(currentToken.kind() != SyntaxKind.IDENTIFIER)
+		{
+			diagnostics.add(ParserErrors.keywordUsedAsIdentifier(currentToken));
+		}
+
+		var token = currentToken.withKind(SyntaxKind.IDENTIFIER);
+		tokens.advance();
+		return token;
+	}
+
+	protected SyntaxToken consumeMandatoryIdentifier(BaseSyntaxNode node) throws ParseError
+	{
+		var identifierToken = identifier();
+		previousNode = new TokenNode(identifierToken);
+		node.addNode(previousNode);
+		return identifierToken;
 	}
 
 	protected SyntaxToken consumeAny(List<SyntaxKind> acceptedKinds) throws ParseError
@@ -244,6 +281,81 @@ abstract class AbstractParser<T>
 		}
 
 		return tokens.advance();
+	}
+
+	protected IOperandNode consumeOperandNode(BaseSyntaxNode node) throws ParseError
+	{
+		if(peekKind(SyntaxKind.IDENTIFIER))
+		{
+			return consumeVariableReferenceNode(node);
+		}
+		if(peek().kind().isSystemVariable())
+		{
+			return consumeSystemVariableNode(node);
+		}
+		if(peek().kind().isSystemFunction())
+		{
+			return consumeSystemFunctionNode(node);
+		}
+
+		return consumeLiteralNode(node);
+	}
+
+	protected ISystemFunctionNode consumeSystemFunctionNode(BaseSyntaxNode node) throws ParseError
+	{
+		var systemFunction = new SystemFunctionNode();
+		systemFunction.setSystemFunction(peek().kind());
+		consume(systemFunction);
+		consumeMandatory(systemFunction, SyntaxKind.LPAREN);
+		systemFunction.setParameter(consumeOperandNode(systemFunction));
+		consumeMandatory(systemFunction, SyntaxKind.RPAREN);
+		node.addNode(systemFunction);
+		return systemFunction;
+	}
+
+	protected IVariableReferenceNode consumeVariableReferenceNode(BaseSyntaxNode node) throws ParseError
+	{
+		var identifierToken = identifier();
+		var reference = new VariableReferenceNode(identifierToken);
+		reference.addNode(new TokenNode(identifierToken));
+		previousNode = reference;
+		node.addNode(reference);
+
+		if(consumeOptionally(reference, SyntaxKind.LPAREN))
+		{
+			reference.addDimension(consumeOperandNode(reference));
+			while(peekKind(SyntaxKind.COMMA))
+			{
+				consume(reference);
+				reference.addDimension(consumeOperandNode(reference));
+			}
+			consumeMandatory(reference, SyntaxKind.RPAREN);
+		}
+
+		unresolvedReferences.add(reference);
+		return reference;
+	}
+
+	protected ISystemVariableNode consumeSystemVariableNode(BaseSyntaxNode node)
+	{
+		var systemVariableNode = new SystemVariableNode(peek());
+		consume(node);
+		node.addNode(systemVariableNode);
+		return systemVariableNode;
+	}
+
+	protected void consumeAnyMandatory(BaseSyntaxNode node, List<SyntaxKind> acceptedKinds) throws ParseError
+	{
+		for (SyntaxKind acceptedKind : acceptedKinds)
+		{
+			if(consumeOptionally(node, acceptedKind))
+			{
+				return;
+			}
+		}
+
+		diagnostics.add(ParserErrors.unexpectedToken(acceptedKinds, tokens.peek()));
+		throw new ParseError(peek());
 	}
 
 	protected boolean peekAny(List<SyntaxKind> acceptedKinds)
@@ -317,6 +429,15 @@ abstract class AbstractParser<T>
 	{
 		// Skip to next line or END-DEFINE to recover
 		while (!tokens.isAtEnd() && peek().line() == e.getErrorToken().line() && peek().kind() != SyntaxKind.END_DEFINE)
+		{
+			tokens.advance();
+		}
+	}
+
+	protected void skipToNextLineAsRecovery(int currentLine)
+	{
+		// Skip to next line or END-DEFINE to recover
+		while (!tokens.isAtEnd() && peek().line() == currentLine && peek().kind() != SyntaxKind.END_DEFINE)
 		{
 			tokens.advance();
 		}

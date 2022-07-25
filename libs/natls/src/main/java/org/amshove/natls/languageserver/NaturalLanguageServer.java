@@ -1,5 +1,6 @@
 package org.amshove.natls.languageserver;
 
+import org.amshove.natls.App;
 import org.amshove.natls.codeactions.CodeActionRegistry;
 import org.amshove.natls.progress.ClientProgressType;
 import org.amshove.natls.progress.MessageProgressMonitor;
@@ -43,7 +44,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			capabilities.setSignatureHelpProvider(new SignatureHelpOptions()); // Maybe < for Functions?
 			capabilities.setCallHierarchyProvider(true);
 			capabilities.setCodeActionProvider(CodeActionRegistry.INSTANCE.registeredCodeActionCount() > 0);
-			capabilities.setRenameProvider(true);
+			capabilities.setRenameProvider(new RenameOptions(true));
 
 			var progressMonitor = params.getWorkDoneToken() != null
 				? new WorkDoneProgressMonitor(params.getWorkDoneToken().getLeft(), client)
@@ -94,7 +95,10 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			{
 				progressMonitor.progress("Initialization done in %dms".formatted(endTime - startTime), 100);
 			}
-			return new InitializeResult(capabilities);
+
+			var lspName = App.class.getPackage().getImplementationTitle();
+			var lspVersion = App.class.getPackage().getImplementationVersion();
+			return new InitializeResult(capabilities, new ServerInfo(lspName != null ? lspName : "natls", lspVersion != null ? lspVersion : "dev"));
 		});
 	}
 

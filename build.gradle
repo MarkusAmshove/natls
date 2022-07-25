@@ -7,6 +7,7 @@ plugins {
 ext {
 	JAVA_VERSION = 17
 	SLF4J_VERSION = '1.7.32'
+    SONAR_VERSION = '8.5.1.38104'
 	libraries = [
 		// Implementation
 		guava : 'com.google.guava:guava:31.0.1-jre',
@@ -16,6 +17,8 @@ ext {
 		slf4j_simple : "org.slf4j:slf4j-simple:${SLF4J_VERSION}",
 		slf4j_nop	: "org.slf4j:slf4j-nop:${SLF4J_VERSION}",
 		reflections  : 'org.reflections:reflections:0.10.2',
+		picocli : 'info.picocli:picocli:4.6.3',
+        sonarqube_api   : "org.sonarsource.sonarqube:sonar-plugin-api:${SONAR_VERSION}",
 		// Test
 		junit_jupiter : 'org.junit:junit-bom:5.8.2',
 		assertJ : 'org.assertj:assertj-core:3.11.1',
@@ -103,6 +106,11 @@ task cover(type: JacocoReport) {
 		xml.required = true
 		csv.required = false
 	}
+}
+
+task testReport(type: TestReport) {
+	destinationDir = file("$buildDir/reports/allTests")
+	reportOn subprojects.collect { it.tasks.withType(Test) }
 }
 
 sonarqube {
