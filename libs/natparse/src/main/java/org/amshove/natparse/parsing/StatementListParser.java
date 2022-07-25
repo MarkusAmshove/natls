@@ -139,8 +139,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			}
 			catch (ParseError e)
 			{
-				// Currently just skip over the token
-				// TODO: Add a diagnostic. For this move the method from DefineDataParser up into AbstractParser
+				// TODO: Add a ErrorRecoveryNode which eats every token until `isStatementStart()` returns true?
 				tokens.advance();
 			}
 		}
@@ -590,5 +589,32 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		unresolvedReferences.removeAll(resolvedReferences);
+	}
+
+	@SuppressWarnings({"unused"}) // TODO: use this for error recovery
+	private boolean isStatementStart()
+	{
+		if(tokens.isAtEnd())
+		{
+			return false;
+		}
+
+		var currentKind = tokens.peek().kind();
+		if(currentKind.canBeIdentifier() && peekKind(1, SyntaxKind.COLON_EQUALS_SIGN))
+		{
+			return true;
+		}
+
+		return switch(currentKind) {
+			case ACCEPT, ADD, ASSIGN, CALL, CALLNAT, CLOSE, COMMIT, COMPRESS, COMPUTE, DECIDE, DEFINE, DELETE, DISPLAY, DIVIDE, DO, DOEND, DOWNLOAD, EJECT, END, ESCAPE, EXAMINE, EXPAND, FETCH, FIND, FOR, FORMAT, GET, HISTOGRAM, IF, IGNORE, INCLUDE, INPUT, INSERT, INTERFACE, LIMIT, LOOP, METHOD, MOVE, MULTIPLY, NEWPAGE, OBTAIN, OPTIONS, PASSW, PERFORM, PRINT, PROCESS, PROPERTY, READ, REDEFINE, REDUCE, REINPUT, REJECT, RELEASE, REPEAT, RESET, RESIZE, RETRY, ROLLBACK, RUN, SELECT, SEPARATE, SET, SKIP, SORT, STACK, STOP, STORE, SUBTRACT, TERMINATE, UPDATE, WRITE -> true;
+			case ON -> peekKind(1, SyntaxKind.ERROR);
+			case OPEN -> peekKind(1, SyntaxKind.CONVERSATION);
+			case PARSE -> peekKind(1, SyntaxKind.XML);
+			case REQUEST -> peekKind(1, SyntaxKind.DOCUMENT);
+			case SEND -> peekKind(1, SyntaxKind.METHOD);
+			case SUSPEND -> peekKind(1, SyntaxKind.IDENTICAL) && peekKind(2, SyntaxKind.SUPPRESS);
+			case UPLOAD -> peekKind(1, SyntaxKind.PC) && peekKind(2, SyntaxKind.FILE);
+			default -> false;
+		};
 	}
 }
