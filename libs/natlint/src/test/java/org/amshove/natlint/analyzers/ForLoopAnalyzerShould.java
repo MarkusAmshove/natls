@@ -12,7 +12,7 @@ public class ForLoopAnalyzerShould extends AbstractAnalyzerTest
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "OCC", "OCCURENCE" })
+	@ValueSource(strings = { "OCC", "OCCURRENCE" })
 	void recognizeTheDiagnostic(String systemVar)
 	{
 		testDiagnostics("""

@@ -57,7 +57,7 @@ public class ForLoopAnalyzer extends AbstractAnalyzer
 			return;
 		}
 
-		if(sysFuncNode.systemFunction() == SyntaxKind.OCC || sysFuncNode.systemFunction() == SyntaxKind.OCCURENCE)
+		if(sysFuncNode.systemFunction() == SyntaxKind.OCC || sysFuncNode.systemFunction() == SyntaxKind.OCCURRENCE)
 		{
 			context.report(UPPER_BOUND_OCC.createDiagnostic(sysFuncNode));
 		}
