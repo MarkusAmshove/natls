@@ -392,7 +392,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 
 		var upperBound = assertNodeType(forLoopNode.upperBound(), ISystemFunctionNode.class);
 		assertThat(upperBound.systemFunction()).isEqualTo(SyntaxKind.OCC);
-		assertThat(upperBound.parameter()).isInstanceOf(IVariableReferenceNode.class);
+		assertThat(upperBound.parameter().first()).isInstanceOf(IVariableReferenceNode.class);
 		assertThat(forLoopNode.body().statements()).hasSize(1);
 		assertThat(forLoopNode.descendants()).hasSize(8);
 	}

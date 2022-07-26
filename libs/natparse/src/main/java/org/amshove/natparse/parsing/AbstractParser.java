@@ -307,7 +307,11 @@ abstract class AbstractParser<T>
 		systemFunction.setSystemFunction(peek().kind());
 		consume(systemFunction);
 		consumeMandatory(systemFunction, SyntaxKind.LPAREN);
-		systemFunction.setParameter(consumeOperandNode(systemFunction));
+		systemFunction.addParameter(consumeOperandNode(systemFunction));
+		while(consumeOptionally(systemFunction, SyntaxKind.COMMA))
+		{
+			systemFunction.addParameter(consumeOperandNode(systemFunction));
+		}
 		consumeMandatory(systemFunction, SyntaxKind.RPAREN);
 		node.addNode(systemFunction);
 		return systemFunction;
