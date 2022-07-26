@@ -94,7 +94,7 @@ public abstract class AbstractAnalyzerTest
 		var module = parse(file);
 		LinterContext.INSTANCE.reset();
 		LinterContext.INSTANCE.registerAnalyzer(analyzerUnderTest);
-		LinterContext.INSTANCE.initialiazeAnalyzers();
+		LinterContext.INSTANCE.initializeAnalyzers();
 		var linter = new NaturalLinter();
 		return linter.lint(module);
 	}
