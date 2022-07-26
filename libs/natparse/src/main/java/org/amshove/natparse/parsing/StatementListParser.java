@@ -153,7 +153,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		var opening = consumeMandatory(loopNode, SyntaxKind.FOR);
 		consumeVariableReferenceNode(loopNode);
-		consumeAnyMandatory(loopNode, List.of(SyntaxKind.COLON_EQUALS_SIGN, SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.FROM));
+		consumeAnyOptionally(loopNode, List.of(SyntaxKind.COLON_EQUALS_SIGN, SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.FROM));
 		consumeOperandNode(loopNode); // TODO(arithmetic-expression): Could also be arithmetic expression
 		consumeAnyMandatory(loopNode, List.of(SyntaxKind.TO, SyntaxKind.THRU));
 		var upperBound = consumeOperandNode(loopNode); // TODO(arithmetic-expression): Could also be arithmetic expression

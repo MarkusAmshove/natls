@@ -344,6 +344,19 @@ abstract class AbstractParser<T>
 		return systemVariableNode;
 	}
 
+	protected boolean consumeAnyOptionally(BaseSyntaxNode node, List<SyntaxKind> acceptedKinds)
+	{
+		for (SyntaxKind acceptedKind : acceptedKinds)
+		{
+			if(consumeOptionally(node, acceptedKind))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	protected void consumeAnyMandatory(BaseSyntaxNode node, List<SyntaxKind> acceptedKinds) throws ParseError
 	{
 		for (SyntaxKind acceptedKind : acceptedKinds)
