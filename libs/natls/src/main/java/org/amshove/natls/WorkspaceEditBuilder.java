@@ -4,6 +4,7 @@ import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natls.languageserver.TextEdits;
 import org.amshove.natls.languageserver.UsingToAdd;
 import org.amshove.natls.project.LanguageServerFile;
+import org.amshove.natparse.IPosition;
 import org.amshove.natparse.natural.IHasDefineData;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.VariableScope;
@@ -38,6 +39,18 @@ public class WorkspaceEditBuilder
 	public WorkspaceEditBuilder changesNode(ISyntaxNode node, String newText)
 	{
 		return changesText(LspUtil.pathToUri(node.position().filePath()), LspUtil.toRange(node), newText);
+	}
+
+	public WorkspaceEditBuilder changesText(IPosition position, String newText)
+	{
+		var edits = textEdits.computeIfAbsent(LspUtil.pathToUri(position.filePath()), u -> new ArrayList<>());
+
+		var edit = new TextEdit();
+		edit.setRange(LspUtil.toRange(position));
+		edit.setNewText(newText);
+
+		edits.add(edit);
+		return this;
 	}
 
 	public WorkspaceEditBuilder changesText(String fileUri, Range range, String newText)
