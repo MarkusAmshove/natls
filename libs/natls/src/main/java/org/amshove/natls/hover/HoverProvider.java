@@ -32,6 +32,9 @@ public class HoverProvider
 			return EMPTY_HOVER;
 		}
 
+		// TODO: This should use nodes instead of tokens, but does not work currently in every case, as they're only created when parsing operands
+		//		and some node types that use operands aren't implemented yet.
+		//		The `tokenToHover` can then be removed from the context.
 		if(context.tokenToHover().kind().isSystemVariable() || context.tokenToHover().kind().isSystemFunction())
 		{
 			return hoverBuiltinFunction(context.tokenToHover().kind());
