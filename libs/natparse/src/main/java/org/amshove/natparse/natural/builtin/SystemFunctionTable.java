@@ -7,9 +7,9 @@ import java.util.Map;
 
 public class SystemFunctionTable
 {
-	private static final Map<SyntaxKind, ISystemDefinition> TABLE = new HashMap<>();
+	private static final Map<SyntaxKind, IBuiltinFunctionDefinition> TABLE = new HashMap<>();
 
-	public static ISystemDefinition getDefinition(SyntaxKind kind)
+	public static IBuiltinFunctionDefinition getDefinition(SyntaxKind kind)
 	{
 		return TABLE.get(kind);
 	}
