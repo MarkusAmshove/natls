@@ -21,10 +21,12 @@ public class SystemFunctionTableAcceptanceTest
 			.map(k -> dynamicContainer(k.toString(), Stream.of(
 				dynamicTest("%s should be represented".formatted(k), () ->
 					assertThat(SystemFunctionTable.getDefinition(k)).isNotNull()),
+				dynamicTest("%s should have a name".formatted(k), () ->
+					assertThat(SystemFunctionTable.getDefinition(k).name()).isNotNull()),
 				dynamicTest("%s should have documentation".formatted(k), () ->
 					assertThat(SystemFunctionTable.getDefinition(k).documentation()).isNotNull()),
 				dynamicTest("%s should have a data format".formatted(k), () ->
-					assertThat(SystemFunctionTable.getDefinition(k).format()).isNotNull())
+					assertThat(SystemFunctionTable.getDefinition(k).type()).isNotNull())
 			)));
 	}
 }

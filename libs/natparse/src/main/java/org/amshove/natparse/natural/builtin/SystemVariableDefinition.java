@@ -1,7 +1,7 @@
 package org.amshove.natparse.natural.builtin;
 
-import org.amshove.natparse.natural.DataFormat;
+import org.amshove.natparse.natural.IDataType;
 
-public record SystemVariableDefinition(String documentation, DataFormat format) implements IBuiltinFunctionDefinition
+public record SystemVariableDefinition(String name, String documentation, IDataType type, boolean isModifiable) implements IBuiltinFunctionDefinition
 {
 }
