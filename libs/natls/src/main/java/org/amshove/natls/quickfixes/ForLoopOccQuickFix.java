@@ -24,7 +24,7 @@ public class ForLoopOccQuickFix extends AbstractQuickFix
 	{
 		var systemFunctionNode = (ISystemFunctionNode) quickFixContext.nodeAtPosition();
 		var forLoop = (IForLoopNode) systemFunctionNode.parent();
-		var operand = systemFunctionNode.parameter();
+		var operand = systemFunctionNode.parameter().first();
 		if(!(operand instanceof IVariableReferenceNode variableReferenceNode))
 		{
 			return null;

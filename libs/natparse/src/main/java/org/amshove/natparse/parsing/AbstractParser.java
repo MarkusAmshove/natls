@@ -307,7 +307,11 @@ abstract class AbstractParser<T>
 		systemFunction.setSystemFunction(peek().kind());
 		consume(systemFunction);
 		consumeMandatory(systemFunction, SyntaxKind.LPAREN);
-		systemFunction.setParameter(consumeOperandNode(systemFunction));
+		systemFunction.addParameter(consumeOperandNode(systemFunction));
+		while(consumeOptionally(systemFunction, SyntaxKind.COMMA))
+		{
+			systemFunction.addParameter(consumeOperandNode(systemFunction));
+		}
 		consumeMandatory(systemFunction, SyntaxKind.RPAREN);
 		node.addNode(systemFunction);
 		return systemFunction;
@@ -342,6 +346,19 @@ abstract class AbstractParser<T>
 		consume(node);
 		node.addNode(systemVariableNode);
 		return systemVariableNode;
+	}
+
+	protected boolean consumeAnyOptionally(BaseSyntaxNode node, List<SyntaxKind> acceptedKinds)
+	{
+		for (SyntaxKind acceptedKind : acceptedKinds)
+		{
+			if(consumeOptionally(node, acceptedKind))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	protected void consumeAnyMandatory(BaseSyntaxNode node, List<SyntaxKind> acceptedKinds) throws ParseError

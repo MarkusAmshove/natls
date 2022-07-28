@@ -47,7 +47,7 @@ public enum LinterContext implements ILinterContext
 		}
 
 		registeredAnalyzers = analyzers;
-		initialiazeAnalyzers();
+		initializeAnalyzers();
 	}
 
 	@Override
@@ -106,10 +106,11 @@ public enum LinterContext implements ILinterContext
 	{
 		registeredAnalyzers.clear();
 		nodeAnalyzerFunctions.clear();
+		tokenAnalyzerFunctions.clear();
 		initialized = false;
 	}
 
-	/* test */ void initialiazeAnalyzers()
+	/* test */ void initializeAnalyzers()
 	{
 		if (!initialized)
 		{

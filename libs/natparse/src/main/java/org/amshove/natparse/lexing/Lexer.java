@@ -326,9 +326,9 @@ public class Lexer
 
 		scanner.start();
 		scanner.advance();
-		if (scanner.advanceIf("OCCURENCE"))
+		if (scanner.advanceIf("OCCURRENCE"))
 		{
-			createAndAdd(SyntaxKind.OCC);
+			createAndAdd(SyntaxKind.OCCURRENCE);
 			return;
 		}
 		if (scanner.advanceIf("OCC"))

@@ -138,7 +138,7 @@ public class VariableReferenceTests extends ParserIntegrationTest
 		var subprogram = assertFileParsesAs(project.findModule("OPER"), ISubprogram.class);
 		var forStatement = (IForLoopNode) subprogram.body().statements().get(1);
 		assertThat(forStatement.upperBound()).isInstanceOf(ISystemFunctionNode.class);
-		var parameter = ((ISystemFunctionNode) forStatement.upperBound()).parameter();
+		var parameter = ((ISystemFunctionNode) forStatement.upperBound()).parameter().first();
 		assertThat(parameter).isInstanceOf(IVariableReferenceNode.class);
 		assertThat(((IVariableReferenceNode) parameter).reference()).isNotNull();
 	}

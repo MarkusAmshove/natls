@@ -317,7 +317,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
-	void rudimentaryParseIfStatements()
+	void parseIfStatements()
 	{
 		var ifStatement = assertParsesSingleStatement("""
 			IF #TEST = 5
@@ -330,7 +330,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
-	void rudimentaryParseForColonEqualsToStatements()
+	void parseForColonEqualsToStatements()
 	{
 		var forLoopNode = assertParsesSingleStatement("""
 			FOR #I := 1 TO 10
@@ -343,7 +343,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
-	void rudimentaryParseForEqToStatements()
+	void parseForEqToStatements()
 	{
 		var forLoopNode = assertParsesSingleStatement("""
 			FOR #I EQ 1 TO 10
@@ -356,7 +356,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
-	void rudimentaryParseForFromToStatementsStep()
+	void parseForFromToStatementsStep()
 	{
 		var forLoopNode = assertParsesSingleStatement("""
 			FOR #I FROM 5 TO 10 STEP 2
@@ -366,6 +366,19 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 
 		assertThat(forLoopNode.body().statements()).hasSize(1);
 		assertThat(forLoopNode.descendants()).hasSize(10);
+	}
+
+	@Test
+	void parseForWithoutFromOrEqOrColonEqualsToStatementsStep()
+	{
+		var forLoopNode = assertParsesSingleStatement("""
+			FOR #I 5 TO 10 STEP 2
+			    IGNORE
+			END-FOR
+			""", IForLoopNode.class);
+
+		assertThat(forLoopNode.body().statements()).hasSize(1);
+		assertThat(forLoopNode.descendants()).hasSize(9);
 	}
 
 	@Test
@@ -379,7 +392,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 
 		var upperBound = assertNodeType(forLoopNode.upperBound(), ISystemFunctionNode.class);
 		assertThat(upperBound.systemFunction()).isEqualTo(SyntaxKind.OCC);
-		assertThat(upperBound.parameter()).isInstanceOf(IVariableReferenceNode.class);
+		assertThat(upperBound.parameter().first()).isInstanceOf(IVariableReferenceNode.class);
 		assertThat(forLoopNode.body().statements()).hasSize(1);
 		assertThat(forLoopNode.descendants()).hasSize(8);
 	}

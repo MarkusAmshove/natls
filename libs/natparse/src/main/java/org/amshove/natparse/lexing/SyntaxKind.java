@@ -50,7 +50,7 @@ public enum SyntaxKind
 	LINEX(false, true, false),
 	CURRENT_UNIT(false, true, false),
 	OCC(false, false, true),
-	OCCURENCE(false, false, true),
+	OCCURRENCE(false, false, true),
 	ERROR_NR(false, true, false),
 	ERROR_LINE(false, true, false),
 	ERROR_TA(false, true, false),

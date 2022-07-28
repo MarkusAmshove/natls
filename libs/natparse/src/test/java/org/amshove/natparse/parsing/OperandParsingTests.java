@@ -34,8 +34,19 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		var operand = parseOperands("*TRIM(' Hello ')").first();
 		var function = assertNodeType(operand, ISystemFunctionNode.class);
 		assertThat(function.systemFunction()).isEqualTo(SyntaxKind.TRIM);
-		var parameter = assertNodeType(function.parameter(), ILiteralNode.class);
+		var parameter = assertNodeType(function.parameter().first(), ILiteralNode.class);
 		assertThat(parameter.token().source()).isEqualTo("' Hello '");
+	}
+
+	@Test
+	void parseSystemFunctionsWithMultipleParameter()
+	{
+		var operand = parseOperands("*OCC(#THE-ARR, 1, 5)").first();
+		var function = assertNodeType(operand, ISystemFunctionNode.class);
+		assertThat(function.systemFunction()).isEqualTo(SyntaxKind.OCC);
+		assertNodeType(function.parameter().first(), IVariableReferenceNode.class);
+		assertNodeType(function.parameter().get(1), ILiteralNode.class);
+		assertNodeType(function.parameter().get(2), ILiteralNode.class);
 	}
 
 	@Test

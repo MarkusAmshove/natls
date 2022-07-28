@@ -1,12 +1,16 @@
 package org.amshove.natparse.parsing;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.ISystemFunctionNode;
 
 class SystemFunctionNode extends BaseSyntaxNode implements ISystemFunctionNode
 {
-	private IOperandNode parameter;
+	private List<IOperandNode> parameter = new ArrayList<>();
 	private SyntaxKind systemFunction;
 
 	@Override
@@ -16,14 +20,14 @@ class SystemFunctionNode extends BaseSyntaxNode implements ISystemFunctionNode
 	}
 
 	@Override
-	public IOperandNode parameter()
+	public ReadOnlyList<IOperandNode> parameter()
 	{
-		return parameter;
+		return ReadOnlyList.from(parameter);
 	}
 
-	void setParameter(IOperandNode parameter)
+	void addParameter(IOperandNode parameter)
 	{
-		this.parameter = parameter;
+		this.parameter.add(parameter);
 	}
 
 	void setSystemFunction(SyntaxKind systemFunction)
