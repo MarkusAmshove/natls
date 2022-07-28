@@ -67,7 +67,8 @@ public class BuiltInFunctionTable
 				
 				If this is inside a copycode, it will return the number within the copycode, not the `INCLUDE`.
 				If you want to get all line numbers, including the `INCLUDE`s, use `*LINEX` instead.
-				""", INTEGER, 4.0)
+				""", INTEGER, 4.0),
+			unmodifiableVariable(SyntaxKind.ERROR_LINE, "Returns the line of the statement that raised an error", NUMERIC, 4)
 		);
 	}
 
