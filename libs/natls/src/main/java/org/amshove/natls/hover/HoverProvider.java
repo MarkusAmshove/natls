@@ -6,10 +6,11 @@ import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natls.project.LanguageServerProject;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.NodeUtil;
+import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
-import org.amshove.natparse.natural.ISymbolReferenceNode;
-import org.amshove.natparse.natural.ITypedVariableNode;
-import org.amshove.natparse.natural.IVariableNode;
+import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.builtin.BuiltInFunctionTable;
+import org.amshove.natparse.natural.builtin.SystemFunctionDefinition;
 import org.eclipse.lsp4j.Hover;
 
 import java.nio.file.Path;
@@ -31,6 +32,11 @@ public class HoverProvider
 			return EMPTY_HOVER;
 		}
 
+		if(context.tokenToHover().kind().isSystemVariable() || context.tokenToHover().kind().isSystemFunction())
+		{
+			return hoverBuiltinFunction(context.tokenToHover().kind());
+		}
+
 		if(context.nodeToHover() instanceof IVariableNode variableNode)
 		{
 			return hoverVariable(variableNode, context);
@@ -46,6 +52,22 @@ public class HoverProvider
 
 
 		return EMPTY_HOVER;
+	}
+
+	private Hover hoverBuiltinFunction(SyntaxKind kind)
+	{
+		var builtinFunction = BuiltInFunctionTable.getDefinition(kind);
+		var contentBuilder = MarkupContentBuilderFactory.newBuilder();
+		contentBuilder.appendCode("%s : %s".formatted(builtinFunction.name(), builtinFunction.type().toShortString()));
+		contentBuilder.appendParagraph("---");
+
+		if(builtinFunction instanceof SystemFunctionDefinition)
+		{
+			contentBuilder.appendSection("Parameter", nested -> {}); // TODO: Format parameter
+		}
+
+		contentBuilder.appendParagraph(builtinFunction.documentation());
+		return new Hover(contentBuilder.build());
 	}
 
 	private Hover hoverVariable(IVariableNode variable, HoverContext context)

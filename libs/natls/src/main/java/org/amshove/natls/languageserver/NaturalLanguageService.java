@@ -165,14 +165,13 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		var module = file.module();
 		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), module);
-		var providedHover = hoverProvider.createHover(new HoverContext(node, file));
+		var symbolToSearchFor = findTokenAtPosition(filepath, position); // TODO: Actually look for a node, could be ISymbolReferenceNode
+		var providedHover = hoverProvider.createHover(new HoverContext(node, symbolToSearchFor, file));
 		if(providedHover != null)
 		{
 			return providedHover;
 		}
 
-
-		var symbolToSearchFor = findTokenAtPosition(filepath, position); // TODO: Actually look for a node, could be ISymbolReferenceNode
 		if (symbolToSearchFor == null)
 		{
 			// No position found where we can provide hover for

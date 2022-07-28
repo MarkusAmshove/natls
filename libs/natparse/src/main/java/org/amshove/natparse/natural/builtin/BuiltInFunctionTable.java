@@ -8,7 +8,7 @@ import java.util.Map;
 
 import static org.amshove.natparse.natural.DataFormat.*;
 
-public class SystemFunctionTable
+public class BuiltInFunctionTable
 {
 	private static final Map<SyntaxKind, IBuiltinFunctionDefinition> TABLE;
 
