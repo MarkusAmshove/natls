@@ -11,6 +11,7 @@ import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.builtin.BuiltInFunctionTable;
 import org.amshove.natparse.natural.builtin.SystemFunctionDefinition;
+import org.amshove.natparse.natural.builtin.SystemVariableDefinition;
 import org.eclipse.lsp4j.Hover;
 
 import java.nio.file.Path;
@@ -67,6 +68,10 @@ public class HoverProvider
 		if(builtinFunction instanceof SystemFunctionDefinition)
 		{
 			contentBuilder.appendSection("Parameter", nested -> {}); // TODO: Format parameter
+		}
+		else if(builtinFunction instanceof SystemVariableDefinition variableDefinition)
+		{
+			contentBuilder.appendStrong(variableDefinition.isModifiable() ? "modifiable" : "unmodifiable").appendNewline();
 		}
 
 		contentBuilder.appendParagraph(builtinFunction.documentation());
