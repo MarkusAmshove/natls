@@ -115,18 +115,4 @@ LOCAL 1 #MYGROUP
 
 """);
 	}
-
-	private static LspTestContext testContext;
-
-	@BeforeAll
-	static void setupProject(@LspProjectName("emptyproject") LspTestContext context)
-	{
-		testContext = context;
-	}
-
-	@Override
-	protected LspTestContext getContext()
-	{
-		return testContext;
-	}
 }
