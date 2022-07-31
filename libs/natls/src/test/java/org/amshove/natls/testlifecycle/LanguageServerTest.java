@@ -1,7 +1,5 @@
 package org.amshove.natls.testlifecycle;
 
-import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 
 import java.io.IOException;
@@ -53,14 +51,5 @@ public abstract class LanguageServerTest
 		{
 			throw new UncheckedIOException(e);
 		}
-	}
-
-	protected Range singleCharacterPosition(int line, int column)
-	{
-		var position = new Position(line, column);
-		return new Range(
-			position,
-			position
-		);
 	}
 }

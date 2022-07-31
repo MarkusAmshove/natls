@@ -323,7 +323,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	private VariableNode typedVariable(VariableNode variable) throws ParseError
 	{
 		var typedVariable = new TypedVariableNode(variable);
-		var type = new VariableTypeNode();
+		var type = new VariableType();
 
 		if(peekKind(SyntaxKind.RPAREN))
 		{
@@ -614,9 +614,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			switch (variable.type().format())
 			{
 				case ALPHANUMERIC, BINARY, UNICODE -> {
-					if (variableLength < 1 || variableLength > VariableTypeNode.ONE_GIGABYTE)
+					if (variableLength < 1 || variableLength > VariableType.ONE_GIGABYTE)
 					{
-						report(ParserErrors.invalidLengthForDataTypeRange(variable, 1, VariableTypeNode.ONE_GIGABYTE));
+						report(ParserErrors.invalidLengthForDataTypeRange(variable, 1, VariableType.ONE_GIGABYTE));
 					}
 				}
 				case CONTROL, DATE, LOGIC, TIME -> report(ParserErrors.typeCantHaveLength(variable));

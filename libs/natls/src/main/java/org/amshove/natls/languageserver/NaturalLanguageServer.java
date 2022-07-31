@@ -2,6 +2,8 @@ package org.amshove.natls.languageserver;
 
 import org.amshove.natls.App;
 import org.amshove.natls.codeactions.CodeActionRegistry;
+import org.amshove.natls.markupcontent.MarkdownContentBuilder;
+import org.amshove.natls.markupcontent.MarkupContentBuilderFactory;
 import org.amshove.natls.progress.ClientProgressType;
 import org.amshove.natls.progress.MessageProgressMonitor;
 import org.amshove.natls.progress.ProgressTasks;
@@ -45,6 +47,8 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			capabilities.setCallHierarchyProvider(true);
 			capabilities.setCodeActionProvider(CodeActionRegistry.INSTANCE.registeredCodeActionCount() > 0);
 			capabilities.setRenameProvider(new RenameOptions(true));
+
+			MarkupContentBuilderFactory.configureFactory(MarkdownContentBuilder::new);
 
 			var progressMonitor = params.getWorkDoneToken() != null
 				? new WorkDoneProgressMonitor(params.getWorkDoneToken().getLeft(), client)

@@ -6,7 +6,10 @@ import org.amshove.natparse.natural.ddm.IDdmField;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 class DefineDataNode extends BaseSyntaxNode implements IDefineData
 {
@@ -32,6 +35,20 @@ class DefineDataNode extends BaseSyntaxNode implements IDefineData
 	}
 
 	@Override
+	public ReadOnlyList<IParameterDefinitionNode> parameterInOrder()
+	{
+		var allParameter = Stream.of(
+				parameterUsings().stream(),
+				variables.stream().filter(v -> v.position().isSameFileAs(position()) && v.scope().isParameter() && !(v instanceof IRedefinitionNode)))
+			.flatMap(s -> s)
+			.sorted(Comparator.comparingInt(n -> n.diagnosticPosition().line()));
+
+		return ReadOnlyList.from(
+			allParameter.collect(Collectors.toList())
+		);
+	}
+
+	@Override
 	public ReadOnlyList<IVariableNode> variables()
 	{
 		return ReadOnlyList.from(variables); // TODO: Perf
@@ -43,7 +60,7 @@ class DefineDataNode extends BaseSyntaxNode implements IDefineData
 	{
 		for (var variable : variables)
 		{
-			if(variable.name().equals(symbolName) || variable.qualifiedName().equals(symbolName))
+			if (variable.name().equals(symbolName) || variable.qualifiedName().equals(symbolName))
 			{
 				return variable;
 			}
@@ -58,10 +75,10 @@ class DefineDataNode extends BaseSyntaxNode implements IDefineData
 	{
 		for (var variable : variables)
 		{
-			if(variable instanceof IViewNode viewNode)
+			if (variable instanceof IViewNode viewNode)
 			{
 				var field = viewNode.ddm().findField(symbolName);
-				if(field != null)
+				if (field != null)
 				{
 					return field;
 				}
@@ -94,7 +111,7 @@ class DefineDataNode extends BaseSyntaxNode implements IDefineData
 
 	private void addAllVariablesFromUsing(IUsingNode usingNode)
 	{
-		if(usingNode.defineData() == null)
+		if (usingNode.defineData() == null)
 		{
 			return;
 		}
@@ -130,12 +147,12 @@ class DefineDataNode extends BaseSyntaxNode implements IDefineData
 		var foundVariables = new ArrayList<IVariableNode>();
 		for (var variable : variables)
 		{
-			if(variable.name() == null)
+			if (variable.name() == null)
 			{
 				continue; // There was a parse error with that variable name
 			}
 
-			if((variable.name().equals(symbolName) || variable.qualifiedName().equals(symbolName))
+			if ((variable.name().equals(symbolName) || variable.qualifiedName().equals(symbolName))
 				&& !(variable instanceof IRedefinitionNode))
 			{
 				foundVariables.add(variable);

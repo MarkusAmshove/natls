@@ -6,6 +6,8 @@ import org.amshove.natls.DiagnosticTool;
 import org.amshove.natls.codeactions.CodeActionRegistry;
 import org.amshove.natls.codeactions.RefactoringContext;
 import org.amshove.natls.codeactions.RenameSymbolAction;
+import org.amshove.natls.hover.HoverContext;
+import org.amshove.natls.hover.HoverProvider;
 import org.amshove.natls.progress.IProgressMonitor;
 import org.amshove.natls.progress.ProgressTasks;
 import org.amshove.natls.project.*;
@@ -48,6 +50,7 @@ public class NaturalLanguageService implements LanguageClientAware
 {
 	private static final Hover EMPTY_HOVER = null; // This should be done according to the spec
 	private final CodeActionRegistry codeActionRegistry = CodeActionRegistry.INSTANCE;
+	private HoverProvider hoverProvider;
 	private NaturalProject project; // TODO: Replace
 	private LanguageServerProject languageServerProject;
 	private LanguageClient client;
@@ -73,6 +76,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		preParseDataAreas(progressMonitor);
 		snippetEngine = new SnippetEngine(languageServerProject);
 		initialized = true;
+		hoverProvider = new HoverProvider(languageServerProject);
 	}
 
 	public List<SymbolInformation> findSymbolsInFile(TextDocumentIdentifier textDocument)
@@ -152,14 +156,22 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	public Hover hoverSymbol(TextDocumentIdentifier textDocument, Position position)
 	{
-
 		var filepath = LspUtil.uriToPath(textDocument.getUri());
 		var file = findNaturalFile(filepath);
 		if (file.getType() == NaturalFileType.COPYCODE)
 		{
 			return EMPTY_HOVER;
 		}
+
+		var module = file.module();
+		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), module);
 		var symbolToSearchFor = findTokenAtPosition(filepath, position); // TODO: Actually look for a node, could be ISymbolReferenceNode
+		var providedHover = hoverProvider.createHover(new HoverContext(node, symbolToSearchFor, file));
+		if(providedHover != null)
+		{
+			return providedHover;
+		}
+
 		if (symbolToSearchFor == null)
 		{
 			// No position found where we can provide hover for
@@ -177,7 +189,6 @@ public class NaturalLanguageService implements LanguageClientAware
 			return externalSubroutineHover;
 		}
 
-		var module = file.module();
 		if (!(module instanceof IHasDefineData hasDefineData))
 		{
 			return EMPTY_HOVER;
@@ -654,7 +665,8 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		var jsonData = (JsonObject)item.getData();
 		var info = new Gson().fromJson(jsonData, UnresolvedCompletionInfo.class);
-		var module = findNaturalFile(LspUtil.uriToPath(info.getUri())).module();
+		var file = findNaturalFile(LspUtil.uriToPath(info.getUri()));
+		var module = file.module();
 		if(!(module instanceof IHasDefineData hasDefineData))
 		{
 			return item;
@@ -666,7 +678,8 @@ public class NaturalLanguageService implements LanguageClientAware
 			return item;
 		}
 
-		item.setDocumentation(new MarkupContent(MarkupKind.MARKDOWN, createHoverMarkdownText(variableNode, module)));
+		item.setDocumentation(new MarkupContent(MarkupKind.MARKDOWN,
+			hoverProvider.createHover(new HoverContext(variableNode, variableNode.declaration(), file)).getContents().getRight().getValue()));
 		return item;
 	}
 
@@ -707,7 +720,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var label = "";
 		if (variableNode instanceof ITypedVariableNode typedNode)
 		{
-			label = variableName + " :" + typedNode.type().toShortString();
+			label = variableName + " :" + typedNode.formatTypeForDisplay();
 			item.setInsertText(variableName);
 		}
 		if (variableNode instanceof IGroupNode)

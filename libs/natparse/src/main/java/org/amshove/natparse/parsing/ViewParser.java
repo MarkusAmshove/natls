@@ -116,7 +116,7 @@ class ViewParser extends AbstractParser<ViewNode>
 	private TypedVariableNode typedVariable(VariableNode variable) throws ParseError
 	{
 		var typedVariable = new TypedVariableNode(variable);
-		var type = new VariableTypeNode();
+		var type = new VariableType();
 
 		var dataType = consumeMandatoryIdentifier(typedVariable).source();
 
