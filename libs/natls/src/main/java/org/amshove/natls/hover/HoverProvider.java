@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class HoverProvider
@@ -254,28 +255,31 @@ public class HoverProvider
 			return;
 		}
 
+		Function<IUsingNode, String> usingFormatter = (using) -> "PARAMETER USING %s %s".formatted(using.target().source(), getLineComment(using.position().line(), context.file()));
+		Function<IVariableNode, String> variableFormatter = (variable) -> {
+			var declaration = formatVariableDeclaration(variable);
+			return "%s%s".formatted(
+				declaration.declaration,
+				!declaration.comment.isEmpty()
+					? " %s".formatted(declaration.comment)
+					: "");
+		};
+
 		contentBuilder.appendSection("Parameter", nested -> {
 			var parameterBlock = new StringBuilder();
-			var definedParameterUsings = hasDefineData.defineData().parameterUsings().stream()
-				.map(using -> "PARAMETER USING %s %s".formatted(using.target().source(), getLineComment(using.position().line(), context.file())))
-				.collect(Collectors.joining(System.lineSeparator()));
+			for (var parameterDefinition : hasDefineData.defineData().parameterInOrder())
+			{
+				if(parameterDefinition instanceof IUsingNode using)
+				{
+					parameterBlock.append(usingFormatter.apply(using));
+				}
+				else if (parameterDefinition instanceof IVariableNode variable)
+				{
+					parameterBlock.append(variableFormatter.apply(variable));
+				}
 
-			var definedParameters = hasDefineData.defineData().variables().stream()
-				.filter(v -> v.scope() == VariableScope.PARAMETER)
-				.filter(v -> v.position().filePath().equals(module.file().getPath())) // get rid of parameters that are not directly declared in the module
-				.map(v -> {
-					var declaration = formatVariableDeclaration(v);
-					return "%s%s".formatted(
-						declaration.declaration,
-						!declaration.comment.isEmpty()
-						? " %s".formatted(declaration.comment)
-						: "");
-				})
-				.collect(Collectors.joining(System.lineSeparator()));
-
-			parameterBlock.append(definedParameterUsings);
-			parameterBlock.append(System.lineSeparator());
-			parameterBlock.append(definedParameters);
+				parameterBlock.append(System.lineSeparator());
+			}
 
 			nested.appendCode(parameterBlock.toString().stripIndent().trim());
 		});

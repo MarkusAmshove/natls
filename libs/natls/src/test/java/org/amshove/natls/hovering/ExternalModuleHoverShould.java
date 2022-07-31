@@ -70,4 +70,37 @@ public class ExternalModuleHoverShould extends HoveringTest
 			PARAMETER 1 #EXTSUB-PARAM (A10) /* Parameter documentation
 			```""");
 	}
+
+	@Test
+	void includeTheParameterInOrderOfDeclaration()
+	{
+		createOrSaveFile("LIBONE", "EXTPROG.NSN", """
+			DEFINE DATA
+			PARAMETER USING FIRSTPDA
+			PARAMETER
+			1 #APARAM (A10)
+			PARAMETER USING SECONDPDA
+			PARAMETER
+			1 #ANOTHER (N5)
+			1 #OPTIONAL (N5) OPTIONAL
+			END-DEFINE
+			""");
+
+		assertHover("""
+			DEFINE DATA LOCAL
+			END-DEFINE
+			CALLNAT 'EXT${}$PROG' 'A' 5
+			END
+			""", """
+			**LIBONE.EXTPROG**
+
+			*Parameter:*
+			```natural
+			PARAMETER USING FIRSTPDA
+			PARAMETER 1 #APARAM (A10)
+			PARAMETER USING SECONDPDA
+			PARAMETER 1 #ANOTHER (N5)
+			PARAMETER 1 #OPTIONAL (N5) OPTIONAL
+			```""");
+	}
 }
