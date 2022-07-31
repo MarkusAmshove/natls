@@ -238,15 +238,16 @@ abstract class AbstractParser<T>
 		return literal;
 	}
 
-	/**
-	 * @deprecated
-	 * You probably wanted to use {@link AbstractParser#consumeMandatoryIdentifier(BaseSyntaxNode)}, because that already creates a TokenNode.</br>
-	 * If not, remove the Deprecated annotation
-	 */
-	@Deprecated(forRemoval = true)
-	protected SyntaxToken identifier() throws ParseError
+	protected SyntaxToken consumeMandatoryIdentifier(BaseSyntaxNode node) throws ParseError
 	{
-		// TODO(kcheck): This currently allows keywords as identifier
+		var identifierToken = consumeIdentifierTokenOnly();
+		previousNode = new TokenNode(identifierToken);
+		node.addNode(previousNode);
+		return identifierToken;
+	}
+
+	protected SyntaxToken consumeIdentifierTokenOnly() throws ParseError
+	{
 		var currentToken = tokens.peek();
 		if(tokens.isAtEnd() || (currentToken.kind() != SyntaxKind.IDENTIFIER && !currentToken.kind().canBeIdentifier()))
 		{
@@ -259,16 +260,8 @@ abstract class AbstractParser<T>
 			diagnostics.add(ParserErrors.keywordUsedAsIdentifier(currentToken));
 		}
 
-		var token = currentToken.withKind(SyntaxKind.IDENTIFIER);
+		var identifierToken = currentToken.withKind(SyntaxKind.IDENTIFIER);
 		tokens.advance();
-		return token;
-	}
-
-	protected SyntaxToken consumeMandatoryIdentifier(BaseSyntaxNode node) throws ParseError
-	{
-		var identifierToken = identifier();
-		previousNode = new TokenNode(identifierToken);
-		node.addNode(previousNode);
 		return identifierToken;
 	}
 
@@ -331,7 +324,7 @@ abstract class AbstractParser<T>
 
 	protected IVariableReferenceNode consumeVariableReferenceNode(BaseSyntaxNode node) throws ParseError
 	{
-		var identifierToken = identifier();
+		var identifierToken = consumeIdentifierTokenOnly();
 		var reference = new VariableReferenceNode(identifierToken);
 		reference.addNode(new TokenNode(identifierToken));
 		previousNode = reference;

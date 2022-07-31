@@ -26,6 +26,7 @@ public class LspProjectNameResolver implements ParameterResolver
 	}
 
 	@Override
+	@SuppressWarnings("deprecation")
 	public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException
 	{
 		try

@@ -174,7 +174,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var internalPerform = new InternalPerformNode();
 
 		consumeMandatory(internalPerform, SyntaxKind.PERFORM);
-		var symbolName = identifier();
+		var symbolName = consumeIdentifierTokenOnly();
 		var referenceNode = new SymbolReferenceNode(symbolName);
 		internalPerform.setReferenceNode(referenceNode);
 		internalPerform.addNode(referenceNode);
@@ -216,7 +216,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private StatementNode identifierReference() throws ParseError
 	{
-		var token = identifier();
+		var token = consumeIdentifierTokenOnly();
 		if (peekKind(SyntaxKind.LPAREN)
 			&& (peekKind(1, SyntaxKind.LESSER_SIGN) || peekKind(1, SyntaxKind.LESSER_GREATER)))
 		{
@@ -484,7 +484,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeOptionally(find, SyntaxKind.IN);
 		consumeOptionally(find, SyntaxKind.FILE);
 
-		var viewName = symbolReferenceNode(identifier());
+		var viewName = symbolReferenceNode(consumeIdentifierTokenOnly());
 		find.setView(viewName);
 
 		if(consumeOptionally(find, SyntaxKind.WITH))
@@ -494,7 +494,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 				consumeLiteral(find);
 			}
 
-			var descriptor = identifier(); // TODO(expressions): Must be ISearchCriteriaNode
+			var descriptor = consumeIdentifierTokenOnly(); // TODO(expressions): Must be ISearchCriteriaNode
 			var descriptorNode = new DescriptorNode(descriptor);
 			find.addNode(descriptorNode);
 		}

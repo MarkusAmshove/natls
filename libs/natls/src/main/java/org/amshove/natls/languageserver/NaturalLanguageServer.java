@@ -27,6 +27,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 	private LanguageClient client;
 
 	@Override
+	@SuppressWarnings("deprecation") // Further support old LSP versions
 	public CompletableFuture<InitializeResult> initialize(InitializeParams params)
 	{
 		return CompletableFuture.supplyAsync(() -> {
@@ -143,6 +144,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 	}
 
 	@JsonRequest
+	@SuppressWarnings("unused") // used as endpoint
 	public CompletableFuture<Void> parseProject(Object params)
 	{
 		if (languageService.isInitialized())
@@ -154,6 +156,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 	}
 
 	@JsonRequest
+	@SuppressWarnings("unused") // used as endpoint
 	public CompletableFuture<Void> reparseReferences(Object params)
 	{
 		if (languageService.isInitialized())

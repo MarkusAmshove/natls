@@ -690,10 +690,6 @@ public enum SyntaxKind
 		this.isSystemFunction = isSystemFunction;
 	}
 
-	/**
-	 * @deprecated Directly test against {@link SyntaxKind#IDENTIFIER}
-	 */
-	@Deprecated(forRemoval = true)
 	public boolean isIdentifier()
 	{
 		return this == IDENTIFIER;

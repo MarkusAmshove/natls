@@ -530,7 +530,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		consume(using, SyntaxKind.USING);
 
-		var identifier = identifier();
+		var identifier = consumeIdentifierTokenOnly();
 		using.setUsingTarget(identifier);
 		var identifierTokenNode = new TokenNode(identifier);
 		using.addNode(identifierTokenNode);
