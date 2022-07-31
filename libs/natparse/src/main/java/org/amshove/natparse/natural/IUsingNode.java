@@ -2,7 +2,7 @@ package org.amshove.natparse.natural;
 
 import org.amshove.natparse.lexing.SyntaxToken;
 
-public interface IUsingNode extends ISyntaxNode, IModuleReferencingNode
+public non-sealed interface IUsingNode extends ISyntaxNode, IModuleReferencingNode, IParameterDefinitionNode
 {
 	/**
 	 * Contains the identifier that is being "used".

@@ -1479,6 +1479,42 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""");
 	}
 
+	@Test
+	void containParameterInOrderTheyAppeared()
+	{
+		ignoreModuleProvider();
+		var defineData = assertParsesWithoutDiagnostics("""
+			define data
+			parameter 1 #firstparam (a10)
+			parameter using PDA1
+			parameter 1 #secondparam (n5)
+			parameter using PDA2
+			parameter 1 #thirdparam (n5)
+			end-define
+			""");
+
+		var parameterInOrder = defineData.parameterInOrder();
+
+		assertParameter(parameterInOrder.first(), IVariableNode.class, "#FIRSTPARAM");
+		assertParameter(parameterInOrder.get(1), IUsingNode.class, "PDA1");
+		assertParameter(parameterInOrder.get(2), IVariableNode.class, "#SECONDPARAM");
+		assertParameter(parameterInOrder.get(3), IUsingNode.class, "PDA2");
+		assertParameter(parameterInOrder.get(4), IVariableNode.class, "#THIRDPARAM");
+	}
+
+	private <T extends IParameterDefinitionNode> void assertParameter(IParameterDefinitionNode node, Class<T> parameterType, String identifier)
+	{
+		var typedNode = assertNodeType(node, parameterType);
+		if(typedNode instanceof IUsingNode usingNode)
+		{
+			assertThat(usingNode.target().source()).isEqualTo(identifier);
+		}
+		else
+		{
+			assertThat(((IVariableNode)typedNode).name()).isEqualTo(identifier);
+		}
+	}
+
 	private DynamicTest createTypeTest(String source, DataFormat expectedFormat, double expectedLength, boolean hasDynamicLength)
 	{
 		return dynamicTest(

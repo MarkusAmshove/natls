@@ -2,7 +2,7 @@ package org.amshove.natparse.natural;
 
 import org.amshove.natparse.ReadOnlyList;
 
-public interface IVariableNode extends IReferencableNode
+public non-sealed interface IVariableNode extends IReferencableNode, IParameterDefinitionNode
 {
 	// TODO: Might need "effectiveScope"? Beacuse when LOCAL USING a PDA this returns parameter
 	VariableScope scope();
