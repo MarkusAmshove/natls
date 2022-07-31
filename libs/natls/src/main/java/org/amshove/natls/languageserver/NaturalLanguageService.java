@@ -842,11 +842,8 @@ public class NaturalLanguageService implements LanguageClientAware
 			return;
 		}
 
-		var start = System.currentTimeMillis();
 		file.changed(newSource);
 		publishDiagnostics(file);
-		var end = System.currentTimeMillis();
-		System.err.printf("fileChanged took %dms%n", end - start);
 	}
 
 	public void parseAll(IProgressMonitor monitor)

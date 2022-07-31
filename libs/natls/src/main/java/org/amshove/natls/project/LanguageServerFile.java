@@ -203,8 +203,6 @@ public class LanguageServerFile implements IModuleProvider
 
 	private void analyze()
 	{
-		var start = System.currentTimeMillis();
-		var log = "Analyzing %s".formatted(getReferableName());
 		clearDiagnosticsByTool(DiagnosticTool.NATLINT);
 		var linter = new NaturalLinter();
 		var linterDiagnostics = linter.lint(module);
@@ -212,9 +210,6 @@ public class LanguageServerFile implements IModuleProvider
 		{
 			addDiagnostic(DiagnosticTool.NATLINT, linterDiagnostic);
 		}
-		var end = System.currentTimeMillis();
-		log += " took %dms".formatted(end - start);
-		System.err.println(log);
 	}
 
 	public void reparseCallers()
@@ -255,14 +250,10 @@ public class LanguageServerFile implements IModuleProvider
 	private void reparseWithoutAnalyzing(String source)
 	{
 		hasBeenAnalyzed = false;
-		var start = System.currentTimeMillis();
-		var log = "Parsing %s".formatted(getReferableName());
 		if (module != null)
 		{
 			destroyPresentNodes();
-			log += " (destroyed previous nodes)";
 		}
-		System.err.println(log);
 
 		outgoingReferences.forEach(ref -> ref.removeIncomingReference(this));
 		outgoingReferences.clear(); // Will be re-added during parse
@@ -279,8 +270,6 @@ public class LanguageServerFile implements IModuleProvider
 		{
 			addDiagnostic(DiagnosticTool.NATPARSE, diagnostic);
 		}
-		var end = System.currentTimeMillis();
-		System.err.printf("Took %dms%n", end - start);
 	}
 
 	private void destroyPresentNodes()
