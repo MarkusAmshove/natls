@@ -13,6 +13,7 @@ tasks.withType(JavaCompile).configureEach {
 jar {
     manifest {
         def buildDate = new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+
         attributes(
                 'Build-Time': buildDate,
                 'Plugin-BuildDate': buildDate,
@@ -20,17 +21,17 @@ jar {
                 'Plugin-Class': 'org.amshove.natqube.NaturalPlugin',
                 'Plugin-Description': 'Natural language integration for SonarQube, featuring static code analasys',
                 'Plugin-Developers': 'Markus Amshove',
-                'Plugin-Display-Version': version,
+                'Plugin-Display-Version': archiveVersion,
                 'Plugin-Homepage': 'https://github.com/MarkusAmshove/NatLS',
                 'Plugin-IssueTrackerUrl': 'https://github.com/MarkusAmshove/NatLS',
                 'Plugin-Key': 'natural',
                 'Plugin-License': 'MIT',
                 'Plugin-Name': 'NatQube',
                 'Plugin-SourcesUrl': 'https://github.com/MarkusAmshove/NatLS',
-                'Plugin-Version': version,
+                'Plugin-Version': archiveVersion,
                 'Sonar-Version': "${SONAR_VERSION}",
                 'SonarLint-Supported': 'false',
-                'Version': "${version}",
+                'Version': "${archiveVersion}",
         )
     }
 }
@@ -41,7 +42,7 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 }
 
 shadowJar {
-    baseName = 'natqube'
+    archiveBaseName = 'natqube'
     classifier = null
     exclude 'META-INF/**/*'
     dependencies {
