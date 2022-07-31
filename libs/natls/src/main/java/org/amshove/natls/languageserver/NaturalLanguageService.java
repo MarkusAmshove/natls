@@ -665,7 +665,8 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		var jsonData = (JsonObject)item.getData();
 		var info = new Gson().fromJson(jsonData, UnresolvedCompletionInfo.class);
-		var module = findNaturalFile(LspUtil.uriToPath(info.getUri())).module();
+		var file = findNaturalFile(LspUtil.uriToPath(info.getUri()));
+		var module = file.module();
 		if(!(module instanceof IHasDefineData hasDefineData))
 		{
 			return item;
@@ -677,7 +678,8 @@ public class NaturalLanguageService implements LanguageClientAware
 			return item;
 		}
 
-		item.setDocumentation(new MarkupContent(MarkupKind.MARKDOWN, createHoverMarkdownText(variableNode, module)));
+		item.setDocumentation(new MarkupContent(MarkupKind.MARKDOWN,
+			hoverProvider.createHover(new HoverContext(variableNode, variableNode.declaration(), file)).getContents().getRight().getValue()));
 		return item;
 	}
 
@@ -718,7 +720,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var label = "";
 		if (variableNode instanceof ITypedVariableNode typedNode)
 		{
-			label = variableName + " :" + typedNode.type().toShortString();
+			label = variableName + " :" + typedNode.formatTypeForDisplay();
 			item.setInsertText(variableName);
 		}
 		if (variableNode instanceof IGroupNode)

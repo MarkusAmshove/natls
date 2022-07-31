@@ -20,9 +20,7 @@ public class MarkdownContentBuilderShould extends MarkupContentBuilderTest
 		assertContent(
 			sut.appendParagraph("This is a paragraph"),
 			"""
-				This is a paragraph
-
-				"""
+				This is a paragraph"""
 		);
 	}
 
