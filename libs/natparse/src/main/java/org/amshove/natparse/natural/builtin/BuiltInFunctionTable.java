@@ -4,6 +4,7 @@ import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.DataType;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import static org.amshove.natparse.natural.DataFormat.*;
@@ -44,7 +45,7 @@ public class BuiltInFunctionTable
 				```
 				0100 INCLUDE FIRSTCC
 				  0200 INCLUDE SCNDCC
-				    0300 PRINT *LINEX
+					0300 PRINT *LINEX
 				```
 
 				In this case the variable returns `0100/0200/0300`.
@@ -144,7 +145,97 @@ public class BuiltInFunctionTable
 				Notes:
 
 				- If a page break occurs, the value changes to `ENTR`.
-				""", ALPHANUMERIC, 4)
+				""", ALPHANUMERIC, 4),
+			function(SyntaxKind.COUNTER, """
+				Returns the number of times a processing loop initiated by `FIND`, `READ`, `HISTOGRAM` or `PARSE` has been entered.
+
+				If a record is rejected through a `WHERE`-clause, `*COUNTER` is not incremented.
+				If a record is rejected through `ACCEPT` or `REJECT`, `*COUNTER` is incremented.
+
+
+				Usage:
+				```natural
+				#I := *COUNTER
+				#I := *COUNTER(RD.)
+				```
+				""", PACKED, 10, new BuiltInFunctionParameter("label", new DataType(DataFormat.NONE, 1), false)),
+			function(SyntaxKind.OCCURRENCE, "See `*OCC`", INTEGER, 4,
+					new BuiltInFunctionParameter("array", new DataType(DataFormat.NONE, 1), true),
+					new BuiltInFunctionParameter("dimension", new DataType(DataFormat.NONE, 1), false)
+			),
+			function(SyntaxKind.OCC, """
+				Returns the current length of an array.
+
+				The optional `dimension` parameter handles for which dimension the length is returned. Defaults to 1 if not specified.
+
+				Possible value of `dimension`:
+
+				- `1`: One-dimensional array (**default**)
+				- `2`: Two-dimensional array
+				- `3`: Three-dimensional array
+				- `*`: All dimensions defined for the corresponding array apply
+
+				Example:
+
+				```natural
+				DEFINE DATA LOCAL
+				1 #LENGTH (I4)
+				1 #ARRAY (A10/1:*,1:*)
+				1 #DIMENSIONS (I4/1:3)
+				END-DEFINE
+
+				EXPAND ARRAY #ARRAY TO (1:10,1:20)
+				#LENGTH := *OCC(#ARRAY) /* #LENGTH = 10, first dimension
+				#LENGTH := *OCC(#ARRAY, 1) /* #LENGTH = 10, first dimension
+				#LENGTH := *OCC(#ARRAY, 2) /* #LENGTH = 20, first dimension
+				#DIMENSIONS(1:2) := *OCC(#ARRAY, *) /* #DIMENSIONS(1) = 10; #DIMENSIONS(2) = 20
+				```
+				""", INTEGER, 4,
+					new BuiltInFunctionParameter("array", new DataType(DataFormat.NONE, 1), true),
+					new BuiltInFunctionParameter("dimension", new DataType(DataFormat.NONE, 1), false)
+			),
+			function(SyntaxKind.MINVAL, """
+				Returns the minimal value of all given operand values.
+				
+				The result type can be optionally specified with `(IR=`, e.g. `(IR=F8)`. Otherwise the biggest data type of the operands is chosen.
+				
+				If an array is passed, this function returns the minimum value of all arrays values.
+				
+				If a binary or alphanumeric value is passed, this function returns the minimum length of the operands.
+				""", FLOAT, 8,
+				new BuiltInFunctionParameter("operand1", new DataType(NONE, 1), true),
+				new BuiltInFunctionParameter("operand2", new DataType(NONE, 1), false),
+				new BuiltInFunctionParameter("operand3", new DataType(NONE, 1), false)
+			),
+			function(SyntaxKind.MAXVAL, """
+				Returns the maximum value of all given operand values.
+				
+				The result type can be optionally specified with `(IR=`, e.g. `(IR=F8)`. Otherwise the biggest data type of the operands is chosen.
+				
+				If an array is passed, this function returns the maximum value of all arrays values.
+				
+				If a binary or alphanumeric value is passed, this function returns the maximum length of the operands.
+				""", FLOAT, 8,
+				new BuiltInFunctionParameter("operand1", new DataType(NONE, 1), true),
+				new BuiltInFunctionParameter("operand2", new DataType(NONE, 1), false),
+				new BuiltInFunctionParameter("operand3", new DataType(NONE, 1), false)
+			),
+			function(SyntaxKind.TRIM, """
+				Remove all leading and trailing whitespace from an alphanumeric or binary string.
+
+				The content of the passed variable is not modified.
+				
+				`LEADING` or `TRIALING` can be specified if only one of them should be trimmed.
+				
+				Example:
+				
+				```natural
+				#NO-LEADING-TRAILING := *TRIM(#ALPHA)
+				#NO-LEADING := *TRIM(#ALPHA, LEADING)
+				#NO-TRAILING := *TRIM(#ALPHA, TRAILING)
+				""", ALPHANUMERIC, DataType.DYNAMIC_LENGTH,
+				new BuiltInFunctionParameter("operand", new DataType(ALPHANUMERIC, DataType.DYNAMIC_LENGTH), true)
+			)
 		);
 	}
 
@@ -162,5 +253,11 @@ public class BuiltInFunctionTable
 	{
 		var name = kind.toString().replace("_", "-");
 		return Map.entry(kind, new SystemVariableDefinition("*%s".formatted(name), documentation, new DataType(format, length), modifiable));
+	}
+
+	private static Map.Entry<SyntaxKind, SystemFunctionDefinition> function(SyntaxKind kind, String documentation, DataFormat format, double length, BuiltInFunctionParameter... parameter)
+	{
+		var name = kind.toString().replace("_", "-");
+		return Map.entry(kind, new SystemFunctionDefinition("*%s".formatted(name), documentation, new DataType(format, length), Arrays.asList(parameter)));
 	}
 }

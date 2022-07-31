@@ -1,8 +1,5 @@
 package org.amshove.natls.hovering;
 
-import org.amshove.natls.testlifecycle.LspProjectName;
-import org.amshove.natls.testlifecycle.LspTestContext;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class VariableHoverTests extends HoveringTest
@@ -25,9 +22,29 @@ LOCAL 1 #MYVAR (A10)
 	}
 
 	@Test
-	void levelOneVariablesShouldBeHoveredCorrectlyEvenWhenHoveringTheReference()
+	void arrayDimensionsShouldBeIncluded()
 	{
 		assertHover("""
+			DEFINE DATA
+			LOCAL 1 #MY${}$VAR (A10/1:*,1:5)
+			END-DEFINE
+			END
+			""",
+			"""
+```natural
+LOCAL 1 #MYVAR (A10)
+```
+
+*dimensions:*
+- 1:*
+- 1:5
+
+""");
+	}
+
+	@Test
+	void levelOneVariablesShouldBeHoveredCorrectlyEvenWhenHoveringTheReference()
+	{assertHover("""
 			DEFINE DATA
 			LOCAL 1 #MYVAR (A10)
 			END-DEFINE

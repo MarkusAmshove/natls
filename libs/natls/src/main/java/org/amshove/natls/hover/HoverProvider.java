@@ -111,14 +111,29 @@ public class HoverProvider
 	{
 		var builtinFunction = BuiltInFunctionTable.getDefinition(kind);
 		var contentBuilder = MarkupContentBuilderFactory.newBuilder();
-		contentBuilder.appendCode("%s : %s".formatted(builtinFunction.name(), builtinFunction.type().toShortString()));
+
+		var signature = builtinFunction.name();
+		if(builtinFunction instanceof SystemFunctionDefinition function)
+		{
+			signature += "(";
+			signature += function.parameter().stream()
+				.map(p -> {
+					var parameter = p.name();
+					if(p.type().format() != DataFormat.NONE)
+					{
+						parameter += p.type().toShortString();
+					}
+					return p.mandatory() ? parameter : "[%s]".formatted(parameter);
+				})
+				.collect(Collectors.joining(", "));
+			signature += ")";
+		}
+
+		signature += " : %s".formatted(builtinFunction.type().toShortString());
+		contentBuilder.appendCode(signature);
 		contentBuilder.appendParagraph("---");
 
-		if(builtinFunction instanceof SystemFunctionDefinition)
-		{
-			contentBuilder.appendSection("Parameter", nested -> {}); // TODO: Format parameter
-		}
-		else if(builtinFunction instanceof SystemVariableDefinition variableDefinition)
+		if(builtinFunction instanceof SystemVariableDefinition variableDefinition)
 		{
 			contentBuilder.appendStrong(variableDefinition.isModifiable() ? "modifiable" : "unmodifiable").appendNewline();
 		}
