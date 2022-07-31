@@ -4,6 +4,8 @@ import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
@@ -47,6 +49,20 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		assertNodeType(function.parameter().first(), IVariableReferenceNode.class);
 		assertNodeType(function.parameter().get(1), ILiteralNode.class);
 		assertNodeType(function.parameter().get(2), ILiteralNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "MINVAL", "MAXVAL"})
+	void parseMinAndMaxValWithExplicitReturnType(String function)
+	{
+		var node = parseOperands("""
+			*%s((IR=N8,2)5, 7)
+			""".formatted(function)).first();
+
+		var functionCall = assertNodeType(node, ISystemFunctionNode.class);
+		// Currently the IR is just consumed and not inspected any further
+		assertNodeType(functionCall.parameter().first(), ILiteralNode.class);
+		assertNodeType(functionCall.parameter().get(1), ILiteralNode.class);
 	}
 
 	@Test

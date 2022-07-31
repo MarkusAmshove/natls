@@ -307,6 +307,18 @@ abstract class AbstractParser<T>
 		systemFunction.setSystemFunction(peek().kind());
 		consume(systemFunction);
 		consumeMandatory(systemFunction, SyntaxKind.LPAREN);
+		if(consumeOptionally(systemFunction, SyntaxKind.LPAREN)
+			&& (systemFunction.systemFunction() == SyntaxKind.MAXVAL || systemFunction.systemFunction() == SyntaxKind.MINVAL)
+			&& peek().kind() == SyntaxKind.IDENTIFIER && peek().symbolName().equals("IR"))
+		{
+			consumeMandatory(systemFunction, SyntaxKind.IDENTIFIER); // IR
+			consumeMandatory(systemFunction, SyntaxKind.EQUALS_SIGN);
+			while(!isAtEnd() && tokens.peek().kind() != SyntaxKind.RPAREN)
+			{
+				consume(systemFunction);
+			}
+			consumeMandatory(systemFunction, SyntaxKind.RPAREN);
+		}
 		systemFunction.addParameter(consumeOperandNode(systemFunction));
 		while(consumeOptionally(systemFunction, SyntaxKind.COMMA))
 		{
