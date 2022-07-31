@@ -48,10 +48,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			capabilities.setCodeActionProvider(CodeActionRegistry.INSTANCE.registeredCodeActionCount() > 0);
 			capabilities.setRenameProvider(new RenameOptions(true));
 
-			if(params.getCapabilities().getGeneral().getMarkdown() != null)
-			{
-				MarkupContentBuilderFactory.configureFactory(MarkdownContentBuilder::new);
-			}
+			MarkupContentBuilderFactory.configureFactory(MarkdownContentBuilder::new);
 
 			var progressMonitor = params.getWorkDoneToken() != null
 				? new WorkDoneProgressMonitor(params.getWorkDoneToken().getLeft(), client)
