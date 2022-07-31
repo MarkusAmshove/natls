@@ -15,6 +15,8 @@ public interface IMarkupContentBuilder
 	IMarkupContentBuilder appendStrong(String content);
 	IMarkupContentBuilder appendItalic(String content);
 	IMarkupContentBuilder appendSection(String heading, Consumer<IMarkupContentBuilder> nestedBuilder);
+	IMarkupContentBuilder appendBullet(String bulletPoint);
 
 	MarkupContent build();
+
 }

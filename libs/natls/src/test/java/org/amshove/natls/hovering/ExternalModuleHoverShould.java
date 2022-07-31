@@ -10,8 +10,10 @@ public class ExternalModuleHoverShould extends HoveringTest
 		createOrSaveFile("LIBONE", "EXTPROG.NSN", """
 			/** Module documentation
 			DEFINE DATA
-			PARAMETER 1 #APARAM (A10) /* Parameter documentation
-			PARAMETER 1 #ANOTHER (N5) /* Second parameter documentation
+			PARAMETER
+			1 #APARAM (A10) /* Parameter documentation
+			1 #ANOTHER (N5) /* Second parameter documentation
+			1 #OPTIONAL (N5) OPTIONAL /* Optional parameter documentation
 			END-DEFINE
 			""");
 		assertHover("""
@@ -29,15 +31,9 @@ public class ExternalModuleHoverShould extends HoveringTest
 			*Parameter:*
 			```natural
 			PARAMETER 1 #APARAM (A10) /* Parameter documentation
-			```
-
-			```natural
 			PARAMETER 1 #ANOTHER (N5) /* Second parameter documentation
-			```
-
-			Hover v2
-
-			""");
+			PARAMETER 1 #OPTIONAL (N5) OPTIONAL /* Optional parameter documentation
+			```""");
 	}
 
 	@Test
@@ -46,7 +42,7 @@ public class ExternalModuleHoverShould extends HoveringTest
 		createOrSaveFile("LIBONE", "EXTERN.NSS", """
 			/* MODULE DOCUMENTATION
 			DEFINE DATA
-			1 PARAMETER #EXTSUB-PARAM (A10)
+			PARAMETER 1 #EXTSUB-PARAM (A10) /* Parameter documentation
 			END-DEFINE
 			DEFINE SUBROUTINE THE-EXTERNAL-SUB
 			IGNORE
@@ -70,8 +66,8 @@ public class ExternalModuleHoverShould extends HoveringTest
 			```
 
 			*Parameter:*
-			Hover v2
-
-			""");
+			```natural
+			PARAMETER 1 #EXTSUB-PARAM (A10) /* Parameter documentation
+			```""");
 	}
 }

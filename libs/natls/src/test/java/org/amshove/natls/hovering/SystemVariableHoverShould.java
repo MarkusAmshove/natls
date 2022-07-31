@@ -18,9 +18,7 @@ public class SystemVariableHoverShould extends HoveringTest
 
 			**unmodifiable**
 
-			Returns the current time of the day as builtin time format
-
-			""");
+			Returns the current time of the day as builtin time format""");
 	}
 
 	@Test

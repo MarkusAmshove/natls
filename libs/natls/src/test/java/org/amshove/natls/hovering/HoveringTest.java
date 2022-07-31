@@ -8,12 +8,13 @@ import org.eclipse.lsp4j.HoverParams;
 import org.junit.jupiter.api.BeforeAll;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class HoveringTest extends LanguageServerTest
 {
 	protected void assertHover(String sourceWithCursor, String expectedHoverText)
 	{
-		assertThat(getHover(sourceWithCursor)).isEqualToNormalizingNewlines(expectedHoverText);
+		assertEquals(expectedHoverText, getHover(sourceWithCursor));
 	}
 
 	protected void assertHoverContains(String sourceWithCursor, String expectedContain)

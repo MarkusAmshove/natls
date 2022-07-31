@@ -75,6 +75,15 @@ public class MarkdownContentBuilder implements IMarkupContentBuilder
 		append(System.lineSeparator());
 		nestedBuilder.accept(nested);
 		append(nested.builder.toString());
+		append(System.lineSeparator());
+		return this;
+	}
+
+	@Override
+	public IMarkupContentBuilder appendBullet(String bulletPoint)
+	{
+		append("- %s".formatted(bulletPoint));
+		append(System.lineSeparator());
 		return this;
 	}
 
@@ -83,7 +92,7 @@ public class MarkdownContentBuilder implements IMarkupContentBuilder
 	{
 		return new MarkupContent(
 			MarkupKind.MARKDOWN,
-			builder.toString()
+			builder.toString().stripIndent().trim()
 		);
 	}
 }

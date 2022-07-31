@@ -72,6 +72,14 @@ public class PlaintextContentBuilder implements IMarkupContentBuilder
 	}
 
 	@Override
+	public IMarkupContentBuilder appendBullet(String bulletPoint)
+	{
+		append("- %s".formatted(bulletPoint));
+		appendNewline();
+		return this;
+	}
+
+	@Override
 	public MarkupContent build()
 	{
 		return new MarkupContent(

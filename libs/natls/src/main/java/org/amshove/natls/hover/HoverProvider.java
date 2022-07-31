@@ -101,8 +101,6 @@ public class HoverProvider
 
 		addModuleParameter(contentBuilder, module, context);
 
-		contentBuilder.appendParagraph("Hover v2"); // TODO: until the old hover is removed
-
 		return new Hover(contentBuilder.build());
 	}
 
@@ -145,7 +143,22 @@ public class HoverProvider
 	private Hover hoverVariable(IVariableNode variable, HoverContext context)
 	{
 		var contentBuilder = MarkupContentBuilderFactory.newBuilder();
-		addVariableHover(contentBuilder, variable, false);
+		var declaration = formatVariableDeclaration(variable);
+		contentBuilder.appendCode(declaration.declaration);
+		if(!declaration.comment.isEmpty())
+		{
+			contentBuilder.appendSection("comment", nestedBuilder -> nestedBuilder.appendCode(declaration.comment));
+		}
+
+		if(variable.isArray())
+		{
+			contentBuilder.appendSection("dimensions", nested -> {
+				for (var dimension : variable.dimensions())
+				{
+					nested.appendBullet(dimension.displayFormat());
+				}
+			});
+		}
 
 		if(variable.level() > 1)
 		{
@@ -159,7 +172,7 @@ public class HoverProvider
 		return new Hover(contentBuilder.build());
 	}
 
-	private void addVariableHover(IMarkupContentBuilder contentBuilder, IVariableNode  variable, boolean documentationInline)
+	private VariableDeclarationFormat formatVariableDeclaration(IVariableNode variable)
 	{
 		var declaration = "%s %d %s".formatted(variable.scope().toString(), variable.level(), variable.name());
 		if(variable instanceof ITypedVariableNode typedVariableNode)
@@ -167,20 +180,13 @@ public class HoverProvider
 			declaration += " %s".formatted(typedVariableNode.type().toShortString());
 		}
 
-		var comment = getLineComment(variable.position().line(), variable.position().filePath());
-		if(!comment.isEmpty())
+		if(variable.findDescendantToken(SyntaxKind.OPTIONAL) != null)
 		{
-			if(documentationInline)
-			{
-				declaration += " " + comment;
-			}
+			declaration += " OPTIONAL";
 		}
 
-		contentBuilder.appendCode(declaration);
-		if(!comment.isEmpty() && !documentationInline)
-		{
-			contentBuilder.appendSection("comment", nestedBuilder -> nestedBuilder.appendCode(comment));
-		}
+		var comment = getLineComment(variable.position().line(), variable.position().filePath());
+		return new VariableDeclarationFormat(declaration, comment);
 	}
 
 	private static void addSourceFileIfNeeded(IMarkupContentBuilder contentBuilder, IPosition hoveredPosition, HoverContext context)
@@ -249,21 +255,32 @@ public class HoverProvider
 		}
 
 		contentBuilder.appendSection("Parameter", nested -> {
-			var parameterUsings = new StringBuilder();
-			hasDefineData.defineData().parameterUsings().stream()
+			var parameterBlock = new StringBuilder();
+			var definedParameterUsings = hasDefineData.defineData().parameterUsings().stream()
 				.map(using -> "PARAMETER USING %s %s".formatted(using.target().source(), getLineComment(using.position().line(), context.file())))
-				.forEach(p -> parameterUsings.append(p).append(System.lineSeparator()));
-			var usingsText = parameterUsings.toString();
-			if(!usingsText.trim().isEmpty())
-			{
-				nested.appendCode(usingsText);
-			}
+				.collect(Collectors.joining(System.lineSeparator()));
 
-			hasDefineData.defineData().variables().stream()
+			var definedParameters = hasDefineData.defineData().variables().stream()
 				.filter(v -> v.scope() == VariableScope.PARAMETER)
 				.filter(v -> v.position().filePath().equals(module.file().getPath())) // get rid of parameters that are not directly declared in the module
-				.forEach(v -> addVariableHover(nested, v, true));
-		});
+				.map(v -> {
+					var declaration = formatVariableDeclaration(v);
+					return "%s%s".formatted(
+						declaration.declaration,
+						!declaration.comment.isEmpty()
+						? " %s".formatted(declaration.comment)
+						: "");
+				})
+				.collect(Collectors.joining(System.lineSeparator()));
 
+			parameterBlock.append(definedParameterUsings);
+			parameterBlock.append(System.lineSeparator());
+			parameterBlock.append(definedParameters);
+
+			nested.appendCode(parameterBlock.toString().stripIndent().trim());
+		});
 	}
+
+	private record VariableDeclarationFormat(String declaration, String comment)
+	{}
 }

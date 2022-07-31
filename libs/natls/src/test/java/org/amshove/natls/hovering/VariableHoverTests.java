@@ -16,9 +16,7 @@ public class VariableHoverTests extends HoveringTest
 			"""
 ```natural
 LOCAL 1 #MYVAR (A10)
-```
-
-""");
+```""");
 	}
 
 	@Test
@@ -37,9 +35,7 @@ LOCAL 1 #MYVAR (A10)
 
 *dimensions:*
 - 1:*
-- 1:5
-
-""");
+- 1:5""");
 	}
 
 	@Test
@@ -54,9 +50,7 @@ LOCAL 1 #MYVAR (A10)
 			"""
 ```natural
 LOCAL 1 #MYVAR (A10)
-```
-
-""");
+```""");
 	}
 
 	@Test
@@ -76,9 +70,7 @@ LOCAL 1 #MYVAR (A10)
 				*comment:*
 				```natural
 				/* Inline comment
-				```
-
-				""");
+				```""");
 	}
 
 	@Test
@@ -96,8 +88,7 @@ LOCAL 1 #MYVAR (A10)
 			END-DEFINE
 			
 			WRITE #MY${}$VAR
-			END
-			""",
+			END""",
 			"""
 ```natural
 LOCAL 1 #MYVAR (A10)
@@ -128,8 +119,6 @@ LOCAL 2 #VARINGROUP (N4)
 
 ```natural
 LOCAL 1 #MYGROUP
-```
-
-""");
+```""");
 	}
 }
