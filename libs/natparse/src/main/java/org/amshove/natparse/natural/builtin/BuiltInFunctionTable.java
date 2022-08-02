@@ -187,7 +187,7 @@ public class BuiltInFunctionTable
 				EXPAND ARRAY #ARRAY TO (1:10,1:20)
 				#LENGTH := *OCC(#ARRAY) /* #LENGTH = 10, first dimension
 				#LENGTH := *OCC(#ARRAY, 1) /* #LENGTH = 10, first dimension
-				#LENGTH := *OCC(#ARRAY, 2) /* #LENGTH = 20, first dimension
+				#LENGTH := *OCC(#ARRAY, 2) /* #LENGTH = 20, second dimension
 				#DIMENSIONS(1:2) := *OCC(#ARRAY, *) /* #DIMENSIONS(1) = 10; #DIMENSIONS(2) = 20
 				```
 				""", INTEGER, 4,
