@@ -8,6 +8,7 @@ import org.amshove.natls.progress.ClientProgressType;
 import org.amshove.natls.progress.MessageProgressMonitor;
 import org.amshove.natls.progress.ProgressTasks;
 import org.amshove.natls.progress.WorkDoneProgressMonitor;
+import org.amshove.natparse.natural.project.NaturalFileType;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
@@ -15,6 +16,7 @@ import org.eclipse.lsp4j.services.*;
 
 import java.net.URI;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -49,13 +51,25 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			capabilities.setCodeActionProvider(CodeActionRegistry.INSTANCE.registeredCodeActionCount() > 0);
 			capabilities.setRenameProvider(new RenameOptions(true));
 
+			var workspace = new WorkspaceServerCapabilities();
+			var fileOperations = new FileOperationsServerCapabilities();
+			fileOperations.setDidCreate(new FileOperationOptions(
+				Arrays.stream(NaturalFileType.values()).
+					map(ft -> new FileOperationFilter(new FileOperationPattern(
+						"**/Natural-Libraries/**/*.%s".formatted(ft.getExtension())
+					)))
+					.toList()
+			));
+			workspace.setFileOperations(fileOperations);
+			capabilities.setWorkspace(workspace);
+
 			MarkupContentBuilderFactory.configureFactory(MarkdownContentBuilder::new);
 
 			var progressMonitor = params.getWorkDoneToken() != null
 				? new WorkDoneProgressMonitor(params.getWorkDoneToken().getLeft(), client)
 				: new MessageProgressMonitor(client);
 
-			if(params.getCapabilities().getWindow().getWorkDoneProgress())
+			if (params.getCapabilities().getWindow().getWorkDoneProgress())
 			{
 				ProgressTasks.setClientProgressType(ClientProgressType.WORK_DONE);
 			}
@@ -70,7 +84,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 				client.registerCapability(new RegistrationParams(List.of(new Registration(UUID.randomUUID().toString(), watchFileMethod, watchChangesRegistrationOption))));
 			}
 
-			if(params.getWorkDoneToken() != null)
+			if (params.getWorkDoneToken() != null)
 			{
 				var begin = new WorkDoneProgressBegin();
 				begin.setTitle("Natural Language Server initializing");
@@ -90,7 +104,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			documentService.setLanguageService(languageService);
 			var endTime = System.currentTimeMillis();
 
-			if(params.getWorkDoneToken() != null)
+			if (params.getWorkDoneToken() != null)
 			{
 				var end = new WorkDoneProgressEnd();
 				end.setMessage("Initialization done");
