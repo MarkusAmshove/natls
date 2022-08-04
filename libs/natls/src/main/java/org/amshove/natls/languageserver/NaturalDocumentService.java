@@ -8,6 +8,7 @@ import org.eclipse.lsp4j.services.TextDocumentService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 public class NaturalDocumentService implements TextDocumentService
 {
@@ -16,32 +17,32 @@ public class NaturalDocumentService implements TextDocumentService
 	@Override
 	public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams completionParams)
 	{
-		return CompletableFuture.supplyAsync(() -> Either.forLeft(languageService.complete(completionParams)));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> Either.forLeft(languageService.complete(completionParams))));
 	}
 
 	@Override
 	public CompletableFuture<CompletionItem> resolveCompletionItem(CompletionItem unresolved)
 	{
-		return CompletableFuture.supplyAsync(() -> languageService.resolveComplete(unresolved));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.resolveComplete(unresolved)));
 	}
 
 	@Override
 	public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> definition(
 		DefinitionParams params)
 	{
-		return CompletableFuture.supplyAsync(() -> Either.forLeft(languageService.gotoDefinition(params)));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> Either.forLeft(languageService.gotoDefinition(params))));
 	}
 
 	@Override
 	public CompletableFuture<List<? extends Location>> references(ReferenceParams params)
 	{
-		return CompletableFuture.supplyAsync(() -> languageService.findReferences(params));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.findReferences(params)));
 	}
 
 	@Override
 	public void didOpen(DidOpenTextDocumentParams params)
 	{
-		languageService.fileOpened(LspUtil.uriToPath(params.getTextDocument().getUri()));
+		wrapSafe(() -> languageService.fileOpened(LspUtil.uriToPath(params.getTextDocument().getUri())));
 	}
 
 	@Override
@@ -53,7 +54,7 @@ public class NaturalDocumentService implements TextDocumentService
 		}
 
 		var change = params.getContentChanges().get(0);
-		languageService.fileChanged(LspUtil.uriToPath(params.getTextDocument().getUri()), change.getText());
+		wrapSafe(() -> languageService.fileChanged(LspUtil.uriToPath(params.getTextDocument().getUri()), change.getText()));
 	}
 
 	@Override
@@ -61,19 +62,19 @@ public class NaturalDocumentService implements TextDocumentService
 	{
 		// TODO: Do we want to clear all diagnostics?
 		//		at least clear the parse tree
-		languageService.fileClosed(LspUtil.uriToPath(params.getTextDocument().getUri()));
+		wrapSafe(() -> languageService.fileClosed(LspUtil.uriToPath(params.getTextDocument().getUri())));
 	}
 
 	@Override
 	public void didSave(DidSaveTextDocumentParams params)
 	{
-		languageService.fileSaved(LspUtil.uriToPath(params.getTextDocument().getUri()));
+		wrapSafe(() -> languageService.fileSaved(LspUtil.uriToPath(params.getTextDocument().getUri())));
 	}
 
 	@Override
 	public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params)
 	{
-		return CompletableFuture.supplyAsync(() -> {
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> {
 			var path = LspUtil.uriToPath(params.getTextDocument().getUri());
 			var file = languageService.findNaturalFile(path);
 			if (file == null)
@@ -116,68 +117,68 @@ public class NaturalDocumentService implements TextDocumentService
 			}
 
 			return codelens;
-		});
+		}));
 	}
 
 	@Override
 	public CompletableFuture<CodeLens> resolveCodeLens(CodeLens unresolved)
 	{
-		return CompletableFuture.completedFuture(unresolved);
+		return wrapSafe(() -> CompletableFuture.completedFuture(unresolved));
 	}
 
 	@Override
 	public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbol(DocumentSymbolParams params)
 	{
-		return CompletableFuture.supplyAsync(() -> languageService.findSymbolsInFile(params.getTextDocument()).stream().map(Either::<SymbolInformation, DocumentSymbol>forLeft).toList());
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.findSymbolsInFile(params.getTextDocument()).stream().map(Either::<SymbolInformation, DocumentSymbol>forLeft).toList()));
 	}
 
 	@Override
 	public CompletableFuture<Hover> hover(HoverParams params)
 	{
-		return CompletableFuture.supplyAsync(() -> languageService.hoverSymbol(params.getTextDocument(), params.getPosition()));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.hoverSymbol(params.getTextDocument(), params.getPosition())));
 	}
 
 	@Override
 	public CompletableFuture<SignatureHelp> signatureHelp(SignatureHelpParams params)
 	{
-		return CompletableFuture.supplyAsync(() -> languageService.signatureHelp(params.getTextDocument(), params.getPosition()));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.signatureHelp(params.getTextDocument(), params.getPosition())));
 	}
 
 	@Override
 	public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(CodeActionParams params)
 	{
-		return CompletableFuture.supplyAsync(() -> languageService.codeAction(params).stream().map(Either::<Command, CodeAction>forRight).toList());
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.codeAction(params).stream().map(Either::<Command, CodeAction>forRight).toList()));
 	}
 
 	@Override
 	public CompletableFuture<List<CallHierarchyIncomingCall>> callHierarchyIncomingCalls(CallHierarchyIncomingCallsParams params)
 	{
-		return CompletableFuture.supplyAsync(() -> languageService.createCallHierarchyIncomingCalls(params.getItem()));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.createCallHierarchyIncomingCalls(params.getItem())));
 	}
 
 	@Override
 	public CompletableFuture<List<CallHierarchyOutgoingCall>> callHierarchyOutgoingCalls(CallHierarchyOutgoingCallsParams params)
 	{
 		// TODO: Might contain work done token
-		return CompletableFuture.supplyAsync(() -> languageService.createCallHierarchyOutgoingCalls(params.getItem()));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.createCallHierarchyOutgoingCalls(params.getItem())));
 	}
 
 	@Override
 	public CompletableFuture<List<CallHierarchyItem>> prepareCallHierarchy(CallHierarchyPrepareParams params)
 	{
-		return CompletableFuture.supplyAsync(()->languageService.createCallHierarchyItems(params));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(()->languageService.createCallHierarchyItems(params)));
 	}
 
 	@Override
 	public CompletableFuture<Either<Range, PrepareRenameResult>> prepareRename(PrepareRenameParams params)
 	{
-		return CompletableFuture.supplyAsync(() -> Either.forRight(languageService.prepareRename(params)));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> Either.forRight(languageService.prepareRename(params))));
 	}
 
 	@Override
 	public CompletableFuture<WorkspaceEdit> rename(RenameParams params)
 	{
-		return CompletableFuture.supplyAsync(() -> languageService.rename(params));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.rename(params)));
 	}
 
 	public void setLanguageService(NaturalLanguageService languageService)
@@ -185,4 +186,28 @@ public class NaturalDocumentService implements TextDocumentService
 		this.languageService = languageService;
 	}
 
+	private <R> CompletableFuture<R> wrapSafe(Supplier<CompletableFuture<R>> function)
+	{
+		return function.get().handle((r, e) -> {
+			if(e != null)
+			{
+				// TODO: log exception
+				return null;
+			}
+
+			return r;
+		});
+	}
+
+	private void wrapSafe(Runnable runnable)
+	{
+		try
+		{
+			runnable.run();
+		}
+		catch (Exception e)
+		{
+			// TODO: log exception
+		}
+	}
 }
