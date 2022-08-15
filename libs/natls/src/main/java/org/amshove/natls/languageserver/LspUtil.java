@@ -27,6 +27,14 @@ public class LspUtil
 		return path.toUri().toString();
 	}
 
+	public static Position toPosition(IPosition position)
+	{
+		return new Position(
+				position.line(),
+				position.offsetInLine()
+		);
+	}
+
 	public static Location toLocation(String fileUri, SyntaxToken token)
 	{
 		return new Location(

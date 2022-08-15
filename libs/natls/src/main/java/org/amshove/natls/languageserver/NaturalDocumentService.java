@@ -129,7 +129,7 @@ public class NaturalDocumentService implements TextDocumentService
 	@Override
 	public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbol(DocumentSymbolParams params)
 	{
-		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.findSymbolsInFile(params.getTextDocument()).stream().map(Either::<SymbolInformation, DocumentSymbol>forLeft).toList()));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.findSymbolsInFile(params.getTextDocument())));
 	}
 
 	@Override

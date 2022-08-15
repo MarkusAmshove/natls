@@ -6,13 +6,16 @@ import org.amshove.natls.DiagnosticTool;
 import org.amshove.natls.codeactions.CodeActionRegistry;
 import org.amshove.natls.codeactions.RefactoringContext;
 import org.amshove.natls.codeactions.RenameSymbolAction;
+import org.amshove.natls.documentsymbol.DocumentSymbolProvider;
 import org.amshove.natls.hover.HoverContext;
 import org.amshove.natls.hover.HoverProvider;
 import org.amshove.natls.progress.IProgressMonitor;
 import org.amshove.natls.progress.ProgressTasks;
-import org.amshove.natls.project.*;
+import org.amshove.natls.project.LanguageServerFile;
+import org.amshove.natls.project.LanguageServerProject;
+import org.amshove.natls.project.ModuleReferenceParser;
+import org.amshove.natls.project.ParseStrategy;
 import org.amshove.natls.snippets.SnippetEngine;
-import org.amshove.natls.documentsymbol.SymbolInformationProvider;
 import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
@@ -30,6 +33,7 @@ import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.ResponseErrorException;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseError;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
@@ -79,11 +83,12 @@ public class NaturalLanguageService implements LanguageClientAware
 		hoverProvider = new HoverProvider(languageServerProject);
 	}
 
-	public List<SymbolInformation> findSymbolsInFile(TextDocumentIdentifier textDocument)
+	public List<Either<SymbolInformation, DocumentSymbol>> findSymbolsInFile(TextDocumentIdentifier textDocument)
 	{
 		var filepath = LspUtil.uriToPath(textDocument.getUri());
 		var module = findNaturalFile(filepath).module();
-		return new SymbolInformationProvider().provideSymbols(module);
+		//return new SymbolInformationProvider().provideSymbols(module).stream().map(Either::<SymbolInformation, DocumentSymbol>forLeft).toList();
+		return new DocumentSymbolProvider().provideSymbols(module).stream().map(Either::<SymbolInformation, DocumentSymbol>forRight).toList();
 	}
 
 	public void createdFile(String uri)
