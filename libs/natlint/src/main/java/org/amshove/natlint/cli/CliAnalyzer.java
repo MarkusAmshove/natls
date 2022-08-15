@@ -163,7 +163,7 @@ public class CliAnalyzer
 
 	private List<? extends IDiagnostic> filterDiagnostics(ReadOnlyList<? extends IDiagnostic> diagnostics)
 	{
-		return diagnostics.stream().filter(d -> diagnosticPredicates.stream().anyMatch(p -> p.test(d))).toList();
+		return diagnostics.stream().filter(d -> diagnosticPredicates.stream().allMatch(p -> p.test(d))).toList();
 	}
 
 	record SlowestModule(long milliseconds, String module)
