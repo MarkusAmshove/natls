@@ -69,6 +69,7 @@ public class AnsiDiagnosticSink implements IDiagnosticSink
 		message.append(colored(diagnostic.severity().toString(), severity));
 		message.append(colored(": ", severity));
 		message.append(colored(splitMessage(diagnostic.message(), offsetInLine), severity));
+		message.append(colored(" [%s]".formatted(diagnostic.id()), severity));
 		return message.toString();
 	}
 
