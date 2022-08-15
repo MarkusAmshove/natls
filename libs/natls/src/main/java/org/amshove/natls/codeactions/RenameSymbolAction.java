@@ -25,7 +25,17 @@ public class RenameSymbolAction
 		referencableNode.references().stream().forEach(ref -> {
 			var changes = changesPerFile.computeIfAbsent(LspUtil.pathToUri(ref.position().filePath()), k -> new ArrayList<>());
 			var edit = new TextEdit();
-			edit.setNewText(newName);
+			if(ref.referencingToken().isQualified())
+			{
+				edit.setNewText(String.format("%s.%s",
+					ref.referencingToken().symbolName().split("\\.")[0],
+					newName
+				));
+			}
+			else
+			{
+				edit.setNewText(newName);
+			}
 			edit.setRange(LspUtil.toRange(ref.referencingToken()));
 			changes.add(edit);
 		});

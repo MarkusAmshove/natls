@@ -6,6 +6,8 @@ import org.checkerframework.dataflow.qual.Pure;
 import java.nio.file.Path;
 import java.util.Objects;
 
+import static org.amshove.natparse.lexing.SyntaxKind.IDENTIFIER;
+
 public class SyntaxToken implements IPosition
 {
 
@@ -164,5 +166,10 @@ public class SyntaxToken implements IPosition
 	public int hashCode()
 	{
 		return Objects.hash(kind, offset, offsetInLine, line, source);
+	}
+
+	public boolean isQualified()
+	{
+		return kind == IDENTIFIER && symbolName().contains(".");
 	}
 }

@@ -150,4 +150,24 @@ public class RenameSymbolActionShould extends LanguageServerTest
 			.changesText(1, "1 #MYVAR (A5)", "1 #NEW-VAR (A5)", file)
 			.changesText(4, "    WRITE #MYVAR", "    WRITE #NEW-VAR", file);
 	}
+
+	@Test
+	void keepNamesQualifiedIfTheyHaveBeenQualifiedBefore()
+	{
+		var source = SourceWithCursor.fromSourceWithCursor("""
+			DEFINE DATA LOCAL
+			1 #GROUP
+			2 #MY${}$VAR (N2)
+			END-DEFINE
+			WRITE #GROUP.#MYVAR
+			END
+			""");
+
+		var file = createOrSaveFile("LIBONE", "RENAM.NSN", source);
+		var edit = testContext.languageService().rename(new RenameParams(file, source.toSinglePosition(), "#NEWVAR"));
+
+		WorkspaceEditAssertion.assertThatEdit(edit)
+			.changesText(2, "2 #MYVAR (N2)", "2 #NEWVAR (N2)", file)
+			.changesText(4, "WRITE #GROUP.#MYVAR", "WRITE #GROUP.#NEWVAR", file);
+	}
 }
