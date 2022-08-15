@@ -147,4 +147,25 @@ public class LspUtil
 			new Position(line + 1, 0)
 		);
 	}
+
+	public static Position toPosition(IPosition position)
+	{
+		return new Position(
+			position.line(),
+			position.offsetInLine()
+		);
+	}
+
+	/**
+	 * Converts the {@link IPosition} to an LSP position which is <strong>after</strong> the {@link IPosition} (using {@link IPosition#endOffset()})
+	 * @param position
+	 * @return
+	 */
+	public static Position toPositionAfter(IPosition position)
+	{
+		return new Position(
+			position.line(),
+			position.endOffset()
+		);
+	}
 }

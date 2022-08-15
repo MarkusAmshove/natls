@@ -1097,4 +1097,52 @@ public class NaturalLanguageService implements LanguageClientAware
 			throw new UncheckedIOException(e);
 		}
 	}
+
+	public List<InlayHint> inlayHints(InlayHintParams params)
+	{
+		var hints = new ArrayList<InlayHint>();
+
+		var module = findNaturalFile(LspUtil.uriToPath(params.getTextDocument().getUri())).module();
+		module.syntaxTree().accept((n) -> {
+			if(!n.isInFile(module.file().getPath()))
+			{
+				return;
+			}
+
+			if(n.diagnosticPosition().line() < params.getRange().getStart().getLine() || n.diagnosticPosition().line() > params.getRange().getEnd().getLine())
+			{
+				return;
+			}
+
+			if(n instanceof ISubroutineNode subroutineNode)
+			{
+				var endSubroutine = subroutineNode.findDescendantToken(SyntaxKind.END_SUBROUTINE);
+				if(endSubroutine == null)
+				{
+					return;
+				}
+
+				var hint = new InlayHint();
+				hint.setPosition(LspUtil.toPositionAfter(endSubroutine.diagnosticPosition()));
+				hint.setLabel(subroutineNode.declaration().symbolName());
+				hint.setKind(InlayHintKind.Type);
+				hint.setPaddingLeft(true);
+				hints.add(hint);
+				return;
+			}
+
+			if(n instanceof IInternalPerformNode internalPerform && !internalPerform.reference().isInFile(module.file().getPath()))
+			{
+				var hint = new InlayHint();
+				hint.setPosition(LspUtil.toPositionAfter(internalPerform.position()));
+				hint.setLabel(internalPerform.reference().position().fileNameWithoutExtension());
+				hint.setKind(InlayHintKind.Type);
+				hint.setPaddingLeft(true);
+				hints.add(hint);
+				return;
+			}
+		});
+
+		return hints;
+	}
 }

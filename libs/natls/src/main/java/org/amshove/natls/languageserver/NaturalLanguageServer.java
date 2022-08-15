@@ -50,6 +50,10 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			capabilities.setCallHierarchyProvider(true);
 			capabilities.setCodeActionProvider(CodeActionRegistry.INSTANCE.registeredCodeActionCount() > 0);
 			capabilities.setRenameProvider(new RenameOptions(true));
+			var inlayHintRegistrationOptions = new InlayHintRegistrationOptions();
+			inlayHintRegistrationOptions.setId("natls");
+			inlayHintRegistrationOptions.setResolveProvider(true);
+			capabilities.setInlayHintProvider(inlayHintRegistrationOptions);
 
 			var workspace = new WorkspaceServerCapabilities();
 			var fileOperations = new FileOperationsServerCapabilities();
@@ -77,9 +81,9 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			if (client != null)
 			{
 				var watchFileMethod = "workspace/didChangeWatchedFiles";
-				var natunitWatcher = new FileSystemWatcher("**/build/test-results/**/*.xml");
-				var stowWatcher = new FileSystemWatcher("**/build/stow.log");
-				var sourceWatcher = new FileSystemWatcher("**/Natural-Libraries/**/*.*");
+				var natunitWatcher = new FileSystemWatcher(Either.forLeft("**/build/test-results/**/*.xml"));
+				var stowWatcher = new FileSystemWatcher(Either.forLeft("**/build/stow.log"));
+				var sourceWatcher = new FileSystemWatcher(Either.forLeft("**/Natural-Libraries/**/*.*"));
 				var watchChangesRegistrationOption = new DidChangeWatchedFilesRegistrationOptions(List.of(natunitWatcher, sourceWatcher, stowWatcher));
 				client.registerCapability(new RegistrationParams(List.of(new Registration(UUID.randomUUID().toString(), watchFileMethod, watchChangesRegistrationOption))));
 			}
@@ -179,5 +183,11 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 		}
 
 		return CompletableFuture.completedFuture(null);
+	}
+
+	@Override
+	public NotebookDocumentService getNotebookDocumentService()
+	{
+		return null;
 	}
 }
