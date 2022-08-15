@@ -1081,7 +1081,6 @@ public class NaturalLanguageService implements LanguageClientAware
 		try(var lines = Files.lines(cacheFile))
 		{
 			var newLines = lines.map(l -> {
-				System.err.println(file.getPath().toString());
 				if(l.startsWith(file.getPath().toString()))
 				{
 					return file.getPath().toString() + "=";
