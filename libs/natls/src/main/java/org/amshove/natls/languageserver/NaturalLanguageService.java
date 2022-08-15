@@ -12,6 +12,7 @@ import org.amshove.natls.progress.IProgressMonitor;
 import org.amshove.natls.progress.ProgressTasks;
 import org.amshove.natls.project.*;
 import org.amshove.natls.snippets.SnippetEngine;
+import org.amshove.natls.documentsymbol.SymbolInformationProvider;
 import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
@@ -44,7 +45,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class NaturalLanguageService implements LanguageClientAware
 {
@@ -83,22 +83,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	{
 		var filepath = LspUtil.uriToPath(textDocument.getUri());
 		var module = findNaturalFile(filepath).module();
-		var referencableNodes = module.referencableNodes();
-
-		return referencableNodes
-			.stream()
-			.map(n -> new SymbolInformation(
-				n.declaration().symbolName(),
-				n instanceof IVariableNode ? SymbolKind.Variable : SymbolKind.Method,
-				LspUtil.toLocation(n),
-				n.position().fileNameWithoutExtension()
-			))
-			.toList();
-	}
-
-	private Stream<SyntaxToken> getVariableDeclarationTokens(TokenList tokens)
-	{
-		return tokens.tokensUntilNext(SyntaxKind.END_DEFINE).stream();
+		return new SymbolInformationProvider().provideSymbols(module);
 	}
 
 	public void createdFile(String uri)
@@ -136,21 +121,6 @@ public class NaturalLanguageService implements LanguageClientAware
 				)
 			),
 			file.getLibrary().getName()
-		);
-	}
-
-	private SymbolInformation convertToSymbolInformation(SyntaxToken token, Path filepath)
-	{
-		return new SymbolInformation(
-			token.source(),
-			SymbolKind.Variable,
-			new Location(
-				filepath.toUri().toString(),
-				new Range(
-					new Position(token.line(), token.offsetInLine()),
-					new Position(token.line(), token.offsetInLine() + token.length())
-				)
-			)
 		);
 	}
 
@@ -917,6 +887,7 @@ public class NaturalLanguageService implements LanguageClientAware
 				switch (file.getType())
 				{
 					case PROGRAM, SUBPROGRAM, SUBROUTINE, FUNCTION -> parser.parseReferences(file);
+					default -> {}
 				}
 				processedFiles++;
 			}
