@@ -78,6 +78,7 @@ jobs:
           name: natlint.jar
           path: libs/natlint/build/libs/natlint.jar
           if-no-files-found: error
+          retention-days: 1
 
   docker_natlint:
     needs: [build]
