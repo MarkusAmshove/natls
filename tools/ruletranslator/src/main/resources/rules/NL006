@@ -11,9 +11,9 @@ Use the following table to decide which operator to use:
 
 | Discouraged operator | Preferred operator |
 | --- | --- |
-| `GT` | `>` |
-| `LT` | `<` |
-| `EQ` | `=` |
-| `NE` | `<>` |
-| `GE` | `>=` |
-| `LE` | `<=` |
+| ``GT`` | `>`` |
+| ``LT`` | `<`` |
+| ``EQ`` | `=`` |
+| ``NE`` | `<>`` |
+| ``GE`` | `>=`` |
+| ``LE`` | `<=`` |

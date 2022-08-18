@@ -5,14 +5,14 @@ type: BUG
 description:
 The specified data format needs a length.
 
-## Invalid
+== Invalid
 
-```natural
+``
 1 #VAR (N)
-```
+``
 
-## Valid
+== Valid
 
-```natural
+``
 1 #VAR (N10)
-```
+``

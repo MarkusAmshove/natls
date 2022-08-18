@@ -7,11 +7,11 @@ In Natural there are sometimes multiple names to the same thing that do not affe
 
 To keep the code style consistent prefer to do things the same way every time.
 
-## Example
+== Example
 
-```natural
+``
 #VAR := *OCC(#ARRAY)
 #VAR := *OCCURRENCE(#ARRAY)
-```
+``
 
 These to lines have the same result.

@@ -7,20 +7,20 @@ Subroutines with names longer than 32 characters get cut to 32 characters at com
 
 Having a subroutine with a longer name is no problem in itself, as it can help the developer to express its intend more clear.
 
-This issue is only raised if there is a subroutine with a name longer than 32 characters and a `PERFORM` which uses a different subroutine
+This issue is only raised if there is a subroutine with a name longer than 32 characters and a ``PERFORM`` which uses a different subroutine
 name but having the first 32 characters match.
 
-## Example
+== Example
 
-```natural
+``
 DEFINE SUBROUTINE THIS-IS-A-LONG-SUBROUTINE-NAME-WHICH-IS-CUT
 ...
 END-SUBROUTINE
 
 PERFORM THIS-IS-A-LONG-SUBROUTINE-NAME-WHERE-THE-MOST-PART-MATCHES
-```
+``
 
-At compilation time, the subroutine name is cut to `THIS-IS-A-LONG-SUBROUTINE-NAME-W` which results in the correct subroutine
-to be called by the `PERFORM`.
+At compilation time, the subroutine name is cut to ``THIS-IS-A-LONG-SUBROUTINE-NAME-W`` which results in the correct subroutine
+to be called by the ``PERFORM``.
 
 However, the names differ in the source code, which is very confusing.

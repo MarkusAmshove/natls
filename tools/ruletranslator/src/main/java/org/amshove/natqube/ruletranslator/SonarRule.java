@@ -14,6 +14,7 @@ public record SonarRule(String key, String name, String description, String prio
 			    <key>%s</key>
 			    <name><![CDATA[%s]]></name>
 			    <description><![CDATA[%s]]></description>
+			    <descriptionFormat>MARKDOWN</descriptionFormat>
 			    <priority>%s</priority>
 			    %s
 			    <type>%s</type>

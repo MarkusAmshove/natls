@@ -5,4 +5,4 @@ type: BUG
 description:
 Naming for independent variables follow hard rules.
 
-Names of idependent variables *must* start with a `+`.
+Names of idependent variables *must* start with a `+``.

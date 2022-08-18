@@ -5,4 +5,4 @@ type: BUG
 description:
 The specified data type can't have a dynamic length.
 
-Only `A`lphanumeric, `B`inary and `U`nicode support dynamic length.
+Only ``A``lphanumeric, ``B``inary and ``U``nicode support dynamic length.

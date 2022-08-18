@@ -26,7 +26,9 @@ public class NaturalRuleRepository implements RulesDefinition
 		Objects.requireNonNull(rulesStream);
 		xmlLoader.load(repository, rulesStream, StandardCharsets.UTF_8);
 
-		repository.rules().forEach(r -> r.setDebtRemediationFunction(r.debtRemediationFunctions().linear("5min")).setActivatedByDefault(true));
+		repository.rules().forEach(r -> r
+			.setDebtRemediationFunction(r.debtRemediationFunctions().linear("5min"))
+			.setActivatedByDefault(true));
 
 		repository.done();
 	}
