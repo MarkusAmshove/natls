@@ -23,7 +23,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Create target jars
-        run: ./gradlew shadowJar
+        run: ./gradlew :natlint:shadowJar
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -44,4 +44,4 @@ jobs:
           context: .
           file: docker/Dockerfile.natlint
           push: true
-          tags: markusamshove/natlint:latest
+          tags: ghcr.io/markusamshove/natlint:latest
