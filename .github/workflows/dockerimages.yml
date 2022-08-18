@@ -3,9 +3,9 @@ name: Publish docker images
 on:
   workflow_run:
     workflows: [ "Continuous Integration" ]
-      branches: [ main ]
-      types:
-        - completed
+    branches: [ main ]
+    types:
+      - completed
   push:
     branches: [ main ]
     tags:
