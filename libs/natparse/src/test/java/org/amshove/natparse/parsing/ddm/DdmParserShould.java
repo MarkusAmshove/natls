@@ -1,9 +1,9 @@
 package org.amshove.natparse.parsing.ddm;
 
 import org.amshove.natparse.NaturalParseException;
-import org.amshove.natparse.ResourceHelper;
 import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.ddm.*;
+import org.amshove.testhelpers.ResourceHelper;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 

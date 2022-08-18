@@ -1,0 +1,6 @@
+name: Keyword is used as identifier
+priority: BLOCKER
+tags: natparse-internal, clumsy, brain-overload
+type: BUG
+description:
+Keywords should not be used as identifier.

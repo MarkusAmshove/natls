@@ -1,0 +1,6 @@
+name: Array dimension must be constant or initialized
+priority: BLOCKER
+tags: natparse-internal
+type: BUG
+description:
+If array dimensions are specified via variable references, the referenced variable must either be `CONST` or `INIT`ialized.

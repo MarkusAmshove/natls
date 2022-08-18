@@ -1,0 +1,11 @@
+name: Test names are duplicated
+priority: BLOCKER
+tags: pitfall, confusing, brain-overload, bad-practice
+type: BUG
+description:
+A test with this name is already defined in this module.
+
+Having multiple tests with the same name results in each test being run multiple times and also each test being run each time
+the test module is called with the test name.
+
+This leads to unpredictable behavior.

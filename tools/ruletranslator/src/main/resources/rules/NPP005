@@ -1,0 +1,18 @@
+name: Length of data format is missing
+priority: BLOCKER
+tags: natparse-internal
+type: BUG
+description:
+The specified data format needs a length.
+
+## Invalid
+
+```natural
+1 #VAR (N)
+```
+
+## Valid
+
+```natural
+1 #VAR (N10)
+```

@@ -1,0 +1,12 @@
+name: Variable with fixed data type length can't also be dynamic
+priority: BLOCKER
+tags: natparse-internal
+type: BUG
+description:
+If a variable already has a fixed length, it can not also be dynamic.
+
+## Invalid
+
+```natural
+1 #VAR (A10) DYNAMIC
+```

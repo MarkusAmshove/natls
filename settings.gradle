@@ -12,5 +12,8 @@ project(':libs/natlint').name = 'natlint'
 include 'libs/natls'
 project(':libs/natls').name = 'natls'
 
+include 'tools/ruletranslator'
+project(':tools/ruletranslator').name = 'ruletranslator'
+
 include 'libs/natqube'
 project(':libs/natqube').name = 'natqube'
