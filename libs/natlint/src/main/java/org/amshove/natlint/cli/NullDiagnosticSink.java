@@ -8,7 +8,7 @@ import java.util.List;
 public class NullDiagnosticSink implements IDiagnosticSink
 {
 	@Override
-	public void printDiagnostics(Path filePath, List<IDiagnostic> diagnostics)
+	public void printDiagnostics(int currentFileCount, Path filePath, List<IDiagnostic> diagnostics)
 	{
 
 	}

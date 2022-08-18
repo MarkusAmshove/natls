@@ -128,7 +128,7 @@ public class CliAnalyzer
 
 					totalDiagnostics += allDiagnosticsInFile.size();
 
-					diagnosticSink.printDiagnostics(filePath, allDiagnosticsInFile);
+					diagnosticSink.printDiagnostics(filesChecked, filePath, allDiagnosticsInFile);
 				}
 				catch (Exception e)
 				{

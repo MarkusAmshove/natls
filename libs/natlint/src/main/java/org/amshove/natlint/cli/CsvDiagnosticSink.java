@@ -28,12 +28,14 @@ public class CsvDiagnosticSink implements IDiagnosticSink
 	}
 
 	@Override
-	public void printDiagnostics(Path filePath, List<IDiagnostic> diagnostics)
+	public void printDiagnostics(int currentFileCount, Path filePath, List<IDiagnostic> diagnostics)
 	{
 		for (var diagnostic : diagnostics)
 		{
 			try
 			{
+				System.out.print("\r             ");
+				System.out.print("\r" + currentFileCount);
 				sink.write("%s;%s;%s;%s;%d;%d;%d%n".formatted(filePath, diagnostic.id(), diagnostic.severity(), diagnostic.message(), diagnostic.line(), diagnostic.offsetInLine(), diagnostic.length()));
 			}
 			catch (IOException e)
