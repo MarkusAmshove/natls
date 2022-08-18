@@ -37,7 +37,10 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build
-        run: ./gradlew check shadowJar
+        run: ./gradlew check shadowJar --no-daemon
+
+      - name: Stop daemon for caching
+        run: ./gradlew --stop
 
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action/composite@v1
