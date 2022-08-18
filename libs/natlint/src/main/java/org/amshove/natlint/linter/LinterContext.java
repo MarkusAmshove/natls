@@ -119,7 +119,7 @@ public enum LinterContext implements ILinterContext
 		}
 	}
 
-	/* test */ ReadOnlyList<AbstractAnalyzer> registeredAnalyzers()
+	public ReadOnlyList<AbstractAnalyzer> registeredAnalyzers()
 	{
 		return ReadOnlyList.from(registeredAnalyzers);
 	}

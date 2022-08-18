@@ -3,7 +3,8 @@ plugins {
 }
 
 dependencies {
-    implementation libraries.sonarqube_api
+    compileOnly libraries.sonarqube_api
+    compileOnly libraries.slf4j_api
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -37,17 +38,16 @@ jar {
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
+    archiveClassifier.set('sources')
     from sourceSets.main.allSource
 }
 
 shadowJar {
-    archiveBaseName = 'natqube'
-    classifier = null
+    setArchivesBaseName('natqube')
+    archiveClassifier.set(null)
     exclude 'META-INF/**/*'
-    dependencies {
-        exclude(dependency('org.sonarsource.sonarqube:sonar-plugin-api'))
-        exclude(dependency('org.codehaus.woodstox:.*'))
-        exclude(dependency('org.codehaus.staxmate:.*'))
-    }
+}
+
+artifacts {
+    shadowJar
 }
