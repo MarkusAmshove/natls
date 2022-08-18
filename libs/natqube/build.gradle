@@ -44,7 +44,8 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 
 shadowJar {
     setArchivesBaseName('natqube')
-    archiveClassifier.set(null)
+    archiveClassifier.set('')
+    archiveVersion.set('')
     exclude 'META-INF/**/*'
 }
 
