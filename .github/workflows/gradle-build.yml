@@ -72,7 +72,7 @@ jobs:
             libs/natls/build/libs/natls.jar
             libs/natqube/build/libs/natqube.jar
 
-      - name: Save natlinat.jar
+      - name: Save natlint.jar
         uses: actions/upload-artifact@v3
         with:
           name: natlint.jar
