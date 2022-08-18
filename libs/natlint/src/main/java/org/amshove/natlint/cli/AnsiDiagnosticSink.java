@@ -24,7 +24,7 @@ public class AnsiDiagnosticSink implements IDiagnosticSink
 	private static final ActualFilesystem filesystem = new ActualFilesystem();
 
 	@Override
-	public void printDiagnostics(Path filePath, List<IDiagnostic> diagnostics)
+	public void printDiagnostics(int currentFileCount, Path filePath, List<IDiagnostic> diagnostics)
 	{
 		if (diagnostics.isEmpty())
 		{
