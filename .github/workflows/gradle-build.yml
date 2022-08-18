@@ -38,9 +38,11 @@ jobs:
 
       - name: Publish Jars
         uses: softprops/action-gh-release@v1
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' |
+          && matrix.os == 'ubuntu-latest'
         with:
           prerelease: true
+          tag_name: latest
           files: |
             libs/natlint/build/libs/natlint.jar
             libs/natls/build/libs/natls.jar
