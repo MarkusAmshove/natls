@@ -1,0 +1,6 @@
+name: Unresolved import
+priority: BLOCKER
+tags: natparse-internal
+type: BUG
+description:
+DATA AREA does not seem to exist.

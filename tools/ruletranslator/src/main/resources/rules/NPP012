@@ -1,0 +1,23 @@
+name: Independent variables can't be groups
+priority: BLOCKER
+tags: natparse-internal
+type: BUG
+description:
+Natural does not allow independent variables to be groups.
+
+== Invalid
+
+``
+INDEPENDENT
+1 +GROUP
+2 +VAR (A10)
+2 +ANOTHER-VAR (A10)
+``
+
+== Valid
+
+``
+INDEPENDENT
+1 +VAR (A10)
+1 +ANOTHER-VAR (A10)
+``

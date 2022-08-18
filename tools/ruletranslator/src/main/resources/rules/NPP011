@@ -1,0 +1,8 @@
+name: Invalid naming for independent variable
+priority: BLOCKER
+tags: natparse-internal
+type: BUG
+description:
+Naming for independent variables follow hard rules.
+
+Names of idependent variables *must* start with a `+``.

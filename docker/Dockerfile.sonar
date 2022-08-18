@@ -1,0 +1,3 @@
+FROM sonarqube:latest
+
+COPY libs/natqube/build/libs/natqube.jar /opt/sonarqube/extensions/plugins/natqube.jar
