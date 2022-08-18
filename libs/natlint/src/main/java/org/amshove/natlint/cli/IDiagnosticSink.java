@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface IDiagnosticSink
 {
-	void printDiagnostics(Path filePath, List<IDiagnostic> diagnostics);
+	void printDiagnostics(int currentFileCount, Path filePath, List<IDiagnostic> diagnostics);
 }
