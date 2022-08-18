@@ -5,7 +5,7 @@ type: BUG
 description:
 A redefinition can't contain a variable with ``DYNAMIC`` length.
 
-# Invalid
+== Invalid
 
 ``
 1 #VAR (A50)
