@@ -1,5 +1,22 @@
+plugins {
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '7.1.0'
+}
+
 dependencies {
     implementation project(':testhelpers')
     implementation project(':natparse')
     implementation project(':natlint')
+}
+
+shadowJar {
+    archiveBaseName.set('ruletranslator')
+    archiveClassifier.set('')
+    archiveVersion.set('')
+}
+
+mainClassName = 'org.amshove.natqube.ruletranslator.App'
+
+runShadow {
+    args "${project(':natqube').sourceSets.main.resources.srcDirs[0]}/rules.xml"
 }

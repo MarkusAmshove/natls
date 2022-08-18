@@ -10,6 +10,7 @@ public class App
 {
 	public static void main(String[] args) throws IOException
 	{
+		System.out.println("Exporting rules to %s".formatted(args[0]));
 		var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<rules>\n";
 		xml += RuleRepository.getRules().stream().map(SonarRule::toXml).collect(Collectors.joining("\n"));
 		xml += "\n</rules>";
