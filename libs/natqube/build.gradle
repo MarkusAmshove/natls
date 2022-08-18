@@ -52,4 +52,4 @@ artifacts {
     shadowJar
 }
 
-compileJava.dependsOn(':ruletranslator:runShadow')
+compileJava.dependsOn(':ruletranslator:run')

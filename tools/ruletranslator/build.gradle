@@ -1,6 +1,5 @@
 plugins {
     id 'application'
-    id 'com.github.johnrengelman.shadow' version '7.1.0'
 }
 
 dependencies {
@@ -9,14 +8,10 @@ dependencies {
     implementation project(':natlint')
 }
 
-shadowJar {
-    archiveBaseName.set('ruletranslator')
-    archiveClassifier.set('')
-    archiveVersion.set('')
+application {
+    mainClass = 'org.amshove.natqube.ruletranslator.App'
 }
 
-mainClassName = 'org.amshove.natqube.ruletranslator.App'
-
-runShadow {
-    args "${project(':natqube').sourceSets.main.resources.srcDirs[0]}/rules.xml"
+run {
+    args = ["${project(':natqube').sourceSets.main.resources.srcDirs[0]}/rules.xml"]
 }

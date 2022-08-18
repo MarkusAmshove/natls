@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -45,7 +44,7 @@ public class ResourceHelper
 			var str = Resources.toString(Resources.getResource(caller, resourcePath), UTF_8);
 			return Arrays.stream(str.split("\n")) // always has linux line endings
 				.map(filename -> resourcePath + filename)
-				.collect(Collectors.toList());
+				.toList();
 		}
 		catch (IOException e)
 		{
