@@ -28,13 +28,13 @@ public class ResourceHelper
 	public static String readRelativeResourceFile(String relativePath, Class<?> caller)
 	{
 		var startPath = caller.getPackage().getName().replace(".", "/");
-		return readResourceFile(String.format("%s/%s", startPath, relativePath), caller);
+		return readResourceFile(String.format("/%s/%s", startPath, relativePath), caller);
 	}
 
 	public static List<String> findRelativeResourceFiles(String relativePath, Class<?> caller)
 	{
 		var startPath = caller.getPackage().getName().replace(".", "/");
-		var targetPath = "%s/%s/".formatted(startPath, relativePath);
+		var targetPath = "/%s/%s/".formatted(startPath, relativePath);
 		return findAbsoluteResourceFiles(targetPath, caller);
 	}
 
