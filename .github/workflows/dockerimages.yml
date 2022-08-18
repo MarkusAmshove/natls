@@ -1,11 +1,12 @@
 name: Publish docker images
 
 on:
-  workflow_run:
-      workflows: [ "Continuous Integration" ]
-      branches: [ main ]
-      types:
-        - completed
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main ]
 
 jobs:
   natlint:
@@ -41,10 +42,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: markusamshove/natlint
+
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
           context: .
           file: docker/Dockerfile.natlint
-          push: true
-          tags: ghcr.io/markusamshove/natlint:latest
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
