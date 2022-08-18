@@ -1,0 +1,3 @@
+**/*
+!./libs/natqube/build/libs/*.jar
+!./libs/natlint/build/libs/*.jar

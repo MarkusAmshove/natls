@@ -1,4 +1,4 @@
-name: Continuous Integration
+name: CI
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Build on ${{ matrix.os }}
+    name: Build/Test on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -24,14 +24,107 @@ jobs:
         with:
           java-version: 11
 
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: Build
-        run: ./gradlew check shadowJar
+        run: ./gradlew check shadowJar --no-daemon
+
+      - name: Stop daemon for caching
+        run: ./gradlew --stop
 
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action/composite@v1
         if: always()
         with:
           files: "**/build/test-results/**/*.xml"
+
+      - name: Publish nightly
+        uses: softprops/action-gh-release@v1
+        if: |
+          github.ref == 'refs/heads/main'
+          && matrix.os == 'ubuntu-latest'
+        with:
+          prerelease: true
+          tag_name: nightly
+          files: |
+            libs/natlint/build/libs/natlint.jar
+            libs/natls/build/libs/natls.jar
+            libs/natqube/build/libs/natqube.jar
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v1
+        if: |
+          startsWith(github.ref, 'refs/tags/')
+          && github.event_name != 'pull_request'
+          && matrix.os == 'ubuntu-latest'
+        with:
+          draft: true
+          generate_release_notes: true
+          files: |
+            libs/natlint/build/libs/natlint.jar
+            libs/natls/build/libs/natls.jar
+            libs/natqube/build/libs/natqube.jar
+
+      - name: Save natlint.jar
+        uses: actions/upload-artifact@v3
+        with:
+          name: natlint.jar
+          path: libs/natlint/build/libs/natlint.jar
+          if-no-files-found: error
+          retention-days: 1
+
+  docker_natlint:
+    needs: [build]
+    name: Build natlint docker image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - run: mkdir -p libs/natlint/build/libs/
+
+      - name: Load natlint.jar
+        uses: actions/download-artifact@v3
+        with:
+          name: natlint.jar
+          path: libs/natlint/build/libs/natlint.jar
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ghcr.io/markusamshove/natlint
+
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: docker/Dockerfile.natlint
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

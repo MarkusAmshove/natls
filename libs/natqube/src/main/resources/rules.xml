@@ -1,0 +1,626 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<rules>
+<rule>
+    <key>NPP004</key>
+    <name><![CDATA[Invalid data type for dynamic length]]></name>
+    <description><![CDATA[The specified data type can't have a dynamic length.
+
+Only ``A``lphanumeric, ``B``inary and ``U``nicode support dynamic length.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP026</key>
+    <name><![CDATA[Unresolved import]]></name>
+    <description><![CDATA[DATA AREA does not seem to exist.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP005</key>
+    <name><![CDATA[Length of data format is missing]]></name>
+    <description><![CDATA[The specified data format needs a length.
+
+== Invalid
+
+``
+1 #VAR (N)
+``
+
+== Valid
+
+``
+1 #VAR (N10)
+``
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP027</key>
+    <name><![CDATA[Duplicated symbol]]></name>
+    <description><![CDATA[This symbol is defined more than once.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP002</key>
+    <name><![CDATA[Missing END-DEFINE]]></name>
+    <description><![CDATA[The DEFINE DATA block of this file is unclosed
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP024</key>
+    <name><![CDATA[Target of REDEFINE can't contain DYNAMIC]]></name>
+    <description><![CDATA[A redefinition can't contain a variable with ``DYNAMIC`` length.
+
+== Invalid
+
+``
+1 #VAR (A50)
+1 REDEFINE #VAR
+2 #REST (A) DYNAMIC /* DYNAMIC not allowed here
+``
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP003</key>
+    <name><![CDATA[Unexpected token]]></name>
+    <description><![CDATA[The specified token was not expected at this position.
+
+Either the parser is incomplete at this point or this is an actual error.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP025</key>
+    <name><![CDATA[Invalid length for data type]]></name>
+    <description><![CDATA[The specified length is not valid for this data type.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP022</key>
+    <name><![CDATA[Target of REDEFINE can't be an X-Array]]></name>
+    <description><![CDATA[X-Arrays can't be redefined.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP001</key>
+    <name><![CDATA[No DEFINE DATA has been found]]></name>
+    <description><![CDATA[This file type should have a DEFINE DATA, but none was found
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP023</key>
+    <name><![CDATA[Target of REDEFINE can't be DYNAMIC]]></name>
+    <description><![CDATA[Dynamic length variables can't be redefined.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP020</key>
+    <name><![CDATA[Trailing token]]></name>
+    <description><![CDATA[Token is not expected here.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP021</key>
+    <name><![CDATA[Filler missing X]]></name>
+    <description><![CDATA[To make a ``FILLER`` an actual filler and not a variable name, it has to have a length followed by an ``X``.
+
+== Invalid
+
+``
+1 #VAR (A50)
+1 REDEFINE #VAR
+2 FILLER 10
+2 #REST (A40)
+``
+
+== Valid
+
+``
+1 #VAR (A50)
+1 REDEFINE #VAR
+2 FILLER 10X
+2 #REST (A40)
+``
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP008</key>
+    <name><![CDATA[Variable with fixed data type length can't also be dynamic]]></name>
+    <description><![CDATA[If a variable already has a fixed length, it can not also be dynamic.
+
+== Invalid
+
+``
+1 #VAR (A10) DYNAMIC
+``
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP009</key>
+    <name><![CDATA[Invalid array bounds]]></name>
+    <description><![CDATA[The boundary specified is syntactically incorrect
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP006</key>
+    <name><![CDATA[Invalid data type for dynamic length]]></name>
+    <description><![CDATA[The specified data type can't have a dynamic length.
+
+Only ``A``lphanumeric, ``B``inary and ``U``nicode support dynamic length.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP028</key>
+    <name><![CDATA[Duplicated import]]></name>
+    <description><![CDATA[This data area has already been imported via ``USING``.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP007</key>
+    <name><![CDATA[Initial variable value can't be empty]]></name>
+    <description><![CDATA[The initial value of a variable can't be empty
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP029</key>
+    <name><![CDATA[Keyword is used as identifier]]></name>
+    <description><![CDATA[Keywords should not be used as identifier.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+<tag>clumsy</tag>
+<tag>brain-overload</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NL008</key>
+    <name><![CDATA[Test names are duplicated]]></name>
+    <description><![CDATA[A test with this name is already defined in this module.
+
+Having multiple tests with the same name results in each test being run multiple times and also each test being run each time
+the test module is called with the test name.
+
+This leads to unpredictable behavior.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>pitfall</tag>
+<tag>confusing</tag>
+<tag>brain-overload</tag>
+<tag>bad-practice</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NL009</key>
+    <name><![CDATA[Module name contains trailing or leading whitespace]]></name>
+    <description><![CDATA[The module name passed to, e.g. ``CALLNAT``, contains leading or trailing whitespace.
+
+This can result in a runtime error.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>pitfall</tag>
+<tag>confusing</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NL006</key>
+    <name><![CDATA[Operator is discouraged]]></name>
+    <description><![CDATA[Operators can be specified multiple ways.
+
+Having consistent code guidelines for those cases is a good idea.
+
+Use the following table to decide which operator to use:
+
+| Discouraged operator | Preferred operator |
+| --- | --- |
+| ``GT`` | `>`` |
+| ``LT`` | `<`` |
+| ``EQ`` | `=`` |
+| ``NE`` | `<>`` |
+| ``GE`` | `>=`` |
+| ``LE`` | `<=`` |
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>MINOR</priority>
+    <tag>convention</tag>
+    <type>CODE_SMELL</type>
+</rule>
+
+<rule>
+    <key>NL007</key>
+    <name><![CDATA[Keep code consistent]]></name>
+    <description><![CDATA[In Natural there are sometimes multiple names to the same thing that do not affect the result.
+
+To keep the code style consistent prefer to do things the same way every time.
+
+== Example
+
+``
+#VAR := *OCC(#ARRAY)
+#VAR := *OCCURRENCE(#ARRAY)
+``
+
+These to lines have the same result.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>MAJOR</priority>
+    <tag>convention</tag>
+<tag>confusing</tag>
+    <type>CODE_SMELL</type>
+</rule>
+
+<rule>
+    <key>NL004</key>
+    <name><![CDATA[Subroutine name cut on compilation]]></name>
+    <description><![CDATA[Subroutines with names longer than 32 characters get cut to 32 characters at compilation time.
+
+Having a subroutine with a longer name is no problem in itself, as it can help the developer to express its intend more clear.
+
+This issue is only raised if there is a subroutine with a name longer than 32 characters and a ``PERFORM`` which uses a different subroutine
+name but having the first 32 characters match.
+
+== Example
+
+``
+DEFINE SUBROUTINE THIS-IS-A-LONG-SUBROUTINE-NAME-WHICH-IS-CUT
+...
+END-SUBROUTINE
+
+PERFORM THIS-IS-A-LONG-SUBROUTINE-NAME-WHERE-THE-MOST-PART-MATCHES
+``
+
+At compilation time, the subroutine name is cut to ``THIS-IS-A-LONG-SUBROUTINE-NAME-W`` which results in the correct subroutine
+to be called by the ``PERFORM``.
+
+However, the names differ in the source code, which is very confusing.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>CRITICAL</priority>
+    <tag>pitfall</tag>
+<tag>confusing</tag>
+    <type>CODE_SMELL</type>
+</rule>
+
+<rule>
+    <key>NL005</key>
+    <name><![CDATA[Subroutine is unused]]></name>
+    <description><![CDATA[This rule is raised when there is a local subroutine defined that is not used within the module
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>MINOR</priority>
+    <tag>unused</tag>
+    <type>CODE_SMELL</type>
+</rule>
+
+<rule>
+    <key>NPP030</key>
+    <name><![CDATA[Ambiguous variable reference]]></name>
+    <description><![CDATA[This variable is defined twice with different qualifications.
+
+Use the qualified name instead.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NL002</key>
+    <name><![CDATA[Using is unused]]></name>
+    <description><![CDATA[This rule is raised when there is a ``USING`` for a data area whose variables are not used.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>MINOR</priority>
+    <tag>unused</tag>
+    <type>CODE_SMELL</type>
+</rule>
+
+<rule>
+    <key>NL003</key>
+    <name><![CDATA[NatUnit test case won't be recognized]]></name>
+    <description><![CDATA[NatUnit recognizes tests only with ``EQ``.
+
+== Invalid
+
+``
+IF NUTESTP.TEST = 'My fancy test'
+``
+
+== Valid
+
+``
+IF NUTESTP.TEST EQ 'My fancy test'
+``
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>CRITICAL</priority>
+    <tag>convention</tag>
+<tag>pitfall</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NL001</key>
+    <name><![CDATA[Variable is unused]]></name>
+    <description><![CDATA[This rule is raised when there is a variable that is not used.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>MINOR</priority>
+    <tag>unused</tag>
+    <type>CODE_SMELL</type>
+</rule>
+
+<rule>
+    <key>NPP015</key>
+    <name><![CDATA[Redefined length exceeds target type length]]></name>
+    <description><![CDATA[The number of bytes of the accumulated fields in the ``REDEFINE`` exceeds the number of bytes of the
+variable that is redefined.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP016</key>
+    <name><![CDATA[Unresolved reference]]></name>
+    <description><![CDATA[Declaration of local subroutine or variable not found.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP013</key>
+    <name><![CDATA[Groups can't be empty]]></name>
+    <description><![CDATA[Natural does not allow groups to be empty.
+
+== Invalid
+
+``
+LOCAL
+1 #GROUP
+``
+
+== Valid
+
+``
+LOCAL
+1 #GROUP
+2 #VAR (A10)
+``
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP014</key>
+    <name><![CDATA[Variable to REDEFINE not found]]></name>
+    <description><![CDATA[Redefinition of an undeclared variable.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP011</key>
+    <name><![CDATA[Invalid naming for independent variable]]></name>
+    <description><![CDATA[Naming for independent variables follow hard rules.
+
+Names of idependent variables *must* start with a `+``.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP012</key>
+    <name><![CDATA[Independent variables can't be groups]]></name>
+    <description><![CDATA[Natural does not allow independent variables to be groups.
+
+== Invalid
+
+``
+INDEPENDENT
+1 +GROUP
+2 +VAR (A10)
+2 +ANOTHER-VAR (A10)
+``
+
+== Valid
+
+``
+INDEPENDENT
+1 +VAR (A10)
+1 +ANOTHER-VAR (A10)
+``
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP031</key>
+    <name><![CDATA[Unclosed statement]]></name>
+    <description><![CDATA[This statement expects to be ended, e.g. by ``END-IF``, ``END-SUBROUTINE``, etc.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP010</key>
+    <name><![CDATA[Incomplete array definition]]></name>
+    <description><![CDATA[The array definition specified is syntactically incomplete
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP019</key>
+    <name><![CDATA[OPTIONAL not allowed in this scope]]></name>
+    <description><![CDATA[``OPTIONAL`` is only allowed in ``PARAMETER`` scope.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP017</key>
+    <name><![CDATA[Array dimension must be constant or initialized]]></name>
+    <description><![CDATA[If array dimensions are specified via variable references, the referenced variable must either be ``CONST`` or ``INIT``ialized.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NPP018</key>
+    <name><![CDATA[BY VALUE not allowed in this scope]]></name>
+    <description><![CDATA[``BY VALUE`` is only allowed in ``PARAMETER`` scope.
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>BLOCKER</priority>
+    <tag>natparse-internal</tag>
+    <type>BUG</type>
+</rule>
+
+<rule>
+    <key>NL010</key>
+    <name><![CDATA[NatUnit test case won't be recognized]]></name>
+    <description><![CDATA[NatUnit recognizes tests only with ``EQ``.
+
+== Invalid
+
+``
+IF NUTESTP.TEST = 'My fancy test'
+``
+
+== Valid
+
+``
+IF NUTESTP.TEST EQ 'My fancy test'
+``
+]]></description>
+    <descriptionFormat>MARKDOWN</descriptionFormat>
+    <priority>CRITICAL</priority>
+    <tag>convention</tag>
+<tag>pitfall</tag>
+    <type>BUG</type>
+</rule>
+
+</rules>

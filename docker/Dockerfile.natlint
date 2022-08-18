@@ -1,0 +1,6 @@
+FROM eclipse-temurin:17-alpine
+
+USER 1000
+ADD --chown=1000:1000 ./libs/natlint/build/libs/natlint.jar /opt/natlint.jar
+
+ENTRYPOINT [ "java", "-jar", "/opt/natlint.jar" ]

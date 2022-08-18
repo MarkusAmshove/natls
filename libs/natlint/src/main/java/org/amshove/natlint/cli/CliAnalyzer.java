@@ -128,7 +128,7 @@ public class CliAnalyzer
 
 					totalDiagnostics += allDiagnosticsInFile.size();
 
-					diagnosticSink.printDiagnostics(filePath, allDiagnosticsInFile);
+					diagnosticSink.printDiagnostics(filesChecked, filePath, allDiagnosticsInFile);
 				}
 				catch (Exception e)
 				{
@@ -148,7 +148,7 @@ public class CliAnalyzer
 		System.out.println("Done.");
 		System.out.println("Index time: " + indexTime + " ms");
 		System.out.println("Check time: " + checkTime + " ms");
-		System.out.println("Total: " + (indexTime + checkTime) + " ms (" + (indexTime + checkTime / 1000) + "s)");
+		System.out.println("Total: " + (indexTime + checkTime) + " ms (" + ((indexTime + checkTime) / 1000) + "s)");
 		System.out.println("Files checked: " + filesChecked);
 		System.out.println("Total diagnostics: " + totalDiagnostics);
 		System.out.println("Exceptions: " + exceptions);
