@@ -2,11 +2,13 @@ name: Publish docker images
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - 'main'
+    tags:
+      - 'v*'
   pull_request:
-    branches: [ main ]
-  tags:
-    - 'v*'
+    branches:
+      - 'main'
 
 jobs:
   natlint:
