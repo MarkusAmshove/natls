@@ -62,6 +62,7 @@ public enum SyntaxKind
 	PF_KEY(false, true, false),
 	INIT_USER(false, true, false),
 	COUNTER(false, true, false),
+	COM(false, true, false),
 	DEVICE(false, true, false),
 	OPSYS(false, true, false),
 	TPSYS(false, true, false),
