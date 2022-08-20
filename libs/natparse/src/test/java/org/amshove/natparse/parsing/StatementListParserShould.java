@@ -570,6 +570,14 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(reset.operands()).hasSize(2);
 	}
 
+	@Test
+	void rudimentaryParseMasks()
+	{
+		// TODO(expressions): Implement proper expressions
+		var mask = assertParsesSingleStatement("MASK (DDMMYYYY)", SyntheticTokenStatementNode.class);
+		assertThat(mask).isNotNull();
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);

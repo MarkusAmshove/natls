@@ -134,6 +134,15 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						// While the parser is incomplete, we just add a node for every token
 						var tokenStatementNode = new SyntheticTokenStatementNode();
 						consume(tokenStatementNode);
+						if(tokenStatementNode.token().kind() == SyntaxKind.MASK) // TODO(expressions): Remove once we can parse expressions
+						{
+							consumeMandatory(tokenStatementNode, SyntaxKind.LPAREN);
+							while(!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+							{
+								consume(tokenStatementNode);
+							}
+							consumeMandatory(tokenStatementNode, SyntaxKind.RPAREN);
+						}
 						statementList.addStatement(tokenStatementNode);
 				}
 			}
