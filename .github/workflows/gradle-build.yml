@@ -56,7 +56,7 @@ jobs:
           git tag -d nightly
           git push origin :refs/tags/nighly
           git tag nightly
-          git push origin nightly
+          git push -f --tags
 
       - name: Publish nightly
         uses: softprops/action-gh-release@v1
