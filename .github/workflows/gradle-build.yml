@@ -48,16 +48,6 @@ jobs:
         with:
           files: "**/build/test-results/**/*.xml"
 
-      - name: Move nightly tag
-        if: |
-          github.ref == 'refs/heads/main'
-          && matrix.os == 'ubuntu-latest'
-        run: |
-          git tag -d nightly
-          git push origin :refs/tags/nighly
-          git tag nightly
-          git push -f --tags
-
       - name: Publish nightly
         uses: softprops/action-gh-release@v1
         if: |
