@@ -677,6 +677,13 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(closePrinter.printer().symbolName()).isEqualTo("PR5");
 	}
 
+	@Test
+	void rudimentaryParseDefineWindow()
+	{
+		var window = assertParsesSingleStatement("DEFINE WINDOW MAIN", IDefineWindowNode.class);
+		assertThat(window.name().symbolName()).isEqualTo("MAIN");
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);

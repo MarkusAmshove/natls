@@ -43,7 +43,7 @@ Legend:
 | DEFINE PRINTER | :white_check_mark: |
 | DEFINE PROTOTYPE | :x: |
 | DEFINE SUBROUTINE | :white_check_mark: |
-| DEFINE WINDOW | :x: |
+| DEFINE WINDOW | partial |
 | DEFINE WORK FILE | :x: |
 | DELETE | :x: |
 | DELETE (SQL) | :x: |

@@ -94,6 +94,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						{
 							case SUBROUTINE -> statementList.addStatement(subroutine());
 							case PRINTER -> statementList.addStatement(definePrinter());
+							case WINDOW -> statementList.addStatement(defineWindow());
 							default ->
 							{
 								tokens.advance();
@@ -165,6 +166,17 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode defineWindow() throws ParseError
+	{
+		var window = new DefineWindowNode();
+		consumeMandatory(window, SyntaxKind.DEFINE);
+		consumeMandatory(window, SyntaxKind.WINDOW);
+		var name = consumeIdentifierTokenOnly();
+		window.setName(name);
+		window.addNode(new TokenNode(name));
+		return window;
 	}
 
 	private StatementNode closePrinter() throws ParseError
