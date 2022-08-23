@@ -40,7 +40,7 @@ Legend:
 | DEFINE CLASS | :x: |
 | DEFINE DATA | :x: |
 | DEFINE FUNCTION | :x: |
-| DEFINE PRINTER | :x: |
+| DEFINE PRINTER | :white_check_mark: |
 | DEFINE PROTOTYPE | :x: |
 | DEFINE SUBROUTINE | :white_check_mark: |
 | DEFINE WINDOW | :x: |

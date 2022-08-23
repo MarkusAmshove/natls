@@ -447,6 +447,7 @@ public enum SyntaxKind
 	JUST(true, false, false),
 	JUSTIFIED(true, false, false),
 	KD(true, false, false),
+	DEL(true, false, false),
 	KEEP(true, false, false),
 	KEY(true, false, false),
 	KEYS(true, false, false),

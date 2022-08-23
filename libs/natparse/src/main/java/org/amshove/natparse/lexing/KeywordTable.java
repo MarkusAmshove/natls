@@ -109,6 +109,7 @@ public class KeywordTable
 				case "decimal" -> SyntaxKind.DECIMAL;
 				case "define" -> SyntaxKind.DEFINE;
 				case "definition" -> SyntaxKind.DEFINITION;
+				case "del" -> SyntaxKind.DEL;
 				case "delete" -> SyntaxKind.DELETE;
 				case "delimited" -> SyntaxKind.DELIMITED;
 				case "delimiter" -> SyntaxKind.DELIMITER;

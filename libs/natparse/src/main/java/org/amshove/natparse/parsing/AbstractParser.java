@@ -211,6 +211,17 @@ abstract class AbstractParser<T>
 		return literalNode;
 	}
 
+	protected ILiteralNode consumeLiteralNode(BaseSyntaxNode node, SyntaxKind literalKind) throws ParseError
+	{
+		var literal = consumeLiteralNode(node);
+		if(literal.token().kind() != literalKind)
+		{
+			report(ParserErrors.unexpectedToken(literalKind, literal.token()));
+		}
+
+		return literal;
+	}
+
 	protected SyntaxToken consumeLiteral(BaseSyntaxNode node) throws ParseError
 	{
 		if (peek().kind().isSystemVariable())

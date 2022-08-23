@@ -1,6 +1,7 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.SyntaxKind;
+import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 import org.amshove.testhelpers.IntegrationTest;
 import org.junit.jupiter.api.Test;
@@ -576,6 +577,88 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		// TODO(expressions): Implement proper expressions
 		var mask = assertParsesSingleStatement("MASK (DDMMYYYY)", SyntheticTokenStatementNode.class);
 		assertThat(mask).isNotNull();
+	}
+
+	@Test
+	void parseASimpleDefinePrinter()
+	{
+		var printer = assertParsesSingleStatement("DEFINE PRINTER(2)", IDefinePrinterNode.class);
+		assertThat(printer.printerNumber()).isEqualTo(2);
+		assertThat(printer.printerName()).isEmpty();
+	}
+
+	@Test
+	void parseADefinePrinterWithPrinterName()
+	{
+		var printer = assertParsesSingleStatement("DEFINE PRINTER(MYPRINTER=5)", IDefinePrinterNode.class);
+		assertThat(printer.printerNumber()).isEqualTo(5);
+		assertThat(printer.printerName()).map(SyntaxToken::symbolName).hasValue("MYPRINTER");
+	}
+
+	@Test
+	void parseADefinePrinterWithOutputString()
+	{
+		var printer = assertParsesSingleStatement("DEFINE PRINTER(5) OUTPUT 'LPT1'", IDefinePrinterNode.class);
+		assertThat(printer.output()).hasValueSatisfying(n -> assertThat(n).isInstanceOf(ILiteralNode.class));
+		assertThat(printer.output()).map(ILiteralNode.class::cast).map(ILiteralNode::token).map(SyntaxToken::stringValue).hasValue("LPT1");
+	}
+
+	@Test
+	void reportADiagnosticIfDefinePrinterHasAnInvalidOutputStringFormat()
+	{
+		assertDiagnostic("DEFINE PRINTER (2) OUTPUT 'WRONG'", ParserError.INVALID_PRINTER_OUTPUT_FORMAT);
+	}
+
+	@Test
+	void reportADiagnosticIfDefinePrinterHasAnInvalidTokenKind()
+	{
+		assertDiagnostic("DEFINE PRINTER (2) OUTPUT 5", ParserError.UNEXPECTED_TOKEN);
+	}
+
+	@Test
+	void parseADefinePrinterWithOutputVariable()
+	{
+		var printer = assertParsesSingleStatement("DEFINE PRINTER(5) OUTPUT #MYPRINTER", IDefinePrinterNode.class);
+		assertThat(printer.output()).hasValueSatisfying(n -> assertThat(n).isInstanceOf(ISymbolReferenceNode.class));
+		assertThat(printer.output()).map(ISymbolReferenceNode.class::cast).map(ISymbolReferenceNode::referencingToken).map(SyntaxToken::symbolName).hasValue("#MYPRINTER");
+	}
+
+	@Test
+	void parseADefinePrinterWithProfile()
+	{
+		assertParsesWithoutDiagnostics("DEFINE PRINTER(8) PROFILE 'MYPR'");
+	}
+
+	@Test
+	void parseADefinePrinterWithCopies()
+	{
+		assertParsesWithoutDiagnostics("DEFINE PRINTER(8) COPIES 10");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"HOLD", "KEEP", "DEL"
+	})
+	void parseADefinePrinterWithDisp(String disp)
+	{
+		assertParsesWithoutDiagnostics("DEFINE PRINTER(8) DISP %s".formatted(disp));
+	}
+
+	@Test
+	void reportADiagnosticIfThePrinterProfileIsLongerThan8()
+	{
+		assertDiagnostic("DEFINE PRINTER(8) PROFILE 'MYLONGPROFILE'", ParserError.INVALID_LENGTH_FOR_LITERAL);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"PROFILE 'PROF' DISP KEEP COPIES 5",
+		"COPIES 3 PROFILE 'PROF' DISP DEL",
+		"DISP HOLD COPES 2 DISP HOLD"
+	})
+	void parseADefinePrinterWithAnyOrderOfDispProfileAndCopies(String order)
+	{
+		assertParsesWithoutDiagnostics("DEFINE PRINTER (2) %s".formatted(order));
 	}
 
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)

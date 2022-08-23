@@ -33,7 +33,9 @@ public enum ParserError
 	DUPLICATED_IMPORT("NPP028", "Duplicated import"),
 	KEYWORD_USED_AS_IDENTIFIER("NPP029", "Keyword is used as identifier"),
 	AMBIGUOUS_VARIABLE_REFERENCE("NPP030", "Ambiguous variable reference"),
-	UNCLOSED_STATEMENT("NPP031", "Unclosed statement");
+	UNCLOSED_STATEMENT("NPP031", "Unclosed statement"),
+	INVALID_PRINTER_OUTPUT_FORMAT("NPP032", ""),
+	INVALID_LENGTH_FOR_LITERAL("NPP033", "");
 
 	private final String id;
 	private final String name;

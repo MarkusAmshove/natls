@@ -1,0 +1,8 @@
+name: Unclosed statement
+priority: BLOCKER
+tags: natparse-internal
+type: BUG
+description:
+The format for ``OUTPUT`` is invalid.
+
+It expects either a variable reference or a string in the form of 'LPTn' where ``n`` is a number in the range of 1-31.

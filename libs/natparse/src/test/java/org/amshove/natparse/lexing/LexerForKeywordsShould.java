@@ -308,6 +308,7 @@ public class LexerForKeywordsShould extends AbstractLexerTest
 				keywordTest("JUST", SyntaxKind.JUST),
 				keywordTest("JUSTIFIED", SyntaxKind.JUSTIFIED),
 				keywordTest("KD", SyntaxKind.KD),
+				keywordTest("DEL", SyntaxKind.DEL),
 				keywordTest("KEEP", SyntaxKind.KEEP),
 				keywordTest("KEY", SyntaxKind.KEY),
 				keywordTest("KEYS", SyntaxKind.KEYS),
