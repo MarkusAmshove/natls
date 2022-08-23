@@ -9,6 +9,7 @@ import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 abstract class AbstractParser<T>
@@ -364,7 +365,7 @@ abstract class AbstractParser<T>
 		return systemVariableNode;
 	}
 
-	protected boolean consumeAnyOptionally(BaseSyntaxNode node, List<SyntaxKind> acceptedKinds)
+	protected boolean consumeAnyOptionally(BaseSyntaxNode node, Collection<SyntaxKind> acceptedKinds)
 	{
 		for (SyntaxKind acceptedKind : acceptedKinds)
 		{

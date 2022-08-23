@@ -684,6 +684,29 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(window.name().symbolName()).isEqualTo("MAIN");
 	}
 
+	@Test
+	void rudimentaryParseFormat()
+	{
+		var statementList = assertParsesWithoutDiagnostics("""
+			FORMAT (PR15) AD=IO AL=5 CD=BL DF=S DL=29 EM=YYYY-MM-DD ES=ON FC= FL=2 GC=a HC=L HW=OFF IC= IP=ON IS=OFF LC=- LS=5 MC=3 MP=2 MS=ON NL=20 PC=3 PM=I PS=40 SF=3 SG=0 TC= UC=
+			ZP=ON""");
+		assertThat(statementList.statements().size()).isEqualTo(1);
+	}
+
+	@Test
+	void rudimentaryParseFormatIfNextLineStartsWithStatement()
+	{
+		// If a format thingy is empty, the next line should still properly be identified as the next statement
+		var statementList = assertParsesWithoutDiagnostics("""
+			FORMAT (PR15) AD=IO AL=5 CD=BL DF=S DL=29 EM=YYYY-MM-DD ES=ON FC= FL=2 GC=a HC=L HW=OFF IC= IP=ON IS=OFF LC=- LS=5 MC=3 MP=2 MS=ON NL=20 PC=3 PM=I PS=40 SF=3 SG=0 TC= UC=
+			ZP=
+			DEFINE PRINTER (5)""");
+
+		assertThat(statementList.statements().size()).isEqualTo(2);
+		assertThat(statementList.statements().get(0)).isInstanceOf(IFormatNode.class);
+		assertThat(statementList.statements().get(1)).isInstanceOf(IDefinePrinterNode.class);
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);

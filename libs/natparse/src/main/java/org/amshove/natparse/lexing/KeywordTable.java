@@ -116,6 +116,7 @@ public class KeywordTable
 				case "delimiters" -> SyntaxKind.DELIMITERS;
 				case "desc" -> SyntaxKind.DESC;
 				case "descending" -> SyntaxKind.DESCENDING;
+				case "df" -> SyntaxKind.DF;
 				case "dialog" -> SyntaxKind.DIALOG;
 				case "dialog-id" -> SyntaxKind.DIALOG_ID;
 				case "digits" -> SyntaxKind.DIGITS;

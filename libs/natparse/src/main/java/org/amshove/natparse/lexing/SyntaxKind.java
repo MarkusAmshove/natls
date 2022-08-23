@@ -325,6 +325,7 @@ public enum SyntaxKind
 	DELIMITERS(true, false, false),
 	DESC(true, false, false),
 	DESCENDING(true, false, false),
+	DF(true, false, false),
 	DIALOG(true, false, false),
 	DIALOG_ID(true, false, false),
 	DIGITS(true, false, false),

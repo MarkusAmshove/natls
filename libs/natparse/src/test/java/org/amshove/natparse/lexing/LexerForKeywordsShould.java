@@ -70,6 +70,7 @@ public class LexerForKeywordsShould extends AbstractLexerTest
 				keywordTest("CASE", SyntaxKind.CASE),
 				keywordTest("CC", SyntaxKind.CC),
 				keywordTest("CD", SyntaxKind.CD),
+				keywordTest("DF", SyntaxKind.DF),
 				keywordTest("CDID", SyntaxKind.CDID),
 				keywordTest("CF", SyntaxKind.CF),
 				keywordTest("CHAR", SyntaxKind.CHAR),

@@ -60,7 +60,7 @@ Legend:
 | FETCH | :white_check_mark: |
 | FIND | :x: |
 | FOR | :white_check_mark: |
-| FORMAT | :x: |
+| FORMAT | partial |
 | GET | :x: |
 | GET SAME | :x: |
 | GET TRANSACTION DATA | :x: |

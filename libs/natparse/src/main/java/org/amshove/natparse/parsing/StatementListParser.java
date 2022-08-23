@@ -12,6 +12,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 class StatementListParser extends AbstractParser<IStatementListNode>
 {
@@ -70,11 +71,14 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(callnat());
 						break;
 					case CLOSE:
-						switch(peek(1).kind())
+						switch (peek(1).kind())
 						{
 							case PRINTER -> statementList.addStatement(closePrinter());
 							default -> statementList.addStatement(consumeFallback());
 						}
+						break;
+					case FORMAT:
+						statementList.addStatement(formatNode());
 						break;
 					case INCLUDE:
 						statementList.addStatement(include());
@@ -168,6 +172,31 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return statementList;
 	}
 
+	private static final Set<SyntaxKind> FORMAT_MODIFIERS = Set.of(SyntaxKind.AD, SyntaxKind.AL, SyntaxKind.CD, SyntaxKind.DF, SyntaxKind.DL, SyntaxKind.EM, SyntaxKind.ES, SyntaxKind.FC, SyntaxKind.FL, SyntaxKind.GC, SyntaxKind.HC, SyntaxKind.HW, SyntaxKind.IC, SyntaxKind.IP, SyntaxKind.IS, SyntaxKind.KD, SyntaxKind.LC, SyntaxKind.LS, SyntaxKind.MC, SyntaxKind.MP, SyntaxKind.MS, SyntaxKind.NL,
+		SyntaxKind.PC, SyntaxKind.PM, SyntaxKind.PS, SyntaxKind.SF, SyntaxKind.SG, SyntaxKind.TC, SyntaxKind.UC, SyntaxKind.ZP);
+
+	private StatementNode formatNode() throws ParseError
+	{
+		var format = new FormatNode();
+		consumeMandatory(format, SyntaxKind.FORMAT);
+		if (consumeOptionally(format, SyntaxKind.LPAREN))
+		{
+			consumeMandatoryIdentifier(format);
+			consumeMandatory(format, SyntaxKind.RPAREN);
+		}
+
+		while (consumeAnyOptionally(format, FORMAT_MODIFIERS))
+		{
+			consumeMandatory(format, SyntaxKind.EQUALS_SIGN);
+			if(!FORMAT_MODIFIERS.contains(peek().kind()) && peek().line() == previousToken().line())
+			{
+				consume(format);
+			}
+		}
+
+		return format;
+	}
+
 	private StatementNode defineWindow() throws ParseError
 	{
 		var window = new DefineWindowNode();
@@ -186,7 +215,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(closePrinter, SyntaxKind.PRINTER);
 		consumeMandatory(closePrinter, SyntaxKind.LPAREN);
 
-		if(peekAnyMandatoryOrAdvance(List.of(SyntaxKind.NUMBER_LITERAL, SyntaxKind.IDENTIFIER)))
+		if (peekAnyMandatoryOrAdvance(List.of(SyntaxKind.NUMBER_LITERAL, SyntaxKind.IDENTIFIER)))
 		{
 			if (peekKind(SyntaxKind.NUMBER_LITERAL))
 			{
@@ -256,20 +285,20 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			}
 		}
 
-		while(peekAny(List.of(SyntaxKind.PROFILE, SyntaxKind.DISP, SyntaxKind.COPIES)))
+		while (peekAny(List.of(SyntaxKind.PROFILE, SyntaxKind.DISP, SyntaxKind.COPIES)))
 		{
-			if(consumeOptionally(printer, SyntaxKind.PROFILE))
+			if (consumeOptionally(printer, SyntaxKind.PROFILE))
 			{
 				var literal = consumeLiteralNode(printer, SyntaxKind.STRING_LITERAL);
 				checkStringLength(literal.token(), literal.token().stringValue(), 8);
 			}
 
-			if(consumeOptionally(printer, SyntaxKind.DISP))
+			if (consumeOptionally(printer, SyntaxKind.DISP))
 			{
 				consumeAnyMandatory(printer, List.of(SyntaxKind.HOLD, SyntaxKind.KEEP, SyntaxKind.DEL));
 			}
 
-			if(consumeOptionally(printer, SyntaxKind.COPIES))
+			if (consumeOptionally(printer, SyntaxKind.COPIES))
 			{
 				consumeLiteralNode(printer, SyntaxKind.NUMBER_LITERAL);
 			}
@@ -280,7 +309,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private void checkStringLength(SyntaxToken token, String stringValue, int maxLength)
 	{
-		if(stringValue.length() > maxLength)
+		if (stringValue.length() > maxLength)
 		{
 			report(ParserErrors.invalidLengthForLiteral(token, maxLength));
 		}
