@@ -661,6 +661,22 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertParsesWithoutDiagnostics("DEFINE PRINTER (2) %s".formatted(order));
 	}
 
+	@Test
+	void parseClosePrinterWithPrinterNumber()
+	{
+		var closePrinter = assertParsesSingleStatement("CLOSE PRINTER(5)", IClosePrinterNode.class);
+		assertThat(closePrinter.printer().kind()).isEqualTo(SyntaxKind.NUMBER_LITERAL);
+		assertThat(closePrinter.printer().intValue()).isEqualTo(5);
+	}
+
+	@Test
+	void parseClosePrinterWithPrinterName()
+	{
+		var closePrinter = assertParsesSingleStatement("CLOSE PRINTER (PR5)", IClosePrinterNode.class);
+		assertThat(closePrinter.printer().kind()).isEqualTo(SyntaxKind.IDENTIFIER);
+		assertThat(closePrinter.printer().symbolName()).isEqualTo("PR5");
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);

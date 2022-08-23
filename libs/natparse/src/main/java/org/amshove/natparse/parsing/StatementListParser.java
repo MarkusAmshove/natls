@@ -69,6 +69,13 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					case CALLNAT:
 						statementList.addStatement(callnat());
 						break;
+					case CLOSE:
+						switch(peek(1).kind())
+						{
+							case PRINTER -> statementList.addStatement(closePrinter());
+							default -> statementList.addStatement(consumeFallback());
+						}
+						break;
 					case INCLUDE:
 						statementList.addStatement(include());
 						break;
@@ -158,6 +165,38 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode closePrinter() throws ParseError
+	{
+		var closePrinter = new ClosePrinterNode();
+		consumeMandatory(closePrinter, SyntaxKind.CLOSE);
+		consumeMandatory(closePrinter, SyntaxKind.PRINTER);
+		consumeMandatory(closePrinter, SyntaxKind.LPAREN);
+
+		if(peekAnyMandatoryOrAdvance(List.of(SyntaxKind.NUMBER_LITERAL, SyntaxKind.IDENTIFIER)))
+		{
+			if (peekKind(SyntaxKind.NUMBER_LITERAL))
+			{
+				var literal = consumeLiteralNode(closePrinter, SyntaxKind.NUMBER_LITERAL);
+				closePrinter.setPrinter(literal.token());
+			}
+			if (peekKind(SyntaxKind.IDENTIFIER))
+			{
+				var identifier = consumeIdentifierTokenOnly();
+				closePrinter.setPrinter(identifier);
+			}
+		}
+
+		consumeMandatory(closePrinter, SyntaxKind.RPAREN);
+		return closePrinter;
+	}
+
+	private SyntheticTokenStatementNode consumeFallback()
+	{
+		var tokenStatementNode = new SyntheticTokenStatementNode();
+		consume(tokenStatementNode);
+		return tokenStatementNode;
 	}
 
 	private StatementNode definePrinter() throws ParseError

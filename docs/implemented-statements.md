@@ -29,7 +29,7 @@ Legend:
 | CALLNAT | :white_check_mark: |
 | CLOSE CONVERSATION | :x: |
 | CLOSE PC FILE | :x: |
-| CLOSE PRINTER | :x: |
+| CLOSE PRINTER | :white_check_mark: |
 | CLOSE WORK FILE | :x: |
 | COMMIT (SQL) | :x: |
 | COMPRESS | :x: |

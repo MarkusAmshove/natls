@@ -491,4 +491,17 @@ abstract class AbstractParser<T>
 	{
 		this.relocatedDiagnosticPosition = relocatedDiagnosticPosition;
 	}
+
+
+	protected boolean peekAnyMandatoryOrAdvance(List<SyntaxKind> acceptedKinds)
+	{
+		if(peekAny(acceptedKinds))
+		{
+			return true;
+		}
+
+		report(ParserErrors.unexpectedToken(acceptedKinds, peek()));
+		tokens.advance();
+		return false;
+	}
 }
