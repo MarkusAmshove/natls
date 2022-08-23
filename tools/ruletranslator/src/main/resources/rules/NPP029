@@ -1,6 +1,6 @@
 name: Keyword is used as identifier
-priority: BLOCKER
+priority: MAJOR
 tags: natparse-internal, clumsy, brain-overload
-type: BUG
+type: CODE_SMELL
 description:
 Keywords should not be used as identifier.
