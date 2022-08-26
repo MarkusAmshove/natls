@@ -356,6 +356,18 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseAMinimalForLoop()
+	{
+		var forLoopNode = assertParsesSingleStatement("""
+			FOR #I 1 10
+			    IGNORE
+			END-FOR
+			""", IForLoopNode.class);
+
+		assertThat(forLoopNode.body().statements()).hasSize(1);
+	}
+
+	@Test
 	void parseForEqToStatements()
 	{
 		var forLoopNode = assertParsesSingleStatement("""
