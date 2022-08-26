@@ -8,6 +8,7 @@ import org.amshove.natls.codeactions.RefactoringContext;
 import org.amshove.natls.codeactions.RenameSymbolAction;
 import org.amshove.natls.hover.HoverContext;
 import org.amshove.natls.hover.HoverProvider;
+import org.amshove.natls.inlayhints.InlayHintProvider;
 import org.amshove.natls.progress.IProgressMonitor;
 import org.amshove.natls.progress.ProgressTasks;
 import org.amshove.natls.project.*;
@@ -50,14 +51,17 @@ public class NaturalLanguageService implements LanguageClientAware
 {
 	private static final Hover EMPTY_HOVER = null; // This should be done according to the spec
 	private final CodeActionRegistry codeActionRegistry = CodeActionRegistry.INSTANCE;
-	private HoverProvider hoverProvider;
 	private NaturalProject project; // TODO: Replace
 	private LanguageServerProject languageServerProject;
 	private LanguageClient client;
 	private boolean initialized;
-	private RenameSymbolAction renameComputer = new RenameSymbolAction();
-	private SnippetEngine snippetEngine;
 	private Path workspaceRoot;
+
+	// TODO: These should all either be DI'd through constructor or created based on capabilities
+	private final InlayHintProvider inlayHintProvider = new InlayHintProvider();
+	private HoverProvider hoverProvider;
+	private final RenameSymbolAction renameComputer = new RenameSymbolAction();
+	private SnippetEngine snippetEngine;
 
 	public void indexProject(Path workspaceRoot, IProgressMonitor progressMonitor)
 	{
@@ -1096,5 +1100,11 @@ public class NaturalLanguageService implements LanguageClientAware
 		{
 			throw new UncheckedIOException(e);
 		}
+	}
+
+	public List<InlayHint> inlayHints(InlayHintParams params)
+	{
+		var module = findNaturalFile(LspUtil.uriToPath(params.getTextDocument().getUri())).module();
+		return inlayHintProvider.provideInlayHints(module, params.getRange());
 	}
 }

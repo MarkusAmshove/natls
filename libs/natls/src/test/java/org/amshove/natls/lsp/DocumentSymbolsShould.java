@@ -13,7 +13,7 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-public class DocumentSymbolsShould extends LanguageServerTest
+class DocumentSymbolsShould extends LanguageServerTest
 {
 
 	private static LspTestContext testContext;

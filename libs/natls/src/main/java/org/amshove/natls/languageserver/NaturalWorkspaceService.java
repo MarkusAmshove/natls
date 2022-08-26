@@ -7,6 +7,7 @@ import org.amshove.natls.natunit.NatUnitResultParser;
 import org.amshove.natls.project.LanguageServerFile;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.CompletableFutures;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
 import java.io.IOException;
@@ -177,9 +178,9 @@ public class NaturalWorkspaceService implements WorkspaceService
 	}
 
 	@Override
-	public CompletableFuture<List<? extends SymbolInformation>> symbol(WorkspaceSymbolParams params)
+	public CompletableFuture<Either<List<? extends SymbolInformation>, List<? extends WorkspaceSymbol>>> symbol(WorkspaceSymbolParams params)
 	{
-		return CompletableFutures.computeAsync(cancelChecker -> languageService.findWorkspaceSymbols(params.getQuery(), cancelChecker));
+		return CompletableFutures.computeAsync(cancelChecker -> Either.forLeft(languageService.findWorkspaceSymbols(params.getQuery(), cancelChecker)));
 	}
 
 	public void setLanguageService(NaturalLanguageService languageService)

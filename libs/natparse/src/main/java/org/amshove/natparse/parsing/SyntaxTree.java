@@ -2,6 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.ISyntaxNode;
+import org.amshove.natparse.natural.ISyntaxNodeVisitor;
 import org.amshove.natparse.natural.ISyntaxTree;
 
 import javax.annotation.Nonnull;
@@ -29,6 +30,16 @@ final class SyntaxTree implements ISyntaxTree
 	public ReadOnlyList<ISyntaxNode> descendants()
 	{
 		return ReadOnlyList.from(descendants); // TODO: perf
+	}
+
+	@Override
+	public void accept(ISyntaxNodeVisitor visitor)
+	{
+		for (var descendant : descendants())
+		{
+			visitor.visit(descendant);
+			descendant.accept(visitor);
+		}
 	}
 
 	@Override

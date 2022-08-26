@@ -49,4 +49,6 @@ public interface ISyntaxTree extends Iterable<ISyntaxNode>
 			.filter(n -> type.isAssignableFrom(n.getClass()))
 			.map(n -> (T)n);
 	}
+
+	void accept(ISyntaxNodeVisitor visitor);
 }
