@@ -2,8 +2,8 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.IDiagnostic;
-import org.amshove.natparse.ResourceHelper;
 import org.amshove.natparse.lexing.Lexer;
+import org.amshove.testhelpers.ResourceHelper;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
@@ -24,7 +24,7 @@ public class DefineDataParserDiagnosticTest
 		return diagnosticTests.stream()
 			.flatMap(path -> {
 				var name = Path.of(path).getFileName().toString();
-				var source = ResourceHelper.readResourceFile(path);
+				var source = ResourceHelper.readResourceFile(path, DefineDataParserDiagnosticTest.class);
 				var tests = new ArrayList<DynamicTest>();
 				var expectedDiagnostics = findExpectedDiagnostics(source);
 

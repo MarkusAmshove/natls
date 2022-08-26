@@ -1,0 +1,6 @@
+name: Keyword is used as identifier
+priority: MAJOR
+tags: natparse-internal, clumsy, brain-overload
+type: CODE_SMELL
+description:
+Keywords should not be used as identifier.

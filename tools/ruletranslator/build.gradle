@@ -1,0 +1,17 @@
+plugins {
+    id 'application'
+}
+
+dependencies {
+    implementation project(':testhelpers')
+    implementation project(':natparse')
+    implementation project(':natlint')
+}
+
+application {
+    mainClass = 'org.amshove.natqube.ruletranslator.App'
+}
+
+run {
+    args = ["${project(':natqube').sourceSets.main.resources.srcDirs[0]}/rules.xml"]
+}

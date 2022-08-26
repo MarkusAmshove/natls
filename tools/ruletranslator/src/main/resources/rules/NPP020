@@ -1,0 +1,6 @@
+name: Trailing token
+priority: BLOCKER
+tags: natparse-internal
+type: BUG
+description:
+Token is not expected here.

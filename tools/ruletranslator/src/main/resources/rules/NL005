@@ -1,0 +1,6 @@
+name: Subroutine is unused
+priority: MINOR
+tags: unused
+type: CODE_SMELL
+description:
+This rule is raised when there is a local subroutine defined that is not used within the module

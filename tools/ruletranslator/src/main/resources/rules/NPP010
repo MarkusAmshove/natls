@@ -1,0 +1,6 @@
+name: Incomplete array definition
+priority: BLOCKER
+tags: natparse-internal
+type: BUG
+description:
+The array definition specified is syntactically incomplete

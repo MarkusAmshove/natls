@@ -1,0 +1,18 @@
+name: NatUnit test case won't be recognized
+priority: CRITICAL
+tags: convention, pitfall
+type: BUG
+description:
+NatUnit recognizes tests only with ``EQ``.
+
+== Invalid
+
+``
+IF NUTESTP.TEST = 'My fancy test'
+``
+
+== Valid
+
+``
+IF NUTESTP.TEST EQ 'My fancy test'
+``

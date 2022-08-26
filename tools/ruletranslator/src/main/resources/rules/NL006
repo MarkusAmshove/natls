@@ -1,0 +1,19 @@
+name: Operator is discouraged
+priority: MINOR
+tags: convention
+type: CODE_SMELL
+description:
+Operators can be specified multiple ways.
+
+Having consistent code guidelines for those cases is a good idea.
+
+Use the following table to decide which operator to use:
+
+| Discouraged operator | Preferred operator |
+| --- | --- |
+| ``GT`` | `>`` |
+| ``LT`` | `<`` |
+| ``EQ`` | `=`` |
+| ``NE`` | `<>`` |
+| ``GE`` | `>=`` |
+| ``LE`` | `<=`` |

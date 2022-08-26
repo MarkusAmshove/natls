@@ -1,0 +1,17 @@
+name: Keep code consistent
+priority: MAJOR
+tags: convention, confusing
+type: CODE_SMELL
+description:
+In Natural there are sometimes multiple names to the same thing that do not affect the result.
+
+To keep the code style consistent prefer to do things the same way every time.
+
+== Example
+
+``
+#VAR := *OCC(#ARRAY)
+#VAR := *OCCURRENCE(#ARRAY)
+``
+
+These to lines have the same result.

@@ -109,12 +109,14 @@ public class KeywordTable
 				case "decimal" -> SyntaxKind.DECIMAL;
 				case "define" -> SyntaxKind.DEFINE;
 				case "definition" -> SyntaxKind.DEFINITION;
+				case "del" -> SyntaxKind.DEL;
 				case "delete" -> SyntaxKind.DELETE;
 				case "delimited" -> SyntaxKind.DELIMITED;
 				case "delimiter" -> SyntaxKind.DELIMITER;
 				case "delimiters" -> SyntaxKind.DELIMITERS;
 				case "desc" -> SyntaxKind.DESC;
 				case "descending" -> SyntaxKind.DESCENDING;
+				case "df" -> SyntaxKind.DF;
 				case "dialog" -> SyntaxKind.DIALOG;
 				case "dialog-id" -> SyntaxKind.DIALOG_ID;
 				case "digits" -> SyntaxKind.DIGITS;

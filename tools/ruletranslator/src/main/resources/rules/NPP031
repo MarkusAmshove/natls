@@ -1,0 +1,6 @@
+name: Unclosed statement
+priority: BLOCKER
+tags: natparse-internal
+type: BUG
+description:
+This statement expects to be ended, e.g. by ``END-IF``, ``END-SUBROUTINE``, etc.

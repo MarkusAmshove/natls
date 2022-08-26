@@ -29,7 +29,7 @@ Legend:
 | CALLNAT | :white_check_mark: |
 | CLOSE CONVERSATION | :x: |
 | CLOSE PC FILE | :x: |
-| CLOSE PRINTER | :x: |
+| CLOSE PRINTER | :white_check_mark: |
 | CLOSE WORK FILE | :x: |
 | COMMIT (SQL) | :x: |
 | COMPRESS | :x: |
@@ -40,10 +40,10 @@ Legend:
 | DEFINE CLASS | :x: |
 | DEFINE DATA | :x: |
 | DEFINE FUNCTION | :x: |
-| DEFINE PRINTER | :x: |
+| DEFINE PRINTER | :white_check_mark: |
 | DEFINE PROTOTYPE | :x: |
 | DEFINE SUBROUTINE | :white_check_mark: |
-| DEFINE WINDOW | :x: |
+| DEFINE WINDOW | partial |
 | DEFINE WORK FILE | :x: |
 | DELETE | :x: |
 | DELETE (SQL) | :x: |
@@ -60,7 +60,7 @@ Legend:
 | FETCH | :white_check_mark: |
 | FIND | :x: |
 | FOR | :white_check_mark: |
-| FORMAT | :x: |
+| FORMAT | partial |
 | GET | :x: |
 | GET SAME | :x: |
 | GET TRANSACTION DATA | :x: |

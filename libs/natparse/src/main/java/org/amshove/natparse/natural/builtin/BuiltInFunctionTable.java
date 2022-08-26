@@ -235,7 +235,13 @@ public class BuiltInFunctionTable
 				#NO-TRAILING := *TRIM(#ALPHA, TRAILING)
 				""", ALPHANUMERIC, DataType.DYNAMIC_LENGTH,
 				new BuiltInFunctionParameter("operand", new DataType(ALPHANUMERIC, DataType.DYNAMIC_LENGTH), true)
-			)
+			),
+			modifiableVariable(SyntaxKind.COM, """
+				Get or set the value of the communication area which can be used to process data from outside a screen window.
+
+				When a window is active, no data can be entered outside the window.
+				If a map contains *COM as modifiable field, it will be available for the user to enter data even though a window is currently active on the screen.
+				""", ALPHANUMERIC, 128)
 		);
 	}
 
