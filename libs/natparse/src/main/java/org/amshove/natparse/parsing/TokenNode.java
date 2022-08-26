@@ -4,6 +4,8 @@ import org.amshove.natparse.IPosition;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.ITokenNode;
 
+import java.nio.file.Path;
+
 class TokenNode extends BaseSyntaxNode implements ITokenNode
 {
 	private final SyntaxToken token;
@@ -29,6 +31,12 @@ class TokenNode extends BaseSyntaxNode implements ITokenNode
 	public IPosition diagnosticPosition()
 	{
 		return token.diagnosticPosition();
+	}
+
+	@Override
+	public boolean isInFile(Path path)
+	{
+		return token.filePath().equals(path);
 	}
 
 	@Override

@@ -3,8 +3,10 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.ISyntaxNode;
+import org.amshove.natparse.natural.ISyntaxNodeVisitor;
 import org.amshove.natparse.natural.ISyntaxTree;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -59,6 +61,16 @@ class BaseSyntaxNode implements ISyntaxNode
 	}
 
 	@Override
+	public void accept(ISyntaxNodeVisitor visitor)
+	{
+		visitor.visit(this);
+		for (var node : nodes)
+		{
+			node.accept(visitor);
+		}
+	}
+
+	@Override
 	public IPosition position()
 	{
 		return getStart().position();
@@ -68,6 +80,12 @@ class BaseSyntaxNode implements ISyntaxNode
 	public IPosition diagnosticPosition()
 	{
 		return getStart().diagnosticPosition();
+	}
+
+	@Override
+	public boolean isInFile(Path path)
+	{
+		return position().filePath().equals(path);
 	}
 
 	@Override

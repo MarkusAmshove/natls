@@ -44,6 +44,16 @@ class ParserErrors
 		);
 	}
 
+	public static ParserDiagnostic unexpectedToken(SyntaxKind expectedKind, SyntaxToken invalidToken)
+	{
+		var message = "Unexpected token <%s>, expected <%s>".formatted(formatTokenKind(invalidToken), expectedKind);
+		return ParserDiagnostic.create(
+			message,
+			invalidToken,
+			ParserError.UNEXPECTED_TOKEN
+		);
+	}
+
 	public static ParserDiagnostic unexpectedToken(List<SyntaxKind> expectedTokenKinds, SyntaxToken invalidToken)
 	{
 		return ParserDiagnostic.create(
@@ -335,6 +345,24 @@ class ParserErrors
 			"Reference %s is ambiguous and needs to be qualified. Ambiguous with: %s".formatted(symbolReferenceNode.referencingToken().symbolName(), possibleQualifications.trim()),
 			symbolReferenceNode,
 			ParserError.AMBIGUOUS_VARIABLE_REFERENCE
+		);
+	}
+
+	public static IDiagnostic invalidPrinterOutputFormat(SyntaxToken token)
+	{
+		return ParserDiagnostic.create(
+			"Printer output '%s' is invalid. It has to be in the form of 'LTPn' ('LTP1' - 'LTP31')",
+			token,
+			ParserError.INVALID_PRINTER_OUTPUT_FORMAT
+		);
+	}
+
+	public static IDiagnostic invalidLengthForLiteral(SyntaxToken token, int maxLength)
+	{
+		return ParserDiagnostic.create(
+			"The maximum literal length at this position is restricted to %d".formatted(maxLength),
+			token,
+			ParserError.INVALID_LENGTH_FOR_LITERAL
 		);
 	}
 }

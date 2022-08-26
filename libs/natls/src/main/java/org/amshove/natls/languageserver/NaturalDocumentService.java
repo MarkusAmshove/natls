@@ -3,6 +3,7 @@ package org.amshove.natls.languageserver;
 import org.amshove.natparse.natural.IHasDefineData;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.eclipse.lsp4j.jsonrpc.messages.Either3;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
 import java.util.ArrayList;
@@ -170,15 +171,27 @@ public class NaturalDocumentService implements TextDocumentService
 	}
 
 	@Override
-	public CompletableFuture<Either<Range, PrepareRenameResult>> prepareRename(PrepareRenameParams params)
+	public CompletableFuture<Either3<Range, PrepareRenameResult, PrepareRenameDefaultBehavior>> prepareRename(PrepareRenameParams params)
 	{
-		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> Either.forRight(languageService.prepareRename(params))));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> Either3.forSecond(languageService.prepareRename(params))));
 	}
 
 	@Override
 	public CompletableFuture<WorkspaceEdit> rename(RenameParams params)
 	{
 		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.rename(params)));
+	}
+
+	@Override
+	public CompletableFuture<List<InlayHint>> inlayHint(InlayHintParams params)
+	{
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.inlayHints(params)));
+	}
+
+	@Override
+	public CompletableFuture<InlayHint> resolveInlayHint(InlayHint unresolved)
+	{
+		return CompletableFuture.completedFuture(unresolved);
 	}
 
 	public void setLanguageService(NaturalLanguageService languageService)

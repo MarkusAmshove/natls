@@ -1,6 +1,7 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.SyntaxKind;
+import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 import org.amshove.testhelpers.IntegrationTest;
 import org.junit.jupiter.api.Test;
@@ -189,6 +190,18 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseASubroutineWithoutSubroutineKeyword()
+	{
+		var subroutine = assertParsesSingleStatement("""
+			   DEFINE #MY-SUBROUTINE
+			       IGNORE
+			   END-SUBROUTINE
+			""", ISubroutineNode.class);
+
+		assertThat(subroutine.declaration().symbolName()).isEqualTo("#MY-SUBROUTINE");
+	}
+
+	@Test
 	void parseInternalPerformNodes()
 	{
 		ignoreModuleProvider();
@@ -340,6 +353,18 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 
 		assertThat(forLoopNode.body().statements()).hasSize(1);
 		assertThat(forLoopNode.descendants()).hasSize(8);
+	}
+
+	@Test
+	void parseAMinimalForLoop()
+	{
+		var forLoopNode = assertParsesSingleStatement("""
+			FOR #I 1 10
+			    IGNORE
+			END-FOR
+			""", IForLoopNode.class);
+
+		assertThat(forLoopNode.body().statements()).hasSize(1);
 	}
 
 	@Test
@@ -568,6 +593,149 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	{
 		var reset = assertParsesSingleStatement("RESET INITIAL #THEVAR #THEOTHERVAR", IResetStatementNode.class);
 		assertThat(reset.operands()).hasSize(2);
+	}
+
+	@Test
+	void rudimentaryParseMasks()
+	{
+		// TODO(expressions): Implement proper expressions
+		var mask = assertParsesSingleStatement("MASK (DDMMYYYY)", SyntheticTokenStatementNode.class);
+		assertThat(mask).isNotNull();
+	}
+
+	@Test
+	void parseASimpleDefinePrinter()
+	{
+		var printer = assertParsesSingleStatement("DEFINE PRINTER(2)", IDefinePrinterNode.class);
+		assertThat(printer.printerNumber()).isEqualTo(2);
+		assertThat(printer.printerName()).isEmpty();
+	}
+
+	@Test
+	void parseADefinePrinterWithPrinterName()
+	{
+		var printer = assertParsesSingleStatement("DEFINE PRINTER(MYPRINTER=5)", IDefinePrinterNode.class);
+		assertThat(printer.printerNumber()).isEqualTo(5);
+		assertThat(printer.printerName()).map(SyntaxToken::symbolName).hasValue("MYPRINTER");
+	}
+
+	@Test
+	void parseADefinePrinterWithOutputString()
+	{
+		var printer = assertParsesSingleStatement("DEFINE PRINTER(5) OUTPUT 'LPT1'", IDefinePrinterNode.class);
+		assertThat(printer.output()).hasValueSatisfying(n -> assertThat(n).isInstanceOf(ILiteralNode.class));
+		assertThat(printer.output()).map(ILiteralNode.class::cast).map(ILiteralNode::token).map(SyntaxToken::stringValue).hasValue("LPT1");
+	}
+
+	@Test
+	void reportADiagnosticIfDefinePrinterHasAnInvalidOutputStringFormat()
+	{
+		assertDiagnostic("DEFINE PRINTER (2) OUTPUT 'WRONG'", ParserError.INVALID_PRINTER_OUTPUT_FORMAT);
+	}
+
+	@Test
+	void reportADiagnosticIfDefinePrinterHasAnInvalidTokenKind()
+	{
+		assertDiagnostic("DEFINE PRINTER (2) OUTPUT 5", ParserError.UNEXPECTED_TOKEN);
+	}
+
+	@Test
+	void parseADefinePrinterWithOutputVariable()
+	{
+		var printer = assertParsesSingleStatement("DEFINE PRINTER(5) OUTPUT #MYPRINTER", IDefinePrinterNode.class);
+		assertThat(printer.output()).hasValueSatisfying(n -> assertThat(n).isInstanceOf(ISymbolReferenceNode.class));
+		assertThat(printer.output()).map(ISymbolReferenceNode.class::cast).map(ISymbolReferenceNode::referencingToken).map(SyntaxToken::symbolName).hasValue("#MYPRINTER");
+	}
+
+	@Test
+	void parseADefinePrinterWithProfile()
+	{
+		assertParsesWithoutDiagnostics("DEFINE PRINTER(8) PROFILE 'MYPR'");
+	}
+
+	@Test
+	void parseADefinePrinterWithCopies()
+	{
+		assertParsesWithoutDiagnostics("DEFINE PRINTER(8) COPIES 10");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"HOLD", "KEEP", "DEL"
+	})
+	void parseADefinePrinterWithDisp(String disp)
+	{
+		assertParsesWithoutDiagnostics("DEFINE PRINTER(8) DISP %s".formatted(disp));
+	}
+
+	@Test
+	void reportADiagnosticIfThePrinterProfileIsLongerThan8()
+	{
+		assertDiagnostic("DEFINE PRINTER(8) PROFILE 'MYLONGPROFILE'", ParserError.INVALID_LENGTH_FOR_LITERAL);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"PROFILE 'PROF' DISP KEEP COPIES 5",
+		"COPIES 3 PROFILE 'PROF' DISP DEL",
+		"DISP HOLD COPES 2 DISP HOLD"
+	})
+	void parseADefinePrinterWithAnyOrderOfDispProfileAndCopies(String order)
+	{
+		assertParsesWithoutDiagnostics("DEFINE PRINTER (2) %s".formatted(order));
+	}
+
+	@Test
+	void parseClosePrinterWithPrinterNumber()
+	{
+		var closePrinter = assertParsesSingleStatement("CLOSE PRINTER(5)", IClosePrinterNode.class);
+		assertThat(closePrinter.printer().kind()).isEqualTo(SyntaxKind.NUMBER_LITERAL);
+		assertThat(closePrinter.printer().intValue()).isEqualTo(5);
+	}
+
+	@Test
+	void parseClosePrinterWithPrinterName()
+	{
+		var closePrinter = assertParsesSingleStatement("CLOSE PRINTER (PR5)", IClosePrinterNode.class);
+		assertThat(closePrinter.printer().kind()).isEqualTo(SyntaxKind.IDENTIFIER);
+		assertThat(closePrinter.printer().symbolName()).isEqualTo("PR5");
+	}
+
+	@Test
+	void rudimentaryParseDefineWindow()
+	{
+		var window = assertParsesSingleStatement("DEFINE WINDOW MAIN", IDefineWindowNode.class);
+		assertThat(window.name().symbolName()).isEqualTo("MAIN");
+	}
+
+	@Test
+	void parseFormat()
+	{
+		var statementList = assertParsesWithoutDiagnostics("""
+			FORMAT (PR15) AD=IO AL=5 CD=BL DF=S DL=29 EM=YYYY-MM-DD ES=ON FC= FL=2 GC=a HC=L HW=OFF IC= IP=ON IS=OFF LC=- LS=5 MC=3 MP=2 MS=ON NL=20 PC=3 PM=I PS=40 SF=3 SG=0 TC= UC=
+			ZP=ON""");
+		assertThat(statementList.statements().size()).isEqualTo(1);
+	}
+
+	@Test
+	void parseFormatWithPrinterNumber()
+	{
+		var statementList = assertParsesWithoutDiagnostics("FORMAT (5) LS=5 ZP=ON");
+		assertThat(statementList.statements().size()).isEqualTo(1);
+	}
+
+	@Test
+	void parseFormatIfNextLineStartsWithStatement()
+	{
+		// If a format thingy is empty, the next line should still properly be identified as the next statement
+		var statementList = assertParsesWithoutDiagnostics("""
+			FORMAT (PR15) AD=IO AL=5 CD=BL DF=S DL=29 EM=YYYY-MM-DD ES=ON FC= FL=2 GC=a HC=L HW=OFF IC= IP=ON IS=OFF LC=- LS=5 MC=3 MP=2 MS=ON NL=20 PC=3 PM=I PS=40 SF=3 SG=0 TC= UC=
+			ZP=
+			DEFINE PRINTER (5)""");
+
+		assertThat(statementList.statements().size()).isEqualTo(2);
+		assertThat(statementList.statements().get(0)).isInstanceOf(IFormatNode.class);
+		assertThat(statementList.statements().get(1)).isInstanceOf(IDefinePrinterNode.class);
 	}
 
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)

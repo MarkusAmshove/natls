@@ -1,0 +1,8 @@
+name: Module name contains trailing or leading whitespace
+priority: BLOCKER
+tags: pitfall, confusing
+type: BUG
+description:
+The module name passed to, e.g. ``CALLNAT``, contains leading or trailing whitespace.
+
+This can result in a runtime error.

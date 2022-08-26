@@ -1,0 +1,6 @@
+name: Variable to REDEFINE not found
+priority: BLOCKER
+tags: natparse-internal
+type: BUG
+description:
+Redefinition of an undeclared variable.

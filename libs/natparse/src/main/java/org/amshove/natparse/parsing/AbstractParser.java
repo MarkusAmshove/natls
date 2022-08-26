@@ -9,6 +9,7 @@ import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 abstract class AbstractParser<T>
@@ -211,6 +212,17 @@ abstract class AbstractParser<T>
 		return literalNode;
 	}
 
+	protected ILiteralNode consumeLiteralNode(BaseSyntaxNode node, SyntaxKind literalKind) throws ParseError
+	{
+		var literal = consumeLiteralNode(node);
+		if(literal.token().kind() != literalKind)
+		{
+			report(ParserErrors.unexpectedToken(literalKind, literal.token()));
+		}
+
+		return literal;
+	}
+
 	protected SyntaxToken consumeLiteral(BaseSyntaxNode node) throws ParseError
 	{
 		if (peek().kind().isSystemVariable())
@@ -353,7 +365,7 @@ abstract class AbstractParser<T>
 		return systemVariableNode;
 	}
 
-	protected boolean consumeAnyOptionally(BaseSyntaxNode node, List<SyntaxKind> acceptedKinds)
+	protected boolean consumeAnyOptionally(BaseSyntaxNode node, Collection<SyntaxKind> acceptedKinds)
 	{
 		for (SyntaxKind acceptedKind : acceptedKinds)
 		{
@@ -479,5 +491,18 @@ abstract class AbstractParser<T>
 	protected void relocateDiagnosticPosition(IPosition relocatedDiagnosticPosition)
 	{
 		this.relocatedDiagnosticPosition = relocatedDiagnosticPosition;
+	}
+
+
+	protected boolean peekAnyMandatoryOrAdvance(List<SyntaxKind> acceptedKinds)
+	{
+		if(peekAny(acceptedKinds))
+		{
+			return true;
+		}
+
+		report(ParserErrors.unexpectedToken(acceptedKinds, peek()));
+		tokens.advance();
+		return false;
 	}
 }

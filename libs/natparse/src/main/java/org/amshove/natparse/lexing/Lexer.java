@@ -436,6 +436,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.COUNTER);
 			return;
 		}
+		if (scanner.advanceIf("COM"))
+		{
+			createAndAdd(SyntaxKind.COM);
+			return;
+		}
 		if (scanner.advanceIf("PF-KEY"))
 		{
 			createAndAdd(SyntaxKind.PF_KEY);

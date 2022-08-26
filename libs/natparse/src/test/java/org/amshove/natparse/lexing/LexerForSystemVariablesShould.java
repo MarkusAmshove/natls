@@ -210,4 +210,10 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 	{
 		assertTokens("*INIT-ID", token(SyntaxKind.INIT_ID, "*INIT-ID"));
 	}
+
+	@Test
+	void lexCom()
+	{
+		assertTokens("*COM", token(SyntaxKind.COM, "*COM"));
+	}
 }
