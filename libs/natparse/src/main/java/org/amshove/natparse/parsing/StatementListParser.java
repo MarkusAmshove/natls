@@ -93,10 +93,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(end());
 						break;
 					case DEFINE:
-
 						switch (peek(1).kind())
 						{
-							case SUBROUTINE -> statementList.addStatement(subroutine());
+							case SUBROUTINE, IDENTIFIER -> statementList.addStatement(subroutine());
 							case PRINTER -> statementList.addStatement(definePrinter());
 							case WINDOW -> statementList.addStatement(defineWindow());
 							default ->

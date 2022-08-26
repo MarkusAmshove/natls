@@ -190,6 +190,18 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseASubroutineWithoutSubroutineKeyword()
+	{
+		var subroutine = assertParsesSingleStatement("""
+			   DEFINE #MY-SUBROUTINE
+			       IGNORE
+			   END-SUBROUTINE
+			""", ISubroutineNode.class);
+
+		assertThat(subroutine.declaration().symbolName()).isEqualTo("#MY-SUBROUTINE");
+	}
+
+	@Test
 	void parseInternalPerformNodes()
 	{
 		ignoreModuleProvider();
