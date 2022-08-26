@@ -180,7 +180,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(format, SyntaxKind.FORMAT);
 		if (consumeOptionally(format, SyntaxKind.LPAREN))
 		{
-			consumeMandatoryIdentifier(format);
+			consumeAnyMandatory(format, List.of(SyntaxKind.IDENTIFIER, SyntaxKind.NUMBER_LITERAL));
 			consumeMandatory(format, SyntaxKind.RPAREN);
 		}
 
