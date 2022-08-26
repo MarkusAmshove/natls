@@ -21,7 +21,7 @@ ext {
         sonarqube_api   : "org.sonarsource.sonarqube:sonar-plugin-api:${SONAR_VERSION}",
 		// Test
 		junit_jupiter : 'org.junit:junit-bom:5.8.2',
-		assertJ : 'org.assertj:assertj-core:3.11.1',
+		assertJ : 'org.assertj:assertj-core:3.23.1',
 		mockito : 'org.mockito:mockito-all:1.10.19',
 		archUnit: 'com.tngtech.archunit:archunit:0.22.0'
 	]

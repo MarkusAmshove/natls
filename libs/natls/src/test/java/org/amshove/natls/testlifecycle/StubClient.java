@@ -93,12 +93,6 @@ public class StubClient implements LanguageClient
 	}
 
 	@Override
-	public void setTrace(SetTraceParams params)
-	{
-		LanguageClient.super.setTrace(params);
-	}
-
-	@Override
 	public CompletableFuture<Void> refreshSemanticTokens()
 	{
 		return LanguageClient.super.refreshSemanticTokens();

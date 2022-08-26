@@ -8,6 +8,7 @@ import org.amshove.natls.codeactions.RefactoringContext;
 import org.amshove.natls.codeactions.RenameSymbolAction;
 import org.amshove.natls.hover.HoverContext;
 import org.amshove.natls.hover.HoverProvider;
+import org.amshove.natls.inlayhints.InlayHintProvider;
 import org.amshove.natls.progress.IProgressMonitor;
 import org.amshove.natls.progress.ProgressTasks;
 import org.amshove.natls.project.*;
@@ -50,14 +51,17 @@ public class NaturalLanguageService implements LanguageClientAware
 {
 	private static final Hover EMPTY_HOVER = null; // This should be done according to the spec
 	private final CodeActionRegistry codeActionRegistry = CodeActionRegistry.INSTANCE;
-	private HoverProvider hoverProvider;
 	private NaturalProject project; // TODO: Replace
 	private LanguageServerProject languageServerProject;
 	private LanguageClient client;
 	private boolean initialized;
-	private RenameSymbolAction renameComputer = new RenameSymbolAction();
-	private SnippetEngine snippetEngine;
 	private Path workspaceRoot;
+
+	// TODO: These should all either be DI'd through constructor or created based on capabilities
+	private final InlayHintProvider inlayHintProvider = new InlayHintProvider();
+	private HoverProvider hoverProvider;
+	private final RenameSymbolAction renameComputer = new RenameSymbolAction();
+	private SnippetEngine snippetEngine;
 
 	public void indexProject(Path workspaceRoot, IProgressMonitor progressMonitor)
 	{
@@ -1100,49 +1104,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	public List<InlayHint> inlayHints(InlayHintParams params)
 	{
-		var hints = new ArrayList<InlayHint>();
-
 		var module = findNaturalFile(LspUtil.uriToPath(params.getTextDocument().getUri())).module();
-		module.syntaxTree().accept((n) -> {
-			if(!n.isInFile(module.file().getPath()))
-			{
-				return;
-			}
-
-			if(n.diagnosticPosition().line() < params.getRange().getStart().getLine() || n.diagnosticPosition().line() > params.getRange().getEnd().getLine())
-			{
-				return;
-			}
-
-			if(n instanceof ISubroutineNode subroutineNode)
-			{
-				var endSubroutine = subroutineNode.findDescendantToken(SyntaxKind.END_SUBROUTINE);
-				if(endSubroutine == null)
-				{
-					return;
-				}
-
-				var hint = new InlayHint();
-				hint.setPosition(LspUtil.toPositionAfter(endSubroutine.diagnosticPosition()));
-				hint.setLabel(subroutineNode.declaration().symbolName());
-				hint.setKind(InlayHintKind.Type);
-				hint.setPaddingLeft(true);
-				hints.add(hint);
-				return;
-			}
-
-			if(n instanceof IInternalPerformNode internalPerform && !internalPerform.reference().isInFile(module.file().getPath()))
-			{
-				var hint = new InlayHint();
-				hint.setPosition(LspUtil.toPositionAfter(internalPerform.position()));
-				hint.setLabel(internalPerform.reference().position().fileNameWithoutExtension());
-				hint.setKind(InlayHintKind.Type);
-				hint.setPaddingLeft(true);
-				hints.add(hint);
-				return;
-			}
-		});
-
-		return hints;
+		return inlayHintProvider.provideInlayHints(module, params.getRange());
 	}
 }

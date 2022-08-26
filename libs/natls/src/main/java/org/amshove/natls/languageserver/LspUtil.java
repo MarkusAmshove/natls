@@ -168,4 +168,12 @@ public class LspUtil
 			position.endOffset()
 		);
 	}
+
+	public static Range newRange(int startLine, int startColumn, int endLine, int endColumn)
+	{
+		return new Range(
+			new Position(startLine, startColumn),
+			new Position(endLine, endColumn)
+		);
+	}
 }
