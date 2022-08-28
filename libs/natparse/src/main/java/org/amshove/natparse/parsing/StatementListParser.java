@@ -89,6 +89,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					case IDENTIFIER:
 						statementList.addStatement(identifierReference());
 						break;
+					case WRITE:
+						statementList.addStatement(write());
+						break;
 					case END:
 						statementList.addStatement(end());
 						break;
@@ -169,6 +172,34 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode write() throws ParseError
+	{
+		var write = new WriteNode();
+		consumeMandatory(write, SyntaxKind.WRITE);
+		if(consumeOptionally(write, SyntaxKind.LPAREN))
+		{
+			if(peekKind(SyntaxKind.IDENTIFIER) && peekKind(1, SyntaxKind.RPAREN))
+			{
+				var token = consumeMandatoryIdentifier(write);
+				write.setReportSpecification(token);
+			}
+			else
+			{
+				// currently consume everything until closing parenthesis to consume things like attribute definition etc.
+				while(!peekKind(SyntaxKind.RPAREN))
+				{
+					consume(write);
+				}
+			}
+			consumeMandatory(write, SyntaxKind.RPAREN);
+		}
+
+		consumeOptionally(write, SyntaxKind.NOTITLE);
+		consumeOptionally(write, SyntaxKind.NOHDR);
+
+		return write;
 	}
 
 	private static final Set<SyntaxKind> FORMAT_MODIFIERS = Set.of(SyntaxKind.AD, SyntaxKind.AL, SyntaxKind.CD, SyntaxKind.DF, SyntaxKind.DL, SyntaxKind.EM, SyntaxKind.ES, SyntaxKind.FC, SyntaxKind.FL, SyntaxKind.GC, SyntaxKind.HC, SyntaxKind.HW, SyntaxKind.IC, SyntaxKind.IP, SyntaxKind.IS, SyntaxKind.KD, SyntaxKind.LC, SyntaxKind.LS, SyntaxKind.MC, SyntaxKind.MP, SyntaxKind.MS, SyntaxKind.NL,

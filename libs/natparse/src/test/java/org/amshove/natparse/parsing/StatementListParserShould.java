@@ -738,6 +738,28 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(statementList.statements().get(1)).isInstanceOf(IDefinePrinterNode.class);
 	}
 
+	@Test
+	void parseWriteWithReportSpecification()
+	{
+		var write = assertParsesSingleStatement("WRITE (REP1)", IWriteNode.class);
+		assertThat(write.reportSpecification()).map(SyntaxToken::source).hasValue("REP1");
+	}
+
+	@Test
+	void parseWriteWithAttributeDefinition()
+	{
+		var write = assertParsesSingleStatement("WRITE (AD=UL AL=17 NL=8)", IWriteNode.class);
+		assertThat(write.descendants()).hasSize(10);
+	}
+
+	@Test
+	void parseWriteWithNoTitleAndNoHdr()
+	{
+		var write = assertParsesSingleStatement("WRITE NOTITLE NOHDR", IWriteNode.class);
+		assertThat(write.findDescendantToken(SyntaxKind.NOTITLE)).isNotNull();
+		assertThat(write.findDescendantToken(SyntaxKind.NOHDR)).isNotNull();
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);

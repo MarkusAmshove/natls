@@ -129,7 +129,7 @@ Legend:
 | UPDATE (SQL) | :x: |
 | UPDATELOB | :x: |
 | UPLOAD PC FILE | :x: |
-| WRITE | :x: |
+| WRITE | partial |
 | WRITE TITLE | :x: |
 | WRITE TRAILER | :x: |
 | WRITE WORK FILE | :x: |
