@@ -55,7 +55,7 @@ Legend:
 | END | :white_check_mark: |
 | END TRANSACTION | :x: |
 | ESCAPE | :x: |
-| EXAMINE | :x: |
+| EXAMINE | :white_check_mark: |
 | EXPAND | :x: |
 | FETCH | :white_check_mark: |
 | FIND | :x: |

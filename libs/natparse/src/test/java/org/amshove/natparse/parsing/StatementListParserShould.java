@@ -760,6 +760,56 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(write.findDescendantToken(SyntaxKind.NOHDR)).isNotNull();
 	}
 
+	@Test
+	void parseASimpleExamineReplace()
+	{
+		var examine = assertParsesSingleStatement("EXAMINE #VAR 'a' REPLACE 'b'", IExamineNode.class);
+		assertThat(examine.examinedVariable()).isNotNull();
+		assertThat(examine.examinedVariable().referencingToken().symbolName()).isEqualTo("#VAR");
+	}
+
+	@Test
+	void parseAComplexExamineReplace()
+	{
+		var examine = assertParsesSingleStatement("EXAMINE FORWARD FULL VALUE OF #DOC STARTING FROM POSITION 7 ENDING AT POSITION 10 FOR FULL VALUE OF PATTERN #HTML(*) WITH DELIMITERS ',' AND REPLACE FIRST WITH FULL VALUE OF #TAB(*) ", IExamineNode.class);
+		assertThat(examine.descendants().size()).isEqualTo(31);
+	}
+
+	@Test
+	void parseAComplexExamineDelete()
+	{
+		var examine = assertParsesSingleStatement("EXAMINE FORWARD FULL VALUE OF #DOC STARTING FROM POSITION 7 ENDING AT POSITION 10 FOR FULL VALUE OF PATTERN #HTML(*) WITH DELIMITERS ',' AND DELETE FIRST", IExamineNode.class);
+		assertThat(examine.descendants().size()).isEqualTo(26);
+	}
+
+	@Test
+	void parseAComplexExamineDeleteGiving()
+	{
+		var examine = assertParsesSingleStatement("EXAMINE FORWARD FULL VALUE OF #DOC STARTING FROM POSITION 7 ENDING AT POSITION 10 FOR FULL VALUE OF PATTERN #HTML(*) WITH DELIMITERS ',' AND DELETE FIRST GIVING INDEX IN #ASD #EFG #HIJ", IExamineNode.class);
+		assertThat(examine.descendants().size()).isEqualTo(32);
+	}
+
+	@Test
+	void parseAExamineWithMultipleGivings()
+	{
+		var examine = assertParsesSingleStatement("EXAMINE #DOC FOR FULL VALUE OF 'a' GIVING NUMBER #NUM GIVING POSITION #POS GIVING LENGTH #LEN GIVING INDEX #INDEX", IExamineNode.class);
+		assertThat(examine.descendants().size()).isEqualTo(19);
+	}
+
+	@Test
+	void parseAnExamineTranslateStatement()
+	{
+		var examine = assertParsesSingleStatement("EXAMINE #ASD AND TRANSLATE INTO UPPER CASE", IExamineNode.class);
+		assertThat(examine.descendants().size()).isEqualTo(7);
+	}
+
+	@Test
+	void parseAnExamineTranslateUsingStatement()
+	{
+		var examine = assertParsesSingleStatement("EXAMINE #ASD AND TRANSLATE USING INVERTED #EFG", IExamineNode.class);
+		assertThat(examine.descendants().size()).isEqualTo(7);
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);

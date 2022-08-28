@@ -89,6 +89,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					case IDENTIFIER:
 						statementList.addStatement(identifierReference());
 						break;
+					case EXAMINE:
+						statementList.addStatement(examine());
+						break;
 					case WRITE:
 						statementList.addStatement(write());
 						break;
@@ -141,7 +144,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						// FALLTHROUGH TO DEFAULT INTENDED
 					case FOR:
 						if (peekKind(SyntaxKind.FOR) && (peek(-1) == null || (peek(1).kind() == SyntaxKind.IDENTIFIER && peek(-1).kind() != SyntaxKind.REJECT && peek(-1).kind() != SyntaxKind.ACCEPT)))
-						// TODO: until we support EXAMINE, DECIDE, ...
+						// TODO: until we support EXAMINE, DECIDE, HISTOGRAM, ...
 						//      just.. implement them already and don't try to understand the conditions
 						{
 							statementList.addStatement(forLoop());
@@ -174,13 +177,143 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return statementList;
 	}
 
+	private StatementNode examine() throws ParseError
+	{
+		var examine = new ExamineNode();
+		consumeMandatory(examine, SyntaxKind.EXAMINE);
+		consumeAnyOptionally(examine, List.of(SyntaxKind.FORWARD, SyntaxKind.BACKWARD));
+		if (consumeOptionally(examine, SyntaxKind.FULL))
+		{
+			if (consumeOptionally(examine, SyntaxKind.VALUE))
+			{
+				consumeOptionally(examine, SyntaxKind.OF);
+			}
+		}
+
+		// TODO: Handle SUBSTRING
+		var examined = consumeVariableReferenceNode(examine);
+		examine.setExamined(examined);
+
+		if(consumeOptionally(examine, SyntaxKind.AND) || peekKind(SyntaxKind.TRANSLATE))
+		{
+			return examineTranslate(examine);
+		}
+
+		// [STARTING] FROM
+		var hasPositionClause = consumeOptionally(examine, SyntaxKind.STARTING);
+		hasPositionClause = consumeOptionally(examine, SyntaxKind.FROM) || hasPositionClause;
+		if (hasPositionClause)
+		{
+			consumeOptionally(examine, SyntaxKind.POSITION);
+			consumeOperandNode(examine);
+			if (consumeAnyOptionally(examine, List.of(SyntaxKind.ENDING, SyntaxKind.THRU)))
+			{
+				consumeOptionally(examine, SyntaxKind.AT);
+				consumeOptionally(examine, SyntaxKind.POSITION);
+				consumeOperandNode(examine);
+			}
+		}
+
+		consumeOptionally(examine, SyntaxKind.FOR);
+		if (consumeOptionally(examine, SyntaxKind.FULL))
+		{
+			consumeOptionally(examine, SyntaxKind.VALUE);
+			consumeOptionally(examine, SyntaxKind.OF);
+		}
+		consumeOptionally(examine, SyntaxKind.PATTERN);
+
+		consumeOperandNode(examine);
+
+		var hadAbsolute = consumeOptionally(examine, SyntaxKind.ABSOLUTE);
+		if (!hadAbsolute && consumeOptionally(examine, SyntaxKind.WITH))
+		{
+			consumeOptionally(examine, SyntaxKind.DELIMITERS);
+			consumeOperandNode(examine);
+		}
+
+		consumeOptionally(examine, SyntaxKind.AND);
+		if (consumeOptionally(examine, SyntaxKind.REPLACE))
+		{
+			consumeOptionally(examine, SyntaxKind.FIRST);
+			consumeOptionally(examine, SyntaxKind.WITH);
+			consumeOptionally(examine, SyntaxKind.FULL);
+			consumeOptionally(examine, SyntaxKind.VALUE);
+			consumeOptionally(examine, SyntaxKind.OF);
+			consumeOperandNode(examine);
+		}
+		else
+			if (consumeOptionally(examine, SyntaxKind.DELETE))
+			{
+				consumeOptionally(examine, SyntaxKind.FIRST);
+			}
+
+		while (consumeOptionally(examine, SyntaxKind.GIVING))
+		{
+			if (consumeOptionally(examine, SyntaxKind.IN))
+			{
+				consumeOperandNode(examine);
+			}
+			else
+				if (consumeOptionally(examine, SyntaxKind.KW_NUMBER))
+				{
+					consumeOptionally(examine, SyntaxKind.IN);
+					consumeOperandNode(examine);
+				}
+				else
+					if (consumeOptionally(examine, SyntaxKind.POSITION))
+					{
+						consumeOptionally(examine, SyntaxKind.IN);
+						consumeOperandNode(examine);
+					}
+					else
+						if (consumeOptionally(examine, SyntaxKind.LENGTH))
+						{
+							consumeOptionally(examine, SyntaxKind.IN);
+							consumeOperandNode(examine);
+						}
+						else
+							if (consumeOptionally(examine, SyntaxKind.INDEX))
+							{
+								consumeOptionally(examine, SyntaxKind.IN);
+								while (isOperand())
+								{
+									consumeOperandNode(examine);
+								}
+							}
+							else
+							{
+								consumeOperandNode(examine);
+							}
+		}
+
+		return examine;
+	}
+
+	private StatementNode examineTranslate(ExamineNode examine) throws ParseError
+	{
+		consumeMandatory(examine, SyntaxKind.TRANSLATE);
+		if(consumeOptionally(examine, SyntaxKind.INTO))
+		{
+			consumeAnyMandatory(examine, List.of(SyntaxKind.UPPER, SyntaxKind.LOWER));
+			consumeOptionally(examine, SyntaxKind.CASE);
+		}
+		else
+		{
+			consumeMandatory(examine, SyntaxKind.USING);
+			consumeOptionally(examine, SyntaxKind.INVERTED);
+			consumeOperandNode(examine);
+		}
+
+		return examine;
+	}
+
 	private StatementNode write() throws ParseError
 	{
 		var write = new WriteNode();
 		consumeMandatory(write, SyntaxKind.WRITE);
-		if(consumeOptionally(write, SyntaxKind.LPAREN))
+		if (consumeOptionally(write, SyntaxKind.LPAREN))
 		{
-			if(peekKind(SyntaxKind.IDENTIFIER) && peekKind(1, SyntaxKind.RPAREN))
+			if (peekKind(SyntaxKind.IDENTIFIER) && peekKind(1, SyntaxKind.RPAREN))
 			{
 				var token = consumeMandatoryIdentifier(write);
 				write.setReportSpecification(token);
@@ -188,7 +321,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			else
 			{
 				// currently consume everything until closing parenthesis to consume things like attribute definition etc.
-				while(!peekKind(SyntaxKind.RPAREN))
+				while (!peekKind(SyntaxKind.RPAREN))
 				{
 					consume(write);
 				}
@@ -218,7 +351,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		while (consumeAnyOptionally(format, FORMAT_MODIFIERS))
 		{
 			consumeMandatory(format, SyntaxKind.EQUALS_SIGN);
-			if(!FORMAT_MODIFIERS.contains(peek().kind()) && peek().line() == previousToken().line())
+			if (!FORMAT_MODIFIERS.contains(peek().kind()) && peek().line() == previousToken().line())
 			{
 				consume(format);
 			}
