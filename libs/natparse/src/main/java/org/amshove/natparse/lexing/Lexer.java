@@ -590,6 +590,12 @@ public class Lexer
 			return;
 		}
 
+		if(inParens && scanner.peekText("CD="))
+		{
+			colorDefinition();
+			return;
+		}
+
 		var isQualified = false;
 		SyntaxKind kindHint = null;
 		scanner.start();
@@ -744,6 +750,18 @@ public class Lexer
 		}
 
 		createAndAdd(SyntaxKind.AD);
+	}
+
+	private void colorDefinition()
+	{
+		scanner.start();
+		scanner.advance(3); // CD=
+		while(!scanner.isAtEnd() && isNoWhitespace() && scanner.peek() != ')')
+		{
+			scanner.advance();
+		}
+
+		createAndAdd(SyntaxKind.CD);
 	}
 
 	private boolean isNoWhitespace()

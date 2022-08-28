@@ -35,4 +35,15 @@ public class LexerForAttributeControlsShould extends AbstractLexerTest
 			token(SyntaxKind.RPAREN)
 		);
 	}
+
+	@Test
+	void consumeColorDefinition()
+	{
+		assertTokens("MOVE (CD=RE)",
+			token(SyntaxKind.MOVE),
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.CD),
+			token(SyntaxKind.RPAREN)
+		);
+	}
 }

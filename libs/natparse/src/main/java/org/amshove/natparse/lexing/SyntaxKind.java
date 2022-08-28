@@ -250,6 +250,7 @@ public enum SyntaxKind
 	ACTION(true, false, false),
 	ACTIVATION(true, false, false),
 	AD(true, false, false), // Attribute Definition
+	CD(true, false, false), // Color Definition
 	AFTER(true, false, false),
 	AL(true, false, false),
 	ALARM(true, false, false),
@@ -285,7 +286,6 @@ public enum SyntaxKind
 	CAPTIONED(true, false, false),
 	CASE(true, false, false),
 	CC(true, false, false),
-	CD(true, false, false),
 	CDID(true, false, false),
 	CF(true, false, false),
 	CHAR(true, false, false),
