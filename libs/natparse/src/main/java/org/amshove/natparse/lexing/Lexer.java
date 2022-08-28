@@ -240,11 +240,11 @@ public class Lexer
 		var isStringConcatenation = previousToken != null && previousToken.kind() == SyntaxKind.STRING_LITERAL && (lookahead == '\'' || lookahead == '"');
 		if (isStringConcatenation)
 		{
-			var previousString = previous();
+			var previousString = previousUnsafe();
 			var previousStringIndex = tokens.size() - 1;
 			scanner.advance(lookaheadIndex);
 			consumeString(lookahead);
-			var currentString = previous();
+			var currentString = previousUnsafe();
 			var currentStringIndex = tokens.size() - 1;
 			if (currentStringIndex >= previousStringIndex)
 			{
@@ -1000,6 +1000,14 @@ public class Lexer
 		{
 			return null;
 		}
+		return tokens.get(tokens.size() - 1);
+	}
+
+	/**
+	 * Returns the previous consumed token. <strong>Does not do a boundary check</strong>
+	 */
+	private SyntaxToken previousUnsafe()
+	{
 		return tokens.get(tokens.size() - 1);
 	}
 
