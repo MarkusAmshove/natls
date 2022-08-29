@@ -12,10 +12,11 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 class CachingModuleProvider implements IModuleProvider
 {
-	private static final Map<NaturalLibrary, Map<String, ParsedModule>> libToReferableNameToFileCache = new HashMap<>();
+	private static final Map<NaturalLibrary, Map<String, ParsedModule>> libToReferableNameToFileCache = new ConcurrentHashMap<>();
 	private final NaturalFile caller;
 
 	CachingModuleProvider(NaturalFile caller)
@@ -51,7 +52,7 @@ class CachingModuleProvider implements IModuleProvider
 		}
 
 		var callerLib = caller.getLibrary();
-		var referableToModule = libToReferableNameToFileCache.computeIfAbsent(callerLib, (l) -> new HashMap<>());
+		var referableToModule = libToReferableNameToFileCache.computeIfAbsent(callerLib, (l) -> new ConcurrentHashMap<>());
 
 		var foundModule = referableToModule.computeIfAbsent(referableName, n -> new ParsedModule(callerLib.findFileByReferableName(referableName, true), null));
 		if (foundModule.file == null)
