@@ -6,7 +6,8 @@ public enum DiagnosticSinkType
 {
 	STDOUT,
 	NONE,
-	CSV;
+	CSV,
+	CI_CSV;
 
 	public IDiagnosticSink createSink()
 	{
@@ -15,6 +16,7 @@ public enum DiagnosticSinkType
 				case STDOUT -> new AnsiDiagnosticSink();
 				case NONE -> new NullDiagnosticSink();
 				case CSV -> new CsvDiagnosticSink(Paths.get("diagnostics.csv"));
+				case CI_CSV -> new CiCsvDiagnosticSink(Paths.get("diagnostics.csv"));
 			};
 	}
 }

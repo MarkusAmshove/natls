@@ -36,6 +36,9 @@ public class AnalyzeCommand implements Callable<Integer>
 	@CommandLine.Option(names = { "--sink" }, description = "Sets the output sink where the diagnostics are printed to. Defaults to STDOUT. Valid values: ${COMPLETION-CANDIDATES}", defaultValue = "STDOUT")
 	DiagnosticSinkType sinkType;
 
+	@CommandLine.Option(names = { "--ci" }, description = "Analyzer will return exit code 0, even when diagnostics are found. Will also use the CSV sink", defaultValue = "false")
+	boolean ciMode;
+
 	private static final List<Predicate<NaturalFile>> DEFAULT_MODULE_PREDICATES = List.of(f -> true);
 	private static final List<Predicate<IDiagnostic>> DEFAULT_DIAGNOSTIC_PREDICATES = List.of(d -> true);
 
@@ -80,13 +83,24 @@ public class AnalyzeCommand implements Callable<Integer>
 				.forEach(id -> diagnosticPredicates.add(d -> d.id().equals(id)));
 		}
 
+		if (ciMode)
+		{
+			sinkType = DiagnosticSinkType.CI_CSV;
+		}
+
 		var analyzer = new CliAnalyzer(
 			sinkType.createSink(),
 			modulePredicates.isEmpty() ? DEFAULT_MODULE_PREDICATES : modulePredicates,
 			diagnosticPredicates.isEmpty() ? DEFAULT_DIAGNOSTIC_PREDICATES : diagnosticPredicates
 		);
 
-		return analyzer.run();
+		var exitCode = analyzer.run();
+		if(ciMode)
+		{
+			return 0;
+		}
+
+		return exitCode;
 	}
 
 	record QualifiedModuleName(String library, String filename)
