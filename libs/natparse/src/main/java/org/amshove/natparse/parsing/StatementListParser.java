@@ -72,6 +72,10 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						{
 							statementList.addStatement(atEndOfPage());
 						}
+						if(peekKind(1, SyntaxKind.TOP) && (peekKind(3, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE)))
+						{
+							statementList.addStatement(atTopOfPage());
+						}
 						break;
 					case CALLNAT:
 						statementList.addStatement(callnat());
@@ -140,6 +144,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 							break;
 						}
 						statementList.addStatement(perform());
+						break;
+					case TOP:
+						statementList.addStatement(atTopOfPage());
 						break;
 					case RESET:
 						statementList.addStatement(resetStatement());
@@ -211,6 +218,26 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		endOfPage.setBody(statementList(SyntaxKind.END_ENDPAGE));
 
 		return endOfPage;
+	}
+
+	private StatementNode atTopOfPage() throws ParseError
+	{
+		var topOfPage = new TopOfPageNode();
+		consumeOptionally(topOfPage, SyntaxKind.AT);
+		consumeMandatory(topOfPage, SyntaxKind.TOP);
+		consumeOptionally(topOfPage, SyntaxKind.OF);
+		consumeMandatory(topOfPage, SyntaxKind.PAGE);
+
+		if (consumeOptionally(topOfPage, SyntaxKind.LPAREN))
+		{
+			consumeAnyMandatory(topOfPage, List.of(SyntaxKind.IDENTIFIER, SyntaxKind.NUMBER_LITERAL));
+			topOfPage.setReportSpecification(previousToken());
+			consumeMandatory(topOfPage, SyntaxKind.RPAREN);
+		}
+
+		topOfPage.setBody(statementList(SyntaxKind.END_TOPPAGE));
+
+		return topOfPage;
 	}
 
 	private StatementNode newPage() throws ParseError

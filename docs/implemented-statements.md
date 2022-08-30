@@ -2,13 +2,13 @@
 
 This document tracks the implementation status of Natural statements.
 
-Implemented: 9/121
-
 Legend:
 
 :x: - not implemented
 
 :white_check_mark: - implemented
+
+partial - partially implemented to prevent false positives
 
 | Statement | Status |
 | --- | -- |
@@ -19,7 +19,7 @@ Legend:
 | AT END OF DATA | :x: |
 | AT END OF PAGE | :white_check_mark: |
 | AT START OF DATA | :x: |
-| AT TOP OF PAGE | :x: |
+| AT TOP OF PAGE | :white_check_mark: |
 | BACKOUT TRANSACTION | :x: |
 | BEFORE BREAK PROCESSING | :x: |
 | CALL | :x: |

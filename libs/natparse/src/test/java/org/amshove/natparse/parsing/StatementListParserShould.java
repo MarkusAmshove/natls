@@ -879,7 +879,49 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 			%s
 			IGNORE
 			END-ENDPAGE
-		""");
+		""".formatted(header));
+	}
+
+	@Test
+	void parseAtTopOfPage()
+	{
+		var topOfPage = assertParsesSingleStatement("""
+			AT TOP OF PAGE (PRNT)
+			IGNORE
+			END-TOPPAGE
+			""", ITopOfPageNode.class);
+
+		assertThat(topOfPage.reportSpecification()).map(SyntaxToken::symbolName).hasValue("PRNT");
+		assertThat(topOfPage.body().statements()).hasSize(1);
+	}
+
+	@Test
+	void parseTopPage()
+	{
+		var topOfPage = assertParsesSingleStatement("""
+			TOP PAGE (5)
+			IGNORE
+			END-TOPPAGE
+			""", ITopOfPageNode.class);
+
+		assertThat(topOfPage.reportSpecification()).map(SyntaxToken::intValue).hasValue(5);
+		assertThat(topOfPage.body().statements()).hasSize(1);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"AT TOP OF PAGE",
+		"TOP PAGE",
+		"TOP OF PAGE",
+		"AT TOP PAGE"
+	})
+	void parseMultipleHeaderOptionsForTopOfPage(String header)
+	{
+		assertParsesWithoutDiagnostics("""
+			%s
+			IGNORE
+			END-TOPPAGE
+		""".formatted(header));
 	}
 
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
