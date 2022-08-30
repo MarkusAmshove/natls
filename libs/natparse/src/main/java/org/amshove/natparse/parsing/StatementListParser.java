@@ -107,6 +107,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 							default -> statementList.addStatement(consumeFallback());
 						}
 						break;
+					case EJECT:
+						statementList.addStatement(eject());
+						break;
 					case FORMAT:
 						statementList.addStatement(formatNode());
 						break;
@@ -225,6 +228,41 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode eject() throws ParseError
+	{
+		var eject = new EjectNode();
+		consumeMandatory(eject, SyntaxKind.EJECT);
+
+		if(consumeAnyOptionally(eject, List.of(SyntaxKind.ON, SyntaxKind.OFF)))
+		{
+			consumeOptionalReportSpecification(eject);
+		}
+		else
+		{
+			consumeOptionalReportSpecification(eject);
+			consumeAnyOptionally(eject, List.of(SyntaxKind.IF, SyntaxKind.WHEN));
+			if(consumeOptionally(eject, SyntaxKind.LESS))
+			{
+				consumeOptionally(eject, SyntaxKind.THAN);
+				consumeOperandNode(eject);
+				consumeOptionally(eject, SyntaxKind.LINES);
+				consumeOptionally(eject, SyntaxKind.LEFT);
+			}
+		}
+
+		return eject;
+	}
+
+	private <T extends BaseSyntaxNode & ICanSetReportSpecification> void consumeOptionalReportSpecification(T node) throws ParseError
+	{
+		if (consumeOptionally(node, SyntaxKind.LPAREN))
+		{
+			consumeAnyMandatory(node, List.of(SyntaxKind.IDENTIFIER, SyntaxKind.NUMBER_LITERAL));
+			node.setReportSpecification(previousToken());
+			consumeMandatory(node, SyntaxKind.RPAREN);
+		}
 	}
 
 	private StatementNode breakOf() throws ParseError

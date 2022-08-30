@@ -51,7 +51,7 @@ partial - partially implemented to prevent false positives
 | DIVIDE | :x: |
 | DO/DOEND | :x: |
 | DOWNLOAD PC FILE | :x: |
-| EJECT | :x: |
+| EJECT | :white_check_mark: |
 | END | :white_check_mark: |
 | END TRANSACTION | :x: |
 | ESCAPE | :x: |

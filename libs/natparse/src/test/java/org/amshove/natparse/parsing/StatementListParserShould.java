@@ -978,6 +978,44 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(breakOf.body().statements()).hasSize(1);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"EJECT ON (0)",
+		"EJECT OFF (PRNT)",
+		"EJECT OFF",
+		"EJECT ON",
+		"EJECT (PRNT)",
+		"EJECT (5)",
+		"EJECT",
+		"EJECT IF LESS THAN 10 LINES LEFT",
+		"EJECT WHEN LESS THAN #VAR LINES LEFT",
+		"EJECT (10) LESS #VAR",
+		"EJECT (10) WHEN LESS #VAR",
+		"EJECT (10) WHEN LESS THAN #VAR",
+		"EJECT (10) WHEN LESS THAN #VAR LEFT",
+		"EJECT (PRNT) IF LESS THAN 10 LINES LEFT",
+	})
+	void parseEject(String eject)
+	{
+		var statements = assertParsesWithoutDiagnostics(eject);
+		assertThat(statements.statements()).hasSize(1);
+		assertThat(statements.statements().get(0)).isInstanceOf(IEjectNode.class);
+	}
+
+	@Test
+	void parseEjectWithPrinterReference()
+	{
+		var eject = assertParsesSingleStatement("EJECT (PRNT)", IEjectNode.class);
+		assertThat(eject.reportSpecification()).map(SyntaxToken::symbolName).hasValue("PRNT");
+	}
+
+	@Test
+	void parseEjectWithNumericPrinterReference()
+	{
+		var eject = assertParsesSingleStatement("EJECT (5)", IEjectNode.class);
+		assertThat(eject.reportSpecification()).map(SyntaxToken::intValue).hasValue(5);
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);
