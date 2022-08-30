@@ -119,7 +119,7 @@ partial - partially implemented to prevent false positives
 | SET WINDOW | :x: |
 | SKIP | :x: |
 | SORT | :x: |
-| STACK | :x: |
+| STACK | :white_check_mark: |
 | STOP | :x: |
 | STORE | :x: |
 | SUBTRACT | :x: |

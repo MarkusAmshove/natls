@@ -1065,6 +1065,33 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(escape.label()).map(SyntaxToken::symbolName).hasValue("RD.");
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"STACK TOP COMMAND 'ASD' #VAR 'ASDF'",
+		"STACK 'MOD'",
+		"STACK DATA FORMATTED #DATA1 #DATA2 #DATA3",
+		"STACK TOP DATA #VAR1 #VAR2",
+		"STACK TOP FORMATTED #VAR1 #VAR2"
+	})
+	void parseStack(String stack)
+	{
+		var statementList = assertParsesWithoutDiagnostics(stack);
+		assertThat(statementList.statements()).hasSize(1);
+		assertThat(statementList.statements().get(0)).isInstanceOf(IStackNode.class);
+	}
+
+	@Test
+	void parseStackWithManyOperands()
+	{
+		var statementList = assertParsesWithoutDiagnostics("""
+			STACK TOP COMMAND #ASD #ASDF 'ASD' #ASDFG
+			IGNORE
+			""");
+		assertThat(statementList.statements()).hasSize(2);
+		assertThat(statementList.statements().get(0)).isInstanceOf(IStackNode.class);
+		assertThat(statementList.statements().get(1)).isInstanceOf(IIgnoreNode.class);
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);

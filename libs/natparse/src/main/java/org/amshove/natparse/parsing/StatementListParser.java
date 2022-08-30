@@ -179,6 +179,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						}
 						statementList.addStatement(perform());
 						break;
+					case STACK:
+						statementList.addStatement(stack());
+						break;
 					case TOP:
 						statementList.addStatement(parseAtPositionOf(SyntaxKind.TOP, SyntaxKind.PAGE, SyntaxKind.END_TOPPAGE, false, new TopOfPageNode()));
 						break;
@@ -234,6 +237,38 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return statementList;
 	}
 
+	private StatementNode stack() throws ParseError
+	{
+		var stack = new StackNode();
+		consumeMandatory(stack, SyntaxKind.STACK);
+		consumeOptionally(stack, SyntaxKind.TOP);
+		if (consumeOptionally(stack, SyntaxKind.COMMAND))
+		{
+			consumeOperandNode(stack);
+			while (isOperand())
+			{
+				consumeOperandNode(stack);
+			}
+
+		}
+		else
+			if (consumeOptionally(stack, SyntaxKind.DATA) || consumeOptionally(stack, SyntaxKind.FORMATTED) || isOperand())
+			{
+				if (previousToken().kind() == SyntaxKind.DATA)
+				{
+					consumeOptionally(stack, SyntaxKind.FORMATTED);
+				}
+
+				consumeOperandNode(stack);
+				while (isOperand())
+				{
+					consumeOperandNode(stack);
+				}
+			}
+
+		return stack;
+	}
+
 	private StatementNode escape() throws ParseError
 	{
 		var escape = new EscapeNode();
@@ -241,23 +276,23 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeAnyMandatory(escape, List.of(SyntaxKind.TOP, SyntaxKind.BOTTOM, SyntaxKind.ROUTINE, SyntaxKind.MODULE));
 		var direction = previousToken().kind();
 		escape.setDirection(direction);
-		if(direction == SyntaxKind.TOP)
+		if (direction == SyntaxKind.TOP)
 		{
-			if(consumeOptionally(escape, SyntaxKind.REPOSITION))
+			if (consumeOptionally(escape, SyntaxKind.REPOSITION))
 			{
 				escape.setReposition();
 			}
 		}
 		else
 		{
-			if(direction == SyntaxKind.BOTTOM && consumeOptionally(escape, SyntaxKind.LPAREN))
+			if (direction == SyntaxKind.BOTTOM && consumeOptionally(escape, SyntaxKind.LPAREN))
 			{
 				var label = consumeMandatory(escape, SyntaxKind.LABEL_IDENTIFIER);
 				escape.setLabel(label);
 				consumeMandatory(escape, SyntaxKind.RPAREN);
 			}
 
-			if(consumeOptionally(escape, SyntaxKind.IMMEDIATE))
+			if (consumeOptionally(escape, SyntaxKind.IMMEDIATE))
 			{
 				escape.setImmediate();
 			}
@@ -271,7 +306,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var eject = new EjectNode();
 		consumeMandatory(eject, SyntaxKind.EJECT);
 
-		if(consumeAnyOptionally(eject, List.of(SyntaxKind.ON, SyntaxKind.OFF)))
+		if (consumeAnyOptionally(eject, List.of(SyntaxKind.ON, SyntaxKind.OFF)))
 		{
 			consumeOptionalReportSpecification(eject);
 		}
@@ -279,7 +314,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			consumeOptionalReportSpecification(eject);
 			consumeAnyOptionally(eject, List.of(SyntaxKind.IF, SyntaxKind.WHEN));
-			if(consumeOptionally(eject, SyntaxKind.LESS))
+			if (consumeOptionally(eject, SyntaxKind.LESS))
 			{
 				consumeOptionally(eject, SyntaxKind.THAN);
 				consumeOperandNode(eject);
@@ -306,7 +341,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var breakOf = new BreakOfNode();
 		consumeOptionally(breakOf, SyntaxKind.AT);
 		var openingToken = consumeMandatory(breakOf, SyntaxKind.BREAK);
-		if(consumeOptionally(breakOf, SyntaxKind.LPAREN))
+		if (consumeOptionally(breakOf, SyntaxKind.LPAREN))
 		{
 			var identifier = consumeMandatory(breakOf, SyntaxKind.LABEL_IDENTIFIER);
 			breakOf.setReportSpecification(identifier);
@@ -316,7 +351,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeOptionally(breakOf, SyntaxKind.OF);
 		consumeVariableReferenceNode(breakOf);
 
-		if(consumeOptionally(breakOf, SyntaxKind.SLASH))
+		if (consumeOptionally(breakOf, SyntaxKind.SLASH))
 		{
 			consumeLiteralNode(breakOf, SyntaxKind.NUMBER_LITERAL);
 			consumeMandatory(breakOf, SyntaxKind.SLASH);
@@ -353,7 +388,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		if (consumeOptionally(node, SyntaxKind.LPAREN))
 		{
-			if(canHaveLabelIdentifier)
+			if (canHaveLabelIdentifier)
 			{
 				consumeMandatory(node, SyntaxKind.LABEL_IDENTIFIER);
 			}
@@ -1103,6 +1138,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			(peekKind(SyntaxKind.IDENTIFIER) && !isAtEnd(1) && peek(1).kind() != SyntaxKind.COLON_EQUALS_SIGN)
 				|| peek().kind().isSystemFunction()
 				|| peek().kind().isSystemVariable()
+				|| peek().kind().isLiteralOrConst()
 				|| peek().kind().canBeIdentifier(); // this should hopefully catch the begin of statements
 	}
 
