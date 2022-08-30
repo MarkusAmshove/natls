@@ -93,6 +93,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 							statementList.addStatement(breakOf());
 							break;
 						}
+						tokens.advance(); // TODO: default case
 						break;
 					case BREAK:
 						statementList.addStatement(breakOf());
