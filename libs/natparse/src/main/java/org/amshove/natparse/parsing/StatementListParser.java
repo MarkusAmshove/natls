@@ -95,6 +95,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						}
 						tokens.advance(); // TODO: default case
 						break;
+					case BEFORE:
+						statementList.addStatement(beforeBreak());
+						break;
 					case BREAK:
 						statementList.addStatement(breakOf());
 						break;
@@ -235,6 +238,19 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode beforeBreak() throws ParseError
+	{
+		var beforeBreak = new BeforeBreakNode();
+		var start = consumeMandatory(beforeBreak, SyntaxKind.BEFORE);
+		consumeOptionally(beforeBreak, SyntaxKind.BREAK);
+		consumeOptionally(beforeBreak, SyntaxKind.PROCESSING);
+
+		beforeBreak.setBody(statementList(SyntaxKind.END_BEFORE));
+
+		consumeMandatoryClosing(beforeBreak, SyntaxKind.END_BEFORE, start);
+		return beforeBreak;
 	}
 
 	private StatementNode stack() throws ParseError

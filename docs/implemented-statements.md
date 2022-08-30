@@ -21,7 +21,7 @@ partial - partially implemented to prevent false positives
 | AT START OF DATA | :white_check_mark: |
 | AT TOP OF PAGE | :white_check_mark: |
 | BACKOUT TRANSACTION | :x: |
-| BEFORE BREAK PROCESSING | :x: |
+| BEFORE BREAK PROCESSING | :white_check_mark: |
 | CALL | :x: |
 | CALL FILE | :x: |
 | CALL LOOP | :x: |

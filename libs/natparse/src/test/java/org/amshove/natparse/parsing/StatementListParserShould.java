@@ -1092,6 +1092,25 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(statementList.statements().get(1)).isInstanceOf(IIgnoreNode.class);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"BEFORE BREAK PROCESSING",
+		"BEFORE BREAK",
+		"BEFORE",
+		"BEFORE PROCESSING"
+	})
+	void parseBeforeBreakProcessing(String header)
+	{
+		var beforeBreak = assertParsesSingleStatement("""
+			%s
+			IGNORE
+			END-BEFORE
+			""".formatted(header), IBeforeBreakNode.class);
+
+		assertThat(beforeBreak.body().statements()).hasSize(1);
+		assertThat(beforeBreak.body().statements().first()).isInstanceOf(IIgnoreNode.class);
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);
