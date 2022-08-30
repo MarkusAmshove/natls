@@ -386,6 +386,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.DATD);
 			return;
 		}
+		if (scanner.advanceIf("DAT4D"))
+		{
+			createAndAdd(SyntaxKind.DAT4D);
+			return;
+		}
 		if (scanner.advanceIf("LANGUAGE"))
 		{
 			createAndAdd(SyntaxKind.LANGUAGE);

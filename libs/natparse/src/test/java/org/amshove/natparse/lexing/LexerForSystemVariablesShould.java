@@ -216,4 +216,10 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 	{
 		assertTokens("*COM", token(SyntaxKind.COM, "*COM"));
 	}
+
+	@Test
+	void lexDat4D()
+	{
+		assertTokens("*DAT4D", token(SyntaxKind.DAT4D, "*DAT4D"));
+	}
 }

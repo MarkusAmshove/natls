@@ -39,6 +39,7 @@ public enum SyntaxKind
 	TIMX(false, true, false),
 	TIMN(false, true, false),
 	DATD(false, true, false),
+	DAT4D(false, true, false),
 	LANGUAGE(true, true, false),
 	DATX(false, true, false),
 	DATN(false, true, false),
