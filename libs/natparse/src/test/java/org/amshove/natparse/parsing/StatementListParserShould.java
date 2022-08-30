@@ -960,6 +960,24 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(endOfData.body().statements()).hasSize(1);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"AT BREAK (RD.) OF #VAR /5/",
+		"BREAK #VARIABLE",
+		"AT BREAK #VAR",
+		"BREAK (R1.) OF #VAR /10/"
+	})
+	void parseAtBreakOf(String header)
+	{
+		var breakOf = assertParsesSingleStatement("""
+			%s
+			IGNORE
+			END-BREAK
+			""".formatted(header), IBreakOfNode.class);
+
+		assertThat(breakOf.body().statements()).hasSize(1);
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);

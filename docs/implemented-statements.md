@@ -15,7 +15,7 @@ partial - partially implemented to prevent false positives
 | ACCEPT/REJECT | :x: |
 | ADD | :x: |
 | ASSIGN | :x: |
-| AT BREAK | :x: |
+| AT BREAK | :white_check_mark: |
 | AT END OF DATA | :white_check_mark: |
 | AT END OF PAGE | :white_check_mark: |
 | AT START OF DATA | :white_check_mark: |

@@ -88,6 +88,14 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 							statementList.addStatement(parseAtPositionOf(SyntaxKind.END, SyntaxKind.DATA, SyntaxKind.END_ENDDATA, true, new EndOfDataNode()));
 							break;
 						}
+						if (peekKind(1, SyntaxKind.BREAK))
+						{
+							statementList.addStatement(breakOf());
+							break;
+						}
+						break;
+					case BREAK:
+						statementList.addStatement(breakOf());
 						break;
 					case CALLNAT:
 						statementList.addStatement(callnat());
@@ -219,6 +227,33 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return statementList;
 	}
 
+	private StatementNode breakOf() throws ParseError
+	{
+		var breakOf = new BreakOfNode();
+		consumeOptionally(breakOf, SyntaxKind.AT);
+		var openingToken = consumeMandatory(breakOf, SyntaxKind.BREAK);
+		if(consumeOptionally(breakOf, SyntaxKind.LPAREN))
+		{
+			var identifier = consumeMandatory(breakOf, SyntaxKind.LABEL_IDENTIFIER);
+			breakOf.setReportSpecification(identifier);
+			consumeMandatory(breakOf, SyntaxKind.RPAREN);
+		}
+
+		consumeOptionally(breakOf, SyntaxKind.OF);
+		consumeVariableReferenceNode(breakOf);
+
+		if(consumeOptionally(breakOf, SyntaxKind.SLASH))
+		{
+			consumeLiteralNode(breakOf, SyntaxKind.NUMBER_LITERAL);
+			consumeMandatory(breakOf, SyntaxKind.SLASH);
+		}
+
+		breakOf.setBody(statementList(SyntaxKind.END_BREAK));
+		consumeMandatoryClosing(breakOf, SyntaxKind.END_BREAK, openingToken);
+
+		return breakOf;
+	}
+
 	/**
 	 * Parse any node in the form of:<br/>
 	 * [AT] {@code location} [OF] {@code statementType} [(reportSpecification)]<br/>
@@ -238,7 +273,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		T node) throws ParseError
 	{
 		consumeOptionally(node, SyntaxKind.AT);
-		consumeMandatory(node, location);
+		var openingToken = consumeMandatory(node, location);
 		consumeOptionally(node, SyntaxKind.OF);
 		consumeMandatory(node, statementType);
 
@@ -257,6 +292,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		node.setBody(statementList(statementEndToken));
+		consumeMandatoryClosing(node, statementEndToken, openingToken);
 		return node;
 	}
 
