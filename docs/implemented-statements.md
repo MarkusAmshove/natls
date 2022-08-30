@@ -54,7 +54,7 @@ partial - partially implemented to prevent false positives
 | EJECT | :white_check_mark: |
 | END | :white_check_mark: |
 | END TRANSACTION | :x: |
-| ESCAPE | :x: |
+| ESCAPE | :white_check_mark: |
 | EXAMINE | :white_check_mark: |
 | EXPAND | :x: |
 | FETCH | :white_check_mark: |

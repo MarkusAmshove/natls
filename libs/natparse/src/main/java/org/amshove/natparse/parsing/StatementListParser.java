@@ -111,6 +111,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					case EJECT:
 						statementList.addStatement(eject());
 						break;
+					case ESCAPE:
+						statementList.addStatement(escape());
+						break;
 					case FORMAT:
 						statementList.addStatement(formatNode());
 						break;
@@ -229,6 +232,38 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode escape() throws ParseError
+	{
+		var escape = new EscapeNode();
+		consumeMandatory(escape, SyntaxKind.ESCAPE);
+		consumeAnyMandatory(escape, List.of(SyntaxKind.TOP, SyntaxKind.BOTTOM, SyntaxKind.ROUTINE, SyntaxKind.MODULE));
+		var direction = previousToken().kind();
+		escape.setDirection(direction);
+		if(direction == SyntaxKind.TOP)
+		{
+			if(consumeOptionally(escape, SyntaxKind.REPOSITION))
+			{
+				escape.setReposition();
+			}
+		}
+		else
+		{
+			if(direction == SyntaxKind.BOTTOM && consumeOptionally(escape, SyntaxKind.LPAREN))
+			{
+				var label = consumeMandatory(escape, SyntaxKind.LABEL_IDENTIFIER);
+				escape.setLabel(label);
+				consumeMandatory(escape, SyntaxKind.RPAREN);
+			}
+
+			if(consumeOptionally(escape, SyntaxKind.IMMEDIATE))
+			{
+				escape.setImmediate();
+			}
+		}
+
+		return escape;
 	}
 
 	private StatementNode eject() throws ParseError

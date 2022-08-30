@@ -1016,6 +1016,55 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(eject.reportSpecification()).map(SyntaxToken::intValue).hasValue(5);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"ESCAPE TOP REPOSITION",
+		"ESCAPE TOP",
+		"ESCAPE BOTTOM IMMEDIATE",
+		"ESCAPE BOTTOM (RD.) IMMEDIATE",
+		"ESCAPE BOTTOM",
+		"ESCAPE BOTTOM (R1.)",
+		"ESCAPE ROUTINE IMMEDIATE",
+		"ESCAPE ROUTINE",
+		"ESCAPE MODULE IMMEDIATE",
+		"ESCAPE MODULE"
+	})
+	void parseEscapes(String escape)
+	{
+		assertParsesSingleStatement(escape, IEscapeNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"TOP", "BOTTOM", "ROUTINE", "MODULE"
+	})
+	void parseEscapeDirectionOfEscapeNode(String direction)
+	{
+		var escape = assertParsesSingleStatement("ESCAPE %s".formatted(direction), IEscapeNode.class);
+		assertThat(escape.escapeDirection().name()).isEqualTo(direction);
+	}
+
+	@Test
+	void parseEscapeImmediate()
+	{
+		var escape = assertParsesSingleStatement("ESCAPE ROUTINE IMMEDIATE", IEscapeNode.class);
+		assertThat(escape.isImmediate()).isTrue();
+	}
+
+	@Test
+	void parseEscapeReposition()
+	{
+		var escape = assertParsesSingleStatement("ESCAPE TOP REPOSITION", IEscapeNode.class);
+		assertThat(escape.isReposition()).isTrue();
+	}
+
+	@Test
+	void parseEscapeLabel()
+	{
+		var escape = assertParsesSingleStatement("ESCAPE BOTTOM (RD.)", IEscapeNode.class);
+		assertThat(escape.label()).map(SyntaxToken::symbolName).hasValue("RD.");
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);
