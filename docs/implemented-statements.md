@@ -78,7 +78,7 @@ Legend:
 | MOVE | :x: |
 | MOVE INDEXED | :x: |
 | MULTIPLY | :x: |
-| NEWPAGE | :x: |
+| NEWPAGE | :white_check_mark: |
 | OBTAIN | :x: |
 | ON ERROR | :x: |
 | OPEN CONVERSATION | :x: |

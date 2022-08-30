@@ -114,6 +114,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					case IGNORE:
 						statementList.addStatement(ignore());
 						break;
+					case NEWPAGE:
+						statementList.addStatement(newPage());
+						break;
 					case FIND:
 						statementList.addStatement(find());
 						break;
@@ -175,6 +178,50 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode newPage() throws ParseError
+	{
+		var newPage = new NewPageNode();
+		consumeMandatory(newPage, SyntaxKind.NEWPAGE);
+		if (consumeOptionally(newPage, SyntaxKind.LPAREN))
+		{
+			consumeAnyMandatory(newPage, List.of(SyntaxKind.IDENTIFIER, SyntaxKind.NUMBER_LITERAL));
+			newPage.setReportSpecification(previousToken());
+			consumeMandatory(newPage, SyntaxKind.RPAREN);
+		}
+
+		if(consumeOptionally(newPage, SyntaxKind.EVEN))
+		{
+			consumeOptionally(newPage, SyntaxKind.IF);
+			consumeMandatory(newPage, SyntaxKind.TOP);
+			consumeOptionally(newPage, SyntaxKind.OF);
+			consumeOptionally(newPage, SyntaxKind.PAGE);
+		}
+		else if(consumeAnyOptionally(newPage, List.of(SyntaxKind.IF, SyntaxKind.WHEN, SyntaxKind.LESS)))
+		{
+			if(previousToken().kind() != SyntaxKind.LESS)
+			{
+				consumeMandatory(newPage, SyntaxKind.LESS);
+			}
+
+			consumeOptionally(newPage, SyntaxKind.THAN);
+			consumeOperandNode(newPage);
+			consumeOptionally(newPage, SyntaxKind.LINES);
+			consumeOptionally(newPage, SyntaxKind.LEFT);
+		}
+
+		if(consumeAnyOptionally(newPage, List.of(SyntaxKind.WITH, SyntaxKind.TITLE)))
+		{
+			if(previousToken().kind() != SyntaxKind.TITLE)
+			{
+				consumeMandatory(newPage, SyntaxKind.TITLE);
+			}
+			consumeOperandNode(newPage);
+		}
+
+
+		return newPage;
 	}
 
 	private StatementNode examine() throws ParseError

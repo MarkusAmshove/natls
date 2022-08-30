@@ -810,6 +810,36 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(examine.descendants().size()).isEqualTo(7);
 	}
 
+	@Test
+	void parseNewPage()
+	{
+		var newPage = assertParsesSingleStatement("NEWPAGE EVEN IF TOP OF PAGE WITH TITLE 'The Title'", INewPageNode.class);
+		assertThat(newPage.descendants()).hasSize(9);
+	}
+
+	@Test
+	void parseNewPageWithoutTitle()
+	{
+		var newPage = assertParsesSingleStatement("NEWPAGE WHEN LESS THAN 10 LINES LEFT", INewPageNode.class);
+		assertThat(newPage.descendants()).hasSize(7);
+	}
+
+	@Test
+	void parseNewPageWithNumericReportSpecification()
+	{
+		var newPage = assertParsesSingleStatement("NEWPAGE(5) WHEN LESS 10 TITLE 'The Title'", INewPageNode.class);
+		assertThat(newPage.reportSpecification()).map(SyntaxToken::intValue).hasValue(5);
+		assertThat(newPage.descendants()).hasSize(9);
+	}
+
+	@Test
+	void parseNewPageWithLogicalNameInReportSpecification()
+	{
+		var newPage = assertParsesSingleStatement("NEWPAGE(THEPRINT) IF LESS THAN #VAR LINES LEFT", INewPageNode.class);
+		assertThat(newPage.reportSpecification()).map(SyntaxToken::symbolName).hasValue("THEPRINT");
+		assertThat(newPage.descendants()).hasSize(10);
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);
