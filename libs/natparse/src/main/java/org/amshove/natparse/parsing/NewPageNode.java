@@ -5,7 +5,7 @@ import org.amshove.natparse.natural.INewPageNode;
 
 import java.util.Optional;
 
-class NewPageNode extends StatementNode implements INewPageNode
+class NewPageNode extends StatementNode implements INewPageNode, ICanSetReportSpecification
 {
 	private SyntaxToken reportSpecification;
 
@@ -15,7 +15,8 @@ class NewPageNode extends StatementNode implements INewPageNode
 		return Optional.ofNullable(reportSpecification);
 	}
 
-	void setReportSpecification(SyntaxToken reportSpecification)
+	@Override
+	public void setReportSpecification(SyntaxToken reportSpecification)
 	{
 		this.reportSpecification = reportSpecification;
 	}

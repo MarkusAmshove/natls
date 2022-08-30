@@ -70,11 +70,11 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					case AT:
 						if(peekKind(1, SyntaxKind.END) && (peekKind(3, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE)))
 						{
-							statementList.addStatement(atEndOfPage());
+							statementList.addStatement(parseAtPositionOf(SyntaxKind.END, SyntaxKind.PAGE, SyntaxKind.END_ENDPAGE, new EndOfPageNode()));
 						}
 						if(peekKind(1, SyntaxKind.TOP) && (peekKind(3, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE)))
 						{
-							statementList.addStatement(atTopOfPage());
+							statementList.addStatement(parseAtPositionOf(SyntaxKind.TOP, SyntaxKind.PAGE, SyntaxKind.END_TOPPAGE, new TopOfPageNode()));
 						}
 						break;
 					case CALLNAT:
@@ -108,7 +108,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					case END:
 						if(peekKind(1, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE))
 						{
-							statementList.addStatement(atEndOfPage());
+							statementList.addStatement(parseAtPositionOf(SyntaxKind.END, SyntaxKind.PAGE, SyntaxKind.END_ENDPAGE, new EndOfPageNode()));
 						}
 						else
 						{
@@ -146,7 +146,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(perform());
 						break;
 					case TOP:
-						statementList.addStatement(atTopOfPage());
+						statementList.addStatement(parseAtPositionOf(SyntaxKind.TOP, SyntaxKind.PAGE, SyntaxKind.END_TOPPAGE, new TopOfPageNode()));
 						break;
 					case RESET:
 						statementList.addStatement(resetStatement());
@@ -200,44 +200,36 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return statementList;
 	}
 
-	private StatementNode atEndOfPage() throws ParseError
+	/**
+	 * Parse any node in the form of:<br/>
+	 * [AT] {@code location} [OF] {@code statementType} [(reportSpecification)]<br/>
+	 * 	StatementBody<br/>
+	 * 	{@code statementEndTokenType}
+	 * @param location the "location", e.g. START, TOP, END
+	 * @param statementType the type, e.g. PAGE, DATA
+	 * @param statementEndToken the token which ends the body
+	 * @param node the resulting node
+	 */
+	private <T extends StatementWithBodyNode & ICanSetReportSpecification> StatementNode parseAtPositionOf(
+		SyntaxKind location,
+		SyntaxKind statementType,
+		SyntaxKind statementEndToken,
+		T node) throws ParseError
 	{
-		var endOfPage = new EndOfPageNode();
-		consumeOptionally(endOfPage, SyntaxKind.AT);
-		consumeMandatory(endOfPage, SyntaxKind.END);
-		consumeOptionally(endOfPage, SyntaxKind.OF);
-		consumeMandatory(endOfPage, SyntaxKind.PAGE);
+		consumeOptionally(node, SyntaxKind.AT);
+		consumeMandatory(node, location);
+		consumeOptionally(node, SyntaxKind.OF);
+		consumeMandatory(node, statementType);
 
-		if (consumeOptionally(endOfPage, SyntaxKind.LPAREN))
+		if (consumeOptionally(node, SyntaxKind.LPAREN))
 		{
-			consumeAnyMandatory(endOfPage, List.of(SyntaxKind.IDENTIFIER, SyntaxKind.NUMBER_LITERAL));
-			endOfPage.setReportSpecification(previousToken());
-			consumeMandatory(endOfPage, SyntaxKind.RPAREN);
+			consumeAnyMandatory(node, List.of(SyntaxKind.IDENTIFIER, SyntaxKind.NUMBER_LITERAL));
+			node.setReportSpecification(previousToken());
+			consumeMandatory(node, SyntaxKind.RPAREN);
 		}
 
-		endOfPage.setBody(statementList(SyntaxKind.END_ENDPAGE));
-
-		return endOfPage;
-	}
-
-	private StatementNode atTopOfPage() throws ParseError
-	{
-		var topOfPage = new TopOfPageNode();
-		consumeOptionally(topOfPage, SyntaxKind.AT);
-		consumeMandatory(topOfPage, SyntaxKind.TOP);
-		consumeOptionally(topOfPage, SyntaxKind.OF);
-		consumeMandatory(topOfPage, SyntaxKind.PAGE);
-
-		if (consumeOptionally(topOfPage, SyntaxKind.LPAREN))
-		{
-			consumeAnyMandatory(topOfPage, List.of(SyntaxKind.IDENTIFIER, SyntaxKind.NUMBER_LITERAL));
-			topOfPage.setReportSpecification(previousToken());
-			consumeMandatory(topOfPage, SyntaxKind.RPAREN);
-		}
-
-		topOfPage.setBody(statementList(SyntaxKind.END_TOPPAGE));
-
-		return topOfPage;
+		node.setBody(statementList(statementEndToken));
+		return node;
 	}
 
 	private StatementNode newPage() throws ParseError

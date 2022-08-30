@@ -5,11 +5,12 @@ import org.amshove.natparse.natural.IEndOfPageNode;
 
 import java.util.Optional;
 
-class EndOfPageNode extends StatementWithBodyNode implements IEndOfPageNode
+class EndOfPageNode extends StatementWithBodyNode implements IEndOfPageNode, ICanSetReportSpecification
 {
 	private SyntaxToken reportSpecification;
 
-	void setReportSpecification(SyntaxToken reportSpecification)
+	@Override
+	public void setReportSpecification(SyntaxToken reportSpecification)
 	{
 		this.reportSpecification = reportSpecification;
 	}

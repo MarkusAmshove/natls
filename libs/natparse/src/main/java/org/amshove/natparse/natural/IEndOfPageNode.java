@@ -1,10 +1,5 @@
 package org.amshove.natparse.natural;
 
-import org.amshove.natparse.lexing.SyntaxToken;
-
-import java.util.Optional;
-
-public interface IEndOfPageNode extends IStatementWithBodyNode
+public interface IEndOfPageNode extends IStatementWithBodyNode, ICanHaveReportSpecification
 {
-	Optional<SyntaxToken> reportSpecification();
 }

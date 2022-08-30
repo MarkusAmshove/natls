@@ -5,7 +5,7 @@ import org.amshove.natparse.natural.IWriteNode;
 
 import java.util.Optional;
 
-class WriteNode extends StatementNode implements IWriteNode
+class WriteNode extends StatementNode implements IWriteNode, ICanSetReportSpecification
 {
 	private SyntaxToken reportSpecification;
 
@@ -15,7 +15,8 @@ class WriteNode extends StatementNode implements IWriteNode
 		return Optional.ofNullable(reportSpecification);
 	}
 
-	void setReportSpecification(SyntaxToken token)
+	@Override
+	public void setReportSpecification(SyntaxToken token)
 	{
 		reportSpecification = token;
 	}
