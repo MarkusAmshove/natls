@@ -11,6 +11,7 @@ import static org.amshove.natparse.natural.DataFormat.*;
 
 public class BuiltInFunctionTable
 {
+	private BuiltInFunctionTable() {}
 	private static final Map<SyntaxKind, IBuiltinFunctionDefinition> TABLE;
 
 	public static IBuiltinFunctionDefinition getDefinition(SyntaxKind kind)
@@ -46,7 +47,7 @@ public class BuiltInFunctionTable
 				```
 				0100 INCLUDE FIRSTCC
 				  0200 INCLUDE SCNDCC
-					0300 PRINT *LINEX
+				    0300 PRINT *LINEX
 				```
 
 				In this case the variable returns `0100/0200/0300`.
@@ -71,6 +72,10 @@ public class BuiltInFunctionTable
 				If you want to get all line numbers, including the `INCLUDE`s, use `*LINEX` instead.
 				""", INTEGER, 4.0),
 			unmodifiableVariable(SyntaxKind.ERROR_LINE, "Returns the line of the statement that raised an error", NUMERIC, 4),
+			unmodifiableVariable(SyntaxKind.CURS_FIELD, """
+				Returns the identification of the field in which the cursor is positioned" +
+				Can only be used together withe the `POS` function.
+				""", INTEGER, 4),
 			modifiableVariable(SyntaxKind.CURS_LINE, """
 				Get or set the number of the line where the cursor is positioned.
 				To get the cursor column, use `*CURS-COL`.

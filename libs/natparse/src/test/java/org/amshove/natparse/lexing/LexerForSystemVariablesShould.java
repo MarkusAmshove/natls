@@ -222,4 +222,10 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 	{
 		assertTokens("*DAT4D", token(SyntaxKind.DAT4D, "*DAT4D"));
 	}
+
+	@Test
+	void lexCursField()
+	{
+		assertTokens("*CURS-FIELD", token(SyntaxKind.CURS_FIELD, "*CURS-FIELD"));
+	}
 }

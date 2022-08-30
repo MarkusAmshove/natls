@@ -421,6 +421,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.CURS_LINE);
 			return;
 		}
+		if (scanner.advanceIf("CURS-FIELD"))
+		{
+			createAndAdd(SyntaxKind.CURS_FIELD);
+			return;
+		}
 		if (scanner.advanceIf("ERROR-TA"))
 		{
 			createAndAdd(SyntaxKind.ERROR_TA);
