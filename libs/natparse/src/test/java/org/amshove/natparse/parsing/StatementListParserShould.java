@@ -876,10 +876,10 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	void parseMultipleHeaderOptionsForEndOfPage(String header)
 	{
 		assertParsesWithoutDiagnostics("""
-			%s
-			IGNORE
-			END-ENDPAGE
-		""".formatted(header));
+				%s
+				IGNORE
+				END-ENDPAGE
+			""".formatted(header));
 	}
 
 	@Test
@@ -921,7 +921,25 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 			%s
 			IGNORE
 			END-TOPPAGE
-		""".formatted(header));
+			""".formatted(header));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"AT START OF DATA (R1.)",
+		"START DATA",
+		"START OF DATA",
+		"AT START DATA (R5.)"
+	})
+	void parseAtStartOfData(String header)
+	{
+		var startOfData = assertParsesSingleStatement("""
+			%s
+			IGNORE
+			END-START
+			""".formatted(header), IStartOfDataNode.class);
+
+		assertThat(startOfData.body().statements()).hasSize(1);
 	}
 
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)

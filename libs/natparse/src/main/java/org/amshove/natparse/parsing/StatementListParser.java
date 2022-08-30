@@ -68,13 +68,20 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 				switch (tokens.peek().kind())
 				{
 					case AT:
-						if(peekKind(1, SyntaxKind.END) && (peekKind(3, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE)))
+						if (peekKind(1, SyntaxKind.END) && (peekKind(3, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE)))
 						{
-							statementList.addStatement(parseAtPositionOf(SyntaxKind.END, SyntaxKind.PAGE, SyntaxKind.END_ENDPAGE, new EndOfPageNode()));
+							statementList.addStatement(parseAtPositionOf(SyntaxKind.END, SyntaxKind.PAGE, SyntaxKind.END_ENDPAGE, false, new EndOfPageNode()));
+							break;
 						}
-						if(peekKind(1, SyntaxKind.TOP) && (peekKind(3, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE)))
+						if (peekKind(1, SyntaxKind.TOP) && (peekKind(3, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE)))
 						{
-							statementList.addStatement(parseAtPositionOf(SyntaxKind.TOP, SyntaxKind.PAGE, SyntaxKind.END_TOPPAGE, new TopOfPageNode()));
+							statementList.addStatement(parseAtPositionOf(SyntaxKind.TOP, SyntaxKind.PAGE, SyntaxKind.END_TOPPAGE, false, new TopOfPageNode()));
+							break;
+						}
+						if (peekKind(1, SyntaxKind.START) && (peekKind(3, SyntaxKind.DATA) || peekKind(2, SyntaxKind.DATA)))
+						{
+							statementList.addStatement(parseAtPositionOf(SyntaxKind.START, SyntaxKind.DATA, SyntaxKind.END_START, true, new StartOfDataNode()));
+							break;
 						}
 						break;
 					case CALLNAT:
@@ -89,6 +96,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						break;
 					case FORMAT:
 						statementList.addStatement(formatNode());
+						break;
+					case START:
+						statementList.addStatement(parseAtPositionOf(SyntaxKind.START, SyntaxKind.DATA, SyntaxKind.END_START, true, new StartOfDataNode()));
 						break;
 					case INCLUDE:
 						statementList.addStatement(include());
@@ -106,9 +116,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(write());
 						break;
 					case END:
-						if(peekKind(1, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE))
+						if (peekKind(1, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE))
 						{
-							statementList.addStatement(parseAtPositionOf(SyntaxKind.END, SyntaxKind.PAGE, SyntaxKind.END_ENDPAGE, new EndOfPageNode()));
+							statementList.addStatement(parseAtPositionOf(SyntaxKind.END, SyntaxKind.PAGE, SyntaxKind.END_ENDPAGE, false, new EndOfPageNode()));
 						}
 						else
 						{
@@ -146,7 +156,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(perform());
 						break;
 					case TOP:
-						statementList.addStatement(parseAtPositionOf(SyntaxKind.TOP, SyntaxKind.PAGE, SyntaxKind.END_TOPPAGE, new TopOfPageNode()));
+						statementList.addStatement(parseAtPositionOf(SyntaxKind.TOP, SyntaxKind.PAGE, SyntaxKind.END_TOPPAGE, false, new TopOfPageNode()));
 						break;
 					case RESET:
 						statementList.addStatement(resetStatement());
@@ -203,17 +213,19 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	/**
 	 * Parse any node in the form of:<br/>
 	 * [AT] {@code location} [OF] {@code statementType} [(reportSpecification)]<br/>
-	 * 	StatementBody<br/>
-	 * 	{@code statementEndTokenType}
-	 * @param location the "location", e.g. START, TOP, END
-	 * @param statementType the type, e.g. PAGE, DATA
+	 * StatementBody<br/>
+	 * {@code statementEndTokenType}
+	 *
+	 * @param location          the "location", e.g. START, TOP, END
+	 * @param statementType     the type, e.g. PAGE, DATA
 	 * @param statementEndToken the token which ends the body
-	 * @param node the resulting node
+	 * @param node              the resulting node
 	 */
 	private <T extends StatementWithBodyNode & ICanSetReportSpecification> StatementNode parseAtPositionOf(
 		SyntaxKind location,
 		SyntaxKind statementType,
 		SyntaxKind statementEndToken,
+		boolean canHaveLabelIdentifier,
 		T node) throws ParseError
 	{
 		consumeOptionally(node, SyntaxKind.AT);
@@ -223,7 +235,14 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		if (consumeOptionally(node, SyntaxKind.LPAREN))
 		{
-			consumeAnyMandatory(node, List.of(SyntaxKind.IDENTIFIER, SyntaxKind.NUMBER_LITERAL));
+			if(canHaveLabelIdentifier)
+			{
+				consumeMandatory(node, SyntaxKind.LABEL_IDENTIFIER);
+			}
+			else
+			{
+				consumeAnyMandatory(node, List.of(SyntaxKind.IDENTIFIER, SyntaxKind.NUMBER_LITERAL));
+			}
 			node.setReportSpecification(previousToken());
 			consumeMandatory(node, SyntaxKind.RPAREN);
 		}
@@ -243,35 +262,35 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			consumeMandatory(newPage, SyntaxKind.RPAREN);
 		}
 
-		if(consumeOptionally(newPage, SyntaxKind.EVEN))
+		if (consumeOptionally(newPage, SyntaxKind.EVEN))
 		{
 			consumeOptionally(newPage, SyntaxKind.IF);
 			consumeMandatory(newPage, SyntaxKind.TOP);
 			consumeOptionally(newPage, SyntaxKind.OF);
 			consumeOptionally(newPage, SyntaxKind.PAGE);
 		}
-		else if(consumeAnyOptionally(newPage, List.of(SyntaxKind.IF, SyntaxKind.WHEN, SyntaxKind.LESS)))
-		{
-			if(previousToken().kind() != SyntaxKind.LESS)
+		else
+			if (consumeAnyOptionally(newPage, List.of(SyntaxKind.IF, SyntaxKind.WHEN, SyntaxKind.LESS)))
 			{
-				consumeMandatory(newPage, SyntaxKind.LESS);
+				if (previousToken().kind() != SyntaxKind.LESS)
+				{
+					consumeMandatory(newPage, SyntaxKind.LESS);
+				}
+
+				consumeOptionally(newPage, SyntaxKind.THAN);
+				consumeOperandNode(newPage);
+				consumeOptionally(newPage, SyntaxKind.LINES);
+				consumeOptionally(newPage, SyntaxKind.LEFT);
 			}
 
-			consumeOptionally(newPage, SyntaxKind.THAN);
-			consumeOperandNode(newPage);
-			consumeOptionally(newPage, SyntaxKind.LINES);
-			consumeOptionally(newPage, SyntaxKind.LEFT);
-		}
-
-		if(consumeAnyOptionally(newPage, List.of(SyntaxKind.WITH, SyntaxKind.TITLE)))
+		if (consumeAnyOptionally(newPage, List.of(SyntaxKind.WITH, SyntaxKind.TITLE)))
 		{
-			if(previousToken().kind() != SyntaxKind.TITLE)
+			if (previousToken().kind() != SyntaxKind.TITLE)
 			{
 				consumeMandatory(newPage, SyntaxKind.TITLE);
 			}
 			consumeOperandNode(newPage);
 		}
-
 
 		return newPage;
 	}
@@ -293,7 +312,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var examined = consumeVariableReferenceNode(examine);
 		examine.setExamined(examined);
 
-		if(consumeOptionally(examine, SyntaxKind.AND) || peekKind(SyntaxKind.TRANSLATE))
+		if (consumeOptionally(examine, SyntaxKind.AND) || peekKind(SyntaxKind.TRANSLATE))
 		{
 			return examineTranslate(examine);
 		}
@@ -391,7 +410,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	private StatementNode examineTranslate(ExamineNode examine) throws ParseError
 	{
 		consumeMandatory(examine, SyntaxKind.TRANSLATE);
-		if(consumeOptionally(examine, SyntaxKind.INTO))
+		if (consumeOptionally(examine, SyntaxKind.INTO))
 		{
 			consumeAnyMandatory(examine, List.of(SyntaxKind.UPPER, SyntaxKind.LOWER));
 			consumeOptionally(examine, SyntaxKind.CASE);
