@@ -25,6 +25,7 @@ public class BuiltInFunctionTable
 			unmodifiableVariable(SyntaxKind.APPLIC_ID, "Returns the ID of the current library", ALPHANUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.INIT_ID, "Returns the ID of the device that Natural invoked", ALPHANUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.TIMX, "Returns the current time of the day as builtin time format", TIME, 0.0),
+			unmodifiableVariable(SyntaxKind.TIMESTMP, "Returns the machine-internal clock value", BINARY, 8.0),
 			unmodifiableVariable(SyntaxKind.TIMN, "Returns the current time of the day as numeric format", NUMERIC, 7.0),
 			unmodifiableVariable(SyntaxKind.DATD, "Returns the current date in the format `DD.MM.YY`", ALPHANUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.DAT4D, "Returns the current date in the format `DD.MM.YYYY`", ALPHANUMERIC, 10.0),

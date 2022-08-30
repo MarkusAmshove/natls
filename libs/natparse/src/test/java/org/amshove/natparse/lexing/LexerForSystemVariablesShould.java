@@ -228,4 +228,10 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 	{
 		assertTokens("*CURS-FIELD", token(SyntaxKind.CURS_FIELD, "*CURS-FIELD"));
 	}
+
+	@Test
+	void lexTimestmp()
+	{
+		assertTokens("*TIMESTMP", token(SyntaxKind.TIMESTMP, "*TIMESTMP"));
+	}
 }

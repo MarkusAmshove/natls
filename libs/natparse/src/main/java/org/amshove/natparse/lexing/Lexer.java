@@ -481,6 +481,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.TPSYS);
 			return;
 		}
+		if (scanner.advanceIf("TIMESTMP"))
+		{
+			createAndAdd(SyntaxKind.TIMESTMP);
+			return;
+		}
 		if (scanner.advanceIf("APPLIC-ID"))
 		{
 			createAndAdd(SyntaxKind.APPLIC_ID);
