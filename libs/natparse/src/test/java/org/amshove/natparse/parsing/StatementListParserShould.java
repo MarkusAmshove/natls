@@ -942,6 +942,24 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(startOfData.body().statements()).hasSize(1);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"AT END OF DATA (R1.)",
+		"END DATA",
+		"END OF DATA",
+		"AT END DATA (R5.)"
+	})
+	void parseAtEndOfData(String header)
+	{
+		var endOfData = assertParsesSingleStatement("""
+			%s
+			IGNORE
+			END-ENDDATA
+			""".formatted(header), IEndOfDataNode.class);
+
+		assertThat(endOfData.body().statements()).hasSize(1);
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);

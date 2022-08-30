@@ -16,7 +16,7 @@ partial - partially implemented to prevent false positives
 | ADD | :x: |
 | ASSIGN | :x: |
 | AT BREAK | :x: |
-| AT END OF DATA | :x: |
+| AT END OF DATA | :white_check_mark: |
 | AT END OF PAGE | :white_check_mark: |
 | AT START OF DATA | :white_check_mark: |
 | AT TOP OF PAGE | :white_check_mark: |

@@ -83,6 +83,11 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 							statementList.addStatement(parseAtPositionOf(SyntaxKind.START, SyntaxKind.DATA, SyntaxKind.END_START, true, new StartOfDataNode()));
 							break;
 						}
+						if (peekKind(1, SyntaxKind.END) && (peekKind(3, SyntaxKind.DATA) || peekKind(2, SyntaxKind.DATA)))
+						{
+							statementList.addStatement(parseAtPositionOf(SyntaxKind.END, SyntaxKind.DATA, SyntaxKind.END_ENDDATA, true, new EndOfDataNode()));
+							break;
+						}
 						break;
 					case CALLNAT:
 						statementList.addStatement(callnat());
@@ -119,11 +124,15 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						if (peekKind(1, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE))
 						{
 							statementList.addStatement(parseAtPositionOf(SyntaxKind.END, SyntaxKind.PAGE, SyntaxKind.END_ENDPAGE, false, new EndOfPageNode()));
+							break;
 						}
-						else
+						if (peekKind(1, SyntaxKind.DATA) || peekKind(2, SyntaxKind.DATA))
 						{
-							statementList.addStatement(end());
+							statementList.addStatement(parseAtPositionOf(SyntaxKind.END, SyntaxKind.DATA, SyntaxKind.END_ENDDATA, true, new EndOfDataNode()));
+							break;
 						}
+
+						statementList.addStatement(end());
 						break;
 					case DEFINE:
 						switch (peek(1).kind())
