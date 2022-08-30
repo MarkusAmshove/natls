@@ -17,7 +17,7 @@ Legend:
 | ASSIGN | :x: |
 | AT BREAK | :x: |
 | AT END OF DATA | :x: |
-| AT END OF PAGE | :x: |
+| AT END OF PAGE | :white_check_mark: |
 | AT START OF DATA | :x: |
 | AT TOP OF PAGE | :x: |
 | BACKOUT TRANSACTION | :x: |

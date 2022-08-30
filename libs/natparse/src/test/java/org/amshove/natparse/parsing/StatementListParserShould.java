@@ -840,6 +840,48 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(newPage.descendants()).hasSize(10);
 	}
 
+	@Test
+	void parseAtEndOfPage()
+	{
+		var endOfPage = assertParsesSingleStatement("""
+			AT END OF PAGE (PRNT)
+			IGNORE
+			END-ENDPAGE
+			""", IEndOfPageNode.class);
+
+		assertThat(endOfPage.reportSpecification()).map(SyntaxToken::symbolName).hasValue("PRNT");
+		assertThat(endOfPage.body().statements()).hasSize(1);
+	}
+
+	@Test
+	void parseEndPage()
+	{
+		var endOfPage = assertParsesSingleStatement("""
+			END PAGE (5)
+			IGNORE
+			END-ENDPAGE
+			""", IEndOfPageNode.class);
+
+		assertThat(endOfPage.reportSpecification()).map(SyntaxToken::intValue).hasValue(5);
+		assertThat(endOfPage.body().statements()).hasSize(1);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"AT END OF PAGE",
+		"END PAGE",
+		"END OF PAGE",
+		"AT END PAGE"
+	})
+	void parseMultipleHeaderOptionsForEndOfPage(String header)
+	{
+		assertParsesWithoutDiagnostics("""
+			%s
+			IGNORE
+			END-ENDPAGE
+		""");
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);

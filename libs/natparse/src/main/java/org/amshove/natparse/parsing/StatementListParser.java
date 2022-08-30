@@ -67,6 +67,12 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 				switch (tokens.peek().kind())
 				{
+					case AT:
+						if(peekKind(1, SyntaxKind.END) && (peekKind(3, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE)))
+						{
+							statementList.addStatement(atEndOfPage());
+						}
+						break;
 					case CALLNAT:
 						statementList.addStatement(callnat());
 						break;
@@ -96,7 +102,14 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(write());
 						break;
 					case END:
-						statementList.addStatement(end());
+						if(peekKind(1, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE))
+						{
+							statementList.addStatement(atEndOfPage());
+						}
+						else
+						{
+							statementList.addStatement(end());
+						}
 						break;
 					case DEFINE:
 						switch (peek(1).kind())
@@ -178,6 +191,26 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode atEndOfPage() throws ParseError
+	{
+		var endOfPage = new EndOfPageNode();
+		consumeOptionally(endOfPage, SyntaxKind.AT);
+		consumeMandatory(endOfPage, SyntaxKind.END);
+		consumeOptionally(endOfPage, SyntaxKind.OF);
+		consumeMandatory(endOfPage, SyntaxKind.PAGE);
+
+		if (consumeOptionally(endOfPage, SyntaxKind.LPAREN))
+		{
+			consumeAnyMandatory(endOfPage, List.of(SyntaxKind.IDENTIFIER, SyntaxKind.NUMBER_LITERAL));
+			endOfPage.setReportSpecification(previousToken());
+			consumeMandatory(endOfPage, SyntaxKind.RPAREN);
+		}
+
+		endOfPage.setBody(statementList(SyntaxKind.END_ENDPAGE));
+
+		return endOfPage;
 	}
 
 	private StatementNode newPage() throws ParseError
