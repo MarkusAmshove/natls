@@ -2,10 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
-import org.amshove.natparse.natural.conditionals.ComparisonOperator;
-import org.amshove.natparse.natural.conditionals.ILogicalConditionCriteriaNode;
-import org.amshove.natparse.natural.conditionals.IRelationalExpressionCriteriaNode;
-import org.amshove.natparse.natural.conditionals.IUnaryLogicalCriteriaNode;
+import org.amshove.natparse.natural.conditionals.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
@@ -91,7 +88,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		);
 		return operatorMappings.entrySet().stream()
 			.map(e -> dynamicTest("%s should be operator %s".formatted(e.getKey(), e.getValue()), () -> {
-				var criteria = assertParsesCriteria("1 %s 2".formatted(e.getKey()), IRelationalExpressionCriteriaNode.class);
+				var criteria = assertParsesCriteria("1 %s 2".formatted(e.getKey()), IRelationalCriteriaNode.class);
 				var left = assertNodeType(criteria.left(), ILiteralNode.class);
 				var right = assertNodeType(criteria.right(), ILiteralNode.class);
 				assertThat(left.token().intValue()).isEqualTo(1);
@@ -103,12 +100,27 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	@Test
 	void parseRelationalExpressionsWithVariables()
 	{
-		var criteria = assertParsesCriteria("#NUM1 > #NUM2", IRelationalExpressionCriteriaNode.class);
+		var criteria = assertParsesCriteria("#NUM1 > #NUM2", IRelationalCriteriaNode.class);
 		var left = assertNodeType(criteria.left(), IVariableReferenceNode.class);
 		var right = assertNodeType(criteria.right(), IVariableReferenceNode.class);
 		assertThat(left.token().symbolName()).isEqualTo("#NUM1");
 		assertThat(right.token().symbolName()).isEqualTo("#NUM2");
 		assertThat(criteria.operator()).isEqualTo(ComparisonOperator.GREATER_THAN);
+	}
+
+	@Test
+	void parseRelationalExpressionsWithMultipleEquals()
+	{
+		var criteria = assertParsesCriteria("#NUM1 = #NUM2 OR = 5 OR EQUAL 10 OR EQUAL TO 20", IExtendedRelationalCriteriaNode.class);
+		assertThat(criteria.descendants().size()).isEqualTo(13);
+
+		var left = assertNodeType(criteria.left(), IVariableReferenceNode.class);
+		assertThat(left.token().symbolName()).isEqualTo("#NUM1");
+		var rights = criteria.rights();
+		assertThat(assertNodeType(rights.first(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#NUM2");
+		assertThat(assertNodeType(rights.get(1), ILiteralNode.class).token().intValue()).isEqualTo(5);
+		assertThat(assertNodeType(rights.get(2), ILiteralNode.class).token().intValue()).isEqualTo(10);
+		assertThat(assertNodeType(rights.get(3), ILiteralNode.class).token().intValue()).isEqualTo(20);
 	}
 
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)

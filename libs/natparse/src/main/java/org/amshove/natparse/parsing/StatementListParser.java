@@ -1040,7 +1040,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var lookAhead = peek(1);
 		if(lookAhead != null && CONDITIONAL_OPERATOR_START.contains(lookAhead.kind()))
 		{
-			return relationalExpression();
+			return relationalCriteria();
 		}
 
 		return switch (peek().kind())
@@ -1054,9 +1054,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		};
 	}
 
-	private RelationalExpressionCriteriaNode relationalExpression() throws ParseError
+	private ILogicalConditionCriteriaNode relationalCriteria() throws ParseError
 	{
-		var expression = new RelationalExpressionCriteriaNode();
+		var expression = new RelationalCriteriaNode();
 		var lhs = consumeOperandNode(expression);
 		var operator = parseRelationalOperator(expression); // we did the check of supported values beforehand as lookahead, don't check again
 		var rhs = consumeOperandNode(expression);
@@ -1064,10 +1064,37 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		expression.setOperator(operator);
 		expression.setRight(rhs);
 
+		if(peekKind(SyntaxKind.OR) && (peekAny(1, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL))))
+		{
+			if(expression.operator() != ComparisonOperator.EQUAL)
+			{
+				// TODO: Diagnostic
+			}
+			return extendedRelationalCriteria(expression);
+		}
+
 		return expression;
 	}
 
-	private ComparisonOperator parseRelationalOperator(RelationalExpressionCriteriaNode node) throws ParseError
+	private ExtendedRelationalCriteriaNode extendedRelationalCriteria(RelationalCriteriaNode expression) throws ParseError
+	{
+		var extendedCriteria = new ExtendedRelationalCriteriaNode(expression);
+		while(peekKind(SyntaxKind.OR))
+		{
+			consumeMandatory(extendedCriteria, SyntaxKind.OR);
+			consumeAnyMandatory(extendedCriteria, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL));
+			if(previousToken().kind() == SyntaxKind.EQUAL)
+			{
+				consumeOptionally(extendedCriteria, SyntaxKind.TO);
+			}
+
+			extendedCriteria.addRight(consumeOperandNode(extendedCriteria));
+		}
+
+		return extendedCriteria;
+	}
+
+	private ComparisonOperator parseRelationalOperator(RelationalCriteriaNode node) throws ParseError
 	{
 		var kind = peek().kind();
 		var maybeOperator = ComparisonOperator.ofSyntaxKind(kind);

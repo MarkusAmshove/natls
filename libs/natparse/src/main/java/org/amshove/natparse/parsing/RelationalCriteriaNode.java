@@ -2,9 +2,9 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.conditionals.ComparisonOperator;
-import org.amshove.natparse.natural.conditionals.IRelationalExpressionCriteriaNode;
+import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
 
-public class RelationalExpressionCriteriaNode extends BaseSyntaxNode implements IRelationalExpressionCriteriaNode
+public class RelationalCriteriaNode extends BaseSyntaxNode implements IRelationalCriteriaNode
 {
 	private IOperandNode left;
 	private ComparisonOperator operator;
