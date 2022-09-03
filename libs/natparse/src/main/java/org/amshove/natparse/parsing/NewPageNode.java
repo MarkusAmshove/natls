@@ -1,11 +1,11 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.SyntaxToken;
-import org.amshove.natparse.natural.IWriteNode;
+import org.amshove.natparse.natural.INewPageNode;
 
 import java.util.Optional;
 
-class WriteNode extends StatementNode implements IWriteNode, ICanSetReportSpecification
+class NewPageNode extends StatementNode implements INewPageNode, ICanSetReportSpecification
 {
 	private SyntaxToken reportSpecification;
 
@@ -16,8 +16,8 @@ class WriteNode extends StatementNode implements IWriteNode, ICanSetReportSpecif
 	}
 
 	@Override
-	public void setReportSpecification(SyntaxToken token)
+	public void setReportSpecification(SyntaxToken reportSpecification)
 	{
-		reportSpecification = token;
+		this.reportSpecification = reportSpecification;
 	}
 }

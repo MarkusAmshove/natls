@@ -386,6 +386,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.DATD);
 			return;
 		}
+		if (scanner.advanceIf("DAT4D"))
+		{
+			createAndAdd(SyntaxKind.DAT4D);
+			return;
+		}
 		if (scanner.advanceIf("LANGUAGE"))
 		{
 			createAndAdd(SyntaxKind.LANGUAGE);
@@ -414,6 +419,11 @@ public class Lexer
 		if (scanner.advanceIf("CURS-LINE"))
 		{
 			createAndAdd(SyntaxKind.CURS_LINE);
+			return;
+		}
+		if (scanner.advanceIf("CURS-FIELD"))
+		{
+			createAndAdd(SyntaxKind.CURS_FIELD);
 			return;
 		}
 		if (scanner.advanceIf("ERROR-TA"))
@@ -469,6 +479,11 @@ public class Lexer
 		if (scanner.advanceIf("TPSYS"))
 		{
 			createAndAdd(SyntaxKind.TPSYS);
+			return;
+		}
+		if (scanner.advanceIf("TIMESTMP"))
+		{
+			createAndAdd(SyntaxKind.TIMESTMP);
 			return;
 		}
 		if (scanner.advanceIf("APPLIC-ID"))

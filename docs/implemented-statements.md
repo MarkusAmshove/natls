@@ -2,26 +2,26 @@
 
 This document tracks the implementation status of Natural statements.
 
-Implemented: 9/121
-
 Legend:
 
 :x: - not implemented
 
 :white_check_mark: - implemented
 
+partial - partially implemented to prevent false positives
+
 | Statement | Status |
 | --- | -- |
 | ACCEPT/REJECT | :x: |
 | ADD | :x: |
 | ASSIGN | :x: |
-| AT BREAK | :x: |
-| AT END OF DATA | :x: |
-| AT END OF PAGE | :x: |
-| AT START OF DATA | :x: |
-| AT TOP OF PAGE | :x: |
+| AT BREAK | :white_check_mark: |
+| AT END OF DATA | :white_check_mark: |
+| AT END OF PAGE | :white_check_mark: |
+| AT START OF DATA | :white_check_mark: |
+| AT TOP OF PAGE | :white_check_mark: |
 | BACKOUT TRANSACTION | :x: |
-| BEFORE BREAK PROCESSING | :x: |
+| BEFORE BREAK PROCESSING | :white_check_mark: |
 | CALL | :x: |
 | CALL FILE | :x: |
 | CALL LOOP | :x: |
@@ -51,10 +51,10 @@ Legend:
 | DIVIDE | :x: |
 | DO/DOEND | :x: |
 | DOWNLOAD PC FILE | :x: |
-| EJECT | :x: |
+| EJECT | :white_check_mark: |
 | END | :white_check_mark: |
 | END TRANSACTION | :x: |
-| ESCAPE | :x: |
+| ESCAPE | :white_check_mark: |
 | EXAMINE | :white_check_mark: |
 | EXPAND | :x: |
 | FETCH | :white_check_mark: |
@@ -78,7 +78,7 @@ Legend:
 | MOVE | :x: |
 | MOVE INDEXED | :x: |
 | MULTIPLY | :x: |
-| NEWPAGE | :x: |
+| NEWPAGE | :white_check_mark: |
 | OBTAIN | :x: |
 | ON ERROR | :x: |
 | OPEN CONVERSATION | :x: |
@@ -119,7 +119,7 @@ Legend:
 | SET WINDOW | :x: |
 | SKIP | :x: |
 | SORT | :x: |
-| STACK | :x: |
+| STACK | :white_check_mark: |
 | STOP | :x: |
 | STORE | :x: |
 | SUBTRACT | :x: |
