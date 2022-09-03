@@ -193,6 +193,33 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(assertNodeType(secondSubstring.length(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#MAX");
 	}
 
+	@Test
+	void parseConditionCriteriaWithParens()
+	{
+		var criteria = assertParsesCriteria("( 5 > 2)", IGroupedConditionCriteria.class);
+		assertThat(criteria.descendants()).hasSize(3);
+		var nestedRelationalCriteria = assertNodeType(criteria.criteria(), IRelationalCriteriaNode.class);
+		assertThat(assertNodeType(nestedRelationalCriteria.left(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+		assertThat(nestedRelationalCriteria.operator()).isEqualTo(ComparisonOperator.GREATER_THAN);
+		assertThat(assertNodeType(nestedRelationalCriteria.right(), ILiteralNode.class).token().intValue()).isEqualTo(2);
+		// IF NOT #TRUE
+		// IF (5 < 2) AND 5 = 2
+		// IF 5 = 5 AND TRUE
+		// IF 5 = 5 OR TRUE
+		// ....
+	}
+
+	@Test
+	void parseConditionCriteriaWithMultipleParens()
+	{
+		var criteria = assertParsesCriteria("((( 5 > 2 )))", IGroupedConditionCriteria.class);
+		var secondNest = assertNodeType(criteria.criteria(), IGroupedConditionCriteria.class);
+		var thirdNest = assertNodeType(secondNest.criteria(), IGroupedConditionCriteria.class);
+
+		var relational = assertNodeType(thirdNest.criteria(), IRelationalCriteriaNode.class);
+		assertThat(relational.operator()).isEqualTo(ComparisonOperator.GREATER_THAN);
+	}
+
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
 	{
 		var list = assertParsesWithoutDiagnostics("IF %s\nIGNORE\nEND-IF".formatted(source));

@@ -1066,6 +1066,10 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	private static final Set<SyntaxKind> CONDITIONAL_OPERATOR_START = Set.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL, SyntaxKind.LESSER_GREATER, SyntaxKind.NE, SyntaxKind.NOT, SyntaxKind.LESSER_SIGN, SyntaxKind.LT, SyntaxKind.LESS, SyntaxKind.LESSER_EQUALS_SIGN, SyntaxKind.LE, SyntaxKind.GREATER_SIGN, SyntaxKind.GT, SyntaxKind.GREATER, SyntaxKind.GREATER_EQUALS_SIGN, SyntaxKind.GE);
 	private ILogicalConditionCriteriaNode conditionCriteria() throws ParseError
 	{
+		if(peekKind(SyntaxKind.LPAREN))
+		{
+			return groupedConditionCriteria();
+		}
 		var lookAhead = peek(1);
 		if(lookAhead != null && CONDITIONAL_OPERATOR_START.contains(lookAhead.kind()))
 		{
@@ -1086,6 +1090,15 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 				throw new ParseError(peek());
 			}
 		};
+	}
+
+	private ILogicalConditionCriteriaNode groupedConditionCriteria() throws ParseError
+	{
+		var groupedCriteria = new GroupedConditionCriteriaNode();
+		consumeMandatory(groupedCriteria, SyntaxKind.LPAREN);
+		groupedCriteria.setCriteria(conditionCriteria());
+		consumeMandatory(groupedCriteria, SyntaxKind.RPAREN);
+		return groupedCriteria;
 	}
 
 	private ILogicalConditionCriteriaNode relationalCriteria() throws ParseError
