@@ -1150,12 +1150,14 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			return false; // readability
 		}
 
+		var lookahead = isAtEnd(1) ? null : peek(1).kind();
+
 		return
-			(peekKind(SyntaxKind.IDENTIFIER) && !isAtEnd(1) && peek(1).kind() != SyntaxKind.COLON_EQUALS_SIGN)
+			(peekKind(SyntaxKind.IDENTIFIER) && lookahead != SyntaxKind.COLON_EQUALS_SIGN)
 				|| peek().kind().isSystemFunction()
 				|| peek().kind().isSystemVariable()
 				|| peek().kind().isLiteralOrConst()
-				|| peek().kind().canBeIdentifier(); // this should hopefully catch the begin of statements
+				|| (peek().kind().canBeIdentifier() && lookahead != SyntaxKind.COLON_EQUALS_SIGN); // this should hopefully catch the begin of statements
 	}
 
 	private boolean isNotCallnatOrFetchModule()
