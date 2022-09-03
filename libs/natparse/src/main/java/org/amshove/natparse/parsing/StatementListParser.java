@@ -7,6 +7,7 @@ import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.IReferencableNode;
 import org.amshove.natparse.natural.IStatementListNode;
 import org.amshove.natparse.natural.ISymbolReferenceNode;
+import org.amshove.natparse.natural.conditionals.ChainedCriteriaOperator;
 import org.amshove.natparse.natural.conditionals.ComparisonOperator;
 import org.amshove.natparse.natural.conditionals.ILogicalConditionCriteriaNode;
 
@@ -1059,8 +1060,41 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	private ConditionNode conditionNode() throws ParseError
 	{
 		var conditionNode = new ConditionNode();
-		conditionNode.setCriteria(conditionCriteria());
+		conditionNode.setCriteria(chainedCriteria());
 		return conditionNode;
+	}
+
+	private ILogicalConditionCriteriaNode chainedCriteria() throws ParseError
+	{
+		var left = conditionCriteria();
+		if(peekKind(SyntaxKind.AND) || peekKind(SyntaxKind.OR))
+		{
+			var chainedCriteria = new ChainedCriteriaNode();
+			chainedCriteria.setLeft(left);
+			consumeAnyMandatory(chainedCriteria, List.of(SyntaxKind.AND, SyntaxKind.OR));
+			chainedCriteria.setOperator(ChainedCriteriaOperator.fromSyntax(previousToken().kind()));
+			chainedCriteria.setRight(conditionCriteria());
+
+			while(peekKind(SyntaxKind.AND) || peekKind(SyntaxKind.OR))
+			{
+				chainedCriteria = nestedChainedCriteria(chainedCriteria);
+			}
+			return chainedCriteria;
+		}
+		else
+		{
+			return left;
+		}
+	}
+
+	private ChainedCriteriaNode nestedChainedCriteria(ChainedCriteriaNode previousChain) throws ParseError
+	{
+		var chain = new ChainedCriteriaNode();
+		chain.setLeft(previousChain);
+		consumeAnyMandatory(chain, List.of(SyntaxKind.AND, SyntaxKind.OR));
+		chain.setOperator(ChainedCriteriaOperator.fromSyntax(previousToken().kind()));
+		chain.setRight(chainedCriteria());
+		return chain;
 	}
 
 	private static final Set<SyntaxKind> CONDITIONAL_OPERATOR_START = Set.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL, SyntaxKind.LESSER_GREATER, SyntaxKind.NE, SyntaxKind.NOT, SyntaxKind.LESSER_SIGN, SyntaxKind.LT, SyntaxKind.LESS, SyntaxKind.LESSER_EQUALS_SIGN, SyntaxKind.LE, SyntaxKind.GREATER_SIGN, SyntaxKind.GT, SyntaxKind.GREATER, SyntaxKind.GREATER_EQUALS_SIGN, SyntaxKind.GE);
@@ -1096,7 +1130,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		var groupedCriteria = new GroupedConditionCriteriaNode();
 		consumeMandatory(groupedCriteria, SyntaxKind.LPAREN);
-		groupedCriteria.setCriteria(conditionCriteria());
+		groupedCriteria.setCriteria(chainedCriteria());
 		consumeMandatory(groupedCriteria, SyntaxKind.RPAREN);
 		return groupedCriteria;
 	}

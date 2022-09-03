@@ -220,6 +220,59 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(relational.operator()).isEqualTo(ComparisonOperator.GREATER_THAN);
 	}
 
+	@TestFactory
+	Stream<DynamicTest> parseChainedCriteria()
+	{
+		return Map.of(
+				"AND", ChainedCriteriaOperator.AND,
+				"OR", ChainedCriteriaOperator.OR
+			).entrySet().stream()
+			.map(e -> dynamicTest(e.getKey(), () -> {
+				var chained = assertParsesCriteria("#VAR = #VAR2 %s #VAR3 <> #VAR4".formatted(e.getKey()), IChainedCriteriaNode.class);
+				assertThat(chained.operator()).isEqualTo(e.getValue());
+				var left = assertNodeType(chained.left(), IRelationalCriteriaNode.class);
+				assertThat(left.operator()).isEqualTo(ComparisonOperator.EQUAL);
+				var right = assertNodeType(chained.right(), IRelationalCriteriaNode.class);
+				assertThat(right.operator()).isEqualTo(ComparisonOperator.NOT_EQUAL);
+			}));
+	}
+
+	@Test
+	void parseMultipleChainedCriteria()
+	{
+		/*"""
+	            OR
+			   /   \
+			 AND   1 = 1
+		   /    \
+		 5 = 5  2 = 2
+		 """*/
+		var firstChained = assertParsesCriteria("5 = 5 AND 2 = 2 OR (1 = 1)", IChainedCriteriaNode.class);
+		assertThat(firstChained.operator()).isEqualTo(ChainedCriteriaOperator.OR);
+
+		var firstLeft = assertNodeType(firstChained.left(), IChainedCriteriaNode.class);
+		assertThat(firstLeft.operator()).isEqualTo(ChainedCriteriaOperator.AND);
+		var nestedLeft = assertNodeType(firstLeft.left(), IRelationalCriteriaNode.class);
+		assertThat(assertNodeType(nestedLeft.left(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+		assertThat(assertNodeType(nestedLeft.right(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+		var nestedRight = assertNodeType(firstLeft.right(), IRelationalCriteriaNode.class);
+		assertThat(assertNodeType(nestedRight.left(), ILiteralNode.class).token().intValue()).isEqualTo(2);
+		assertThat(assertNodeType(nestedRight.right(), ILiteralNode.class).token().intValue()).isEqualTo(2);
+
+		var firstRightGrouped = assertNodeType(firstChained.right(), IGroupedConditionCriteria.class).criteria();
+		var firstRight = assertNodeType(firstRightGrouped, IRelationalCriteriaNode.class);
+		assertThat(assertNodeType(firstRight.left(), ILiteralNode.class).token().intValue()).isEqualTo(1);
+		assertThat(assertNodeType(firstRight.right(), ILiteralNode.class).token().intValue()).isEqualTo(1);
+	}
+
+	@Test
+	void parseChainedCriteriaWithinGroupedCriteria()
+	{
+		var grouped = assertParsesCriteria("(5 > 2 AND 3 < 10)", IGroupedConditionCriteria.class);
+		var chained = assertNodeType(grouped.criteria(), IChainedCriteriaNode.class);
+		assertThat(chained.operator()).isEqualTo(ChainedCriteriaOperator.AND);
+	}
+
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
 	{
 		var list = assertParsesWithoutDiagnostics("IF %s\nIGNORE\nEND-IF".formatted(source));
