@@ -340,7 +340,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 
 		assertThat(ifStatement.condition()).isNotNull();
 		assertThat(ifStatement.body().statements()).hasSize(1);
-		assertThat(ifStatement.descendants()).hasSize(3);
+		assertThat(ifStatement.descendants()).hasSize(4);
 	}
 
 	@Test

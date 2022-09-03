@@ -4,7 +4,7 @@ import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.conditionals.ComparisonOperator;
 import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
 
-public class RelationalCriteriaNode extends BaseSyntaxNode implements IRelationalCriteriaNode
+class RelationalCriteriaNode extends BaseSyntaxNode implements IRelationalCriteriaNode
 {
 	private IOperandNode left;
 	private ComparisonOperator operator;
