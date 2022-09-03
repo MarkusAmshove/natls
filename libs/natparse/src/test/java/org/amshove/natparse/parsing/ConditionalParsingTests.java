@@ -291,6 +291,15 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(assertNodeType(relational.right(), ILiteralNode.class).token().intValue()).isEqualTo(5);
 	}
 
+	@Test
+	void parseIsTypeCriteria()
+	{
+		var criteria = assertParsesCriteria("#VAR IS (A10)", IIsConditionCriteriaNode.class);
+		assertThat(criteria.descendants()).hasSize(5);
+		assertThat(assertNodeType(criteria.left(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+		assertThat(criteria.checkedType().symbolName()).isEqualTo("A10");
+	}
+
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
 	{
 		var list = assertParsesWithoutDiagnostics("IF %s\nIGNORE\nEND-IF".formatted(source));
