@@ -1058,6 +1058,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		var expression = new RelationalCriteriaNode();
 		var lhs = consumeOperandNode(expression);
+		var originalOperator = peek();
 		var operator = parseRelationalOperator(expression); // we did the check of supported values beforehand as lookahead, don't check again
 		var rhs = consumeOperandNode(expression);
 		expression.setLeft(lhs);
@@ -1068,7 +1069,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			if(expression.operator() != ComparisonOperator.EQUAL)
 			{
-				// TODO: Diagnostic
+				report(ParserErrors.extendedRelationalExpressionCanOnlyBeUsedWithEquals(originalOperator));
 			}
 			return extendedRelationalCriteria(expression);
 		}

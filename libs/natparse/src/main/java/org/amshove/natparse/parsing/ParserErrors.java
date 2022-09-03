@@ -365,4 +365,13 @@ class ParserErrors
 			ParserError.INVALID_LENGTH_FOR_LITERAL
 		);
 	}
+
+    public static IDiagnostic extendedRelationalExpressionCanOnlyBeUsedWithEquals(SyntaxToken token)
+	{
+		return ParserDiagnostic.create(
+			"Extended relational expression can only be compared with =, EQ, EQUAL or EQUAL TO",
+			token,
+			ParserError.EXTENDED_RELATIONAL_EXPRESSION_NEEDS_EQUAL
+		);
+    }
 }

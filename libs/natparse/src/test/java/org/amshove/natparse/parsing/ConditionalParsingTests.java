@@ -7,6 +7,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Map;
 import java.util.stream.Stream;
@@ -21,7 +23,6 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	{
 		super(StatementListParser::new);
 	}
-
 
 	@Test
 	void parseTrueLiteral()
@@ -121,6 +122,19 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(assertNodeType(rights.get(1), ILiteralNode.class).token().intValue()).isEqualTo(5);
 		assertThat(assertNodeType(rights.get(2), ILiteralNode.class).token().intValue()).isEqualTo(10);
 		assertThat(assertNodeType(rights.get(3), ILiteralNode.class).token().intValue()).isEqualTo(20);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"GT", "LT", "<", ">", ">=", "<=", "NE", "<>"
+	})
+	void reportADiagnosticIfExtendedRelationalExpressionIsNotUsedWithEqualComparison(String operator)
+	{
+		assertDiagnostic("""
+			IF #NUM1 %s #NUM2 OR = 5 OR EQUAL 10 OR EQUAL TO 20
+			IGNORE
+			END-IF
+			""".formatted(operator), ParserError.EXTENDED_RELATIONAL_EXPRESSION_NEEDS_EQUAL);
 	}
 
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
