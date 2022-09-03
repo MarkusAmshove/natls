@@ -1104,6 +1104,12 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			return groupedConditionCriteria();
 		}
+
+		if(peekKind(SyntaxKind.NOT))
+		{
+			return negatedConditionCriteria();
+		}
+
 		var lookAhead = peek(1);
 		if(lookAhead != null && CONDITIONAL_OPERATOR_START.contains(lookAhead.kind()))
 		{
@@ -1124,6 +1130,14 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 				throw new ParseError(peek());
 			}
 		};
+	}
+
+	private ILogicalConditionCriteriaNode negatedConditionCriteria() throws ParseError
+	{
+		var negated = new NegatedConditionalCriteria();
+		consumeMandatory(negated, SyntaxKind.NOT);
+		negated.setCriteria(chainedCriteria());
+		return negated;
 	}
 
 	private ILogicalConditionCriteriaNode groupedConditionCriteria() throws ParseError

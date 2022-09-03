@@ -273,6 +273,24 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(chained.operator()).isEqualTo(ChainedCriteriaOperator.AND);
 	}
 
+	@Test
+	void parseNegatedConditionalCriteria()
+	{
+		var negated = assertParsesCriteria("NOT TRUE", INegatedConditionalCriteria.class);
+		var unary = assertNodeType(negated.criteria(), IUnaryLogicalCriteriaNode.class);
+		assertThat(assertNodeType(unary.node(), ILiteralNode.class).token().kind()).isEqualTo(SyntaxKind.TRUE);
+	}
+
+	@Test
+	void parseNegatedConditionalCriteriaWithCriteria()
+	{
+		var negated = assertParsesCriteria("NOT 5 EQUAL TO 5", INegatedConditionalCriteria.class);
+		var relational = assertNodeType(negated.criteria(), IRelationalCriteriaNode.class);
+		assertThat(assertNodeType(relational.left(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+		assertThat(relational.operator()).isEqualTo(ComparisonOperator.EQUAL);
+		assertThat(assertNodeType(relational.right(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+	}
+
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
 	{
 		var list = assertParsesWithoutDiagnostics("IF %s\nIGNORE\nEND-IF".formatted(source));
