@@ -338,8 +338,9 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 			END-IF
 			""", IIfStatementNode.class);
 
-		assertThat(ifStatement.body().statements()).hasSize(4); // TODO(logical-expressions)
-		assertThat(ifStatement.descendants()).hasSize(6);
+		assertThat(ifStatement.condition()).isNotNull();
+		assertThat(ifStatement.body().statements()).hasSize(1);
+		assertThat(ifStatement.descendants()).hasSize(3);
 	}
 
 	@Test
@@ -764,8 +765,19 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	void parseASimpleExamineReplace()
 	{
 		var examine = assertParsesSingleStatement("EXAMINE #VAR 'a' REPLACE 'b'", IExamineNode.class);
-		assertThat(examine.examinedVariable()).isNotNull();
-		assertThat(examine.examinedVariable().referencingToken().symbolName()).isEqualTo("#VAR");
+		assertThat(examine.examined()).isNotNull();
+		assertThat(assertNodeType(examine.examined(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+	}
+
+	@Test
+	void parseAnExamineWithSubstring()
+	{
+		var examine = assertParsesSingleStatement("EXAMINE SUBSTR(#VAR, 1, 5) FOR 'a'", IExamineNode.class);
+		assertThat(examine.examined()).isNotNull();
+		var substringOperand = assertNodeType(examine.examined(), ISubstringOperandNode.class);
+		assertThat(assertNodeType(substringOperand.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+		assertThat(assertNodeType(substringOperand.startPosition(), ILiteralNode.class).token().intValue()).isEqualTo(1);
+		assertThat(assertNodeType(substringOperand.length(), ILiteralNode.class).token().intValue()).isEqualTo(5);
 	}
 
 	@Test

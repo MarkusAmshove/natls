@@ -3,6 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
+import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.IReferencableNode;
 import org.amshove.natparse.natural.IStatementListNode;
 import org.amshove.natparse.natural.ISymbolReferenceNode;
@@ -480,8 +481,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			}
 		}
 
-		// TODO: Handle SUBSTRING
-		var examined = consumeVariableReferenceNode(examine);
+		var examined = consumeSubstringOrOperand(examine);
 		examine.setExamined(examined);
 
 		if (consumeOptionally(examine, SyntaxKind.AND) || peekKind(SyntaxKind.TRANSLATE))
@@ -577,6 +577,35 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return examine;
+	}
+
+	private IOperandNode consumeSubstringOrOperand(BaseSyntaxNode node) throws ParseError
+	{
+		if(peekKind(SyntaxKind.SUBSTR) || peekKind(SyntaxKind.SUBSTRING))
+		{
+			return consumeSubstring(node);
+		}
+		else
+		{
+			return consumeOperandNode(node);
+		}
+	}
+
+	private IOperandNode consumeSubstring(BaseSyntaxNode node) throws ParseError
+	{
+		var substring = new SubstringOperandNode();
+		node.addNode(substring);
+		consumeAnyMandatory(node, List.of(SyntaxKind.SUBSTR, SyntaxKind.SUBSTRING));
+
+		consumeMandatory(node, SyntaxKind.LPAREN);
+		substring.setOperand(consumeOperandNode(substring));
+		consumeMandatory(node, SyntaxKind.COMMA);
+		substring.setStartingPosition(consumeOperandNode(substring));
+		consumeMandatory(node, SyntaxKind.COMMA);
+		substring.setLength(consumeOperandNode(substring));
+		consumeMandatory(node, SyntaxKind.RPAREN);
+
+		return substring;
 	}
 
 	private StatementNode examineTranslate(ExamineNode examine) throws ParseError
@@ -1043,6 +1072,11 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			return relationalCriteria();
 		}
 
+		if(peekKind(SyntaxKind.SUBSTR) || peekKind(SyntaxKind.SUBSTRING))
+		{
+			return relationalCriteria();
+		}
+
 		return switch (peek().kind())
 		{
 			case TRUE, FALSE -> constantUnary();
@@ -1057,10 +1091,10 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	private ILogicalConditionCriteriaNode relationalCriteria() throws ParseError
 	{
 		var expression = new RelationalCriteriaNode();
-		var lhs = consumeOperandNode(expression);
+		var lhs = consumeSubstringOrOperand(expression);
 		var originalOperator = peek();
 		var operator = parseRelationalOperator(expression); // we did the check of supported values beforehand as lookahead, don't check again
-		var rhs = consumeOperandNode(expression);
+		var rhs = consumeSubstringOrOperand(expression);
 		expression.setLeft(lhs);
 		expression.setOperator(operator);
 		expression.setRight(rhs);

@@ -15,7 +15,7 @@ class ParserErrors
 {
 	private static String formatTokenKind(SyntaxToken token)
 	{
-		if(token == null || token.kind() == null)
+		if (token == null || token.kind() == null)
 		{
 			return SyntaxKind.NONE.toString();
 		}
@@ -92,7 +92,7 @@ class ParserErrors
 
 	public static ParserDiagnostic initValueMismatch(TypedVariableNode variable, SyntaxKind... expectedKinds)
 	{
-		if(expectedKinds.length == 1)
+		if (expectedKinds.length == 1)
 		{
 			return initValueMismatch(variable, expectedKinds[0]);
 		}
@@ -366,12 +366,12 @@ class ParserErrors
 		);
 	}
 
-    public static IDiagnostic extendedRelationalExpressionCanOnlyBeUsedWithEquals(SyntaxToken token)
+	public static IDiagnostic extendedRelationalExpressionCanOnlyBeUsedWithEquals(SyntaxToken token)
 	{
 		return ParserDiagnostic.create(
 			"Extended relational expression can only be compared with =, EQ, EQUAL or EQUAL TO",
 			token,
 			ParserError.EXTENDED_RELATIONAL_EXPRESSION_NEEDS_EQUAL
 		);
-    }
+	}
 }

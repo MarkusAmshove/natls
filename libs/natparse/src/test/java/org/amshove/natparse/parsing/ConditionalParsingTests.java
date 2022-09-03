@@ -179,6 +179,20 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(assertNodeType(criteria.excludedUpperBound().get(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
 	}
 
+	@Test
+	void parseARelationalExpressionWithSubstring()
+	{
+		var criteria = assertParsesCriteria("SUBSTR(#VAR, 1, #MAX) = SUBSTRING(#VAR, #MIN, #MAX)", IRelationalCriteriaNode.class);
+		var firstSubstring = assertNodeType(criteria.left(), ISubstringOperandNode.class);
+		assertThat(assertNodeType(firstSubstring.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+		assertThat(assertNodeType(firstSubstring.startPosition(), ILiteralNode.class).token().intValue()).isEqualTo(1);
+		assertThat(assertNodeType(firstSubstring.length(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#MAX");
+		var secondSubstring = assertNodeType(criteria.right(), ISubstringOperandNode.class);
+		assertThat(assertNodeType(secondSubstring.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+		assertThat(assertNodeType(secondSubstring.startPosition(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#MIN");
+		assertThat(assertNodeType(secondSubstring.length(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#MAX");
+	}
+
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
 	{
 		var list = assertParsesWithoutDiagnostics("IF %s\nIGNORE\nEND-IF".formatted(source));
