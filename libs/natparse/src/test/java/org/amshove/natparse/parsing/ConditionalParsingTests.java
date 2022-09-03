@@ -91,13 +91,24 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		);
 		return operatorMappings.entrySet().stream()
 			.map(e -> dynamicTest("%s should be operator %s".formatted(e.getKey(), e.getValue()), () -> {
-				var criteria = assertParsesCriteria("1 %s 1".formatted(e.getKey()), IRelationalExpressionCriteriaNode.class);
+				var criteria = assertParsesCriteria("1 %s 2".formatted(e.getKey()), IRelationalExpressionCriteriaNode.class);
 				var left = assertNodeType(criteria.left(), ILiteralNode.class);
-				var right = assertNodeType(criteria.left(), ILiteralNode.class);
+				var right = assertNodeType(criteria.right(), ILiteralNode.class);
 				assertThat(left.token().intValue()).isEqualTo(1);
-				assertThat(right.token().intValue()).isEqualTo(1);
+				assertThat(right.token().intValue()).isEqualTo(2);
 				assertThat(criteria.operator()).isEqualTo(e.getValue());
 			}));
+	}
+
+	@Test
+	void parseRelationalExpressionsWithVariables()
+	{
+		var criteria = assertParsesCriteria("#NUM1 > #NUM2", IRelationalExpressionCriteriaNode.class);
+		var left = assertNodeType(criteria.left(), IVariableReferenceNode.class);
+		var right = assertNodeType(criteria.right(), IVariableReferenceNode.class);
+		assertThat(left.token().symbolName()).isEqualTo("#NUM1");
+		assertThat(right.token().symbolName()).isEqualTo("#NUM2");
+		assertThat(criteria.operator()).isEqualTo(ComparisonOperator.GREATER_THAN);
 	}
 
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
