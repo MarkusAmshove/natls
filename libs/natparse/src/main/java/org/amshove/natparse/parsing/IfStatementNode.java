@@ -15,7 +15,7 @@ class IfStatementNode extends StatementWithBodyNode implements IIfStatementNode
 
 	void setCondition(ConditionNode condition)
 	{
-		condition.setParent(this);
+		addNode(condition);
 		this.condition = condition;
 	}
 }

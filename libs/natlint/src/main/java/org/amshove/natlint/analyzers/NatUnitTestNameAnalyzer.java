@@ -6,8 +6,8 @@ import org.amshove.natlint.api.IAnalyzeContext;
 import org.amshove.natlint.api.ILinterContext;
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.ReadOnlyList;
-import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -55,27 +55,37 @@ public class NatUnitTestNameAnalyzer extends AbstractAnalyzer
 
 		var ifStatement = (IIfStatementNode) node;
 
-		var possibleTestReference = ifStatement.descendants().get(1);
-		if (!(possibleTestReference instanceof ISymbolReferenceNode symbolReferenceNode && symbolReferenceNode.referencingToken().symbolName().equals("NUTESTP.TEST")))
+		var condition = ifStatement.condition();
+		if(!(condition.criteria() instanceof IRelationalCriteriaNode relationalNode))
 		{
 			return;
 		}
 
-		var possibleTestName = ifStatement.descendants().get(3);
-		if (!(possibleTestName instanceof ITokenNode nameToken) || nameToken.token().kind() != SyntaxKind.STRING_LITERAL)
+		if(!(relationalNode.left() instanceof ISymbolReferenceNode testedVariable))
 		{
 			return;
 		}
 
-		var testName = nameToken.token().stringValue();
+		if(!testedVariable.referencingToken().symbolName().equals("NUTESTP.TEST"))
+		{
+			return;
+		}
+
+		if(!(relationalNode.right() instanceof ILiteralNode nameNode))
+		{
+			return;
+		}
+
+		var nameToken = nameNode.token();
+		var testName = nameToken.stringValue();
 		if (definedTestCases.containsKey(context.getModule()) && definedTestCases.get(context.getModule()).containsKey(testName))
 		{
 			var line = definedTestCases.get(context.getModule()).get(testName);
-			context.report(DUPLICATED_TEST_NAME.createFormattedDiagnostic(nameToken.token(), line));
+			context.report(DUPLICATED_TEST_NAME.createFormattedDiagnostic(nameToken, line));
 		}
 		else
 		{
-			markTest(context.getModule(), testName, nameToken.token().line());
+			markTest(context.getModule(), testName, nameToken.line());
 		}
 	}
 
