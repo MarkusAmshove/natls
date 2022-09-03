@@ -6,6 +6,8 @@ import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.IReferencableNode;
 import org.amshove.natparse.natural.IStatementListNode;
 import org.amshove.natparse.natural.ISymbolReferenceNode;
+import org.amshove.natparse.natural.conditionals.ComparisonOperator;
+import org.amshove.natparse.natural.conditionals.ILogicalConditionCriteriaNode;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -1028,19 +1030,81 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	private ConditionNode conditionNode() throws ParseError
 	{
 		var conditionNode = new ConditionNode();
-		switch (peek().kind())
-		{
-			case TRUE, FALSE:
-				conditionNode.setCriteria(constantUnary());
-				break;
-			case IDENTIFIER:
-				conditionNode.setCriteria(unaryVariableOrFunctionCall());
-				break;
-			default:
-				// TODO: condition expected
-				break;
-		}
+		conditionNode.setCriteria(conditionCriteria());
 		return conditionNode;
+	}
+
+	private static final Set<SyntaxKind> CONDITIONAL_OPERATOR_START = Set.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL, SyntaxKind.LESSER_GREATER, SyntaxKind.NE, SyntaxKind.NOT, SyntaxKind.LESSER_SIGN, SyntaxKind.LT, SyntaxKind.LESS, SyntaxKind.LESSER_EQUALS_SIGN, SyntaxKind.LE, SyntaxKind.GREATER_SIGN, SyntaxKind.GT, SyntaxKind.GREATER, SyntaxKind.GREATER_EQUALS_SIGN, SyntaxKind.GE);
+	private ILogicalConditionCriteriaNode conditionCriteria() throws ParseError
+	{
+		var lookAhead = peek(1);
+		if(lookAhead != null && CONDITIONAL_OPERATOR_START.contains(lookAhead.kind()))
+		{
+			return relationalExpression();
+		}
+
+		return switch (peek().kind())
+		{
+			case TRUE, FALSE -> constantUnary();
+			case IDENTIFIER -> unaryVariableOrFunctionCall();
+			default -> {
+				report(ParserErrors.unexpectedToken(List.of(SyntaxKind.TRUE, SyntaxKind.FALSE, SyntaxKind.IDENTIFIER), peek()));
+				throw new ParseError(peek());
+			}
+		};
+	}
+
+	private RelationalExpressionCriteriaNode relationalExpression() throws ParseError
+	{
+		var expression = new RelationalExpressionCriteriaNode();
+		var lhs = consumeOperandNode(expression);
+		var operator = parseRelationalOperator(expression); // we did the check of supported values beforehand as lookahead, don't check again
+		var rhs = consumeOperandNode(expression);
+		expression.setLeft(lhs);
+		expression.setOperator(operator);
+		expression.setRight(rhs);
+
+		return expression;
+	}
+
+	private ComparisonOperator parseRelationalOperator(RelationalExpressionCriteriaNode node) throws ParseError
+	{
+		var kind = peek().kind();
+		var maybeOperator = ComparisonOperator.ofSyntaxKind(kind);
+		if(maybeOperator != null)
+		{
+			consume(node);
+			return maybeOperator;
+		}
+
+		return switch(kind)
+		{
+			case EQUAL -> {
+				consume(node);
+				consumeOptionally(node, SyntaxKind.TO);
+				yield ComparisonOperator.EQUAL;
+			}
+			case NOT -> {
+				consume(node);
+				consumeAnyMandatory(node, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL));
+				if(previousToken().kind() == SyntaxKind.EQUAL)
+				{
+					consumeOptionally(node, SyntaxKind.TO);
+				}
+				yield ComparisonOperator.NOT_EQUAL;
+			}
+			case LESS -> {
+				consume(node);
+				consumeAnyMandatory(node, List.of(SyntaxKind.THAN, SyntaxKind.EQUAL));
+				yield previousToken().kind() == SyntaxKind.THAN ? ComparisonOperator.LESS_THAN : ComparisonOperator.LESS_OR_EQUAL;
+			}
+			case GREATER -> {
+				consume(node);
+				consumeAnyMandatory(node, List.of(SyntaxKind.THAN, SyntaxKind.EQUAL));
+				yield previousToken().kind() == SyntaxKind.THAN ? ComparisonOperator.GREATER_THAN : ComparisonOperator.GREATER_OR_EQUAL;
+			}
+			default -> throw new RuntimeException("unreachable: All SyntaxKinds should have been checked beforehand");
+		};
 	}
 
 	private IfNoRecordNode ifNoRecord() throws ParseError

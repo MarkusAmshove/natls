@@ -2,12 +2,20 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
-import org.amshove.natparse.natural.conditionals.IConditionNode;
+import org.amshove.natparse.natural.conditionals.ComparisonOperator;
+import org.amshove.natparse.natural.conditionals.ILogicalConditionCriteriaNode;
+import org.amshove.natparse.natural.conditionals.IRelationalExpressionCriteriaNode;
 import org.amshove.natparse.natural.conditionals.IUnaryLogicalCriteriaNode;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
+
+import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 @DisplayName("ConditionParser should")
 class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
@@ -21,8 +29,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	@Test
 	void parseTrueLiteral()
 	{
-		var condition = assertParsesCondition("TRUE");
-		var criteria = assertNodeType(condition.criteria(), IUnaryLogicalCriteriaNode.class);
+		var criteria = assertParsesCriteria("TRUE", IUnaryLogicalCriteriaNode.class);
 		var literal = assertNodeType(criteria.node(), ILiteralNode.class);
 		assertThat(literal.token().kind()).isEqualTo(SyntaxKind.TRUE);
 	}
@@ -30,8 +37,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	@Test
 	void parseFalseLiteral()
 	{
-		var condition = assertParsesCondition("FALSE");
-		var criteria = assertNodeType(condition.criteria(), IUnaryLogicalCriteriaNode.class);
+		var criteria = assertParsesCriteria("FALSE", IUnaryLogicalCriteriaNode.class);
 		var literal = assertNodeType(criteria.node(), ILiteralNode.class);
 		assertThat(literal.token().kind()).isEqualTo(SyntaxKind.FALSE);
 	}
@@ -39,8 +45,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	@Test
 	void parseVariableReferencesAsUnaryCondition()
 	{
-		var condition = assertParsesCondition("#CONDITION");
-		var criteria = assertNodeType(condition.criteria(), IUnaryLogicalCriteriaNode.class);
+		var criteria = assertParsesCriteria("#CONDITION", IUnaryLogicalCriteriaNode.class);
 		var reference = assertNodeType(criteria.node(), IVariableReferenceNode.class);
 		assertThat(reference.referencingToken().symbolName()).isEqualTo("#CONDITION");
 	}
@@ -51,18 +56,55 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		var calledFunction = new NaturalModule(null);
 		moduleProvider.addModule("ISSTH", calledFunction);
 
-		var condition = assertParsesCondition("ISSTH(<'1', '2'>)");
-		var criteria = assertNodeType(condition.criteria(), IUnaryLogicalCriteriaNode.class);
+		var criteria = assertParsesCriteria("ISSTH(<'1', '2'>)", IUnaryLogicalCriteriaNode.class);
 		var call = assertNodeType(criteria.node(), IFunctionCallNode.class);
 		assertThat(call.referencingToken().symbolName()).isEqualTo("ISSTH");
 		// TODO: Check parameter
 	}
 
-	protected IConditionNode assertParsesCondition(String source)
+	@TestFactory
+	Stream<DynamicTest> parseSimpleRelationalExpressionForAllOperatorsWithCorrectMapping()
+	{
+		var operatorMappings = Map.ofEntries(
+			Map.entry("=", ComparisonOperator.EQUAL),
+			Map.entry("EQ", ComparisonOperator.EQUAL),
+			Map.entry("EQUAL", ComparisonOperator.EQUAL),
+			Map.entry("EQUAL TO", ComparisonOperator.EQUAL),
+			Map.entry("<>", ComparisonOperator.NOT_EQUAL),
+			Map.entry("NE", ComparisonOperator.NOT_EQUAL),
+			Map.entry("NOT =", ComparisonOperator.NOT_EQUAL),
+			Map.entry("NOT EQ ", ComparisonOperator.NOT_EQUAL),
+			Map.entry("NOT EQUAL", ComparisonOperator.NOT_EQUAL),
+			Map.entry("NOT EQUAL TO", ComparisonOperator.NOT_EQUAL),
+			Map.entry("<", ComparisonOperator.LESS_THAN),
+			Map.entry("LT", ComparisonOperator.LESS_THAN),
+			Map.entry("LESS THAN", ComparisonOperator.LESS_THAN),
+			Map.entry("<=", ComparisonOperator.LESS_OR_EQUAL),
+			Map.entry("LE", ComparisonOperator.LESS_OR_EQUAL),
+			Map.entry("LESS EQUAL", ComparisonOperator.LESS_OR_EQUAL),
+			Map.entry(">", ComparisonOperator.GREATER_THAN),
+			Map.entry("GT", ComparisonOperator.GREATER_THAN),
+			Map.entry("GREATER THAN", ComparisonOperator.GREATER_THAN),
+			Map.entry(">=", ComparisonOperator.GREATER_OR_EQUAL),
+			Map.entry("GE", ComparisonOperator.GREATER_OR_EQUAL),
+			Map.entry("GREATER EQUAL", ComparisonOperator.GREATER_OR_EQUAL)
+		);
+		return operatorMappings.entrySet().stream()
+			.map(e -> dynamicTest("%s should be operator %s".formatted(e.getKey(), e.getValue()), () -> {
+				var criteria = assertParsesCriteria("1 %s 1".formatted(e.getKey()), IRelationalExpressionCriteriaNode.class);
+				var left = assertNodeType(criteria.left(), ILiteralNode.class);
+				var right = assertNodeType(criteria.left(), ILiteralNode.class);
+				assertThat(left.token().intValue()).isEqualTo(1);
+				assertThat(right.token().intValue()).isEqualTo(1);
+				assertThat(criteria.operator()).isEqualTo(e.getValue());
+			}));
+	}
+
+	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
 	{
 		var list = assertParsesWithoutDiagnostics("IF %s\nIGNORE\nEND-IF".formatted(source));
 		var ifNode = assertNodeType(list.statements().first(), IIfStatementNode.class);
-		return ifNode.condition();
+		return assertNodeType(ifNode.condition().criteria(), criteriaType);
 	}
 
 	/*
