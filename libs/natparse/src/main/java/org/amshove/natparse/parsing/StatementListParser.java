@@ -1074,7 +1074,33 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			return extendedRelationalCriteria(expression);
 		}
 
+		if(peekKind(SyntaxKind.THRU))
+		{
+			if(expression.operator() != ComparisonOperator.EQUAL)
+			{
+				report(ParserErrors.extendedRelationalExpressionCanOnlyBeUsedWithEquals(originalOperator));
+			}
+			return rangedExtendedRelationalCriteria(expression);
+		}
+
 		return expression;
+	}
+
+	private ILogicalConditionCriteriaNode rangedExtendedRelationalCriteria(RelationalCriteriaNode expression) throws ParseError
+	{
+		var rangedCriteria = new RangedExtendedRelationalCriteriaNode(expression);
+		consumeMandatory(rangedCriteria, SyntaxKind.THRU);
+		rangedCriteria.setUpperBound(consumeOperandNode(rangedCriteria));
+		if(consumeOptionally(rangedCriteria, SyntaxKind.BUT))
+		{
+			consumeMandatory(rangedCriteria, SyntaxKind.NOT);
+			rangedCriteria.setExcludedLowerBound(consumeOperandNode(rangedCriteria));
+			if(consumeOptionally(rangedCriteria, SyntaxKind.THRU))
+			{
+				rangedCriteria.setExcludedUpperBound(consumeOperandNode(rangedCriteria));
+			}
+		}
+		return rangedCriteria;
 	}
 
 	private ExtendedRelationalCriteriaNode extendedRelationalCriteria(RelationalCriteriaNode expression) throws ParseError

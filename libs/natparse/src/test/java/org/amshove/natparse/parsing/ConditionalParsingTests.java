@@ -137,6 +137,48 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 			""".formatted(operator), ParserError.EXTENDED_RELATIONAL_EXPRESSION_NEEDS_EQUAL);
 	}
 
+	@Test
+	void parseASimpleThruExtendedRelationalExpression()
+	{
+		var criteria = assertParsesCriteria("#VAR = 1 THRU 10", IRangedExtendedRelationalCriteriaNode.class);
+		assertThat(assertNodeType(criteria.left(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+		assertThat(criteria.operator()).isEqualTo(ComparisonOperator.EQUAL);
+		assertThat(assertNodeType(criteria.lowerBound(), ILiteralNode.class).token().intValue()).isEqualTo(1);
+		assertThat(assertNodeType(criteria.upperBound(), ILiteralNode.class).token().intValue()).isEqualTo(10);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"GT", "LT", "<", ">", ">=", "<=", "NE", "<>"
+	})
+	void reportADiagnosticIfRangedExtendedRelationalExpressionIsNotUsedWithEqualComparison(String operator)
+	{
+		assertDiagnostic("""
+			IF #NUM1 %s #NUM2 THRU 10
+			IGNORE
+			END-IF
+			""".formatted(operator), ParserError.EXTENDED_RELATIONAL_EXPRESSION_NEEDS_EQUAL);
+	}
+
+	@Test
+	void parseARangedExtendedRelationalCriteriaWithASingleExcluding()
+	{
+		var criteria = assertParsesCriteria("#VAR = 1 THRU 10 BUT NOT 5", IRangedExtendedRelationalCriteriaNode.class);
+		assertThat(criteria.excludedLowerBound()).isNotEmpty();
+		assertThat(criteria.excludedUpperBound()).isEmpty();
+		assertThat(assertNodeType(criteria.excludedLowerBound().get(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+	}
+
+	@Test
+	void parseARangedExtendedRelationalCriteriaWithAnExclusionRange()
+	{
+		var criteria = assertParsesCriteria("#VAR = 1 THRU 10 BUT NOT 5 THRU #VAR2", IRangedExtendedRelationalCriteriaNode.class);
+		assertThat(criteria.excludedLowerBound()).isNotEmpty();
+		assertThat(criteria.excludedUpperBound()).isNotEmpty();
+		assertThat(assertNodeType(criteria.excludedLowerBound().get(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+		assertThat(assertNodeType(criteria.excludedUpperBound().get(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+	}
+
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
 	{
 		var list = assertParsesWithoutDiagnostics("IF %s\nIGNORE\nEND-IF".formatted(source));
