@@ -1016,11 +1016,31 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		var opening = consumeMandatory(ifStatement, SyntaxKind.IF);
 
+		ifStatement.setCondition(conditionNode());
+
 		ifStatement.setBody(statementList(SyntaxKind.END_IF));
 
 		consumeMandatoryClosing(ifStatement, SyntaxKind.END_IF, opening);
 
 		return ifStatement;
+	}
+
+	private ConditionNode conditionNode() throws ParseError
+	{
+		var conditionNode = new ConditionNode();
+		switch (peek().kind())
+		{
+			case TRUE, FALSE:
+				conditionNode.setCriteria(constantUnary());
+				break;
+			case IDENTIFIER:
+				conditionNode.setCriteria(unaryVariableOrFunctionCall());
+				break;
+			default:
+				// TODO: condition expected
+				break;
+		}
+		return conditionNode;
 	}
 
 	private IfNoRecordNode ifNoRecord() throws ParseError
@@ -1241,5 +1261,35 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 				case UPLOAD -> peekKind(1, SyntaxKind.PC) && peekKind(2, SyntaxKind.FILE);
 				default -> false;
 			};
+	}
+
+	private UnaryLogicalCriteriaNode unaryVariableOrFunctionCall() throws ParseError
+	{
+		var unary = new UnaryLogicalCriteriaNode();
+		if(peekKind(1, SyntaxKind.LPAREN) && peekKind(2, SyntaxKind.LESSER_SIGN))
+		{
+			var functionName = consumeIdentifierTokenOnly();
+			unary.setNode(functionCall(functionName));
+		}
+		else
+		{
+			unary.setNode(consumeVariableReferenceNode(unary));
+		}
+		return unary;
+	}
+
+	private UnaryLogicalCriteriaNode constantUnary() throws ParseError
+	{
+		var unary = new UnaryLogicalCriteriaNode();
+		if(peekKind(SyntaxKind.TRUE))
+		{
+			unary.setNode(consumeLiteralNode(unary, SyntaxKind.TRUE));
+		}
+		else
+		{
+			unary.setNode(consumeLiteralNode(unary, SyntaxKind.FALSE));
+		}
+
+		return unary;
 	}
 }

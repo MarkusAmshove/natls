@@ -493,7 +493,6 @@ abstract class AbstractParser<T>
 		this.relocatedDiagnosticPosition = relocatedDiagnosticPosition;
 	}
 
-
 	protected boolean peekAnyMandatoryOrAdvance(List<SyntaxKind> acceptedKinds)
 	{
 		if(peekAny(acceptedKinds))
@@ -505,4 +504,5 @@ abstract class AbstractParser<T>
 		tokens.advance();
 		return false;
 	}
+
 }
