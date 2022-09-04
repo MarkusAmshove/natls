@@ -580,7 +580,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private IOperandNode consumeSubstringOrOperand(BaseSyntaxNode node) throws ParseError
 	{
-		if(peekKind(SyntaxKind.SUBSTR) || peekKind(SyntaxKind.SUBSTRING))
+		if (peekKind(SyntaxKind.SUBSTR) || peekKind(SyntaxKind.SUBSTRING))
 		{
 			return consumeSubstring(node);
 		}
@@ -599,7 +599,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(node, SyntaxKind.LPAREN);
 		substring.setOperand(consumeOperandNode(substring));
 		consumeMandatory(node, SyntaxKind.COMMA);
-		if(peekKind(SyntaxKind.NUMBER_LITERAL) && peek().source().contains(","))
+		if (peekKind(SyntaxKind.NUMBER_LITERAL) && peek().source().contains(","))
 		{
 			// HACK: this should be handled somewhere nicely
 			var wrongToken = peek();
@@ -1039,7 +1039,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	private ILogicalConditionCriteriaNode chainedCriteria() throws ParseError
 	{
 		var left = conditionCriteria();
-		if(peekKind(SyntaxKind.AND) || peekKind(SyntaxKind.OR))
+		if (peekKind(SyntaxKind.AND) || peekKind(SyntaxKind.OR))
 		{
 			var chainedCriteria = new ChainedCriteriaNode();
 			chainedCriteria.setLeft(left);
@@ -1047,7 +1047,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			chainedCriteria.setOperator(ChainedCriteriaOperator.fromSyntax(previousToken().kind()));
 			chainedCriteria.setRight(conditionCriteria());
 
-			while(peekKind(SyntaxKind.AND) || peekKind(SyntaxKind.OR))
+			while (peekKind(SyntaxKind.AND) || peekKind(SyntaxKind.OR))
 			{
 				chainedCriteria = nestedChainedCriteria(chainedCriteria);
 			}
@@ -1069,15 +1069,17 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return chain;
 	}
 
-	private static final Set<SyntaxKind> CONDITIONAL_OPERATOR_START = Set.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL, SyntaxKind.LESSER_GREATER, SyntaxKind.NE, SyntaxKind.NOT, SyntaxKind.LESSER_SIGN, SyntaxKind.LT, SyntaxKind.LESS, SyntaxKind.LESSER_EQUALS_SIGN, SyntaxKind.LE, SyntaxKind.GREATER_SIGN, SyntaxKind.GT, SyntaxKind.GREATER, SyntaxKind.GREATER_EQUALS_SIGN, SyntaxKind.GE);
+	private static final Set<SyntaxKind> CONDITIONAL_OPERATOR_START =
+		Set.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL, SyntaxKind.LESSER_GREATER, SyntaxKind.NE, SyntaxKind.NOT, SyntaxKind.LESSER_SIGN, SyntaxKind.LT, SyntaxKind.LESS, SyntaxKind.LESSER_EQUALS_SIGN, SyntaxKind.LE, SyntaxKind.GREATER_SIGN, SyntaxKind.GT, SyntaxKind.GREATER, SyntaxKind.GREATER_EQUALS_SIGN, SyntaxKind.GE);
+
 	private ILogicalConditionCriteriaNode conditionCriteria() throws ParseError
 	{
-		if(peekKind(SyntaxKind.LPAREN))
+		if (peekKind(SyntaxKind.LPAREN))
 		{
 			return groupedConditionCriteria();
 		}
 
-		if(peekKind(SyntaxKind.NOT))
+		if (peekKind(SyntaxKind.NOT))
 		{
 			return negatedConditionCriteria();
 		}
@@ -1085,24 +1087,24 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var tmpNode = new BaseSyntaxNode();
 		var lhs = consumeSubstringOrOperand(tmpNode);
 
-		if(peekKind(SyntaxKind.IS))
+		if (peekKind(SyntaxKind.IS))
 		{
 			return isConditionCriteria(lhs);
 		}
 
-		if(CONDITIONAL_OPERATOR_START.contains(peek().kind()))
+		if (CONDITIONAL_OPERATOR_START.contains(peek().kind()))
 		{
 			return relationalCriteria(lhs);
 		}
 
-		if(lhs instanceof IFunctionCallNode || lhs instanceof IVariableReferenceNode)
+		if (lhs instanceof IFunctionCallNode || lhs instanceof IVariableReferenceNode)
 		{
 			var unary = new UnaryLogicalCriteriaNode();
 			unary.setNode(lhs);
 			return unary;
 		}
 
-		if(lhs instanceof ILiteralNode literalNode && (literalNode.token().kind() == SyntaxKind.TRUE || literalNode.token().kind() == SyntaxKind.FALSE))
+		if (lhs instanceof ILiteralNode literalNode && (literalNode.token().kind() == SyntaxKind.TRUE || literalNode.token().kind() == SyntaxKind.FALSE))
 		{
 			var unary = new UnaryLogicalCriteriaNode();
 			unary.setNode(lhs);
@@ -1120,7 +1122,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		isCriteria.setLeft(lhs);
 		consumeMandatory(isCriteria, SyntaxKind.IS);
 		consumeMandatory(isCriteria, SyntaxKind.LPAREN);
-		if(!peekKind(SyntaxKind.IDENTIFIER))
+		if (!peekKind(SyntaxKind.IDENTIFIER))
 		{
 			report(ParserErrors.unexpectedToken(peek(), "Expected a data type notation"));
 			throw new ParseError(peek());
@@ -1128,7 +1130,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		var type = peek();
 		discard();
-		if(peekKind(SyntaxKind.COMMA) || peekKind(SyntaxKind.DOT)) // TODO (lexermode): This should be done in the lexer when lexing data types (in this case after IS)
+		if (peekKind(SyntaxKind.COMMA) || peekKind(SyntaxKind.DOT)) // TODO (lexermode): This should be done in the lexer when lexing data types (in this case after IS)
 		{
 			type = type.combine(peek(), type.kind());
 			discard();
@@ -1172,18 +1174,18 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var rhs = consumeRelationalCriteriaRightHandSide(expression);
 		expression.setRight(rhs);
 
-		if(peekKind(SyntaxKind.OR) && (peekAny(1, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL))))
+		if (peekKind(SyntaxKind.OR) && (peekAny(1, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL))))
 		{
-			if(expression.operator() != ComparisonOperator.EQUAL)
+			if (expression.operator() != ComparisonOperator.EQUAL)
 			{
 				report(ParserErrors.extendedRelationalExpressionCanOnlyBeUsedWithEquals(originalOperator));
 			}
 			return extendedRelationalCriteria(expression);
 		}
 
-		if(peekKind(SyntaxKind.THRU))
+		if (peekKind(SyntaxKind.THRU))
 		{
-			if(expression.operator() != ComparisonOperator.EQUAL)
+			if (expression.operator() != ComparisonOperator.EQUAL)
 			{
 				report(ParserErrors.extendedRelationalExpressionCanOnlyBeUsedWithEquals(originalOperator));
 			}
@@ -1195,12 +1197,40 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private IOperandNode consumeRelationalCriteriaRightHandSide(RelationalCriteriaNode expression) throws ParseError
 	{
-		if(peekKind(SyntaxKind.MASK))
+		if (peekKind(SyntaxKind.MASK))
 		{
 			return consumeMask(expression);
 		}
 
+		if (peekKind(SyntaxKind.SCAN))
+		{
+			return consumeScan(expression);
+		}
+
 		return consumeSubstringOrOperand(expression);
+	}
+
+	private IOperandNode consumeScan(RelationalCriteriaNode node) throws ParseError
+	{
+		var scan = new ScanOperandNode();
+		node.addNode(scan);
+		consumeMandatory(scan, SyntaxKind.SCAN);
+		if (consumeOptionally(scan, SyntaxKind.LPAREN))
+		{
+			scan.setOperand(consumeOperandNode(scan));
+			consumeMandatory(scan, SyntaxKind.RPAREN);
+		}
+		else
+		{
+			scan.setOperand(consumeOperandNode(scan));
+		}
+
+		if (node.operator() != ComparisonOperator.EQUAL && node.operator() != ComparisonOperator.NOT_EQUAL)
+		{
+			report(ParserErrors.invalidMaskOrScanComparisonOperator(Objects.requireNonNull(scan.findDescendantToken(SyntaxKind.SCAN)).token()));
+		}
+
+		return scan;
 	}
 
 	private IOperandNode consumeMask(RelationalCriteriaNode expression) throws ParseError
@@ -1208,9 +1238,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var isConstant = peekKind(1, SyntaxKind.LPAREN);
 		var mask = isConstant ? consumeConstantMask(expression) : consumeVariableMask(expression);
 
-		if(expression.operator() != ComparisonOperator.EQUAL && expression.operator() != ComparisonOperator.NOT_EQUAL)
+		if (expression.operator() != ComparisonOperator.EQUAL && expression.operator() != ComparisonOperator.NOT_EQUAL)
 		{
-			report(ParserErrors.invalidMaskComparisonOperator(Objects.requireNonNull(mask.findDescendantToken(SyntaxKind.MASK)).token()));
+			report(ParserErrors.invalidMaskOrScanComparisonOperator(Objects.requireNonNull(mask.findDescendantToken(SyntaxKind.MASK)).token()));
 		}
 
 		return mask;
@@ -1222,14 +1252,14 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		node.addNode(mask);
 		consumeMandatory(mask, SyntaxKind.MASK);
 		consumeMandatory(mask, SyntaxKind.LPAREN);
-		while(!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+		while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
 		{
 			var token = consume(mask);
 			mask.addContent(token);
 		}
 		consumeMandatory(mask, SyntaxKind.RPAREN);
 
-		if(!isAtEnd() && peek().kind().canBeIdentifier() && !peekKind(SyntaxKind.OR) && !peekKind(SyntaxKind.AND))
+		if (!isAtEnd() && peek().kind().canBeIdentifier() && !peekKind(SyntaxKind.OR) && !peekKind(SyntaxKind.AND))
 		{
 			mask.setCheckedOperand(consumeVariableReferenceNode(mask));
 		}
@@ -1251,11 +1281,11 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var rangedCriteria = new RangedExtendedRelationalCriteriaNode(expression);
 		consumeMandatory(rangedCriteria, SyntaxKind.THRU);
 		rangedCriteria.setUpperBound(consumeOperandNode(rangedCriteria));
-		if(consumeOptionally(rangedCriteria, SyntaxKind.BUT))
+		if (consumeOptionally(rangedCriteria, SyntaxKind.BUT))
 		{
 			consumeMandatory(rangedCriteria, SyntaxKind.NOT);
 			rangedCriteria.setExcludedLowerBound(consumeOperandNode(rangedCriteria));
-			if(consumeOptionally(rangedCriteria, SyntaxKind.THRU))
+			if (consumeOptionally(rangedCriteria, SyntaxKind.THRU))
 			{
 				rangedCriteria.setExcludedUpperBound(consumeOperandNode(rangedCriteria));
 			}
@@ -1266,11 +1296,11 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	private ExtendedRelationalCriteriaNode extendedRelationalCriteria(RelationalCriteriaNode expression) throws ParseError
 	{
 		var extendedCriteria = new ExtendedRelationalCriteriaNode(expression);
-		while(peekKind(SyntaxKind.OR) && peekAny(1, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL)))
+		while (peekKind(SyntaxKind.OR) && peekAny(1, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL)))
 		{
 			consumeMandatory(extendedCriteria, SyntaxKind.OR);
 			consumeAnyMandatory(extendedCriteria, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL));
-			if(previousToken().kind() == SyntaxKind.EQUAL)
+			if (previousToken().kind() == SyntaxKind.EQUAL)
 			{
 				consumeOptionally(extendedCriteria, SyntaxKind.TO);
 			}
@@ -1285,40 +1315,44 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		var kind = peek().kind();
 		var maybeOperator = ComparisonOperator.ofSyntaxKind(kind);
-		if(maybeOperator != null)
+		if (maybeOperator != null)
 		{
 			consume(node);
 			return maybeOperator;
 		}
 
-		return switch(kind)
-		{
-			case EQUAL -> {
-				consume(node);
-				consumeOptionally(node, SyntaxKind.TO);
-				yield ComparisonOperator.EQUAL;
-			}
-			case NOT -> {
-				consume(node);
-				consumeAnyMandatory(node, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL));
-				if(previousToken().kind() == SyntaxKind.EQUAL)
+		return switch (kind)
+			{
+				case EQUAL ->
 				{
+					consume(node);
 					consumeOptionally(node, SyntaxKind.TO);
+					yield ComparisonOperator.EQUAL;
 				}
-				yield ComparisonOperator.NOT_EQUAL;
-			}
-			case LESS -> {
-				consume(node);
-				consumeAnyMandatory(node, List.of(SyntaxKind.THAN, SyntaxKind.EQUAL));
-				yield previousToken().kind() == SyntaxKind.THAN ? ComparisonOperator.LESS_THAN : ComparisonOperator.LESS_OR_EQUAL;
-			}
-			case GREATER -> {
-				consume(node);
-				consumeAnyMandatory(node, List.of(SyntaxKind.THAN, SyntaxKind.EQUAL));
-				yield previousToken().kind() == SyntaxKind.THAN ? ComparisonOperator.GREATER_THAN : ComparisonOperator.GREATER_OR_EQUAL;
-			}
-			default -> throw new RuntimeException("unreachable: All SyntaxKinds should have been checked beforehand");
-		};
+				case NOT ->
+				{
+					consume(node);
+					consumeAnyMandatory(node, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL));
+					if (previousToken().kind() == SyntaxKind.EQUAL)
+					{
+						consumeOptionally(node, SyntaxKind.TO);
+					}
+					yield ComparisonOperator.NOT_EQUAL;
+				}
+				case LESS ->
+				{
+					consume(node);
+					consumeAnyMandatory(node, List.of(SyntaxKind.THAN, SyntaxKind.EQUAL));
+					yield previousToken().kind() == SyntaxKind.THAN ? ComparisonOperator.LESS_THAN : ComparisonOperator.LESS_OR_EQUAL;
+				}
+				case GREATER ->
+				{
+					consume(node);
+					consumeAnyMandatory(node, List.of(SyntaxKind.THAN, SyntaxKind.EQUAL));
+					yield previousToken().kind() == SyntaxKind.THAN ? ComparisonOperator.GREATER_THAN : ComparisonOperator.GREATER_OR_EQUAL;
+				}
+				default -> throw new RuntimeException("unreachable: All SyntaxKinds should have been checked beforehand");
+			};
 	}
 
 	private IfNoRecordNode ifNoRecord() throws ParseError
@@ -1546,7 +1580,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	private UnaryLogicalCriteriaNode unaryVariableOrFunctionCall() throws ParseError
 	{
 		var unary = new UnaryLogicalCriteriaNode();
-		if(peekKind(1, SyntaxKind.LPAREN) && peekKind(2, SyntaxKind.LESSER_SIGN))
+		if (peekKind(1, SyntaxKind.LPAREN) && peekKind(2, SyntaxKind.LESSER_SIGN))
 		{
 			var functionName = consumeIdentifierTokenOnly();
 			unary.setNode(functionCall(functionName));
@@ -1561,7 +1595,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	private UnaryLogicalCriteriaNode constantUnary() throws ParseError
 	{
 		var unary = new UnaryLogicalCriteriaNode();
-		if(peekKind(SyntaxKind.TRUE))
+		if (peekKind(SyntaxKind.TRUE))
 		{
 			unary.setNode(consumeLiteralNode(unary, SyntaxKind.TRUE));
 		}

@@ -375,12 +375,12 @@ class ParserErrors
 		);
 	}
 
-	public static IDiagnostic invalidMaskComparisonOperator(SyntaxToken maskToken)
+	public static IDiagnostic invalidMaskOrScanComparisonOperator(SyntaxToken maskToken)
 	{
 		return ParserDiagnostic.create(
-			"MASK can only be compared for direct equality (=, <>, EQ, NE, ...)",
+			"MASK and SCAN can only be compared for direct equality (=, <>, EQ, NE, ...)",
 			maskToken,
-			ParserError.INVALID_MASK_COMPARISON_OPERATOR
+			ParserError.INVALID_MASK_OR_SCAN_COMPARISON_OPERATOR
 		);
 	}
 

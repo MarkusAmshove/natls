@@ -346,6 +346,38 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 
 	@ParameterizedTest
 	@ValueSource(strings = {
+		"=", "EQ", "EQUAL", "EQUAL TO", "NE", "NOT EQUAL", "<>"
+	})
+	void parseScanWithVariableReference(String operator)
+	{
+		var criteria = assertParsesCriteria("#VAR %s SCAN #SCANVAR".formatted(operator), IRelationalCriteriaNode.class);
+		var scanOperand = assertNodeType(criteria.right(), IScanOperandNode.class);
+		assertThat(assertNodeType(scanOperand.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#SCANVAR");
+	}
+
+	@Test
+	void parseScanWithConstantString()
+	{
+		var criteria = assertParsesCriteria("#VAR = SCAN ('ABC')", IRelationalCriteriaNode.class);
+		var scanOperand = assertNodeType(criteria.right(), IScanOperandNode.class);
+		assertThat(assertNodeType(scanOperand.operand(), ILiteralNode.class).token().stringValue()).isEqualTo("ABC");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		">", "<", "GT", "GE", "LT", "LE", "LESS THAN", "GREATER THAN", "<=", ">=", "LESS EQUAL", "GREATER EQUAL"
+	})
+	void reportDiagnosticsForUnsupportedScanComparisonOperators(String operator)
+	{
+		assertDiagnostic("""
+			IF #VAR %s SCAN #VAR2
+			IGNORE
+			END-IF
+			""".formatted(operator), ParserError.INVALID_MASK_OR_SCAN_COMPARISON_OPERATOR);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
 		">", "<", "GT", "GE", "LT", "LE", "LESS THAN", "GREATER THAN", "<=", ">=", "LESS EQUAL", "GREATER EQUAL"
 	})
 	void reportDiagnosticsForUnsupportedMaskComparisonOperators(String operator)
@@ -354,7 +386,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 			IF #VAR %s MASK (DDMMYYYY)
 			IGNORE
 			END-IF
-			""".formatted(operator), ParserError.INVALID_MASK_COMPARISON_OPERATOR);
+			""".formatted(operator), ParserError.INVALID_MASK_OR_SCAN_COMPARISON_OPERATOR);
 	}
 
 	@Test
