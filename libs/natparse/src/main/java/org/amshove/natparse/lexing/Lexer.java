@@ -418,7 +418,7 @@ public class Lexer
 		}
 		if (scanner.advanceIf("USER"))
 		{
-			createAndAdd(SyntaxKind.USER);
+			createAndAdd(SyntaxKind.SV_USER);
 			return;
 		}
 		if (scanner.advanceIf("CURRENT-UNIT"))

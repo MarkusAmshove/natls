@@ -366,6 +366,14 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseAnotherConditionWithASystemVariable()
+	{
+		var criteria = assertParsesCriteria("*USER = 'Donald'", IRelationalCriteriaNode.class);
+		assertThat(assertNodeType(criteria.left(), ISystemVariableNode.class).systemVariable()).isEqualTo(SyntaxKind.SV_USER);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).token().stringValue()).isEqualTo("Donald");
+	}
+
+	@Test
 	void parseAConditionSystemFunctions()
 	{
 		var criteria = assertParsesCriteria("*COUNTER(ASD.) = *OCC(#ARR)", IRelationalCriteriaNode.class);

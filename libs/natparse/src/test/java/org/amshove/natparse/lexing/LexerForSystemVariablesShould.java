@@ -39,7 +39,7 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 	@Test
 	void lexUser()
 	{
-		assertTokens("*USER", token(SyntaxKind.USER, "*USER"));
+		assertTokens("*USER", token(SyntaxKind.SV_USER, "*USER"));
 	}
 
 	@Test
