@@ -207,6 +207,15 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseAChainedRelationalConstructedByExtendedAndNonExtended()
+	{
+		var criteria = assertParsesCriteria("#VAR EQ 'A' OR EQ 'B' OR = 'C' OR 1 = 1", IChainedCriteriaNode.class);
+		// the last OR was raising a diagnostic that it is missing = because it was seen as another branch of the chained one
+		assertNodeType(criteria.left(), IExtendedRelationalCriteriaNode.class);
+		assertNodeType(criteria.right(), IRelationalCriteriaNode.class);
+	}
+
+	@Test
 	void parseConditionCriteriaWithParens()
 	{
 		var criteria = assertParsesCriteria("( 5 > 2)", IGroupedConditionCriteria.class);

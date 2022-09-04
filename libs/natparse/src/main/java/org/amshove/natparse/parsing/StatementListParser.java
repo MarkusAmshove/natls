@@ -1227,7 +1227,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	private ExtendedRelationalCriteriaNode extendedRelationalCriteria(RelationalCriteriaNode expression) throws ParseError
 	{
 		var extendedCriteria = new ExtendedRelationalCriteriaNode(expression);
-		while(peekKind(SyntaxKind.OR))
+		while(peekKind(SyntaxKind.OR) && peekAny(1, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL)))
 		{
 			consumeMandatory(extendedCriteria, SyntaxKind.OR);
 			consumeAnyMandatory(extendedCriteria, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL));
