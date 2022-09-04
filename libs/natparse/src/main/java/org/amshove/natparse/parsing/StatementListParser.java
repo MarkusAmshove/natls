@@ -6,6 +6,7 @@ import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.conditionals.ChainedCriteriaOperator;
 import org.amshove.natparse.natural.conditionals.ComparisonOperator;
+import org.amshove.natparse.natural.conditionals.IHasComparisonOperator;
 import org.amshove.natparse.natural.conditionals.ILogicalConditionCriteriaNode;
 
 import java.io.IOException;
@@ -1195,7 +1196,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return expression;
 	}
 
-	private IOperandNode consumeRelationalCriteriaRightHandSide(RelationalCriteriaNode expression) throws ParseError
+	private <T extends BaseSyntaxNode & IHasComparisonOperator> IOperandNode consumeRelationalCriteriaRightHandSide(T expression) throws ParseError
 	{
 		if (peekKind(SyntaxKind.MASK))
 		{
@@ -1210,7 +1211,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return consumeSubstringOrOperand(expression);
 	}
 
-	private IOperandNode consumeScan(RelationalCriteriaNode node) throws ParseError
+	private <T extends BaseSyntaxNode & IHasComparisonOperator> IOperandNode consumeScan(T node) throws ParseError
 	{
 		var scan = new ScanOperandNode();
 		node.addNode(scan);
@@ -1233,7 +1234,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return scan;
 	}
 
-	private IOperandNode consumeMask(RelationalCriteriaNode expression) throws ParseError
+	private <T extends BaseSyntaxNode & IHasComparisonOperator> IOperandNode consumeMask(T expression) throws ParseError
 	{
 		var isConstant = peekKind(1, SyntaxKind.LPAREN);
 		var mask = isConstant ? consumeConstantMask(expression) : consumeVariableMask(expression);
@@ -1305,7 +1306,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 				consumeOptionally(extendedCriteria, SyntaxKind.TO);
 			}
 
-			extendedCriteria.addRight(consumeOperandNode(extendedCriteria));
+			extendedCriteria.addRight(consumeRelationalCriteriaRightHandSide(extendedCriteria));
 		}
 
 		return extendedCriteria;

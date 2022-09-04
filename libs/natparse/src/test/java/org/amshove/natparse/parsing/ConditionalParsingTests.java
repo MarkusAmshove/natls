@@ -462,6 +462,16 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(assertNodeType(firstSubstring.length(), ILiteralNode.class).token().intValue()).isEqualTo(5);
 	}
 
+	@Test
+	void parseScanAndMaskInExtendedExpression()
+	{
+		var criteria = assertParsesCriteria("#VAR = 'ABC' OR = MASK ('DDMMYYYY') OR = SCAN #SCANVAR", IExtendedRelationalCriteriaNode.class);
+		var rights = criteria.rights();
+		assertThat(assertNodeType(rights.get(0), ILiteralNode.class).token().stringValue()).isEqualTo("ABC");
+		assertThat(assertNodeType(rights.get(1), IConstantMaskOperandNode.class).maskContents()).isNotEmpty();
+		assertThat(assertNodeType(rights.get(2), IScanOperandNode.class).operand()).isNotNull();
+	}
+
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
 	{
 		var list = assertParsesWithoutDiagnostics("IF %s\nIGNORE\nEND-IF".formatted(source));
