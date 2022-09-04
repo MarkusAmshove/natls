@@ -129,4 +129,12 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(valNode.variable().referencingToken().symbolName()).isEqualTo("#THEVAR");
 		assertThat(assertNodeType(valNode.variable().dimensions().first(), ILiteralNode.class).token().intValue()).isEqualTo(1);
 	}
+
+	@Test
+	void parseAbs()
+	{
+		var operand = parseOperands("ABS(#THEVAR)");
+		var valNode = assertNodeType(operand.get(0), IAbsOperandNode.class);
+		assertThat(valNode.variable().referencingToken().symbolName()).isEqualTo("#THEVAR");
+	}
 }

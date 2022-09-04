@@ -370,6 +370,10 @@ abstract class AbstractParser<T>
 		{
 			return valOperand(node);
 		}
+		if(peek().kind() == SyntaxKind.ABS)
+		{
+			return absOperand(node);
+		}
 
 		if(peek().kind() == SyntaxKind.LABEL_IDENTIFIER)
 		{
@@ -384,6 +388,17 @@ abstract class AbstractParser<T>
 		var valOperand = new ValOperandNode();
 		node.addNode(valOperand);
 		consumeMandatory(valOperand, SyntaxKind.VAL);
+		consumeMandatory(valOperand, SyntaxKind.LPAREN);
+		valOperand.setVariable(consumeVariableReferenceNode(valOperand));
+		consumeMandatory(valOperand, SyntaxKind.RPAREN);
+		return valOperand;
+	}
+
+	private IOperandNode absOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var valOperand = new AbsOperandNode();
+		node.addNode(valOperand);
+		consumeMandatory(valOperand, SyntaxKind.ABS);
 		consumeMandatory(valOperand, SyntaxKind.LPAREN);
 		valOperand.setVariable(consumeVariableReferenceNode(valOperand));
 		consumeMandatory(valOperand, SyntaxKind.RPAREN);
