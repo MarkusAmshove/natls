@@ -366,6 +366,10 @@ abstract class AbstractParser<T>
 		{
 			return consumeSystemFunctionNode(node);
 		}
+		if(peek().kind() == SyntaxKind.VAL)
+		{
+			return valOperand(node);
+		}
 
 		if(peek().kind() == SyntaxKind.LABEL_IDENTIFIER)
 		{
@@ -373,6 +377,17 @@ abstract class AbstractParser<T>
 		}
 
 		return consumeLiteralNode(node);
+	}
+
+	private IOperandNode valOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var valOperand = new ValOperandNode();
+		node.addNode(valOperand);
+		consumeMandatory(valOperand, SyntaxKind.VAL);
+		consumeMandatory(valOperand, SyntaxKind.LPAREN);
+		valOperand.setVariable(consumeVariableReferenceNode(valOperand));
+		consumeMandatory(valOperand, SyntaxKind.RPAREN);
+		return valOperand;
 	}
 
 	private IOperandNode consumeLabelIdentifier(BaseSyntaxNode node) throws ParseError

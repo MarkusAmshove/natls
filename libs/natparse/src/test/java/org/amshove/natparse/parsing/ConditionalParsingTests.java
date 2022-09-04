@@ -397,6 +397,14 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(assertNodeType(criteria.right(), ISystemFunctionNode.class).systemFunction()).isEqualTo(SyntaxKind.OCC);
 	}
 
+	@Test
+	void parseRelationalCriteriaWithVal()
+	{
+		var criteria = assertParsesCriteria("VAL(#VAR1) = VAL(#VAR2)", IRelationalCriteriaNode.class);
+		assertNodeType(criteria.left(), IValOperandNode.class);
+		assertNodeType(criteria.right(), IValOperandNode.class);
+	}
+
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
 	{
 		var list = assertParsesWithoutDiagnostics("IF %s\nIGNORE\nEND-IF".formatted(source));
