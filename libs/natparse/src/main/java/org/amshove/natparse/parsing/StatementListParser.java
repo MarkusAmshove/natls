@@ -599,9 +599,32 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(node, SyntaxKind.LPAREN);
 		substring.setOperand(consumeOperandNode(substring));
 		consumeMandatory(node, SyntaxKind.COMMA);
-		substring.setStartingPosition(consumeOperandNode(substring));
-		consumeMandatory(node, SyntaxKind.COMMA);
-		substring.setLength(consumeOperandNode(substring));
+		if(peekKind(SyntaxKind.NUMBER_LITERAL) && peek().source().contains(","))
+		{
+			// HACK: this should be handled somewhere nicely
+			var wrongToken = peek();
+			discard();
+			var split = wrongToken.source().split(",");
+			var firstNumber = new SyntaxToken(SyntaxKind.NUMBER_LITERAL, wrongToken.offset(), wrongToken.offsetInLine(), wrongToken.line(), split[0], wrongToken.filePath());
+			var comma = new SyntaxToken(SyntaxKind.COMMA, wrongToken.offset() + split[0].length(), wrongToken.offsetInLine() + split[0].length(), wrongToken.line(), ",", wrongToken.filePath());
+			var secondNumber = new SyntaxToken(SyntaxKind.NUMBER_LITERAL, comma.offset() + comma.length(), comma.offsetInLine() + comma.length(), wrongToken.line(), split[1], wrongToken.filePath());
+
+			var startingPosition = new LiteralNode(firstNumber);
+			substring.addNode(startingPosition);
+			substring.setStartingPosition(startingPosition);
+
+			substring.addNode(new TokenNode(comma));
+
+			var length = new LiteralNode(secondNumber);
+			substring.addNode(length);
+			substring.setLength(length);
+		}
+		else
+		{
+			substring.setStartingPosition(consumeOperandNode(substring));
+			consumeMandatory(node, SyntaxKind.COMMA);
+			substring.setLength(consumeOperandNode(substring));
+		}
 		consumeMandatory(node, SyntaxKind.RPAREN);
 
 		return substring;

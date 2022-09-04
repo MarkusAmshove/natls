@@ -412,6 +412,16 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(criteria.checkedType().source()).isEqualTo("N12,7");
 	}
 
+	@Test
+	void parseSubstringWithNonWhitespaceSeparatedNumericArguments()
+	{
+		var criteria = assertParsesCriteria("SUBSTR(#VAR,1,5) = 'Test'", IRelationalCriteriaNode.class);
+		var firstSubstring = assertNodeType(criteria.left(), ISubstringOperandNode.class);
+		assertThat(assertNodeType(firstSubstring.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+		assertThat(assertNodeType(firstSubstring.startPosition(), ILiteralNode.class).token().intValue()).isEqualTo(1);
+		assertThat(assertNodeType(firstSubstring.length(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+	}
+
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
 	{
 		var list = assertParsesWithoutDiagnostics("IF %s\nIGNORE\nEND-IF".formatted(source));
