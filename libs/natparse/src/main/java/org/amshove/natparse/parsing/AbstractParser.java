@@ -291,11 +291,72 @@ abstract class AbstractParser<T>
 		return tokens.advance();
 	}
 
+	protected SymbolReferenceNode symbolReferenceNode(SyntaxToken token)
+	{
+		var node = new SymbolReferenceNode(token);
+		unresolvedReferences.add(node);
+		return node;
+	}
+
+	protected StatementNode identifierReference() throws ParseError
+	{
+		var token = consumeIdentifierTokenOnly();
+		if (peekKind(SyntaxKind.LPAREN)
+			&& (peekKind(1, SyntaxKind.LESSER_SIGN) || peekKind(1, SyntaxKind.LESSER_GREATER)))
+		{
+			return functionCall(token);
+		}
+
+		var node = symbolReferenceNode(token);
+		return new SyntheticVariableStatementNode(node);
+	}
+
+	protected FunctionCallNode functionCall(SyntaxToken token) throws ParseError
+	{
+		var node = new FunctionCallNode();
+
+		var functionName = new TokenNode(token);
+		node.setReferencingToken(token);
+		node.addNode(functionName);
+		var module = sideloadModule(token.symbolName(), functionName);
+		node.setReferencedModule((NaturalModule) module);
+
+		consumeMandatory(node, SyntaxKind.LPAREN);
+
+		while (!peekKind(SyntaxKind.RPAREN))
+		{
+			if (peekKind(SyntaxKind.IDENTIFIER))
+			{
+				node.addNode(identifierReference());
+			}
+			else
+			{
+				consume(node);
+			}
+		}
+
+		consumeMandatory(node, SyntaxKind.RPAREN);
+
+		return node;
+	}
+
 	protected IOperandNode consumeOperandNode(BaseSyntaxNode node) throws ParseError
 	{
 		if(peekKind(SyntaxKind.IDENTIFIER))
 		{
+			if(peekKind(1, SyntaxKind.LPAREN) && peekKind(2, SyntaxKind.LESSER_SIGN))
+			{
+				var token = peek();
+				discard(); // this is kinda strange. reiterate on why functionCall() needs to get the token
+				var functionCall = functionCall(token);
+				node.addNode(functionCall);
+				return functionCall;
+			}
 			return consumeVariableReferenceNode(node);
+		}
+		if(peek().kind().isSystemVariable() && peek().kind().isSystemFunction()) // can be both, like *COUNTER
+		{
+			return peekKind(1, SyntaxKind.LPAREN) ? consumeSystemFunctionNode(node) : consumeSystemVariableNode(node);
 		}
 		if(peek().kind().isSystemVariable())
 		{
@@ -306,7 +367,21 @@ abstract class AbstractParser<T>
 			return consumeSystemFunctionNode(node);
 		}
 
+		if(peek().kind() == SyntaxKind.LABEL_IDENTIFIER)
+		{
+			return consumeLabelIdentifier(node);
+		}
+
 		return consumeLiteralNode(node);
+	}
+
+	private IOperandNode consumeLabelIdentifier(BaseSyntaxNode node) throws ParseError
+	{
+		var labelNode = new LabelIdentifierNode();
+		node.addNode(labelNode);
+		var label = consumeMandatory(labelNode, SyntaxKind.LABEL_IDENTIFIER);
+		labelNode.setLabel(label);
+		return labelNode;
 	}
 
 	protected ISystemFunctionNode consumeSystemFunctionNode(BaseSyntaxNode node) throws ParseError
@@ -505,6 +580,26 @@ abstract class AbstractParser<T>
 
 		report(ParserErrors.unexpectedToken(acceptedKinds, peek()));
 		tokens.advance();
+		return false;
+	}
+
+	/**
+	 * Determines if any of the given {@link SyntaxKind}s is in the same line as the current peekable token.
+	 */
+	protected boolean peekSameLine(Collection<SyntaxKind> kindsToLookFor)
+	{
+		var startLine = peek().line();
+		var peekOffset = 0;
+		while(!isAtEnd(peekOffset) && peek(peekOffset).line() == startLine)
+		{
+			if(kindsToLookFor.contains(peek(peekOffset).kind()))
+			{
+				return true;
+			}
+
+			peekOffset++;
+		}
+
 		return false;
 	}
 

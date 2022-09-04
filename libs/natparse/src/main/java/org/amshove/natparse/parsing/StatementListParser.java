@@ -863,55 +863,6 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return endNode;
 	}
 
-	private StatementNode identifierReference() throws ParseError
-	{
-		var token = consumeIdentifierTokenOnly();
-		if (peekKind(SyntaxKind.LPAREN)
-			&& (peekKind(1, SyntaxKind.LESSER_SIGN) || peekKind(1, SyntaxKind.LESSER_GREATER)))
-		{
-			return functionCall(token);
-		}
-
-		var node = symbolReferenceNode(token);
-		return new SyntheticVariableStatementNode(node);
-	}
-
-	private SymbolReferenceNode symbolReferenceNode(SyntaxToken token)
-	{
-		var node = new SymbolReferenceNode(token);
-		unresolvedReferences.add(node);
-		return node;
-	}
-
-	private FunctionCallNode functionCall(SyntaxToken token) throws ParseError
-	{
-		var node = new FunctionCallNode();
-
-		var functionName = new TokenNode(token);
-		node.setReferencingToken(token);
-		node.addNode(functionName);
-		var module = sideloadModule(token.symbolName(), functionName);
-		node.setReferencedModule((NaturalModule) module);
-
-		consumeMandatory(node, SyntaxKind.LPAREN);
-
-		while (!peekKind(SyntaxKind.RPAREN))
-		{
-			if (peekKind(SyntaxKind.IDENTIFIER))
-			{
-				node.addNode(identifierReference());
-			}
-			else
-			{
-				consume(node);
-			}
-		}
-
-		consumeMandatory(node, SyntaxKind.RPAREN);
-
-		return node;
-	}
-
 	private CallnatNode callnat() throws ParseError
 	{
 		var callnat = new CallnatNode();
@@ -1108,37 +1059,47 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			return negatedConditionCriteria();
 		}
 
-		if(peekKind(1, SyntaxKind.IS))
+//		if(peekKind(SyntaxKind.SUBSTR) || peekKind(SyntaxKind.SUBSTRING))
+//		{
+//			return relationalCriteria();
+//		}
+
+		var tmpNode = new BaseSyntaxNode();
+		var lhs = consumeSubstringOrOperand(tmpNode);
+
+		if(peekKind(SyntaxKind.IS))
 		{
-			return isConditionCriteria();
+			return isConditionCriteria(lhs);
 		}
 
-		var lookAhead = peek(1);
-		if(lookAhead != null && CONDITIONAL_OPERATOR_START.contains(lookAhead.kind()))
+		if(CONDITIONAL_OPERATOR_START.contains(peek().kind()))
 		{
-			return relationalCriteria();
+			return relationalCriteria(lhs);
 		}
 
-		if(peekKind(SyntaxKind.SUBSTR) || peekKind(SyntaxKind.SUBSTRING))
+		if(lhs instanceof IFunctionCallNode || lhs instanceof IVariableReferenceNode)
 		{
-			return relationalCriteria();
+			var unary = new UnaryLogicalCriteriaNode();
+			unary.setNode(lhs);
+			return unary;
 		}
 
-		return switch (peek().kind())
+		if(lhs instanceof ILiteralNode literalNode && (literalNode.token().kind() == SyntaxKind.TRUE || literalNode.token().kind() == SyntaxKind.FALSE))
 		{
-			case TRUE, FALSE -> constantUnary();
-			case IDENTIFIER -> unaryVariableOrFunctionCall();
-			default -> {
-				report(ParserErrors.unexpectedToken(List.of(SyntaxKind.TRUE, SyntaxKind.FALSE, SyntaxKind.IDENTIFIER), peek()));
-				throw new ParseError(peek());
-			}
-		};
+			var unary = new UnaryLogicalCriteriaNode();
+			unary.setNode(lhs);
+			return unary;
+		}
+
+		report(ParserErrors.unexpectedToken(List.of(SyntaxKind.TRUE, SyntaxKind.FALSE, SyntaxKind.IDENTIFIER), peek()));
+		throw new ParseError(peek());
 	}
 
-	private ILogicalConditionCriteriaNode isConditionCriteria() throws ParseError
+	private ILogicalConditionCriteriaNode isConditionCriteria(IOperandNode lhs) throws ParseError
 	{
 		var isCriteria = new IsConditionCriteriaNode();
-		isCriteria.setLeft(consumeOperandNode(isCriteria));
+		isCriteria.addNode((BaseSyntaxNode) lhs);
+		isCriteria.setLeft(lhs);
 		consumeMandatory(isCriteria, SyntaxKind.IS);
 		consumeMandatory(isCriteria, SyntaxKind.LPAREN);
 		var type = consumeMandatoryIdentifier(isCriteria);
@@ -1164,10 +1125,10 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return groupedCriteria;
 	}
 
-	private ILogicalConditionCriteriaNode relationalCriteria() throws ParseError
+	private ILogicalConditionCriteriaNode relationalCriteria(IOperandNode lhs) throws ParseError
 	{
 		var expression = new RelationalCriteriaNode();
-		var lhs = consumeSubstringOrOperand(expression);
+		expression.addNode((BaseSyntaxNode) lhs);
 		expression.setLeft(lhs);
 
 		var originalOperator = peek();

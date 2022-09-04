@@ -58,7 +58,19 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		var criteria = assertParsesCriteria("ISSTH(<'1', '2'>)", IUnaryLogicalCriteriaNode.class);
 		var call = assertNodeType(criteria.node(), IFunctionCallNode.class);
 		assertThat(call.referencingToken().symbolName()).isEqualTo("ISSTH");
-		// TODO: Check parameter
+	}
+
+	@Test
+	void parseFunctionCallsInRelationalCriteria()
+	{
+		var calledFunction = new NaturalModule(null);
+		moduleProvider.addModule("ISSTH", calledFunction);
+
+		var criteria = assertParsesCriteria("ISSTH(<'1', '2'>) = 'A'", IRelationalCriteriaNode.class);
+		var call = assertNodeType(criteria.left(), IFunctionCallNode.class);
+		assertThat(call.referencingToken().symbolName()).isEqualTo("ISSTH");
+		var comparison = assertNodeType(criteria.right(), ILiteralNode.class);
+		assertThat(comparison.token().stringValue()).isEqualTo("A");
 	}
 
 	@TestFactory
@@ -343,6 +355,22 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		var criteria = assertParsesCriteria("#VAR = MASK #MASK", IRelationalCriteriaNode.class);
 		var mask = assertNodeType(criteria.right(), IVariableMaskOperandNode.class);
 		assertThat(mask.variableMask().referencingToken().symbolName()).isEqualTo("#MASK");
+	}
+
+	@Test
+	void parseAConditionWithASystemVariable()
+	{
+		var criteria = assertParsesCriteria("*DATA = *LEVEL", IRelationalCriteriaNode.class);
+		assertThat(assertNodeType(criteria.left(), ISystemVariableNode.class).systemVariable()).isEqualTo(SyntaxKind.SV_DATA);
+		assertThat(assertNodeType(criteria.right(), ISystemVariableNode.class).systemVariable()).isEqualTo(SyntaxKind.SV_LEVEL);
+	}
+
+	@Test
+	void parseAConditionSystemFunctions()
+	{
+		var criteria = assertParsesCriteria("*COUNTER(ASD.) = *OCC(#ARR)", IRelationalCriteriaNode.class);
+		assertThat(assertNodeType(criteria.left(), ISystemFunctionNode.class).systemFunction()).isEqualTo(SyntaxKind.COUNTER);
+		assertThat(assertNodeType(criteria.right(), ISystemFunctionNode.class).systemFunction()).isEqualTo(SyntaxKind.OCC);
 	}
 
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)

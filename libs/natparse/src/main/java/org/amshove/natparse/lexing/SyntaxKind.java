@@ -66,7 +66,7 @@ public enum SyntaxKind
 	TIMESTMP(false, true, false),
 	PF_KEY(false, true, false),
 	INIT_USER(false, true, false),
-	COUNTER(false, true, false),
+	COUNTER(false, true, true),
 	COM(false, true, false),
 	DEVICE(false, true, false),
 	OPSYS(false, true, false),
