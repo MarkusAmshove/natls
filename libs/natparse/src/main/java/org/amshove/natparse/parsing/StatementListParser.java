@@ -1059,11 +1059,6 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			return negatedConditionCriteria();
 		}
 
-//		if(peekKind(SyntaxKind.SUBSTR) || peekKind(SyntaxKind.SUBSTRING))
-//		{
-//			return relationalCriteria();
-//		}
-
 		var tmpNode = new BaseSyntaxNode();
 		var lhs = consumeSubstringOrOperand(tmpNode);
 
@@ -1195,7 +1190,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 		consumeMandatory(mask, SyntaxKind.RPAREN);
 
-		if(!isAtEnd() && peek().kind().canBeIdentifier())
+		if(!isAtEnd() && peek().kind().canBeIdentifier() && !peekKind(SyntaxKind.OR) && !peekKind(SyntaxKind.AND))
 		{
 			mask.setCheckedOperand(consumeVariableReferenceNode(mask));
 		}

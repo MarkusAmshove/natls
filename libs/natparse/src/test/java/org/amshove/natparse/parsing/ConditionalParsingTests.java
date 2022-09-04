@@ -279,6 +279,13 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseChainedCriteriaWithMasks()
+	{
+		assertParsesCriteria("#VAR = 'E1' OR #VAR = 'E2' OR #VAR2 EQ MASK ('A B') OR #VAR2 EQ MASK ('C D')", IChainedCriteriaNode.class);
+		// Just test if this results in a diagnostic. The problem was that `OR` after mask was considered as operand to mask
+	}
+
+	@Test
 	void parseChainedCriteriaWithinGroupedCriteria()
 	{
 		var grouped = assertParsesCriteria("(5 > 2 AND 3 < 10)", IGroupedConditionCriteria.class);
