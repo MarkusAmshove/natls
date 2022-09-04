@@ -3,10 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
-import org.amshove.natparse.natural.IOperandNode;
-import org.amshove.natparse.natural.IReferencableNode;
-import org.amshove.natparse.natural.IStatementListNode;
-import org.amshove.natparse.natural.ISymbolReferenceNode;
+import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.conditionals.ChainedCriteriaOperator;
 import org.amshove.natparse.natural.conditionals.ComparisonOperator;
 import org.amshove.natparse.natural.conditionals.ILogicalConditionCriteriaNode;
@@ -16,6 +13,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 class StatementListParser extends AbstractParser<IStatementListNode>
@@ -1170,11 +1168,13 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		var expression = new RelationalCriteriaNode();
 		var lhs = consumeSubstringOrOperand(expression);
+		expression.setLeft(lhs);
+
 		var originalOperator = peek();
 		var operator = parseRelationalOperator(expression); // we did the check of supported values beforehand as lookahead, don't check again
-		var rhs = consumeSubstringOrOperand(expression);
-		expression.setLeft(lhs);
 		expression.setOperator(operator);
+
+		var rhs = consumeRelationalCriteriaRightHandSide(expression);
 		expression.setRight(rhs);
 
 		if(peekKind(SyntaxKind.OR) && (peekAny(1, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL))))
@@ -1196,6 +1196,59 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return expression;
+	}
+
+	private IOperandNode consumeRelationalCriteriaRightHandSide(RelationalCriteriaNode expression) throws ParseError
+	{
+		if(peekKind(SyntaxKind.MASK))
+		{
+			return consumeMask(expression);
+		}
+
+		return consumeSubstringOrOperand(expression);
+	}
+
+	private IOperandNode consumeMask(RelationalCriteriaNode expression) throws ParseError
+	{
+		var isConstant = peekKind(1, SyntaxKind.LPAREN);
+		var mask = isConstant ? consumeConstantMask(expression) : consumeVariableMask(expression);
+
+		if(expression.operator() != ComparisonOperator.EQUAL && expression.operator() != ComparisonOperator.NOT_EQUAL)
+		{
+			report(ParserErrors.invalidMaskComparisonOperator(Objects.requireNonNull(mask.findDescendantToken(SyntaxKind.MASK)).token()));
+		}
+
+		return mask;
+	}
+
+	private IMaskOperandNode consumeConstantMask(BaseSyntaxNode node) throws ParseError
+	{
+		var mask = new ConstantMaskOperandNode();
+		node.addNode(mask);
+		consumeMandatory(mask, SyntaxKind.MASK);
+		consumeMandatory(mask, SyntaxKind.LPAREN);
+		while(!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+		{
+			var token = consume(mask);
+			mask.addContent(token);
+		}
+		consumeMandatory(mask, SyntaxKind.RPAREN);
+
+		if(!isAtEnd() && peek().kind().canBeIdentifier())
+		{
+			mask.setCheckedOperand(consumeVariableReferenceNode(mask));
+		}
+
+		return mask;
+	}
+
+	private IMaskOperandNode consumeVariableMask(BaseSyntaxNode node) throws ParseError
+	{
+		var mask = new VariableMaskOperandNode();
+		node.addNode(mask);
+		consumeMandatory(mask, SyntaxKind.MASK);
+		mask.setVariableMask(consumeVariableReferenceNode(mask));
+		return mask;
 	}
 
 	private ILogicalConditionCriteriaNode rangedExtendedRelationalCriteria(RelationalCriteriaNode expression) throws ParseError

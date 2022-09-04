@@ -101,14 +101,17 @@ abstract class AbstractParser<T>
 	 *
 	 * @param node to add to
 	 */
-	protected void consume(BaseSyntaxNode node)
+	protected SyntaxToken consume(BaseSyntaxNode node)
 	{
 		if (!isAtEnd())
 		{
 			var token = tokens.advance();
 			previousNode = new TokenNode(token);
 			node.addNode(previousNode);
+			return token;
 		}
+
+		return null;
 	}
 
 	protected SyntaxToken peek(int offset)

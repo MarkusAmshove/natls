@@ -1,6 +1,7 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.SyntaxKind;
+import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.conditionals.*;
 import org.junit.jupiter.api.DisplayName;
@@ -300,18 +301,54 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(criteria.checkedType().symbolName()).isEqualTo("A10");
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"=", "EQ", "EQUAL", "EQUAL TO", "NE", "NOT EQUAL", "<>"
+	})
+	void parseMaskWithConstantDefinition(String operator)
+	{
+		var criteria = assertParsesCriteria("#VAR %s MASK(NN'ABC'..NN)".formatted(operator), IRelationalCriteriaNode.class);
+		var contents = assertNodeType(criteria.right(), IConstantMaskOperandNode.class).maskContents();
+		assertThat(contents.get(0).source()).isEqualTo("NN");
+		assertThat(contents.get(1).source()).isEqualTo("'ABC'");
+		assertThat(contents.get(2).source()).isEqualTo(".");
+		assertThat(contents.get(3).source()).isEqualTo(".");
+		assertThat(contents.get(4).source()).isEqualTo("NN");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		">", "<", "GT", "GE", "LT", "LE", "LESS THAN", "GREATER THAN", "<=", ">=", "LESS EQUAL", "GREATER EQUAL"
+	})
+	void reportDiagnosticsForUnsupportedMaskComparisonOperators(String operator)
+	{
+		assertDiagnostic("""
+			IF #VAR %s MASK (DDMMYYYY)
+			IGNORE
+			END-IF
+			""".formatted(operator), ParserError.INVALID_MASK_COMPARISON_OPERATOR);
+	}
+
+	@Test
+	void parseConstantMaskWithCheckedOperand()
+	{
+		var criteria = assertParsesCriteria("#VAR EQ MASK (DDXYYYY) #VAR2", IRelationalCriteriaNode.class);
+		var mask = assertNodeType(criteria.right(), IConstantMaskOperandNode.class);
+		assertThat(mask.checkedOperand()).map(IVariableReferenceNode::referencingToken).map(SyntaxToken::symbolName).hasValue("#VAR2");
+	}
+
+	@Test
+	void parseVariableMaskOperands()
+	{
+		var criteria = assertParsesCriteria("#VAR = MASK #MASK", IRelationalCriteriaNode.class);
+		var mask = assertNodeType(criteria.right(), IVariableMaskOperandNode.class);
+		assertThat(mask.variableMask().referencingToken().symbolName()).isEqualTo("#MASK");
+	}
+
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
 	{
 		var list = assertParsesWithoutDiagnostics("IF %s\nIGNORE\nEND-IF".formatted(source));
 		var ifNode = assertNodeType(list.statements().first(), IIfStatementNode.class);
 		return assertNodeType(ifNode.condition().criteria(), criteriaType);
 	}
-
-	/*
-	condition: logical_expression ((AND|OR) logical_expression)?;
-
-	logical_expression:  LPAREN? TRUE | FALSE | function_call | IS (Type) | relational_expression RPAREN?;
-
-	relational_expression: operand COMPARISON_OPERATOR operand;
-	 */
 }

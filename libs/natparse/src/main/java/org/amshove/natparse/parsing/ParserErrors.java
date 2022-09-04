@@ -374,4 +374,13 @@ class ParserErrors
 			ParserError.EXTENDED_RELATIONAL_EXPRESSION_NEEDS_EQUAL
 		);
 	}
+
+	public static IDiagnostic invalidMaskComparisonOperator(SyntaxToken maskToken)
+	{
+		return ParserDiagnostic.create(
+			"MASK can only be compared for direct equality (=, <>, EQ, NE, ...)",
+			maskToken,
+			ParserError.INVALID_MASK_COMPARISON_OPERATOR
+		);
+	}
 }

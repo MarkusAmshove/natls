@@ -1,0 +1,6 @@
+name: Invalid operator for MASK expression
+priority: BLOCKER
+tags: compile-time
+type: BUG
+description:
+``MASK`` can only be used with direct equality operators ``=``, ``<>``, ``EQ``, ``NE``.
