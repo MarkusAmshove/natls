@@ -405,6 +405,13 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		assertNodeType(criteria.right(), IValOperandNode.class);
 	}
 
+	@Test
+	void parseIsTestWithComma()
+	{
+		var criteria = assertParsesCriteria("#VAR IS (N12,7)", IIsConditionCriteriaNode.class);
+		assertThat(criteria.checkedType().source()).isEqualTo("N12,7");
+	}
+
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
 	{
 		var list = assertParsesWithoutDiagnostics("IF %s\nIGNORE\nEND-IF".formatted(source));

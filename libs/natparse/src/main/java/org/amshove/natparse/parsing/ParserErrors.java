@@ -383,4 +383,13 @@ class ParserErrors
 			ParserError.INVALID_MASK_COMPARISON_OPERATOR
 		);
 	}
+
+	public static IDiagnostic unexpectedToken(SyntaxToken wrongToken, String message)
+	{
+		return ParserDiagnostic.create(
+			message,
+			wrongToken,
+			ParserError.UNEXPECTED_TOKEN
+		);
+	}
 }

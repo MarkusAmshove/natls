@@ -1097,7 +1097,23 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		isCriteria.setLeft(lhs);
 		consumeMandatory(isCriteria, SyntaxKind.IS);
 		consumeMandatory(isCriteria, SyntaxKind.LPAREN);
-		var type = consumeMandatoryIdentifier(isCriteria);
+		if(!peekKind(SyntaxKind.IDENTIFIER))
+		{
+			report(ParserErrors.unexpectedToken(peek(), "Expected a data type notation"));
+			throw new ParseError(peek());
+		}
+
+		var type = peek();
+		discard();
+		if(peekKind(SyntaxKind.COMMA) || peekKind(SyntaxKind.DOT)) // TODO (lexermode): This should be done in the lexer when lexing data types (in this case after IS)
+		{
+			type = type.combine(peek(), type.kind());
+			discard();
+			type = type.combine(peek(), type.kind());
+			discard();
+		}
+
+		isCriteria.addNode(new TokenNode(type));
 		isCriteria.setCheckedType(type);
 		consumeMandatory(isCriteria, SyntaxKind.RPAREN);
 		return isCriteria;
