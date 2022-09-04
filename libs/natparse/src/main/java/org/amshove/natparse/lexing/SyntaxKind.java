@@ -61,6 +61,7 @@ public enum SyntaxKind
 	MINVAL(false, false, true),
 	CURS_LINE(false, true, false),
 	CURS_FIELD(false, true, false),
+	SV_DATA(false, true, false),
 	TIMESTMP(false, true, false),
 	PF_KEY(false, true, false),
 	INIT_USER(false, true, false),

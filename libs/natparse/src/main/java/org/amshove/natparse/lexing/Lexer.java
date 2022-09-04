@@ -336,6 +336,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.OCC);
 			return;
 		}
+		if (scanner.advanceIf("DATA"))
+		{
+			createAndAdd(SyntaxKind.SV_DATA);
+			return;
+		}
 		if (scanner.advanceIf("LINEX"))
 		{
 			createAndAdd(SyntaxKind.LINEX);

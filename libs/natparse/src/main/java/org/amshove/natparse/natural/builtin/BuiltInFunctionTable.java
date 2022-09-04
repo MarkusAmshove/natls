@@ -11,7 +11,10 @@ import static org.amshove.natparse.natural.DataFormat.*;
 
 public class BuiltInFunctionTable
 {
-	private BuiltInFunctionTable() {}
+	private BuiltInFunctionTable()
+	{
+	}
+
 	private static final Map<SyntaxKind, IBuiltinFunctionDefinition> TABLE;
 
 	public static IBuiltinFunctionDefinition getDefinition(SyntaxKind kind)
@@ -167,80 +170,80 @@ public class BuiltInFunctionTable
 				```
 				""", PACKED, 10, new BuiltInFunctionParameter("label", new DataType(DataFormat.NONE, 1), false)),
 			function(SyntaxKind.OCCURRENCE, "See `*OCC`", INTEGER, 4,
-					new BuiltInFunctionParameter("array", new DataType(DataFormat.NONE, 1), true),
-					new BuiltInFunctionParameter("dimension", new DataType(DataFormat.NONE, 1), false)
+				new BuiltInFunctionParameter("array", new DataType(DataFormat.NONE, 1), true),
+				new BuiltInFunctionParameter("dimension", new DataType(DataFormat.NONE, 1), false)
 			),
 			function(SyntaxKind.OCC, """
-				Returns the current length of an array.
+					Returns the current length of an array.
 
-				The optional `dimension` parameter handles for which dimension the length is returned. Defaults to 1 if not specified.
+					The optional `dimension` parameter handles for which dimension the length is returned. Defaults to 1 if not specified.
 
-				Possible value of `dimension`:
+					Possible value of `dimension`:
 
-				- `1`: One-dimensional array (**default**)
-				- `2`: Two-dimensional array
-				- `3`: Three-dimensional array
-				- `*`: All dimensions defined for the corresponding array apply
+					- `1`: One-dimensional array (**default**)
+					- `2`: Two-dimensional array
+					- `3`: Three-dimensional array
+					- `*`: All dimensions defined for the corresponding array apply
 
-				Example:
+					Example:
 
-				```natural
-				DEFINE DATA LOCAL
-				1 #LENGTH (I4)
-				1 #ARRAY (A10/1:*,1:*)
-				1 #DIMENSIONS (I4/1:3)
-				END-DEFINE
+					```natural
+					DEFINE DATA LOCAL
+					1 #LENGTH (I4)
+					1 #ARRAY (A10/1:*,1:*)
+					1 #DIMENSIONS (I4/1:3)
+					END-DEFINE
 
-				EXPAND ARRAY #ARRAY TO (1:10,1:20)
-				#LENGTH := *OCC(#ARRAY) /* #LENGTH = 10, first dimension
-				#LENGTH := *OCC(#ARRAY, 1) /* #LENGTH = 10, first dimension
-				#LENGTH := *OCC(#ARRAY, 2) /* #LENGTH = 20, second dimension
-				#DIMENSIONS(1:2) := *OCC(#ARRAY, *) /* #DIMENSIONS(1) = 10; #DIMENSIONS(2) = 20
-				```
-				""", INTEGER, 4,
-					new BuiltInFunctionParameter("array", new DataType(DataFormat.NONE, 1), true),
-					new BuiltInFunctionParameter("dimension", new DataType(DataFormat.NONE, 1), false)
+					EXPAND ARRAY #ARRAY TO (1:10,1:20)
+					#LENGTH := *OCC(#ARRAY) /* #LENGTH = 10, first dimension
+					#LENGTH := *OCC(#ARRAY, 1) /* #LENGTH = 10, first dimension
+					#LENGTH := *OCC(#ARRAY, 2) /* #LENGTH = 20, second dimension
+					#DIMENSIONS(1:2) := *OCC(#ARRAY, *) /* #DIMENSIONS(1) = 10; #DIMENSIONS(2) = 20
+					```
+					""", INTEGER, 4,
+				new BuiltInFunctionParameter("array", new DataType(DataFormat.NONE, 1), true),
+				new BuiltInFunctionParameter("dimension", new DataType(DataFormat.NONE, 1), false)
 			),
 			function(SyntaxKind.MINVAL, """
-				Returns the minimal value of all given operand values.
-				
-				The result type can be optionally specified with `(IR=`, e.g. `(IR=F8)`. Otherwise the biggest data type of the operands is chosen.
-				
-				If an array is passed, this function returns the minimum value of all arrays values.
-				
-				If a binary or alphanumeric value is passed, this function returns the minimum length of the operands.
-				""", FLOAT, 8,
+					Returns the minimal value of all given operand values.
+									
+					The result type can be optionally specified with `(IR=`, e.g. `(IR=F8)`. Otherwise the biggest data type of the operands is chosen.
+									
+					If an array is passed, this function returns the minimum value of all arrays values.
+									
+					If a binary or alphanumeric value is passed, this function returns the minimum length of the operands.
+					""", FLOAT, 8,
 				new BuiltInFunctionParameter("operand1", new DataType(NONE, 1), true),
 				new BuiltInFunctionParameter("operand2", new DataType(NONE, 1), false),
 				new BuiltInFunctionParameter("operand3", new DataType(NONE, 1), false)
 			),
 			function(SyntaxKind.MAXVAL, """
-				Returns the maximum value of all given operand values.
-				
-				The result type can be optionally specified with `(IR=`, e.g. `(IR=F8)`. Otherwise the biggest data type of the operands is chosen.
-				
-				If an array is passed, this function returns the maximum value of all arrays values.
-				
-				If a binary or alphanumeric value is passed, this function returns the maximum length of the operands.
-				""", FLOAT, 8,
+					Returns the maximum value of all given operand values.
+									
+					The result type can be optionally specified with `(IR=`, e.g. `(IR=F8)`. Otherwise the biggest data type of the operands is chosen.
+									
+					If an array is passed, this function returns the maximum value of all arrays values.
+									
+					If a binary or alphanumeric value is passed, this function returns the maximum length of the operands.
+					""", FLOAT, 8,
 				new BuiltInFunctionParameter("operand1", new DataType(NONE, 1), true),
 				new BuiltInFunctionParameter("operand2", new DataType(NONE, 1), false),
 				new BuiltInFunctionParameter("operand3", new DataType(NONE, 1), false)
 			),
 			function(SyntaxKind.TRIM, """
-				Remove all leading and trailing whitespace from an alphanumeric or binary string.
+					Remove all leading and trailing whitespace from an alphanumeric or binary string.
 
-				The content of the passed variable is not modified.
-				
-				`LEADING` or `TRIALING` can be specified if only one of them should be trimmed.
-				
-				Example:
-				
-				```natural
-				#NO-LEADING-TRAILING := *TRIM(#ALPHA)
-				#NO-LEADING := *TRIM(#ALPHA, LEADING)
-				#NO-TRAILING := *TRIM(#ALPHA, TRAILING)
-				""", ALPHANUMERIC, DataType.DYNAMIC_LENGTH,
+					The content of the passed variable is not modified.
+									
+					`LEADING` or `TRIALING` can be specified if only one of them should be trimmed.
+									
+					Example:
+									
+					```natural
+					#NO-LEADING-TRAILING := *TRIM(#ALPHA)
+					#NO-LEADING := *TRIM(#ALPHA, LEADING)
+					#NO-TRAILING := *TRIM(#ALPHA, TRAILING)
+					""", ALPHANUMERIC, DataType.DYNAMIC_LENGTH,
 				new BuiltInFunctionParameter("operand", new DataType(ALPHANUMERIC, DataType.DYNAMIC_LENGTH), true)
 			),
 			modifiableVariable(SyntaxKind.COM, """
@@ -248,7 +251,13 @@ public class BuiltInFunctionTable
 
 				When a window is active, no data can be entered outside the window.
 				If a map contains *COM as modifiable field, it will be available for the user to enter data even though a window is currently active on the screen.
-				""", ALPHANUMERIC, 128)
+				""", ALPHANUMERIC, 128),
+			unmodifiableVariable(SyntaxKind.SV_DATA, """
+				Returns the number of elements in the Natural stack available for next `INPUT`.
+				
+				`0` is returned if the stack is empty.
+				`-1` is returned if the next value in the stack is a command or name of a transaction
+				""", NUMERIC, 3)
 		);
 	}
 
