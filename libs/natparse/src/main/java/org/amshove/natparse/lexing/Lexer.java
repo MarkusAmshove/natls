@@ -341,6 +341,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.SV_DATA);
 			return;
 		}
+		if (scanner.advanceIf("LEVEL"))
+		{
+			createAndAdd(SyntaxKind.SV_LEVEL);
+			return;
+		}
 		if (scanner.advanceIf("LINEX"))
 		{
 			createAndAdd(SyntaxKind.LINEX);

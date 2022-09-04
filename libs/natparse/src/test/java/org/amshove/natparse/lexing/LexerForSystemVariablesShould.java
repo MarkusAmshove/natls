@@ -240,4 +240,10 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 	{
 		assertTokens("*DATA", token(SyntaxKind.SV_DATA, "*DATA"));
 	}
+
+	@Test
+	void lexLevel()
+	{
+		assertTokens("*LEVEL", token(SyntaxKind.SV_LEVEL, "*LEVEL"));
+	}
 }

@@ -254,10 +254,15 @@ public class BuiltInFunctionTable
 				""", ALPHANUMERIC, 128),
 			unmodifiableVariable(SyntaxKind.SV_DATA, """
 				Returns the number of elements in the Natural stack available for next `INPUT`.
-				
+								
 				`0` is returned if the stack is empty.
 				`-1` is returned if the next value in the stack is a command or name of a transaction
-				""", NUMERIC, 3)
+				""", NUMERIC, 3),
+			unmodifiableVariable(SyntaxKind.SV_LEVEL, """
+				Returns the level number of the current program, dialog, ... which is currently active.
+				
+				Level 1 is the main program.
+				""", NUMERIC, 2)
 		);
 	}
 
