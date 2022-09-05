@@ -488,6 +488,27 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(assertNodeType(rightArithmetic.right(), ILiteralNode.class).token().intValue()).isEqualTo(2);
 	}
 
+	@Test
+	void parseAChainedConditionalWithArithmetic()
+	{
+		var relationalCriteria = assertParsesCriteria("(#VAR2 * -1 ) > (#VAR1 * 2 + #VAR3)", IRelationalCriteriaNode.class);
+		assertThat(assertNodeType(relationalCriteria.left(), IArithmeticExpressionNode.class).operator()).isEqualTo(SyntaxKind.ASTERISK);
+		assertThat(relationalCriteria.operator()).isEqualTo(ComparisonOperator.GREATER_THAN);
+		var rightArithmetic = assertNodeType(relationalCriteria.right(), IArithmeticExpressionNode.class);
+		assertThat(rightArithmetic.operator()).isEqualTo(SyntaxKind.ASTERISK);
+		assertThat(assertNodeType(rightArithmetic.left(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#VAR1");
+		var nestedArithmetic = assertNodeType(rightArithmetic.right(), IArithmeticExpressionNode.class);
+		assertThat(nestedArithmetic.operator()).isEqualTo(SyntaxKind.PLUS);
+		assertThat(assertNodeType(nestedArithmetic.left(), ILiteralNode.class).token().intValue()).isEqualTo(2);
+		assertThat(assertNodeType(nestedArithmetic.right(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#VAR3");
+	}
+
+	@Test
+	void parseAComplexChainedConditionWithArithmeticWithoutDiagnostics()
+	{
+		assertParsesCriteria("#VAR1 + 2 = *OCC(#ARR) AND (5 > 2) OR *COUNTER(R1.) = 5 OR = 2", IChainedCriteriaNode.class);
+	}
+
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
 	{
 		var list = assertParsesWithoutDiagnostics("IF %s\nIGNORE\nEND-IF".formatted(source));

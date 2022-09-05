@@ -340,11 +340,12 @@ abstract class AbstractParser<T>
 		return node;
 	}
 
+	protected static final List<SyntaxKind> ARITHMETIC_OPERATOR_KINDS = List.of(SyntaxKind.PLUS, SyntaxKind.MINUS, SyntaxKind.ASTERISK, SyntaxKind.SLASH);
 	protected IOperandNode consumeArithmeticExpression(BaseSyntaxNode node) throws ParseError
 	{
 		var needRParen = consumeOptionally(node, SyntaxKind.LPAREN);
 		var operand = consumeOperandNode(node);
-		if(peekAny(List.of(SyntaxKind.PLUS, SyntaxKind.MINUS, SyntaxKind.ASTERISK, SyntaxKind.SLASH)))
+		if(peekAny(ARITHMETIC_OPERATOR_KINDS))
 		{
 			var arithmetic = new ArithmeticExpressionNode();
 			arithmetic.addNode((BaseSyntaxNode) operand);
@@ -652,6 +653,26 @@ abstract class AbstractParser<T>
 			}
 
 			peekOffset++;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Scans all {@link SyntaxKind}s until the stopKind is encountered<br/>
+	 * Returns true if any of the scanned {@link SyntaxKind}s is in the given list.<br/>
+	 * Returns false if none is in the given list or the end of tokens is encountered.
+	 */
+	protected boolean peekAnyUntil(SyntaxKind stopKind, List<SyntaxKind> kinds)
+	{
+		var offset = 0;
+		while(!isAtEnd(offset) && !peekKind(offset, stopKind))
+		{
+			if(kinds.contains(peek(offset).kind()))
+			{
+				return true;
+			}
+			offset++;
 		}
 
 		return false;

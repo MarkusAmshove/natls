@@ -1075,7 +1075,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private ILogicalConditionCriteriaNode conditionCriteria() throws ParseError
 	{
-		if (peekKind(SyntaxKind.LPAREN))
+		if (peekKind(SyntaxKind.LPAREN) && !peekAnyUntil(SyntaxKind.RPAREN, ARITHMETIC_OPERATOR_KINDS)) // not a grouped criteria but an arithmetic expression. nasty lookahead :(
 		{
 			return groupedConditionCriteria();
 		}
