@@ -400,12 +400,28 @@ abstract class AbstractParser<T>
 			return absOperand(node);
 		}
 
+		if(peek().kind() == SyntaxKind.POS)
+		{
+			return posOperand(node);
+		}
+
 		if(peek().kind() == SyntaxKind.LABEL_IDENTIFIER)
 		{
 			return consumeLabelIdentifier(node);
 		}
 
 		return consumeLiteralNode(node);
+	}
+
+	private IOperandNode posOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var posNode = new PosNode();
+		node.addNode(posNode);
+		consumeMandatory(posNode, SyntaxKind.POS);
+		consumeMandatory(posNode, SyntaxKind.LPAREN);
+		posNode.setPositionOf(consumeVariableReferenceNode(posNode));
+		consumeMandatory(posNode, SyntaxKind.RPAREN);
+		return posNode;
 	}
 
 	private IOperandNode valOperand(BaseSyntaxNode node) throws ParseError

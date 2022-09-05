@@ -185,4 +185,11 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(arithmetic.operator()).isEqualTo(SyntaxKind.PLUS);
 		assertThat(assertNodeType(arithmetic.right(), ILiteralNode.class).token().intValue()).isEqualTo(5);
 	}
+
+	@Test
+	void parsePosOperand()
+	{
+		var operand = parseOperands("POS(#VAR.#VAR2)");
+		assertThat(assertNodeType(operand.get(0), IPosNode.class).positionOf().token().symbolName()).isEqualTo("#VAR.#VAR2");
+	}
 }
