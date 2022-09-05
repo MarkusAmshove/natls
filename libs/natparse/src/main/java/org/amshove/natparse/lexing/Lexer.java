@@ -305,6 +305,8 @@ public class Lexer
 			case 'L':
 			case 'm':
 			case 'M':
+			case 'n':
+			case 'N':
 			case 't':
 			case 'T':
 			case 'o':
@@ -334,6 +336,16 @@ public class Lexer
 		if (scanner.advanceIf("OCC"))
 		{
 			createAndAdd(SyntaxKind.OCC);
+			return;
+		}
+		if (scanner.advanceIf("DATA"))
+		{
+			createAndAdd(SyntaxKind.SV_DATA);
+			return;
+		}
+		if (scanner.advanceIf("LEVEL"))
+		{
+			createAndAdd(SyntaxKind.SV_LEVEL);
 			return;
 		}
 		if (scanner.advanceIf("LINEX"))
@@ -408,7 +420,12 @@ public class Lexer
 		}
 		if (scanner.advanceIf("USER"))
 		{
-			createAndAdd(SyntaxKind.USER);
+			createAndAdd(SyntaxKind.SV_USER);
+			return;
+		}
+		if (scanner.advanceIf("NUMBER"))
+		{
+			createAndAdd(SyntaxKind.SV_NUMBER);
 			return;
 		}
 		if (scanner.advanceIf("CURRENT-UNIT"))
@@ -509,6 +526,11 @@ public class Lexer
 		if (scanner.advanceIf("WINDOW-PS"))
 		{
 			createAndAdd(SyntaxKind.WINDOW_PS);
+			return;
+		}
+		if (scanner.advanceIf("TRANSLATE"))
+		{
+			createAndAdd(SyntaxKind.TRANSLATE);
 			return;
 		}
 		scanner.rollbackCurrentLexeme();

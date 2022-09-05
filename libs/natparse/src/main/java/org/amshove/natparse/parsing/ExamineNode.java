@@ -1,19 +1,19 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.natural.IExamineNode;
-import org.amshove.natparse.natural.IVariableReferenceNode;
+import org.amshove.natparse.natural.IOperandNode;
 
 class ExamineNode extends StatementNode implements IExamineNode
 {
-	private IVariableReferenceNode examined;
+	private IOperandNode examined;
 
 	@Override
-	public IVariableReferenceNode examinedVariable()
+	public IOperandNode examined()
 	{
 		return examined;
 	}
 
-	void setExamined(IVariableReferenceNode examined)
+	void setExamined(IOperandNode examined)
 	{
 		this.examined = examined;
 	}
