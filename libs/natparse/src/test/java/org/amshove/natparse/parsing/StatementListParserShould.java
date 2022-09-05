@@ -1123,6 +1123,75 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(beforeBreak.body().statements().first()).isInstanceOf(IIgnoreNode.class);
 	}
 
+	@Test
+	void parseASimpleHistogram()
+	{
+		var histogram = assertParsesSingleStatement("""
+			HISTOGRAM THE-VIEW THE-DESC STARTING FROM 'M'
+			IGNORE
+			END-HISTOGRAM""", IHistogramNode.class);
+		assertThat(histogram.view().token().symbolName()).isEqualTo("THE-VIEW");
+		assertThat(histogram.descriptor().symbolName()).isEqualTo("THE-DESC");
+	}
+
+	@Test
+	void parseAHistogramWithNumber()
+	{
+		assertParsesSingleStatement("""
+			HISTOGRAM(1) THE-VIEW THE-DESC
+			IGNORE
+			END-HISTOGRAM""", IHistogramNode.class);
+	}
+
+	@Test
+	void parseHistogramWithAll()
+	{
+		assertParsesSingleStatement("""
+			HISTOGRAM ALL THE-VIEW THE-DESC
+			IGNORE
+			END-HISTOGRAM""", IHistogramNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"ON", "OFF"
+	})
+	void parseHistogramWithMultiFetch(String multifetch)
+	{
+		assertParsesSingleStatement("""
+			HISTOGRAM ALL MULTI-FETCH %s THE-VIEW THE-DESC
+			IGNORE
+			END-HISTOGRAM""".formatted(multifetch), IHistogramNode.class);
+	}
+
+	@Test
+	void parseHistogramWithStartingFrom()
+	{
+		assertParsesSingleStatement("""
+			HISTOGRAM IN FILE THE-VIEW VALUE FOR FIELD THE-DESC STARTING FROM VALUES #ABC ENDING AT #DEF
+			IGNORE
+			END-HISTOGRAM""", IHistogramNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"IN ASCENDING SEQUENCE",
+		"IN DESCENDING SEQUENCE",
+		"IN ASC",
+		"IN DESC",
+		"ASC",
+		"DESC",
+		"IN VARIABLE #VAR2",
+		"DYNAMIC #VAR2"
+	})
+	void parseHistogramWithSorting(String sorting)
+	{
+		assertParsesSingleStatement("""
+			HISTOGRAM THE-VIEW %s THE-DESC
+			IGNORE
+			END-HISTOGRAM""".formatted(sorting), IHistogramNode.class);
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);
