@@ -66,9 +66,9 @@ public class ModuleDocumentationGenerator
 
 	private void appendUsages(LanguageServerFile file)
 	{
-		documentation.append("## Usages");
+		documentation.append("## Used by");
 		file.getIncomingReferences().stream().forEach(r -> {
-			documentation.append("\n- [%s](../%s/%s.md)".formatted(r.getReferableName(), r.getLibrary().name(), r.getReferableName()));
+			documentation.append("\n- [%s.%s](../%s/%s.md)".formatted(r.getLibrary().name(), r.getReferableName(), r.getLibrary().name(), r.getReferableName()));
 		});
 	}
 
