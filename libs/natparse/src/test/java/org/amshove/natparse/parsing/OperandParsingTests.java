@@ -52,7 +52,7 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "MINVAL", "MAXVAL"})
+	@ValueSource(strings = { "MINVAL", "MAXVAL" })
 	void parseMinAndMaxValWithExplicitReturnType(String function)
 	{
 		var node = parseOperands("""
@@ -171,5 +171,18 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(assertNodeType(translate.parameter().first(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#VAR");
 		assertThat(assertNodeType(translate.toTranslate(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#VAR");
 		assertThat(translate.isToUpper()).isFalse();
+	}
+
+	@Test
+	void parseArithmeticInArrayAccess()
+	{
+		var operand = parseOperands("#THEVAR(#I + 5)").first();
+		var reference = assertNodeType(operand, IVariableReferenceNode.class);
+		assertThat(reference.referencingToken()).isNotNull();
+		assertThat(reference.dimensions()).hasSize(1);
+		var arithmetic = assertNodeType(reference.dimensions().first(), IArithmeticExpressionNode.class);
+		assertThat(assertNodeType(arithmetic.left(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#I");
+		assertThat(arithmetic.operator()).isEqualTo(SyntaxKind.PLUS);
+		assertThat(assertNodeType(arithmetic.right(), ILiteralNode.class).token().intValue()).isEqualTo(5);
 	}
 }

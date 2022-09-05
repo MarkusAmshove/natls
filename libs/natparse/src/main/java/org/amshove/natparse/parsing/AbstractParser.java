@@ -505,11 +505,11 @@ abstract class AbstractParser<T>
 
 		if(consumeOptionally(reference, SyntaxKind.LPAREN))
 		{
-			reference.addDimension(consumeOperandNode(reference));
+			reference.addDimension(consumeArithmeticExpression(reference));
 			while(peekKind(SyntaxKind.COMMA))
 			{
 				consume(reference);
-				reference.addDimension(consumeOperandNode(reference));
+				reference.addDimension(consumeArithmeticExpression(reference));
 			}
 			consumeMandatory(reference, SyntaxKind.RPAREN);
 		}
