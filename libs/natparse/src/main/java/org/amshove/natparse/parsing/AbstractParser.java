@@ -340,6 +340,30 @@ abstract class AbstractParser<T>
 		return node;
 	}
 
+	protected IOperandNode consumeArithmeticExpression(BaseSyntaxNode node) throws ParseError
+	{
+		var needRParen = consumeOptionally(node, SyntaxKind.LPAREN);
+		var operand = consumeOperandNode(node);
+		if(peekAny(List.of(SyntaxKind.PLUS, SyntaxKind.MINUS, SyntaxKind.ASTERISK, SyntaxKind.SLASH)))
+		{
+			var arithmetic = new ArithmeticExpressionNode();
+			arithmetic.addNode((BaseSyntaxNode) operand);
+			arithmetic.setLeft(operand);
+			var operator = consume(arithmetic);
+			arithmetic.setOperator(operator.kind());
+			var rhs = consumeArithmeticExpression(arithmetic);
+			arithmetic.setRight(rhs);
+			node.replaceChild((BaseSyntaxNode) operand, arithmetic);
+			operand = arithmetic;
+		}
+
+		if(needRParen)
+		{
+			consumeMandatory(node, SyntaxKind.RPAREN);
+		}
+		return operand;
+	}
+
 	protected IOperandNode consumeOperandNode(BaseSyntaxNode node) throws ParseError
 	{
 		if(peekKind(SyntaxKind.IDENTIFIER))

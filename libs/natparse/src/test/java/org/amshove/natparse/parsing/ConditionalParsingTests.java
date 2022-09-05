@@ -472,6 +472,22 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(assertNodeType(rights.get(2), IScanOperandNode.class).operand()).isNotNull();
 	}
 
+	@Test
+	void parseArithmeticExpressionsInCriteria()
+	{
+		var criteria = assertParsesCriteria("*OCC(#ARR) + 5 = (10 * 2)", IRelationalCriteriaNode.class);
+
+		var leftArithmetic = assertNodeType(criteria.left(), IArithmeticExpressionNode.class);
+		assertThat(assertNodeType(leftArithmetic.left(), ISystemFunctionNode.class).systemFunction()).isEqualTo(SyntaxKind.OCC);
+		assertThat(leftArithmetic.operator()).isEqualTo(SyntaxKind.PLUS);
+		assertThat(assertNodeType(leftArithmetic.right(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+
+		var rightArithmetic = assertNodeType(criteria.right(), IArithmeticExpressionNode.class);
+		assertThat(assertNodeType(rightArithmetic.left(), ILiteralNode.class).token().intValue()).isEqualTo(10);
+		assertThat(rightArithmetic.operator()).isEqualTo(SyntaxKind.ASTERISK);
+		assertThat(assertNodeType(rightArithmetic.right(), ILiteralNode.class).token().intValue()).isEqualTo(2);
+	}
+
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
 	{
 		var list = assertParsesWithoutDiagnostics("IF %s\nIGNORE\nEND-IF".formatted(source));

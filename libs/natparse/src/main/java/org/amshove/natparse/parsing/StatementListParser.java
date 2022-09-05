@@ -587,7 +587,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 		else
 		{
-			return consumeOperandNode(node);
+			return consumeArithmeticExpression(node);
 		}
 	}
 
