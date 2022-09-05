@@ -530,6 +530,16 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		assertParsesCriteria("NOT (#VAR1  =  #ARR(*))  AND  (#VAR2  > ((0 + 5)))", INegatedConditionalCriteria.class);
 	}
 
+	@Test
+	void handleChainedGroupedCriteriaWithAbsCallsAndArrayAccessesWithoutDiagnostics()
+	{
+		assertParsesCriteria("""
+			(ABS(#VAR1) EQ ABS(P-VAR(#I))
+			   OR (ABS(#VAR5) < ABS(#VAR2) + 0,15
+			   AND ABS(#VAR1) > ABS(#VAR2) - 0,15 ))
+			""", IGroupedConditionCriteria.class);
+	}
+
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
 	{
 		var list = assertParsesWithoutDiagnostics("IF %s\nIGNORE\nEND-IF".formatted(source));

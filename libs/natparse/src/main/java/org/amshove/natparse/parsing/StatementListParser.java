@@ -1075,7 +1075,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private ILogicalConditionCriteriaNode conditionCriteria() throws ParseError
 	{
-		if (peekKind(SyntaxKind.LPAREN) && !peekAnyUntil(SyntaxKind.RPAREN, ARITHMETIC_OPERATOR_KINDS)) // not a grouped criteria but an arithmetic expression. nasty lookahead :(
+		if (peekKind(SyntaxKind.LPAREN) && containsNoArithmeticUntilClosingParensOrComparingOperator(SyntaxKind.RPAREN))  // we're not bamboozled by grouping arithmetics or nested comparisons
 		{
 			return groupedConditionCriteria();
 		}
@@ -1115,6 +1115,43 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		report(ParserErrors.unexpectedToken(List.of(SyntaxKind.TRUE, SyntaxKind.FALSE, SyntaxKind.IDENTIFIER), peek()));
 		throw new ParseError(peek());
 	}
+
+	protected boolean containsNoArithmeticUntilClosingParensOrComparingOperator(SyntaxKind stopKind)
+	{
+		var offset = 1;
+		var nestedParens = 0;
+		while(!isAtEnd(offset) && !peekKind(offset, stopKind) && !CONDITIONAL_OPERATOR_START.contains(peek(offset).kind()))
+		{
+			var currentKind = peek(offset).kind();
+			if(currentKind == SyntaxKind.LPAREN)
+			{
+				nestedParens++;
+			}
+			// skip nested parens
+			while(nestedParens > 0 && !isAtEnd(offset))
+			{
+				if(currentKind == SyntaxKind.LPAREN)
+				{
+					nestedParens++;
+				}
+				if(currentKind == SyntaxKind.RPAREN)
+				{
+					nestedParens--;
+				}
+
+				offset++;
+			}
+
+			if(ARITHMETIC_OPERATOR_KINDS.contains(currentKind))
+			{
+				return false;
+			}
+			offset++;
+		}
+
+		return true;
+	}
+
 
 	private ILogicalConditionCriteriaNode isConditionCriteria(IOperandNode lhs) throws ParseError
 	{
