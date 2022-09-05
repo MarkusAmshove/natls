@@ -40,6 +40,7 @@ public class BuiltInFunctionTable
 			modifiableVariable(SyntaxKind.PAGE_NUMBER, "Get or set the current page number of an report", PACKED, 5.0),
 			unmodifiableVariable(SyntaxKind.WINDOW_PS, "Returns the page size of the logical window (without the frame)", NUMERIC, 3.0),
 			unmodifiableVariable(SyntaxKind.LIBRARY_ID, "Returns the ID the the current library. This returns the same as *APPLIC-ID", ALPHANUMERIC, 8.0),
+			modifiableVariable(SyntaxKind.SV_NUMBER, "Get or set the number of record a FIND or HISTOGRAM statement. Uses the innermost statement if no label identifier is passed.", PACKED, 10),
 			unmodifiableVariable(SyntaxKind.LINEX, """
 				Returns the line number of the invocation of this variable.
 				When this variable is used within copycodes, it contains the line numbers of all includes leading to this variable.

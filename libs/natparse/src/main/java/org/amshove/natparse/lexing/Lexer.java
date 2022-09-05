@@ -305,6 +305,8 @@ public class Lexer
 			case 'L':
 			case 'm':
 			case 'M':
+			case 'n':
+			case 'N':
 			case 't':
 			case 'T':
 			case 'o':
@@ -419,6 +421,11 @@ public class Lexer
 		if (scanner.advanceIf("USER"))
 		{
 			createAndAdd(SyntaxKind.SV_USER);
+			return;
+		}
+		if (scanner.advanceIf("NUMBER"))
+		{
+			createAndAdd(SyntaxKind.SV_NUMBER);
 			return;
 		}
 		if (scanner.advanceIf("CURRENT-UNIT"))

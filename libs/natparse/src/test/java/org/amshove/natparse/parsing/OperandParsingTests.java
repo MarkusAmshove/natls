@@ -137,4 +137,19 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		var valNode = assertNodeType(operand.get(0), IAbsOperandNode.class);
 		assertThat(valNode.variable().referencingToken().symbolName()).isEqualTo("#THEVAR");
 	}
+
+	@Test
+	void parseNumberWithParam()
+	{
+		var operand = parseOperands("*NUMBER(R1.)");
+		var number = assertNodeType(operand.get(0), ISystemFunctionNode.class);
+		assertThat(number.parameter()).hasSize(1);
+	}
+
+	@Test
+	void parseNumberWithoutParam()
+	{
+		var operand = parseOperands("*NUMBER");
+		assertNodeType(operand.get(0), ISystemVariableNode.class);
+	}
 }

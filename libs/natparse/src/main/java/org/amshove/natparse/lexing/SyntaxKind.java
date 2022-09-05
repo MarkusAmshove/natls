@@ -63,6 +63,7 @@ public enum SyntaxKind
 	CURS_FIELD(false, true, false),
 	SV_DATA(false, true, false),
 	SV_LEVEL(false, true, false),
+	SV_NUMBER(false, true, true),
 	TIMESTMP(false, true, false),
 	PF_KEY(false, true, false),
 	INIT_USER(false, true, false),
