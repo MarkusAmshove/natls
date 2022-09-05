@@ -687,15 +687,24 @@ abstract class AbstractParser<T>
 	}
 
 	/**
-	 * Scans all {@link SyntaxKind}s until the stopKind is encountered<br/>
+	 * Scans all {@link SyntaxKind}s (starting from the next one, not current) until the stopKind is encountered<br/>
 	 * Returns true if any of the scanned {@link SyntaxKind}s is in the given list.<br/>
 	 * Returns false if none is in the given list or the end of tokens is encountered.
 	 */
 	protected boolean peekAnyUntil(SyntaxKind stopKind, List<SyntaxKind> kinds)
 	{
-		var offset = 0;
+		var offset = 1;
 		while(!isAtEnd(offset) && !peekKind(offset, stopKind))
 		{
+			if(peek(offset).kind() == SyntaxKind.LPAREN)
+			{
+				// skip nested parens
+				while(!isAtEnd(offset) && !peekKind(offset, SyntaxKind.RPAREN))
+				{
+					offset++;
+				}
+			}
+
 			if(kinds.contains(peek(offset).kind()))
 			{
 				return true;

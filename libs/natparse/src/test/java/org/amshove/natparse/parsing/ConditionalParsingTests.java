@@ -509,6 +509,12 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		assertParsesCriteria("#VAR1 + 2 = *OCC(#ARR) AND (5 > 2) OR *COUNTER(R1.) = 5 OR = 2", IChainedCriteriaNode.class);
 	}
 
+	@Test
+	void handleNestedParenthesis()
+	{
+		assertParsesCriteria("NOT (#VAR1  =  #ARR(*))  AND  (#VAR2  > ((0 + 5)))", INegatedConditionalCriteria.class);
+	}
+
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
 	{
 		var list = assertParsesWithoutDiagnostics("IF %s\nIGNORE\nEND-IF".formatted(source));
