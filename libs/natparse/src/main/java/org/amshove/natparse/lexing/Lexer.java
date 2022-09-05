@@ -528,6 +528,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.WINDOW_PS);
 			return;
 		}
+		if (scanner.advanceIf("TRANSLATE"))
+		{
+			createAndAdd(SyntaxKind.TRANSLATE);
+			return;
+		}
 		scanner.rollbackCurrentLexeme();
 		createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
 	}

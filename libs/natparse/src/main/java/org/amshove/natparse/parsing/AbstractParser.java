@@ -441,6 +441,11 @@ abstract class AbstractParser<T>
 
 	protected ISystemFunctionNode consumeSystemFunctionNode(BaseSyntaxNode node) throws ParseError
 	{
+		if(peek().kind() == SyntaxKind.TRANSLATE)
+		{
+			return consumeTranslateSystemFunction(node);
+		}
+
 		var systemFunction = new SystemFunctionNode();
 		systemFunction.setSystemFunction(peek().kind());
 		consume(systemFunction);
@@ -460,11 +465,34 @@ abstract class AbstractParser<T>
 		systemFunction.addParameter(consumeOperandNode(systemFunction));
 		while(consumeOptionally(systemFunction, SyntaxKind.COMMA))
 		{
-			systemFunction.addParameter(consumeOperandNode(systemFunction));
+			if(systemFunction.systemFunction() == SyntaxKind.TRANSLATE)
+			{
+				consumeAnyMandatory(systemFunction, List.of(SyntaxKind.UPPER, SyntaxKind.LOWER)); // TODO: Save if upper or lower
+			}
+			else
+			{
+				systemFunction.addParameter(consumeOperandNode(systemFunction));
+			}
+
 		}
 		consumeMandatory(systemFunction, SyntaxKind.RPAREN);
 		node.addNode(systemFunction);
 		return systemFunction;
+	}
+
+	private ISystemFunctionNode consumeTranslateSystemFunction(BaseSyntaxNode node) throws ParseError
+	{
+		var translate = new TranslateSystemFunctionNode();
+		node.addNode(translate);
+		consumeMandatory(translate, SyntaxKind.TRANSLATE);
+		consumeMandatory(translate, SyntaxKind.LPAREN);
+		var reference = consumeVariableReferenceNode(translate);
+		translate.setToTranslate(reference);
+		consumeMandatory(translate, SyntaxKind.COMMA);
+		var translationToken = consumeAny(List.of(SyntaxKind.UPPER, SyntaxKind.LOWER));
+		translate.setToUpper(translationToken.kind() == SyntaxKind.UPPER);
+		consumeMandatory(translate, SyntaxKind.RPAREN);
+		return translate;
 	}
 
 	protected IVariableReferenceNode consumeVariableReferenceNode(BaseSyntaxNode node) throws ParseError

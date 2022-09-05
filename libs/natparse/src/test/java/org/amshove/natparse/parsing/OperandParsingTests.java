@@ -152,4 +152,24 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		var operand = parseOperands("*NUMBER");
 		assertNodeType(operand.get(0), ISystemVariableNode.class);
 	}
+
+	@Test
+	void parseTranslateUpper()
+	{
+		var operand = parseOperands("*TRANSLATE(#VAR, UPPER)");
+		var translate = assertNodeType(operand.get(0), ITranslateSystemFunctionNode.class);
+		assertThat(assertNodeType(translate.parameter().first(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#VAR");
+		assertThat(assertNodeType(translate.toTranslate(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#VAR");
+		assertThat(translate.isToUpper()).isTrue();
+	}
+
+	@Test
+	void parseTranslateLower()
+	{
+		var operand = parseOperands("*TRANSLATE(#VAR, LOWER)");
+		var translate = assertNodeType(operand.get(0), ITranslateSystemFunctionNode.class);
+		assertThat(assertNodeType(translate.parameter().first(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#VAR");
+		assertThat(assertNodeType(translate.toTranslate(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#VAR");
+		assertThat(translate.isToUpper()).isFalse();
+	}
 }

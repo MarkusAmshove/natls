@@ -252,4 +252,10 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 	{
 		assertTokens("*NUMBER", token(SyntaxKind.SV_NUMBER, "*NUMBER"));
 	}
+
+	@Test
+	void lexTranslate()
+	{
+		assertTokens("*TRANSLATE", token(SyntaxKind.TRANSLATE, "*TRANSLATE"));
+	}
 }

@@ -40,6 +40,17 @@ public class BuiltInFunctionTable
 			modifiableVariable(SyntaxKind.PAGE_NUMBER, "Get or set the current page number of an report", PACKED, 5.0),
 			unmodifiableVariable(SyntaxKind.WINDOW_PS, "Returns the page size of the logical window (without the frame)", NUMERIC, 3.0),
 			unmodifiableVariable(SyntaxKind.LIBRARY_ID, "Returns the ID the the current library. This returns the same as *APPLIC-ID", ALPHANUMERIC, 8.0),
+			unmodifiableVariable(SyntaxKind.TRANSLATE, """
+				Converts the characters passed as first argument into either `LOWER` or `UPPER` case.
+				
+				Accepts an operand of type `A`, `B` or `U`.
+				
+				Usage:
+				
+				```
+				#UPPER := *TRANSLATE(#VAR2, UPPER)
+				#LOWER := *TRANSLATE(#VAR2, LOWER)
+				""", ALPHANUMERIC, 0),
 			modifiableVariable(SyntaxKind.SV_NUMBER, "Get or set the number of record a FIND or HISTOGRAM statement. Uses the innermost statement if no label identifier is passed.", PACKED, 10),
 			unmodifiableVariable(SyntaxKind.LINEX, """
 				Returns the line number of the invocation of this variable.
@@ -262,7 +273,7 @@ public class BuiltInFunctionTable
 				""", NUMERIC, 3),
 			unmodifiableVariable(SyntaxKind.SV_LEVEL, """
 				Returns the level number of the current program, dialog, ... which is currently active.
-				
+								
 				Level 1 is the main program.
 				""", NUMERIC, 2)
 		);
