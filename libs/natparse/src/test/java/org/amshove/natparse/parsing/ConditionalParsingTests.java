@@ -61,6 +61,21 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseMultipleFunctionCallsOverMultipleLinesInNegatedGroupedCriteriaWithoutDiagnostics()
+	{
+		var calledFunction = new NaturalModule(null);
+		moduleProvider.addModule("ISSTH", calledFunction);
+		assertParsesCriteria("""
+			  NOT (ISSTH(<#VAR3.VAR4(#I)>)
+			   OR ISSTH(<#VAR3.VAR4(#I)>)
+			   OR ISSTH(<#VAR3.VAR4(#I)>)
+			   OR ISSTH(<#VAR3.VAR4(#I)>)
+			   OR #VAR.#VAR2(#I) = 'Hello'
+			   OR #VAR.#VAR2(#I) = 'World')
+			""", INegatedConditionalCriteria.class);
+	}
+
+	@Test
 	void parseFunctionCallsInRelationalCriteria()
 	{
 		var calledFunction = new NaturalModule(null);

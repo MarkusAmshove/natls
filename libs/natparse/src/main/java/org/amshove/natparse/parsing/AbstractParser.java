@@ -322,8 +322,17 @@ abstract class AbstractParser<T>
 		node.setReferencedModule((NaturalModule) module);
 
 		consumeMandatory(node, SyntaxKind.LPAREN);
+		if(peekKind(SyntaxKind.LESSER_GREATER) && peekKind(1, SyntaxKind.RPAREN))
+		{
+			// function call wihtout parameter
+			consumeMandatory(node, SyntaxKind.LESSER_GREATER);
+			consumeMandatory(node, SyntaxKind.RPAREN);
+			return node;
+		}
 
-		while (!peekKind(SyntaxKind.RPAREN))
+		consumeMandatory(node, SyntaxKind.LESSER_SIGN);
+
+		while (!isAtEnd() && !peekKind(SyntaxKind.GREATER_SIGN))
 		{
 			if (peekKind(SyntaxKind.IDENTIFIER))
 			{
@@ -335,6 +344,7 @@ abstract class AbstractParser<T>
 			}
 		}
 
+		consumeMandatory(node, SyntaxKind.GREATER_SIGN);
 		consumeMandatory(node, SyntaxKind.RPAREN);
 
 		return node;
