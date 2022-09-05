@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 public class App
 {
-	private static final List<NaturalFileType> RELEVANT_FILE_TYPES = List.of(NaturalFileType.FUNCTION, NaturalFileType.SUBROUTINE, NaturalFileType.SUBPROGRAM);
+	private static final List<NaturalFileType> RELEVANT_FILE_TYPES = List.of(NaturalFileType.FUNCTION, NaturalFileType.SUBROUTINE, NaturalFileType.SUBPROGRAM, NaturalFileType.PROGRAM);
 	public static void main(String[] args) throws IOException
 	{
 		var nls = new NaturalLanguageService();

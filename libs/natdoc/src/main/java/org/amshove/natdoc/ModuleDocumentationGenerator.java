@@ -87,7 +87,7 @@ public class ModuleDocumentationGenerator
 		defineData.variables().stream()
 			.filter(v -> v.scope() == VariableScope.PARAMETER)
 			.filter(v -> v.position().isSameFileAs(defineData.position()))
-			.forEach(v -> documentation.append(convertVariable(v)));
+			.forEach(v -> documentation.append(convertVariable(v) + "\n"));
 
 		documentation.append("\n```");
 		appendNewLine();
