@@ -123,6 +123,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					case FORMAT:
 						statementList.addStatement(formatNode());
 						break;
+					case HISTOGRAM:
+						statementList.addStatement(histogram());
+						break;
 					case START:
 						statementList.addStatement(parseAtPositionOf(SyntaxKind.START, SyntaxKind.DATA, SyntaxKind.END_START, true, new StartOfDataNode()));
 						break;
@@ -241,6 +244,87 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode histogram() throws ParseError
+	{
+		var histogram = new HistogramNode();
+		consumeMandatory(histogram, SyntaxKind.HISTOGRAM);
+		var start = previousToken();
+
+		consumeAnyOptionally(histogram, List.of(SyntaxKind.ALL, SyntaxKind.LPAREN));
+		if (previousToken().kind() == SyntaxKind.LPAREN)
+		{
+			consumeOperandNode(histogram); // limit
+			consumeMandatory(histogram, SyntaxKind.RPAREN);
+		}
+
+		if (consumeOptionally(histogram, SyntaxKind.MULTI_FETCH))
+		{
+			consumeAnyMandatory(histogram, List.of(SyntaxKind.ON, SyntaxKind.OFF));
+		}
+
+		consumeOptionally(histogram, SyntaxKind.IN);
+		consumeOptionally(histogram, SyntaxKind.FILE);
+
+		histogram.setView(consumeVariableReferenceNode(histogram));
+		if (consumeOptionally(histogram, SyntaxKind.PASSWORD))
+		{
+			consumeMandatory(histogram, SyntaxKind.EQUALS_SIGN);
+			consumeOperandNode(histogram);
+		}
+
+		if (consumeAnyOptionally(histogram, List.of(SyntaxKind.IN, SyntaxKind.ASC, SyntaxKind.ASCENDING, SyntaxKind.DESC, SyntaxKind.DESCENDING, SyntaxKind.VARIABLE, SyntaxKind.DYNAMIC)))
+		{
+			if (previousToken().kind() == SyntaxKind.IN)
+			{
+				consumeAnyMandatory(histogram, List.of(SyntaxKind.ASC, SyntaxKind.ASCENDING, SyntaxKind.DESC, SyntaxKind.DESCENDING, SyntaxKind.VARIABLE, SyntaxKind.DYNAMIC));
+			}
+
+			if (previousToken().kind() == SyntaxKind.VARIABLE || previousToken().kind() == SyntaxKind.DYNAMIC)
+			{
+				consumeOperandNode(histogram);
+			}
+
+			consumeOptionally(histogram, SyntaxKind.SEQUENCE);
+		}
+
+		consumeOptionally(histogram, SyntaxKind.VALUE);
+		consumeOptionally(histogram, SyntaxKind.FOR);
+		consumeOptionally(histogram, SyntaxKind.FIELD);
+		histogram.setDescriptor(consumeMandatoryIdentifier(histogram));
+
+		if (consumeAnyOptionally(histogram, List.of(SyntaxKind.STARTING, SyntaxKind.ENDING)))
+		{
+			if (previousToken().kind() == SyntaxKind.STARTING)
+			{
+				consumeAnyOptionally(histogram, List.of(SyntaxKind.WITH, SyntaxKind.FROM));
+				consumeAnyOptionally(histogram, List.of(SyntaxKind.VALUE, SyntaxKind.VALUES));
+				consumeOperandNode(histogram);
+			}
+
+			if (consumeAnyOptionally(histogram, List.of(SyntaxKind.THRU, SyntaxKind.ENDING)))
+			{
+				if (previousToken().kind() == SyntaxKind.ENDING)
+				{
+					consumeOptionally(histogram, SyntaxKind.AT);
+				}
+			}
+			else
+			{
+				consumeOptionally(histogram, SyntaxKind.TO);
+			}
+
+			if (isOperand())
+			{
+				consumeOperandNode(histogram);
+			}
+		}
+
+		histogram.setBody(statementList(SyntaxKind.END_HISTOGRAM));
+		consumeMandatoryClosing(histogram, SyntaxKind.END_HISTOGRAM, start);
+
+		return histogram;
 	}
 
 	private StatementNode beforeBreak() throws ParseError
@@ -1120,21 +1204,21 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		var offset = 1;
 		var nestedParens = 0;
-		while(!isAtEnd(offset) && !peekKind(offset, stopKind) && !CONDITIONAL_OPERATOR_START.contains(peek(offset).kind()))
+		while (!isAtEnd(offset) && !peekKind(offset, stopKind) && !CONDITIONAL_OPERATOR_START.contains(peek(offset).kind()))
 		{
 			var currentKind = peek(offset).kind();
-			if(currentKind == SyntaxKind.LPAREN)
+			if (currentKind == SyntaxKind.LPAREN)
 			{
 				nestedParens++;
 			}
 			// skip nested parens
-			while(nestedParens > 0 && !isAtEnd(offset))
+			while (nestedParens > 0 && !isAtEnd(offset))
 			{
-				if(currentKind == SyntaxKind.LPAREN)
+				if (currentKind == SyntaxKind.LPAREN)
 				{
 					nestedParens++;
 				}
-				if(currentKind == SyntaxKind.RPAREN)
+				if (currentKind == SyntaxKind.RPAREN)
 				{
 					nestedParens--;
 				}
@@ -1142,7 +1226,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 				offset++;
 			}
 
-			if(ARITHMETIC_OPERATOR_KINDS.contains(currentKind))
+			if (ARITHMETIC_OPERATOR_KINDS.contains(currentKind))
 			{
 				return false;
 			}
@@ -1151,7 +1235,6 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		return true;
 	}
-
 
 	private ILogicalConditionCriteriaNode isConditionCriteria(IOperandNode lhs) throws ParseError
 	{

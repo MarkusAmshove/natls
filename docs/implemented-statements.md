@@ -64,7 +64,7 @@ partial - partially implemented to prevent false positives
 | GET | :x: |
 | GET SAME | :x: |
 | GET TRANSACTION DATA | :x: |
-| HISTOGRAM | :x: |
+| HISTOGRAM | :partial: |
 | IF | :white_check_mark: |
 | IF SELECTION | :x: |
 | IGNORE | :white_check_mark: |
