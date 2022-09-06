@@ -379,7 +379,7 @@ abstract class AbstractParser<T>
 	{
 		if(peekKind(SyntaxKind.IDENTIFIER))
 		{
-			if(peekKind(1, SyntaxKind.LPAREN) && peekKind(2, SyntaxKind.LESSER_SIGN))
+			if(peekKind(1, SyntaxKind.LPAREN) && (peekKind(2, SyntaxKind.LESSER_SIGN) || peekKind(2, SyntaxKind.LESSER_GREATER)))
 			{
 				var token = peek();
 				discard(); // this is kinda strange. reiterate on why functionCall() needs to get the token

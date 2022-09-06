@@ -540,6 +540,16 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 			""", IGroupedConditionCriteria.class);
 	}
 
+	@Test
+	void parseFunctionCallsWithEmptyParameter()
+	{
+		var calledFunction = new NaturalModule(null);
+		moduleProvider.addModule("ISSTH", calledFunction);
+
+		var negated = assertParsesCriteria("NOT ISSTH(<>)", INegatedConditionalCriteria.class);
+		assertThat(assertNodeType(negated.criteria(), IUnaryLogicalCriteriaNode.class).node()).isInstanceOf(IFunctionCallNode.class);
+	}
+
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
 	{
 		var list = assertParsesWithoutDiagnostics("IF %s\nIGNORE\nEND-IF".formatted(source));
