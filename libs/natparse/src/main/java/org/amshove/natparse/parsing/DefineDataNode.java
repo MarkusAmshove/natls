@@ -4,10 +4,10 @@ import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.ddm.IDdmField;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -54,24 +54,22 @@ class DefineDataNode extends BaseSyntaxNode implements IDefineData
 		return ReadOnlyList.from(variables); // TODO: Perf
 	}
 
-	@Nullable
 	@Override
-	public IVariableNode findVariable(String symbolName)
+	public Optional<IVariableNode> findVariable(String symbolName)
 	{
 		for (var variable : variables)
 		{
 			if (variable.name().equals(symbolName) || variable.qualifiedName().equals(symbolName))
 			{
-				return variable;
+				return Optional.of(variable);
 			}
 		}
 
-		return null;
+		return Optional.empty();
 	}
 
-	@Nullable
 	@Override
-	public IDdmField findDdmField(String symbolName)
+	public Optional<IDdmField> findDdmField(String symbolName)
 	{
 		for (var variable : variables)
 		{
@@ -80,12 +78,12 @@ class DefineDataNode extends BaseSyntaxNode implements IDefineData
 				var field = viewNode.ddm().findField(symbolName);
 				if (field != null)
 				{
-					return field;
+					return Optional.of(field);
 				}
 			}
 		}
 
-		return null;
+		return Optional.empty();
 	}
 
 	@Override

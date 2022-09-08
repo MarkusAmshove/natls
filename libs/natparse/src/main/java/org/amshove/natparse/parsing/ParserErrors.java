@@ -115,12 +115,9 @@ class ParserErrors
 
 	public static ParserDiagnostic dynamicAndFixedLength(TypedVariableNode variable)
 	{
-		var dynamicToken = variable.findDescendantToken(SyntaxKind.DYNAMIC);
-		if (dynamicToken != null)
-		{
-			return ParserDiagnostic.create("A variable with a fixed length can't also have dynamic length", dynamicToken, ParserError.DYNAMIC_AND_FIXED_LENGTH);
-		}
-		return null;
+		return variable.findDescendantToken(SyntaxKind.DYNAMIC)
+			.map(dynamicToken -> ParserDiagnostic.create("A variable with a fixed length can't also have dynamic length", dynamicToken, ParserError.DYNAMIC_AND_FIXED_LENGTH))
+			.orElse(null);
 	}
 
 	public static ParserDiagnostic invalidArrayBound(IArrayDimension dimension, int bound)

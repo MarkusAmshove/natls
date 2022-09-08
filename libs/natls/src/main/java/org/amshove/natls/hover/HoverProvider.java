@@ -181,7 +181,7 @@ public class HoverProvider
 			declaration += " %s".formatted(typedVariableNode.type().toShortString());
 		}
 
-		if(variable.findDescendantToken(SyntaxKind.OPTIONAL) != null)
+		if(variable.findDescendantToken(SyntaxKind.OPTIONAL).isPresent())
 		{
 			declaration += " OPTIONAL";
 		}

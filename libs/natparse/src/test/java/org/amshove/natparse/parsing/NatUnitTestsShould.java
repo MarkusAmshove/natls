@@ -11,7 +11,7 @@ public class NatUnitTestsShould extends ParserIntegrationTest
 	@Test
 	void notReportAnUnresolvedSubroutineForSetup(@ProjectName("natunittests")NaturalProject project)
 	{
-		var module = project.findModule("NATUNIT", "TCSETUP");
+		var module = project.findModuleUnsafe("NATUNIT", "TCSETUP");
 		var subprogram = assertParsesWithoutAnyDiagnostics(module);
 		assertThat(subprogram.isTestCase()).isTrue();
 	}
@@ -19,7 +19,7 @@ public class NatUnitTestsShould extends ParserIntegrationTest
 	@Test
 	void notReportAnUnresolvedSubroutineForTeardown(@ProjectName("natunittests")NaturalProject project)
 	{
-		var module = project.findModule("NATUNIT", "TCTEAR");
+		var module = project.findModuleUnsafe("NATUNIT", "TCTEAR");
 		var subprogram = assertParsesWithoutAnyDiagnostics(module);
 		assertThat(subprogram.isTestCase()).isTrue();
 	}

@@ -314,7 +314,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var variable = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
 		assertThat(variable.type().initialValue().source()).isEqualTo("*DATN");
-		var systemVar = variable.findDescendantOfType(ISystemVariableNode.class);
+		var systemVar = variable.findDescendantOfType(ISystemVariableNode.class).orElseThrow();
 		assertThat(systemVar).isNotNull();
 		assertThat(systemVar.systemVariable()).isEqualTo(SyntaxKind.DATN);
 	}
@@ -415,7 +415,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			end-define
 			""");
 
-		var scopeNode = defineData.findDescendantOfType(IScopeNode.class);
+		var scopeNode = defineData.findDescendantOfType(IScopeNode.class).orElseThrow();
 		assertThat(scopeNode).isNotNull();
 		assertThat(scopeNode.descendants().size()).isEqualTo(3); // LOCAL + Group + Typed
 
@@ -679,7 +679,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var length = assertNodeType(defineData.variables().first(), IReferencableNode.class);
 		var myArray = assertNodeType(defineData.variables().last(), ITypedVariableNode.class);
-		var referenceNode = myArray.dimensions().first().findDescendantOfType(ISymbolReferenceNode.class);
+		var referenceNode = myArray.dimensions().first().findDescendantOfType(ISymbolReferenceNode.class).orElseThrow();
 
 		assertThat(length.references().first()).isEqualTo(referenceNode);
 		assertThat(referenceNode.reference()).isEqualTo(length);

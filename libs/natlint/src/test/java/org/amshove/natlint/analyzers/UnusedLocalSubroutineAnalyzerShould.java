@@ -86,7 +86,7 @@ public class UnusedLocalSubroutineAnalyzerShould extends AbstractAnalyzerTest
 	void notReportADiagnosticForAnUnusedSubroutineDeclaredInACopycode(@ProjectName("unusedsubroutines")NaturalProject project)
 	{
 		testDiagnostics(
-			project.findModule("UNUSEDSUBINCC"),
+			project.findModule("UNUSEDSUBINCC").orElseThrow(),
 			expectNoDiagnosticOfType(UnusedLocalSubroutineAnalyzer.UNUSED_SUBROUTINE)
 		);
 	}
@@ -95,7 +95,7 @@ public class UnusedLocalSubroutineAnalyzerShould extends AbstractAnalyzerTest
 	void notReportADiagnosticForIfASubroutineIsUsedFromWithinACopyCode(@ProjectName("unusedsubroutines")NaturalProject project)
 	{
 		testDiagnostics(
-			project.findModule("DECLARINGSUB"),
+			project.findModule("DECLARINGSUB").orElseThrow(),
 			expectNoDiagnosticOfType(UnusedLocalSubroutineAnalyzer.UNUSED_SUBROUTINE)
 		);
 	}
@@ -104,7 +104,7 @@ public class UnusedLocalSubroutineAnalyzerShould extends AbstractAnalyzerTest
 	void notReportAnExternalSubroutineAsLocallyUnused(@ProjectName("unusedsubroutines")NaturalProject project)
 	{
 		testDiagnostics(
-			project.findModule("EXTERNAL-SUBROUTINE"),
+			project.findModule("EXTERNAL-SUBROUTINE").orElseThrow(),
 			expectNoDiagnosticOfType(UnusedLocalSubroutineAnalyzer.UNUSED_SUBROUTINE)
 		);
 	}
@@ -113,7 +113,7 @@ public class UnusedLocalSubroutineAnalyzerShould extends AbstractAnalyzerTest
 	void reportADiagnosticForUnusedLocalSubroutinesWithinExternalSubroutines(@ProjectName("unusedsubroutines")NaturalProject project)
 	{
 		testDiagnostics(
-			project.findModule("EXTERNAL-WITH-LOCAL"),
+			project.findModule("EXTERNAL-WITH-LOCAL").orElseThrow(),
 			expectDiagnostic(5, UnusedLocalSubroutineAnalyzer.UNUSED_SUBROUTINE)
 		);
 	}

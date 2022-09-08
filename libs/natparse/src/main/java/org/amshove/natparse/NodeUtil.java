@@ -2,7 +2,7 @@ package org.amshove.natparse;
 
 import org.amshove.natparse.natural.*;
 
-import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class NodeUtil
 {
@@ -32,7 +32,7 @@ public class NodeUtil
 			&& module.file().getPath().equals(node.diagnosticPosition().filePath());
 	}
 
-	public static @Nullable ISyntaxNode findNodeAtPosition(int line, int character, INaturalModule module)
+	public static Optional<ISyntaxNode> findNodeAtPosition(int line, int character, INaturalModule module)
 	{
 		return findNodeAtPosition(line, character, module.syntaxTree());
 	}
@@ -41,11 +41,11 @@ public class NodeUtil
 	 * Tries to find the node at the given position.
 	 * It does try to not return an {@link ITokenNode}, but the node that contains the {@link ITokenNode}.
 	 */
-	public static @Nullable ISyntaxNode findNodeAtPosition(int line, int character, ISyntaxTree syntaxTree)
+	public static Optional<ISyntaxNode> findNodeAtPosition(int line, int character, ISyntaxTree syntaxTree)
 	{
 		if (syntaxTree == null)
 		{
-			return null;
+			return Optional.empty();
 		}
 
 		ISyntaxNode previousNode = null;
@@ -54,12 +54,12 @@ public class NodeUtil
 		{
 			if (node.position().line() == line && node.position().offsetInLine() == character)
 			{
-				return node;
+				return Optional.of(node);
 			}
 
 			if (node.position().line() == line && node.position().offsetInLine() > character)
 			{
-				return previousNode instanceof ITokenNode ? (ISyntaxNode) syntaxTree : previousNode;
+				return Optional.of(previousNode instanceof ITokenNode ? (ISyntaxNode) syntaxTree : previousNode);
 			}
 
 			if (node.position().line() == line && node.position().offsetInLine() < character && node.position().endOffset() > character)
@@ -68,7 +68,7 @@ public class NodeUtil
 				{
 					return findNodeAtPosition(line, character, node);
 				}
-				return node;
+				return Optional.of(node);
 			}
 
 			if (node.position().line() > line)
@@ -84,7 +84,7 @@ public class NodeUtil
 			&& previousNode.position().offsetInLine() < character
 			&& previousNode.position().offsetInLine() + previousNode.position().length() >= character)
 		{
-			return previousNode;
+			return Optional.of(previousNode);
 		}
 
 		if (previousNode != null
@@ -99,7 +99,7 @@ public class NodeUtil
 			return findNodeAtPosition(line, character, previousNode);
 		}
 
-		return null;
+		return Optional.empty();
 	}
 
 	public static <T extends ISyntaxNode> T findFirstParentOfType(ISyntaxNode start, Class<T> type)

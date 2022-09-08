@@ -74,7 +74,7 @@ public class BooleanOperatorAnalyzer extends AbstractAnalyzer
 		}
 
 		var node = NodeUtil.findNodeAtPosition(syntaxToken.line(), syntaxToken.offsetInLine(), context.getModule());
-		if(node == null || !(node.parent() instanceof IRelationalCriteriaNode relationalCriteria))
+		if(node.isEmpty() || !(node.get().parent() instanceof IRelationalCriteriaNode relationalCriteria))
 		{
 			return;
 		}

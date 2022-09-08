@@ -2,7 +2,7 @@ package org.amshove.natls.hovering;
 
 import org.junit.jupiter.api.Test;
 
-public class VariableHoverTests extends HoveringTest
+class VariableHoverTests extends HoveringTest
 {
 	@Test
 	void levelOneVariablesShouldBeHoveredCorrectly()

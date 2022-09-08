@@ -9,6 +9,6 @@ public class NaturalParserShould extends ParserIntegrationTest
 	@Test
 	void notReportDiagnosticsForUnresolvedCopyCodeVariables(@ProjectName("copycodetests") NaturalProject project)
 	{
-		assertParsesWithoutAnyDiagnostics(project.findModule("LIBONE", "SUBPROG3"));
+		assertParsesWithoutAnyDiagnostics(project.findModuleUnsafe("LIBONE", "SUBPROG3"));
 	}
 }

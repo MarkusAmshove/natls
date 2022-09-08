@@ -2,8 +2,6 @@ package org.amshove.natparse.natural.conditionals;
 
 import org.amshove.natparse.lexing.SyntaxKind;
 
-import javax.annotation.Nullable;
-
 public enum ComparisonOperator
 {
 	EQUAL,
@@ -18,7 +16,7 @@ public enum ComparisonOperator
 	 * If multiple SyntaxKinds can result in the same comparison (e.g. GREATER vs GREATER THAN), this returns null.</br>
 	 * Nullable because it's used in the hot path.
 	 */
-	public static @Nullable ComparisonOperator ofSyntaxKind(SyntaxKind kind)
+	public static ComparisonOperator ofSyntaxKind(SyntaxKind kind)
 	{
 		return switch (kind) {
 			case EQUALS_SIGN, EQ -> EQUAL;

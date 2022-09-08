@@ -12,15 +12,15 @@ public class VariableReferenceTests extends ParserIntegrationTest
 	@Test
 	void referencableVariablesShouldBeExported(@ProjectName("variablereferencetests") NaturalProject project)
 	{
-		var subprogram = assertFileParsesAs(project.findModule("SUBMOD"), ISubprogram.class);
+		var subprogram = assertFileParsesAs(project.findModuleUnsafe("SUBMOD"), ISubprogram.class);
 		assertThat(subprogram.referencableNodes()).anyMatch(r -> r instanceof IVariableNode variableNode && variableNode.name().equals("#LOCALVAR"));
 	}
 
 	@Test
 	void localVariablesShouldBeReferenced(@ProjectName("variablereferencetests") NaturalProject project)
 	{
-		var subprogram = assertFileParsesAs(project.findModule("SUBMOD"), ISubprogram.class);
-		var variable = subprogram.defineData().findVariable("#LOCALVAR");
+		var subprogram = assertFileParsesAs(project.findModuleUnsafe("SUBMOD"), ISubprogram.class);
+		var variable = subprogram.defineData().findVariable("#LOCALVAR").orElseThrow();
 		assertThat(variable).isNotNull();
 
 		assertThat(variable.references()).hasSize(3);
@@ -29,8 +29,8 @@ public class VariableReferenceTests extends ParserIntegrationTest
 	@Test
 	void importedVariablesShouldBeReferenced(@ProjectName("variablereferencetests") NaturalProject project)
 	{
-		var subprogram = assertFileParsesAs(project.findModule("SUBMOD2"), ISubprogram.class);
-		var variable = subprogram.defineData().findVariable("#IMPORTED-VAR");
+		var subprogram = assertFileParsesAs(project.findModuleUnsafe("SUBMOD2"), ISubprogram.class);
+		var variable = subprogram.defineData().findVariable("#IMPORTED-VAR").orElseThrow();
 		assertThat(variable).isNotNull();
 
 		assertThat(variable.references()).hasSize(3);
@@ -39,7 +39,7 @@ public class VariableReferenceTests extends ParserIntegrationTest
 	@Test
 	void usingNodeShouldHaveAReferenceToIncludedModule(@ProjectName("variablereferencetests") NaturalProject project)
 	{
-		var subprogram = assertFileParsesAs(project.findModule("SUBMOD2"), ISubprogram.class);
+		var subprogram = assertFileParsesAs(project.findModuleUnsafe("SUBMOD2"), ISubprogram.class);
 		var using = subprogram.defineData().usings().first();
 
 		assertThat(using.reference()).isNotNull();
@@ -49,8 +49,8 @@ public class VariableReferenceTests extends ParserIntegrationTest
 	@Test
 	void includeNodesShouldAddTheirTreeToTheInclude(@ProjectName("variablereferencetests") NaturalProject project)
 	{
-		var subprogram = assertFileParsesAs(project.findModule("SUBMOD3"), ISubprogram.class);
-		var variable = subprogram.defineData().findVariable("#INSIDE-INCLUDE");
+		var subprogram = assertFileParsesAs(project.findModuleUnsafe("SUBMOD3"), ISubprogram.class);
+		var variable = subprogram.defineData().findVariable("#INSIDE-INCLUDE").orElseThrow();
 
 		assertThat(variable).isNotNull();
 		assertThat(variable.references()).hasSize(1);
@@ -60,8 +60,8 @@ public class VariableReferenceTests extends ParserIntegrationTest
 	@Test
 	void includeShouldAddABidirectionalReference(@ProjectName("variablereferencetests") NaturalProject project)
 	{
-		var subprogram = assertFileParsesAs(project.findModule("SUBMOD3"), ISubprogram.class);
-		var include = subprogram.body().findDescendantOfType(IIncludeNode.class);
+		var subprogram = assertFileParsesAs(project.findModuleUnsafe("SUBMOD3"), ISubprogram.class);
+		var include = subprogram.body().findDescendantOfType(IIncludeNode.class).orElseThrow();
 
 		assertThat(include).isNotNull();
 		assertThat(include.reference().callers()).contains(include);
@@ -70,19 +70,19 @@ public class VariableReferenceTests extends ParserIntegrationTest
 	@Test
 	void ignorePlusInVariableNameIfItMightNotBeAiv(@ProjectName("variablereferencetests") NaturalProject project)
 	{
-		var subprogram = assertFileParsesAs(project.findModule("STRANGEAIV"), ISubprogram.class);
+		var subprogram = assertFileParsesAs(project.findModuleUnsafe("STRANGEAIV"), ISubprogram.class);
 
 		assertThat(subprogram.diagnostics()).isEmpty();
 
-		var varOne = subprogram.defineData().findVariable("#VARONE");
+		var varOne = subprogram.defineData().findVariable("#VARONE").orElseThrow();
 		assertThat(varOne).isNotNull();
 		assertThat(varOne.references()).isNotEmpty();
 
-		var varTwo = subprogram.defineData().findVariable("#VARTWO");
+		var varTwo = subprogram.defineData().findVariable("#VARTWO").orElseThrow();
 		assertThat(varTwo).isNotNull();
 		assertThat(varTwo.references()).isNotEmpty();
 
-		var varThree = subprogram.defineData().findVariable("#VARTHREE");
+		var varThree = subprogram.defineData().findVariable("#VARTHREE").orElseThrow();
 		assertThat(varThree).isNotNull();
 		assertThat(varThree.references()).isNotEmpty();
 	}
@@ -90,31 +90,31 @@ public class VariableReferenceTests extends ParserIntegrationTest
 	@Test
 	void addAReferenceToVariablesUsedAsCounter(@ProjectName("variablereferencetests") NaturalProject project)
 	{
-		var subprogram = assertFileParsesAs(project.findModule("CSTAR"), ISubprogram.class);
+		var subprogram = assertFileParsesAs(project.findModuleUnsafe("CSTAR"), ISubprogram.class);
 
-		assertThat(subprogram.defineData().findVariable("#MYVAR").references()).isNotEmpty();
+		assertThat(subprogram.defineData().findVariable("#MYVAR").orElseThrow().references()).isNotEmpty();
 	}
 
 	@Test
 	void addAReferenceToVariablesUsedAsPStar(@ProjectName("variablereferencetests") NaturalProject project)
 	{
-		var subprogram = assertFileParsesAs(project.findModule("PSTAR"), ISubprogram.class);
+		var subprogram = assertFileParsesAs(project.findModuleUnsafe("PSTAR"), ISubprogram.class);
 
-		assertThat(subprogram.defineData().findVariable("#MYVAR").references()).isNotEmpty();
+		assertThat(subprogram.defineData().findVariable("#MYVAR").orElseThrow().references()).isNotEmpty();
 	}
 
 	@Test
 	void addAReferenceToVariablesUsedAsTStar(@ProjectName("variablereferencetests") NaturalProject project)
 	{
-		var subprogram = assertFileParsesAs(project.findModule("TSTAR"), ISubprogram.class);
+		var subprogram = assertFileParsesAs(project.findModuleUnsafe("TSTAR"), ISubprogram.class);
 
-		assertThat(subprogram.defineData().findVariable("#MYVAR").references()).isNotEmpty();
+		assertThat(subprogram.defineData().findVariable("#MYVAR").orElseThrow().references()).isNotEmpty();
 	}
 
 	@Test
 	void ambiguousVariableReferencesShouldBeAnnotated(@ProjectName("variablereferencetests") NaturalProject project)
 	{
-		var subprogram = assertFileParsesAs(project.findModule("AMBIG"), ISubprogram.class);
+		var subprogram = assertFileParsesAs(project.findModuleUnsafe("AMBIG"), ISubprogram.class);
 		assertThat(subprogram.diagnostics())
 			.as("Expected only one diagnostic")
 			.hasSize(1);
@@ -126,7 +126,7 @@ public class VariableReferenceTests extends ParserIntegrationTest
 	@Test
 	void addReferenceToVariableOperand(@ProjectName("variablereferencetests") NaturalProject project)
 	{
-		var subprogram = assertFileParsesAs(project.findModule("OPER"), ISubprogram.class);
+		var subprogram = assertFileParsesAs(project.findModuleUnsafe("OPER"), ISubprogram.class);
 		var forStatement = (IForLoopNode) subprogram.body().statements().first();
 		assertThat(forStatement.upperBound()).isInstanceOf(IVariableReferenceNode.class);
 		assertThat(((IVariableReferenceNode) forStatement.upperBound()).reference()).isNotNull();
@@ -135,7 +135,7 @@ public class VariableReferenceTests extends ParserIntegrationTest
 	@Test
 	void addReferenceToVariableSystemFunctionParameterOperand(@ProjectName("variablereferencetests") NaturalProject project)
 	{
-		var subprogram = assertFileParsesAs(project.findModule("OPER"), ISubprogram.class);
+		var subprogram = assertFileParsesAs(project.findModuleUnsafe("OPER"), ISubprogram.class);
 		var forStatement = (IForLoopNode) subprogram.body().statements().get(1);
 		assertThat(forStatement.upperBound()).isInstanceOf(ISystemFunctionNode.class);
 		var parameter = ((ISystemFunctionNode) forStatement.upperBound()).parameter().first();

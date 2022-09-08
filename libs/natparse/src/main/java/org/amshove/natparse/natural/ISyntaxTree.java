@@ -3,30 +3,28 @@ package org.amshove.natparse.natural;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 
-import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface ISyntaxTree extends Iterable<ISyntaxNode>
 {
 	ReadOnlyList<? extends ISyntaxNode> descendants();
 
-	@Nullable
 	@SuppressWarnings("unchecked")
-	default <T extends ISyntaxNode> T findDescendantOfType(Class<T> type)
+	default <T extends ISyntaxNode> Optional<T> findDescendantOfType(Class<T> type)
 	{
 		for (var node : descendants())
 		{
 			if (type.isAssignableFrom(node.getClass()))
 			{
-				return (T) node;
+				return Optional.of((T) node);
 			}
 		}
 
-		return null;
+		return Optional.empty();
 	}
 
-	@Nullable
-	default ITokenNode findDescendantToken(SyntaxKind kind)
+	default Optional<ITokenNode> findDescendantToken(SyntaxKind kind)
 	{
 		for (var node : descendants())
 		{
@@ -34,12 +32,12 @@ public interface ISyntaxTree extends Iterable<ISyntaxNode>
 			{
 				if (tokenNode.token().kind() == kind)
 				{
-					return tokenNode;
+					return Optional.of(tokenNode);
 				}
 			}
 		}
 
-		return null;
+		return Optional.empty();
 	}
 
 	@SuppressWarnings("unchecked")

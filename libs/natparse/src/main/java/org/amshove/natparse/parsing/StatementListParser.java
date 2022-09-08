@@ -14,7 +14,6 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 class StatementListParser extends AbstractParser<IStatementListNode>
@@ -1335,7 +1334,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		var scan = new ScanOperandNode();
 		node.addNode(scan);
-		consumeMandatory(scan, SyntaxKind.SCAN);
+		var scanToken = consumeMandatory(scan, SyntaxKind.SCAN);
 		if (consumeOptionally(scan, SyntaxKind.LPAREN))
 		{
 			scan.setOperand(consumeOperandNode(scan));
@@ -1348,7 +1347,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		if (node.operator() != ComparisonOperator.EQUAL && node.operator() != ComparisonOperator.NOT_EQUAL)
 		{
-			report(ParserErrors.invalidMaskOrScanComparisonOperator(Objects.requireNonNull(scan.findDescendantToken(SyntaxKind.SCAN)).token()));
+			report(ParserErrors.invalidMaskOrScanComparisonOperator(scanToken));
 		}
 
 		return scan;
@@ -1361,7 +1360,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		if (expression.operator() != ComparisonOperator.EQUAL && expression.operator() != ComparisonOperator.NOT_EQUAL)
 		{
-			report(ParserErrors.invalidMaskOrScanComparisonOperator(Objects.requireNonNull(mask.findDescendantToken(SyntaxKind.MASK)).token()));
+			mask.findDescendantToken(SyntaxKind.MASK).ifPresent( t ->
+				report(ParserErrors.invalidMaskOrScanComparisonOperator(t.token()))
+			);
 		}
 
 		return mask;

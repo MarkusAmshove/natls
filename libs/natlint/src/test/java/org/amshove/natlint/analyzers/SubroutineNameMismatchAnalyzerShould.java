@@ -61,7 +61,7 @@ public class SubroutineNameMismatchAnalyzerShould extends AbstractAnalyzerTest
 	void reportADiagnosticOnTheCallingSideOfThePerformForLongExternalSubroutines(@ProjectName("long_subroutine_names") NaturalProject project)
 	{
 		testDiagnostics(
-			project.findModule("SUB"),
+			project.findModule("SUB").orElseThrow(),
 			expectDiagnostic(2, SubroutineNameMismatchAnalyzer.SUBROUTINE_NAME_MISMATCH)
 		);
 	}
@@ -70,7 +70,7 @@ public class SubroutineNameMismatchAnalyzerShould extends AbstractAnalyzerTest
 	void reportADiagnosticOnTheCallingSideOfThePerformForLongExternalSubroutinesNamesWhereThePerformIsExactly32(@ProjectName("long_subroutine_names") NaturalProject project)
 	{
 		testDiagnostics(
-			project.findModule("SUB2"),
+			project.findModule("SUB2").orElseThrow(),
 			expectDiagnostic(2, SubroutineNameMismatchAnalyzer.SUBROUTINE_NAME_MISMATCH)
 		);
 	}

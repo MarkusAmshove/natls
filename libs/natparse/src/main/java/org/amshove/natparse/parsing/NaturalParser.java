@@ -175,7 +175,7 @@ public class NaturalParser
 				possibleQualifications.append(foundVariable.qualifiedName()).append(" ");
 			}
 
-			if(defineData.findDdmField(symbolName) != null) // TODO: Currently only necessary here because we don't parse FIND or READ yet
+			if(defineData.findDdmField(symbolName).isPresent()) // TODO: Currently only necessary here because we don't parse FIND or READ yet
 			{
 				return true;
 			}
@@ -188,6 +188,6 @@ public class NaturalParser
 			return true;
 		}
 
-		return defineData.findDdmField(symbolName) != null;
+		return defineData.findDdmField(symbolName).isPresent();
 	}
 }

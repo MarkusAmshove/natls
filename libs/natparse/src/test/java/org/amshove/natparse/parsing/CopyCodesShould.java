@@ -13,20 +13,20 @@ public class CopyCodesShould extends ParserIntegrationTest
 	@Test
 	void notReportDiagnosticsForUnresolvedReferences(@ProjectName("copycodetests") NaturalProject project)
 	{
-		assertParsesWithoutAnyDiagnostics(project.findModule("LIBONE", "NODIAG"));
+		assertParsesWithoutAnyDiagnostics(project.findModuleUnsafe("LIBONE", "NODIAG"));
 	}
 
 	@Test
 	void exportDeclaredSubroutinesUpToTheIncludingModule(@ProjectName("copycodetests") NaturalProject project)
 	{
-		var module = assertParsesWithoutAnyDiagnostics(project.findModule("LIBONE", "USEDECL"));
+		var module = assertParsesWithoutAnyDiagnostics(project.findModuleUnsafe("LIBONE", "USEDECL"));
 		assertThat(module.referencableNodes()).anyMatch(n -> n instanceof ISubroutineNode subroutine && subroutine.declaration().symbolName().equals("INSIDE-CCODE"));
 	}
 
 	@Test
 	void relocateDiagnosticsFromCopyCodesToTheirIncludeStatement(@ProjectName("copycodetests") NaturalProject project)
 	{
-		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "SUBPROG"), ISubprogram.class);
+		var subprogram = assertFileParsesAs(project.findModuleUnsafe("LIBONE", "SUBPROG"), ISubprogram.class);
 		assertThat(subprogram.diagnostics()).hasSize(2);
 		for (var diagnostic : subprogram.diagnostics())
 		{
@@ -38,7 +38,7 @@ public class CopyCodesShould extends ParserIntegrationTest
 	@Test
 	void relocateDiagnosticsFromDeeplyNestedCopyCodesToTheirIncludeStatement(@ProjectName("copycodetests") NaturalProject project)
 	{
-		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "DANEST"), ISubprogram.class);
+		var subprogram = assertFileParsesAs(project.findModuleUnsafe("LIBONE", "DANEST"), ISubprogram.class);
 		assertThat(subprogram.diagnostics()).hasSize(2);
 		for (var diagnostic : subprogram.diagnostics())
 		{
@@ -50,14 +50,14 @@ public class CopyCodesShould extends ParserIntegrationTest
 	@Test
 	void notReportDiagnosticsForCopycodeParameterThatAreQualified(@ProjectName("copycodetests") NaturalProject project)
 	{
-		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "USEQVAR"), ISubprogram.class);
+		var subprogram = assertFileParsesAs(project.findModuleUnsafe("LIBONE", "USEQVAR"), ISubprogram.class);
 		assertThat(subprogram.diagnostics()).hasSize(0);
 	}
 
 	@Test
 	void relocateDiagnosticLocationsForCopyCodeNodesThatAreNestedMultipleTimes(@ProjectName("copycodetests") NaturalProject project)
 	{
-		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "SUBPROG2"), ISubprogram.class);
+		var subprogram = assertFileParsesAs(project.findModuleUnsafe("LIBONE", "SUBPROG2"), ISubprogram.class);
 		assertThat(subprogram.diagnostics()).hasSize(2);
 		for (var diagnostic : subprogram.diagnostics())
 		{

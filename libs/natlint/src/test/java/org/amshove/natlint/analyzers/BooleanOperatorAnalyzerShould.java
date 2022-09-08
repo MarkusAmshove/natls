@@ -54,7 +54,7 @@ public class BooleanOperatorAnalyzerShould extends AbstractAnalyzerTest
 	void notEnforceEqualsOverEqForNatUnitTests(@ProjectName("natunit")NaturalProject project)
 	{
 		testDiagnostics(
-			project.findModule("TCEQTEST"),
+			project.findModule("TCEQTEST").orElseThrow(),
 			expectNoDiagnosticOfType(BooleanOperatorAnalyzer.DISCOURAGED_BOOLEAN_OPERATOR)
 		);
 	}
@@ -63,7 +63,7 @@ public class BooleanOperatorAnalyzerShould extends AbstractAnalyzerTest
 	void enforceEqOverEqualsForNatUnitTests(@ProjectName("natunit")NaturalProject project)
 	{
 		testDiagnostics(
-			project.findModule("TCTEST"),
+			project.findModule("TCTEST").orElseThrow(),
 			expectDiagnostic(4, BooleanOperatorAnalyzer.INVALID_NATUNIT_COMPARISON_OPERATOR)
 		);
 	}

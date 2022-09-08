@@ -16,6 +16,7 @@ import org.eclipse.lsp4j.CodeActionKind;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class UnresolvedReferenceQuickFix extends AbstractQuickFix
@@ -71,14 +72,16 @@ public class UnresolvedReferenceQuickFix extends AbstractQuickFix
 			.map(m -> {
 				try
 				{
-					return new VariableCandidate(m, ((IHasDefineData) m).defineData().findVariable(variableName));
+					return ((IHasDefineData) m).defineData().findVariable(variableName)
+						.map(v -> new VariableCandidate(m, v));
 				}
 				catch (Exception e)
 				{
-					return new VariableCandidate(null, null);
+					return Optional.<VariableCandidate>empty();
 				}
 			})
-			.filter(c -> c.variableNode != null)
+			.filter(Optional::isPresent)
+			.map(Optional::get)
 			.distinct()
 			.toList();
 	}

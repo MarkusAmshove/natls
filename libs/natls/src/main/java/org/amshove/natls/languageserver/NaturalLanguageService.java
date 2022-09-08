@@ -168,12 +168,12 @@ public class NaturalLanguageService implements LanguageClientAware
 		}
 
 		var module = file.module();
-		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), module);
 		var symbolToSearchFor = findTokenAtPosition(filepath, position); // TODO: Actually look for a node, could be ISymbolReferenceNode
-		var providedHover = hoverProvider.createHover(new HoverContext(node, symbolToSearchFor, file));
-		if(providedHover != null)
+		var providedHover = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), module)
+			.map(node -> hoverProvider.createHover(new HoverContext(node, symbolToSearchFor, file)));
+		if(providedHover.isPresent())
 		{
-			return providedHover;
+			return providedHover.get();
 		}
 
 		if (symbolToSearchFor == null)
@@ -223,11 +223,12 @@ public class NaturalLanguageService implements LanguageClientAware
 		{
 			return EMPTY_HOVER;
 		}
-		var module = project.findModule(symbolToSearchFor.kind().isIdentifier() ? symbolToSearchFor.symbolName() : symbolToSearchFor.stringValue());
-		if (module == null)
+		var maybeModule = project.findModule(symbolToSearchFor.kind().isIdentifier() ? symbolToSearchFor.symbolName() : symbolToSearchFor.stringValue());
+		if (maybeModule.isEmpty())
 		{
 			return EMPTY_HOVER;
 		}
+		var module = maybeModule.get();
 
 		var tokens = lexPath(module.getPath());
 		var defineData = parseDefineData(tokens);
@@ -476,7 +477,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var file = findNaturalFile(filePath);
 		var position = params.getPosition();
 
-		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), file.module());
+		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), file.module()).orElse(null); // null is checked by instanceof
 		// TOOD: qualified variables
 
 		if(node instanceof ISymbolReferenceNode symbolReferenceNode)
@@ -509,7 +510,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var position = params.getPosition();
 		var file = findNaturalFile(filePath);
 
-		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), file.module());
+		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), file.module()).orElse(null); // null is checked by instanceof
 		if(node instanceof ITokenNode && node.parent() instanceof ISubroutineNode)
 		{
 			node = (ISyntaxNode) node.parent();
@@ -765,14 +766,16 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	public LanguageServerFile findNaturalFile(String library, String name)
 	{
-		var naturalFile = project.findModule(library, name);
-		return languageServerProject.findFile(naturalFile);
+		return project.findModule(library, name)
+			.map(languageServerProject::findFile)
+			.orElse(null);
 	}
 
 	public LanguageServerFile findNaturalFile(Path path)
 	{
-		var naturalFile = project.findModule(path);
-		return languageServerProject.findFile(naturalFile);
+		return project.findModule(path)
+			.map(languageServerProject::findFile)
+			.orElse(null);
 	}
 
 	public void publishDiagnostics(LanguageServerFile file)
@@ -1001,15 +1004,11 @@ public class NaturalLanguageService implements LanguageClientAware
 	{
 		var file = findNaturalFile(LspUtil.uriToPath(params.getTextDocument().getUri()));
 		var token = findTokenAtPosition(file.getPath(), params.getRange().getStart());
-		var node = NodeUtil.findNodeAtPosition(params.getRange().getStart().getLine(), params.getRange().getStart().getCharacter(), file.module());
-		if(node == null)
-		{
-			return List.of();
-		}
 
-		var context = new RefactoringContext(params.getTextDocument().getUri(), file.module(), file, token, node, file.diagnosticsInRange(params.getRange()));
-
-		return codeActionRegistry.createCodeActions(context);
+		return NodeUtil.findNodeAtPosition(params.getRange().getStart().getLine(), params.getRange().getStart().getCharacter(), file.module())
+			.map(node -> new RefactoringContext(params.getTextDocument().getUri(), file.module(), file, token, node, file.diagnosticsInRange(params.getRange())))
+			.map(codeActionRegistry::createCodeActions)
+			.orElse(List.of());
 	}
 
 	public PrepareRenameResult prepareRename(PrepareRenameParams params)
@@ -1017,7 +1016,13 @@ public class NaturalLanguageService implements LanguageClientAware
 		var path = LspUtil.uriToPath(params.getTextDocument().getUri());
 		var file = findNaturalFile(path);
 
-		var node = NodeUtil.findNodeAtPosition(params.getPosition().getLine(), params.getPosition().getCharacter(), file.module());
+		var node = NodeUtil.findNodeAtPosition(params.getPosition().getLine(), params.getPosition().getCharacter(), file.module()).orElse(null);
+
+		if(node == null)
+		{
+			// Nothing to rename found
+			throw new ResponseErrorException(new ResponseError(1, "Nothing to rename found", null));
+		}
 
 		String placeholder = null;
 		if(node instanceof ISymbolReferenceNode symbolReferenceNode)
@@ -1051,7 +1056,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var path = LspUtil.uriToPath(params.getTextDocument().getUri());
 		var file = findNaturalFile(path);
 
-		var node = NodeUtil.findNodeAtPosition(params.getPosition().getLine(), params.getPosition().getCharacter(), file.module());
+		var node = NodeUtil.findNodeAtPosition(params.getPosition().getLine(), params.getPosition().getCharacter(), file.module()).orElseThrow(); // safe because prepareRename was called first
 		if(node instanceof ISymbolReferenceNode symbolReferenceNode)
 		{
 			return renameComputer.rename(symbolReferenceNode, params.getNewName());

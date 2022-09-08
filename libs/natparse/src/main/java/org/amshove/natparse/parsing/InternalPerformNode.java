@@ -37,7 +37,7 @@ final class InternalPerformNode extends PerformNode implements IInternalPerformN
 
 	ITokenNode tokenNode()
 	{
-		return findDescendantToken(SyntaxKind.IDENTIFIER);
+		return findDescendantToken(SyntaxKind.IDENTIFIER).orElseThrow();
 	}
 
 	void setReferenceNode(SymbolReferenceNode referenceNode)

@@ -5,7 +5,6 @@ import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.ISyntaxNodeVisitor;
 import org.amshove.natparse.natural.ISyntaxTree;
 
-import javax.annotation.Nonnull;
 import java.util.*;
 
 final class SyntaxTree implements ISyntaxTree
@@ -43,7 +42,6 @@ final class SyntaxTree implements ISyntaxTree
 	}
 
 	@Override
-	@Nonnull
 	public Iterator<ISyntaxNode> iterator()
 	{
 		return descendants.iterator();

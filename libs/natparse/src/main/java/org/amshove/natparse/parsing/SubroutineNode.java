@@ -6,7 +6,6 @@ import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.ISubroutineNode;
 import org.amshove.natparse.natural.ISymbolReferenceNode;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +31,6 @@ class SubroutineNode extends StatementWithBodyNode implements ISubroutineNode
 		this.nameToken = nameToken;
 	}
 
-	@Nonnull
 	@Override
 	public ReadOnlyList<ISymbolReferenceNode> references()
 	{

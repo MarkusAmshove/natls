@@ -16,7 +16,7 @@ public class UnusedImportAnalyzerShould extends AbstractAnalyzerTest
 	void reportADiagnosticForAnUnusedUsing(@ProjectName("unusedimports") NaturalProject project)
 	{
 		testDiagnostics(
-			project.findModule("SUBTWO"),
+			project.findModuleUnsafe("SUBTWO"),
 			expectDiagnostic(1, UnusedImportAnalyzer.UNUSED_IMPORT, "Using MYLDA is unused")
 		);
 	}
@@ -24,24 +24,24 @@ public class UnusedImportAnalyzerShould extends AbstractAnalyzerTest
 	@Test
 	void reportNoDiagnosticIfAVariableFromUsingIsUsed(@ProjectName("unusedimports") NaturalProject project)
 	{
-		testDiagnostics(project.findModule("SUBONE"), expectNoDiagnosticOfType(UnusedImportAnalyzer.UNUSED_IMPORT));
+		testDiagnostics(project.findModuleUnsafe("SUBONE"), expectNoDiagnosticOfType(UnusedImportAnalyzer.UNUSED_IMPORT));
 	}
 
 	@Test
 	void reportNoDiagnosticIfAVariableInAPdaIsUsedByFullQualifyingIt(@ProjectName("unusedimports") NaturalProject project)
 	{
-		testDiagnostics(project.findModule("MY-SUBROUTINE"), expectNoDiagnosticOfType(UnusedImportAnalyzer.UNUSED_IMPORT));
+		testDiagnostics(project.findModuleUnsafe("MY-SUBROUTINE"), expectNoDiagnosticOfType(UnusedImportAnalyzer.UNUSED_IMPORT));
 	}
 
 	@Test
 	void reportNoDiagnosticIfAVariableFromUsingIsUsedWithinCopyCode(@ProjectName("unusedimports") NaturalProject project)
 	{
-		testDiagnostics(project.findModule("INCC"), expectNoDiagnosticOfType(UnusedImportAnalyzer.UNUSED_IMPORT));
+		testDiagnostics(project.findModuleUnsafe("INCC"), expectNoDiagnosticOfType(UnusedImportAnalyzer.UNUSED_IMPORT));
 	}
 
 	@Test
 	void reportNoDiagnosticIfAVariableFromUsingIsUsedQualifiedWithinSubroutineInCopyCode(@ProjectName("unusedimports") NaturalProject project)
 	{
-		testDiagnostics(project.findModule("QINCC"), expectNoDiagnosticOfType(UnusedImportAnalyzer.UNUSED_IMPORT));
+		testDiagnostics(project.findModuleUnsafe("QINCC"), expectNoDiagnosticOfType(UnusedImportAnalyzer.UNUSED_IMPORT));
 	}
 }

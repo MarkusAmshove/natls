@@ -3,7 +3,7 @@ package org.amshove.natparse.natural;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.ddm.IDdmField;
 
-import javax.annotation.Nullable;
+import java.util.Optional;
 
 public interface IDefineData extends ISyntaxNode
 {
@@ -24,6 +24,6 @@ public interface IDefineData extends ISyntaxNode
 
 	ReadOnlyList<IVariableNode> variables();
 
-	@Nullable IVariableNode findVariable(String symbolName);
-	@Nullable IDdmField findDdmField(String symbolName);
+	Optional<IVariableNode> findVariable(String symbolName);
+	Optional<IDdmField> findDdmField(String symbolName);
 }

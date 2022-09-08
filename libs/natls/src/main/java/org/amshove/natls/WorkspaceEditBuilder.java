@@ -75,7 +75,7 @@ public class WorkspaceEditBuilder
 
 	public WorkspaceEditBuilder addsVariable(LanguageServerFile file, String name, String type, VariableScope scope)
 	{
-		if(file.module() instanceof IHasDefineData hasDefineData && hasDefineData.defineData() != null && hasDefineData.defineData().findVariable(name) != null)
+		if(file.module() instanceof IHasDefineData hasDefineData && hasDefineData.defineData() != null && hasDefineData.defineData().findVariable(name).isPresent())
 		{
 			return this;
 		}

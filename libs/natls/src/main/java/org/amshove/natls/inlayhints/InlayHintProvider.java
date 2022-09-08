@@ -29,18 +29,15 @@ public class InlayHintProvider
 
 			if (n instanceof ISubroutineNode subroutineNode)
 			{
-				var endSubroutine = subroutineNode.findDescendantToken(SyntaxKind.END_SUBROUTINE);
-				if (endSubroutine == null)
-				{
-					return;
-				}
-
-				var hint = new InlayHint();
-				hint.setPosition(LspUtil.toPositionAfter(endSubroutine.diagnosticPosition()));
-				hint.setLabel(subroutineNode.declaration().symbolName());
-				hint.setKind(InlayHintKind.Type);
-				hint.setPaddingLeft(true);
-				hints.add(hint);
+				subroutineNode.findDescendantToken(SyntaxKind.END_SUBROUTINE)
+					.ifPresent(endSubroutine -> {
+						var hint = new InlayHint();
+						hint.setPosition(LspUtil.toPositionAfter(endSubroutine.diagnosticPosition()));
+						hint.setLabel(subroutineNode.declaration().symbolName());
+						hint.setKind(InlayHintKind.Type);
+						hint.setPaddingLeft(true);
+						hints.add(hint);
+					});
 				return;
 			}
 
