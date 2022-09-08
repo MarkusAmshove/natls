@@ -1,5 +1,6 @@
 module natls.natls {
 	exports org.amshove.natls.languageserver;
+	opens org.amshove.natls.languageserver to com.google.gson;
 	requires natls.natparse;
 	requires natls.natlint;
 	requires java.xml;
