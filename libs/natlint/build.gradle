@@ -1,5 +1,7 @@
 plugins {
     id 'com.github.johnrengelman.shadow' version '7.1.0'
+    id 'org.beryx.jlink' version '2.25.0'
+    id 'org.javamodularity.moduleplugin' version '1.8.12'
 }
 
 dependencies {
@@ -17,6 +19,10 @@ shadowJar {
     archiveVersion.set('')
 }
 
+application {
+    mainClassName = 'org.amshove.natlint.App'
+}
+
 jar {
     manifest {
         attributes(
@@ -24,5 +30,12 @@ jar {
                 'Implementation-Title': project.name,
                 'Implementation-Version': project.version
         )
+    }
+}
+
+jlink {
+    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    launcher {
+        name = 'natlint'
     }
 }

@@ -1,5 +1,7 @@
 plugins {
     id 'com.github.johnrengelman.shadow' version '7.1.0'
+    id 'org.beryx.jlink' version '2.25.0'
+    id 'org.javamodularity.moduleplugin' version '1.8.12'
 }
 
 dependencies {
@@ -26,4 +28,17 @@ jar {
                 'Implementation-Version': project.version
         )
     }
+}
+
+jlink {
+    mergedModule {
+        additive = true
+        requires 'com.google.gson'
+    }
+    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    launcher {
+        name = 'natls'
+        mainClassName = 'org.amshove.natls.App'
+    }
+//    forceMerge('org.lsp4j')
 }

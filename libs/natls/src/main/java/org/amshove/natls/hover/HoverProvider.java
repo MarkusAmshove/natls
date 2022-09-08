@@ -17,7 +17,6 @@ import org.amshove.natparse.natural.builtin.SystemFunctionDefinition;
 import org.amshove.natparse.natural.builtin.SystemVariableDefinition;
 import org.eclipse.lsp4j.Hover;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -205,7 +204,7 @@ public class HoverProvider
 		return getLineComment(line, project.findFile(filePath));
 	}
 
-	private @Nonnull String getLineComment(int line, LanguageServerFile file)
+	private String getLineComment(int line, LanguageServerFile file)
 	{
 		file.module(); // make sure we get comments
 		return file.comments().stream()
