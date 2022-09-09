@@ -1,6 +1,6 @@
 FROM debian:stable-slim
 
 USER 1000
-ADD --chown=1000:1000 libs/natlint/build/image/ /natlint/
+ADD --chown=1000:1000 libs/natlint/build/natlint/natlint-linux/ /natlint/
 
 ENTRYPOINT [ "/natlint/bin/natlint" ]
