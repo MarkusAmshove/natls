@@ -87,6 +87,7 @@ jobs:
 
       - name: Save natlint-linux
         uses: actions/upload-artifact@v3
+        if: matrix.os == 'ubuntu-latest'
         with:
           name: natlint-linux
           path: libs/natlint/build/natlint-linux.zip
