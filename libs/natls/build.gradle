@@ -31,14 +31,14 @@ jar {
 }
 
 jlink {
-    mergedModule {
-        additive = true
-        requires 'com.google.gson'
-    }
     options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    imageName = 'natls'
     launcher {
         name = 'natls'
         mainClassName = 'org.amshove.natls.App'
     }
-//    forceMerge('org.lsp4j')
+    mergedModule {
+        additive = true
+        requires 'com.google.gson'
+    }
 }
