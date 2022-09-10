@@ -90,7 +90,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         with:
           name: natlint-linux
-          path: libs/natlint/build/natlint-linux.zip
+          path: libs/natlint/build/natlint/natlint-linux/
           if-no-files-found: error
           retention-days: 1
 
@@ -110,7 +110,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: natlint-linux
-          path: libs/natlint/build/natlint-linux.zip
+          path: libs/natlint/build/natlint-linux/
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
