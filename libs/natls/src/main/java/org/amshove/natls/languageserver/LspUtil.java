@@ -156,14 +156,6 @@ public class LspUtil
 		);
 	}
 
-	public static Position toPosition(IPosition position)
-	{
-		return new Position(
-			position.line(),
-			position.offsetInLine()
-		);
-	}
-
 	/**
 	 * Converts the {@link IPosition} to an LSP position which is <strong>after</strong> the {@link IPosition} (using {@link IPosition#endOffset()})
 	 * @param position
