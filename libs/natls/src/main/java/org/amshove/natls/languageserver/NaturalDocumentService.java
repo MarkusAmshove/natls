@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
+@SuppressWarnings("deprecation")
 public class NaturalDocumentService implements TextDocumentService
 {
 	private NaturalLanguageService languageService;
@@ -130,7 +131,7 @@ public class NaturalDocumentService implements TextDocumentService
 	@Override
 	public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbol(DocumentSymbolParams params)
 	{
-		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.findSymbolsInFile(params.getTextDocument())));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.findSymbolsInFile(params.getTextDocument()).stream().map(Either::<SymbolInformation, DocumentSymbol>forRight).toList()));
 	}
 
 	@Override
