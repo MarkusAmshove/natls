@@ -9,9 +9,9 @@ import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
-import org.amshove.natparse.natural.IIfStatementNode;
 import org.amshove.natparse.natural.ISymbolReferenceNode;
 import org.amshove.natparse.natural.ITokenNode;
+import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
 
 import java.util.Map;
 
@@ -74,13 +74,13 @@ public class BooleanOperatorAnalyzer extends AbstractAnalyzer
 		}
 
 		var node = NodeUtil.findNodeAtPosition(syntaxToken.line(), syntaxToken.offsetInLine(), context.getModule());
-		if(node == null || !(node.parent() instanceof IIfStatementNode ifStatement))
+		if(node == null || !(node.parent() instanceof IRelationalCriteriaNode relationalCriteria))
 		{
 			return;
 		}
 
-		var possibleTestReference = ifStatement.descendants().get(1);
-		var possibleTestComparisonOperator = ifStatement.descendants().get(2);
+		var possibleTestReference = relationalCriteria.left();
+		var possibleTestComparisonOperator = relationalCriteria.descendants().get(1);
 
 		if (syntaxToken.kind() == SyntaxKind.EQUALS_SIGN
 			&& possibleTestReference instanceof ISymbolReferenceNode symbolReferenceNode && symbolReferenceNode.referencingToken().symbolName().equals("NUTESTP.TEST")

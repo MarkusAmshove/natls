@@ -11,6 +11,10 @@ import static org.amshove.natparse.natural.DataFormat.*;
 
 public class BuiltInFunctionTable
 {
+	private BuiltInFunctionTable()
+	{
+	}
+
 	private static final Map<SyntaxKind, IBuiltinFunctionDefinition> TABLE;
 
 	public static IBuiltinFunctionDefinition getDefinition(SyntaxKind kind)
@@ -24,8 +28,10 @@ public class BuiltInFunctionTable
 			unmodifiableVariable(SyntaxKind.APPLIC_ID, "Returns the ID of the current library", ALPHANUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.INIT_ID, "Returns the ID of the device that Natural invoked", ALPHANUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.TIMX, "Returns the current time of the day as builtin time format", TIME, 0.0),
+			unmodifiableVariable(SyntaxKind.TIMESTMP, "Returns the machine-internal clock value", BINARY, 8.0),
 			unmodifiableVariable(SyntaxKind.TIMN, "Returns the current time of the day as numeric format", NUMERIC, 7.0),
 			unmodifiableVariable(SyntaxKind.DATD, "Returns the current date in the format `DD.MM.YY`", ALPHANUMERIC, 8.0),
+			unmodifiableVariable(SyntaxKind.DAT4D, "Returns the current date in the format `DD.MM.YYYY`", ALPHANUMERIC, 10.0),
 			unmodifiableVariable(SyntaxKind.DATX, "Returns the current date as internal date format", DATE, 0.0),
 			unmodifiableVariable(SyntaxKind.DATN, "Returns the current date in the format `YYYYMMDD`", ALPHANUMERIC, 10.0),
 			modifiableVariable(SyntaxKind.LANGUAGE, "Returns the language code, e.g. 1 for english, 2 for german etc.", INTEGER, 1.0),
@@ -34,6 +40,18 @@ public class BuiltInFunctionTable
 			modifiableVariable(SyntaxKind.PAGE_NUMBER, "Get or set the current page number of an report", PACKED, 5.0),
 			unmodifiableVariable(SyntaxKind.WINDOW_PS, "Returns the page size of the logical window (without the frame)", NUMERIC, 3.0),
 			unmodifiableVariable(SyntaxKind.LIBRARY_ID, "Returns the ID the the current library. This returns the same as *APPLIC-ID", ALPHANUMERIC, 8.0),
+			unmodifiableVariable(SyntaxKind.TRANSLATE, """
+				Converts the characters passed as first argument into either `LOWER` or `UPPER` case.
+				
+				Accepts an operand of type `A`, `B` or `U`.
+				
+				Usage:
+				
+				```
+				#UPPER := *TRANSLATE(#VAR2, UPPER)
+				#LOWER := *TRANSLATE(#VAR2, LOWER)
+				""", ALPHANUMERIC, 0),
+			modifiableVariable(SyntaxKind.SV_NUMBER, "Get or set the number of record a FIND or HISTOGRAM statement. Uses the innermost statement if no label identifier is passed.", PACKED, 10),
 			unmodifiableVariable(SyntaxKind.LINEX, """
 				Returns the line number of the invocation of this variable.
 				When this variable is used within copycodes, it contains the line numbers of all includes leading to this variable.
@@ -45,7 +63,7 @@ public class BuiltInFunctionTable
 				```
 				0100 INCLUDE FIRSTCC
 				  0200 INCLUDE SCNDCC
-					0300 PRINT *LINEX
+				    0300 PRINT *LINEX
 				```
 
 				In this case the variable returns `0100/0200/0300`.
@@ -70,6 +88,10 @@ public class BuiltInFunctionTable
 				If you want to get all line numbers, including the `INCLUDE`s, use `*LINEX` instead.
 				""", INTEGER, 4.0),
 			unmodifiableVariable(SyntaxKind.ERROR_LINE, "Returns the line of the statement that raised an error", NUMERIC, 4),
+			unmodifiableVariable(SyntaxKind.CURS_FIELD, """
+				Returns the identification of the field in which the cursor is positioned" +
+				Can only be used together withe the `POS` function.
+				""", INTEGER, 4),
 			modifiableVariable(SyntaxKind.CURS_LINE, """
 				Get or set the number of the line where the cursor is positioned.
 				To get the cursor column, use `*CURS-COL`.
@@ -122,6 +144,7 @@ public class BuiltInFunctionTable
 				More in depth information can be retrieved with a combination of `MACHINE-CLASS`, `*HARDWARE` and `*OS`.
 				""", ALPHANUMERIC, 8),
 			unmodifiableVariable(SyntaxKind.PROGRAM, "Returns the name of the current Natural object", ALPHANUMERIC, 8),
+			unmodifiableVariable(SyntaxKind.SV_USER, "Returns the user id of the current user, as taken from Natural Security", ALPHANUMERIC, 8),
 			unmodifiableVariable(SyntaxKind.INIT_USER, """
 				Returns the value of the profile parameter `USER`.
 
@@ -160,80 +183,80 @@ public class BuiltInFunctionTable
 				```
 				""", PACKED, 10, new BuiltInFunctionParameter("label", new DataType(DataFormat.NONE, 1), false)),
 			function(SyntaxKind.OCCURRENCE, "See `*OCC`", INTEGER, 4,
-					new BuiltInFunctionParameter("array", new DataType(DataFormat.NONE, 1), true),
-					new BuiltInFunctionParameter("dimension", new DataType(DataFormat.NONE, 1), false)
+				new BuiltInFunctionParameter("array", new DataType(DataFormat.NONE, 1), true),
+				new BuiltInFunctionParameter("dimension", new DataType(DataFormat.NONE, 1), false)
 			),
 			function(SyntaxKind.OCC, """
-				Returns the current length of an array.
+					Returns the current length of an array.
 
-				The optional `dimension` parameter handles for which dimension the length is returned. Defaults to 1 if not specified.
+					The optional `dimension` parameter handles for which dimension the length is returned. Defaults to 1 if not specified.
 
-				Possible value of `dimension`:
+					Possible value of `dimension`:
 
-				- `1`: One-dimensional array (**default**)
-				- `2`: Two-dimensional array
-				- `3`: Three-dimensional array
-				- `*`: All dimensions defined for the corresponding array apply
+					- `1`: One-dimensional array (**default**)
+					- `2`: Two-dimensional array
+					- `3`: Three-dimensional array
+					- `*`: All dimensions defined for the corresponding array apply
 
-				Example:
+					Example:
 
-				```natural
-				DEFINE DATA LOCAL
-				1 #LENGTH (I4)
-				1 #ARRAY (A10/1:*,1:*)
-				1 #DIMENSIONS (I4/1:3)
-				END-DEFINE
+					```natural
+					DEFINE DATA LOCAL
+					1 #LENGTH (I4)
+					1 #ARRAY (A10/1:*,1:*)
+					1 #DIMENSIONS (I4/1:3)
+					END-DEFINE
 
-				EXPAND ARRAY #ARRAY TO (1:10,1:20)
-				#LENGTH := *OCC(#ARRAY) /* #LENGTH = 10, first dimension
-				#LENGTH := *OCC(#ARRAY, 1) /* #LENGTH = 10, first dimension
-				#LENGTH := *OCC(#ARRAY, 2) /* #LENGTH = 20, second dimension
-				#DIMENSIONS(1:2) := *OCC(#ARRAY, *) /* #DIMENSIONS(1) = 10; #DIMENSIONS(2) = 20
-				```
-				""", INTEGER, 4,
-					new BuiltInFunctionParameter("array", new DataType(DataFormat.NONE, 1), true),
-					new BuiltInFunctionParameter("dimension", new DataType(DataFormat.NONE, 1), false)
+					EXPAND ARRAY #ARRAY TO (1:10,1:20)
+					#LENGTH := *OCC(#ARRAY) /* #LENGTH = 10, first dimension
+					#LENGTH := *OCC(#ARRAY, 1) /* #LENGTH = 10, first dimension
+					#LENGTH := *OCC(#ARRAY, 2) /* #LENGTH = 20, second dimension
+					#DIMENSIONS(1:2) := *OCC(#ARRAY, *) /* #DIMENSIONS(1) = 10; #DIMENSIONS(2) = 20
+					```
+					""", INTEGER, 4,
+				new BuiltInFunctionParameter("array", new DataType(DataFormat.NONE, 1), true),
+				new BuiltInFunctionParameter("dimension", new DataType(DataFormat.NONE, 1), false)
 			),
 			function(SyntaxKind.MINVAL, """
-				Returns the minimal value of all given operand values.
-				
-				The result type can be optionally specified with `(IR=`, e.g. `(IR=F8)`. Otherwise the biggest data type of the operands is chosen.
-				
-				If an array is passed, this function returns the minimum value of all arrays values.
-				
-				If a binary or alphanumeric value is passed, this function returns the minimum length of the operands.
-				""", FLOAT, 8,
+					Returns the minimal value of all given operand values.
+									
+					The result type can be optionally specified with `(IR=`, e.g. `(IR=F8)`. Otherwise the biggest data type of the operands is chosen.
+									
+					If an array is passed, this function returns the minimum value of all arrays values.
+									
+					If a binary or alphanumeric value is passed, this function returns the minimum length of the operands.
+					""", FLOAT, 8,
 				new BuiltInFunctionParameter("operand1", new DataType(NONE, 1), true),
 				new BuiltInFunctionParameter("operand2", new DataType(NONE, 1), false),
 				new BuiltInFunctionParameter("operand3", new DataType(NONE, 1), false)
 			),
 			function(SyntaxKind.MAXVAL, """
-				Returns the maximum value of all given operand values.
-				
-				The result type can be optionally specified with `(IR=`, e.g. `(IR=F8)`. Otherwise the biggest data type of the operands is chosen.
-				
-				If an array is passed, this function returns the maximum value of all arrays values.
-				
-				If a binary or alphanumeric value is passed, this function returns the maximum length of the operands.
-				""", FLOAT, 8,
+					Returns the maximum value of all given operand values.
+									
+					The result type can be optionally specified with `(IR=`, e.g. `(IR=F8)`. Otherwise the biggest data type of the operands is chosen.
+									
+					If an array is passed, this function returns the maximum value of all arrays values.
+									
+					If a binary or alphanumeric value is passed, this function returns the maximum length of the operands.
+					""", FLOAT, 8,
 				new BuiltInFunctionParameter("operand1", new DataType(NONE, 1), true),
 				new BuiltInFunctionParameter("operand2", new DataType(NONE, 1), false),
 				new BuiltInFunctionParameter("operand3", new DataType(NONE, 1), false)
 			),
 			function(SyntaxKind.TRIM, """
-				Remove all leading and trailing whitespace from an alphanumeric or binary string.
+					Remove all leading and trailing whitespace from an alphanumeric or binary string.
 
-				The content of the passed variable is not modified.
-				
-				`LEADING` or `TRIALING` can be specified if only one of them should be trimmed.
-				
-				Example:
-				
-				```natural
-				#NO-LEADING-TRAILING := *TRIM(#ALPHA)
-				#NO-LEADING := *TRIM(#ALPHA, LEADING)
-				#NO-TRAILING := *TRIM(#ALPHA, TRAILING)
-				""", ALPHANUMERIC, DataType.DYNAMIC_LENGTH,
+					The content of the passed variable is not modified.
+									
+					`LEADING` or `TRIALING` can be specified if only one of them should be trimmed.
+									
+					Example:
+									
+					```natural
+					#NO-LEADING-TRAILING := *TRIM(#ALPHA)
+					#NO-LEADING := *TRIM(#ALPHA, LEADING)
+					#NO-TRAILING := *TRIM(#ALPHA, TRAILING)
+					""", ALPHANUMERIC, DataType.DYNAMIC_LENGTH,
 				new BuiltInFunctionParameter("operand", new DataType(ALPHANUMERIC, DataType.DYNAMIC_LENGTH), true)
 			),
 			modifiableVariable(SyntaxKind.COM, """
@@ -241,7 +264,18 @@ public class BuiltInFunctionTable
 
 				When a window is active, no data can be entered outside the window.
 				If a map contains *COM as modifiable field, it will be available for the user to enter data even though a window is currently active on the screen.
-				""", ALPHANUMERIC, 128)
+				""", ALPHANUMERIC, 128),
+			unmodifiableVariable(SyntaxKind.SV_DATA, """
+				Returns the number of elements in the Natural stack available for next `INPUT`.
+								
+				`0` is returned if the stack is empty.
+				`-1` is returned if the next value in the stack is a command or name of a transaction
+				""", NUMERIC, 3),
+			unmodifiableVariable(SyntaxKind.SV_LEVEL, """
+				Returns the level number of the current program, dialog, ... which is currently active.
+								
+				Level 1 is the main program.
+				""", NUMERIC, 2)
 		);
 	}
 

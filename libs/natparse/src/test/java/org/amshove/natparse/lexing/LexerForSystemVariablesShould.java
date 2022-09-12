@@ -39,7 +39,7 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 	@Test
 	void lexUser()
 	{
-		assertTokens("*USER", token(SyntaxKind.USER, "*USER"));
+		assertTokens("*USER", token(SyntaxKind.SV_USER, "*USER"));
 	}
 
 	@Test
@@ -215,5 +215,47 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 	void lexCom()
 	{
 		assertTokens("*COM", token(SyntaxKind.COM, "*COM"));
+	}
+
+	@Test
+	void lexDat4D()
+	{
+		assertTokens("*DAT4D", token(SyntaxKind.DAT4D, "*DAT4D"));
+	}
+
+	@Test
+	void lexCursField()
+	{
+		assertTokens("*CURS-FIELD", token(SyntaxKind.CURS_FIELD, "*CURS-FIELD"));
+	}
+
+	@Test
+	void lexTimestmp()
+	{
+		assertTokens("*TIMESTMP", token(SyntaxKind.TIMESTMP, "*TIMESTMP"));
+	}
+
+	@Test
+	void lexData()
+	{
+		assertTokens("*DATA", token(SyntaxKind.SV_DATA, "*DATA"));
+	}
+
+	@Test
+	void lexLevel()
+	{
+		assertTokens("*LEVEL", token(SyntaxKind.SV_LEVEL, "*LEVEL"));
+	}
+
+	@Test
+	void lexNumber()
+	{
+		assertTokens("*NUMBER", token(SyntaxKind.SV_NUMBER, "*NUMBER"));
+	}
+
+	@Test
+	void lexTranslate()
+	{
+		assertTokens("*TRANSLATE", token(SyntaxKind.TRANSLATE, "*TRANSLATE"));
 	}
 }

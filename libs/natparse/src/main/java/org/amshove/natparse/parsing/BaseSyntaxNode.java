@@ -117,5 +117,6 @@ class BaseSyntaxNode implements ISyntaxNode
 	{
 		var oldIndex = nodes.indexOf(oldChild);
 		nodes.set(oldIndex, newChild);
+		newChild.setParent(this);
 	}
 }

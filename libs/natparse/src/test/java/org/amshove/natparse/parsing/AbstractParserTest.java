@@ -92,7 +92,7 @@ public abstract class AbstractParserTest<NodeType>
 
 	protected <T extends ISyntaxNode> T assertValidNode(T node)
 	{
-		assertThat(node.parent()).as("Parent for node was not set").isNotNull();
+		assertThat(node.parent()).as("Parent for node %s was not set".formatted(node.getClass().getSimpleName())).isNotNull();
 		assertThat(node.position()).as("Position for node was not set").isNotNull();
 
 		if(!(node instanceof ITokenNode))

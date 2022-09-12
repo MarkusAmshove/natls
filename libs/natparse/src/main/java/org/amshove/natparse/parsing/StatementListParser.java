@@ -3,15 +3,18 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
-import org.amshove.natparse.natural.IReferencableNode;
-import org.amshove.natparse.natural.IStatementListNode;
-import org.amshove.natparse.natural.ISymbolReferenceNode;
+import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.conditionals.ChainedCriteriaOperator;
+import org.amshove.natparse.natural.conditionals.ComparisonOperator;
+import org.amshove.natparse.natural.conditionals.IHasComparisonOperator;
+import org.amshove.natparse.natural.conditionals.ILogicalConditionCriteriaNode;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 class StatementListParser extends AbstractParser<IStatementListNode>
@@ -67,6 +70,40 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 				switch (tokens.peek().kind())
 				{
+					case AT:
+						if (peekKind(1, SyntaxKind.END) && (peekKind(3, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE)))
+						{
+							statementList.addStatement(parseAtPositionOf(SyntaxKind.END, SyntaxKind.PAGE, SyntaxKind.END_ENDPAGE, false, new EndOfPageNode()));
+							break;
+						}
+						if (peekKind(1, SyntaxKind.TOP) && (peekKind(3, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE)))
+						{
+							statementList.addStatement(parseAtPositionOf(SyntaxKind.TOP, SyntaxKind.PAGE, SyntaxKind.END_TOPPAGE, false, new TopOfPageNode()));
+							break;
+						}
+						if (peekKind(1, SyntaxKind.START) && (peekKind(3, SyntaxKind.DATA) || peekKind(2, SyntaxKind.DATA)))
+						{
+							statementList.addStatement(parseAtPositionOf(SyntaxKind.START, SyntaxKind.DATA, SyntaxKind.END_START, true, new StartOfDataNode()));
+							break;
+						}
+						if (peekKind(1, SyntaxKind.END) && (peekKind(3, SyntaxKind.DATA) || peekKind(2, SyntaxKind.DATA)))
+						{
+							statementList.addStatement(parseAtPositionOf(SyntaxKind.END, SyntaxKind.DATA, SyntaxKind.END_ENDDATA, true, new EndOfDataNode()));
+							break;
+						}
+						if (peekKind(1, SyntaxKind.BREAK))
+						{
+							statementList.addStatement(breakOf());
+							break;
+						}
+						tokens.advance(); // TODO: default case
+						break;
+					case BEFORE:
+						statementList.addStatement(beforeBreak());
+						break;
+					case BREAK:
+						statementList.addStatement(breakOf());
+						break;
 					case CALLNAT:
 						statementList.addStatement(callnat());
 						break;
@@ -77,8 +114,20 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 							default -> statementList.addStatement(consumeFallback());
 						}
 						break;
+					case EJECT:
+						statementList.addStatement(eject());
+						break;
+					case ESCAPE:
+						statementList.addStatement(escape());
+						break;
 					case FORMAT:
 						statementList.addStatement(formatNode());
+						break;
+					case HISTOGRAM:
+						statementList.addStatement(histogram());
+						break;
+					case START:
+						statementList.addStatement(parseAtPositionOf(SyntaxKind.START, SyntaxKind.DATA, SyntaxKind.END_START, true, new StartOfDataNode()));
 						break;
 					case INCLUDE:
 						statementList.addStatement(include());
@@ -89,7 +138,24 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					case IDENTIFIER:
 						statementList.addStatement(identifierReference());
 						break;
+					case EXAMINE:
+						statementList.addStatement(examine());
+						break;
+					case WRITE:
+						statementList.addStatement(write());
+						break;
 					case END:
+						if (peekKind(1, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE))
+						{
+							statementList.addStatement(parseAtPositionOf(SyntaxKind.END, SyntaxKind.PAGE, SyntaxKind.END_ENDPAGE, false, new EndOfPageNode()));
+							break;
+						}
+						if (peekKind(1, SyntaxKind.DATA) || peekKind(2, SyntaxKind.DATA))
+						{
+							statementList.addStatement(parseAtPositionOf(SyntaxKind.END, SyntaxKind.DATA, SyntaxKind.END_ENDDATA, true, new EndOfDataNode()));
+							break;
+						}
+
 						statementList.addStatement(end());
 						break;
 					case DEFINE:
@@ -108,6 +174,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					case IGNORE:
 						statementList.addStatement(ignore());
 						break;
+					case NEWPAGE:
+						statementList.addStatement(newPage());
+						break;
 					case FIND:
 						statementList.addStatement(find());
 						break;
@@ -118,6 +187,12 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 							break;
 						}
 						statementList.addStatement(perform());
+						break;
+					case STACK:
+						statementList.addStatement(stack());
+						break;
+					case TOP:
+						statementList.addStatement(parseAtPositionOf(SyntaxKind.TOP, SyntaxKind.PAGE, SyntaxKind.END_TOPPAGE, false, new TopOfPageNode()));
 						break;
 					case RESET:
 						statementList.addStatement(resetStatement());
@@ -138,7 +213,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						// FALLTHROUGH TO DEFAULT INTENDED
 					case FOR:
 						if (peekKind(SyntaxKind.FOR) && (peek(-1) == null || (peek(1).kind() == SyntaxKind.IDENTIFIER && peek(-1).kind() != SyntaxKind.REJECT && peek(-1).kind() != SyntaxKind.ACCEPT)))
-						// TODO: until we support EXAMINE, DECIDE, ...
+						// TODO: until we support EXAMINE, DECIDE, HISTOGRAM, ...
 						//      just.. implement them already and don't try to understand the conditions
 						{
 							statementList.addStatement(forLoop());
@@ -171,6 +246,521 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return statementList;
 	}
 
+	private StatementNode histogram() throws ParseError
+	{
+		var histogram = new HistogramNode();
+		consumeMandatory(histogram, SyntaxKind.HISTOGRAM);
+		var start = previousToken();
+
+		consumeAnyOptionally(histogram, List.of(SyntaxKind.ALL, SyntaxKind.LPAREN));
+		if (previousToken().kind() == SyntaxKind.LPAREN)
+		{
+			consumeOperandNode(histogram); // limit
+			consumeMandatory(histogram, SyntaxKind.RPAREN);
+		}
+
+		if (consumeOptionally(histogram, SyntaxKind.MULTI_FETCH))
+		{
+			consumeAnyMandatory(histogram, List.of(SyntaxKind.ON, SyntaxKind.OFF));
+		}
+
+		consumeOptionally(histogram, SyntaxKind.IN);
+		consumeOptionally(histogram, SyntaxKind.FILE);
+
+		histogram.setView(consumeVariableReferenceNode(histogram));
+		if (consumeOptionally(histogram, SyntaxKind.PASSWORD))
+		{
+			consumeMandatory(histogram, SyntaxKind.EQUALS_SIGN);
+			consumeOperandNode(histogram);
+		}
+
+		if (consumeAnyOptionally(histogram, List.of(SyntaxKind.IN, SyntaxKind.ASC, SyntaxKind.ASCENDING, SyntaxKind.DESC, SyntaxKind.DESCENDING, SyntaxKind.VARIABLE, SyntaxKind.DYNAMIC)))
+		{
+			if (previousToken().kind() == SyntaxKind.IN)
+			{
+				consumeAnyMandatory(histogram, List.of(SyntaxKind.ASC, SyntaxKind.ASCENDING, SyntaxKind.DESC, SyntaxKind.DESCENDING, SyntaxKind.VARIABLE, SyntaxKind.DYNAMIC));
+			}
+
+			if (previousToken().kind() == SyntaxKind.VARIABLE || previousToken().kind() == SyntaxKind.DYNAMIC)
+			{
+				consumeOperandNode(histogram);
+			}
+
+			consumeOptionally(histogram, SyntaxKind.SEQUENCE);
+		}
+
+		consumeOptionally(histogram, SyntaxKind.VALUE);
+		consumeOptionally(histogram, SyntaxKind.FOR);
+		consumeOptionally(histogram, SyntaxKind.FIELD);
+		histogram.setDescriptor(consumeMandatoryIdentifier(histogram));
+
+		if (consumeAnyOptionally(histogram, List.of(SyntaxKind.STARTING, SyntaxKind.ENDING)))
+		{
+			if (previousToken().kind() == SyntaxKind.STARTING)
+			{
+				consumeAnyOptionally(histogram, List.of(SyntaxKind.WITH, SyntaxKind.FROM));
+				consumeAnyOptionally(histogram, List.of(SyntaxKind.VALUE, SyntaxKind.VALUES));
+				consumeOperandNode(histogram);
+			}
+
+			if (consumeAnyOptionally(histogram, List.of(SyntaxKind.THRU, SyntaxKind.ENDING)))
+			{
+				if (previousToken().kind() == SyntaxKind.ENDING)
+				{
+					consumeOptionally(histogram, SyntaxKind.AT);
+				}
+			}
+			else
+			{
+				consumeOptionally(histogram, SyntaxKind.TO);
+			}
+
+			if (isOperand())
+			{
+				consumeOperandNode(histogram);
+			}
+		}
+
+		histogram.setBody(statementList(SyntaxKind.END_HISTOGRAM));
+		consumeMandatoryClosing(histogram, SyntaxKind.END_HISTOGRAM, start);
+
+		return histogram;
+	}
+
+	private StatementNode beforeBreak() throws ParseError
+	{
+		var beforeBreak = new BeforeBreakNode();
+		var start = consumeMandatory(beforeBreak, SyntaxKind.BEFORE);
+		consumeOptionally(beforeBreak, SyntaxKind.BREAK);
+		consumeOptionally(beforeBreak, SyntaxKind.PROCESSING);
+
+		beforeBreak.setBody(statementList(SyntaxKind.END_BEFORE));
+
+		consumeMandatoryClosing(beforeBreak, SyntaxKind.END_BEFORE, start);
+		return beforeBreak;
+	}
+
+	private StatementNode stack() throws ParseError
+	{
+		var stack = new StackNode();
+		consumeMandatory(stack, SyntaxKind.STACK);
+		consumeOptionally(stack, SyntaxKind.TOP);
+		if (consumeOptionally(stack, SyntaxKind.COMMAND))
+		{
+			consumeOperandNode(stack);
+			while (isOperand())
+			{
+				consumeOperandNode(stack);
+			}
+
+		}
+		else
+			if (consumeOptionally(stack, SyntaxKind.DATA) || consumeOptionally(stack, SyntaxKind.FORMATTED) || isOperand())
+			{
+				if (previousToken().kind() == SyntaxKind.DATA)
+				{
+					consumeOptionally(stack, SyntaxKind.FORMATTED);
+				}
+
+				consumeOperandNode(stack);
+				while (isOperand())
+				{
+					consumeOperandNode(stack);
+				}
+			}
+
+		return stack;
+	}
+
+	private StatementNode escape() throws ParseError
+	{
+		var escape = new EscapeNode();
+		consumeMandatory(escape, SyntaxKind.ESCAPE);
+		consumeAnyMandatory(escape, List.of(SyntaxKind.TOP, SyntaxKind.BOTTOM, SyntaxKind.ROUTINE, SyntaxKind.MODULE));
+		var direction = previousToken().kind();
+		escape.setDirection(direction);
+		if (direction == SyntaxKind.TOP)
+		{
+			if (consumeOptionally(escape, SyntaxKind.REPOSITION))
+			{
+				escape.setReposition();
+			}
+		}
+		else
+		{
+			if (direction == SyntaxKind.BOTTOM && consumeOptionally(escape, SyntaxKind.LPAREN))
+			{
+				var label = consumeMandatory(escape, SyntaxKind.LABEL_IDENTIFIER);
+				escape.setLabel(label);
+				consumeMandatory(escape, SyntaxKind.RPAREN);
+			}
+
+			if (consumeOptionally(escape, SyntaxKind.IMMEDIATE))
+			{
+				escape.setImmediate();
+			}
+		}
+
+		return escape;
+	}
+
+	private StatementNode eject() throws ParseError
+	{
+		var eject = new EjectNode();
+		consumeMandatory(eject, SyntaxKind.EJECT);
+
+		if (consumeAnyOptionally(eject, List.of(SyntaxKind.ON, SyntaxKind.OFF)))
+		{
+			consumeOptionalReportSpecification(eject);
+		}
+		else
+		{
+			consumeOptionalReportSpecification(eject);
+			consumeAnyOptionally(eject, List.of(SyntaxKind.IF, SyntaxKind.WHEN));
+			if (consumeOptionally(eject, SyntaxKind.LESS))
+			{
+				consumeOptionally(eject, SyntaxKind.THAN);
+				consumeOperandNode(eject);
+				consumeOptionally(eject, SyntaxKind.LINES);
+				consumeOptionally(eject, SyntaxKind.LEFT);
+			}
+		}
+
+		return eject;
+	}
+
+	private <T extends BaseSyntaxNode & ICanSetReportSpecification> void consumeOptionalReportSpecification(T node) throws ParseError
+	{
+		if (consumeOptionally(node, SyntaxKind.LPAREN))
+		{
+			consumeAnyMandatory(node, List.of(SyntaxKind.IDENTIFIER, SyntaxKind.NUMBER_LITERAL));
+			node.setReportSpecification(previousToken());
+			consumeMandatory(node, SyntaxKind.RPAREN);
+		}
+	}
+
+	private StatementNode breakOf() throws ParseError
+	{
+		var breakOf = new BreakOfNode();
+		consumeOptionally(breakOf, SyntaxKind.AT);
+		var openingToken = consumeMandatory(breakOf, SyntaxKind.BREAK);
+		if (consumeOptionally(breakOf, SyntaxKind.LPAREN))
+		{
+			var identifier = consumeMandatory(breakOf, SyntaxKind.LABEL_IDENTIFIER);
+			breakOf.setReportSpecification(identifier);
+			consumeMandatory(breakOf, SyntaxKind.RPAREN);
+		}
+
+		consumeOptionally(breakOf, SyntaxKind.OF);
+		consumeVariableReferenceNode(breakOf);
+
+		if (consumeOptionally(breakOf, SyntaxKind.SLASH))
+		{
+			consumeLiteralNode(breakOf, SyntaxKind.NUMBER_LITERAL);
+			consumeMandatory(breakOf, SyntaxKind.SLASH);
+		}
+
+		breakOf.setBody(statementList(SyntaxKind.END_BREAK));
+		consumeMandatoryClosing(breakOf, SyntaxKind.END_BREAK, openingToken);
+
+		return breakOf;
+	}
+
+	/**
+	 * Parse any node in the form of:<br/>
+	 * [AT] {@code location} [OF] {@code statementType} [(reportSpecification)]<br/>
+	 * StatementBody<br/>
+	 * {@code statementEndTokenType}
+	 *
+	 * @param location          the "location", e.g. START, TOP, END
+	 * @param statementType     the type, e.g. PAGE, DATA
+	 * @param statementEndToken the token which ends the body
+	 * @param node              the resulting node
+	 */
+	private <T extends StatementWithBodyNode & ICanSetReportSpecification> StatementNode parseAtPositionOf(
+		SyntaxKind location,
+		SyntaxKind statementType,
+		SyntaxKind statementEndToken,
+		boolean canHaveLabelIdentifier,
+		T node) throws ParseError
+	{
+		consumeOptionally(node, SyntaxKind.AT);
+		var openingToken = consumeMandatory(node, location);
+		consumeOptionally(node, SyntaxKind.OF);
+		consumeMandatory(node, statementType);
+
+		if (consumeOptionally(node, SyntaxKind.LPAREN))
+		{
+			if (canHaveLabelIdentifier)
+			{
+				consumeMandatory(node, SyntaxKind.LABEL_IDENTIFIER);
+			}
+			else
+			{
+				consumeAnyMandatory(node, List.of(SyntaxKind.IDENTIFIER, SyntaxKind.NUMBER_LITERAL));
+			}
+			node.setReportSpecification(previousToken());
+			consumeMandatory(node, SyntaxKind.RPAREN);
+		}
+
+		node.setBody(statementList(statementEndToken));
+		consumeMandatoryClosing(node, statementEndToken, openingToken);
+		return node;
+	}
+
+	private StatementNode newPage() throws ParseError
+	{
+		var newPage = new NewPageNode();
+		consumeMandatory(newPage, SyntaxKind.NEWPAGE);
+		if (consumeOptionally(newPage, SyntaxKind.LPAREN))
+		{
+			consumeAnyMandatory(newPage, List.of(SyntaxKind.IDENTIFIER, SyntaxKind.NUMBER_LITERAL));
+			newPage.setReportSpecification(previousToken());
+			consumeMandatory(newPage, SyntaxKind.RPAREN);
+		}
+
+		if (consumeOptionally(newPage, SyntaxKind.EVEN))
+		{
+			consumeOptionally(newPage, SyntaxKind.IF);
+			consumeMandatory(newPage, SyntaxKind.TOP);
+			consumeOptionally(newPage, SyntaxKind.OF);
+			consumeOptionally(newPage, SyntaxKind.PAGE);
+		}
+		else
+			if (consumeAnyOptionally(newPage, List.of(SyntaxKind.IF, SyntaxKind.WHEN, SyntaxKind.LESS)))
+			{
+				if (previousToken().kind() != SyntaxKind.LESS)
+				{
+					consumeMandatory(newPage, SyntaxKind.LESS);
+				}
+
+				consumeOptionally(newPage, SyntaxKind.THAN);
+				consumeOperandNode(newPage);
+				consumeOptionally(newPage, SyntaxKind.LINES);
+				consumeOptionally(newPage, SyntaxKind.LEFT);
+			}
+
+		if (consumeAnyOptionally(newPage, List.of(SyntaxKind.WITH, SyntaxKind.TITLE)))
+		{
+			if (previousToken().kind() != SyntaxKind.TITLE)
+			{
+				consumeMandatory(newPage, SyntaxKind.TITLE);
+			}
+			consumeOperandNode(newPage);
+		}
+
+		return newPage;
+	}
+
+	private StatementNode examine() throws ParseError
+	{
+		var examine = new ExamineNode();
+		consumeMandatory(examine, SyntaxKind.EXAMINE);
+		consumeAnyOptionally(examine, List.of(SyntaxKind.FORWARD, SyntaxKind.BACKWARD));
+		if (consumeOptionally(examine, SyntaxKind.FULL))
+		{
+			if (consumeOptionally(examine, SyntaxKind.VALUE))
+			{
+				consumeOptionally(examine, SyntaxKind.OF);
+			}
+		}
+
+		var examined = consumeSubstringOrOperand(examine);
+		examine.setExamined(examined);
+
+		if (consumeOptionally(examine, SyntaxKind.AND) || peekKind(SyntaxKind.TRANSLATE))
+		{
+			return examineTranslate(examine);
+		}
+
+		// [STARTING] FROM
+		var hasPositionClause = consumeOptionally(examine, SyntaxKind.STARTING);
+		hasPositionClause = consumeOptionally(examine, SyntaxKind.FROM) || hasPositionClause;
+		if (hasPositionClause)
+		{
+			consumeOptionally(examine, SyntaxKind.POSITION);
+			consumeOperandNode(examine);
+			if (consumeAnyOptionally(examine, List.of(SyntaxKind.ENDING, SyntaxKind.THRU)))
+			{
+				consumeOptionally(examine, SyntaxKind.AT);
+				consumeOptionally(examine, SyntaxKind.POSITION);
+				consumeOperandNode(examine);
+			}
+		}
+
+		consumeOptionally(examine, SyntaxKind.FOR);
+		if (consumeOptionally(examine, SyntaxKind.FULL))
+		{
+			consumeOptionally(examine, SyntaxKind.VALUE);
+			consumeOptionally(examine, SyntaxKind.OF);
+		}
+		consumeOptionally(examine, SyntaxKind.PATTERN);
+
+		consumeOperandNode(examine);
+
+		var hadAbsolute = consumeOptionally(examine, SyntaxKind.ABSOLUTE);
+		if (!hadAbsolute && consumeOptionally(examine, SyntaxKind.WITH))
+		{
+			consumeOptionally(examine, SyntaxKind.DELIMITERS);
+			consumeOperandNode(examine);
+		}
+
+		consumeOptionally(examine, SyntaxKind.AND);
+		if (consumeOptionally(examine, SyntaxKind.REPLACE))
+		{
+			consumeOptionally(examine, SyntaxKind.FIRST);
+			consumeOptionally(examine, SyntaxKind.WITH);
+			consumeOptionally(examine, SyntaxKind.FULL);
+			consumeOptionally(examine, SyntaxKind.VALUE);
+			consumeOptionally(examine, SyntaxKind.OF);
+			consumeOperandNode(examine);
+		}
+		else
+			if (consumeOptionally(examine, SyntaxKind.DELETE))
+			{
+				consumeOptionally(examine, SyntaxKind.FIRST);
+			}
+
+		while (consumeOptionally(examine, SyntaxKind.GIVING))
+		{
+			if (consumeOptionally(examine, SyntaxKind.IN))
+			{
+				consumeOperandNode(examine);
+			}
+			else
+				if (consumeOptionally(examine, SyntaxKind.KW_NUMBER))
+				{
+					consumeOptionally(examine, SyntaxKind.IN);
+					consumeOperandNode(examine);
+				}
+				else
+					if (consumeOptionally(examine, SyntaxKind.POSITION))
+					{
+						consumeOptionally(examine, SyntaxKind.IN);
+						consumeOperandNode(examine);
+					}
+					else
+						if (consumeOptionally(examine, SyntaxKind.LENGTH))
+						{
+							consumeOptionally(examine, SyntaxKind.IN);
+							consumeOperandNode(examine);
+						}
+						else
+							if (consumeOptionally(examine, SyntaxKind.INDEX))
+							{
+								consumeOptionally(examine, SyntaxKind.IN);
+								while (isOperand())
+								{
+									consumeOperandNode(examine);
+								}
+							}
+							else
+							{
+								consumeOperandNode(examine);
+							}
+		}
+
+		return examine;
+	}
+
+	private IOperandNode consumeSubstringOrOperand(BaseSyntaxNode node) throws ParseError
+	{
+		if (peekKind(SyntaxKind.SUBSTR) || peekKind(SyntaxKind.SUBSTRING))
+		{
+			return consumeSubstring(node);
+		}
+		else
+		{
+			return consumeArithmeticExpression(node);
+		}
+	}
+
+	private IOperandNode consumeSubstring(BaseSyntaxNode node) throws ParseError
+	{
+		var substring = new SubstringOperandNode();
+		node.addNode(substring);
+		consumeAnyMandatory(node, List.of(SyntaxKind.SUBSTR, SyntaxKind.SUBSTRING));
+
+		consumeMandatory(node, SyntaxKind.LPAREN);
+		substring.setOperand(consumeOperandNode(substring));
+		consumeMandatory(node, SyntaxKind.COMMA);
+		if (peekKind(SyntaxKind.NUMBER_LITERAL) && peek().source().contains(","))
+		{
+			// HACK: this should be handled somewhere nicely
+			var wrongToken = peek();
+			discard();
+			var split = wrongToken.source().split(",");
+			var firstNumber = new SyntaxToken(SyntaxKind.NUMBER_LITERAL, wrongToken.offset(), wrongToken.offsetInLine(), wrongToken.line(), split[0], wrongToken.filePath());
+			var comma = new SyntaxToken(SyntaxKind.COMMA, wrongToken.offset() + split[0].length(), wrongToken.offsetInLine() + split[0].length(), wrongToken.line(), ",", wrongToken.filePath());
+			var secondNumber = new SyntaxToken(SyntaxKind.NUMBER_LITERAL, comma.offset() + comma.length(), comma.offsetInLine() + comma.length(), wrongToken.line(), split[1], wrongToken.filePath());
+
+			var startingPosition = new LiteralNode(firstNumber);
+			substring.addNode(startingPosition);
+			substring.setStartingPosition(startingPosition);
+
+			substring.addNode(new TokenNode(comma));
+
+			var length = new LiteralNode(secondNumber);
+			substring.addNode(length);
+			substring.setLength(length);
+		}
+		else
+		{
+			substring.setStartingPosition(consumeOperandNode(substring));
+			consumeMandatory(node, SyntaxKind.COMMA);
+			substring.setLength(consumeOperandNode(substring));
+		}
+		consumeMandatory(node, SyntaxKind.RPAREN);
+
+		return substring;
+	}
+
+	private StatementNode examineTranslate(ExamineNode examine) throws ParseError
+	{
+		consumeMandatory(examine, SyntaxKind.TRANSLATE);
+		if (consumeOptionally(examine, SyntaxKind.INTO))
+		{
+			consumeAnyMandatory(examine, List.of(SyntaxKind.UPPER, SyntaxKind.LOWER));
+			consumeOptionally(examine, SyntaxKind.CASE);
+		}
+		else
+		{
+			consumeMandatory(examine, SyntaxKind.USING);
+			consumeOptionally(examine, SyntaxKind.INVERTED);
+			consumeOperandNode(examine);
+		}
+
+		return examine;
+	}
+
+	private StatementNode write() throws ParseError
+	{
+		var write = new WriteNode();
+		consumeMandatory(write, SyntaxKind.WRITE);
+		if (consumeOptionally(write, SyntaxKind.LPAREN))
+		{
+			if (peekKind(SyntaxKind.IDENTIFIER) && peekKind(1, SyntaxKind.RPAREN))
+			{
+				var token = consumeMandatoryIdentifier(write);
+				write.setReportSpecification(token);
+			}
+			else
+			{
+				// currently consume everything until closing parenthesis to consume things like attribute definition etc.
+				while (!peekKind(SyntaxKind.RPAREN))
+				{
+					consume(write);
+				}
+			}
+			consumeMandatory(write, SyntaxKind.RPAREN);
+		}
+
+		consumeOptionally(write, SyntaxKind.NOTITLE);
+		consumeOptionally(write, SyntaxKind.NOHDR);
+
+		return write;
+	}
+
 	private static final Set<SyntaxKind> FORMAT_MODIFIERS = Set.of(SyntaxKind.AD, SyntaxKind.AL, SyntaxKind.CD, SyntaxKind.DF, SyntaxKind.DL, SyntaxKind.EM, SyntaxKind.ES, SyntaxKind.FC, SyntaxKind.FL, SyntaxKind.GC, SyntaxKind.HC, SyntaxKind.HW, SyntaxKind.IC, SyntaxKind.IP, SyntaxKind.IS, SyntaxKind.KD, SyntaxKind.LC, SyntaxKind.LS, SyntaxKind.MC, SyntaxKind.MP, SyntaxKind.MS, SyntaxKind.NL,
 		SyntaxKind.PC, SyntaxKind.PM, SyntaxKind.PS, SyntaxKind.SF, SyntaxKind.SG, SyntaxKind.TC, SyntaxKind.UC, SyntaxKind.ZP);
 
@@ -187,7 +777,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		while (consumeAnyOptionally(format, FORMAT_MODIFIERS))
 		{
 			consumeMandatory(format, SyntaxKind.EQUALS_SIGN);
-			if(!FORMAT_MODIFIERS.contains(peek().kind()) && peek().line() == previousToken().line())
+			if (!FORMAT_MODIFIERS.contains(peek().kind()) && peek().line() == previousToken().line())
 			{
 				consume(format);
 			}
@@ -381,55 +971,6 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return endNode;
 	}
 
-	private StatementNode identifierReference() throws ParseError
-	{
-		var token = consumeIdentifierTokenOnly();
-		if (peekKind(SyntaxKind.LPAREN)
-			&& (peekKind(1, SyntaxKind.LESSER_SIGN) || peekKind(1, SyntaxKind.LESSER_GREATER)))
-		{
-			return functionCall(token);
-		}
-
-		var node = symbolReferenceNode(token);
-		return new SyntheticVariableStatementNode(node);
-	}
-
-	private SymbolReferenceNode symbolReferenceNode(SyntaxToken token)
-	{
-		var node = new SymbolReferenceNode(token);
-		unresolvedReferences.add(node);
-		return node;
-	}
-
-	private FunctionCallNode functionCall(SyntaxToken token) throws ParseError
-	{
-		var node = new FunctionCallNode();
-
-		var functionName = new TokenNode(token);
-		node.setReferencingToken(token);
-		node.addNode(functionName);
-		var module = sideloadModule(token.symbolName(), functionName);
-		node.setReferencedModule((NaturalModule) module);
-
-		consumeMandatory(node, SyntaxKind.LPAREN);
-
-		while (!peekKind(SyntaxKind.RPAREN))
-		{
-			if (peekKind(SyntaxKind.IDENTIFIER))
-			{
-				node.addNode(identifierReference());
-			}
-			else
-			{
-				consume(node);
-			}
-		}
-
-		consumeMandatory(node, SyntaxKind.RPAREN);
-
-		return node;
-	}
-
 	private CallnatNode callnat() throws ParseError
 	{
 		var callnat = new CallnatNode();
@@ -564,11 +1105,375 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		var opening = consumeMandatory(ifStatement, SyntaxKind.IF);
 
+		ifStatement.setCondition(conditionNode());
+
 		ifStatement.setBody(statementList(SyntaxKind.END_IF));
 
 		consumeMandatoryClosing(ifStatement, SyntaxKind.END_IF, opening);
 
 		return ifStatement;
+	}
+
+	private ConditionNode conditionNode() throws ParseError
+	{
+		var conditionNode = new ConditionNode();
+		conditionNode.setCriteria(chainedCriteria());
+		return conditionNode;
+	}
+
+	private ILogicalConditionCriteriaNode chainedCriteria() throws ParseError
+	{
+		var left = conditionCriteria();
+		if (peekKind(SyntaxKind.AND) || peekKind(SyntaxKind.OR))
+		{
+			var chainedCriteria = new ChainedCriteriaNode();
+			chainedCriteria.setLeft(left);
+			consumeAnyMandatory(chainedCriteria, List.of(SyntaxKind.AND, SyntaxKind.OR));
+			chainedCriteria.setOperator(ChainedCriteriaOperator.fromSyntax(previousToken().kind()));
+			chainedCriteria.setRight(conditionCriteria());
+
+			while (peekKind(SyntaxKind.AND) || peekKind(SyntaxKind.OR))
+			{
+				chainedCriteria = nestedChainedCriteria(chainedCriteria);
+			}
+			return chainedCriteria;
+		}
+		else
+		{
+			return left;
+		}
+	}
+
+	private ChainedCriteriaNode nestedChainedCriteria(ChainedCriteriaNode previousChain) throws ParseError
+	{
+		var chain = new ChainedCriteriaNode();
+		chain.setLeft(previousChain);
+		consumeAnyMandatory(chain, List.of(SyntaxKind.AND, SyntaxKind.OR));
+		chain.setOperator(ChainedCriteriaOperator.fromSyntax(previousToken().kind()));
+		chain.setRight(chainedCriteria());
+		return chain;
+	}
+
+	private static final Set<SyntaxKind> CONDITIONAL_OPERATOR_START =
+		Set.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL, SyntaxKind.LESSER_GREATER, SyntaxKind.NE, SyntaxKind.NOT, SyntaxKind.LESSER_SIGN, SyntaxKind.LT, SyntaxKind.LESS, SyntaxKind.LESSER_EQUALS_SIGN, SyntaxKind.LE, SyntaxKind.GREATER_SIGN, SyntaxKind.GT, SyntaxKind.GREATER, SyntaxKind.GREATER_EQUALS_SIGN, SyntaxKind.GE);
+
+	private ILogicalConditionCriteriaNode conditionCriteria() throws ParseError
+	{
+		if (peekKind(SyntaxKind.LPAREN) && containsNoArithmeticUntilClosingParensOrComparingOperator(SyntaxKind.RPAREN))  // we're not bamboozled by grouping arithmetics or nested comparisons
+		{
+			return groupedConditionCriteria();
+		}
+
+		if (peekKind(SyntaxKind.NOT))
+		{
+			return negatedConditionCriteria();
+		}
+
+		var tmpNode = new BaseSyntaxNode();
+		var lhs = consumeSubstringOrOperand(tmpNode);
+
+		if (peekKind(SyntaxKind.IS))
+		{
+			return isConditionCriteria(lhs);
+		}
+
+		if (CONDITIONAL_OPERATOR_START.contains(peek().kind()))
+		{
+			return relationalCriteria(lhs);
+		}
+
+		if (lhs instanceof IFunctionCallNode || lhs instanceof IVariableReferenceNode)
+		{
+			var unary = new UnaryLogicalCriteriaNode();
+			unary.setNode(lhs);
+			return unary;
+		}
+
+		if (lhs instanceof ILiteralNode literalNode && (literalNode.token().kind() == SyntaxKind.TRUE || literalNode.token().kind() == SyntaxKind.FALSE))
+		{
+			var unary = new UnaryLogicalCriteriaNode();
+			unary.setNode(lhs);
+			return unary;
+		}
+
+		report(ParserErrors.unexpectedToken(List.of(SyntaxKind.TRUE, SyntaxKind.FALSE, SyntaxKind.IDENTIFIER), peek()));
+		throw new ParseError(peek());
+	}
+
+	protected boolean containsNoArithmeticUntilClosingParensOrComparingOperator(SyntaxKind stopKind)
+	{
+		var offset = 1;
+		var nestedParens = 0;
+		while (!isAtEnd(offset) && !peekKind(offset, stopKind) && !CONDITIONAL_OPERATOR_START.contains(peek(offset).kind()))
+		{
+			var currentKind = peek(offset).kind();
+			if (currentKind == SyntaxKind.LPAREN)
+			{
+				nestedParens++;
+			}
+			// skip nested parens
+			while (nestedParens > 0 && !isAtEnd(offset))
+			{
+				if (currentKind == SyntaxKind.LPAREN)
+				{
+					nestedParens++;
+				}
+				if (currentKind == SyntaxKind.RPAREN)
+				{
+					nestedParens--;
+				}
+
+				offset++;
+			}
+
+			if (ARITHMETIC_OPERATOR_KINDS.contains(currentKind))
+			{
+				return false;
+			}
+			offset++;
+		}
+
+		return true;
+	}
+
+	private ILogicalConditionCriteriaNode isConditionCriteria(IOperandNode lhs) throws ParseError
+	{
+		var isCriteria = new IsConditionCriteriaNode();
+		isCriteria.addNode((BaseSyntaxNode) lhs);
+		isCriteria.setLeft(lhs);
+		consumeMandatory(isCriteria, SyntaxKind.IS);
+		consumeMandatory(isCriteria, SyntaxKind.LPAREN);
+		if (!peekKind(SyntaxKind.IDENTIFIER))
+		{
+			report(ParserErrors.unexpectedToken(peek(), "Expected a data type notation"));
+			throw new ParseError(peek());
+		}
+
+		var type = peek();
+		discard();
+		if (peekKind(SyntaxKind.COMMA) || peekKind(SyntaxKind.DOT)) // TODO (lexermode): This should be done in the lexer when lexing data types (in this case after IS)
+		{
+			type = type.combine(peek(), type.kind());
+			discard();
+			type = type.combine(peek(), type.kind());
+			discard();
+		}
+
+		isCriteria.addNode(new TokenNode(type));
+		isCriteria.setCheckedType(type);
+		consumeMandatory(isCriteria, SyntaxKind.RPAREN);
+		return isCriteria;
+	}
+
+	private ILogicalConditionCriteriaNode negatedConditionCriteria() throws ParseError
+	{
+		var negated = new NegatedConditionalCriteria();
+		consumeMandatory(negated, SyntaxKind.NOT);
+		negated.setCriteria(chainedCriteria());
+		return negated;
+	}
+
+	private ILogicalConditionCriteriaNode groupedConditionCriteria() throws ParseError
+	{
+		var groupedCriteria = new GroupedConditionCriteriaNode();
+		consumeMandatory(groupedCriteria, SyntaxKind.LPAREN);
+		groupedCriteria.setCriteria(chainedCriteria());
+		consumeMandatory(groupedCriteria, SyntaxKind.RPAREN);
+		return groupedCriteria;
+	}
+
+	private ILogicalConditionCriteriaNode relationalCriteria(IOperandNode lhs) throws ParseError
+	{
+		var expression = new RelationalCriteriaNode();
+		expression.addNode((BaseSyntaxNode) lhs);
+		expression.setLeft(lhs);
+
+		var originalOperator = peek();
+		var operator = parseRelationalOperator(expression); // we did the check of supported values beforehand as lookahead, don't check again
+		expression.setOperator(operator);
+
+		var rhs = consumeRelationalCriteriaRightHandSide(expression);
+		expression.setRight(rhs);
+
+		if (peekKind(SyntaxKind.OR) && (peekAny(1, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL))))
+		{
+			if (expression.operator() != ComparisonOperator.EQUAL)
+			{
+				report(ParserErrors.extendedRelationalExpressionCanOnlyBeUsedWithEquals(originalOperator));
+			}
+			return extendedRelationalCriteria(expression);
+		}
+
+		if (peekKind(SyntaxKind.THRU))
+		{
+			if (expression.operator() != ComparisonOperator.EQUAL)
+			{
+				report(ParserErrors.extendedRelationalExpressionCanOnlyBeUsedWithEquals(originalOperator));
+			}
+			return rangedExtendedRelationalCriteria(expression);
+		}
+
+		return expression;
+	}
+
+	private <T extends BaseSyntaxNode & IHasComparisonOperator> IOperandNode consumeRelationalCriteriaRightHandSide(T expression) throws ParseError
+	{
+		if (peekKind(SyntaxKind.MASK))
+		{
+			return consumeMask(expression);
+		}
+
+		if (peekKind(SyntaxKind.SCAN))
+		{
+			return consumeScan(expression);
+		}
+
+		return consumeSubstringOrOperand(expression);
+	}
+
+	private <T extends BaseSyntaxNode & IHasComparisonOperator> IOperandNode consumeScan(T node) throws ParseError
+	{
+		var scan = new ScanOperandNode();
+		node.addNode(scan);
+		consumeMandatory(scan, SyntaxKind.SCAN);
+		if (consumeOptionally(scan, SyntaxKind.LPAREN))
+		{
+			scan.setOperand(consumeOperandNode(scan));
+			consumeMandatory(scan, SyntaxKind.RPAREN);
+		}
+		else
+		{
+			scan.setOperand(consumeOperandNode(scan));
+		}
+
+		if (node.operator() != ComparisonOperator.EQUAL && node.operator() != ComparisonOperator.NOT_EQUAL)
+		{
+			report(ParserErrors.invalidMaskOrScanComparisonOperator(Objects.requireNonNull(scan.findDescendantToken(SyntaxKind.SCAN)).token()));
+		}
+
+		return scan;
+	}
+
+	private <T extends BaseSyntaxNode & IHasComparisonOperator> IOperandNode consumeMask(T expression) throws ParseError
+	{
+		var isConstant = peekKind(1, SyntaxKind.LPAREN);
+		var mask = isConstant ? consumeConstantMask(expression) : consumeVariableMask(expression);
+
+		if (expression.operator() != ComparisonOperator.EQUAL && expression.operator() != ComparisonOperator.NOT_EQUAL)
+		{
+			report(ParserErrors.invalidMaskOrScanComparisonOperator(Objects.requireNonNull(mask.findDescendantToken(SyntaxKind.MASK)).token()));
+		}
+
+		return mask;
+	}
+
+	private IMaskOperandNode consumeConstantMask(BaseSyntaxNode node) throws ParseError
+	{
+		var mask = new ConstantMaskOperandNode();
+		node.addNode(mask);
+		consumeMandatory(mask, SyntaxKind.MASK);
+		consumeMandatory(mask, SyntaxKind.LPAREN);
+		while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+		{
+			var token = consume(mask);
+			mask.addContent(token);
+		}
+		consumeMandatory(mask, SyntaxKind.RPAREN);
+
+		if (!isAtEnd() && peek().kind().canBeIdentifier() && !peekKind(SyntaxKind.OR) && !peekKind(SyntaxKind.AND))
+		{
+			mask.setCheckedOperand(consumeVariableReferenceNode(mask));
+		}
+
+		return mask;
+	}
+
+	private IMaskOperandNode consumeVariableMask(BaseSyntaxNode node) throws ParseError
+	{
+		var mask = new VariableMaskOperandNode();
+		node.addNode(mask);
+		consumeMandatory(mask, SyntaxKind.MASK);
+		mask.setVariableMask(consumeVariableReferenceNode(mask));
+		return mask;
+	}
+
+	private ILogicalConditionCriteriaNode rangedExtendedRelationalCriteria(RelationalCriteriaNode expression) throws ParseError
+	{
+		var rangedCriteria = new RangedExtendedRelationalCriteriaNode(expression);
+		consumeMandatory(rangedCriteria, SyntaxKind.THRU);
+		rangedCriteria.setUpperBound(consumeOperandNode(rangedCriteria));
+		if (consumeOptionally(rangedCriteria, SyntaxKind.BUT))
+		{
+			consumeMandatory(rangedCriteria, SyntaxKind.NOT);
+			rangedCriteria.setExcludedLowerBound(consumeOperandNode(rangedCriteria));
+			if (consumeOptionally(rangedCriteria, SyntaxKind.THRU))
+			{
+				rangedCriteria.setExcludedUpperBound(consumeOperandNode(rangedCriteria));
+			}
+		}
+		return rangedCriteria;
+	}
+
+	private ExtendedRelationalCriteriaNode extendedRelationalCriteria(RelationalCriteriaNode expression) throws ParseError
+	{
+		var extendedCriteria = new ExtendedRelationalCriteriaNode(expression);
+		while (peekKind(SyntaxKind.OR) && peekAny(1, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL)))
+		{
+			consumeMandatory(extendedCriteria, SyntaxKind.OR);
+			consumeAnyMandatory(extendedCriteria, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL));
+			if (previousToken().kind() == SyntaxKind.EQUAL)
+			{
+				consumeOptionally(extendedCriteria, SyntaxKind.TO);
+			}
+
+			extendedCriteria.addRight(consumeRelationalCriteriaRightHandSide(extendedCriteria));
+		}
+
+		return extendedCriteria;
+	}
+
+	private ComparisonOperator parseRelationalOperator(RelationalCriteriaNode node) throws ParseError
+	{
+		var kind = peek().kind();
+		var maybeOperator = ComparisonOperator.ofSyntaxKind(kind);
+		if (maybeOperator != null)
+		{
+			consume(node);
+			return maybeOperator;
+		}
+
+		return switch (kind)
+			{
+				case EQUAL ->
+				{
+					consume(node);
+					consumeOptionally(node, SyntaxKind.TO);
+					yield ComparisonOperator.EQUAL;
+				}
+				case NOT ->
+				{
+					consume(node);
+					consumeAnyMandatory(node, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL));
+					if (previousToken().kind() == SyntaxKind.EQUAL)
+					{
+						consumeOptionally(node, SyntaxKind.TO);
+					}
+					yield ComparisonOperator.NOT_EQUAL;
+				}
+				case LESS ->
+				{
+					consume(node);
+					consumeAnyMandatory(node, List.of(SyntaxKind.THAN, SyntaxKind.EQUAL));
+					yield previousToken().kind() == SyntaxKind.THAN ? ComparisonOperator.LESS_THAN : ComparisonOperator.LESS_OR_EQUAL;
+				}
+				case GREATER ->
+				{
+					consume(node);
+					consumeAnyMandatory(node, List.of(SyntaxKind.THAN, SyntaxKind.EQUAL));
+					yield previousToken().kind() == SyntaxKind.THAN ? ComparisonOperator.GREATER_THAN : ComparisonOperator.GREATER_OR_EQUAL;
+				}
+				default -> throw new RuntimeException("unreachable: All SyntaxKinds should have been checked beforehand");
+			};
 	}
 
 	private IfNoRecordNode ifNoRecord() throws ParseError
@@ -698,11 +1603,17 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			return false; // readability
 		}
 
+		var lookahead = isAtEnd(1) ? null : peek(1).kind();
+
 		return
-			(peekKind(SyntaxKind.IDENTIFIER) && !isAtEnd(1) && peek(1).kind() != SyntaxKind.COLON_EQUALS_SIGN)
+			(peekKind(SyntaxKind.IDENTIFIER) && lookahead != SyntaxKind.COLON_EQUALS_SIGN)
 				|| peek().kind().isSystemFunction()
 				|| peek().kind().isSystemVariable()
-				|| peek().kind().canBeIdentifier(); // this should hopefully catch the begin of statements
+				|| peek().kind().isLiteralOrConst()
+				|| peekKind(SyntaxKind.VAL)
+				|| peekKind(SyntaxKind.ABS)
+				|| peekKind(SyntaxKind.POS)
+				|| (peek().kind().canBeIdentifier() && lookahead != SyntaxKind.COLON_EQUALS_SIGN); // this should hopefully catch the begin of statements
 	}
 
 	private boolean isNotCallnatOrFetchModule()
@@ -786,5 +1697,35 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 				case UPLOAD -> peekKind(1, SyntaxKind.PC) && peekKind(2, SyntaxKind.FILE);
 				default -> false;
 			};
+	}
+
+	private UnaryLogicalCriteriaNode unaryVariableOrFunctionCall() throws ParseError
+	{
+		var unary = new UnaryLogicalCriteriaNode();
+		if (peekKind(1, SyntaxKind.LPAREN) && peekKind(2, SyntaxKind.LESSER_SIGN))
+		{
+			var functionName = consumeIdentifierTokenOnly();
+			unary.setNode(functionCall(functionName));
+		}
+		else
+		{
+			unary.setNode(consumeVariableReferenceNode(unary));
+		}
+		return unary;
+	}
+
+	private UnaryLogicalCriteriaNode constantUnary() throws ParseError
+	{
+		var unary = new UnaryLogicalCriteriaNode();
+		if (peekKind(SyntaxKind.TRUE))
+		{
+			unary.setNode(consumeLiteralNode(unary, SyntaxKind.TRUE));
+		}
+		else
+		{
+			unary.setNode(consumeLiteralNode(unary, SyntaxKind.FALSE));
+		}
+
+		return unary;
 	}
 }

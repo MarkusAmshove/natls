@@ -26,9 +26,9 @@ public class ActualFilesystem implements IFilesystem
 
 	public List<Path> listDirectories(Path path)
 	{
-		try
+		try (var files = Files.list(path))
 		{
-			return Files.list(path)
+			return files
 				.filter(p -> p.toFile().isDirectory())
 				.toList();
 		}
@@ -52,9 +52,9 @@ public class ActualFilesystem implements IFilesystem
 
 	public Optional<Path> findFile(String name, Path root)
 	{
-		try
+		try (var files = Files.list(root))
 		{
-			return Files.list(root)
+			return files
 				.filter(f -> f.getFileName().toString().equalsIgnoreCase(name))
 				.findFirst();
 		}
@@ -71,16 +71,18 @@ public class ActualFilesystem implements IFilesystem
 		{
 			for (var projectFileName : PROJECT_FILE_NAMES)
 			{
-				var foundFile = Files.list(root)
+				try (var filteredFiles = Files.list(root)
 					.filter(f -> f.getFileName().toString().equalsIgnoreCase(projectFileName))
-					.findFirst();
-
-				if(foundFile.isPresent())
+				)
 				{
-					return foundFile;
+					var foundFile = filteredFiles.findFirst();
+
+					if (foundFile.isPresent())
+					{
+						return foundFile;
+					}
 				}
 			}
-
 			return Optional.empty();
 		}
 		catch (IOException e)

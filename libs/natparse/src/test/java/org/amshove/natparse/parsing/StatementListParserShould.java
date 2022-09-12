@@ -338,8 +338,9 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 			END-IF
 			""", IIfStatementNode.class);
 
-		assertThat(ifStatement.body().statements()).hasSize(4); // TODO(logical-expressions)
-		assertThat(ifStatement.descendants()).hasSize(6);
+		assertThat(ifStatement.condition()).isNotNull();
+		assertThat(ifStatement.body().statements()).hasSize(1);
+		assertThat(ifStatement.descendants()).hasSize(4);
 	}
 
 	@Test
@@ -736,6 +737,459 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(statementList.statements().size()).isEqualTo(2);
 		assertThat(statementList.statements().get(0)).isInstanceOf(IFormatNode.class);
 		assertThat(statementList.statements().get(1)).isInstanceOf(IDefinePrinterNode.class);
+	}
+
+	@Test
+	void parseWriteWithReportSpecification()
+	{
+		var write = assertParsesSingleStatement("WRITE (REP1)", IWriteNode.class);
+		assertThat(write.reportSpecification()).map(SyntaxToken::source).hasValue("REP1");
+	}
+
+	@Test
+	void parseWriteWithAttributeDefinition()
+	{
+		var write = assertParsesSingleStatement("WRITE (AD=UL AL=17 NL=8)", IWriteNode.class);
+		assertThat(write.descendants()).hasSize(10);
+	}
+
+	@Test
+	void parseWriteWithNoTitleAndNoHdr()
+	{
+		var write = assertParsesSingleStatement("WRITE NOTITLE NOHDR", IWriteNode.class);
+		assertThat(write.findDescendantToken(SyntaxKind.NOTITLE)).isNotNull();
+		assertThat(write.findDescendantToken(SyntaxKind.NOHDR)).isNotNull();
+	}
+
+	@Test
+	void parseASimpleExamineReplace()
+	{
+		var examine = assertParsesSingleStatement("EXAMINE #VAR 'a' REPLACE 'b'", IExamineNode.class);
+		assertThat(examine.examined()).isNotNull();
+		assertThat(assertNodeType(examine.examined(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+	}
+
+	@Test
+	void parseAnExamineWithSubstring()
+	{
+		var examine = assertParsesSingleStatement("EXAMINE SUBSTR(#VAR, 1, 5) FOR 'a'", IExamineNode.class);
+		assertThat(examine.examined()).isNotNull();
+		var substringOperand = assertNodeType(examine.examined(), ISubstringOperandNode.class);
+		assertThat(assertNodeType(substringOperand.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+		assertThat(assertNodeType(substringOperand.startPosition(), ILiteralNode.class).token().intValue()).isEqualTo(1);
+		assertThat(assertNodeType(substringOperand.length(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+	}
+
+	@Test
+	void parseAComplexExamineReplace()
+	{
+		var examine = assertParsesSingleStatement("EXAMINE FORWARD FULL VALUE OF #DOC STARTING FROM POSITION 7 ENDING AT POSITION 10 FOR FULL VALUE OF PATTERN #HTML(*) WITH DELIMITERS ',' AND REPLACE FIRST WITH FULL VALUE OF #TAB(*) ", IExamineNode.class);
+		assertThat(examine.descendants().size()).isEqualTo(31);
+	}
+
+	@Test
+	void parseAComplexExamineDelete()
+	{
+		var examine = assertParsesSingleStatement("EXAMINE FORWARD FULL VALUE OF #DOC STARTING FROM POSITION 7 ENDING AT POSITION 10 FOR FULL VALUE OF PATTERN #HTML(*) WITH DELIMITERS ',' AND DELETE FIRST", IExamineNode.class);
+		assertThat(examine.descendants().size()).isEqualTo(26);
+	}
+
+	@Test
+	void parseAComplexExamineDeleteGiving()
+	{
+		var examine = assertParsesSingleStatement("EXAMINE FORWARD FULL VALUE OF #DOC STARTING FROM POSITION 7 ENDING AT POSITION 10 FOR FULL VALUE OF PATTERN #HTML(*) WITH DELIMITERS ',' AND DELETE FIRST GIVING INDEX IN #ASD #EFG #HIJ", IExamineNode.class);
+		assertThat(examine.descendants().size()).isEqualTo(32);
+	}
+
+	@Test
+	void parseAExamineWithMultipleGivings()
+	{
+		var examine = assertParsesSingleStatement("EXAMINE #DOC FOR FULL VALUE OF 'a' GIVING NUMBER #NUM GIVING POSITION #POS GIVING LENGTH #LEN GIVING INDEX #INDEX", IExamineNode.class);
+		assertThat(examine.descendants().size()).isEqualTo(19);
+	}
+
+	@Test
+	void parseAnExamineTranslateStatement()
+	{
+		var examine = assertParsesSingleStatement("EXAMINE #ASD AND TRANSLATE INTO UPPER CASE", IExamineNode.class);
+		assertThat(examine.descendants().size()).isEqualTo(7);
+	}
+
+	@Test
+	void parseAnExamineTranslateUsingStatement()
+	{
+		var examine = assertParsesSingleStatement("EXAMINE #ASD AND TRANSLATE USING INVERTED #EFG", IExamineNode.class);
+		assertThat(examine.descendants().size()).isEqualTo(7);
+	}
+
+	@Test
+	void parseNewPage()
+	{
+		var newPage = assertParsesSingleStatement("NEWPAGE EVEN IF TOP OF PAGE WITH TITLE 'The Title'", INewPageNode.class);
+		assertThat(newPage.descendants()).hasSize(9);
+	}
+
+	@Test
+	void parseNewPageWithoutTitle()
+	{
+		var newPage = assertParsesSingleStatement("NEWPAGE WHEN LESS THAN 10 LINES LEFT", INewPageNode.class);
+		assertThat(newPage.descendants()).hasSize(7);
+	}
+
+	@Test
+	void parseNewPageWithNumericReportSpecification()
+	{
+		var newPage = assertParsesSingleStatement("NEWPAGE(5) WHEN LESS 10 TITLE 'The Title'", INewPageNode.class);
+		assertThat(newPage.reportSpecification()).map(SyntaxToken::intValue).hasValue(5);
+		assertThat(newPage.descendants()).hasSize(9);
+	}
+
+	@Test
+	void parseNewPageWithLogicalNameInReportSpecification()
+	{
+		var newPage = assertParsesSingleStatement("NEWPAGE(THEPRINT) IF LESS THAN #VAR LINES LEFT", INewPageNode.class);
+		assertThat(newPage.reportSpecification()).map(SyntaxToken::symbolName).hasValue("THEPRINT");
+		assertThat(newPage.descendants()).hasSize(10);
+	}
+
+	@Test
+	void parseAtEndOfPage()
+	{
+		var endOfPage = assertParsesSingleStatement("""
+			AT END OF PAGE (PRNT)
+			IGNORE
+			END-ENDPAGE
+			""", IEndOfPageNode.class);
+
+		assertThat(endOfPage.reportSpecification()).map(SyntaxToken::symbolName).hasValue("PRNT");
+		assertThat(endOfPage.body().statements()).hasSize(1);
+	}
+
+	@Test
+	void parseEndPage()
+	{
+		var endOfPage = assertParsesSingleStatement("""
+			END PAGE (5)
+			IGNORE
+			END-ENDPAGE
+			""", IEndOfPageNode.class);
+
+		assertThat(endOfPage.reportSpecification()).map(SyntaxToken::intValue).hasValue(5);
+		assertThat(endOfPage.body().statements()).hasSize(1);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"AT END OF PAGE",
+		"END PAGE",
+		"END OF PAGE",
+		"AT END PAGE"
+	})
+	void parseMultipleHeaderOptionsForEndOfPage(String header)
+	{
+		assertParsesWithoutDiagnostics("""
+				%s
+				IGNORE
+				END-ENDPAGE
+			""".formatted(header));
+	}
+
+	@Test
+	void parseAtTopOfPage()
+	{
+		var topOfPage = assertParsesSingleStatement("""
+			AT TOP OF PAGE (PRNT)
+			IGNORE
+			END-TOPPAGE
+			""", ITopOfPageNode.class);
+
+		assertThat(topOfPage.reportSpecification()).map(SyntaxToken::symbolName).hasValue("PRNT");
+		assertThat(topOfPage.body().statements()).hasSize(1);
+	}
+
+	@Test
+	void parseTopPage()
+	{
+		var topOfPage = assertParsesSingleStatement("""
+			TOP PAGE (5)
+			IGNORE
+			END-TOPPAGE
+			""", ITopOfPageNode.class);
+
+		assertThat(topOfPage.reportSpecification()).map(SyntaxToken::intValue).hasValue(5);
+		assertThat(topOfPage.body().statements()).hasSize(1);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"AT TOP OF PAGE",
+		"TOP PAGE",
+		"TOP OF PAGE",
+		"AT TOP PAGE"
+	})
+	void parseMultipleHeaderOptionsForTopOfPage(String header)
+	{
+		assertParsesWithoutDiagnostics("""
+			%s
+			IGNORE
+			END-TOPPAGE
+			""".formatted(header));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"AT START OF DATA (R1.)",
+		"START DATA",
+		"START OF DATA",
+		"AT START DATA (R5.)"
+	})
+	void parseAtStartOfData(String header)
+	{
+		var startOfData = assertParsesSingleStatement("""
+			%s
+			IGNORE
+			END-START
+			""".formatted(header), IStartOfDataNode.class);
+
+		assertThat(startOfData.body().statements()).hasSize(1);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"AT END OF DATA (R1.)",
+		"END DATA",
+		"END OF DATA",
+		"AT END DATA (R5.)"
+	})
+	void parseAtEndOfData(String header)
+	{
+		var endOfData = assertParsesSingleStatement("""
+			%s
+			IGNORE
+			END-ENDDATA
+			""".formatted(header), IEndOfDataNode.class);
+
+		assertThat(endOfData.body().statements()).hasSize(1);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"AT BREAK (RD.) OF #VAR /5/",
+		"BREAK #VARIABLE",
+		"AT BREAK #VAR",
+		"BREAK (R1.) OF #VAR /10/"
+	})
+	void parseAtBreakOf(String header)
+	{
+		var breakOf = assertParsesSingleStatement("""
+			%s
+			IGNORE
+			END-BREAK
+			""".formatted(header), IBreakOfNode.class);
+
+		assertThat(breakOf.body().statements()).hasSize(1);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"EJECT ON (0)",
+		"EJECT OFF (PRNT)",
+		"EJECT OFF",
+		"EJECT ON",
+		"EJECT (PRNT)",
+		"EJECT (5)",
+		"EJECT",
+		"EJECT IF LESS THAN 10 LINES LEFT",
+		"EJECT WHEN LESS THAN #VAR LINES LEFT",
+		"EJECT (10) LESS #VAR",
+		"EJECT (10) WHEN LESS #VAR",
+		"EJECT (10) WHEN LESS THAN #VAR",
+		"EJECT (10) WHEN LESS THAN #VAR LEFT",
+		"EJECT (PRNT) IF LESS THAN 10 LINES LEFT",
+	})
+	void parseEject(String eject)
+	{
+		var statements = assertParsesWithoutDiagnostics(eject);
+		assertThat(statements.statements()).hasSize(1);
+		assertThat(statements.statements().get(0)).isInstanceOf(IEjectNode.class);
+	}
+
+	@Test
+	void parseEjectWithPrinterReference()
+	{
+		var eject = assertParsesSingleStatement("EJECT (PRNT)", IEjectNode.class);
+		assertThat(eject.reportSpecification()).map(SyntaxToken::symbolName).hasValue("PRNT");
+	}
+
+	@Test
+	void parseEjectWithNumericPrinterReference()
+	{
+		var eject = assertParsesSingleStatement("EJECT (5)", IEjectNode.class);
+		assertThat(eject.reportSpecification()).map(SyntaxToken::intValue).hasValue(5);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"ESCAPE TOP REPOSITION",
+		"ESCAPE TOP",
+		"ESCAPE BOTTOM IMMEDIATE",
+		"ESCAPE BOTTOM (RD.) IMMEDIATE",
+		"ESCAPE BOTTOM",
+		"ESCAPE BOTTOM (R1.)",
+		"ESCAPE ROUTINE IMMEDIATE",
+		"ESCAPE ROUTINE",
+		"ESCAPE MODULE IMMEDIATE",
+		"ESCAPE MODULE"
+	})
+	void parseEscapes(String escape)
+	{
+		assertParsesSingleStatement(escape, IEscapeNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"TOP", "BOTTOM", "ROUTINE", "MODULE"
+	})
+	void parseEscapeDirectionOfEscapeNode(String direction)
+	{
+		var escape = assertParsesSingleStatement("ESCAPE %s".formatted(direction), IEscapeNode.class);
+		assertThat(escape.escapeDirection().name()).isEqualTo(direction);
+	}
+
+	@Test
+	void parseEscapeImmediate()
+	{
+		var escape = assertParsesSingleStatement("ESCAPE ROUTINE IMMEDIATE", IEscapeNode.class);
+		assertThat(escape.isImmediate()).isTrue();
+	}
+
+	@Test
+	void parseEscapeReposition()
+	{
+		var escape = assertParsesSingleStatement("ESCAPE TOP REPOSITION", IEscapeNode.class);
+		assertThat(escape.isReposition()).isTrue();
+	}
+
+	@Test
+	void parseEscapeLabel()
+	{
+		var escape = assertParsesSingleStatement("ESCAPE BOTTOM (RD.)", IEscapeNode.class);
+		assertThat(escape.label()).map(SyntaxToken::symbolName).hasValue("RD.");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"STACK TOP COMMAND 'ASD' #VAR 'ASDF'",
+		"STACK 'MOD'",
+		"STACK DATA FORMATTED #DATA1 #DATA2 #DATA3",
+		"STACK TOP DATA #VAR1 #VAR2",
+		"STACK TOP FORMATTED #VAR1 #VAR2"
+	})
+	void parseStack(String stack)
+	{
+		var statementList = assertParsesWithoutDiagnostics(stack);
+		assertThat(statementList.statements()).hasSize(1);
+		assertThat(statementList.statements().get(0)).isInstanceOf(IStackNode.class);
+	}
+
+	@Test
+	void parseStackWithManyOperands()
+	{
+		var statementList = assertParsesWithoutDiagnostics("""
+			STACK TOP COMMAND #ASD #ASDF 'ASD' #ASDFG
+			IGNORE
+			""");
+		assertThat(statementList.statements()).hasSize(2);
+		assertThat(statementList.statements().get(0)).isInstanceOf(IStackNode.class);
+		assertThat(statementList.statements().get(1)).isInstanceOf(IIgnoreNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"BEFORE BREAK PROCESSING",
+		"BEFORE BREAK",
+		"BEFORE",
+		"BEFORE PROCESSING"
+	})
+	void parseBeforeBreakProcessing(String header)
+	{
+		var beforeBreak = assertParsesSingleStatement("""
+			%s
+			IGNORE
+			END-BEFORE
+			""".formatted(header), IBeforeBreakNode.class);
+
+		assertThat(beforeBreak.body().statements()).hasSize(1);
+		assertThat(beforeBreak.body().statements().first()).isInstanceOf(IIgnoreNode.class);
+	}
+
+	@Test
+	void parseASimpleHistogram()
+	{
+		var histogram = assertParsesSingleStatement("""
+			HISTOGRAM THE-VIEW THE-DESC STARTING FROM 'M'
+			IGNORE
+			END-HISTOGRAM""", IHistogramNode.class);
+		assertThat(histogram.view().token().symbolName()).isEqualTo("THE-VIEW");
+		assertThat(histogram.descriptor().symbolName()).isEqualTo("THE-DESC");
+	}
+
+	@Test
+	void parseAHistogramWithNumber()
+	{
+		assertParsesSingleStatement("""
+			HISTOGRAM(1) THE-VIEW THE-DESC
+			IGNORE
+			END-HISTOGRAM""", IHistogramNode.class);
+	}
+
+	@Test
+	void parseHistogramWithAll()
+	{
+		assertParsesSingleStatement("""
+			HISTOGRAM ALL THE-VIEW THE-DESC
+			IGNORE
+			END-HISTOGRAM""", IHistogramNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"ON", "OFF"
+	})
+	void parseHistogramWithMultiFetch(String multifetch)
+	{
+		assertParsesSingleStatement("""
+			HISTOGRAM ALL MULTI-FETCH %s THE-VIEW THE-DESC
+			IGNORE
+			END-HISTOGRAM""".formatted(multifetch), IHistogramNode.class);
+	}
+
+	@Test
+	void parseHistogramWithStartingFrom()
+	{
+		assertParsesSingleStatement("""
+			HISTOGRAM IN FILE THE-VIEW VALUE FOR FIELD THE-DESC STARTING FROM VALUES #ABC ENDING AT #DEF
+			IGNORE
+			END-HISTOGRAM""", IHistogramNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"IN ASCENDING SEQUENCE",
+		"IN DESCENDING SEQUENCE",
+		"IN ASC",
+		"IN DESC",
+		"ASC",
+		"DESC",
+		"IN VARIABLE #VAR2",
+		"DYNAMIC #VAR2"
+	})
+	void parseHistogramWithSorting(String sorting)
+	{
+		assertParsesSingleStatement("""
+			HISTOGRAM THE-VIEW %s THE-DESC
+			IGNORE
+			END-HISTOGRAM""".formatted(sorting), IHistogramNode.class);
 	}
 
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)

@@ -12,7 +12,7 @@ import java.util.List;
 
 public class CsvDiagnosticSink implements IDiagnosticSink
 {
-	private final CharSink sink;
+	protected final CharSink sink;
 
 	public CsvDiagnosticSink(Path filePath)
 	{

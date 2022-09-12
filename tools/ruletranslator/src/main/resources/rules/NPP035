@@ -1,0 +1,6 @@
+name: Invalid operator for MASK or SCAN expression
+priority: BLOCKER
+tags: compile-time
+type: BUG
+description:
+``MASK`` and ``SCAN`` can only be used with direct equality operators ``=``, ``<>``, ``EQ``, ``NE``.

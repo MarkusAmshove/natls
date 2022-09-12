@@ -145,6 +145,19 @@ public class SyntaxToken implements IPosition
 		return newToken;
 	}
 
+	@Pure
+	public SyntaxToken combine(SyntaxToken other, SyntaxKind kind)
+	{
+		return new SyntaxToken(
+			kind,
+			offset,
+			offsetInLine,
+			line,
+			source + other.source,
+			filePath
+		);
+	}
+
 	@Override
 	public String toString()
 	{

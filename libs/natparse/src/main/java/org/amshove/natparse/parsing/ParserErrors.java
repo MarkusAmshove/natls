@@ -15,7 +15,7 @@ class ParserErrors
 {
 	private static String formatTokenKind(SyntaxToken token)
 	{
-		if(token == null || token.kind() == null)
+		if (token == null || token.kind() == null)
 		{
 			return SyntaxKind.NONE.toString();
 		}
@@ -92,7 +92,7 @@ class ParserErrors
 
 	public static ParserDiagnostic initValueMismatch(TypedVariableNode variable, SyntaxKind... expectedKinds)
 	{
-		if(expectedKinds.length == 1)
+		if (expectedKinds.length == 1)
 		{
 			return initValueMismatch(variable, expectedKinds[0]);
 		}
@@ -363,6 +363,33 @@ class ParserErrors
 			"The maximum literal length at this position is restricted to %d".formatted(maxLength),
 			token,
 			ParserError.INVALID_LENGTH_FOR_LITERAL
+		);
+	}
+
+	public static IDiagnostic extendedRelationalExpressionCanOnlyBeUsedWithEquals(SyntaxToken token)
+	{
+		return ParserDiagnostic.create(
+			"Extended relational expression can only be compared with =, EQ, EQUAL or EQUAL TO",
+			token,
+			ParserError.EXTENDED_RELATIONAL_EXPRESSION_NEEDS_EQUAL
+		);
+	}
+
+	public static IDiagnostic invalidMaskOrScanComparisonOperator(SyntaxToken maskToken)
+	{
+		return ParserDiagnostic.create(
+			"MASK and SCAN can only be compared for direct equality (=, <>, EQ, NE, ...)",
+			maskToken,
+			ParserError.INVALID_MASK_OR_SCAN_COMPARISON_OPERATOR
+		);
+	}
+
+	public static IDiagnostic unexpectedToken(SyntaxToken wrongToken, String message)
+	{
+		return ParserDiagnostic.create(
+			message,
+			wrongToken,
+			ParserError.UNEXPECTED_TOKEN
 		);
 	}
 }

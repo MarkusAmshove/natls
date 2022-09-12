@@ -52,7 +52,7 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "MINVAL", "MAXVAL"})
+	@ValueSource(strings = { "MINVAL", "MAXVAL" })
 	void parseMinAndMaxValWithExplicitReturnType(String function)
 	{
 		var node = parseOperands("""
@@ -119,5 +119,77 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 
 		var secondReference = assertNodeType(operand.get(1), IVariableReferenceNode.class);
 		assertThat(secondReference.referencingToken().symbolName()).isEqualTo("OTHERVAR");
+	}
+
+	@Test
+	void parseVal()
+	{
+		var operand = parseOperands("VAL(#THEVAR(1))");
+		var valNode = assertNodeType(operand.get(0), IValOperandNode.class);
+		assertThat(valNode.variable().referencingToken().symbolName()).isEqualTo("#THEVAR");
+		assertThat(assertNodeType(valNode.variable().dimensions().first(), ILiteralNode.class).token().intValue()).isEqualTo(1);
+	}
+
+	@Test
+	void parseAbs()
+	{
+		var operand = parseOperands("ABS(#THEVAR)");
+		var valNode = assertNodeType(operand.get(0), IAbsOperandNode.class);
+		assertThat(valNode.variable().referencingToken().symbolName()).isEqualTo("#THEVAR");
+	}
+
+	@Test
+	void parseNumberWithParam()
+	{
+		var operand = parseOperands("*NUMBER(R1.)");
+		var number = assertNodeType(operand.get(0), ISystemFunctionNode.class);
+		assertThat(number.parameter()).hasSize(1);
+	}
+
+	@Test
+	void parseNumberWithoutParam()
+	{
+		var operand = parseOperands("*NUMBER");
+		assertNodeType(operand.get(0), ISystemVariableNode.class);
+	}
+
+	@Test
+	void parseTranslateUpper()
+	{
+		var operand = parseOperands("*TRANSLATE(#VAR, UPPER)");
+		var translate = assertNodeType(operand.get(0), ITranslateSystemFunctionNode.class);
+		assertThat(assertNodeType(translate.parameter().first(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#VAR");
+		assertThat(assertNodeType(translate.toTranslate(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#VAR");
+		assertThat(translate.isToUpper()).isTrue();
+	}
+
+	@Test
+	void parseTranslateLower()
+	{
+		var operand = parseOperands("*TRANSLATE(#VAR, LOWER)");
+		var translate = assertNodeType(operand.get(0), ITranslateSystemFunctionNode.class);
+		assertThat(assertNodeType(translate.parameter().first(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#VAR");
+		assertThat(assertNodeType(translate.toTranslate(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#VAR");
+		assertThat(translate.isToUpper()).isFalse();
+	}
+
+	@Test
+	void parseArithmeticInArrayAccess()
+	{
+		var operand = parseOperands("#THEVAR(#I + 5)").first();
+		var reference = assertNodeType(operand, IVariableReferenceNode.class);
+		assertThat(reference.referencingToken()).isNotNull();
+		assertThat(reference.dimensions()).hasSize(1);
+		var arithmetic = assertNodeType(reference.dimensions().first(), IArithmeticExpressionNode.class);
+		assertThat(assertNodeType(arithmetic.left(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#I");
+		assertThat(arithmetic.operator()).isEqualTo(SyntaxKind.PLUS);
+		assertThat(assertNodeType(arithmetic.right(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+	}
+
+	@Test
+	void parsePosOperand()
+	{
+		var operand = parseOperands("POS(#VAR.#VAR2)");
+		assertThat(assertNodeType(operand.get(0), IPosNode.class).positionOf().token().symbolName()).isEqualTo("#VAR.#VAR2");
 	}
 }

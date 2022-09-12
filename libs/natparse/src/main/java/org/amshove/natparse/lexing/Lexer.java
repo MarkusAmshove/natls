@@ -240,11 +240,11 @@ public class Lexer
 		var isStringConcatenation = previousToken != null && previousToken.kind() == SyntaxKind.STRING_LITERAL && (lookahead == '\'' || lookahead == '"');
 		if (isStringConcatenation)
 		{
-			var previousString = previous();
+			var previousString = previousUnsafe();
 			var previousStringIndex = tokens.size() - 1;
 			scanner.advance(lookaheadIndex);
 			consumeString(lookahead);
-			var currentString = previous();
+			var currentString = previousUnsafe();
 			var currentStringIndex = tokens.size() - 1;
 			if (currentStringIndex >= previousStringIndex)
 			{
@@ -305,6 +305,8 @@ public class Lexer
 			case 'L':
 			case 'm':
 			case 'M':
+			case 'n':
+			case 'N':
 			case 't':
 			case 'T':
 			case 'o':
@@ -334,6 +336,16 @@ public class Lexer
 		if (scanner.advanceIf("OCC"))
 		{
 			createAndAdd(SyntaxKind.OCC);
+			return;
+		}
+		if (scanner.advanceIf("DATA"))
+		{
+			createAndAdd(SyntaxKind.SV_DATA);
+			return;
+		}
+		if (scanner.advanceIf("LEVEL"))
+		{
+			createAndAdd(SyntaxKind.SV_LEVEL);
 			return;
 		}
 		if (scanner.advanceIf("LINEX"))
@@ -386,6 +398,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.DATD);
 			return;
 		}
+		if (scanner.advanceIf("DAT4D"))
+		{
+			createAndAdd(SyntaxKind.DAT4D);
+			return;
+		}
 		if (scanner.advanceIf("LANGUAGE"))
 		{
 			createAndAdd(SyntaxKind.LANGUAGE);
@@ -403,7 +420,12 @@ public class Lexer
 		}
 		if (scanner.advanceIf("USER"))
 		{
-			createAndAdd(SyntaxKind.USER);
+			createAndAdd(SyntaxKind.SV_USER);
+			return;
+		}
+		if (scanner.advanceIf("NUMBER"))
+		{
+			createAndAdd(SyntaxKind.SV_NUMBER);
 			return;
 		}
 		if (scanner.advanceIf("CURRENT-UNIT"))
@@ -414,6 +436,11 @@ public class Lexer
 		if (scanner.advanceIf("CURS-LINE"))
 		{
 			createAndAdd(SyntaxKind.CURS_LINE);
+			return;
+		}
+		if (scanner.advanceIf("CURS-FIELD"))
+		{
+			createAndAdd(SyntaxKind.CURS_FIELD);
 			return;
 		}
 		if (scanner.advanceIf("ERROR-TA"))
@@ -471,6 +498,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.TPSYS);
 			return;
 		}
+		if (scanner.advanceIf("TIMESTMP"))
+		{
+			createAndAdd(SyntaxKind.TIMESTMP);
+			return;
+		}
 		if (scanner.advanceIf("APPLIC-ID"))
 		{
 			createAndAdd(SyntaxKind.APPLIC_ID);
@@ -494,6 +526,11 @@ public class Lexer
 		if (scanner.advanceIf("WINDOW-PS"))
 		{
 			createAndAdd(SyntaxKind.WINDOW_PS);
+			return;
+		}
+		if (scanner.advanceIf("TRANSLATE"))
+		{
+			createAndAdd(SyntaxKind.TRANSLATE);
 			return;
 		}
 		scanner.rollbackCurrentLexeme();
@@ -587,6 +624,12 @@ public class Lexer
 		if(inParens && scanner.peekText("AD="))
 		{
 			attributeDefinition();
+			return;
+		}
+
+		if(inParens && scanner.peekText("CD="))
+		{
+			colorDefinition();
 			return;
 		}
 
@@ -744,6 +787,18 @@ public class Lexer
 		}
 
 		createAndAdd(SyntaxKind.AD);
+	}
+
+	private void colorDefinition()
+	{
+		scanner.start();
+		scanner.advance(3); // CD=
+		while(!scanner.isAtEnd() && isNoWhitespace() && scanner.peek() != ')')
+		{
+			scanner.advance();
+		}
+
+		createAndAdd(SyntaxKind.CD);
 	}
 
 	private boolean isNoWhitespace()
@@ -982,6 +1037,14 @@ public class Lexer
 		{
 			return null;
 		}
+		return tokens.get(tokens.size() - 1);
+	}
+
+	/**
+	 * Returns the previous consumed token. <strong>Does not do a boundary check</strong>
+	 */
+	private SyntaxToken previousUnsafe()
+	{
 		return tokens.get(tokens.size() - 1);
 	}
 

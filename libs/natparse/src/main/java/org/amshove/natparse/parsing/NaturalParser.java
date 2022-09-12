@@ -34,39 +34,64 @@ public class NaturalParser
 			// it saves the file to get the library.
 			moduleProviderToUse = new CachingModuleProvider(file);
 		}
+		return parseModule(file, moduleProviderToUse, tokens);
+	}
 
+	private NaturalModule parseModule(NaturalFile file, IModuleProvider moduleProvider, TokenList tokens)
+	{
 		var naturalModule = new NaturalModule(file);
 		naturalModule.addDiagnostics(tokens.diagnostics());
 		var topLevelNodes = new ArrayList<ISyntaxNode>();
 
+		if(file.getFiletype() == NaturalFileType.FUNCTION) // skip over DEFINE FUNCTION
+		{
+			// TODO: Implement proper when implementing different NaturalModules
+			while(!(tokens.peek().kind() == SyntaxKind.DEFINE && tokens.peek(1).kind() == SyntaxKind.DATA))
+			{
+				tokens.advance();
+			}
+		}
+
 		if (tokens.peek().kind() == SyntaxKind.DEFINE && tokens.peek(1).kind() == SyntaxKind.DATA)
 		{
-			var defineDataParser = new DefineDataParser(moduleProviderToUse);
-			var result = defineDataParser.parse(tokens);
-			naturalModule.addDiagnostics(result.diagnostics());
-			var defineData = result.result();
-			if(defineData != null)
-			{
-				naturalModule.setDefineData(defineData);
-				topLevelNodes.add(defineData);
-				naturalModule.addReferencableNodes(defineData.variables().stream().map(n -> (IReferencableNode) n).toList());
-			}
+			topLevelNodes.add(parseDefineData(tokens, moduleProvider, naturalModule));
 		}
 
 		if (file.getFiletype().canHaveBody())
 		{
-			var statementParser = new StatementListParser(moduleProviderToUse);
-			var result = statementParser.parse(tokens);
-			naturalModule.addReferencableNodes(statementParser.getReferencableNodes());
-			addRelevantParserDiagnostics(naturalModule, result);
-			naturalModule.setBody(result.result());
-			resolveVariableReferences(statementParser, naturalModule);
-			topLevelNodes.add(result.result());
+			topLevelNodes.add(parseBody(tokens, moduleProvider, naturalModule));
 		}
 
 		naturalModule.setSyntaxTree(SyntaxTree.create(ReadOnlyList.from(topLevelNodes)));
 
 		return naturalModule;
+	}
+
+	private IDefineData parseDefineData(TokenList tokens, IModuleProvider moduleProvider, NaturalModule naturalModule)
+	{
+
+		var defineDataParser = new DefineDataParser(moduleProvider);
+		var result = defineDataParser.parse(tokens);
+		naturalModule.addDiagnostics(result.diagnostics());
+		var defineData = result.result();
+		if(defineData != null)
+		{
+			naturalModule.setDefineData(defineData);
+			naturalModule.addReferencableNodes(defineData.variables().stream().map(n -> (IReferencableNode) n).toList());
+		}
+
+		return defineData;
+	}
+
+	private IStatementListNode parseBody(TokenList tokens, IModuleProvider moduleProvider, NaturalModule naturalModule)
+	{
+		var statementParser = new StatementListParser(moduleProvider);
+		var result = statementParser.parse(tokens);
+		naturalModule.addReferencableNodes(statementParser.getReferencableNodes());
+		addRelevantParserDiagnostics(naturalModule, result);
+		naturalModule.setBody(result.result());
+		resolveVariableReferences(statementParser, naturalModule);
+		return result.result();
 	}
 
 	private void addRelevantParserDiagnostics(NaturalModule naturalModule, ParseResult<IStatementListNode> result)
