@@ -1,5 +1,6 @@
 package org.amshove.natls.lsp;
 
+import org.amshove.natls.documentsymbol.SymbolInformationProvider;
 import org.amshove.natls.testlifecycle.LanguageServerTest;
 import org.amshove.natls.testlifecycle.LspProjectName;
 import org.amshove.natls.testlifecycle.LspTestContext;
@@ -13,10 +14,12 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
+@SuppressWarnings("deprecation")
 class DocumentSymbolsShould extends LanguageServerTest
 {
 
 	private static LspTestContext testContext;
+	private SymbolInformationProvider sut = new SymbolInformationProvider();
 
 	@BeforeAll
 	static void setupProject(@LspProjectName("documentsymbols") LspTestContext testContext)
@@ -33,7 +36,8 @@ class DocumentSymbolsShould extends LanguageServerTest
 	@TestFactory
 	Iterable<DynamicTest> includeSubroutinesInDocumentSymbols()
 	{
-		var symbols = testContext.languageService().findSymbolsInFile(textDocumentIdentifier("LIBONE", "MANYSYM"));
+		var file = testContext.project().findFileByReferableName("MANYSYM");
+		var symbols = sut.provideSymbols(file.module());
 		return List.of(
 			testThatSymbolIsIncluded("#FIRST", SymbolKind.Variable, symbols),
 			testThatSymbolIsIncluded("#SECOND", SymbolKind.Variable, symbols),
@@ -50,7 +54,8 @@ class DocumentSymbolsShould extends LanguageServerTest
 	@TestFactory
 	Iterable<DynamicTest> includeImportedSymbolsNoMatterTheNesting()
 	{
-		var symbols = testContext.languageService().findSymbolsInFile(textDocumentIdentifier("LIBONE", "IMPORTER"));
+		var file = testContext.project().findFileByReferableName("IMPORTER");
+		var symbols = sut.provideSymbols(file.module());
 		return List.of(
 			testThatSymbolIsIncluded("#INLDA-1", SymbolKind.Variable, symbols),
 			testThatSymbolIsIncluded("#INLDA-2", SymbolKind.Variable, symbols),
