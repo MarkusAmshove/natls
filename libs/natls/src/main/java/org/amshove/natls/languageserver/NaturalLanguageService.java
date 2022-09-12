@@ -1,39 +1,5 @@
 package org.amshove.natls.languageserver;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import org.amshove.natls.DiagnosticTool;
-import org.amshove.natls.codeactions.CodeActionRegistry;
-import org.amshove.natls.codeactions.RefactoringContext;
-import org.amshove.natls.codeactions.RenameSymbolAction;
-import org.amshove.natls.hover.HoverContext;
-import org.amshove.natls.hover.HoverProvider;
-import org.amshove.natls.inlayhints.InlayHintProvider;
-import org.amshove.natls.progress.IProgressMonitor;
-import org.amshove.natls.progress.ProgressTasks;
-import org.amshove.natls.project.*;
-import org.amshove.natls.snippets.SnippetEngine;
-import org.amshove.natparse.NodeUtil;
-import org.amshove.natparse.ReadOnlyList;
-import org.amshove.natparse.infrastructure.ActualFilesystem;
-import org.amshove.natparse.lexing.Lexer;
-import org.amshove.natparse.lexing.SyntaxKind;
-import org.amshove.natparse.lexing.SyntaxToken;
-import org.amshove.natparse.lexing.TokenList;
-import org.amshove.natparse.natural.*;
-import org.amshove.natparse.natural.project.NaturalFile;
-import org.amshove.natparse.natural.project.NaturalFileType;
-import org.amshove.natparse.natural.project.NaturalProject;
-import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
-import org.amshove.natparse.parsing.DefineDataParser;
-import org.amshove.natparse.parsing.project.BuildFileProjectReader;
-import org.eclipse.lsp4j.*;
-import org.eclipse.lsp4j.jsonrpc.CancelChecker;
-import org.eclipse.lsp4j.jsonrpc.ResponseErrorException;
-import org.eclipse.lsp4j.jsonrpc.messages.ResponseError;
-import org.eclipse.lsp4j.services.LanguageClient;
-import org.eclipse.lsp4j.services.LanguageClientAware;
-
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -45,7 +11,91 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
+import org.amshove.natls.DiagnosticTool;
+import org.amshove.natls.codeactions.CodeActionRegistry;
+import org.amshove.natls.codeactions.RefactoringContext;
+import org.amshove.natls.codeactions.RenameSymbolAction;
+import org.amshove.natls.documentsymbol.DocumentSymbolProvider;
+import org.amshove.natls.hover.HoverContext;
+import org.amshove.natls.hover.HoverProvider;
+import org.amshove.natls.inlayhints.InlayHintProvider;
+import org.amshove.natls.progress.IProgressMonitor;
+import org.amshove.natls.progress.ProgressTasks;
+import org.amshove.natls.project.LanguageServerFile;
+import org.amshove.natls.project.LanguageServerProject;
+import org.amshove.natls.project.ModuleReferenceParser;
+import org.amshove.natls.project.ParseStrategy;
+import org.amshove.natls.snippets.SnippetEngine;
+import org.amshove.natparse.NodeUtil;
+import org.amshove.natparse.ReadOnlyList;
+import org.amshove.natparse.infrastructure.ActualFilesystem;
+import org.amshove.natparse.lexing.Lexer;
+import org.amshove.natparse.lexing.SyntaxKind;
+import org.amshove.natparse.lexing.SyntaxToken;
+import org.amshove.natparse.lexing.TokenList;
+import org.amshove.natparse.natural.DataFormat;
+import org.amshove.natparse.natural.IArrayDimension;
+import org.amshove.natparse.natural.IDefineData;
+import org.amshove.natparse.natural.IGroupNode;
+import org.amshove.natparse.natural.IHasDefineData;
+import org.amshove.natparse.natural.IModuleReferencingNode;
+import org.amshove.natparse.natural.INaturalModule;
+import org.amshove.natparse.natural.IRedefinitionNode;
+import org.amshove.natparse.natural.IReferencableNode;
+import org.amshove.natparse.natural.ISubroutineNode;
+import org.amshove.natparse.natural.ISymbolReferenceNode;
+import org.amshove.natparse.natural.ISyntaxNode;
+import org.amshove.natparse.natural.ITokenNode;
+import org.amshove.natparse.natural.ITypedVariableNode;
+import org.amshove.natparse.natural.IVariableNode;
+import org.amshove.natparse.natural.VariableScope;
+import org.amshove.natparse.natural.project.NaturalFile;
+import org.amshove.natparse.natural.project.NaturalFileType;
+import org.amshove.natparse.natural.project.NaturalProject;
+import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
+import org.amshove.natparse.parsing.DefineDataParser;
+import org.amshove.natparse.parsing.project.BuildFileProjectReader;
+import org.eclipse.lsp4j.CallHierarchyIncomingCall;
+import org.eclipse.lsp4j.CallHierarchyItem;
+import org.eclipse.lsp4j.CallHierarchyOutgoingCall;
+import org.eclipse.lsp4j.CallHierarchyPrepareParams;
+import org.eclipse.lsp4j.CodeAction;
+import org.eclipse.lsp4j.CodeActionParams;
+import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.lsp4j.CompletionItemKind;
+import org.eclipse.lsp4j.CompletionParams;
+import org.eclipse.lsp4j.DefinitionParams;
+import org.eclipse.lsp4j.DocumentSymbol;
+import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.InlayHint;
+import org.eclipse.lsp4j.InlayHintParams;
+import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.MarkupContent;
+import org.eclipse.lsp4j.MarkupKind;
+import org.eclipse.lsp4j.ParameterInformation;
+import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.PrepareRenameParams;
+import org.eclipse.lsp4j.PrepareRenameResult;
+import org.eclipse.lsp4j.PublishDiagnosticsParams;
+import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.ReferenceParams;
+import org.eclipse.lsp4j.RenameParams;
+import org.eclipse.lsp4j.SignatureHelp;
+import org.eclipse.lsp4j.SignatureInformation;
+import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.SymbolKind;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.WorkDoneProgressCreateParams;
+import org.eclipse.lsp4j.WorkspaceEdit;
+import org.eclipse.lsp4j.jsonrpc.CancelChecker;
+import org.eclipse.lsp4j.jsonrpc.ResponseErrorException;
+import org.eclipse.lsp4j.jsonrpc.messages.ResponseError;
+import org.eclipse.lsp4j.services.LanguageClient;
+import org.eclipse.lsp4j.services.LanguageClientAware;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 public class NaturalLanguageService implements LanguageClientAware
 {
@@ -83,26 +133,11 @@ public class NaturalLanguageService implements LanguageClientAware
 		hoverProvider = new HoverProvider(languageServerProject);
 	}
 
-	public List<SymbolInformation> findSymbolsInFile(TextDocumentIdentifier textDocument)
+	public List<DocumentSymbol> findSymbolsInFile(TextDocumentIdentifier textDocument)
 	{
 		var filepath = LspUtil.uriToPath(textDocument.getUri());
 		var module = findNaturalFile(filepath).module();
-		var referencableNodes = module.referencableNodes();
-
-		return referencableNodes
-			.stream()
-			.map(n -> new SymbolInformation(
-				n.declaration().symbolName(),
-				n instanceof IVariableNode ? SymbolKind.Variable : SymbolKind.Method,
-				LspUtil.toLocation(n),
-				n.position().fileNameWithoutExtension()
-			))
-			.toList();
-	}
-
-	private Stream<SyntaxToken> getVariableDeclarationTokens(TokenList tokens)
-	{
-		return tokens.tokensUntilNext(SyntaxKind.END_DEFINE).stream();
+		return new DocumentSymbolProvider().provideSymbols(module);
 	}
 
 	public void createdFile(String uri)
@@ -140,21 +175,6 @@ public class NaturalLanguageService implements LanguageClientAware
 				)
 			),
 			file.getLibrary().getName()
-		);
-	}
-
-	private SymbolInformation convertToSymbolInformation(SyntaxToken token, Path filepath)
-	{
-		return new SymbolInformation(
-			token.source(),
-			SymbolKind.Variable,
-			new Location(
-				filepath.toUri().toString(),
-				new Range(
-					new Position(token.line(), token.offsetInLine()),
-					new Position(token.line(), token.offsetInLine() + token.length())
-				)
-			)
 		);
 	}
 
@@ -921,6 +941,7 @@ public class NaturalLanguageService implements LanguageClientAware
 				switch (file.getType())
 				{
 					case PROGRAM, SUBPROGRAM, SUBROUTINE, FUNCTION -> parser.parseReferences(file);
+					default -> {}
 				}
 				processedFiles++;
 			}

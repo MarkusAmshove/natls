@@ -36,7 +36,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			var capabilities = new ServerCapabilities();
 
 			capabilities.setWorkspaceSymbolProvider(true);
-			capabilities.setDocumentSymbolProvider(true);
+			capabilities.setDocumentSymbolProvider(new DocumentSymbolOptions("NatLS"));
 			var hoverOptions = new HoverOptions();
 			hoverOptions.setWorkDoneProgress(true);
 			capabilities.setHoverProvider(true);

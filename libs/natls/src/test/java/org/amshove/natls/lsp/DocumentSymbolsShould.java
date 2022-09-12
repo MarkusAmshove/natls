@@ -3,8 +3,10 @@ package org.amshove.natls.lsp;
 import org.amshove.natls.testlifecycle.LanguageServerTest;
 import org.amshove.natls.testlifecycle.LspProjectName;
 import org.amshove.natls.testlifecycle.LspTestContext;
-import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.DocumentSymbol;
+import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.SymbolKind;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -33,8 +35,12 @@ class DocumentSymbolsShould extends LanguageServerTest
 	@TestFactory
 	Iterable<DynamicTest> includeSubroutinesInDocumentSymbols()
 	{
-		var symbols = testContext.languageService().findSymbolsInFile(textDocumentIdentifier("LIBONE", "MANYSYM"));
+		var symbols = findSymbols("MANYSYM");
 		return List.of(
+			DynamicTest.dynamicTest("Module root symbol should be included", () -> {
+				assertThat(symbols.get(0).getKind()).isEqualTo(SymbolKind.Class);
+				assertThat(symbols.get(0).getName()).isEqualTo("MANYSYM");
+			}),
 			testThatSymbolIsIncluded("#FIRST", SymbolKind.Variable, symbols),
 			testThatSymbolIsIncluded("#SECOND", SymbolKind.Variable, symbols),
 			testThatSymbolIsIncluded("#THIRD", SymbolKind.Variable, symbols),
@@ -47,24 +53,25 @@ class DocumentSymbolsShould extends LanguageServerTest
 		);
 	}
 
-	@TestFactory
-	Iterable<DynamicTest> includeImportedSymbolsNoMatterTheNesting()
+	private List<DocumentSymbol> findSymbols(String moduleName)
 	{
-		var symbols = testContext.languageService().findSymbolsInFile(textDocumentIdentifier("LIBONE", "IMPORTER"));
-		return List.of(
-			testThatSymbolIsIncluded("#INLDA-1", SymbolKind.Variable, symbols),
-			testThatSymbolIsIncluded("#INLDA-2", SymbolKind.Variable, symbols),
-			testThatSymbolIsIncluded("#INLDA-3", SymbolKind.Variable, symbols),
-			testThatSymbolIsIncluded("#INLDA-4", SymbolKind.Variable, symbols),
-			testThatSymbolIsIncluded("INSIDE-INSIDE-COPYCODE", SymbolKind.Method, symbols)
-		);
+		var params = new DocumentSymbolParams(textDocumentIdentifier("LIBONE", moduleName));
+		try
+		{
+			var result = testContext.documentService().documentSymbol(params).get();
+			return result.stream().map(Either::getRight).toList();
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
-	private DynamicTest testThatSymbolIsIncluded(String symbolName, SymbolKind kind, List<SymbolInformation> informationList)
+	private DynamicTest testThatSymbolIsIncluded(String symbolName, SymbolKind kind, List<DocumentSymbol> informationList)
 	{
 		return DynamicTest.dynamicTest("%s: %s".formatted(kind, symbolName), () -> {
-			assertThat(informationList)
-				.as("Expected symbol to be present")
+			assertThat(informationList.stream().flatMap(ds -> ds.getChildren().stream()))
+				.as("Expected symbol %s to be present".formatted(symbolName))
 				.anyMatch(si -> si.getKind() == kind && si.getName().equals(symbolName));
 		});
 	}
