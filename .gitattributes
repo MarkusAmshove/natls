@@ -3,6 +3,7 @@
 #
 * text eol=lf
 *.bat text eol=crlf
-
+*.gif binary
+*.png binary
 gradle/wrapper/gradle-wrapper.jar binary
 
