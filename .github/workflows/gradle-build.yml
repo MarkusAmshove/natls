@@ -50,14 +50,14 @@ jobs:
         with:
           files: "**/build/test-results/**/*.xml"
 
-      - name: Publish nightly
+      - name: Publish unstable
         uses: softprops/action-gh-release@v1
         if: |
           github.ref == 'refs/heads/main'
           && matrix.os == 'ubuntu-latest'
         with:
           prerelease: true
-          tag_name: nightly
+          tag_name: unstable
           files: |
             libs/natlint/build/libs/natlint.jar
             libs/natls/build/libs/natls.jar
