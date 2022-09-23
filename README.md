@@ -24,7 +24,7 @@ A more in-depth documentation with examples of features can be found [here](docs
 
 ## Projects
 
-```mermaidjs
+```mermaid
 flowchart
     natparse
     natlint
