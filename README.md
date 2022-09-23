@@ -22,6 +22,11 @@ The language server supports, but isn't limited to:
 A more in-depth documentation with examples of features can be found [here](docs/lsp-features.md).
 
 
+## Contributing
+
+Contributions in the form of code, issues and feature requests are always welcome.
+Check out the [contribution guide](CONTRIBUTING.md) to find out more.
+
 ## Projects
 
 ```mermaid
