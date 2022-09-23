@@ -115,6 +115,14 @@ TODO:
 - `natls-vscode`
 - neovim via `nvim-lspconfig`
 
+## Running natqube
+
+To get the output of `natlint` into SonarQube, you have to first install `natqube` as a SonarQube plugin.
+
+To do this, simply add the `natqube.jar` that comes out of `gradlew shadowJar` into the `extensions/plugins` folder of SonarQube. An example can be found in `docker/Dockerfile.sonar`.
+
+`natqube` currently expects to find a `diagnostics.csv` file within the scanners root working directory (e.g. the root of the repository). This file is created by running the `natlint` CLI with either `--sink=CSV` or `--ci`. Using `--ci` is recommended for build servers, because it also forces `natlint` to exit gracefully to not break pipelines when encountering diagnostics.
+
 ## Acknowledgements and dependencies
 
 The logo was created by [Duffed](https://github.com/Duffed)
