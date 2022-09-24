@@ -300,7 +300,7 @@ public class KeywordTable
 				case "investigate" -> SyntaxKind.INVESTIGATE;
 				case "ip" -> SyntaxKind.IP;
 				case "is" -> SyntaxKind.IS;
-				case "isn" -> SyntaxKind.ISN;
+				case "isn" -> SyntaxKind.KW_ISN;
 				case "join" -> SyntaxKind.JOIN;
 				case "just" -> SyntaxKind.JUST;
 				case "justified" -> SyntaxKind.JUSTIFIED;

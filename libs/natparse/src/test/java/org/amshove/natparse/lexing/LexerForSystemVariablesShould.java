@@ -258,4 +258,11 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 	{
 		assertTokens("*TRANSLATE", token(SyntaxKind.TRANSLATE, "*TRANSLATE"));
 	}
+
+	@Test
+	void lexIsn()
+	{
+		assertTokens("*ISN", token(SyntaxKind.SV_ISN, "*ISN"));
+	}
+
 }

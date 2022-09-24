@@ -413,6 +413,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.LIBRARY_ID);
 			return;
 		}
+		if (scanner.advanceIf("ISN"))
+		{
+			createAndAdd(SyntaxKind.SV_ISN);
+			return;
+		}
 		if (scanner.advanceIf("PROGRAM"))
 		{
 			createAndAdd(SyntaxKind.PROGRAM);

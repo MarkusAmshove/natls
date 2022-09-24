@@ -42,11 +42,11 @@ public class BuiltInFunctionTable
 			unmodifiableVariable(SyntaxKind.LIBRARY_ID, "Returns the ID the the current library. This returns the same as *APPLIC-ID", ALPHANUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.TRANSLATE, """
 				Converts the characters passed as first argument into either `LOWER` or `UPPER` case.
-				
+								
 				Accepts an operand of type `A`, `B` or `U`.
-				
+								
 				Usage:
-				
+								
 				```
 				#UPPER := *TRANSLATE(#VAR2, UPPER)
 				#LOWER := *TRANSLATE(#VAR2, LOWER)
@@ -169,6 +169,15 @@ public class BuiltInFunctionTable
 
 				- If a page break occurs, the value changes to `ENTR`.
 				""", ALPHANUMERIC, 4),
+			function(SyntaxKind.SV_ISN, """
+				Gets or sets the internal sequence number of the current Adabas record initiated by `FIND` or `READ`.
+				
+				Usage:
+				```natural
+				#ISN := *ISN
+				#ISN := *ISN(R1.)
+				```
+				""", PACKED, 10, new BuiltInFunctionParameter("label", new DataType(NONE, 0), false)),
 			function(SyntaxKind.COUNTER, """
 				Returns the number of times a processing loop initiated by `FIND`, `READ`, `HISTOGRAM` or `PARSE` has been entered.
 

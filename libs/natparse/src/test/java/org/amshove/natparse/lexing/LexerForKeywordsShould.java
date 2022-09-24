@@ -305,7 +305,7 @@ public class LexerForKeywordsShould extends AbstractLexerTest
 				keywordTest("INVESTIGATE", SyntaxKind.INVESTIGATE),
 				keywordTest("IP", SyntaxKind.IP),
 				keywordTest("IS", SyntaxKind.IS),
-				keywordTest("ISN", SyntaxKind.ISN),
+				keywordTest("ISN", SyntaxKind.KW_ISN),
 				keywordTest("JOIN", SyntaxKind.JOIN),
 				keywordTest("JUST", SyntaxKind.JUST),
 				keywordTest("JUSTIFIED", SyntaxKind.JUSTIFIED),
