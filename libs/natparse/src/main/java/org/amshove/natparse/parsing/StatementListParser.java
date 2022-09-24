@@ -164,10 +164,21 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 							case SUBROUTINE, IDENTIFIER -> statementList.addStatement(subroutine());
 							case PRINTER -> statementList.addStatement(definePrinter());
 							case WINDOW -> statementList.addStatement(defineWindow());
+							case WORK, PROTOTYPE, DATA -> { // not implemented statements. DATA needs to be handled when parsing functions and external subroutines
+								tokens.advance();
+								tokens.advance();
+							}
 							default ->
 							{
-								tokens.advance();
-								tokens.advance();
+								if(peek(1).kind().canBeIdentifier())
+								{
+									statementList.addStatement(subroutine());
+								}
+								else
+								{
+									tokens.advance();
+									tokens.advance();
+								}
 							}
 						}
 						break;

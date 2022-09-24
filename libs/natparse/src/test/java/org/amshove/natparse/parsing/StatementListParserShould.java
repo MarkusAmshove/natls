@@ -202,6 +202,20 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseASubroutineWithoutSubroutineKeywordButKeywordAsName()
+	{
+		var subroutine = assertParsesSingleStatementWithDiagnostic("""
+			 DEFINE RESULT
+			 IGNORE
+			 END-SUBROUTINE
+			""",
+			ISubroutineNode.class,
+			ParserError.KEYWORD_USED_AS_IDENTIFIER);
+
+		assertThat(subroutine.declaration().symbolName()).isEqualTo("RESULT");
+	}
+
+	@Test
 	void parseInternalPerformNodes()
 	{
 		ignoreModuleProvider();
@@ -1231,6 +1245,12 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);
+		return assertNodeType(result.statements().first(), nodeType);
+	}
+
+	private <T extends IStatementNode> T assertParsesSingleStatementWithDiagnostic(String source, Class<T> nodeType, ParserError expectedDiagnostic)
+	{
+		var result = super.assertDiagnostic(source, expectedDiagnostic);
 		return assertNodeType(result.statements().first(), nodeType);
 	}
 }
