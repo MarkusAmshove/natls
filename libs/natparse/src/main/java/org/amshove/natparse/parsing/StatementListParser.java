@@ -601,8 +601,12 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var hadAbsolute = consumeOptionally(examine, SyntaxKind.ABSOLUTE);
 		if (!hadAbsolute && consumeOptionally(examine, SyntaxKind.WITH))
 		{
-			consumeOptionally(examine, SyntaxKind.DELIMITERS);
-			consumeOperandNode(examine);
+			consumeAnyOptionally(examine, List.of(SyntaxKind.DELIMITERS, SyntaxKind.DELIMITER));
+			if(peek().kind().isLiteralOrConst() || peek().kind().isIdentifier())
+			{
+				// specifying a delimiter is optional
+				consumeOperandNode(examine);
+			}
 		}
 
 		consumeOptionally(examine, SyntaxKind.AND);

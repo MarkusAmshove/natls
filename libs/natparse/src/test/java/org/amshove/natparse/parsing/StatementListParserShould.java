@@ -780,6 +780,17 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(assertNodeType(substringOperand.length(), ILiteralNode.class).token().intValue()).isEqualTo(5);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"DELIMITER", "DELIMITERS",
+		"DELIMITER ' '", "DELIMITERS ' '",
+		"DELIMITER #DEL", "DELIMITERS #DEL",
+	})
+	void parseAnExamineWithDelimiters(String delimiter)
+	{
+		assertParsesSingleStatement("EXAMINE #VAR FOR #VAR2 WITH %s GIVING INDEX #INDEX".formatted(delimiter), IExamineNode.class);
+	}
+
 	@Test
 	void parseAComplexExamineReplace()
 	{
