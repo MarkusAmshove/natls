@@ -61,6 +61,7 @@ public enum SyntaxKind
 	MAXVAL(false, false, true),
 	MINVAL(false, false, true),
 	CURS_LINE(false, true, false),
+	CURS_COL(false, true, false),
 	CURS_FIELD(false, true, false),
 	SV_DATA(false, true, false),
 	SV_LEVEL(false, true, false),

@@ -42,11 +42,11 @@ public class BuiltInFunctionTable
 			unmodifiableVariable(SyntaxKind.LIBRARY_ID, "Returns the ID the the current library. This returns the same as *APPLIC-ID", ALPHANUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.TRANSLATE, """
 				Converts the characters passed as first argument into either `LOWER` or `UPPER` case.
-								
+
 				Accepts an operand of type `A`, `B` or `U`.
-								
+
 				Usage:
-								
+
 				```
 				#UPPER := *TRANSLATE(#VAR2, UPPER)
 				#LOWER := *TRANSLATE(#VAR2, LOWER)
@@ -106,6 +106,9 @@ public class BuiltInFunctionTable
 				- -3: On the upper function-key line
 				- -4: On the lower function-key line
 
+				""", PACKED, 3),
+			modifiableVariable(SyntaxKind.CURS_COL, """
+				Get or set the number of the column where the current cursor is located
 				""", PACKED, 3),
 			unmodifiableVariable(SyntaxKind.DEVICE, """
 				Returns the type or mode of the device from which Natural was started.
@@ -171,7 +174,7 @@ public class BuiltInFunctionTable
 				""", ALPHANUMERIC, 4),
 			function(SyntaxKind.SV_ISN, """
 				Gets or sets the internal sequence number of the current Adabas record initiated by `FIND` or `READ`.
-				
+
 				Usage:
 				```natural
 				#ISN := *ISN
@@ -228,11 +231,11 @@ public class BuiltInFunctionTable
 			),
 			function(SyntaxKind.MINVAL, """
 					Returns the minimal value of all given operand values.
-									
+
 					The result type can be optionally specified with `(IR=`, e.g. `(IR=F8)`. Otherwise the biggest data type of the operands is chosen.
-									
+
 					If an array is passed, this function returns the minimum value of all arrays values.
-									
+
 					If a binary or alphanumeric value is passed, this function returns the minimum length of the operands.
 					""", FLOAT, 8,
 				new BuiltInFunctionParameter("operand1", new DataType(NONE, 1), true),
@@ -241,11 +244,11 @@ public class BuiltInFunctionTable
 			),
 			function(SyntaxKind.MAXVAL, """
 					Returns the maximum value of all given operand values.
-									
+
 					The result type can be optionally specified with `(IR=`, e.g. `(IR=F8)`. Otherwise the biggest data type of the operands is chosen.
-									
+
 					If an array is passed, this function returns the maximum value of all arrays values.
-									
+
 					If a binary or alphanumeric value is passed, this function returns the maximum length of the operands.
 					""", FLOAT, 8,
 				new BuiltInFunctionParameter("operand1", new DataType(NONE, 1), true),
@@ -256,11 +259,11 @@ public class BuiltInFunctionTable
 					Remove all leading and trailing whitespace from an alphanumeric or binary string.
 
 					The content of the passed variable is not modified.
-									
+
 					`LEADING` or `TRIALING` can be specified if only one of them should be trimmed.
-									
+
 					Example:
-									
+
 					```natural
 					#NO-LEADING-TRAILING := *TRIM(#ALPHA)
 					#NO-LEADING := *TRIM(#ALPHA, LEADING)
@@ -276,13 +279,13 @@ public class BuiltInFunctionTable
 				""", ALPHANUMERIC, 128),
 			unmodifiableVariable(SyntaxKind.SV_DATA, """
 				Returns the number of elements in the Natural stack available for next `INPUT`.
-								
+
 				`0` is returned if the stack is empty.
 				`-1` is returned if the next value in the stack is a command or name of a transaction
 				""", NUMERIC, 3),
 			unmodifiableVariable(SyntaxKind.SV_LEVEL, """
 				Returns the level number of the current program, dialog, ... which is currently active.
-								
+
 				Level 1 is the main program.
 				""", NUMERIC, 2)
 		);

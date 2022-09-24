@@ -438,6 +438,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.CURRENT_UNIT);
 			return;
 		}
+		if (scanner.advanceIf("CURS-COL"))
+		{
+			createAndAdd(SyntaxKind.CURS_COL);
+			return;
+		}
 		if (scanner.advanceIf("CURS-LINE"))
 		{
 			createAndAdd(SyntaxKind.CURS_LINE);
