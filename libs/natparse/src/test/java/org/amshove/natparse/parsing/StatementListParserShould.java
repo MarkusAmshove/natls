@@ -343,6 +343,31 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(ifStatement.descendants()).hasSize(4);
 	}
 
+
+	@Test
+	void allowIfStatementsToContainTheThenKeyword()
+	{
+		var ifStatement = assertParsesSingleStatement("""
+			IF #TEST = 5 THEN
+			    IGNORE
+			END-IF
+			""", IIfStatementNode.class);
+
+		assertThat(ifStatement.condition().findDescendantToken(SyntaxKind.THEN)).isNull(); // should not be part of the condition
+		assertThat(ifStatement.findDescendantToken(SyntaxKind.THEN)).isNotNull(); // but be part of the if statement itself
+		assertThat(ifStatement.body().statements()).hasSize(1);
+	}
+
+	@Test
+	void allowThenAfterMaskInIf()
+	{
+		assertParsesSingleStatement("""
+			IF #TEST = MASK(A...) THEN
+			    IGNORE
+			END-IF
+			""", IIfStatementNode.class);
+	}
+
 	@Test
 	void parseForColonEqualsToStatements()
 	{

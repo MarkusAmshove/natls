@@ -1111,6 +1111,8 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		ifStatement.setCondition(conditionNode());
 
+		consumeOptionally(ifStatement, SyntaxKind.THEN);
+
 		ifStatement.setBody(statementList(SyntaxKind.END_IF));
 
 		consumeMandatoryClosing(ifStatement, SyntaxKind.END_IF, opening);
@@ -1384,7 +1386,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 		consumeMandatory(mask, SyntaxKind.RPAREN);
 
-		if (!isAtEnd() && peek().kind().canBeIdentifier() && !peekKind(SyntaxKind.OR) && !peekKind(SyntaxKind.AND))
+		if (!isAtEnd() && peek().kind().isIdentifier() && !peekKind(SyntaxKind.OR) && !peekKind(SyntaxKind.AND))
 		{
 			mask.setCheckedOperand(consumeVariableReferenceNode(mask));
 		}
