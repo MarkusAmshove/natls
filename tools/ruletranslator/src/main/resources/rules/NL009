@@ -1,8 +1,19 @@
-name: Module name contains trailing or leading whitespace
-priority: BLOCKER
-tags: pitfall, confusing
-type: BUG
+name: Upper bound of FOR should not be *OCC
+priority: MAJOR
+tags: performance
+type: CODE_SMELL
 description:
-The module name passed to, e.g. ``CALLNAT``, contains leading or trailing whitespace.
+The upper bound for FOR-loops should not be ``*OCC``, as the length of the array will be recalculated on every iteration.
 
-This can result in a runtime error.
+== Invalid
+
+``
+FOR #I = 1 TO *OCC(#ARR)
+``
+
+== Valid
+
+``
+#S-ARR := *OCC(#ARR)
+FOR #I = 1 TO #S-ARR
+``

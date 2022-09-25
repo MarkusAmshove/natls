@@ -1,8 +1,6 @@
-name: Invalid data type for dynamic length
+name: Initial value type mismatch
 priority: BLOCKER
 tags: natparse-internal
 type: BUG
 description:
-The specified data type can't have a dynamic length.
-
-Only ``A``lphanumeric, ``B``inary and ``U``nicode support dynamic length.
+The initial value of this variable does not match the data type.

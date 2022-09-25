@@ -1,18 +1,8 @@
-name: NatUnit test case won't be recognized
-priority: CRITICAL
-tags: convention, pitfall
+name: Module name contains trailing or leading whitespace
+priority: BLOCKER
+tags: pitfall, confusing
 type: BUG
 description:
-NatUnit recognizes tests only with ``EQ``.
+The module name passed to, e.g. ``CALLNAT``, contains leading or trailing whitespace.
 
-== Invalid
-
-``
-IF NUTESTP.TEST = 'My fancy test'
-``
-
-== Valid
-
-``
-IF NUTESTP.TEST EQ 'My fancy test'
-``
+This can result in a runtime error.
