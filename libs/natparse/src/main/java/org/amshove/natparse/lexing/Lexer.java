@@ -558,6 +558,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.TRANSLATE);
 			return;
 		}
+		if (scanner.advanceIf("MACHINE-CLASS"))
+		{
+			createAndAdd(SyntaxKind.MACHINE_CLASS);
+			return;
+		}
 		scanner.rollbackCurrentLexeme();
 		createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
 	}

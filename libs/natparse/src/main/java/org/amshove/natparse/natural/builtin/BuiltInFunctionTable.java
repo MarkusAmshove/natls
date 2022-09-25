@@ -36,6 +36,16 @@ public class BuiltInFunctionTable
 			unmodifiableVariable(SyntaxKind.DATX, "Returns the current date as internal date format", DATE, 0.0),
 			unmodifiableVariable(SyntaxKind.DATN, "Returns the current date in the format `YYYYMMDD`", ALPHANUMERIC, 10.0),
 			unmodifiableVariable(SyntaxKind.LINESIZE, "Returns the physical line size of the I/O device Natural was started with", NUMERIC, 7.0),
+			unmodifiableVariable(SyntaxKind.MACHINE_CLASS, """
+				Returns the name of the machine class Natural was started on
+
+				Possible return values:
+
+				- `MAINFRAME`
+				- `PC`
+				- `UNIX`
+				- `VMS`
+				""", ALPHANUMERIC, 16.0),
 			modifiableVariable(SyntaxKind.LANGUAGE, "Returns the language code, e.g. 1 for english, 2 for german etc.", INTEGER, 1.0),
 			modifiableVariable(SyntaxKind.STARTUP, "Get or set the name of the program which will be executed when Natural would show the command prompt", ALPHANUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.STEPLIB, "Returns the name of the current steplib", ALPHANUMERIC, 8.0),

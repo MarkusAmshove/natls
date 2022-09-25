@@ -288,4 +288,10 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 	{
 		assertTokens("*LINESIZE", token(SyntaxKind.LINESIZE, "*LINESIZE"));
 	}
+
+	@Test
+	void lexMachineClass()
+	{
+		assertTokens("*MACHINE-CLASS", token(SyntaxKind.MACHINE_CLASS, "*MACHINE-CLASS"));
+	}
 }
