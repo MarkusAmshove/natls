@@ -834,22 +834,22 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	@Test
 	void parseAComplexExamineReplace()
 	{
-		var examine = assertParsesSingleStatement("EXAMINE FORWARD FULL VALUE OF #DOC STARTING FROM POSITION 7 ENDING AT POSITION 10 FOR FULL VALUE OF PATTERN #HTML(*) WITH DELIMITERS ',' AND REPLACE FIRST WITH FULL VALUE OF #TAB(*) ", IExamineNode.class);
-		assertThat(examine.descendants().size()).isEqualTo(31);
+		var examine = assertParsesSingleStatement("EXAMINE DIRECTION FORWARD FULL VALUE OF #DOC STARTING FROM POSITION 7 ENDING AT POSITION 10 FOR FULL VALUE OF PATTERN #HTML(*) WITH DELIMITERS ',' AND REPLACE FIRST WITH FULL VALUE OF #TAB(*) ", IExamineNode.class);
+		assertThat(examine.descendants().size()).isEqualTo(32);
 	}
 
 	@Test
 	void parseAComplexExamineDelete()
 	{
-		var examine = assertParsesSingleStatement("EXAMINE FORWARD FULL VALUE OF #DOC STARTING FROM POSITION 7 ENDING AT POSITION 10 FOR FULL VALUE OF PATTERN #HTML(*) WITH DELIMITERS ',' AND DELETE FIRST", IExamineNode.class);
-		assertThat(examine.descendants().size()).isEqualTo(26);
+		var examine = assertParsesSingleStatement("EXAMINE DIRECTION FORWARD FULL VALUE OF #DOC STARTING FROM POSITION 7 ENDING AT POSITION 10 FOR FULL VALUE OF PATTERN #HTML(*) WITH DELIMITERS ',' AND DELETE FIRST", IExamineNode.class);
+		assertThat(examine.descendants().size()).isEqualTo(27);
 	}
 
 	@Test
 	void parseAComplexExamineDeleteGiving()
 	{
-		var examine = assertParsesSingleStatement("EXAMINE FORWARD FULL VALUE OF #DOC STARTING FROM POSITION 7 ENDING AT POSITION 10 FOR FULL VALUE OF PATTERN #HTML(*) WITH DELIMITERS ',' AND DELETE FIRST GIVING INDEX IN #ASD #EFG #HIJ", IExamineNode.class);
-		assertThat(examine.descendants().size()).isEqualTo(32);
+		var examine = assertParsesSingleStatement("EXAMINE DIRECTION FORWARD FULL VALUE OF #DOC STARTING FROM POSITION 7 ENDING AT POSITION 10 FOR FULL VALUE OF PATTERN #HTML(*) WITH DELIMITERS ',' AND DELETE FIRST GIVING INDEX IN #ASD #EFG #HIJ", IExamineNode.class);
+		assertThat(examine.descendants().size()).isEqualTo(33);
 	}
 
 	@Test

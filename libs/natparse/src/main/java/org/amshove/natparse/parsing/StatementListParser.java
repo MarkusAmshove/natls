@@ -596,7 +596,10 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		var examine = new ExamineNode();
 		consumeMandatory(examine, SyntaxKind.EXAMINE);
-		consumeAnyOptionally(examine, List.of(SyntaxKind.FORWARD, SyntaxKind.BACKWARD));
+		if(consumeOptionally(examine, SyntaxKind.DIRECTION))
+		{
+			consumeAnyOptionally(examine, List.of(SyntaxKind.FORWARD, SyntaxKind.BACKWARD));
+		}
 		if (consumeOptionally(examine, SyntaxKind.FULL))
 		{
 			if (consumeOptionally(examine, SyntaxKind.VALUE))
