@@ -7,7 +7,6 @@ import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
-import org.amshove.natparse.natural.builtin.BuiltInFunctionTable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -448,13 +447,13 @@ abstract class AbstractParser<T>
 
 	private IOperandNode absOperand(BaseSyntaxNode node) throws ParseError
 	{
-		var valOperand = new AbsOperandNode();
-		node.addNode(valOperand);
-		consumeMandatory(valOperand, SyntaxKind.ABS);
-		consumeMandatory(valOperand, SyntaxKind.LPAREN);
-		valOperand.setVariable(consumeVariableReferenceNode(valOperand));
-		consumeMandatory(valOperand, SyntaxKind.RPAREN);
-		return valOperand;
+		var absOperand = new AbsOperandNode();
+		node.addNode(absOperand);
+		consumeMandatory(absOperand, SyntaxKind.ABS);
+		consumeMandatory(absOperand, SyntaxKind.LPAREN);
+		absOperand.setParameter(consumeOperandNode(absOperand));
+		consumeMandatory(absOperand, SyntaxKind.RPAREN);
+		return absOperand;
 	}
 
 	private IOperandNode consumeLabelIdentifier(BaseSyntaxNode node) throws ParseError

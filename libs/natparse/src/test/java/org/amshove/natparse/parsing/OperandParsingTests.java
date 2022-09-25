@@ -135,7 +135,18 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	{
 		var operand = parseOperands("ABS(#THEVAR)");
 		var valNode = assertNodeType(operand.get(0), IAbsOperandNode.class);
-		assertThat(valNode.variable().referencingToken().symbolName()).isEqualTo("#THEVAR");
+		var parameter = assertNodeType(valNode.parameter(), IVariableReferenceNode.class);
+		assertThat(parameter.referencingToken().symbolName()).isEqualTo("#THEVAR");
+	}
+
+	@Test
+	void parseFunctionsAsAbsParameter()
+	{
+		moduleProvider.addModule("FUNC", new NaturalModule(null));
+		var operand = parseOperands("ABS(FUNC(<'A', 5>))");
+		var abs = assertNodeType(operand.get(0), IAbsOperandNode.class);
+		var functionAsParameter = assertNodeType(abs.parameter(), IFunctionCallNode.class);
+		assertThat(functionAsParameter.referencingToken().symbolName()).isEqualTo("FUNC");
 	}
 
 	@Test
