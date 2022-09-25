@@ -147,6 +147,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					case WRITE:
 						statementList.addStatement(write());
 						break;
+					case DISPLAY:
+						statementList.addStatement(display());
+						break;
 					case END:
 						if (peekKind(1, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE))
 						{
@@ -778,6 +781,34 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return examine;
+	}
+
+	private StatementNode display() throws ParseError
+	{
+		var display = new DisplayNode();
+		consumeMandatory(display, SyntaxKind.DISPLAY);
+
+		if(consumeOptionally(display, SyntaxKind.LPAREN))
+		{
+			if (peekKind(SyntaxKind.IDENTIFIER) && peekKind(1, SyntaxKind.RPAREN))
+			{
+				var token = consumeMandatoryIdentifier(display);
+				display.setReportSpecification(token);
+			}
+			else
+			{
+				// currently consume everything until closing parenthesis to consume things like attribute definition etc.
+				while (!peekKind(SyntaxKind.RPAREN))
+				{
+					consume(display);
+				}
+			}
+			consumeMandatory(display, SyntaxKind.RPAREN);
+		}
+
+		// TODO: Parse options
+
+		return display;
 	}
 
 	private StatementNode write() throws ParseError

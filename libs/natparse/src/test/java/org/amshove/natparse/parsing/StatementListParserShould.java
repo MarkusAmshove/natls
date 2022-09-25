@@ -802,6 +802,22 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseDisplay()
+	{
+		var display = assertParsesSingleStatement("DISPLAY", IDisplayNode.class);
+		assertThat(display.descendants()).hasSize(1);
+	}
+
+	@Test
+	void parseDisplayWithReportSpecification()
+	{
+		var display = assertParsesSingleStatement("DISPLAY (PR2)", IDisplayNode.class);
+		assertThat(display.reportSpecification()).isPresent();
+		assertThat(display.reportSpecification().get().symbolName()).isEqualTo("PR2");
+		assertThat(display.descendants()).hasSize(4);
+	}
+
+	@Test
 	void parseASimpleExamineReplace()
 	{
 		var examine = assertParsesSingleStatement("EXAMINE #VAR 'a' REPLACE 'b'", IExamineNode.class);

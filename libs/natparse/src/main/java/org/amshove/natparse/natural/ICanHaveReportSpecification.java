@@ -6,5 +6,5 @@ import java.util.Optional;
 
 public interface ICanHaveReportSpecification
 {
-	Optional<SyntaxToken> reportSpecification();
+	Optional<SyntaxToken> reportSpecification(); // TODO: IReportSpecificationOperandNode
 }
