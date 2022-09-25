@@ -282,4 +282,10 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 	{
 		assertTokens("*LINE-COUNT", token(SyntaxKind.LINE_COUNT, "*LINE-COUNT"));
 	}
+
+	@Test
+	void lexLineSize()
+	{
+		assertTokens("*LINESIZE", token(SyntaxKind.LINESIZE, "*LINESIZE"));
+	}
 }

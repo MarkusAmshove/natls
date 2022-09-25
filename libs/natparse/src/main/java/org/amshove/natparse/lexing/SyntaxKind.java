@@ -51,6 +51,7 @@ public enum SyntaxKind
 	LIBRARY_ID(false, true, false),
 	LINEX(false, true, false),
 	LINE_COUNT(false, true, true),
+	LINESIZE(false, true, false),
 	SV_ISN(false, true, true),
 	CURRENT_UNIT(false, true, false),
 	OCC(false, false, true),
