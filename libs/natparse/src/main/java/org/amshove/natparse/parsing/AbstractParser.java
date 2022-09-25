@@ -420,6 +420,11 @@ abstract class AbstractParser<T>
 			return consumeLabelIdentifier(node);
 		}
 
+		if(peek().kind().canBeIdentifier())
+		{
+			return consumeVariableReferenceNode(node);
+		}
+
 		return consumeLiteralNode(node);
 	}
 
