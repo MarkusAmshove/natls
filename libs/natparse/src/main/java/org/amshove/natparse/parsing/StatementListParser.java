@@ -117,6 +117,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					case EJECT:
 						statementList.addStatement(eject());
 						break;
+					case SKIP:
+						statementList.addStatement(skip());
+						break;
 					case ESCAPE:
 						statementList.addStatement(escape());
 						break;
@@ -255,6 +258,26 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode skip() throws ParseError
+	{
+		var skip = new SkipStatementNode();
+		consumeMandatory(skip, SyntaxKind.SKIP);
+
+		if(consumeOptionally(skip, SyntaxKind.LPAREN))
+		{
+			var spec = consumeReportSpecificationOperand(skip);
+			skip.setReportSpecification(spec);
+			consumeMandatory(skip, SyntaxKind.RPAREN);
+		}
+
+		var linesToSkip = consumeOperandNode(skip);
+		skip.setToSkip(linesToSkip);
+
+		consumeOptionally(skip, SyntaxKind.LINES);
+
+		return skip;
 	}
 
 	private StatementNode histogram() throws ParseError

@@ -1242,6 +1242,41 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 			END-HISTOGRAM""".formatted(sorting), IHistogramNode.class);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"10",
+		"5 LINES",
+		"#VAR",
+		"#VAR LINES"
+	})
+	void parseSkipStatement(String skipOperands)
+	{
+		var skip = assertParsesSingleStatement("SKIP %s".formatted(skipOperands), ISkipStatementNode.class);
+		assertThat(skip.descendants()).hasSize(1 + skipOperands.split(" ").length);
+	}
+
+	@Test
+	void parseNumberOfLinesOfSkipStatement()
+	{
+		var skip = assertParsesSingleStatement("SKIP 5 LINES", ISkipStatementNode.class);
+		assertThat(assertNodeType(skip.toSkip(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+	}
+
+	@Test
+	void parseVariableAsNumberOfLinesOfSkipStatement()
+	{
+		var skip = assertParsesSingleStatement("SKIP #VAR LINES", ISkipStatementNode.class);
+		assertThat(assertNodeType(skip.toSkip(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#VAR");
+	}
+
+	@Test
+	void parseSkipStatementWithReportSpecification()
+	{
+		var skip = assertParsesSingleStatement("SKIP (PR2) 5 LINES", ISkipStatementNode.class);
+		assertThat(skip.reportSpecification()).isPresent();
+		assertThat(skip.reportSpecification().get().reportSpecification().symbolName()).isEqualTo("PR2");
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);

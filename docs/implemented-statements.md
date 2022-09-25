@@ -117,7 +117,7 @@ partial - partially implemented to prevent false positives
 | SET KEY | partial |
 | SET TIME | :x: |
 | SET WINDOW | :x: |
-| SKIP | :x: |
+| SKIP | :white_check_mark: |
 | SORT | :x: |
 | STACK | :white_check_mark: |
 | STOP | :x: |

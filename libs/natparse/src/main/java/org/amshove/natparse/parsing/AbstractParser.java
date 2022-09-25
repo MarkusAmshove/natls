@@ -520,7 +520,7 @@ abstract class AbstractParser<T>
 		return systemFunction;
 	}
 
-	private IOperandNode consumeReportSpecificationOperand(BaseSyntaxNode parent)
+	protected IReportSpecificationOperandNode consumeReportSpecificationOperand(BaseSyntaxNode parent)
 	{
 		var operand = new ReportSpecificationOperandNode();
 		parent.addNode(operand);
