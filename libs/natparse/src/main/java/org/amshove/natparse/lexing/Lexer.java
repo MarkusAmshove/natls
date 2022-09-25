@@ -363,6 +363,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.LINESIZE);
 			return;
 		}
+		if (scanner.advanceIf("PAGESIZE"))
+		{
+			createAndAdd(SyntaxKind.PAGESIZE);
+			return;
+		}
 		if (scanner.advanceIf("TRIM"))
 		{
 			createAndAdd(SyntaxKind.TRIM);

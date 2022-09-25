@@ -294,4 +294,10 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 	{
 		assertTokens("*MACHINE-CLASS", token(SyntaxKind.MACHINE_CLASS, "*MACHINE-CLASS"));
 	}
+
+	@Test
+	void lexPageSize()
+	{
+		assertTokens("*PAGESIZE", token(SyntaxKind.PAGESIZE, "*PAGESIZE"));
+	}
 }

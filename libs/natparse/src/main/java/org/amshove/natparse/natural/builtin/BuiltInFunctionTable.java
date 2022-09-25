@@ -35,7 +35,8 @@ public class BuiltInFunctionTable
 			unmodifiableVariable(SyntaxKind.DAT4D, "Returns the current date in the format `DD.MM.YYYY`", ALPHANUMERIC, 10.0),
 			unmodifiableVariable(SyntaxKind.DATX, "Returns the current date as internal date format", DATE, 0.0),
 			unmodifiableVariable(SyntaxKind.DATN, "Returns the current date in the format `YYYYMMDD`", ALPHANUMERIC, 10.0),
-			unmodifiableVariable(SyntaxKind.LINESIZE, "Returns the physical line size of the I/O device Natural was started with", NUMERIC, 7.0),
+			unmodifiableVariable(SyntaxKind.LINESIZE, "Returns the physical line size of the I/O device Natural was started with. For vertical look at `*PAGESIZE`", NUMERIC, 7.0),
+			unmodifiableVariable(SyntaxKind.PAGESIZE, "Returns the physical page size of the I/O device Natural was started with. For horizontal look at `*LINESIZE`", NUMERIC, 7.0),
 			unmodifiableVariable(SyntaxKind.MACHINE_CLASS, """
 				Returns the name of the machine class Natural was started on
 
