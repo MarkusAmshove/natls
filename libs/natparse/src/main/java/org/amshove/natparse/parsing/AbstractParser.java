@@ -7,6 +7,7 @@ import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.builtin.BuiltInFunctionTable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -472,6 +473,11 @@ abstract class AbstractParser<T>
 			return consumeTranslateSystemFunction(node);
 		}
 
+		if(peek().kind() == SyntaxKind.PAGE_NUMBER)
+		{
+			return consumePageNumber(node);
+		}
+
 		var systemFunction = new SystemFunctionNode();
 		systemFunction.setSystemFunction(peek().kind());
 		consume(systemFunction);
@@ -491,19 +497,35 @@ abstract class AbstractParser<T>
 		systemFunction.addParameter(consumeOperandNode(systemFunction));
 		while(consumeOptionally(systemFunction, SyntaxKind.COMMA))
 		{
-			if(systemFunction.systemFunction() == SyntaxKind.TRANSLATE)
-			{
-				consumeAnyMandatory(systemFunction, List.of(SyntaxKind.UPPER, SyntaxKind.LOWER)); // TODO: Save if upper or lower
-			}
-			else
-			{
-				systemFunction.addParameter(consumeOperandNode(systemFunction));
-			}
-
+			systemFunction.addParameter(consumeOperandNode(systemFunction));
 		}
 		consumeMandatory(systemFunction, SyntaxKind.RPAREN);
 		node.addNode(systemFunction);
 		return systemFunction;
+	}
+
+	private ISystemFunctionNode consumePageNumber(BaseSyntaxNode node) throws ParseError
+	{
+		var pageNumber = new SystemFunctionNode();
+		node.addNode(pageNumber);
+		consumeMandatory(pageNumber, SyntaxKind.PAGE_NUMBER);
+		pageNumber.setSystemFunction(SyntaxKind.PAGE_NUMBER);
+		if(consumeOptionally(pageNumber, SyntaxKind.LPAREN))
+		{
+			pageNumber.addParameter(consumeReportSpecificationOperand(pageNumber));
+			consumeMandatory(pageNumber, SyntaxKind.RPAREN);
+		}
+
+		return pageNumber;
+	}
+
+	private IOperandNode consumeReportSpecificationOperand(BaseSyntaxNode parent)
+	{
+		var operand = new ReportSpecificationOperandNode();
+		parent.addNode(operand);
+		var spec = consume(operand);
+		operand.setReportSpecification(spec);
+		return operand;
 	}
 
 	private ISystemFunctionNode consumeTranslateSystemFunction(BaseSyntaxNode node) throws ParseError

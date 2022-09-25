@@ -192,4 +192,22 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		var operand = parseOperands("POS(#VAR.#VAR2)");
 		assertThat(assertNodeType(operand.get(0), IPosNode.class).positionOf().token().symbolName()).isEqualTo("#VAR.#VAR2");
 	}
+
+	@Test
+	void parsePageNumberWithoutRep()
+	{
+		var operand = parseOperands("*PAGE-NUMBER");
+		assertThat(assertNodeType(operand.get(0), ISystemVariableNode.class).systemVariable()).isEqualTo(SyntaxKind.PAGE_NUMBER);
+	}
+
+	@Test
+	void parsePageNumberWithRep()
+	{
+		var operand = parseOperands("*PAGE-NUMBER(SV1)");
+		var function = assertNodeType(operand.get(0), ISystemFunctionNode.class);
+		assertThat(function.systemFunction()).isEqualTo(SyntaxKind.PAGE_NUMBER);
+		assertThat(function.parameter()).hasSize(1);
+		var parameter = assertNodeType(function.parameter().get(0), IReportSpecificationOperandNode.class);
+		assertThat(parameter.reportSpecification().symbolName()).isEqualTo("SV1");
+	}
 }

@@ -46,7 +46,7 @@ public enum SyntaxKind
 	DATN(false, true, false),
 	STARTUP(false, true, false),
 	STEPLIB(false, true, false),
-	PAGE_NUMBER(false, true, false),
+	PAGE_NUMBER(false, true, true),
 	WINDOW_PS(false, true, false),
 	LIBRARY_ID(false, true, false),
 	LINEX(false, true, false),

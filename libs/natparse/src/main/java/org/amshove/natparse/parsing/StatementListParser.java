@@ -773,6 +773,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeOptionally(write, SyntaxKind.NOTITLE);
 		consumeOptionally(write, SyntaxKind.NOHDR);
 
+		// TODO: Actual operands to WRITE not parsed
 		return write;
 	}
 
