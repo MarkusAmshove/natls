@@ -936,6 +936,29 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void parseAViewWithRedefinition()
+	{
+		var source = """
+			DEFINE DATA
+			LOCAL
+			1 MY-VIEW VIEW MY-DDM
+			2 DDM-FIELD
+			2 REDEFINE DDM-FIELD
+			3 FILLER 5X
+			3 #REST (A5)
+			END-DEFINE
+			""";
+
+		var defineData = assertParsesWithoutDiagnostics(source);
+		var view = assertNodeType(defineData.variables().first(), IViewNode.class);
+		assertThat(view.variables().size()).isEqualTo(2);
+		var redefined = assertNodeType(view.variables().get(1), IRedefinitionNode.class);
+		assertThat(redefined.declaration().symbolName()).isEqualTo("DDM-FIELD");
+		assertThat(redefined.fillerBytes()).isEqualTo(5);
+		assertThat(assertNodeType(redefined.variables().first(), ITypedVariableNode.class).declaration().symbolName()).isEqualTo("#REST");
+	}
+
+	@Test
 	void parseViewWithOptionalOf()
 	{
 		assertParsesWithoutDiagnostics("""
