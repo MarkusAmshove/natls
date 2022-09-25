@@ -210,4 +210,22 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		var parameter = assertNodeType(function.parameter().get(0), IReportSpecificationOperandNode.class);
 		assertThat(parameter.reportSpecification().symbolName()).isEqualTo("SV1");
 	}
+
+	@Test
+	void parseLineCountWithoutRep()
+	{
+		var operand = parseOperands("*LINE-COUNT");
+		assertThat(assertNodeType(operand.get(0), ISystemVariableNode.class).systemVariable()).isEqualTo(SyntaxKind.LINE_COUNT);
+	}
+
+	@Test
+	void parseLineCountWithRep()
+	{
+		var operand = parseOperands("*LINE-COUNT(SV1)");
+		var function = assertNodeType(operand.get(0), ISystemFunctionNode.class);
+		assertThat(function.systemFunction()).isEqualTo(SyntaxKind.LINE_COUNT);
+		assertThat(function.parameter()).hasSize(1);
+		var parameter = assertNodeType(function.parameter().get(0), IReportSpecificationOperandNode.class);
+		assertThat(parameter.reportSpecification().symbolName()).isEqualTo("SV1");
+	}
 }

@@ -473,9 +473,10 @@ abstract class AbstractParser<T>
 			return consumeTranslateSystemFunction(node);
 		}
 
-		if(peek().kind() == SyntaxKind.PAGE_NUMBER)
+		if(peek().kind() == SyntaxKind.PAGE_NUMBER || peek().kind() == SyntaxKind.LINE_COUNT)
+			// TODO: Get the entry for the function from BuiltInFunctionTable and check if it takes one parameter that is rep
 		{
-			return consumePageNumber(node);
+			return consumeSystemFunctionWithRepParameter(node, peek().kind());
 		}
 
 		var systemFunction = new SystemFunctionNode();
@@ -504,19 +505,19 @@ abstract class AbstractParser<T>
 		return systemFunction;
 	}
 
-	private ISystemFunctionNode consumePageNumber(BaseSyntaxNode node) throws ParseError
+	private ISystemFunctionNode consumeSystemFunctionWithRepParameter(BaseSyntaxNode node, SyntaxKind kind) throws ParseError
 	{
-		var pageNumber = new SystemFunctionNode();
-		node.addNode(pageNumber);
-		consumeMandatory(pageNumber, SyntaxKind.PAGE_NUMBER);
-		pageNumber.setSystemFunction(SyntaxKind.PAGE_NUMBER);
-		if(consumeOptionally(pageNumber, SyntaxKind.LPAREN))
+		var systemFunction = new SystemFunctionNode();
+		node.addNode(systemFunction);
+		consumeMandatory(systemFunction, kind);
+		systemFunction.setSystemFunction(kind);
+		if(consumeOptionally(systemFunction, SyntaxKind.LPAREN))
 		{
-			pageNumber.addParameter(consumeReportSpecificationOperand(pageNumber));
-			consumeMandatory(pageNumber, SyntaxKind.RPAREN);
+			systemFunction.addParameter(consumeReportSpecificationOperand(systemFunction));
+			consumeMandatory(systemFunction, SyntaxKind.RPAREN);
 		}
 
-		return pageNumber;
+		return systemFunction;
 	}
 
 	private IOperandNode consumeReportSpecificationOperand(BaseSyntaxNode parent)

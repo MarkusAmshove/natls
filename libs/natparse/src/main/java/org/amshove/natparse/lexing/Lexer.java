@@ -353,6 +353,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.LINEX);
 			return;
 		}
+		if (scanner.advanceIf("LINE-COUNT"))
+		{
+			createAndAdd(SyntaxKind.LINE_COUNT);
+			return;
+		}
 		if (scanner.advanceIf("TRIM"))
 		{
 			createAndAdd(SyntaxKind.TRIM);

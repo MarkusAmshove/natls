@@ -50,6 +50,7 @@ public enum SyntaxKind
 	WINDOW_PS(false, true, false),
 	LIBRARY_ID(false, true, false),
 	LINEX(false, true, false),
+	LINE_COUNT(false, true, true),
 	SV_ISN(false, true, true),
 	CURRENT_UNIT(false, true, false),
 	OCC(false, false, true),
