@@ -211,6 +211,12 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					case RESET:
 						statementList.addStatement(resetStatement());
 						break;
+					case DECIDE:
+						if(peekKind(1, SyntaxKind.FOR))
+						{
+							statementList.addStatement(decideFor());
+							break;
+						}
 					case SET:
 						if (peek(1).kind() == SyntaxKind.KEY)
 						{
@@ -1531,6 +1537,49 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatoryClosing(statement, SyntaxKind.END_NOREC, opening);
 
 		return statement;
+	}
+
+	private DecideForConditionNode decideFor() throws ParseError
+	{
+		var decide = new DecideForConditionNode();
+		consumeMandatory(decide, SyntaxKind.DECIDE);
+		consumeMandatory(decide, SyntaxKind.FOR);
+		consumeEitherOptionally(decide, SyntaxKind.FIRST, SyntaxKind.EVERY);
+		consumeMandatory(decide, SyntaxKind.CONDITION);
+
+		while(!isAtEnd() && peekKind(SyntaxKind.WHEN))
+		{
+			consumeMandatory(decide, SyntaxKind.WHEN);
+
+			if(peekKind(SyntaxKind.ANY))
+			{
+				consumeMandatory(decide, SyntaxKind.ANY);
+				decide.setWhenAny(statementList(SyntaxKind.WHEN));
+				continue;
+			}
+
+			if(peekKind(SyntaxKind.ALL))
+			{
+				consumeMandatory(decide, SyntaxKind.ALL);
+				decide.setWhenAll(statementList(SyntaxKind.WHEN));
+				continue;
+			}
+
+			if(peekKind(SyntaxKind.NONE))
+			{
+				consumeMandatory(decide, SyntaxKind.NONE);
+				decide.setWhenNone(statementList(SyntaxKind.END_DECIDE));
+				continue;
+			}
+
+			var branch = new DecideForConditionBranchNode();
+			var criteria = conditionCriteria();
+			branch.setCriteria(criteria);
+			branch.setBody(statementList(SyntaxKind.WHEN));
+			decide.addBranch(branch);
+		}
+
+		return decide;
 	}
 
 	private SetKeyStatementNode setKey() throws ParseError

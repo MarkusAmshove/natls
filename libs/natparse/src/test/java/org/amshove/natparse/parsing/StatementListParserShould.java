@@ -3,6 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
 import org.amshove.testhelpers.IntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -1275,6 +1276,76 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		var skip = assertParsesSingleStatement("SKIP (PR2) 5 LINES", ISkipStatementNode.class);
 		assertThat(skip.reportSpecification()).isPresent();
 		assertThat(skip.reportSpecification().get().reportSpecification().symbolName()).isEqualTo("PR2");
+	}
+
+	@Test
+	void parseDecideForCondition()
+	{
+		var decide = assertParsesSingleStatement("""
+			DECIDE FOR CONDITION
+			WHEN 5 < 2
+				IGNORE
+			WHEN ANY
+				IGNORE
+			WHEN ALL
+				IGNORE
+			WHEN NONE
+				IGNORE
+			END-DECIDE
+		""", IDecideForConditionNode.class);
+
+		assertThat(decide.whenNone().statements()).hasSize(1);
+		assertNodeType(decide.whenNone().statements().first(), IIgnoreNode.class);
+
+		assertThat(decide.whenAny()).isPresent();
+		assertThat(decide.whenAny().get().statements()).hasSize(1);
+		assertNodeType(decide.whenNone().statements().first(), IIgnoreNode.class);
+
+		assertThat(decide.whenAll()).isPresent();
+		assertThat(decide.whenAll().get().statements()).hasSize(1);
+		assertNodeType(decide.whenNone().statements().first(), IIgnoreNode.class);
+
+		assertThat(decide.branches()).hasSize(1);
+		var criteria = assertNodeType(decide.branches().first().criteria(), IRelationalCriteriaNode.class);
+		assertThat(assertNodeType(criteria.left(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).token().intValue()).isEqualTo(2);
+		assertThat(decide.branches().first().body().statements()).hasSize(1);
+		assertThat(decide.branches().first().body().statements().first()).isInstanceOf(IIgnoreNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"EVERY", "FIRST"
+	})
+	void parseDecideForConditionWithEveryAndFirst(String permutation)
+	{
+		assertParsesSingleStatement("""
+			DECIDE FOR %s CONDITION
+			WHEN 5 < 2
+				IGNORE
+			WHEN NONE
+				IGNORE
+			END-DECIDE
+		""".formatted(permutation), IDecideForConditionNode.class);
+	}
+
+	@Test
+	void parseDecideForWithComplexConditions()
+	{
+		var decide = assertParsesSingleStatement("""
+			DECIDE FOR CONDITION
+			WHEN (#VAR IS (N4))
+				IGNORE
+			WHEN #VAR = 'Hello' AND #VAR2 = 2
+				IGNORE
+			WHEN (#VAR = 'Hello' OR *OCC(#ARR) = 5)
+				IGNORE
+			WHEN NONE
+				IGNORE
+			END-DECIDE
+		""", IDecideForConditionNode.class);
+
+		assertThat(decide.branches()).hasSize(3);
 	}
 
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
