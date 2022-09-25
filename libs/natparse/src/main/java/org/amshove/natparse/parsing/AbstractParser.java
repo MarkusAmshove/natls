@@ -554,17 +554,40 @@ abstract class AbstractParser<T>
 
 		if(consumeOptionally(reference, SyntaxKind.LPAREN))
 		{
-			reference.addDimension(consumeArithmeticExpression(reference));
+			reference.addDimension(consumeArrayAccess(reference));
 			while(peekKind(SyntaxKind.COMMA))
 			{
 				consume(reference);
-				reference.addDimension(consumeArithmeticExpression(reference));
+				reference.addDimension(consumeArrayAccess(reference));
 			}
 			consumeMandatory(reference, SyntaxKind.RPAREN);
 		}
 
 		unresolvedReferences.add(reference);
 		return reference;
+	}
+
+	protected IOperandNode consumeArrayAccess(BaseSyntaxNode parent) throws ParseError
+	{
+		if(peekKind(1, SyntaxKind.COLON))
+		{
+			return consumeRangedArrayAccess(parent);
+		}
+
+		return consumeArithmeticExpression(parent);
+	}
+
+	protected IRangedArrayAccessNode consumeRangedArrayAccess(BaseSyntaxNode parent) throws ParseError
+	{
+		var rangedAccess = new RangedArrayAccessNode();
+		parent.addNode(rangedAccess);
+		var lower = consumeArithmeticExpression(rangedAccess);
+		consumeMandatory(rangedAccess, SyntaxKind.COLON);
+		var upper = consumeArithmeticExpression(rangedAccess);
+
+		rangedAccess.setLowerBound(lower);
+		rangedAccess.setUpperBound(upper);
+		return rangedAccess;
 	}
 
 	protected ISystemVariableNode consumeSystemVariableNode(BaseSyntaxNode node)

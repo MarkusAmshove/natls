@@ -228,4 +228,37 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		var parameter = assertNodeType(function.parameter().get(0), IReportSpecificationOperandNode.class);
 		assertThat(parameter.reportSpecification().symbolName()).isEqualTo("SV1");
 	}
+
+	@Test
+	void parseArrayAccessRanges()
+	{
+		var operand = parseOperands("#VAR(1:10)");
+		var access = assertNodeType(operand.get(0), IVariableReferenceNode.class);
+		assertThat(access.dimensions()).hasSize(1);
+		var rangedAccess = assertNodeType(access.dimensions().first(), IRangedArrayAccessNode.class);
+		assertThat(assertNodeType(rangedAccess.lowerBound(), ILiteralNode.class).token().intValue()).isEqualTo(1);
+		assertThat(assertNodeType(rangedAccess.upperBound(), ILiteralNode.class).token().intValue()).isEqualTo(10);
+	}
+
+	@Test
+	void parseArrayAccessWithVariableRanges()
+	{
+		var operand = parseOperands("#VAR(#LOW:50)");
+		var access = assertNodeType(operand.get(0), IVariableReferenceNode.class);
+		assertThat(access.dimensions()).hasSize(1);
+		var rangedAccess = assertNodeType(access.dimensions().first(), IRangedArrayAccessNode.class);
+		assertThat(assertNodeType(rangedAccess.lowerBound(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#LOW");
+		assertThat(assertNodeType(rangedAccess.upperBound(), ILiteralNode.class).token().intValue()).isEqualTo(50);
+	}
+
+	@Test
+	void parseArrayAccessWithVariableRangesInUpperBound()
+	{
+		var operand = parseOperands("#VAR(5:#UP)");
+		var access = assertNodeType(operand.get(0), IVariableReferenceNode.class);
+		assertThat(access.dimensions()).hasSize(1);
+		var rangedAccess = assertNodeType(access.dimensions().first(), IRangedArrayAccessNode.class);
+		assertThat(assertNodeType(rangedAccess.lowerBound(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+		assertThat(assertNodeType(rangedAccess.upperBound(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#UP");
+	}
 }
