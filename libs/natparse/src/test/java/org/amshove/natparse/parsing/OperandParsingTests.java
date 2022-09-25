@@ -272,4 +272,23 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(assertNodeType(rangedAccess.lowerBound(), ILiteralNode.class).token().intValue()).isEqualTo(5);
 		assertThat(assertNodeType(rangedAccess.upperBound(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#UP");
 	}
+
+	@Test
+	void parseArrayAccessWithVariableArithmeticRanges()
+	{
+		var operand = parseOperands("#VAR(#DOWN(2) - 5:#UP + #DOWN(3))");
+		var access = assertNodeType(operand.get(0), IVariableReferenceNode.class);
+		assertThat(access.dimensions()).hasSize(1);
+		var rangedAccess = assertNodeType(access.dimensions().first(), IRangedArrayAccessNode.class);
+
+		var lower = assertNodeType(rangedAccess.lowerBound(),IArithmeticExpressionNode.class);
+		assertThat(assertNodeType(lower.left(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#DOWN");
+		assertThat(lower.operator()).isEqualTo(SyntaxKind.MINUS);
+		assertThat(assertNodeType(lower.right(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+
+		var upper = assertNodeType(rangedAccess.upperBound(),IArithmeticExpressionNode.class);
+		assertThat(assertNodeType(upper.left(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#UP");
+		assertThat(upper.operator()).isEqualTo(SyntaxKind.PLUS);
+		assertThat(assertNodeType(upper.right(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#DOWN");
+	}
 }

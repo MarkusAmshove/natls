@@ -573,7 +573,7 @@ abstract class AbstractParser<T>
 
 	protected IOperandNode consumeArrayAccess(BaseSyntaxNode parent) throws ParseError
 	{
-		if(peekKind(1, SyntaxKind.COLON))
+		if(peekKind(1, SyntaxKind.COLON) || currentParensContainKind(SyntaxKind.COLON))
 		{
 			return consumeRangedArrayAccess(parent);
 		}
@@ -739,6 +739,47 @@ abstract class AbstractParser<T>
 
 		report(ParserErrors.unexpectedToken(acceptedKinds, peek()));
 		tokens.advance();
+		return false;
+	}
+
+	/**
+	 * Determines if the current parenthesis (LPAREN must be consumed already) contain the given token.<br/>
+	 * Will account for additionally opened parens.
+	 */
+	protected boolean currentParensContainKind(SyntaxKind kindToLookFor)
+	{
+		var offset = 1;
+		var nestedParens = 0;
+		while (!isAtEnd(offset) && !peekKind(offset, SyntaxKind.RPAREN))
+		{
+			var currentKind = peek(offset).kind();
+			if (currentKind == SyntaxKind.LPAREN)
+			{
+				nestedParens++;
+				offset++;
+			}
+			// skip nested parens
+			while (nestedParens > 0 && !isAtEnd(offset))
+			{
+				if (peek(offset).kind() == SyntaxKind.LPAREN)
+				{
+					nestedParens++;
+				}
+				if (peek(offset).kind() == SyntaxKind.RPAREN)
+				{
+					nestedParens--;
+				}
+
+				offset++;
+			}
+
+			if (peekKind(offset, kindToLookFor))
+			{
+				return true;
+			}
+			offset++;
+		}
+
 		return false;
 	}
 
