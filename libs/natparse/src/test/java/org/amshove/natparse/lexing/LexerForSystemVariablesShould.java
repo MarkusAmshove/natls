@@ -271,4 +271,9 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 		assertTokens("*ISN", token(SyntaxKind.SV_ISN, "*ISN"));
 	}
 
+	@Test
+	void lexDatG()
+	{
+		assertTokens("*DATG", token(SyntaxKind.DATG, "*DATG"));
+	}
 }

@@ -403,6 +403,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.DAT4D);
 			return;
 		}
+		if (scanner.advanceIf("DATG"))
+		{
+			createAndAdd(SyntaxKind.DATG);
+			return;
+		}
 		if (scanner.advanceIf("LANGUAGE"))
 		{
 			createAndAdd(SyntaxKind.LANGUAGE);
