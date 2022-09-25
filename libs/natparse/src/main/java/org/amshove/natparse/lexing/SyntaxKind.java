@@ -178,7 +178,7 @@ public enum SyntaxKind
 	LIMIT(false, false, false),
 	LOG(true, false, false), // TODO: Should be false, but is currently used by NatUnit
 	LOOP(false, false, false),
-	MAP(false, false, false),
+	MAP(true, false, false),
 	MAX(false, false, false),
 	MIN(false, false, false),
 	MOVE(false, false, false),
@@ -213,7 +213,7 @@ public enum SyntaxKind
 	RESTORE(false, false, false),
 	RET(false, false, false),
 	RETRY(false, false, false),
-	RETURN(false, false, false),
+	RETURN(true, false, false),
 	ROLLBACK(false, false, false),
 	ROUNDED(false, false, false),
 	RULEVAR(false, false, false),
