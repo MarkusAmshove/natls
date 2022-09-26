@@ -291,4 +291,16 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(upper.operator()).isEqualTo(SyntaxKind.PLUS);
 		assertThat(assertNodeType(upper.right(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#DOWN");
 	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"#VAR(2, 1:10)", "#VAR(1:10, 2)"
+	})
+	void parseArrayAccessWithMultipleDimensionsAndRanges(String operandSource)
+	{
+		var operand = parseOperands(operandSource);
+		var access = assertNodeType(operand.get(0), IVariableReferenceNode.class);
+		assertThat(access.dimensions()).hasSize(2);
+		assertThat(access.descendants()).hasSize(6); // #VAR ( IOperand , IRangedArrayAccess )
+	}
 }

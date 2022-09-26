@@ -571,21 +571,21 @@ abstract class AbstractParser<T>
 		return reference;
 	}
 
-	protected IOperandNode consumeArrayAccess(BaseSyntaxNode parent) throws ParseError
+	protected IOperandNode consumeArrayAccess(VariableReferenceNode reference) throws ParseError
 	{
-		if(peekKind(1, SyntaxKind.COLON) || currentParensContainKind(SyntaxKind.COLON))
+		var access = consumeArithmeticExpression(reference);
+		if(peekKind(SyntaxKind.COLON))
 		{
-			return consumeRangedArrayAccess(parent);
+			return consumeRangedArrayAccess(reference, access);
 		}
 
-		return consumeArithmeticExpression(parent);
+		return access;
 	}
 
-	protected IRangedArrayAccessNode consumeRangedArrayAccess(BaseSyntaxNode parent) throws ParseError
+	protected IRangedArrayAccessNode consumeRangedArrayAccess(BaseSyntaxNode parent, IOperandNode lower) throws ParseError
 	{
 		var rangedAccess = new RangedArrayAccessNode();
-		parent.addNode(rangedAccess);
-		var lower = consumeArithmeticExpression(rangedAccess);
+		parent.replaceChild((BaseSyntaxNode) lower, rangedAccess);
 		consumeMandatory(rangedAccess, SyntaxKind.COLON);
 		var upper = consumeArithmeticExpression(rangedAccess);
 
@@ -739,67 +739,6 @@ abstract class AbstractParser<T>
 
 		report(ParserErrors.unexpectedToken(acceptedKinds, peek()));
 		tokens.advance();
-		return false;
-	}
-
-	/**
-	 * Determines if the current parenthesis (LPAREN must be consumed already) contain the given token.<br/>
-	 * Will account for additionally opened parens.
-	 */
-	protected boolean currentParensContainKind(SyntaxKind kindToLookFor)
-	{
-		var offset = 1;
-		var nestedParens = 0;
-		while (!isAtEnd(offset) && !peekKind(offset, SyntaxKind.RPAREN))
-		{
-			var currentKind = peek(offset).kind();
-			if (currentKind == SyntaxKind.LPAREN)
-			{
-				nestedParens++;
-				offset++;
-			}
-			// skip nested parens
-			while (nestedParens > 0 && !isAtEnd(offset))
-			{
-				if (peek(offset).kind() == SyntaxKind.LPAREN)
-				{
-					nestedParens++;
-				}
-				if (peek(offset).kind() == SyntaxKind.RPAREN)
-				{
-					nestedParens--;
-				}
-
-				offset++;
-			}
-
-			if (peekKind(offset, kindToLookFor))
-			{
-				return true;
-			}
-			offset++;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Determines if any of the given {@link SyntaxKind}s is in the same line as the current peekable token.
-	 */
-	protected boolean peekSameLine(Collection<SyntaxKind> kindsToLookFor)
-	{
-		var startLine = peek().line();
-		var peekOffset = 0;
-		while(!isAtEnd(peekOffset) && peek(peekOffset).line() == startLine)
-		{
-			if(kindsToLookFor.contains(peek(peekOffset).kind()))
-			{
-				return true;
-			}
-
-			peekOffset++;
-		}
-
 		return false;
 	}
 
