@@ -83,7 +83,7 @@ public class Lexer
 					}
 					continue;
 				case '-':
-					consumeMinusOrNumberOrStringConcat();
+					consumeMinusOrStringConcat();
 					continue;
 				case '*':
 					consumeAsteriskOrSystemVariable();
@@ -232,7 +232,7 @@ public class Lexer
 		return TokenList.fromTokensAndDiagnostics(filePath, tokens, diagnostics, comments);
 	}
 
-	private void consumeMinusOrNumberOrStringConcat()
+	private void consumeMinusOrStringConcat()
 	{
 		var lookaheadIndex = findNextNonWhitespaceLookaheadOffset();
 		var lookahead = scanner.peek(lookaheadIndex);
@@ -261,29 +261,7 @@ public class Lexer
 			return;
 		}
 
-		scanner.start();
-		scanner.advance(); // the minus
-		if (Character.isDigit(scanner.peek()))
-		{
-			while (Character.isDigit(scanner.peek()) || scanner.peek() == ',' || scanner.peek() == '.')
-			{
-				scanner.advance();
-			}
-			if(scanner.peek() == 'E')
-			{
-				scanner.advance(); // E
-				scanner.advance(); // + or -
-				while(Character.isDigit(scanner.peek()))
-				{
-					scanner.advance();
-				}
-			}
-			createAndAdd(SyntaxKind.NUMBER_LITERAL);
-		}
-		else
-		{
-			createAndAdd(SyntaxKind.MINUS);
-		}
+		createAndAddCurrentSingleToken(SyntaxKind.MINUS);
 	}
 
 	private void consumeAsteriskOrSystemVariable()

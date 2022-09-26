@@ -209,6 +209,16 @@ abstract class AbstractParser<T>
 			return attribute;
 		}
 
+		if(peekKind(SyntaxKind.MINUS) && peekKind(1, SyntaxKind.NUMBER_LITERAL))
+		{
+			var combinedLiteral = peek().combine(peek(1), SyntaxKind.NUMBER_LITERAL);
+			var literal = new LiteralNode(combinedLiteral);
+			discard();
+			discard();
+			node.addNode(literal);
+			return literal;
+		}
+
 		var literal = consumeAny(List.of(SyntaxKind.NUMBER_LITERAL, SyntaxKind.STRING_LITERAL, SyntaxKind.TRUE, SyntaxKind.FALSE, SyntaxKind.ASTERISK));
 		var literalNode = new LiteralNode(literal);
 		node.addNode(literalNode);

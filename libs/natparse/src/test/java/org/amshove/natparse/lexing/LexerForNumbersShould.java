@@ -10,7 +10,7 @@ import java.util.Arrays;
 
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
-public class LexerForNumbersShould extends AbstractLexerTest
+class LexerForNumbersShould extends AbstractLexerTest
 {
 	@TestFactory
 	Iterable<DynamicTest> lexNumbersWithoutDecimalDelimiter()
@@ -70,13 +70,13 @@ public class LexerForNumbersShould extends AbstractLexerTest
 	}
 
 	@TestFactory
-	Iterable<DynamicTest> lexNegativeNumbers()
+	Iterable<DynamicTest> lexNegativeNumbersAsMultipleTokens()
 	{
 		return Arrays.asList(
-			dynamicTest("-1", () -> assertTokens("-1", token(SyntaxKind.NUMBER_LITERAL, "-1"))),
-			dynamicTest("-2,3", () -> assertTokens("-2,3", token(SyntaxKind.NUMBER_LITERAL, "-2,3"))),
-			dynamicTest("-15", () -> assertTokens("-15", token(SyntaxKind.NUMBER_LITERAL, "-15"))),
-			dynamicTest("-1.2", () -> assertTokens("-1.2", token(SyntaxKind.NUMBER_LITERAL, "-1.2")))
+			dynamicTest("-1", () -> assertTokens("-1", token(SyntaxKind.MINUS, "-"), token(SyntaxKind.NUMBER_LITERAL, "1"))),
+			dynamicTest("-2,3", () -> assertTokens("-2,3", token(SyntaxKind.MINUS, "-"), token(SyntaxKind.NUMBER_LITERAL, "2,3"))),
+			dynamicTest("-15", () -> assertTokens("-15", token(SyntaxKind.MINUS, "-"), token(SyntaxKind.NUMBER_LITERAL, "15"))),
+			dynamicTest("-1.2", () -> assertTokens("-1.2", token(SyntaxKind.MINUS, "-"), token(SyntaxKind.NUMBER_LITERAL, "1.2")))
 		);
 	}
 
@@ -95,7 +95,7 @@ public class LexerForNumbersShould extends AbstractLexerTest
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {"1.5E+5", "0.2E-15", "-0.22E+1"})
+	@ValueSource(strings = {"1.5E+5", "0.2E-15", "0.22E+1"})
 	void recognizeFloatingFormats(String format)
 	{
 		assertTokens(format, token(SyntaxKind.NUMBER_LITERAL, format));

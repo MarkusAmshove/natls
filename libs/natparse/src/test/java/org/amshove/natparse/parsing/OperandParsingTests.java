@@ -31,6 +31,23 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseANumberAsLiteral()
+	{
+		var operand = parseOperands("1").first();
+		var variable = assertNodeType(operand, ILiteralNode.class);
+		assertThat(variable.token().intValue()).isEqualTo(1);
+	}
+
+	@Test
+	void parseANegativeNumberAsLiteral()
+	{
+		// Here two tokens (MINUS, NUMBER_LITERAL) get melted into a new one
+		var operand = parseOperands("-1").first();
+		var variable = assertNodeType(operand, ILiteralNode.class);
+		assertThat(variable.token().intValue()).isEqualTo(-1);
+	}
+
+	@Test
 	void parseSystemFunctions()
 	{
 		var operand = parseOperands("*TRIM(' Hello ')").first();
@@ -276,7 +293,7 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	@Test
 	void parseArrayAccessWithVariableArithmeticRanges()
 	{
-		var operand = parseOperands("#VAR(#DOWN(2) - 5:#UP + #DOWN(3))");
+		var operand = parseOperands("#VAR(#DOWN(2) -5:#UP + #DOWN(3))");
 		var access = assertNodeType(operand.get(0), IVariableReferenceNode.class);
 		assertThat(access.dimensions()).hasSize(1);
 		var rangedAccess = assertNodeType(access.dimensions().first(), IRangedArrayAccessNode.class);

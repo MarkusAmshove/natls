@@ -1736,6 +1736,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 				|| peekKind(SyntaxKind.VAL)
 				|| peekKind(SyntaxKind.ABS)
 				|| peekKind(SyntaxKind.POS)
+				|| (peekKind(SyntaxKind.MINUS) && peekKind(1, SyntaxKind.NUMBER_LITERAL))
 				|| (peek().kind().canBeIdentifier() && lookahead != SyntaxKind.COLON_EQUALS_SIGN); // this should hopefully catch the begin of statements
 	}
 
