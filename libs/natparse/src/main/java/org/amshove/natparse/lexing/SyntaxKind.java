@@ -40,6 +40,8 @@ public enum SyntaxKind
 	TIMN(false, true, false),
 	DATD(false, true, false),
 	DATG(false, true, false),
+	DAT4I(false, true, false),
+	DATI(false, true, false),
 	DAT4D(false, true, false),
 	LANGUAGE(true, true, false),
 	DATX(false, true, false),

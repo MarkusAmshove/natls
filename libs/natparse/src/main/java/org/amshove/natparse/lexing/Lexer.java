@@ -418,6 +418,16 @@ public class Lexer
 			createAndAdd(SyntaxKind.DAT4D);
 			return;
 		}
+		if (scanner.advanceIf("DAT4I"))
+		{
+			createAndAdd(SyntaxKind.DAT4I);
+			return;
+		}
+		if (scanner.advanceIf("DATI"))
+		{
+			createAndAdd(SyntaxKind.DATI);
+			return;
+		}
 		if (scanner.advanceIf("DATG"))
 		{
 			createAndAdd(SyntaxKind.DATG);

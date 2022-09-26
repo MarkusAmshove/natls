@@ -33,6 +33,8 @@ public class BuiltInFunctionTable
 			unmodifiableVariable(SyntaxKind.DATD, "Returns the current date in the format `DD.MM.YY`", ALPHANUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.DATG, "Returns the current date in gregorian format `DDmonthnameYYYY`", ALPHANUMERIC, 15.0),
 			unmodifiableVariable(SyntaxKind.DAT4D, "Returns the current date in the format `DD.MM.YYYY`", ALPHANUMERIC, 10.0),
+			unmodifiableVariable(SyntaxKind.DATI, "Returns the current date in the format `YY-MM-DD`", ALPHANUMERIC, 8.0),
+			unmodifiableVariable(SyntaxKind.DAT4I, "Returns the current date in the format `YYYY-MM-DD`", ALPHANUMERIC, 10.0),
 			unmodifiableVariable(SyntaxKind.DATX, "Returns the current date as internal date format", DATE, 0.0),
 			unmodifiableVariable(SyntaxKind.DATN, "Returns the current date in the format `YYYYMMDD`", ALPHANUMERIC, 10.0),
 			unmodifiableVariable(SyntaxKind.LINESIZE, "Returns the physical line size of the I/O device Natural was started with. For vertical look at `*PAGESIZE`", NUMERIC, 7.0),

@@ -300,4 +300,16 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 	{
 		assertTokens("*PAGESIZE", token(SyntaxKind.PAGESIZE, "*PAGESIZE"));
 	}
+
+	@Test
+	void lexDat4I()
+	{
+		assertTokens("*DAT4I", token(SyntaxKind.DAT4I, "*DAT4I"));
+	}
+
+	@Test
+	void lexDatI()
+	{
+		assertTokens("*DATI", token(SyntaxKind.DATI, "*DATI"));
+	}
 }
