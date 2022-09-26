@@ -570,12 +570,11 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			consumeOptionally(newPage, SyntaxKind.PAGE);
 		}
 		else
-			if (consumeAnyOptionally(newPage, List.of(SyntaxKind.IF, SyntaxKind.WHEN, SyntaxKind.LESS)))
+			if (peekAny(List.of(SyntaxKind.IF, SyntaxKind.WHEN)) && peekKind(1, SyntaxKind.LESS) // lookahead because it might also be just an if statement following, not belonging to NEWPAGE
+				|| peekKind(SyntaxKind.LESS))
 			{
-				if (previousToken().kind() != SyntaxKind.LESS)
-				{
-					consumeMandatory(newPage, SyntaxKind.LESS);
-				}
+				consumeAnyOptionally(newPage, List.of(SyntaxKind.IF, SyntaxKind.WHEN));
+				consumeMandatory(newPage, SyntaxKind.LESS);
 
 				consumeOptionally(newPage, SyntaxKind.THAN);
 				consumeOperandNode(newPage);

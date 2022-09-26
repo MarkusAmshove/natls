@@ -920,6 +920,17 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseNewPageWithFollowingIfStatementNotThinkingTheIfBelongsToTheNewPage()
+	{
+		var list = assertParsesWithoutDiagnostics("""
+			NEWPAGE (PR5)
+			IF TRUE
+			IGNORE
+			END-IF""");
+		assertThat(list.statements()).hasSize(2);
+	}
+
+	@Test
 	void parseAtEndOfPage()
 	{
 		var endOfPage = assertParsesSingleStatement("""
