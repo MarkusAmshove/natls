@@ -143,10 +143,7 @@ public class NaturalDocumentService implements TextDocumentService
 	@Override
 	public CompletableFuture<SignatureHelp> signatureHelp(SignatureHelpParams params)
 	{
-		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> {
-			var signatureHelp = languageService.signatureHelp(params.getTextDocument(), params.getPosition());
-			return signatureHelp;
-		}));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.signatureHelp(params.getTextDocument(), params.getPosition())));
 	}
 
 	@Override

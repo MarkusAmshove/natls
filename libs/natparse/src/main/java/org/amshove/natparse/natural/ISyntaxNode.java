@@ -15,7 +15,7 @@ public interface ISyntaxNode extends ISyntaxTree
 	{
 		return diagnosticPosition().line() == line
 			&& descendants().first().diagnosticPosition().offsetInLine() <= column
-			&& descendants().last().diagnosticPosition().offsetInLine() >= column;
+			&& descendants().last().diagnosticPosition().endOffset() >= column;
 	}
 
 	boolean isInFile(Path path);

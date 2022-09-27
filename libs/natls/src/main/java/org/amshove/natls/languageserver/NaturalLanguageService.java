@@ -586,11 +586,29 @@ public class NaturalLanguageService implements LanguageClientAware
 				signature.setActiveParameter(1);
 
 				var signatureInformation = new SignatureInformation();
-				signatureInformation.setActiveParameter(1);
 				signature.setSignatures(List.of(signatureInformation));
 
 				var parameter = new ArrayList<ParameterInformation>();
 				signatureInformation.setParameters(parameter);
+
+				var parameterIndex = 0;
+				var parameterFound = false;
+				for (var providedParameter : moduleReference.providedParameter())
+				{
+					if(providedParameter.enclosesPosition(position.getLine(), position.getCharacter()))
+					{
+						parameterFound = true;
+						signatureInformation.setActiveParameter(parameterIndex);
+						break;
+					}
+
+					parameterIndex++;
+				}
+
+				if(!parameterFound)
+				{
+					signatureInformation.setActiveParameter(moduleReference.providedParameter().size()); // size = next index that isn't provided yet
+				}
 
 				hasDefineData.defineData().parameterInOrder().stream()
 					.map(this::mapToParameterInformation)
