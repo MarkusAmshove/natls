@@ -141,6 +141,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		}
 
 		var module = file.module();
+		// TODO: When fixing: care about parameter, could be variable that is fine to hover.
 		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), module);
 		var symbolToSearchFor = findTokenAtPosition(filepath, position); // TODO: Actually look for a node, could be ISymbolReferenceNode
 		var providedHover = hoverProvider.createHover(new HoverContext(node, symbolToSearchFor, file));

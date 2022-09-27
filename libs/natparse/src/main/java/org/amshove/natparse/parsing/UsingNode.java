@@ -1,11 +1,9 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
-import org.amshove.natparse.natural.IDefineData;
-import org.amshove.natparse.natural.INaturalModule;
-import org.amshove.natparse.natural.IUsingNode;
-import org.amshove.natparse.natural.VariableScope;
+import org.amshove.natparse.natural.*;
 
 class UsingNode extends BaseSyntaxNode implements IUsingNode
 {
@@ -75,6 +73,12 @@ class UsingNode extends BaseSyntaxNode implements IUsingNode
 	public SyntaxToken referencingToken()
 	{
 		return using;
+	}
+
+	@Override
+	public ReadOnlyList<IOperandNode> providedParameter()
+	{
+		return ReadOnlyList.empty();
 	}
 
 	void setReferencingModule(NaturalModule module)

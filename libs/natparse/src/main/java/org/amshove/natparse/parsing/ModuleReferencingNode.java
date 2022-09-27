@@ -1,13 +1,19 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.IModuleReferencingNode;
 import org.amshove.natparse.natural.INaturalModule;
+import org.amshove.natparse.natural.IOperandNode;
+
+import java.util.ArrayList;
+import java.util.List;
 
 class ModuleReferencingNode extends StatementNode implements IModuleReferencingNode
 {
 	private SyntaxToken calledModule;
 	private INaturalModule referencedModule;
+	private List<IOperandNode> providedParameter = new ArrayList<>();
 
 	void setReferencingToken(SyntaxToken calledModule)
 	{
@@ -24,6 +30,17 @@ class ModuleReferencingNode extends StatementNode implements IModuleReferencingN
 	public SyntaxToken referencingToken()
 	{
 		return calledModule;
+	}
+
+	@Override
+	public ReadOnlyList<IOperandNode> providedParameter()
+	{
+		return ReadOnlyList.from(providedParameter);
+	}
+
+	void addParameter(IOperandNode parameter)
+	{
+		providedParameter.add(parameter);
 	}
 
 	void setReferencedModule(NaturalModule module)

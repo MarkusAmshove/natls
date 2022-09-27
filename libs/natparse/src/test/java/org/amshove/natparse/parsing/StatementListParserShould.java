@@ -79,6 +79,39 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseParameterForCallnats()
+	{
+		var calledSubprogram = new NaturalModule(null);
+		moduleProvider.addModule("A-MODULE", calledSubprogram);
+
+		var callnat = assertParsesSingleStatement("CALLNAT 'A-module' #VAR 10 'String' TRUE 1X", ICallnatNode.class);
+		assertThat(callnat.providedParameter()).hasSize(5);
+		assertNodeType(callnat.providedParameter().get(0), IVariableReferenceNode.class);
+		assertNodeType(callnat.providedParameter().get(1), ILiteralNode.class);
+		assertNodeType(callnat.providedParameter().get(2), ILiteralNode.class);
+		assertNodeType(callnat.providedParameter().get(3), ILiteralNode.class);
+		assertNodeType(callnat.providedParameter().get(4), ISkipOperandNode.class);
+	}
+
+	@Test
+	void distinguishBetweenCallnatParameterAndVariableAssignment()
+	{
+
+		var calledSubprogram = new NaturalModule(null);
+		moduleProvider.addModule("A-MODULE", calledSubprogram);
+
+		var statements = assertParsesWithoutDiagnostics("""
+			CALLNAT 'A-module' #VAR #VAR
+				#VARNEWLINE
+			#VAR5 := 1
+			""").statements();
+
+		assertThat(statements).hasSizeGreaterThan(1); // Assignment not parsed yet
+		var callnat = assertNodeType(statements.first(), ICallnatNode.class);
+		assertThat(assertNodeType(callnat.providedParameter().last(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VARNEWLINE");
+	}
+
+	@Test
 	void parseASimpleInclude()
 	{
 		ignoreModuleProvider();
@@ -206,10 +239,10 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	void parseASubroutineWithoutSubroutineKeywordButKeywordAsName()
 	{
 		var subroutine = assertParsesSingleStatementWithDiagnostic("""
-			 DEFINE RESULT
-			 IGNORE
-			 END-SUBROUTINE
-			""",
+				 DEFINE RESULT
+				 IGNORE
+				 END-SUBROUTINE
+				""",
 			ISubroutineNode.class,
 			ParserError.KEYWORD_USED_AS_IDENTIFIER);
 
@@ -357,7 +390,6 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(ifStatement.body().statements()).hasSize(1);
 		assertThat(ifStatement.descendants()).hasSize(4);
 	}
-
 
 	@Test
 	void allowIfStatementsToContainTheThenKeyword()
@@ -1309,17 +1341,17 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	void parseDecideForCondition()
 	{
 		var decide = assertParsesSingleStatement("""
-			DECIDE FOR CONDITION
-			WHEN 5 < 2
-				IGNORE
-			WHEN ANY
-				IGNORE
-			WHEN ALL
-				IGNORE
-			WHEN NONE
-				IGNORE
-			END-DECIDE
-		""", IDecideForConditionNode.class);
+				DECIDE FOR CONDITION
+				WHEN 5 < 2
+					IGNORE
+				WHEN ANY
+					IGNORE
+				WHEN ALL
+					IGNORE
+				WHEN NONE
+					IGNORE
+				END-DECIDE
+			""", IDecideForConditionNode.class);
 
 		assertThat(decide.whenNone().statements()).hasSize(1);
 		assertNodeType(decide.whenNone().statements().first(), IIgnoreNode.class);
@@ -1347,30 +1379,30 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	void parseDecideForConditionWithEveryAndFirst(String permutation)
 	{
 		assertParsesSingleStatement("""
-			DECIDE FOR %s CONDITION
-			WHEN 5 < 2
-				IGNORE
-			WHEN NONE
-				IGNORE
-			END-DECIDE
-		""".formatted(permutation), IDecideForConditionNode.class);
+				DECIDE FOR %s CONDITION
+				WHEN 5 < 2
+					IGNORE
+				WHEN NONE
+					IGNORE
+				END-DECIDE
+			""".formatted(permutation), IDecideForConditionNode.class);
 	}
 
 	@Test
 	void parseDecideForWithComplexConditions()
 	{
 		var decide = assertParsesSingleStatement("""
-			DECIDE FOR CONDITION
-			WHEN (#VAR IS (N4))
-				IGNORE
-			WHEN #VAR = 'Hello' AND #VAR2 = 2
-				IGNORE
-			WHEN (#VAR = 'Hello' OR *OCC(#ARR) = 5)
-				IGNORE
-			WHEN NONE
-				IGNORE
-			END-DECIDE
-		""", IDecideForConditionNode.class);
+				DECIDE FOR CONDITION
+				WHEN (#VAR IS (N4))
+					IGNORE
+				WHEN #VAR = 'Hello' AND #VAR2 = 2
+					IGNORE
+				WHEN (#VAR = 'Hello' OR *OCC(#ARR) = 5)
+					IGNORE
+				WHEN NONE
+					IGNORE
+				END-DECIDE
+			""", IDecideForConditionNode.class);
 
 		assertThat(decide.branches()).hasSize(3);
 	}

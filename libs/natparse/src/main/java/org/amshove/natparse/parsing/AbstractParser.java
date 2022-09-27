@@ -385,6 +385,24 @@ abstract class AbstractParser<T>
 		return operand;
 	}
 
+	protected IOperandNode consumeModuleParameter(BaseSyntaxNode node) throws ParseError
+	{
+		if(peekKind(SyntaxKind.OPERAND_SKIP))
+		{
+			return consumeSkipOperand(node);
+		}
+
+		return consumeOperandNode(node);
+	}
+
+	private IOperandNode consumeSkipOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var skip = new SkipOperandNode();
+		node.addNode(skip);
+		consumeMandatory(skip, SyntaxKind.OPERAND_SKIP);
+		return skip;
+	}
+
 	protected IOperandNode consumeOperandNode(BaseSyntaxNode node) throws ParseError
 	{
 		if(peekKind(SyntaxKind.IDENTIFIER))

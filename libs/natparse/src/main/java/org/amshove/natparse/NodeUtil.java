@@ -186,4 +186,14 @@ public class NodeUtil
 
 		return Optional.empty();
 	}
+
+	public static Optional<IStatementNode> findStatementAtPosition(int line, INaturalModule module)
+	{
+		if(!(module instanceof IModuleWithBody moduleWithBody))
+		{
+			return Optional.empty();
+		}
+
+		return findStatementInLine(line, moduleWithBody.body());
+	}
 }
