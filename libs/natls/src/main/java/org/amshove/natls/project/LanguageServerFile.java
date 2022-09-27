@@ -279,7 +279,7 @@ public class LanguageServerFile implements IModuleProvider
 			hasDefineData.defineData().descendants().forEach(ISyntaxNode::destroy);
 		}
 
-		if (module instanceof IHasBody hasBody && hasBody.body() != null)
+		if (module instanceof IModuleWithBody hasBody && hasBody.body() != null)
 		{
 			hasBody.body().destroy();
 		}
