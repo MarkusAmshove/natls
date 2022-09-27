@@ -11,6 +11,13 @@ public interface ISyntaxNode extends ISyntaxTree
 	IPosition position();
 	IPosition diagnosticPosition();
 
+	default boolean enclosesPosition(int line, int column)
+	{
+		return diagnosticPosition().line() == line
+			&& descendants().first().diagnosticPosition().offsetInLine() <= column
+			&& descendants().last().diagnosticPosition().offsetInLine() >= column;
+	}
+
 	boolean isInFile(Path path);
 
 	/**
