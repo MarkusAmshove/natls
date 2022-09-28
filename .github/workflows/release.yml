@@ -48,12 +48,6 @@ jobs:
       - name: Build
         run: ./gradlew check shadowJar --no-daemon
 
-      - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action/composite@v1
-        if: always()
-        with:
-          files: "**/build/test-results/**/*.xml"
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
