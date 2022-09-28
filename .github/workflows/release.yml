@@ -16,11 +16,11 @@ jobs:
     outputs:
       version: ${{ steps.create_version.outputs.tag_name }}
       body: ${{ steps.create_version.outputs.body }}
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: release-drafter/release-drafter@v5
-      id: create_version
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        id: create_version
 
   release:
     needs: [ release-drafter ]
