@@ -7,11 +7,14 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+  packages: write
+  deployments: write
+
 jobs:
   release-drafter:
     name: Draft Release
-    permissions:
-      contents: write
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.create_version.outputs.tag_name }}
@@ -27,8 +30,7 @@ jobs:
     name: Release Artifacts
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+
     steps:
       - uses: actions/checkout@v2
         with:
