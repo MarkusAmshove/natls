@@ -20,7 +20,7 @@ public class NatUnitTestNameAnalyzer extends AbstractAnalyzer
 		DiagnosticSeverity.ERROR
 	);
 
-	private Map<INaturalModule, Map<String, Integer>> definedTestCases = new ConcurrentHashMap<>();
+	private final Map<INaturalModule, Map<String, Integer>> definedTestCases = new ConcurrentHashMap<>();
 
 	@Override
 	public ReadOnlyList<DiagnosticDescription> getDiagnosticDescriptions()
