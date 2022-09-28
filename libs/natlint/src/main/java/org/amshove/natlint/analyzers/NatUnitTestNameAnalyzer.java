@@ -20,7 +20,7 @@ public class NatUnitTestNameAnalyzer extends AbstractAnalyzer
 		DiagnosticSeverity.ERROR
 	);
 
-	private Map<INaturalModule, Map<String, Integer>> definedTestCases;
+	private Map<INaturalModule, Map<String, Integer>> definedTestCases = new ConcurrentHashMap<>();
 
 	@Override
 	public ReadOnlyList<DiagnosticDescription> getDiagnosticDescriptions()
@@ -32,12 +32,6 @@ public class NatUnitTestNameAnalyzer extends AbstractAnalyzer
 	public void initialize(ILinterContext context)
 	{
 		context.registerNodeAnalyzer(IIfStatementNode.class, this::analyzeTestName);
-	}
-
-	@Override
-	public void beforeAnalyzing(IAnalyzeContext context)
-	{
-		definedTestCases = new ConcurrentHashMap<>();
 	}
 
 	@Override
@@ -56,22 +50,22 @@ public class NatUnitTestNameAnalyzer extends AbstractAnalyzer
 		var ifStatement = (IIfStatementNode) node;
 
 		var condition = ifStatement.condition();
-		if(!(condition.criteria() instanceof IRelationalCriteriaNode relationalNode))
+		if (!(condition.criteria() instanceof IRelationalCriteriaNode relationalNode))
 		{
 			return;
 		}
 
-		if(!(relationalNode.left() instanceof ISymbolReferenceNode testedVariable))
+		if (!(relationalNode.left() instanceof ISymbolReferenceNode testedVariable))
 		{
 			return;
 		}
 
-		if(!testedVariable.referencingToken().symbolName().equals("NUTESTP.TEST"))
+		if (!testedVariable.referencingToken().symbolName().equals("NUTESTP.TEST"))
 		{
 			return;
 		}
 
-		if(!(relationalNode.right() instanceof ILiteralNode nameNode))
+		if (!(relationalNode.right() instanceof ILiteralNode nameNode))
 		{
 			return;
 		}
