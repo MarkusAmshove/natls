@@ -2,20 +2,22 @@ version-template: "$MAJOR.$MINOR"
 name-template: 'v$NEXT_MINOR_VERSION'
 tag-template: 'v$NEXT_MINOR_VERSION'
 categories:
-  - title: '🚀 Features'
+  - title: '🚀 Language Server'
     labels:
-      - 'enhancement'
-  - title: '🔎 Analyzer'
+      - 'natls💻'
+  - title: '🐑 Analyzer'
     labels:
       - 'natlint🐑'
-  - title: '🐛 Bug Fixes'
+  - title: '🔎 Parser'
     labels:
-      - 'bug🪲'
+      - 'natparse🔎'
+  - title: '🎲 SonarQube'
+    labels:
+      - 'natqube🎲'
   - title: '🧰 Maintenance'
     collapse-after: 3
     labels:
-      - 'infrastructure🚊'
-      - 'chore'
+      - 'infrastructure🧰'
 template: |
   ## What's Changed
 
