@@ -1,0 +1,83 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v'
+    branches:
+      - main
+
+jobs:
+  release-drafter:
+    name: Extract Release
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.create_version.outputs.tag_name }}
+      body: ${{ steps.create_version.outputs.body }}
+    steps:
+      - uses: release-drafter/release-drafter@v5
+      id: create_version
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release:
+    needs: [ release-drafter ]
+    name: Release Artifacts
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build
+        run: ./gradlew shadowJar --no-daemon
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ghcr.io/markusamshove/natlint
+
+      - name: Release Dockerimage
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: docker/Dockerfile.natlint
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Release Artifacts
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: 'libs/natls/build/libs/natls.jar,libs/natlint/build/libs/natlint.jar.libs/natqube/build/libs/natqube.jar'
+          tag: ${{ needs.release_drafter.outputs.version }}
+          body: ${{ needs.release_drafter.outputs.body }}
+          token: ${{ secrets.YOUR_GITHUB_TOKEN }}
+
