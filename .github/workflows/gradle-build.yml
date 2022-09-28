@@ -57,7 +57,7 @@ jobs:
         with:
           files: "**/build/test-results/**/*.xml"
 
-      - name: release-drafter
+      - id: release-drafter
         uses: release-drafter/release-drafter@v5
         if: |
           github.ref == 'refs/heads/main'
