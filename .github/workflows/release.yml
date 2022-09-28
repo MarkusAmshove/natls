@@ -6,6 +6,11 @@ on:
       - 'v*'
     branches:
       - main
+  workflow_run:
+    workflows: ["CI"]
+    branches: [main]
+    types:
+      - completed
 
 permissions:
   contents: write
