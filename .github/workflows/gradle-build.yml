@@ -19,6 +19,10 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      checks: write
+      pull-requests: write
+      contents: write
     steps:
       - uses: actions/checkout@v2
         with:
