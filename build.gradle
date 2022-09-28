@@ -44,7 +44,6 @@ allprojects {
 	apply plugin: 'jacoco'
 
 	group = 'org.amshove'
-	version = '0.1.0'
 
 	java {
 		toolchain {
