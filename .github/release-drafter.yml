@@ -15,14 +15,7 @@ categories:
     labels:
       - 'infrastructure🚊'
       - 'chore'
-version-resolver:
-  major:
-    labels:
-      - 'major'
-  minor:
-    labels:
-      - 'minor'
-  default: minor
+version-template: $MAJOR.$MINOR
 template: |
   ## What's Changed
 
