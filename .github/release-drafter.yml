@@ -15,7 +15,7 @@ categories:
     labels:
       - 'infrastructure🚊'
       - 'chore'
-version-template: $MAJOR.$MINOR
+version-template: "$MAJOR.$MINOR"
 template: |
   ## What's Changed
 
