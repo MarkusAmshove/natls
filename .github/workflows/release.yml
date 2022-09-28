@@ -9,7 +9,7 @@ on:
 
 jobs:
   release-drafter:
-    name: Extract Release
+    name: Draft Release
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -43,7 +43,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build
-        run: ./gradlew shadowJar --no-daemon
+        run: ./gradlew check shadowJar --no-daemon
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
