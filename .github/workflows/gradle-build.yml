@@ -59,7 +59,6 @@ jobs:
           && matrix.os == 'ubuntu-latest'
         with:
           prerelease: true
-          tag_name: unstable
           files: |
             libs/natlint/build/libs/natlint.jar
             libs/natls/build/libs/natls.jar
