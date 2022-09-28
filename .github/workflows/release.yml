@@ -78,7 +78,8 @@ jobs:
       - name: Release Artifacts
         uses: ncipollo/release-action@v1
         with:
-          artifacts: 'libs/natls/build/libs/natls.jar,libs/natlint/build/libs/natlint.jar.libs/natqube/build/libs/natqube.jar'
+          artifacts: 'libs/natls/build/libs/natls.jar,libs/natlint/build/libs/natlint.jar,libs/natqube/build/libs/natqube.jar'
+          allowUpdates: true
           tag: ${{ needs.release_drafter.outputs.version }}
           body: ${{ needs.release_drafter.outputs.body }}
           token: ${{ secrets.GITHUB_TOKEN }}
