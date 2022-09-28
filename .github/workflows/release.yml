@@ -81,5 +81,5 @@ jobs:
           artifacts: 'libs/natls/build/libs/natls.jar,libs/natlint/build/libs/natlint.jar.libs/natqube/build/libs/natqube.jar'
           tag: ${{ needs.release_drafter.outputs.version }}
           body: ${{ needs.release_drafter.outputs.body }}
-          token: ${{ secrets.YOUR_GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
