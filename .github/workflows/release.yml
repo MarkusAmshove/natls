@@ -18,7 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.create_version.outputs.tag_name }}
-      body: ${{ steps.create_version.outputs.body }}
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -80,7 +79,7 @@ jobs:
         with:
           artifacts: 'libs/natls/build/libs/natls.jar,libs/natlint/build/libs/natlint.jar,libs/natqube/build/libs/natqube.jar'
           allowUpdates: true
+          omitBodyDuringUpdate: true
           tag: ${{ needs.release_drafter.outputs.version }}
-          body: ${{ needs.release_drafter.outputs.body }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
