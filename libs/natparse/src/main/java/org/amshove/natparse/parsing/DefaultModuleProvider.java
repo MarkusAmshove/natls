@@ -4,21 +4,17 @@ import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
 import org.amshove.natparse.natural.project.NaturalFile;
-import org.amshove.natparse.natural.project.NaturalLibrary;
 import org.amshove.natparse.parsing.ddm.DdmParser;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.Map;
 
-class CachingModuleProvider implements IModuleProvider
+class DefaultModuleProvider implements IModuleProvider
 {
-	private static final Map<NaturalLibrary, Map<String, ParsedModule>> libToReferableNameToFileCache = new HashMap<>();
 	private final NaturalFile caller;
 
-	CachingModuleProvider(NaturalFile caller)
+	DefaultModuleProvider(NaturalFile caller)
 	{
 		this.caller = caller;
 	}
@@ -51,49 +47,26 @@ class CachingModuleProvider implements IModuleProvider
 		}
 
 		var callerLib = caller.getLibrary();
-		var referableToModule = libToReferableNameToFileCache.computeIfAbsent(callerLib, (l) -> new HashMap<>());
-
-		var foundModule = referableToModule.computeIfAbsent(referableName, n -> new ParsedModule(callerLib.findFileByReferableName(referableName, true), null));
-		if (foundModule.file == null)
+		var foundFile = callerLib.findFileByReferableName(referableName, true);
+		if (foundFile == null)
 		{
 			return null;
-		}
-
-		if (foundModule.module != null)
-		{
-			return foundModule.module;
 		}
 
 		try
 		{
 			// Parsing only the DEFINE DATA should be enough for everything except COPYCODEs
 			// If we'd parse more, we would have to handle cyclomatic dependencies
-			var source = Files.readString(foundModule.file.getPath());
-			var tokens = new Lexer().lex(source, foundModule.file.getPath());
+			var source = Files.readString(foundFile.getPath());
+			var tokens = new Lexer().lex(source, foundFile.getPath());
 			var result = new DefineDataParser(this).parse(tokens);
-			var module = new NaturalModule(foundModule.file);
+			var module = new NaturalModule(foundFile);
 			module.setDefineData(result.result());
-			if(shouldCache(foundModule.file))
-			{
-				referableToModule.put(referableName, new ParsedModule(foundModule.file, module));
-			}
 			return module;
 		}
 		catch (Exception e)
 		{
 			return null; // Not found
 		}
-	}
-
-	private boolean shouldCache(NaturalFile file)
-	{
-		return switch (file.getFiletype())
-			{
-				default -> false;
-			};
-	}
-
-	private record ParsedModule(NaturalFile file, INaturalModule module)
-	{
 	}
 }

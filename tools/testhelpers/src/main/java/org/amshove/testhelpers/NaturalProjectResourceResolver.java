@@ -57,7 +57,6 @@ public class NaturalProjectResourceResolver implements ParameterResolver
 			{
 				walk
 					.map(Path::toFile)
-					.sorted((o1, o2) -> -o1.compareTo(o2))
 					.forEach(File::delete);
 			}
 		}
