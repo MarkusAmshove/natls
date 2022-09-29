@@ -107,6 +107,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					case CALLNAT:
 						statementList.addStatement(callnat());
 						break;
+					case RESIZE:
+						statementList.addStatement(resize());
+						break;
 					case CLOSE:
 						switch (peek(1).kind())
 						{
@@ -170,13 +173,14 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 							case SUBROUTINE, IDENTIFIER -> statementList.addStatement(subroutine());
 							case PRINTER -> statementList.addStatement(definePrinter());
 							case WINDOW -> statementList.addStatement(defineWindow());
-							case WORK, PROTOTYPE, DATA -> { // not implemented statements. DATA needs to be handled when parsing functions and external subroutines
+							case WORK, PROTOTYPE, DATA ->
+							{ // not implemented statements. DATA needs to be handled when parsing functions and external subroutines
 								tokens.advance();
 								tokens.advance();
 							}
 							default ->
 							{
-								if(peek(1).kind().canBeIdentifier())
+								if (peek(1).kind().canBeIdentifier())
 								{
 									statementList.addStatement(subroutine());
 								}
@@ -215,7 +219,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(resetStatement());
 						break;
 					case DECIDE:
-						if(peekKind(1, SyntaxKind.FOR))
+						if (peekKind(1, SyntaxKind.FOR))
 						{
 							statementList.addStatement(decideFor());
 							break;
@@ -269,12 +273,66 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return statementList;
 	}
 
+	private StatementNode resize() throws ParseError
+	{
+		if (peekAny(1, List.of(SyntaxKind.SIZE, SyntaxKind.DYNAMIC)))
+		{
+			return resizeDynamic();
+		}
+
+		var resize = new ResizeArrayNode();
+		consumeMandatory(resize, SyntaxKind.RESIZE);
+		if(consumeOptionally(resize, SyntaxKind.AND))
+		{
+			consumeMandatory(resize, SyntaxKind.RESET);
+		}
+
+		if(consumeOptionally(resize, SyntaxKind.OCCURRENCES))
+		{
+			consumeMandatory(resize, SyntaxKind.OF);
+		}
+
+		consumeMandatory(resize, SyntaxKind.ARRAY);
+		var array = consumeVariableReferenceNode(resize);
+		resize.setArrayToResize(array);
+		consumeMandatory(resize, SyntaxKind.TO);
+
+		consumeMandatory(resize, SyntaxKind.LPAREN);
+		while(!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+		{
+			consume(resize);
+		}
+
+		consumeMandatory(resize, SyntaxKind.RPAREN);
+		return resize;
+	}
+
+	private StatementNode resizeDynamic() throws ParseError
+	{
+		var resize = new ResizeDynamicNode();
+		consumeMandatory(resize, SyntaxKind.RESIZE);
+		if (consumeOptionally(resize, SyntaxKind.SIZE))
+		{
+			consumeMandatory(resize, SyntaxKind.OF);
+		}
+
+		consumeMandatory(resize, SyntaxKind.DYNAMIC);
+		consumeOptionally(resize, SyntaxKind.VARIABLE);
+		var toResize = consumeVariableReferenceNode(resize);
+		resize.setVariableToResize(toResize);
+		consumeMandatory(resize, SyntaxKind.TO);
+		var newSize = consumeLiteralNode(resize, SyntaxKind.NUMBER_LITERAL);
+		resize.setSizeToResizeTo(newSize.token().intValue());
+
+		return resize;
+	}
+
 	private StatementNode skip() throws ParseError
 	{
 		var skip = new SkipStatementNode();
 		consumeMandatory(skip, SyntaxKind.SKIP);
 
-		if(consumeOptionally(skip, SyntaxKind.LPAREN))
+		if (consumeOptionally(skip, SyntaxKind.LPAREN))
 		{
 			var spec = consumeReportSpecificationOperand(skip);
 			skip.setReportSpecification(spec);
@@ -598,7 +656,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		var examine = new ExamineNode();
 		consumeMandatory(examine, SyntaxKind.EXAMINE);
-		if(consumeOptionally(examine, SyntaxKind.DIRECTION))
+		if (consumeOptionally(examine, SyntaxKind.DIRECTION))
 		{
 			consumeAnyOptionally(examine, List.of(SyntaxKind.FORWARD, SyntaxKind.BACKWARD));
 		}
@@ -647,7 +705,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		if (!hadAbsolute && consumeOptionally(examine, SyntaxKind.WITH))
 		{
 			consumeAnyOptionally(examine, List.of(SyntaxKind.DELIMITERS, SyntaxKind.DELIMITER));
-			if(peek().kind().isLiteralOrConst() || peek().kind().isIdentifier())
+			if (peek().kind().isLiteralOrConst() || peek().kind().isIdentifier())
 			{
 				// specifying a delimiter is optional
 				consumeOperandNode(examine);
@@ -787,7 +845,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var display = new DisplayNode();
 		consumeMandatory(display, SyntaxKind.DISPLAY);
 
-		if(consumeOptionally(display, SyntaxKind.LPAREN))
+		if (consumeOptionally(display, SyntaxKind.LPAREN))
 		{
 			if (peekKind(SyntaxKind.IDENTIFIER) && peekKind(1, SyntaxKind.RPAREN))
 			{
@@ -1586,25 +1644,25 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeEitherOptionally(decide, SyntaxKind.FIRST, SyntaxKind.EVERY);
 		consumeMandatory(decide, SyntaxKind.CONDITION);
 
-		while(!isAtEnd() && peekKind(SyntaxKind.WHEN))
+		while (!isAtEnd() && peekKind(SyntaxKind.WHEN))
 		{
 			consumeMandatory(decide, SyntaxKind.WHEN);
 
-			if(peekKind(SyntaxKind.ANY))
+			if (peekKind(SyntaxKind.ANY))
 			{
 				consumeMandatory(decide, SyntaxKind.ANY);
 				decide.setWhenAny(statementList(SyntaxKind.WHEN));
 				continue;
 			}
 
-			if(peekKind(SyntaxKind.ALL))
+			if (peekKind(SyntaxKind.ALL))
 			{
 				consumeMandatory(decide, SyntaxKind.ALL);
 				decide.setWhenAll(statementList(SyntaxKind.WHEN));
 				continue;
 			}
 
-			if(peekKind(SyntaxKind.NONE))
+			if (peekKind(SyntaxKind.NONE))
 			{
 				consumeMandatory(decide, SyntaxKind.NONE);
 				decide.setWhenNone(statementList(SyntaxKind.END_DECIDE));

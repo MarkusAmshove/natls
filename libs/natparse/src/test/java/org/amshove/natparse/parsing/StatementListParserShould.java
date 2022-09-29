@@ -1407,6 +1407,37 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(decide.branches()).hasSize(3);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"SIZE OF DYNAMIC VARIABLE",
+		"DYNAMIC",
+		"DYNAMIC VARIABLE",
+		"SIZE OF DYNAMIC",
+	})
+	void parseResizeDynamic(String combination)
+	{
+		// TODO(type-check): Has to be dynamic typed
+		var resize = assertParsesSingleStatement("RESIZE %s #VAR TO 20".formatted(combination), IResizeDynamicNode.class);
+		assertThat(resize.variableToResize().referencingToken().symbolName()).isEqualTo("#VAR");
+		assertThat(resize.sizeToResizeTo()).isEqualTo(20);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"AND RESET OCCURRENCES OF",
+		"AND RESET",
+		"OCCURRENCES OF",
+	})
+	void parseResizeArray(String combination)
+	{
+		// TODO(type-check): Has to be an x-array
+		var resize = assertParsesSingleStatement("RESIZE %s ARRAY #VAR TO (10)".formatted(combination), IResizeArrayNode.class);
+		assertThat(resize.arrayToResize().referencingToken().symbolName()).isEqualTo("#VAR");
+		// TODO(lexer-mode): Actually parse array dimensions
+		assertThat(resize.findDescendantToken(SyntaxKind.LPAREN)).isNotNull();
+		assertThat(resize.findDescendantToken(SyntaxKind.RPAREN)).isNotNull();
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);

@@ -32,7 +32,7 @@ public class NaturalParser
 			// we can instantiate it new for every module to be parsed.
 			// In fact, currently it has to be instantiated every time, because
 			// it saves the file to get the library.
-			moduleProviderToUse = new CachingModuleProvider(file);
+			moduleProviderToUse = new DefaultModuleProvider(file);
 		}
 		return parseModule(file, moduleProviderToUse, tokens);
 	}
