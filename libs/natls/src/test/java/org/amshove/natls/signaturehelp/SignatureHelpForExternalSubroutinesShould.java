@@ -1,6 +1,5 @@
 package org.amshove.natls.signaturehelp;
 
-import org.amshove.testhelpers.IntegrationTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ExecutionException;
@@ -8,13 +7,12 @@ import java.util.concurrent.TimeoutException;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-@IntegrationTest
-class SignatureHelpForCallnatShould extends SignatureHelpTest
+class SignatureHelpForExternalSubroutinesShould extends SignatureHelpTest
 {
 	@Test
 	void haveTheCompleteSignatureAsLabel() throws ExecutionException, InterruptedException, TimeoutException
 	{
-		var help = getSignatureHelpForParameterList("CALLNAT 'CALLED' ${}$");
+		var help = getSignatureHelpForParameterList("PERFORM THESUB${}$");
 		var signature = help.getSignatures().get(0);
 		assertThat(signature.getLabel()).isEqualTo("CALLED (USING APDA, P-OPTIONAL :(A10) OPTIONAL, P-NUMBER :(N12))");
 	}
@@ -22,7 +20,7 @@ class SignatureHelpForCallnatShould extends SignatureHelpTest
 	@Test
 	void haveTheFirstParameterActiveWhenCursorIsAfterModuleName() throws ExecutionException, InterruptedException, TimeoutException
 	{
-		var help = getSignatureHelpForParameterList("CALLNAT 'CALLED'${}$");
+		var help = getSignatureHelpForParameterList("PERFORM THESUB${}$");
 		var signature = help.getSignatures().get(0);
 
 		assertThat(help.getActiveParameter()).isEqualTo(1);
@@ -32,7 +30,7 @@ class SignatureHelpForCallnatShould extends SignatureHelpTest
 	@Test
 	void haveTheSecondParameterActiveWhenCursorIsAfterFirstParameter() throws ExecutionException, InterruptedException, TimeoutException
 	{
-		var help = getSignatureHelpForParameterList("CALLNAT 'CALLED' APDA${}$");
+		var help = getSignatureHelpForParameterList("PERFORM THESUB APDA${}$");
 
 		assertThat(help.getActiveParameter()).isEqualTo(1);
 	}
@@ -40,19 +38,19 @@ class SignatureHelpForCallnatShould extends SignatureHelpTest
 	@Test
 	void haveTheSecondParameterActiveWhenCursorIsInTheSecondParameter() throws ExecutionException, InterruptedException, TimeoutException
 	{
-		var help = getSignatureHelpForParameterList("CALLNAT 'CALLED' APDA 'Lit${}$eral'");
+		var help = getSignatureHelpForParameterList("PERFORM THESUB APDA 'Lit${}$eral'");
 
 		assertThat(help.getActiveParameter()).isEqualTo(1);
 	}
 
 	@Override
-	protected String getCalledModuleFilename()
+	public String getCalledModuleFilename()
 	{
-		return "CALLED.NSN";
+		return "THESUB.NSS";
 	}
 
 	@Override
-	protected String getCalledModuleSource()
+	public String getCalledModuleSource()
 	{
 		return """
 			DEFINE DATA
@@ -61,7 +59,11 @@ class SignatureHelpForCallnatShould extends SignatureHelpTest
 			1 P-OPTIONAL (A10) OPTIONAL
 			1 P-NUMBER (N12)
 			END-DEFINE
-						
+
+			DEFINE SUBROUTINE THE-SUB
+				IGNORE
+			END-SUBROUTINE
+
 			END
 			""";
 	}
