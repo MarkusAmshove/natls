@@ -635,7 +635,7 @@ public class NaturalLanguageService implements LanguageClientAware
 			information.setLabel(variableNode.name());
 			if(variableNode instanceof ITypedVariableNode typedVariableNode)
 			{
-				information.setLabel("%s:%s%s".formatted(
+				information.setLabel("%s :%s%s".formatted(
 					information.getLabel().getLeft(),
 					typedVariableNode.type().toShortString(),
 					typedVariableNode.findDescendantToken(SyntaxKind.OPTIONAL) != null ? " OPTIONAL" : ""
