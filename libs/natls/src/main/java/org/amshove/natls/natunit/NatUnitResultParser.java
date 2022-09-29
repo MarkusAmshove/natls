@@ -42,6 +42,7 @@ public class NatUnitResultParser
 		}
 		catch (Exception e)
 		{
+			// empty result is okay
 		}
 
 		return result;
