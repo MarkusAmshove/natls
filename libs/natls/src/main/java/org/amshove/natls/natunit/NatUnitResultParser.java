@@ -15,6 +15,7 @@ public class NatUnitResultParser
 		try
 		{
 			var factory = DocumentBuilderFactory.newInstance();
+			factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
 			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 
 			var documentBuilder = factory.newDocumentBuilder();
