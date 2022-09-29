@@ -2,7 +2,7 @@
 
 ![NatLS Logo](assets/logo_128x128.png)
 
-[![Continuous Integration](https://github.com/MarkusAmshove/natlint-manual/actions/workflows/gradle-build.yml/badge.svg)](https://github.com/MarkusAmshove/natlint-manual/actions/workflows/gradle-build.yml)
+[![Continuous Integration](https://github.com/MarkusAmshove/natlint-manual/actions/workflows/gradle-build.yml/badge.svg)](https://github.com/MarkusAmshove/natlint-manual/actions/workflows/gradle-build.yml) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=MarkusAmshove_natls&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=MarkusAmshove_natls)
 
 This repository contains a language server implementation for the [Natural language](https://en.wikipedia.org/wiki/ADABAS#Natural_(4GL)) created by Software AG.
 
