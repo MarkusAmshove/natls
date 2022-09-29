@@ -4,12 +4,12 @@ import org.amshove.natparse.IPosition;
 import org.checkerframework.dataflow.qual.Pure;
 
 import java.nio.file.Path;
-import java.util.Objects;
 
 import static org.amshove.natparse.lexing.SyntaxKind.IDENTIFIER;
 
 public class SyntaxToken implements IPosition
 {
+
 	private final SyntaxKind kind;
 	private final int offset;
 	private final int offsetInLine;
@@ -167,28 +167,6 @@ public class SyntaxToken implements IPosition
 			length(),
 			line,
 			offsetInLine);
-	}
-
-	public boolean equalsByPosition(SyntaxToken other)
-	{
-		return other != null && offset == other.offset && line == other.line && offsetInLine == other.offsetInLine;
-	}
-
-	@Override
-	public int hashCode()
-	{
-		return Objects.hash(kind, offset, offsetInLine, line, source);
-	}
-
-	@Override
-	public boolean equals(Object o)
-	{
-		if (this == o)
-			return true;
-		if (o == null || getClass() != o.getClass())
-			return false;
-		SyntaxToken that = (SyntaxToken) o;
-		return offset == that.offset && offsetInLine == that.offsetInLine && line == that.line && kind == that.kind && source.equals(that.source) && filePath.equals(that.filePath) && Objects.equals(identifierName, that.identifierName) && Objects.equals(diagnosticPosition, that.diagnosticPosition);
 	}
 
 	public boolean isQualified()
