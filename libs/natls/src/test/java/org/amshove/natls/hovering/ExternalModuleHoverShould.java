@@ -2,7 +2,7 @@ package org.amshove.natls.hovering;
 
 import org.junit.jupiter.api.Test;
 
-public class ExternalModuleHoverShould extends HoveringTest
+class ExternalModuleHoverShould extends HoveringTest
 {
 	@Test
 	void hoverExternalSubprogramsFromCallnat()
