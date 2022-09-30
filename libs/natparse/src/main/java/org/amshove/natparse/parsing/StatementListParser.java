@@ -1147,6 +1147,8 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			callnat.setReferencedModule((NaturalModule) referencedModule);
 		}
 
+		consumeOptionally(callnat, SyntaxKind.USING);
+
 		while(!isAtEnd() && !isStatementStart() && isModuleParameter())
 		{
 			var operand = consumeModuleParameter(callnat);
