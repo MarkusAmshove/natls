@@ -42,7 +42,7 @@ abstract class SignatureHelpTest extends LanguageServerTest
 		createOrSaveFile("LIBONE", getCalledModuleFilename(), getCalledModuleSource());
 	}
 
-	protected SignatureHelp getSignatureHelpForParameterList(String call) throws ExecutionException, InterruptedException, TimeoutException
+	protected SignatureHelp getSignatureHelpForModuleCall(String call) throws ExecutionException, InterruptedException, TimeoutException
 	{
 		var sourceWithCursor = fromSourceWithCursor("""
 			DEFINE DATA LOCAL
@@ -60,6 +60,6 @@ abstract class SignatureHelpTest extends LanguageServerTest
 				caller,
 				sourceWithCursor.toSinglePosition())
 			)
-			.get(5, TimeUnit.SECONDS);
+			.get(5, TimeUnit.HOURS);
 	}
 }

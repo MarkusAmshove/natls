@@ -12,7 +12,7 @@ class SignatureHelpForExternalSubroutinesShould extends SignatureHelpTest
 	@Test
 	void haveTheCompleteSignatureAsLabel() throws ExecutionException, InterruptedException, TimeoutException
 	{
-		var help = getSignatureHelpForParameterList("PERFORM THESUB${}$");
+		var help = getSignatureHelpForModuleCall("PERFORM THESUB${}$");
 		var signature = help.getSignatures().get(0);
 		assertThat(signature.getLabel()).isEqualTo("THESUB (USING APDA, P-OPTIONAL :(A10) OPTIONAL, P-NUMBER :(N12))");
 	}
@@ -20,27 +20,29 @@ class SignatureHelpForExternalSubroutinesShould extends SignatureHelpTest
 	@Test
 	void haveTheFirstParameterActiveWhenCursorIsAfterModuleName() throws ExecutionException, InterruptedException, TimeoutException
 	{
-		var help = getSignatureHelpForParameterList("PERFORM THESUB${}$");
+		var help = getSignatureHelpForModuleCall("PERFORM THESUB${}$");
 		var signature = help.getSignatures().get(0);
 
-		assertThat(help.getActiveParameter()).isEqualTo(1);
+		assertThat(signature.getActiveParameter()).isZero();
 		assertThat(signature.getParameters().get(0).getLabel().getLeft()).isEqualTo("USING APDA");
 	}
 
 	@Test
 	void haveTheSecondParameterActiveWhenCursorIsAfterFirstParameter() throws ExecutionException, InterruptedException, TimeoutException
 	{
-		var help = getSignatureHelpForParameterList("PERFORM THESUB APDA${}$");
+		var help = getSignatureHelpForModuleCall("PERFORM THESUB APDA ${}$");
+		var signature = help.getSignatures().get(0);
 
-		assertThat(help.getActiveParameter()).isEqualTo(1);
+		assertThat(signature.getActiveParameter()).isEqualTo(1);
 	}
 
 	@Test
 	void haveTheSecondParameterActiveWhenCursorIsInTheSecondParameter() throws ExecutionException, InterruptedException, TimeoutException
 	{
-		var help = getSignatureHelpForParameterList("PERFORM THESUB APDA 'Lit${}$eral'");
+		var help = getSignatureHelpForModuleCall("PERFORM THESUB APDA 'Lit${}$eral'");
+		var signature = help.getSignatures().get(0);
 
-		assertThat(help.getActiveParameter()).isEqualTo(1);
+		assertThat(signature.getActiveParameter()).isEqualTo(1);
 	}
 
 	@Override

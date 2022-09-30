@@ -591,7 +591,6 @@ public class NaturalLanguageService implements LanguageClientAware
 				}
 
 				var signature = new SignatureHelp();
-				signature.setActiveParameter(1);
 
 				var signatureInformation = new SignatureInformation();
 				signature.setSignatures(List.of(signatureInformation));

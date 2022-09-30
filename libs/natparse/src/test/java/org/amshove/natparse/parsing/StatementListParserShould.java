@@ -396,7 +396,18 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		var call = assertParsesSingleStatement("ISSTH(<5>)", IFunctionCallNode.class);
 		assertThat(call.reference()).isEqualTo(calledFunction);
 		assertThat(calledFunction.callers()).contains(call);
-		assertThat(call.position().offsetInLine()).isEqualTo(0);
+		assertThat(call.position().offsetInLine()).isZero();
+		assertThat(call.providedParameter()).hasSize(1);
+		assertThat(assertNodeType(call.providedParameter().first(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+	}
+
+	@Test
+	void reportADiagnosticForFunctionCallsWithTrailingCommas()
+	{
+		var calledFunction = new NaturalModule(null);
+		moduleProvider.addModule("ISSTH", calledFunction);
+
+		assertDiagnostic("ISSTH(<5,>)", ParserError.TRAILING_TOKEN);
 	}
 
 	@Test

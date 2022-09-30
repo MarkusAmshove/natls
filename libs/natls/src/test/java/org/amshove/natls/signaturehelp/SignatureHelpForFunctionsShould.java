@@ -9,61 +9,66 @@ import java.util.concurrent.TimeoutException;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @IntegrationTest
-class SignatureHelpForCallnatShould extends SignatureHelpTest
+class SignatureHelpForFunctionsShould extends SignatureHelpTest
 {
 	@Test
 	void haveTheCompleteSignatureAsLabel() throws ExecutionException, InterruptedException, TimeoutException
 	{
-		var help = getSignatureHelpForModuleCall("CALLNAT 'CALLED' ${}$");
+		var help = getSignatureHelpForModuleCall("ISSTH(<${}$>)");
 		var signature = help.getSignatures().get(0);
-		assertThat(signature.getLabel()).isEqualTo("CALLED (USING APDA, P-OPTIONAL :(A10) OPTIONAL, P-NUMBER :(N12))");
+		assertThat(signature.getLabel()).isEqualTo("ISSTH (P-PARAM :(A10), USING THEPDA, P-OPTIONAL :(A) DYNAMIC OPTIONAL)");
 	}
 
 	@Test
 	void haveTheFirstParameterActiveWhenCursorIsAfterModuleName() throws ExecutionException, InterruptedException, TimeoutException
 	{
-		var help = getSignatureHelpForModuleCall("CALLNAT 'CALLED'${}$");
+		var help = getSignatureHelpForModuleCall("ISSTH(<${}$>)");
 		var signature = help.getSignatures().get(0);
 
 		assertThat(signature.getActiveParameter()).isZero();
-		assertThat(signature.getParameters().get(0).getLabel().getLeft()).isEqualTo("USING APDA");
+		assertThat(signature.getParameters().get(0).getLabel().getLeft()).isEqualTo("P-PARAM :(A10)");
 	}
 
 	@Test
 	void haveTheSecondParameterActiveWhenCursorIsAfterFirstParameter() throws ExecutionException, InterruptedException, TimeoutException
 	{
-		var help = getSignatureHelpForModuleCall("CALLNAT 'CALLED' APDA ${}$");
+		var help = getSignatureHelpForModuleCall("ISSTH(<'ASD', ${}$>)");
 		var signature = help.getSignatures().get(0);
 
 		assertThat(signature.getActiveParameter()).isEqualTo(1);
+		assertThat(signature.getParameters().get(0).getLabel().getLeft()).isEqualTo("P-PARAM :(A10)");
 	}
 
 	@Test
-	void haveTheSecondParameterActiveWhenCursorIsInTheSecondParameter() throws ExecutionException, InterruptedException, TimeoutException
+	void haveTheSecondParameterActiveWhenCursorIsOnTheSecondParameter() throws ExecutionException, InterruptedException, TimeoutException
 	{
-		var help = getSignatureHelpForModuleCall("CALLNAT 'CALLED' APDA 'Lit${}$eral'");
+		var help = getSignatureHelpForModuleCall("ISSTH(<'ASD', 'L${}$iteral'>)");
 		var signature = help.getSignatures().get(0);
 
 		assertThat(signature.getActiveParameter()).isEqualTo(1);
+		assertThat(signature.getParameters().get(0).getLabel().getLeft()).isEqualTo("P-PARAM :(A10)");
 	}
 
 	@Override
 	protected String getCalledModuleFilename()
 	{
-		return "CALLED.NSN";
+		return "ISSTH.NS7";
 	}
 
 	@Override
 	protected String getCalledModuleSource()
 	{
 		return """
+			DEFINE FUNCTION ISSTH
+			RETURNS (L)
+
 			DEFINE DATA
-			PARAMETER USING APDA
-			PARAMETER
-			1 P-OPTIONAL (A10) OPTIONAL
-			1 P-NUMBER (N12)
+			PARAMETER 1 P-PARAM (A10)
+			PARAMETER USING THEPDA
+			PARAMETER 1 P-OPTIONAL (A) DYNAMIC OPTIONAL
 			END-DEFINE
-						
+
+			END-FUNCTION
 			END
 			""";
 	}

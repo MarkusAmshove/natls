@@ -344,14 +344,14 @@ abstract class AbstractParser<T>
 
 		while (!isAtEnd() && !peekKind(SyntaxKind.GREATER_SIGN))
 		{
-			if (peekKind(SyntaxKind.IDENTIFIER))
-			{
-				node.addNode(identifierReference());
-			}
-			else
-			{
-				consume(node);
-			}
+			var parameter = consumeModuleParameter(node);
+			node.addParameter(parameter);
+			consumeOptionally(node, SyntaxKind.COMMA);
+		}
+
+		if(previousToken().kind() == SyntaxKind.COMMA)
+		{
+			report(ParserErrors.trailingToken(previousToken()));
 		}
 
 		consumeMandatory(node, SyntaxKind.GREATER_SIGN);

@@ -13,7 +13,7 @@ class ModuleReferencingNode extends StatementNode implements IModuleReferencingN
 {
 	private SyntaxToken calledModule;
 	private INaturalModule referencedModule;
-	private List<IOperandNode> providedParameter = new ArrayList<>();
+	private final List<IOperandNode> providedParameter = new ArrayList<>();
 
 	void setReferencingToken(SyntaxToken calledModule)
 	{
