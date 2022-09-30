@@ -31,7 +31,7 @@ public class Lexer
 		line = 0;
 		currentLineStartOffset = 0;
 
-		while (!scanner.isAtEnd() && scanner.peek() != '$')
+		while (!scanner.isAtEnd())
 		{
 			if (consumeComment())
 			{
