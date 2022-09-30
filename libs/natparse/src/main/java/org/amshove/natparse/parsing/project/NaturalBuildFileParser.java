@@ -29,7 +29,8 @@ public class NaturalBuildFileParser
 		{
 			var visitor = new XmlLibraryVisitor();
 			var content = filesystem.readFile(path);
-			var document = new SAXReader().read(new StringReader(content));
+			var reader = SAXReader.createDefault();
+			var document = reader.read(new StringReader(content));
 			document.accept(visitor);
 
 			return visitor.getLibraries();

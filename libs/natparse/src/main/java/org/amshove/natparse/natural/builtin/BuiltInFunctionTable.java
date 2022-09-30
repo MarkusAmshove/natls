@@ -31,22 +31,38 @@ public class BuiltInFunctionTable
 			unmodifiableVariable(SyntaxKind.TIMESTMP, "Returns the machine-internal clock value", BINARY, 8.0),
 			unmodifiableVariable(SyntaxKind.TIMN, "Returns the current time of the day as numeric format", NUMERIC, 7.0),
 			unmodifiableVariable(SyntaxKind.DATD, "Returns the current date in the format `DD.MM.YY`", ALPHANUMERIC, 8.0),
+			unmodifiableVariable(SyntaxKind.DATG, "Returns the current date in gregorian format `DDmonthnameYYYY`", ALPHANUMERIC, 15.0),
 			unmodifiableVariable(SyntaxKind.DAT4D, "Returns the current date in the format `DD.MM.YYYY`", ALPHANUMERIC, 10.0),
+			unmodifiableVariable(SyntaxKind.DATI, "Returns the current date in the format `YY-MM-DD`", ALPHANUMERIC, 8.0),
+			unmodifiableVariable(SyntaxKind.DAT4I, "Returns the current date in the format `YYYY-MM-DD`", ALPHANUMERIC, 10.0),
 			unmodifiableVariable(SyntaxKind.DATX, "Returns the current date as internal date format", DATE, 0.0),
 			unmodifiableVariable(SyntaxKind.DATN, "Returns the current date in the format `YYYYMMDD`", ALPHANUMERIC, 10.0),
+			unmodifiableVariable(SyntaxKind.LINESIZE, "Returns the physical line size of the I/O device Natural was started with. For vertical look at `*PAGESIZE`", NUMERIC, 7.0),
+			unmodifiableVariable(SyntaxKind.PAGESIZE, "Returns the physical page size of the I/O device Natural was started with. For horizontal look at `*LINESIZE`", NUMERIC, 7.0),
+			unmodifiableVariable(SyntaxKind.MACHINE_CLASS, """
+				Returns the name of the machine class Natural was started on
+
+				Possible return values:
+
+				- `MAINFRAME`
+				- `PC`
+				- `UNIX`
+				- `VMS`
+				""", ALPHANUMERIC, 16.0),
 			modifiableVariable(SyntaxKind.LANGUAGE, "Returns the language code, e.g. 1 for english, 2 for german etc.", INTEGER, 1.0),
 			modifiableVariable(SyntaxKind.STARTUP, "Get or set the name of the program which will be executed when Natural would show the command prompt", ALPHANUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.STEPLIB, "Returns the name of the current steplib", ALPHANUMERIC, 8.0),
 			modifiableVariable(SyntaxKind.PAGE_NUMBER, "Get or set the current page number of an report", PACKED, 5.0),
+			unmodifiableVariable(SyntaxKind.LINE_COUNT, "Returns the line number of the current pages's line.", PACKED, 5.0),
 			unmodifiableVariable(SyntaxKind.WINDOW_PS, "Returns the page size of the logical window (without the frame)", NUMERIC, 3.0),
 			unmodifiableVariable(SyntaxKind.LIBRARY_ID, "Returns the ID the the current library. This returns the same as *APPLIC-ID", ALPHANUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.TRANSLATE, """
 				Converts the characters passed as first argument into either `LOWER` or `UPPER` case.
-				
+
 				Accepts an operand of type `A`, `B` or `U`.
-				
+
 				Usage:
-				
+
 				```
 				#UPPER := *TRANSLATE(#VAR2, UPPER)
 				#LOWER := *TRANSLATE(#VAR2, LOWER)
@@ -106,6 +122,9 @@ public class BuiltInFunctionTable
 				- -3: On the upper function-key line
 				- -4: On the lower function-key line
 
+				""", PACKED, 3),
+			modifiableVariable(SyntaxKind.CURS_COL, """
+				Get or set the number of the column where the current cursor is located
 				""", PACKED, 3),
 			unmodifiableVariable(SyntaxKind.DEVICE, """
 				Returns the type or mode of the device from which Natural was started.
@@ -169,6 +188,15 @@ public class BuiltInFunctionTable
 
 				- If a page break occurs, the value changes to `ENTR`.
 				""", ALPHANUMERIC, 4),
+			function(SyntaxKind.SV_ISN, """
+				Gets or sets the internal sequence number of the current Adabas record initiated by `FIND` or `READ`.
+
+				Usage:
+				```natural
+				#ISN := *ISN
+				#ISN := *ISN(R1.)
+				```
+				""", PACKED, 10, new BuiltInFunctionParameter("label", new DataType(NONE, 0), false)),
 			function(SyntaxKind.COUNTER, """
 				Returns the number of times a processing loop initiated by `FIND`, `READ`, `HISTOGRAM` or `PARSE` has been entered.
 
@@ -219,11 +247,11 @@ public class BuiltInFunctionTable
 			),
 			function(SyntaxKind.MINVAL, """
 					Returns the minimal value of all given operand values.
-									
+
 					The result type can be optionally specified with `(IR=`, e.g. `(IR=F8)`. Otherwise the biggest data type of the operands is chosen.
-									
+
 					If an array is passed, this function returns the minimum value of all arrays values.
-									
+
 					If a binary or alphanumeric value is passed, this function returns the minimum length of the operands.
 					""", FLOAT, 8,
 				new BuiltInFunctionParameter("operand1", new DataType(NONE, 1), true),
@@ -232,11 +260,11 @@ public class BuiltInFunctionTable
 			),
 			function(SyntaxKind.MAXVAL, """
 					Returns the maximum value of all given operand values.
-									
+
 					The result type can be optionally specified with `(IR=`, e.g. `(IR=F8)`. Otherwise the biggest data type of the operands is chosen.
-									
+
 					If an array is passed, this function returns the maximum value of all arrays values.
-									
+
 					If a binary or alphanumeric value is passed, this function returns the maximum length of the operands.
 					""", FLOAT, 8,
 				new BuiltInFunctionParameter("operand1", new DataType(NONE, 1), true),
@@ -247,11 +275,11 @@ public class BuiltInFunctionTable
 					Remove all leading and trailing whitespace from an alphanumeric or binary string.
 
 					The content of the passed variable is not modified.
-									
+
 					`LEADING` or `TRIALING` can be specified if only one of them should be trimmed.
-									
+
 					Example:
-									
+
 					```natural
 					#NO-LEADING-TRAILING := *TRIM(#ALPHA)
 					#NO-LEADING := *TRIM(#ALPHA, LEADING)
@@ -267,13 +295,13 @@ public class BuiltInFunctionTable
 				""", ALPHANUMERIC, 128),
 			unmodifiableVariable(SyntaxKind.SV_DATA, """
 				Returns the number of elements in the Natural stack available for next `INPUT`.
-								
+
 				`0` is returned if the stack is empty.
 				`-1` is returned if the next value in the stack is a command or name of a transaction
 				""", NUMERIC, 3),
 			unmodifiableVariable(SyntaxKind.SV_LEVEL, """
 				Returns the level number of the current program, dialog, ... which is currently active.
-								
+
 				Level 1 is the main program.
 				""", NUMERIC, 2)
 		);

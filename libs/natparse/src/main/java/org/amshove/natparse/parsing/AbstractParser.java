@@ -209,6 +209,16 @@ abstract class AbstractParser<T>
 			return attribute;
 		}
 
+		if(peekKind(SyntaxKind.MINUS) && peekKind(1, SyntaxKind.NUMBER_LITERAL))
+		{
+			var combinedLiteral = peek().combine(peek(1), SyntaxKind.NUMBER_LITERAL);
+			var literal = new LiteralNode(combinedLiteral);
+			discard();
+			discard();
+			node.addNode(literal);
+			return literal;
+		}
+
 		var literal = consumeAny(List.of(SyntaxKind.NUMBER_LITERAL, SyntaxKind.STRING_LITERAL, SyntaxKind.TRUE, SyntaxKind.FALSE, SyntaxKind.ASTERISK));
 		var literalNode = new LiteralNode(literal);
 		node.addNode(literalNode);
@@ -379,7 +389,7 @@ abstract class AbstractParser<T>
 	{
 		if(peekKind(SyntaxKind.IDENTIFIER))
 		{
-			if(peekKind(1, SyntaxKind.LPAREN) && peekKind(2, SyntaxKind.LESSER_SIGN))
+			if(peekKind(1, SyntaxKind.LPAREN) && (peekKind(2, SyntaxKind.LESSER_SIGN) || peekKind(2, SyntaxKind.LESSER_GREATER)))
 			{
 				var token = peek();
 				discard(); // this is kinda strange. reiterate on why functionCall() needs to get the token
@@ -420,6 +430,11 @@ abstract class AbstractParser<T>
 			return consumeLabelIdentifier(node);
 		}
 
+		if(peek().kind().canBeIdentifier())
+		{
+			return consumeVariableReferenceNode(node);
+		}
+
 		return consumeLiteralNode(node);
 	}
 
@@ -447,13 +462,13 @@ abstract class AbstractParser<T>
 
 	private IOperandNode absOperand(BaseSyntaxNode node) throws ParseError
 	{
-		var valOperand = new AbsOperandNode();
-		node.addNode(valOperand);
-		consumeMandatory(valOperand, SyntaxKind.ABS);
-		consumeMandatory(valOperand, SyntaxKind.LPAREN);
-		valOperand.setVariable(consumeVariableReferenceNode(valOperand));
-		consumeMandatory(valOperand, SyntaxKind.RPAREN);
-		return valOperand;
+		var absOperand = new AbsOperandNode();
+		node.addNode(absOperand);
+		consumeMandatory(absOperand, SyntaxKind.ABS);
+		consumeMandatory(absOperand, SyntaxKind.LPAREN);
+		absOperand.setParameter(consumeOperandNode(absOperand));
+		consumeMandatory(absOperand, SyntaxKind.RPAREN);
+		return absOperand;
 	}
 
 	private IOperandNode consumeLabelIdentifier(BaseSyntaxNode node) throws ParseError
@@ -470,6 +485,12 @@ abstract class AbstractParser<T>
 		if(peek().kind() == SyntaxKind.TRANSLATE)
 		{
 			return consumeTranslateSystemFunction(node);
+		}
+
+		if(peek().kind() == SyntaxKind.PAGE_NUMBER || peek().kind() == SyntaxKind.LINE_COUNT)
+			// TODO: Get the entry for the function from BuiltInFunctionTable and check if it takes one parameter that is rep
+		{
+			return consumeSystemFunctionWithRepParameter(node, peek().kind());
 		}
 
 		var systemFunction = new SystemFunctionNode();
@@ -491,19 +512,35 @@ abstract class AbstractParser<T>
 		systemFunction.addParameter(consumeOperandNode(systemFunction));
 		while(consumeOptionally(systemFunction, SyntaxKind.COMMA))
 		{
-			if(systemFunction.systemFunction() == SyntaxKind.TRANSLATE)
-			{
-				consumeAnyMandatory(systemFunction, List.of(SyntaxKind.UPPER, SyntaxKind.LOWER)); // TODO: Save if upper or lower
-			}
-			else
-			{
-				systemFunction.addParameter(consumeOperandNode(systemFunction));
-			}
-
+			systemFunction.addParameter(consumeOperandNode(systemFunction));
 		}
 		consumeMandatory(systemFunction, SyntaxKind.RPAREN);
 		node.addNode(systemFunction);
 		return systemFunction;
+	}
+
+	private ISystemFunctionNode consumeSystemFunctionWithRepParameter(BaseSyntaxNode node, SyntaxKind kind) throws ParseError
+	{
+		var systemFunction = new SystemFunctionNode();
+		node.addNode(systemFunction);
+		consumeMandatory(systemFunction, kind);
+		systemFunction.setSystemFunction(kind);
+		if(consumeOptionally(systemFunction, SyntaxKind.LPAREN))
+		{
+			systemFunction.addParameter(consumeReportSpecificationOperand(systemFunction));
+			consumeMandatory(systemFunction, SyntaxKind.RPAREN);
+		}
+
+		return systemFunction;
+	}
+
+	protected IReportSpecificationOperandNode consumeReportSpecificationOperand(BaseSyntaxNode parent)
+	{
+		var operand = new ReportSpecificationOperandNode();
+		parent.addNode(operand);
+		var spec = consume(operand);
+		operand.setReportSpecification(spec);
+		return operand;
 	}
 
 	private ISystemFunctionNode consumeTranslateSystemFunction(BaseSyntaxNode node) throws ParseError
@@ -531,17 +568,40 @@ abstract class AbstractParser<T>
 
 		if(consumeOptionally(reference, SyntaxKind.LPAREN))
 		{
-			reference.addDimension(consumeArithmeticExpression(reference));
+			reference.addDimension(consumeArrayAccess(reference));
 			while(peekKind(SyntaxKind.COMMA))
 			{
 				consume(reference);
-				reference.addDimension(consumeArithmeticExpression(reference));
+				reference.addDimension(consumeArrayAccess(reference));
 			}
 			consumeMandatory(reference, SyntaxKind.RPAREN);
 		}
 
 		unresolvedReferences.add(reference);
 		return reference;
+	}
+
+	protected IOperandNode consumeArrayAccess(VariableReferenceNode reference) throws ParseError
+	{
+		var access = consumeArithmeticExpression(reference);
+		if(peekKind(SyntaxKind.COLON))
+		{
+			return consumeRangedArrayAccess(reference, access);
+		}
+
+		return access;
+	}
+
+	protected IRangedArrayAccessNode consumeRangedArrayAccess(BaseSyntaxNode parent, IOperandNode lower) throws ParseError
+	{
+		var rangedAccess = new RangedArrayAccessNode();
+		parent.replaceChild((BaseSyntaxNode) lower, rangedAccess);
+		consumeMandatory(rangedAccess, SyntaxKind.COLON);
+		var upper = consumeArithmeticExpression(rangedAccess);
+
+		rangedAccess.setLowerBound(lower);
+		rangedAccess.setUpperBound(upper);
+		return rangedAccess;
 	}
 
 	protected ISystemVariableNode consumeSystemVariableNode(BaseSyntaxNode node)
@@ -689,26 +749,6 @@ abstract class AbstractParser<T>
 
 		report(ParserErrors.unexpectedToken(acceptedKinds, peek()));
 		tokens.advance();
-		return false;
-	}
-
-	/**
-	 * Determines if any of the given {@link SyntaxKind}s is in the same line as the current peekable token.
-	 */
-	protected boolean peekSameLine(Collection<SyntaxKind> kindsToLookFor)
-	{
-		var startLine = peek().line();
-		var peekOffset = 0;
-		while(!isAtEnd(peekOffset) && peek(peekOffset).line() == startLine)
-		{
-			if(kindsToLookFor.contains(peek(peekOffset).kind()))
-			{
-				return true;
-			}
-
-			peekOffset++;
-		}
-
 		return false;
 	}
 

@@ -1,6 +1,7 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.SyntaxKind;
+import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IArrayDimension;
 import org.amshove.natparse.natural.ITokenNode;
@@ -188,6 +189,15 @@ class ViewParser extends AbstractParser<ViewNode>
 			if (peek().intValue() <= group.level())
 			{
 				break;
+			}
+
+			if(peekKind(1, SyntaxKind.FILLER) && group instanceof RedefinitionNode)
+			{
+				if(mightBeFillerBytes(peek(1), peek(2)))
+				{
+					parseRedefineFiller((RedefinitionNode)group);
+					continue;
+				}
 			}
 
 			var nestedVariable = variable();
@@ -494,6 +504,16 @@ class ViewParser extends AbstractParser<ViewNode>
 		}
 	}
 
+	private boolean mightBeFillerBytes(SyntaxToken fillerToken, SyntaxToken maybeFillerBytes)
+	{
+		return maybeFillerBytes.kind() == SyntaxKind.OPERAND_SKIP
+			// This happens when it's e.g.
+			// 2 FILLER 5
+			// the user forgot the X but meant to write a filler, because the number is in the same line.
+			// we can use this information to raise a better diagnostic message.
+			|| (maybeFillerBytes.kind() == SyntaxKind.NUMBER_LITERAL && maybeFillerBytes.line() == fillerToken.line());
+	}
+
 	private boolean isVariableDeclared(String potentionalVariableName)
 	{
 		return declaredVariables.containsKey(potentionalVariableName.toUpperCase());
@@ -503,5 +523,30 @@ class ViewParser extends AbstractParser<ViewNode>
 	{
 		// Natural is case-insensitive, as that it considers everything upper case
 		return declaredVariables.get(tokenNode.token().symbolName());
+	}
+
+	private void parseRedefineFiller(RedefinitionNode redefinitionNode)
+	{
+		consume(redefinitionNode, SyntaxKind.NUMBER_LITERAL); // Level
+		consume(redefinitionNode, SyntaxKind.FILLER);
+		var fillerToken = previousToken();
+		var errored = false;
+		if(!consumeOptionally(redefinitionNode, SyntaxKind.OPERAND_SKIP))
+		{
+			report(ParserErrors.fillerMustHaveXKeyword(fillerToken));
+			consume(redefinitionNode, SyntaxKind.NUMBER_LITERAL);
+			errored = true;
+		}
+
+		var fillerBytesToken = previousToken();
+		var fillerBytes = fillerBytesToken.kind() == SyntaxKind.KW_NUMBER
+			? fillerBytesToken.intValue()
+			: Integer.parseInt(fillerBytesToken.source().substring(0, fillerBytesToken.length() - 1));
+		redefinitionNode.addFillerBytes(fillerBytes);
+
+		if(errored)
+		{
+			skipToNextLineAsRecovery(fillerToken.line());
+		}
 	}
 }

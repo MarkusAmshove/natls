@@ -58,7 +58,7 @@ public abstract class AbstractParserTest<NodeType>
 		return parseResult.result();
 	}
 
-	protected void assertDiagnostic(String source, ParserError expectedError)
+	protected NodeType assertDiagnostic(String source, ParserError expectedError)
 	{
 		var lexer = new Lexer();
 		var tokens = lexer.lex(source, Paths.get("TESTMODULE.NSN"));
@@ -68,6 +68,8 @@ public abstract class AbstractParserTest<NodeType>
 			.isGreaterThan(0);
 		assertThat(result.diagnostics())
 			.anyMatch(d -> d.id().equals(expectedError.id()));
+
+		return result.result();
 	}
 
 	@SuppressWarnings("unchecked")

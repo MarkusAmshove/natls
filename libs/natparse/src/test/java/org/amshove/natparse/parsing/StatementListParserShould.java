@@ -3,6 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
 import org.amshove.testhelpers.IntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -202,6 +203,20 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseASubroutineWithoutSubroutineKeywordButKeywordAsName()
+	{
+		var subroutine = assertParsesSingleStatementWithDiagnostic("""
+			 DEFINE RESULT
+			 IGNORE
+			 END-SUBROUTINE
+			""",
+			ISubroutineNode.class,
+			ParserError.KEYWORD_USED_AS_IDENTIFIER);
+
+		assertThat(subroutine.declaration().symbolName()).isEqualTo("RESULT");
+	}
+
+	@Test
 	void parseInternalPerformNodes()
 	{
 		ignoreModuleProvider();
@@ -341,6 +356,31 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(ifStatement.condition()).isNotNull();
 		assertThat(ifStatement.body().statements()).hasSize(1);
 		assertThat(ifStatement.descendants()).hasSize(4);
+	}
+
+
+	@Test
+	void allowIfStatementsToContainTheThenKeyword()
+	{
+		var ifStatement = assertParsesSingleStatement("""
+			IF #TEST = 5 THEN
+			    IGNORE
+			END-IF
+			""", IIfStatementNode.class);
+
+		assertThat(ifStatement.condition().findDescendantToken(SyntaxKind.THEN)).isNull(); // should not be part of the condition
+		assertThat(ifStatement.findDescendantToken(SyntaxKind.THEN)).isNotNull(); // but be part of the if statement itself
+		assertThat(ifStatement.body().statements()).hasSize(1);
+	}
+
+	@Test
+	void allowThenAfterMaskInIf()
+	{
+		assertParsesSingleStatement("""
+			IF #TEST = MASK(A...) THEN
+			    IGNORE
+			END-IF
+			""", IIfStatementNode.class);
 	}
 
 	@Test
@@ -762,6 +802,22 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseDisplay()
+	{
+		var display = assertParsesSingleStatement("DISPLAY", IDisplayNode.class);
+		assertThat(display.descendants()).hasSize(1);
+	}
+
+	@Test
+	void parseDisplayWithReportSpecification()
+	{
+		var display = assertParsesSingleStatement("DISPLAY (PR2)", IDisplayNode.class);
+		assertThat(display.reportSpecification()).isPresent();
+		assertThat(display.reportSpecification().get().symbolName()).isEqualTo("PR2");
+		assertThat(display.descendants()).hasSize(4);
+	}
+
+	@Test
 	void parseASimpleExamineReplace()
 	{
 		var examine = assertParsesSingleStatement("EXAMINE #VAR 'a' REPLACE 'b'", IExamineNode.class);
@@ -780,25 +836,36 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(assertNodeType(substringOperand.length(), ILiteralNode.class).token().intValue()).isEqualTo(5);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"DELIMITER", "DELIMITERS",
+		"DELIMITER ' '", "DELIMITERS ' '",
+		"DELIMITER #DEL", "DELIMITERS #DEL",
+	})
+	void parseAnExamineWithDelimiters(String delimiter)
+	{
+		assertParsesSingleStatement("EXAMINE #VAR FOR #VAR2 WITH %s GIVING INDEX #INDEX".formatted(delimiter), IExamineNode.class);
+	}
+
 	@Test
 	void parseAComplexExamineReplace()
 	{
-		var examine = assertParsesSingleStatement("EXAMINE FORWARD FULL VALUE OF #DOC STARTING FROM POSITION 7 ENDING AT POSITION 10 FOR FULL VALUE OF PATTERN #HTML(*) WITH DELIMITERS ',' AND REPLACE FIRST WITH FULL VALUE OF #TAB(*) ", IExamineNode.class);
-		assertThat(examine.descendants().size()).isEqualTo(31);
+		var examine = assertParsesSingleStatement("EXAMINE DIRECTION FORWARD FULL VALUE OF #DOC STARTING FROM POSITION 7 ENDING AT POSITION 10 FOR FULL VALUE OF PATTERN #HTML(*) WITH DELIMITERS ',' AND REPLACE FIRST WITH FULL VALUE OF #TAB(*) ", IExamineNode.class);
+		assertThat(examine.descendants().size()).isEqualTo(32);
 	}
 
 	@Test
 	void parseAComplexExamineDelete()
 	{
-		var examine = assertParsesSingleStatement("EXAMINE FORWARD FULL VALUE OF #DOC STARTING FROM POSITION 7 ENDING AT POSITION 10 FOR FULL VALUE OF PATTERN #HTML(*) WITH DELIMITERS ',' AND DELETE FIRST", IExamineNode.class);
-		assertThat(examine.descendants().size()).isEqualTo(26);
+		var examine = assertParsesSingleStatement("EXAMINE DIRECTION FORWARD FULL VALUE OF #DOC STARTING FROM POSITION 7 ENDING AT POSITION 10 FOR FULL VALUE OF PATTERN #HTML(*) WITH DELIMITERS ',' AND DELETE FIRST", IExamineNode.class);
+		assertThat(examine.descendants().size()).isEqualTo(27);
 	}
 
 	@Test
 	void parseAComplexExamineDeleteGiving()
 	{
-		var examine = assertParsesSingleStatement("EXAMINE FORWARD FULL VALUE OF #DOC STARTING FROM POSITION 7 ENDING AT POSITION 10 FOR FULL VALUE OF PATTERN #HTML(*) WITH DELIMITERS ',' AND DELETE FIRST GIVING INDEX IN #ASD #EFG #HIJ", IExamineNode.class);
-		assertThat(examine.descendants().size()).isEqualTo(32);
+		var examine = assertParsesSingleStatement("EXAMINE DIRECTION FORWARD FULL VALUE OF #DOC STARTING FROM POSITION 7 ENDING AT POSITION 10 FOR FULL VALUE OF PATTERN #HTML(*) WITH DELIMITERS ',' AND DELETE FIRST GIVING INDEX IN #ASD #EFG #HIJ", IExamineNode.class);
+		assertThat(examine.descendants().size()).isEqualTo(33);
 	}
 
 	@Test
@@ -850,6 +917,17 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		var newPage = assertParsesSingleStatement("NEWPAGE(THEPRINT) IF LESS THAN #VAR LINES LEFT", INewPageNode.class);
 		assertThat(newPage.reportSpecification()).map(SyntaxToken::symbolName).hasValue("THEPRINT");
 		assertThat(newPage.descendants()).hasSize(10);
+	}
+
+	@Test
+	void parseNewPageWithFollowingIfStatementNotThinkingTheIfBelongsToTheNewPage()
+	{
+		var list = assertParsesWithoutDiagnostics("""
+			NEWPAGE (PR5)
+			IF TRUE
+			IGNORE
+			END-IF""");
+		assertThat(list.statements()).hasSize(2);
 	}
 
 	@Test
@@ -1192,9 +1270,151 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 			END-HISTOGRAM""".formatted(sorting), IHistogramNode.class);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"10",
+		"5 LINES",
+		"#VAR",
+		"#VAR LINES"
+	})
+	void parseSkipStatement(String skipOperands)
+	{
+		var skip = assertParsesSingleStatement("SKIP %s".formatted(skipOperands), ISkipStatementNode.class);
+		assertThat(skip.descendants()).hasSize(1 + skipOperands.split(" ").length);
+	}
+
+	@Test
+	void parseNumberOfLinesOfSkipStatement()
+	{
+		var skip = assertParsesSingleStatement("SKIP 5 LINES", ISkipStatementNode.class);
+		assertThat(assertNodeType(skip.toSkip(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+	}
+
+	@Test
+	void parseVariableAsNumberOfLinesOfSkipStatement()
+	{
+		var skip = assertParsesSingleStatement("SKIP #VAR LINES", ISkipStatementNode.class);
+		assertThat(assertNodeType(skip.toSkip(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#VAR");
+	}
+
+	@Test
+	void parseSkipStatementWithReportSpecification()
+	{
+		var skip = assertParsesSingleStatement("SKIP (PR2) 5 LINES", ISkipStatementNode.class);
+		assertThat(skip.reportSpecification()).isPresent();
+		assertThat(skip.reportSpecification().get().reportSpecification().symbolName()).isEqualTo("PR2");
+	}
+
+	@Test
+	void parseDecideForCondition()
+	{
+		var decide = assertParsesSingleStatement("""
+			DECIDE FOR CONDITION
+			WHEN 5 < 2
+				IGNORE
+			WHEN ANY
+				IGNORE
+			WHEN ALL
+				IGNORE
+			WHEN NONE
+				IGNORE
+			END-DECIDE
+		""", IDecideForConditionNode.class);
+
+		assertThat(decide.whenNone().statements()).hasSize(1);
+		assertNodeType(decide.whenNone().statements().first(), IIgnoreNode.class);
+
+		assertThat(decide.whenAny()).isPresent();
+		assertThat(decide.whenAny().get().statements()).hasSize(1);
+		assertNodeType(decide.whenNone().statements().first(), IIgnoreNode.class);
+
+		assertThat(decide.whenAll()).isPresent();
+		assertThat(decide.whenAll().get().statements()).hasSize(1);
+		assertNodeType(decide.whenNone().statements().first(), IIgnoreNode.class);
+
+		assertThat(decide.branches()).hasSize(1);
+		var criteria = assertNodeType(decide.branches().first().criteria(), IRelationalCriteriaNode.class);
+		assertThat(assertNodeType(criteria.left(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).token().intValue()).isEqualTo(2);
+		assertThat(decide.branches().first().body().statements()).hasSize(1);
+		assertThat(decide.branches().first().body().statements().first()).isInstanceOf(IIgnoreNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"EVERY", "FIRST"
+	})
+	void parseDecideForConditionWithEveryAndFirst(String permutation)
+	{
+		assertParsesSingleStatement("""
+			DECIDE FOR %s CONDITION
+			WHEN 5 < 2
+				IGNORE
+			WHEN NONE
+				IGNORE
+			END-DECIDE
+		""".formatted(permutation), IDecideForConditionNode.class);
+	}
+
+	@Test
+	void parseDecideForWithComplexConditions()
+	{
+		var decide = assertParsesSingleStatement("""
+			DECIDE FOR CONDITION
+			WHEN (#VAR IS (N4))
+				IGNORE
+			WHEN #VAR = 'Hello' AND #VAR2 = 2
+				IGNORE
+			WHEN (#VAR = 'Hello' OR *OCC(#ARR) = 5)
+				IGNORE
+			WHEN NONE
+				IGNORE
+			END-DECIDE
+		""", IDecideForConditionNode.class);
+
+		assertThat(decide.branches()).hasSize(3);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"SIZE OF DYNAMIC VARIABLE",
+		"DYNAMIC",
+		"DYNAMIC VARIABLE",
+		"SIZE OF DYNAMIC",
+	})
+	void parseResizeDynamic(String combination)
+	{
+		// TODO(type-check): Has to be dynamic typed
+		var resize = assertParsesSingleStatement("RESIZE %s #VAR TO 20".formatted(combination), IResizeDynamicNode.class);
+		assertThat(resize.variableToResize().referencingToken().symbolName()).isEqualTo("#VAR");
+		assertThat(resize.sizeToResizeTo()).isEqualTo(20);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"AND RESET OCCURRENCES OF",
+		"AND RESET",
+		"OCCURRENCES OF",
+	})
+	void parseResizeArray(String combination)
+	{
+		// TODO(type-check): Has to be an x-array
+		var resize = assertParsesSingleStatement("RESIZE %s ARRAY #VAR TO (10)".formatted(combination), IResizeArrayNode.class);
+		assertThat(resize.arrayToResize().referencingToken().symbolName()).isEqualTo("#VAR");
+		// TODO(lexer-mode): Actually parse array dimensions
+		assertThat(resize.findDescendantToken(SyntaxKind.LPAREN)).isNotNull();
+		assertThat(resize.findDescendantToken(SyntaxKind.RPAREN)).isNotNull();
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);
+		return assertNodeType(result.statements().first(), nodeType);
+	}
+
+	private <T extends IStatementNode> T assertParsesSingleStatementWithDiagnostic(String source, Class<T> nodeType, ParserError expectedDiagnostic)
+	{
+		var result = super.assertDiagnostic(source, expectedDiagnostic);
 		return assertNodeType(result.statements().first(), nodeType);
 	}
 }

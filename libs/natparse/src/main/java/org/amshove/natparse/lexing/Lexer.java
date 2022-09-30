@@ -83,7 +83,7 @@ public class Lexer
 					}
 					continue;
 				case '-':
-					consumeMinusOrNumberOrStringConcat();
+					consumeMinusOrStringConcat();
 					continue;
 				case '*':
 					consumeAsteriskOrSystemVariable();
@@ -232,7 +232,7 @@ public class Lexer
 		return TokenList.fromTokensAndDiagnostics(filePath, tokens, diagnostics, comments);
 	}
 
-	private void consumeMinusOrNumberOrStringConcat()
+	private void consumeMinusOrStringConcat()
 	{
 		var lookaheadIndex = findNextNonWhitespaceLookaheadOffset();
 		var lookahead = scanner.peek(lookaheadIndex);
@@ -261,29 +261,7 @@ public class Lexer
 			return;
 		}
 
-		scanner.start();
-		scanner.advance(); // the minus
-		if (Character.isDigit(scanner.peek()))
-		{
-			while (Character.isDigit(scanner.peek()) || scanner.peek() == ',' || scanner.peek() == '.')
-			{
-				scanner.advance();
-			}
-			if(scanner.peek() == 'E')
-			{
-				scanner.advance(); // E
-				scanner.advance(); // + or -
-				while(Character.isDigit(scanner.peek()))
-				{
-					scanner.advance();
-				}
-			}
-			createAndAdd(SyntaxKind.NUMBER_LITERAL);
-		}
-		else
-		{
-			createAndAdd(SyntaxKind.MINUS);
-		}
+		createAndAddCurrentSingleToken(SyntaxKind.MINUS);
 	}
 
 	private void consumeAsteriskOrSystemVariable()
@@ -353,6 +331,21 @@ public class Lexer
 			createAndAdd(SyntaxKind.LINEX);
 			return;
 		}
+		if (scanner.advanceIf("LINE-COUNT"))
+		{
+			createAndAdd(SyntaxKind.LINE_COUNT);
+			return;
+		}
+		if (scanner.advanceIf("LINESIZE"))
+		{
+			createAndAdd(SyntaxKind.LINESIZE);
+			return;
+		}
+		if (scanner.advanceIf("PAGESIZE"))
+		{
+			createAndAdd(SyntaxKind.PAGESIZE);
+			return;
+		}
 		if (scanner.advanceIf("TRIM"))
 		{
 			createAndAdd(SyntaxKind.TRIM);
@@ -403,6 +396,21 @@ public class Lexer
 			createAndAdd(SyntaxKind.DAT4D);
 			return;
 		}
+		if (scanner.advanceIf("DAT4I"))
+		{
+			createAndAdd(SyntaxKind.DAT4I);
+			return;
+		}
+		if (scanner.advanceIf("DATI"))
+		{
+			createAndAdd(SyntaxKind.DATI);
+			return;
+		}
+		if (scanner.advanceIf("DATG"))
+		{
+			createAndAdd(SyntaxKind.DATG);
+			return;
+		}
 		if (scanner.advanceIf("LANGUAGE"))
 		{
 			createAndAdd(SyntaxKind.LANGUAGE);
@@ -411,6 +419,11 @@ public class Lexer
 		if (scanner.advanceIf("LIBRARY-ID"))
 		{
 			createAndAdd(SyntaxKind.LIBRARY_ID);
+			return;
+		}
+		if (scanner.advanceIf("ISN"))
+		{
+			createAndAdd(SyntaxKind.SV_ISN);
 			return;
 		}
 		if (scanner.advanceIf("PROGRAM"))
@@ -431,6 +444,11 @@ public class Lexer
 		if (scanner.advanceIf("CURRENT-UNIT"))
 		{
 			createAndAdd(SyntaxKind.CURRENT_UNIT);
+			return;
+		}
+		if (scanner.advanceIf("CURS-COL"))
+		{
+			createAndAdd(SyntaxKind.CURS_COL);
 			return;
 		}
 		if (scanner.advanceIf("CURS-LINE"))
@@ -531,6 +549,11 @@ public class Lexer
 		if (scanner.advanceIf("TRANSLATE"))
 		{
 			createAndAdd(SyntaxKind.TRANSLATE);
+			return;
+		}
+		if (scanner.advanceIf("MACHINE-CLASS"))
+		{
+			createAndAdd(SyntaxKind.MACHINE_CLASS);
 			return;
 		}
 		scanner.rollbackCurrentLexeme();

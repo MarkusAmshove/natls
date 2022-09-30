@@ -68,6 +68,14 @@ public class NodeUtil
 				{
 					return findNodeAtPosition(line, character, node);
 				}
+				if (node.descendants().hasItems())
+				{
+					var descendant = findNodeAtPosition(line, character, node);
+					if(descendant != null && !(descendant instanceof ITokenNode))
+					{
+						return descendant;
+					}
+				}
 				return node;
 			}
 

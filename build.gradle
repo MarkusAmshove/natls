@@ -1,6 +1,6 @@
 plugins {
 	id 'java-library'
-	id 'org.sonarqube' version '2.7'
+	id 'org.sonarqube' version '3.4.0.2513'
 	id "com.diffplug.spotless" version "6.2.0"
 }
 
@@ -44,7 +44,6 @@ allprojects {
 	apply plugin: 'jacoco'
 
 	group = 'org.amshove'
-	version = '0.1'
 
 	java {
 		toolchain {
@@ -81,14 +80,11 @@ subprojects {
 	}
 
 	jacocoTestReport {
-			additionalSourceDirs.setFrom files(sourceSets.main.allSource.srcDirs)
-			sourceDirectories.setFrom files(sourceSets.main.allSource.srcDirs)
-			classDirectories.setFrom  files(sourceSets.main.output)
-			reports {
-				html.required = true
-				xml.required = true
-				csv.required = false
-			}
+		reports {
+			html.required = true
+			xml.required = true
+			csv.required = false
+		}
 	}
 }
 
@@ -115,8 +111,11 @@ task testReport(type: TestReport) {
 
 sonarqube {
 	properties {
-		property 'sonar.coverage.jacoco.xmlReportPaths', 'build/reports/jacoco/test/jacocoTestReport.xml'
+		property "sonar.projectKey", "MarkusAmshove_natls"
+		property "sonar.organization", "markusamshove"
+		property "sonar.host.url", "https://sonarcloud.io"
+		property 'sonar.coverage.jacoco.xmlReportPaths', "${rootProject.buildDir}/reports/jacoco/cover/cover.xml"
 	}
 }
 
-project.tasks['sonarqube'].dependsOn subprojects.jacocoTestReport
+project.tasks['sonarqube'].dependsOn cover

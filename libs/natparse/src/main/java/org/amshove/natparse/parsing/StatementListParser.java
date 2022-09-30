@@ -107,6 +107,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					case CALLNAT:
 						statementList.addStatement(callnat());
 						break;
+					case RESIZE:
+						statementList.addStatement(resize());
+						break;
 					case CLOSE:
 						switch (peek(1).kind())
 						{
@@ -116,6 +119,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						break;
 					case EJECT:
 						statementList.addStatement(eject());
+						break;
+					case SKIP:
+						statementList.addStatement(skip());
 						break;
 					case ESCAPE:
 						statementList.addStatement(escape());
@@ -144,6 +150,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					case WRITE:
 						statementList.addStatement(write());
 						break;
+					case DISPLAY:
+						statementList.addStatement(display());
+						break;
 					case END:
 						if (peekKind(1, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE))
 						{
@@ -164,10 +173,22 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 							case SUBROUTINE, IDENTIFIER -> statementList.addStatement(subroutine());
 							case PRINTER -> statementList.addStatement(definePrinter());
 							case WINDOW -> statementList.addStatement(defineWindow());
+							case WORK, PROTOTYPE, DATA ->
+							{ // not implemented statements. DATA needs to be handled when parsing functions and external subroutines
+								tokens.advance();
+								tokens.advance();
+							}
 							default ->
 							{
-								tokens.advance();
-								tokens.advance();
+								if (peek(1).kind().canBeIdentifier())
+								{
+									statementList.addStatement(subroutine());
+								}
+								else
+								{
+									tokens.advance();
+									tokens.advance();
+								}
 							}
 						}
 						break;
@@ -197,6 +218,12 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 					case RESET:
 						statementList.addStatement(resetStatement());
 						break;
+					case DECIDE:
+						if (peekKind(1, SyntaxKind.FOR))
+						{
+							statementList.addStatement(decideFor());
+							break;
+						}
 					case SET:
 						if (peek(1).kind() == SyntaxKind.KEY)
 						{
@@ -244,6 +271,80 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode resize() throws ParseError
+	{
+		if (peekAny(1, List.of(SyntaxKind.SIZE, SyntaxKind.DYNAMIC)))
+		{
+			return resizeDynamic();
+		}
+
+		var resize = new ResizeArrayNode();
+		consumeMandatory(resize, SyntaxKind.RESIZE);
+		if(consumeOptionally(resize, SyntaxKind.AND))
+		{
+			consumeMandatory(resize, SyntaxKind.RESET);
+		}
+
+		if(consumeOptionally(resize, SyntaxKind.OCCURRENCES))
+		{
+			consumeMandatory(resize, SyntaxKind.OF);
+		}
+
+		consumeMandatory(resize, SyntaxKind.ARRAY);
+		var array = consumeVariableReferenceNode(resize);
+		resize.setArrayToResize(array);
+		consumeMandatory(resize, SyntaxKind.TO);
+
+		consumeMandatory(resize, SyntaxKind.LPAREN);
+		while(!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+		{
+			consume(resize);
+		}
+
+		consumeMandatory(resize, SyntaxKind.RPAREN);
+		return resize;
+	}
+
+	private StatementNode resizeDynamic() throws ParseError
+	{
+		var resize = new ResizeDynamicNode();
+		consumeMandatory(resize, SyntaxKind.RESIZE);
+		if (consumeOptionally(resize, SyntaxKind.SIZE))
+		{
+			consumeMandatory(resize, SyntaxKind.OF);
+		}
+
+		consumeMandatory(resize, SyntaxKind.DYNAMIC);
+		consumeOptionally(resize, SyntaxKind.VARIABLE);
+		var toResize = consumeVariableReferenceNode(resize);
+		resize.setVariableToResize(toResize);
+		consumeMandatory(resize, SyntaxKind.TO);
+		var newSize = consumeLiteralNode(resize, SyntaxKind.NUMBER_LITERAL);
+		resize.setSizeToResizeTo(newSize.token().intValue());
+
+		return resize;
+	}
+
+	private StatementNode skip() throws ParseError
+	{
+		var skip = new SkipStatementNode();
+		consumeMandatory(skip, SyntaxKind.SKIP);
+
+		if (consumeOptionally(skip, SyntaxKind.LPAREN))
+		{
+			var spec = consumeReportSpecificationOperand(skip);
+			skip.setReportSpecification(spec);
+			consumeMandatory(skip, SyntaxKind.RPAREN);
+		}
+
+		var linesToSkip = consumeOperandNode(skip);
+		skip.setToSkip(linesToSkip);
+
+		consumeOptionally(skip, SyntaxKind.LINES);
+
+		return skip;
 	}
 
 	private StatementNode histogram() throws ParseError
@@ -527,12 +628,11 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			consumeOptionally(newPage, SyntaxKind.PAGE);
 		}
 		else
-			if (consumeAnyOptionally(newPage, List.of(SyntaxKind.IF, SyntaxKind.WHEN, SyntaxKind.LESS)))
+			if (peekAny(List.of(SyntaxKind.IF, SyntaxKind.WHEN)) && peekKind(1, SyntaxKind.LESS) // lookahead because it might also be just an if statement following, not belonging to NEWPAGE
+				|| peekKind(SyntaxKind.LESS))
 			{
-				if (previousToken().kind() != SyntaxKind.LESS)
-				{
-					consumeMandatory(newPage, SyntaxKind.LESS);
-				}
+				consumeAnyOptionally(newPage, List.of(SyntaxKind.IF, SyntaxKind.WHEN));
+				consumeMandatory(newPage, SyntaxKind.LESS);
 
 				consumeOptionally(newPage, SyntaxKind.THAN);
 				consumeOperandNode(newPage);
@@ -556,7 +656,10 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		var examine = new ExamineNode();
 		consumeMandatory(examine, SyntaxKind.EXAMINE);
-		consumeAnyOptionally(examine, List.of(SyntaxKind.FORWARD, SyntaxKind.BACKWARD));
+		if (consumeOptionally(examine, SyntaxKind.DIRECTION))
+		{
+			consumeAnyOptionally(examine, List.of(SyntaxKind.FORWARD, SyntaxKind.BACKWARD));
+		}
 		if (consumeOptionally(examine, SyntaxKind.FULL))
 		{
 			if (consumeOptionally(examine, SyntaxKind.VALUE))
@@ -601,8 +704,12 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var hadAbsolute = consumeOptionally(examine, SyntaxKind.ABSOLUTE);
 		if (!hadAbsolute && consumeOptionally(examine, SyntaxKind.WITH))
 		{
-			consumeOptionally(examine, SyntaxKind.DELIMITERS);
-			consumeOperandNode(examine);
+			consumeAnyOptionally(examine, List.of(SyntaxKind.DELIMITERS, SyntaxKind.DELIMITER));
+			if (peek().kind().isLiteralOrConst() || peek().kind().isIdentifier())
+			{
+				// specifying a delimiter is optional
+				consumeOperandNode(examine);
+			}
 		}
 
 		consumeOptionally(examine, SyntaxKind.AND);
@@ -733,6 +840,34 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return examine;
 	}
 
+	private StatementNode display() throws ParseError
+	{
+		var display = new DisplayNode();
+		consumeMandatory(display, SyntaxKind.DISPLAY);
+
+		if (consumeOptionally(display, SyntaxKind.LPAREN))
+		{
+			if (peekKind(SyntaxKind.IDENTIFIER) && peekKind(1, SyntaxKind.RPAREN))
+			{
+				var token = consumeMandatoryIdentifier(display);
+				display.setReportSpecification(token);
+			}
+			else
+			{
+				// currently consume everything until closing parenthesis to consume things like attribute definition etc.
+				while (!peekKind(SyntaxKind.RPAREN))
+				{
+					consume(display);
+				}
+			}
+			consumeMandatory(display, SyntaxKind.RPAREN);
+		}
+
+		// TODO: Parse options
+
+		return display;
+	}
+
 	private StatementNode write() throws ParseError
 	{
 		var write = new WriteNode();
@@ -758,6 +893,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeOptionally(write, SyntaxKind.NOTITLE);
 		consumeOptionally(write, SyntaxKind.NOHDR);
 
+		// TODO: Actual operands to WRITE not parsed
 		return write;
 	}
 
@@ -1107,6 +1243,8 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		ifStatement.setCondition(conditionNode());
 
+		consumeOptionally(ifStatement, SyntaxKind.THEN);
+
 		ifStatement.setBody(statementList(SyntaxKind.END_IF));
 
 		consumeMandatoryClosing(ifStatement, SyntaxKind.END_IF, opening);
@@ -1380,7 +1518,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 		consumeMandatory(mask, SyntaxKind.RPAREN);
 
-		if (!isAtEnd() && peek().kind().canBeIdentifier() && !peekKind(SyntaxKind.OR) && !peekKind(SyntaxKind.AND))
+		if (!isAtEnd() && peek().kind().isIdentifier() && !peekKind(SyntaxKind.OR) && !peekKind(SyntaxKind.AND))
 		{
 			mask.setCheckedOperand(consumeVariableReferenceNode(mask));
 		}
@@ -1490,6 +1628,49 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatoryClosing(statement, SyntaxKind.END_NOREC, opening);
 
 		return statement;
+	}
+
+	private DecideForConditionNode decideFor() throws ParseError
+	{
+		var decide = new DecideForConditionNode();
+		consumeMandatory(decide, SyntaxKind.DECIDE);
+		consumeMandatory(decide, SyntaxKind.FOR);
+		consumeEitherOptionally(decide, SyntaxKind.FIRST, SyntaxKind.EVERY);
+		consumeMandatory(decide, SyntaxKind.CONDITION);
+
+		while (!isAtEnd() && peekKind(SyntaxKind.WHEN))
+		{
+			consumeMandatory(decide, SyntaxKind.WHEN);
+
+			if (peekKind(SyntaxKind.ANY))
+			{
+				consumeMandatory(decide, SyntaxKind.ANY);
+				decide.setWhenAny(statementList(SyntaxKind.WHEN));
+				continue;
+			}
+
+			if (peekKind(SyntaxKind.ALL))
+			{
+				consumeMandatory(decide, SyntaxKind.ALL);
+				decide.setWhenAll(statementList(SyntaxKind.WHEN));
+				continue;
+			}
+
+			if (peekKind(SyntaxKind.NONE))
+			{
+				consumeMandatory(decide, SyntaxKind.NONE);
+				decide.setWhenNone(statementList(SyntaxKind.END_DECIDE));
+				continue;
+			}
+
+			var branch = new DecideForConditionBranchNode();
+			var criteria = conditionCriteria();
+			branch.setCriteria(criteria);
+			branch.setBody(statementList(SyntaxKind.WHEN));
+			decide.addBranch(branch);
+		}
+
+		return decide;
 	}
 
 	private SetKeyStatementNode setKey() throws ParseError
@@ -1613,6 +1794,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 				|| peekKind(SyntaxKind.VAL)
 				|| peekKind(SyntaxKind.ABS)
 				|| peekKind(SyntaxKind.POS)
+				|| (peekKind(SyntaxKind.MINUS) && peekKind(1, SyntaxKind.NUMBER_LITERAL))
 				|| (peek().kind().canBeIdentifier() && lookahead != SyntaxKind.COLON_EQUALS_SIGN); // this should hopefully catch the begin of statements
 	}
 

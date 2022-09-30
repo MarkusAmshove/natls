@@ -132,6 +132,12 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 		assertTokens("*CURS-LINE", token(SyntaxKind.CURS_LINE, "*CURS-LINE"));
 	}
 
+	@Test
+	void lexCursCol()
+	{
+		assertTokens("*CURS-COL", token(SyntaxKind.CURS_COL, "*CURS-COL"));
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings = { "PF1", "PF2", "PF3", "PF9", "PF12", "PF15" })
 	void lexPfKey(String pfKey)
@@ -257,5 +263,53 @@ public class LexerForSystemVariablesShould extends AbstractLexerTest
 	void lexTranslate()
 	{
 		assertTokens("*TRANSLATE", token(SyntaxKind.TRANSLATE, "*TRANSLATE"));
+	}
+
+	@Test
+	void lexIsn()
+	{
+		assertTokens("*ISN", token(SyntaxKind.SV_ISN, "*ISN"));
+	}
+
+	@Test
+	void lexDatG()
+	{
+		assertTokens("*DATG", token(SyntaxKind.DATG, "*DATG"));
+	}
+
+	@Test
+	void lexLineCount()
+	{
+		assertTokens("*LINE-COUNT", token(SyntaxKind.LINE_COUNT, "*LINE-COUNT"));
+	}
+
+	@Test
+	void lexLineSize()
+	{
+		assertTokens("*LINESIZE", token(SyntaxKind.LINESIZE, "*LINESIZE"));
+	}
+
+	@Test
+	void lexMachineClass()
+	{
+		assertTokens("*MACHINE-CLASS", token(SyntaxKind.MACHINE_CLASS, "*MACHINE-CLASS"));
+	}
+
+	@Test
+	void lexPageSize()
+	{
+		assertTokens("*PAGESIZE", token(SyntaxKind.PAGESIZE, "*PAGESIZE"));
+	}
+
+	@Test
+	void lexDat4I()
+	{
+		assertTokens("*DAT4I", token(SyntaxKind.DAT4I, "*DAT4I"));
+	}
+
+	@Test
+	void lexDatI()
+	{
+		assertTokens("*DATI", token(SyntaxKind.DATI, "*DATI"));
 	}
 }

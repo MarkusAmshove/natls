@@ -31,6 +31,23 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseANumberAsLiteral()
+	{
+		var operand = parseOperands("1").first();
+		var variable = assertNodeType(operand, ILiteralNode.class);
+		assertThat(variable.token().intValue()).isEqualTo(1);
+	}
+
+	@Test
+	void parseANegativeNumberAsLiteral()
+	{
+		// Here two tokens (MINUS, NUMBER_LITERAL) get melted into a new one
+		var operand = parseOperands("-1").first();
+		var variable = assertNodeType(operand, ILiteralNode.class);
+		assertThat(variable.token().intValue()).isEqualTo(-1);
+	}
+
+	@Test
 	void parseSystemFunctions()
 	{
 		var operand = parseOperands("*TRIM(' Hello ')").first();
@@ -135,7 +152,18 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	{
 		var operand = parseOperands("ABS(#THEVAR)");
 		var valNode = assertNodeType(operand.get(0), IAbsOperandNode.class);
-		assertThat(valNode.variable().referencingToken().symbolName()).isEqualTo("#THEVAR");
+		var parameter = assertNodeType(valNode.parameter(), IVariableReferenceNode.class);
+		assertThat(parameter.referencingToken().symbolName()).isEqualTo("#THEVAR");
+	}
+
+	@Test
+	void parseFunctionsAsAbsParameter()
+	{
+		moduleProvider.addModule("FUNC", new NaturalModule(null));
+		var operand = parseOperands("ABS(FUNC(<'A', 5>))");
+		var abs = assertNodeType(operand.get(0), IAbsOperandNode.class);
+		var functionAsParameter = assertNodeType(abs.parameter(), IFunctionCallNode.class);
+		assertThat(functionAsParameter.referencingToken().symbolName()).isEqualTo("FUNC");
 	}
 
 	@Test
@@ -191,5 +219,105 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	{
 		var operand = parseOperands("POS(#VAR.#VAR2)");
 		assertThat(assertNodeType(operand.get(0), IPosNode.class).positionOf().token().symbolName()).isEqualTo("#VAR.#VAR2");
+	}
+
+	@Test
+	void parsePageNumberWithoutRep()
+	{
+		var operand = parseOperands("*PAGE-NUMBER");
+		assertThat(assertNodeType(operand.get(0), ISystemVariableNode.class).systemVariable()).isEqualTo(SyntaxKind.PAGE_NUMBER);
+	}
+
+	@Test
+	void parsePageNumberWithRep()
+	{
+		var operand = parseOperands("*PAGE-NUMBER(SV1)");
+		var function = assertNodeType(operand.get(0), ISystemFunctionNode.class);
+		assertThat(function.systemFunction()).isEqualTo(SyntaxKind.PAGE_NUMBER);
+		assertThat(function.parameter()).hasSize(1);
+		var parameter = assertNodeType(function.parameter().get(0), IReportSpecificationOperandNode.class);
+		assertThat(parameter.reportSpecification().symbolName()).isEqualTo("SV1");
+	}
+
+	@Test
+	void parseLineCountWithoutRep()
+	{
+		var operand = parseOperands("*LINE-COUNT");
+		assertThat(assertNodeType(operand.get(0), ISystemVariableNode.class).systemVariable()).isEqualTo(SyntaxKind.LINE_COUNT);
+	}
+
+	@Test
+	void parseLineCountWithRep()
+	{
+		var operand = parseOperands("*LINE-COUNT(SV1)");
+		var function = assertNodeType(operand.get(0), ISystemFunctionNode.class);
+		assertThat(function.systemFunction()).isEqualTo(SyntaxKind.LINE_COUNT);
+		assertThat(function.parameter()).hasSize(1);
+		var parameter = assertNodeType(function.parameter().get(0), IReportSpecificationOperandNode.class);
+		assertThat(parameter.reportSpecification().symbolName()).isEqualTo("SV1");
+	}
+
+	@Test
+	void parseArrayAccessRanges()
+	{
+		var operand = parseOperands("#VAR(1:10)");
+		var access = assertNodeType(operand.get(0), IVariableReferenceNode.class);
+		assertThat(access.dimensions()).hasSize(1);
+		var rangedAccess = assertNodeType(access.dimensions().first(), IRangedArrayAccessNode.class);
+		assertThat(assertNodeType(rangedAccess.lowerBound(), ILiteralNode.class).token().intValue()).isEqualTo(1);
+		assertThat(assertNodeType(rangedAccess.upperBound(), ILiteralNode.class).token().intValue()).isEqualTo(10);
+	}
+
+	@Test
+	void parseArrayAccessWithVariableRanges()
+	{
+		var operand = parseOperands("#VAR(#LOW:50)");
+		var access = assertNodeType(operand.get(0), IVariableReferenceNode.class);
+		assertThat(access.dimensions()).hasSize(1);
+		var rangedAccess = assertNodeType(access.dimensions().first(), IRangedArrayAccessNode.class);
+		assertThat(assertNodeType(rangedAccess.lowerBound(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#LOW");
+		assertThat(assertNodeType(rangedAccess.upperBound(), ILiteralNode.class).token().intValue()).isEqualTo(50);
+	}
+
+	@Test
+	void parseArrayAccessWithVariableRangesInUpperBound()
+	{
+		var operand = parseOperands("#VAR(5:#UP)");
+		var access = assertNodeType(operand.get(0), IVariableReferenceNode.class);
+		assertThat(access.dimensions()).hasSize(1);
+		var rangedAccess = assertNodeType(access.dimensions().first(), IRangedArrayAccessNode.class);
+		assertThat(assertNodeType(rangedAccess.lowerBound(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+		assertThat(assertNodeType(rangedAccess.upperBound(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#UP");
+	}
+
+	@Test
+	void parseArrayAccessWithVariableArithmeticRanges()
+	{
+		var operand = parseOperands("#VAR(#DOWN(2) -5:#UP + #DOWN(3))");
+		var access = assertNodeType(operand.get(0), IVariableReferenceNode.class);
+		assertThat(access.dimensions()).hasSize(1);
+		var rangedAccess = assertNodeType(access.dimensions().first(), IRangedArrayAccessNode.class);
+
+		var lower = assertNodeType(rangedAccess.lowerBound(),IArithmeticExpressionNode.class);
+		assertThat(assertNodeType(lower.left(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#DOWN");
+		assertThat(lower.operator()).isEqualTo(SyntaxKind.MINUS);
+		assertThat(assertNodeType(lower.right(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+
+		var upper = assertNodeType(rangedAccess.upperBound(),IArithmeticExpressionNode.class);
+		assertThat(assertNodeType(upper.left(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#UP");
+		assertThat(upper.operator()).isEqualTo(SyntaxKind.PLUS);
+		assertThat(assertNodeType(upper.right(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#DOWN");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"#VAR(2, 1:10)", "#VAR(1:10, 2)"
+	})
+	void parseArrayAccessWithMultipleDimensionsAndRanges(String operandSource)
+	{
+		var operand = parseOperands(operandSource);
+		var access = assertNodeType(operand.get(0), IVariableReferenceNode.class);
+		assertThat(access.dimensions()).hasSize(2);
+		assertThat(access.descendants()).hasSize(6); // #VAR ( IOperand , IRangedArrayAccess )
 	}
 }
