@@ -1162,6 +1162,12 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var referencingToken = consumeMandatoryIdentifier(include);
 		include.setReferencingToken(referencingToken);
 
+		while(!isAtEnd() && peekKind(SyntaxKind.STRING_LITERAL))
+		{
+			var parameter = consumeLiteralNode(include, SyntaxKind.STRING_LITERAL);
+			include.addParameter(parameter);
+		}
+
 		var referencedModule = sideloadModule(referencingToken.symbolName(), previousTokenNode().token());
 		include.setReferencedModule((NaturalModule) referencedModule);
 

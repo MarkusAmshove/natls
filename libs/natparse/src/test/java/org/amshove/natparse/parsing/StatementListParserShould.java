@@ -121,6 +121,18 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseAnIncludeWithParameter()
+	{
+		ignoreModuleProvider();
+		var include = assertParsesSingleStatement("INCLUDE THECC '''Literal''' '#VAR' '5' '*OCC(#ARR)'", IIncludeNode.class);
+		assertThat(include.providedParameter()).hasSize(4);
+		assertThat(assertNodeType(include.providedParameter().get(0), ILiteralNode.class).token().stringValue()).isEqualTo("'Literal'");
+		assertThat(assertNodeType(include.providedParameter().get(1), ILiteralNode.class).token().stringValue()).isEqualTo("#VAR");
+		assertThat(assertNodeType(include.providedParameter().get(2), ILiteralNode.class).token().stringValue()).isEqualTo("5");
+		assertThat(assertNodeType(include.providedParameter().get(3), ILiteralNode.class).token().stringValue()).isEqualTo("*OCC(#ARR)");
+	}
+
+	@Test
 	void raiseADiagnosticWhenNoCopycodeIsPassed()
 	{
 		assertDiagnostic("INCLUDE 1", ParserError.UNEXPECTED_TOKEN);
