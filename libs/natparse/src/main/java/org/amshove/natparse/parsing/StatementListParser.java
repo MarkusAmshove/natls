@@ -1816,15 +1816,15 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var lookahead = isAtEnd(1) ? null : peek(1).kind();
 
 		return
-			(peekKind(SyntaxKind.IDENTIFIER) && lookahead != SyntaxKind.COLON_EQUALS_SIGN)
+			(peekKind(SyntaxKind.IDENTIFIER) && !peekKindInLine(SyntaxKind.COLON_EQUALS_SIGN))
 				|| peek().kind().isSystemFunction()
 				|| peek().kind().isSystemVariable()
 				|| peek().kind().isLiteralOrConst()
 				|| peekKind(SyntaxKind.VAL)
 				|| peekKind(SyntaxKind.ABS)
 				|| peekKind(SyntaxKind.POS)
-				|| (peekKind(SyntaxKind.MINUS) && peekKind(1, SyntaxKind.NUMBER_LITERAL))
-				|| (peek().kind().canBeIdentifier() && lookahead != SyntaxKind.COLON_EQUALS_SIGN); // this should hopefully catch the begin of statements
+				|| (peekKind(SyntaxKind.MINUS) && lookahead == SyntaxKind.NUMBER_LITERAL)
+				|| (peek().kind().canBeIdentifier() && !peekKindInLine(SyntaxKind.COLON_EQUALS_SIGN));  // hopefully this fixes `#ARR(10) :=` being recognized as operand and has no side effects :)
 	}
 
 	private boolean isModuleParameter()

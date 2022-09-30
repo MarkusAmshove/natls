@@ -770,4 +770,21 @@ abstract class AbstractParser<T>
 		return false;
 	}
 
+	protected boolean peekKindInLine(SyntaxKind kind)
+	{
+		var line = peek().line();
+		var offset = 0;
+		while(!isAtEnd(offset) && peek(offset).line() == line)
+		{
+			if(peek(offset).kind() == kind)
+			{
+				return true;
+			}
+
+			offset++;
+		}
+
+		return false;
+	}
+
 }

@@ -93,8 +93,12 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertNodeType(callnat.providedParameter().get(4), ISkipOperandNode.class);
 	}
 
-	@Test
-	void distinguishBetweenCallnatParameterAndVariableAssignment()
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"#VAR5 := 1",
+		"#VAR5(2) := 10"
+	})
+	void distinguishBetweenCallnatParameterAndVariableAssignment(String nextLine)
 	{
 
 		var calledSubprogram = new NaturalModule(null);
@@ -103,10 +107,10 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		var statements = assertParsesWithoutDiagnostics("""
 			CALLNAT 'A-module' #VAR #VAR
 				#VARNEWLINE
-			#VAR5 := 1
-			""").statements();
+			%s
+			""".formatted(nextLine)).statements();
 
-		assertThat(statements.size()).isEqualTo(4); // Assignment not parsed yet. Change this to two when this test breaks from implementing assignments
+		assertThat(statements.size()).isGreaterThan(1); // Assignment not parsed yet. Change this to two when this test breaks from implementing assignments
 		var callnat = assertNodeType(statements.first(), ICallnatNode.class);
 		assertThat(assertNodeType(callnat.providedParameter().last(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VARNEWLINE");
 	}
