@@ -2,6 +2,8 @@ package org.amshove.natls.signaturehelp;
 
 import org.amshove.testhelpers.IntegrationTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -37,28 +39,15 @@ class SignatureHelpForCallnatShould extends SignatureHelpTest
 		assertThat(signature.getParameters().get(0).getLabel().getLeft()).isEqualTo("USING APDA");
 	}
 
-	@Test
-	void haveTheSecondParameterActiveWhenCursorIsAfterFirstParameter() throws ExecutionException, InterruptedException, TimeoutException
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"CALLNAT 'CALLED' APDA ${}$",
+		"CALLNAT 'CALLED' APDA 'Lit${}$eral'",
+		"CALLNAT 'CALLED' APDA\n 'Lit${}$eral'"
+	})
+	void haveTheSecondParameterActiveOnDifferentPositionsForSecondParameter(String moduleCall) throws ExecutionException, InterruptedException, TimeoutException
 	{
-		var help = getSignatureHelpForModuleCall("CALLNAT 'CALLED' APDA ${}$");
-		var signature = help.getSignatures().get(0);
-
-		assertThat(signature.getActiveParameter()).isEqualTo(1);
-	}
-
-	@Test
-	void haveTheSecondParameterActiveWhenCursorIsInTheSecondParameter() throws ExecutionException, InterruptedException, TimeoutException
-	{
-		var help = getSignatureHelpForModuleCall("CALLNAT 'CALLED' APDA 'Lit${}$eral'");
-		var signature = help.getSignatures().get(0);
-
-		assertThat(signature.getActiveParameter()).isEqualTo(1);
-	}
-
-	@Test
-	void haveTheSecondParameterActiveEvenIfTheParameterIsOnTheNextLine() throws ExecutionException, InterruptedException, TimeoutException
-	{
-		var help = getSignatureHelpForModuleCall("CALLNAT 'CALLED' APDA\n 'Lit${}$eral'");
+		var help = getSignatureHelpForModuleCall(moduleCall);
 		var signature = help.getSignatures().get(0);
 
 		assertThat(signature.getActiveParameter()).isEqualTo(1);
