@@ -145,11 +145,10 @@ public class NaturalLanguageService implements LanguageClientAware
 		// special case for the callnat string containing the called module
 		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), module);
 		if(node instanceof ITokenNode tokenNode
-			&& tokenNode.token().kind() == SyntaxKind.STRING_LITERAL
-			&& node.parent() instanceof ICallnatNode callnatNode
-			&& callnatNode.referencingToken().equals(tokenNode.token()))
+			&& node.parent() instanceof IModuleReferencingNode moduleReference
+			&& moduleReference.referencingToken().equals(tokenNode.token()))
 		{
-			node = callnatNode;
+			node = moduleReference;
 		}
 
 		var symbolToSearchFor = findTokenAtPosition(filepath, position); // TODO: Actually look for a node, could be ISymbolReferenceNode

@@ -106,7 +106,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 			#VAR5 := 1
 			""").statements();
 
-		assertThat(statements).hasSizeGreaterThan(1); // Assignment not parsed yet
+		assertThat(statements.size()).isEqualTo(4); // Assignment not parsed yet. Change this to two when this test breaks from implementing assignments
 		var callnat = assertNodeType(statements.first(), ICallnatNode.class);
 		assertThat(assertNodeType(callnat.providedParameter().last(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VARNEWLINE");
 	}
@@ -340,6 +340,40 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		var perform = assertParsesSingleStatement("PERFORM EXTERNAL-SUB", IExternalPerformNode.class);
 		assertThat(perform.reference()).isEqualTo(calledSubroutine);
 		assertThat(calledSubroutine.callers()).contains(perform);
+	}
+
+	@Test
+	void parseAndResolveExternalPerformCallsWithParameter()
+	{
+		var calledSubroutine = new NaturalModule(null);
+		moduleProvider.addModule("EXTERNAL-SUB", calledSubroutine);
+
+		var perform = assertParsesSingleStatement("PERFORM EXTERNAL-SUB PDA1 'Literal' 5 #VAR", IExternalPerformNode.class);
+		assertThat(perform.reference()).isEqualTo(calledSubroutine);
+		assertThat(calledSubroutine.callers()).contains(perform);
+		assertThat(perform.providedParameter()).hasSize(4);
+		assertThat(assertNodeType(perform.providedParameter().get(0), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("PDA1");
+		assertThat(assertNodeType(perform.providedParameter().get(1), ILiteralNode.class).token().stringValue()).isEqualTo("Literal");
+		assertThat(assertNodeType(perform.providedParameter().get(2), ILiteralNode.class).token().intValue()).isEqualTo(5);
+		assertThat(assertNodeType(perform.providedParameter().get(3), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+	}
+
+	@Test
+	void distinguishBetweenPerformParameterAndVariableAssignment()
+	{
+
+		var calledSubroutine = new NaturalModule(null);
+		moduleProvider.addModule("A-MODULE", calledSubroutine);
+
+		var statements = assertParsesWithoutDiagnostics("""
+			PERFORM A-MODULE #VAR #VAR
+				#VARNEWLINE
+			#VAR5 := 1
+			""").statements();
+
+		assertThat(statements.size()).isEqualTo(4); // Assignment not parsed yet. Change this to two when this test breaks from implementing assignments
+		var perform = assertNodeType(statements.first(), IExternalPerformNode.class);
+		assertThat(assertNodeType(perform.providedParameter().last(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VARNEWLINE");
 	}
 
 	@Test

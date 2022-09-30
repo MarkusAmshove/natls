@@ -299,11 +299,11 @@ class ParserErrors
 		);
 	}
 
-	public static IDiagnostic unresolvedImport(ITokenNode importNode)
+	public static IDiagnostic unresolvedImport(SyntaxToken token)
 	{
 		return ParserDiagnostic.create(
-			"Could not resolve external module %s".formatted(importNode.token().symbolName()),
-			importNode.token(),
+			"Could not resolve external module %s".formatted(token.symbolName()),
+			token,
 			ParserError.UNRESOLVED_IMPORT
 		);
 	}

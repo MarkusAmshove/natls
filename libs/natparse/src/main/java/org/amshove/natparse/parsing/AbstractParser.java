@@ -49,7 +49,7 @@ abstract class AbstractParser<T>
 		return relocatedDiagnosticPosition != null;
 	}
 
-	protected INaturalModule sideloadModule(String referableName, ITokenNode importNode)
+	protected INaturalModule sideloadModule(String referableName, SyntaxToken moduleIdentifierToken)
 	{
 		if (moduleProvider == null)
 		{
@@ -60,7 +60,7 @@ abstract class AbstractParser<T>
 
 		if (module == null && !(referableName.startsWith("USR") && referableName.endsWith("N")))
 		{
-			report(ParserErrors.unresolvedImport(importNode));
+			report(ParserErrors.unresolvedImport(moduleIdentifierToken));
 		}
 
 		return module;
@@ -68,7 +68,7 @@ abstract class AbstractParser<T>
 
 	protected IHasDefineData sideloadDefineData(TokenNode importNode)
 	{
-		if (sideloadModule(importNode.token().symbolName(), importNode) instanceof IHasDefineData hasDefineData)
+		if (sideloadModule(importNode.token().symbolName(), importNode.token()) instanceof IHasDefineData hasDefineData)
 		{
 			return hasDefineData;
 		}
@@ -328,7 +328,7 @@ abstract class AbstractParser<T>
 		var functionName = new TokenNode(token);
 		node.setReferencingToken(token);
 		node.addNode(functionName);
-		var module = sideloadModule(token.symbolName(), functionName);
+		var module = sideloadModule(token.symbolName(), functionName.token());
 		node.setReferencedModule((NaturalModule) module);
 
 		consumeMandatory(node, SyntaxKind.LPAREN);

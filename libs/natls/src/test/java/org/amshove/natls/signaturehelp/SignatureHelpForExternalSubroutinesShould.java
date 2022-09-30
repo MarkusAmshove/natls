@@ -14,7 +14,7 @@ class SignatureHelpForExternalSubroutinesShould extends SignatureHelpTest
 	{
 		var help = getSignatureHelpForParameterList("PERFORM THESUB${}$");
 		var signature = help.getSignatures().get(0);
-		assertThat(signature.getLabel()).isEqualTo("CALLED (USING APDA, P-OPTIONAL :(A10) OPTIONAL, P-NUMBER :(N12))");
+		assertThat(signature.getLabel()).isEqualTo("THESUB (USING APDA, P-OPTIONAL :(A10) OPTIONAL, P-NUMBER :(N12))");
 	}
 
 	@Test
@@ -60,7 +60,7 @@ class SignatureHelpForExternalSubroutinesShould extends SignatureHelpTest
 			1 P-NUMBER (N12)
 			END-DEFINE
 
-			DEFINE SUBROUTINE THE-SUB
+			DEFINE SUBROUTINE THESUB
 				IGNORE
 			END-SUBROUTINE
 
