@@ -55,7 +55,10 @@ public class SignatureHelpProvider
 			{
 				return provideSignatureForCopyCode(includeNode, position);
 			}
-			return null;
+
+			var signatureHelp = createDefaultSignatureHelp();
+			signatureHelp.getSignatures().get(0).setLabel("%s ()".formatted(moduleReference.reference().name()));
+			return signatureHelp;
 		}
 
 		var signatureHelp = createDefaultSignatureHelp();
