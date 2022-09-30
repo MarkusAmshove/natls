@@ -1820,7 +1820,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return
 			(peekKind(SyntaxKind.IDENTIFIER) && !peekKindInLine(SyntaxKind.COLON_EQUALS_SIGN))
 				|| peek().kind().isSystemFunction()
-				|| peek().kind().isSystemVariable()
+				|| (peek().kind().isSystemVariable() && lookahead != SyntaxKind.COLON_EQUALS_SIGN)
 				|| peek().kind().isLiteralOrConst()
 				|| peekKind(SyntaxKind.VAL)
 				|| peekKind(SyntaxKind.ABS)
@@ -1906,7 +1906,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		return switch (currentKind)
 			{
-				case ACCEPT, ADD, ASSIGN, CALL, CALLNAT, CLOSE, COMMIT, COMPRESS, COMPUTE, DECIDE, DEFINE, DELETE, DISPLAY, DIVIDE, DO, DOEND, DOWNLOAD, EJECT, END, ESCAPE, EXAMINE, EXPAND, FETCH, FIND, FOR, FORMAT, GET, HISTOGRAM, IF, IGNORE, INCLUDE, INPUT, INSERT, INTERFACE, LIMIT, LOOP, METHOD, MOVE, MULTIPLY, NEWPAGE, OBTAIN, OPTIONS, PASSW, PERFORM, PRINT, PROCESS, PROPERTY, READ, REDEFINE, REDUCE, REINPUT, REJECT, RELEASE, REPEAT, RESET, RESIZE, RETRY, ROLLBACK, RUN, SELECT, SEPARATE, SET, SKIP, SORT, STACK, STOP, STORE, SUBTRACT, TERMINATE, UPDATE, WRITE ->
+				case ACCEPT, ADD, ASSIGN, BEFORE, CALL, CALLNAT, CLOSE, COMMIT, COMPRESS, COMPUTE, DECIDE, DEFINE, DELETE, DISPLAY, DIVIDE, DO, DOEND, DOWNLOAD, EJECT, END, ESCAPE, EXAMINE, EXPAND, FETCH, FIND, FOR, FORMAT, GET, HISTOGRAM, IF, IGNORE, INCLUDE, INPUT, INSERT, INTERFACE, LIMIT, LOOP, METHOD, MOVE, MULTIPLY, NEWPAGE, OBTAIN, OPTIONS, PASSW, PERFORM, PRINT, PROCESS, PROPERTY, READ, REDEFINE, REDUCE, REINPUT, REJECT, RELEASE, REPEAT, RESET, RESIZE, RETRY, ROLLBACK, RUN, SELECT, SEPARATE, SET, SKIP, SORT, STACK, STOP, STORE, SUBTRACT, TERMINATE, UPDATE, WRITE ->
 					true;
 				case ON -> peekKind(1, SyntaxKind.ERROR);
 				case OPEN -> peekKind(1, SyntaxKind.CONVERSATION);
@@ -1917,35 +1917,5 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 				case UPLOAD -> peekKind(1, SyntaxKind.PC) && peekKind(2, SyntaxKind.FILE);
 				default -> false;
 			};
-	}
-
-	private UnaryLogicalCriteriaNode unaryVariableOrFunctionCall() throws ParseError
-	{
-		var unary = new UnaryLogicalCriteriaNode();
-		if (peekKind(1, SyntaxKind.LPAREN) && peekKind(2, SyntaxKind.LESSER_SIGN))
-		{
-			var functionName = consumeIdentifierTokenOnly();
-			unary.setNode(functionCall(functionName));
-		}
-		else
-		{
-			unary.setNode(consumeVariableReferenceNode(unary));
-		}
-		return unary;
-	}
-
-	private UnaryLogicalCriteriaNode constantUnary() throws ParseError
-	{
-		var unary = new UnaryLogicalCriteriaNode();
-		if (peekKind(SyntaxKind.TRUE))
-		{
-			unary.setNode(consumeLiteralNode(unary, SyntaxKind.TRUE));
-		}
-		else
-		{
-			unary.setNode(consumeLiteralNode(unary, SyntaxKind.FALSE));
-		}
-
-		return unary;
 	}
 }

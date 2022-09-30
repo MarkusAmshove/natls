@@ -107,7 +107,8 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	@ParameterizedTest
 	@ValueSource(strings = {
 		"#VAR5 := 1",
-		"#VAR5(2) := 10"
+		"#VAR5(2) := 10",
+		"*ERROR-NR := 5"
 	})
 	void distinguishBetweenCallnatParameterAndVariableAssignment(String nextLine)
 	{
