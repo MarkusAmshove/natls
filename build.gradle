@@ -80,14 +80,11 @@ subprojects {
 	}
 
 	jacocoTestReport {
-			additionalSourceDirs.setFrom files(sourceSets.main.allSource.srcDirs)
-			sourceDirectories.setFrom files(sourceSets.main.allSource.srcDirs)
-			classDirectories.setFrom  files(sourceSets.main.output)
-			reports {
-				html.required = true
-				xml.required = true
-				csv.required = false
-			}
+		reports {
+			html.required = true
+			xml.required = true
+			csv.required = false
+		}
 	}
 }
 
@@ -117,7 +114,8 @@ sonarqube {
 		property "sonar.projectKey", "MarkusAmshove_natls"
 		property "sonar.organization", "markusamshove"
 		property "sonar.host.url", "https://sonarcloud.io"
+		property 'sonar.coverage.jacoco.xmlReportPaths', "${rootProject.buildDir}/reports/jacoco/cover/cover.xml"
 	}
 }
 
-project.tasks['sonarqube'].dependsOn subprojects.jacocoTestReport
+project.tasks['sonarqube'].dependsOn cover
