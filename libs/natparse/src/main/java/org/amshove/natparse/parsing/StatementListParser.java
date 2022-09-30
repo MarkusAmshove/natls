@@ -1081,7 +1081,10 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 				externalPerform.addParameter(operand);
 			}
 			var foundModule = sideloadModule(externalPerform.referencingToken().trimmedSymbolName(32), externalPerform.referencingToken());
-			externalPerform.setReference(foundModule);
+			if(foundModule != null)
+			{
+				externalPerform.setReference(foundModule);
+			}
 
 			return externalPerform;
 		}
