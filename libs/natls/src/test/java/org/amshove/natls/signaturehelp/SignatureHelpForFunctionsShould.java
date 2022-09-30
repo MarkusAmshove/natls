@@ -30,6 +30,45 @@ class SignatureHelpForFunctionsShould extends SignatureHelpTest
 	}
 
 	@Test
+	void provideSignatureInformationForFunctionCallsInIfConditions() throws ExecutionException, InterruptedException, TimeoutException
+	{
+		var help = getSignatureHelpForModuleCall("""
+			IF NOT ISSTH(<${}$>)
+			IGNORE
+			END-IF
+			""");
+		assertThat(help).isNotNull();
+	}
+
+	@Test
+	void provideSignatureInformationForFunctionCallsInWhenConditions() throws ExecutionException, InterruptedException, TimeoutException
+	{
+		var help = getSignatureHelpForModuleCall("""
+			DECIDE ON FIRST CONDITION
+			WHEN ISSTH(<${}$>)
+			IGNORE
+			WHEN NONE
+			IGNORE
+			END-DECIDE
+			""");
+		assertThat(help).isNotNull();
+	}
+
+	@Test
+	void provideSignatureInformationForFunctionCallsInWhenConditionsWhenAParameterIsAlreadyPresent() throws ExecutionException, InterruptedException, TimeoutException
+	{
+		var help = getSignatureHelpForModuleCall("""
+			DECIDE ON FIRST CONDITION
+			WHEN ISSTH(<#VAR, ${}$>)
+			IGNORE
+			WHEN NONE
+			IGNORE
+			END-DECIDE
+			""");
+		assertThat(help).isNotNull();
+	}
+
+	@Test
 	void haveTheSecondParameterActiveWhenCursorIsAfterFirstParameter() throws ExecutionException, InterruptedException, TimeoutException
 	{
 		var help = getSignatureHelpForModuleCall("ISSTH(<'ASD', ${}$>)");

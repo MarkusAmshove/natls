@@ -10,7 +10,6 @@ import org.eclipse.lsp4j.SignatureInformation;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class SignatureHelpProvider
@@ -23,27 +22,31 @@ public class SignatureHelpProvider
 			return null;
 		}
 
-		return NodeUtil.findStatementInLine(position.getLine(), hasBody.body())
-			.or(() -> {
-					var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), hasBody.body());
-					if(node != null && node.parent() instanceof IStatementNode statementNode)
-					{
-						return Optional.of(statementNode);
-					}
-					return Optional.empty();
-				}
-			)
-			.map(statement -> provideSignatureForStatement(statement, position))
-			.orElse(null);
-	}
-
-	private SignatureHelp provideSignatureForStatement(IStatementNode statement, Position position)
-	{
-		if(!(statement instanceof IModuleReferencingNode moduleReference))
+		// If we find a module referencing statement, that's the most likely match
+		var maybeStatement = NodeUtil.findStatementInLine(position.getLine(), hasBody.body());
+		if(maybeStatement.isPresent() && maybeStatement.get() instanceof IModuleReferencingNode moduleReferencingNode)
 		{
-			return null;
+			return provideSignatureForStatement(moduleReferencingNode, position);
 		}
 
+		// Look deeper to find the exact Node the cursor on
+		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), hasBody.body());
+		if(node instanceof IModuleReferencingNode moduleReferencingNode)
+		{
+			return provideSignatureForStatement(moduleReferencingNode, position);
+		}
+
+		// We most likely landed on a Token, which could be a parameter
+		if(node != null && node.parent() instanceof IModuleReferencingNode moduleReferencingNode)
+		{
+			return provideSignatureForStatement(moduleReferencingNode, position);
+		}
+
+		return null;
+	}
+
+	private SignatureHelp provideSignatureForStatement(IModuleReferencingNode moduleReference, Position position)
+	{
 		var calledModule = moduleReference.reference();
 		if(!(calledModule instanceof IHasDefineData hasDefineData) || hasDefineData.defineData() == null)
 		{

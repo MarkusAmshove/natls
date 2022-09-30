@@ -137,31 +137,6 @@ public class NodeUtil
 		return (IVariableNode) owner;
 	}
 
-	public static Optional<IStatementNode> findStatementAtPosition(int line, int column, IStatementListNode statementList)
-	{
-		for (var statement : statementList.statements())
-		{
-			if(statement.enclosesPosition(line, column))
-			{
-				return Optional.of(statement);
-			}
-
-			if(statement instanceof IStatementWithBodyNode withBody)
-			{
-				if(withBody.descendants().first().diagnosticPosition().line() <= line && withBody.descendants().last().diagnosticPosition().line() >= line)
-				{
-					var childStatement = findStatementAtPosition(line, column, withBody.body());
-					if (childStatement.isPresent())
-					{
-						return childStatement;
-					}
-				}
-			}
-		}
-
-		return Optional.empty();
-	}
-	
 	public static Optional<IStatementNode> findStatementInLine(int line, IStatementListNode statementList)
 	{
 		for (var statement : statementList.statements())
@@ -171,29 +146,18 @@ public class NodeUtil
 				return Optional.of(statement);
 			}
 
-			if(statement instanceof IStatementWithBodyNode withBody)
+			if(statement instanceof IStatementWithBodyNode withBody
+				&& withBody.descendants().first().diagnosticPosition().line() <= line
+				&& withBody.descendants().last().diagnosticPosition().line() >= line)
 			{
-				if(withBody.descendants().first().diagnosticPosition().line() <= line && withBody.descendants().last().diagnosticPosition().line() >= line)
+				var childStatement = findStatementInLine(line, withBody.body());
+				if (childStatement.isPresent())
 				{
-					var childStatement = findStatementInLine(line, withBody.body());
-					if (childStatement.isPresent())
-					{
-						return childStatement;
-					}
+					return childStatement;
 				}
 			}
 		}
 
 		return Optional.empty();
-	}
-
-	public static Optional<IStatementNode> findStatementAtPosition(int line, INaturalModule module)
-	{
-		if(!(module instanceof IModuleWithBody moduleWithBody))
-		{
-			return Optional.empty();
-		}
-
-		return findStatementInLine(line, moduleWithBody.body());
 	}
 }
