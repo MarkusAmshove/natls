@@ -16,6 +16,7 @@ import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natls.project.LanguageServerProject;
 import org.amshove.natls.project.ModuleReferenceParser;
 import org.amshove.natls.project.ParseStrategy;
+import org.amshove.natls.signaturehelp.SignatureHelpProvider;
 import org.amshove.natls.snippets.SnippetEngine;
 import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
@@ -65,6 +66,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	private HoverProvider hoverProvider;
 	private final RenameSymbolAction renameComputer = new RenameSymbolAction();
 	private SnippetEngine snippetEngine;
+	private final SignatureHelpProvider signatureHelp = new SignatureHelpProvider();
 
 	public void indexProject(Path workspaceRoot, IProgressMonitor progressMonitor)
 	{
@@ -571,92 +573,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var filePath = LspUtil.uriToPath(textDocument.getUri());
 		var file = findNaturalFile(filePath);
 		var module = file.module();
-
-		if(!(module instanceof IModuleWithBody hasBody))
-		{
-			return null;
-		}
-
-		return NodeUtil.findStatementInLine(position.getLine(), hasBody.body())
-			.map(statement -> {
-				if(!(statement instanceof IModuleReferencingNode moduleReference))
-				{
-					return null;
-				}
-
-				var calledModule = moduleReference.reference();
-				if(!(calledModule instanceof IHasDefineData hasDefineData) || hasDefineData.defineData() == null)
-				{
-					return null;
-				}
-
-				var signature = new SignatureHelp();
-
-				var signatureInformation = new SignatureInformation();
-				signature.setSignatures(List.of(signatureInformation));
-
-				var parameter = new ArrayList<ParameterInformation>();
-				signatureInformation.setParameters(parameter);
-
-				var parameterIndex = 0;
-				var parameterFound = false;
-				for (var providedParameter : moduleReference.providedParameter())
-				{
-					if(providedParameter.enclosesPosition(position.getLine(), position.getCharacter()))
-					{
-						parameterFound = true;
-						signatureInformation.setActiveParameter(parameterIndex);
-						break;
-					}
-
-					parameterIndex++;
-				}
-
-				if(!parameterFound)
-				{
-					signatureInformation.setActiveParameter(moduleReference.providedParameter().size()); // size = next index that isn't provided yet
-				}
-
-				hasDefineData.defineData().parameterInOrder().stream()
-					.map(this::mapToParameterInformation)
-					.forEach(parameter::add);
-
-				var parameterSignature = parameter.stream().map(pi -> pi.getLabel().getLeft()).collect(Collectors.joining(", "));
-				signatureInformation.setLabel(
-					"%s (%s)".formatted(
-						calledModule.name(),
-						parameterSignature
-					)
-				);
-
-				return signature;
-			})
-			.orElse(null);
-	}
-
-	private ParameterInformation mapToParameterInformation(IParameterDefinitionNode parameter)
-	{
-		var information = new ParameterInformation();
-		if(parameter instanceof IVariableNode variableNode)
-		{
-			information.setLabel(variableNode.name());
-			if(variableNode instanceof ITypedVariableNode typedVariableNode)
-			{
-				information.setLabel("%s :%s%s".formatted(
-					information.getLabel().getLeft(),
-					typedVariableNode.type().toShortString(),
-					typedVariableNode.findDescendantToken(SyntaxKind.OPTIONAL) != null ? " OPTIONAL" : ""
-					)
-				);
-			}
-		}
-
-		if(parameter instanceof IUsingNode using)
-		{
-			information.setLabel("USING " + using.target().symbolName());
-		}
-
-		return information;
+		return signatureHelp.provideSignatureHelp(module, position);
 	}
 
 	public List<CompletionItem> complete(CompletionParams completionParams)

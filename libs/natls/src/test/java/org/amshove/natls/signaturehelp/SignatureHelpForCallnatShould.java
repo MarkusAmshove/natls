@@ -47,6 +47,15 @@ class SignatureHelpForCallnatShould extends SignatureHelpTest
 		assertThat(signature.getActiveParameter()).isEqualTo(1);
 	}
 
+	@Test
+	void haveTheSecondParameterActiveEvenIfTheParameterIsOnTheNextLine() throws ExecutionException, InterruptedException, TimeoutException
+	{
+		var help = getSignatureHelpForModuleCall("CALLNAT 'CALLED' APDA\n 'Lit${}$eral'");
+		var signature = help.getSignatures().get(0);
+
+		assertThat(signature.getActiveParameter()).isEqualTo(1);
+	}
+
 	@Override
 	protected String getCalledModuleFilename()
 	{
