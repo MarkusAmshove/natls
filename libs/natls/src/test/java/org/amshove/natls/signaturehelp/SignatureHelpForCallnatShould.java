@@ -20,6 +20,14 @@ class SignatureHelpForCallnatShould extends SignatureHelpTest
 	}
 
 	@Test
+	void haveTheCompleteSignatureAsLabelWhenCallnatIsNestedInASubroutine() throws ExecutionException, InterruptedException, TimeoutException
+	{
+		var help = getSignatureHelpForModuleCall("DEFINE SUBROUTINE A-SUB\nCALLNAT 'CALLED' ${}$\nEND-SUBROUTINE");
+		var signature = help.getSignatures().get(0);
+		assertThat(signature.getLabel()).isEqualTo("CALLED (USING APDA, P-OPTIONAL :(A10) OPTIONAL, P-NUMBER :(N12))");
+	}
+
+	@Test
 	void haveTheFirstParameterActiveWhenCursorIsAfterModuleName() throws ExecutionException, InterruptedException, TimeoutException
 	{
 		var help = getSignatureHelpForModuleCall("CALLNAT 'CALLED'${}$");
