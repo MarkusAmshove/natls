@@ -2,7 +2,10 @@ package org.amshove.natparse.lexing;
 
 import org.junit.jupiter.api.Test;
 
-public class LexerForStringsShould extends AbstractLexerTest
+import static org.assertj.core.api.AssertionsForInterfaceTypes.*;
+
+
+class LexerForStringsShould extends AbstractLexerTest
 {
 	@Test
 	void lexSingleQuoteStrings()
@@ -90,5 +93,21 @@ public class LexerForStringsShould extends AbstractLexerTest
 			token(SyntaxKind.STRING_LITERAL, "'Hello World!'"),
 			token(SyntaxKind.WRITE)
 		);
+	}
+
+	@Test
+	void lexEscapedStrings()
+	{
+		var tokens = lexSource("''''");
+		assertThat(tokens.size()).isEqualTo(1);
+		assertThat(tokens.peek().stringValue()).isEqualTo("'");
+	}
+
+	@Test
+	void lexEscapedStringsWithContent()
+	{
+		var tokens = lexSource("'''Hello'''");
+		assertThat(tokens.size()).isEqualTo(1);
+		assertThat(tokens.peek().stringValue()).isEqualTo("'Hello'");
 	}
 }
