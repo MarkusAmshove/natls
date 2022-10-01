@@ -1153,6 +1153,10 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			var operand = consumeModuleParameter(callnat);
 			callnat.addParameter(operand);
+			if(peekKind(SyntaxKind.LPAREN) && peekKind(1, SyntaxKind.AD))
+			{
+				consumeAttributeDefinition((BaseSyntaxNode) operand);
+			}
 		}
 
 		return callnat;

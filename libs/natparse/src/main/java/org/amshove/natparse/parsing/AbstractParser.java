@@ -592,8 +592,9 @@ abstract class AbstractParser<T>
 		previousNode = reference;
 		node.addNode(reference);
 
-		if(consumeOptionally(reference, SyntaxKind.LPAREN))
+		if(peekKind(SyntaxKind.LPAREN) && !peekKind(1, SyntaxKind.AD))
 		{
+			consumeMandatory(reference, SyntaxKind.LPAREN);
 			reference.addDimension(consumeArrayAccess(reference));
 			while(peekKind(SyntaxKind.COMMA))
 			{
@@ -663,6 +664,16 @@ abstract class AbstractParser<T>
 
 		diagnostics.add(ParserErrors.unexpectedToken(acceptedKinds, tokens.peek()));
 		throw new ParseError(peek());
+	}
+
+	protected void consumeAttributeDefinition(BaseSyntaxNode node) throws ParseError
+	{
+		// we don't do anything special yet, need some experience on where attribute definitions are allowed
+		// this was built for CALLNAT, where a variable reference as parameter can have attribute definitions (only AD)
+		// might be reusable for WRITE, DISPLAY, etc. for all kind of operands, but has to be fleshed out then
+		consumeMandatory(node, SyntaxKind.LPAREN);
+		consumeMandatory(node, SyntaxKind.AD);
+		consumeMandatory(node, SyntaxKind.RPAREN);
 	}
 
 	protected boolean peekAny(List<SyntaxKind> acceptedKinds)

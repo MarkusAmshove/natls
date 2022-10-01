@@ -94,6 +94,25 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseParameterForCallnatsWithAttributeDefinition()
+	{
+		var calledSubprogram = new NaturalModule(null);
+		moduleProvider.addModule("A-MODULE", calledSubprogram);
+
+		var callnat = assertParsesSingleStatement("CALLNAT 'A-module' #VAR (AD=O) #VAR2 (AD=M) #VAR3 (AD=A)", ICallnatNode.class);
+		assertThat(callnat.providedParameter()).hasSize(3);
+
+		var first = assertNodeType(callnat.providedParameter().get(0), IVariableReferenceNode.class);
+		assertThat(first.findDescendantToken(SyntaxKind.AD)).isNotNull();
+
+		var second = assertNodeType(callnat.providedParameter().get(1), IVariableReferenceNode.class);
+		assertThat(second.findDescendantToken(SyntaxKind.AD)).isNotNull();
+
+		var third = assertNodeType(callnat.providedParameter().get(2), IVariableReferenceNode.class);
+		assertThat(third.findDescendantToken(SyntaxKind.AD)).isNotNull();
+	}
+
+	@Test
 	void parseCallnatWithUsing()
 	{
 		var calledSubprogram = new NaturalModule(null);
