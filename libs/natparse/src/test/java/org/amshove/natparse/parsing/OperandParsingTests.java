@@ -192,6 +192,16 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseTranslateWithLiterals()
+	{
+		var operand = parseOperands("*TRANSLATE('dr.', UPPER)");
+		var translate = assertNodeType(operand.get(0), ITranslateSystemFunctionNode.class);
+		assertThat(assertNodeType(translate.parameter().first(), ILiteralNode.class).token().stringValue()).isEqualTo("dr.");
+		assertThat(assertNodeType(translate.toTranslate(), ILiteralNode.class).token().stringValue()).isEqualTo("dr.");
+		assertThat(translate.isToUpper()).isTrue();
+	}
+
+	@Test
 	void parseTranslateLower()
 	{
 		var operand = parseOperands("*TRANSLATE(#VAR, LOWER)");

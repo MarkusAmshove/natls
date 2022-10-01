@@ -567,8 +567,16 @@ abstract class AbstractParser<T>
 		node.addNode(translate);
 		consumeMandatory(translate, SyntaxKind.TRANSLATE);
 		consumeMandatory(translate, SyntaxKind.LPAREN);
-		var reference = consumeVariableReferenceNode(translate);
-		translate.setToTranslate(reference);
+		if(peekKind(SyntaxKind.STRING_LITERAL))
+		{
+			var literal = consumeLiteralNode(translate, SyntaxKind.STRING_LITERAL);
+			translate.setToTranslate(literal);
+		}
+		else
+		{
+			var reference = consumeVariableReferenceNode(translate);
+			translate.setToTranslate(reference);
+		}
 		consumeMandatory(translate, SyntaxKind.COMMA);
 		var translationToken = consumeAny(List.of(SyntaxKind.UPPER, SyntaxKind.LOWER));
 		translate.setToUpper(translationToken.kind() == SyntaxKind.UPPER);
