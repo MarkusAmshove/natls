@@ -1,25 +1,18 @@
 package org.amshove.natls.hover;
 
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import org.amshove.natls.markupcontent.IMarkupContentBuilder;
 import org.amshove.natls.markupcontent.MarkupContentBuilderFactory;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.lexing.SyntaxKind;
-import org.amshove.natparse.natural.DataFormat;
-import org.amshove.natparse.natural.IHasDefineData;
-import org.amshove.natparse.natural.IModuleReferencingNode;
-import org.amshove.natparse.natural.INaturalModule;
-import org.amshove.natparse.natural.ISymbolReferenceNode;
-import org.amshove.natparse.natural.ITypedVariableNode;
-import org.amshove.natparse.natural.IUsingNode;
-import org.amshove.natparse.natural.IVariableNode;
+import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.builtin.BuiltInFunctionTable;
 import org.amshove.natparse.natural.builtin.SystemFunctionDefinition;
 import org.amshove.natparse.natural.builtin.SystemVariableDefinition;
 import org.eclipse.lsp4j.Hover;
+
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class HoverProvider
 {
@@ -42,7 +35,7 @@ public class HoverProvider
 
 		if(context.nodeToHover() instanceof IModuleReferencingNode moduleReferencingNode)
 		{
-			return hoverExternalModule(moduleReferencingNode, context);
+			return hoverExternalModule(moduleReferencingNode);
 		}
 
 		if(context.nodeToHover() instanceof IVariableNode variableNode)
@@ -62,7 +55,7 @@ public class HoverProvider
 		return EMPTY_HOVER;
 	}
 
-	private Hover hoverExternalModule(IModuleReferencingNode moduleReferencingNode, HoverContext context)
+	private Hover hoverExternalModule(IModuleReferencingNode moduleReferencingNode)
 	{
 		var module = moduleReferencingNode.reference();
 		if(module == null)
@@ -90,7 +83,7 @@ public class HoverProvider
 			contentBuilder.appendCode(documentation);
 		}
 
-		addModuleParameter(contentBuilder, module, context);
+		addModuleParameter(contentBuilder, module);
 
 		return new Hover(contentBuilder.build());
 	}
@@ -190,7 +183,7 @@ public class HoverProvider
 		}
 	}
 
-	private void addModuleParameter(IMarkupContentBuilder contentBuilder, INaturalModule module, HoverContext context)
+	private void addModuleParameter(IMarkupContentBuilder contentBuilder, INaturalModule module)
 	{
 		if(!(module instanceof IHasDefineData hasDefineData) || hasDefineData.defineData() == null)
 		{
