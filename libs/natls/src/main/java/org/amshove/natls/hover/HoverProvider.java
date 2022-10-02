@@ -197,8 +197,8 @@ public class HoverProvider
 			return;
 		}
 
-		Function<IUsingNode, String> usingFormatter = (using) -> "PARAMETER USING %s %s".formatted(using.target().source(), module.extractLineComment(using.position().line()));
-		Function<IVariableNode, String> variableFormatter = (variable) -> {
+		Function<IUsingNode, String> usingFormatter = using -> "PARAMETER USING %s %s".formatted(using.target().source(), module.extractLineComment(using.position().line()));
+		Function<IVariableNode, String> variableFormatter = variable -> {
 			var declaration = formatVariableDeclaration(module, variable);
 			return "%s%s".formatted(
 				declaration.declaration,

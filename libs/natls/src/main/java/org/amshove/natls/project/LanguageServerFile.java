@@ -6,7 +6,6 @@ import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.Lexer;
-import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
 import org.amshove.natparse.natural.project.NaturalFile;
@@ -27,7 +26,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class LanguageServerFile implements IModuleProvider
 {
@@ -433,12 +431,6 @@ public class LanguageServerFile implements IModuleProvider
 	public NaturalFile getNaturalFile()
 	{
 		return file;
-	}
-
-	@Deprecated(since = "Use module().comments()", forRemoval = true)
-	public ReadOnlyList<SyntaxToken> comments()
-	{
-		return module.comments();
 	}
 
 	private byte[] hashDefineData(String source)
