@@ -86,10 +86,12 @@ public class LanguageServerProject
 		return provideAllFiles().count();
 	}
 
-	public void addFile(Path path)
+	public LanguageServerFile addFile(Path path)
 	{
 		var library = libraries.values().stream().filter(l -> l.residesInLibrary(path)).findFirst().orElseThrow();
 		var naturalFile = new NaturalProjectFileIndexer().toNaturalFile(path, library.getLibrary());
-		library.addFile(new LanguageServerFile(naturalFile));
+		var lspFile = new LanguageServerFile(naturalFile);
+		library.addFile(lspFile);
+		return lspFile;
 	}
 }

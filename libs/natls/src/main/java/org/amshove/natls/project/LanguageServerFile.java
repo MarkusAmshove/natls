@@ -7,6 +7,7 @@ import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxToken;
+import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
 import org.amshove.natparse.natural.project.NaturalFile;
@@ -27,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class LanguageServerFile implements IModuleProvider
 {
@@ -36,7 +38,6 @@ public class LanguageServerFile implements IModuleProvider
 	private LanguageServerLibrary library;
 	private final Set<LanguageServerFile> outgoingReferences = new HashSet<>();
 	private final Set<LanguageServerFile> incomingReferences = new HashSet<>();
-	private final List<SyntaxToken> comments = new ArrayList<>();
 
 	private byte[] defineDataHash;
 	private boolean hasBeenAnalyzed;
@@ -261,8 +262,6 @@ public class LanguageServerFile implements IModuleProvider
 
 		var lexer = new Lexer();
 		var tokenList = lexer.lex(source, file.getPath());
-		comments.clear();
-		comments.addAll(tokenList.comments().toList());
 		var parser = new NaturalParser(this);
 
 		module = parser.parse(file, tokenList);
@@ -437,9 +436,47 @@ public class LanguageServerFile implements IModuleProvider
 		return file;
 	}
 
+	@Deprecated(since = "Use module().comments()", forRemoval = true)
 	public ReadOnlyList<SyntaxToken> comments()
 	{
-		return ReadOnlyList.from(comments);
+		return module.comments();
+	}
+
+	public String extractModuleDocumentation()
+	{
+		ensureParsed(ParseStrategy.WITHOUT_CALLERS);
+		if(module.comments().isEmpty())
+		{
+			return "";
+		}
+
+		var firstLineOfCode = module.syntaxTree().descendants().first().diagnosticPosition().line();
+
+		return module.comments().stream()
+			.takeWhile(t -> t.line() < firstLineOfCode)
+			.map(SyntaxToken::source)
+			.filter(l -> !l.startsWith("* >") && !l.startsWith("* <") && !l.startsWith("* :"))
+			.filter(l -> !l.trim().endsWith("*"))
+			.collect(Collectors.joining(System.lineSeparator()));
+	}
+
+	public String extractLineComment(int line)
+	{
+		ensureParsed(ParseStrategy.WITHOUT_CALLERS);
+
+		return module.comments().stream()
+			.filter(t -> t.line() == line)
+			.map(SyntaxToken::source)
+			.findFirst()
+			.orElse("");
+	}
+
+	private void ensureParsed(ParseStrategy strategy)
+	{
+		if(module == null)
+		{
+			parse(strategy);
+		}
 	}
 
 	private byte[] hashDefineData(String source)

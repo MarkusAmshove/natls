@@ -98,7 +98,8 @@ public class NaturalLanguageService implements LanguageClientAware
 	public void createdFile(String uri)
 	{
 		var path = LspUtil.uriToPath(uri);
-		languageServerProject.addFile(path);
+		var lspFile = languageServerProject.addFile(path);
+		lspFile.parse();
 	}
 
 	public List<? extends SymbolInformation> findWorkspaceSymbols(String query, CancelChecker cancelChecker)
@@ -316,7 +317,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	private String getLineComment(int line, LanguageServerFile file)
 	{
-		return file.comments().stream()
+		return file.module().comments().stream()
 			.filter(t -> t.line() == line)
 			.map(SyntaxToken::source)
 			.findFirst()

@@ -38,6 +38,7 @@ public class NaturalParser
 		var naturalModule = new NaturalModule(file);
 		naturalModule.addDiagnostics(tokens.diagnostics());
 		var topLevelNodes = new ArrayList<ISyntaxNode>();
+		naturalModule.setComments(tokens.comments());
 
 		if(file.getFiletype() == NaturalFileType.FUNCTION) // skip over DEFINE FUNCTION
 		{

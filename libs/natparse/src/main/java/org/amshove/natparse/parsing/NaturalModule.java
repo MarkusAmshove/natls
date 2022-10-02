@@ -2,6 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
+import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
@@ -20,6 +21,7 @@ public class NaturalModule
 	private final List<IReferencableNode> referencableNodes = new ArrayList<>();
 	private IStatementListNode body;
 	private ISyntaxTree tree;
+	private ReadOnlyList<SyntaxToken> comments;
 
 	public NaturalModule(NaturalFile file)
 	{
@@ -124,6 +126,16 @@ public class NaturalModule
 	void addReferencableNodes(List<IReferencableNode> nodes)
 	{
 		referencableNodes.addAll(nodes);
+	}
+
+	void setComments(ReadOnlyList<SyntaxToken> comments)
+	{
+		this.comments = comments;
+	}
+
+	public ReadOnlyList<SyntaxToken> comments()
+	{
+		return comments;
 	}
 
 	public ReadOnlyList<IReferencableNode> referencableNodes()
