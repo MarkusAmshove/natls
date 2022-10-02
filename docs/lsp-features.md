@@ -25,7 +25,7 @@ Code completion that tells you where variables come from, what type they are, ar
 
 # Signature help
 
-![signature_help](/assets/lsp_features/signature_help.png)
+![signature_help](/assets/lsp_features/signature_help.gif)
 
 Get signature help for calling external modules, including the documentation of the module and the parameter with their documentation.
 
