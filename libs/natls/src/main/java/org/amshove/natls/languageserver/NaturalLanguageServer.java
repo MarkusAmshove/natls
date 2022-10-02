@@ -54,10 +54,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			inlayHintRegistrationOptions.setResolveProvider(true);
 			capabilities.setInlayHintProvider(inlayHintRegistrationOptions);
 
-			var signatureHelpProvider = new SignatureHelpOptions();
-			signatureHelpProvider.setTriggerCharacters(List.of("§"));
-			signatureHelpProvider.setRetriggerCharacters(List.of("§"));
-			capabilities.setSignatureHelpProvider(signatureHelpProvider);
+			capabilities.setSignatureHelpProvider(new SignatureHelpOptions());
 
 			var workspace = new WorkspaceServerCapabilities();
 			var fileOperations = new FileOperationsServerCapabilities();
