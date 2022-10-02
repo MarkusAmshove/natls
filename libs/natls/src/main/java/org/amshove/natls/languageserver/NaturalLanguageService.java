@@ -85,7 +85,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		preParseDataAreas(progressMonitor);
 		snippetEngine = new SnippetEngine(languageServerProject);
 		initialized = true;
-		hoverProvider = new HoverProvider(languageServerProject);
+		hoverProvider = new HoverProvider();
 	}
 
 	public List<DocumentSymbol> findSymbolsInFile(TextDocumentIdentifier textDocument)

@@ -7,7 +7,6 @@ import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxToken;
-import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
 import org.amshove.natparse.natural.project.NaturalFile;
@@ -440,43 +439,6 @@ public class LanguageServerFile implements IModuleProvider
 	public ReadOnlyList<SyntaxToken> comments()
 	{
 		return module.comments();
-	}
-
-	public String extractModuleDocumentation()
-	{
-		ensureParsed(ParseStrategy.WITHOUT_CALLERS);
-		if(module.comments().isEmpty())
-		{
-			return "";
-		}
-
-		var firstLineOfCode = module.syntaxTree().descendants().first().diagnosticPosition().line();
-
-		return module.comments().stream()
-			.takeWhile(t -> t.line() < firstLineOfCode)
-			.map(SyntaxToken::source)
-			.filter(l -> !l.startsWith("* >") && !l.startsWith("* <") && !l.startsWith("* :"))
-			.filter(l -> !l.trim().endsWith("*"))
-			.collect(Collectors.joining(System.lineSeparator()));
-	}
-
-	public String extractLineComment(int line)
-	{
-		ensureParsed(ParseStrategy.WITHOUT_CALLERS);
-
-		return module.comments().stream()
-			.filter(t -> t.line() == line)
-			.map(SyntaxToken::source)
-			.findFirst()
-			.orElse("");
-	}
-
-	private void ensureParsed(ParseStrategy strategy)
-	{
-		if(module == null)
-		{
-			parse(strategy);
-		}
 	}
 
 	private byte[] hashDefineData(String source)

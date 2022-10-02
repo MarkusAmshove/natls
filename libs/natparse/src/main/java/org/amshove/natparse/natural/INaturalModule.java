@@ -14,6 +14,9 @@ public interface INaturalModule
 	ReadOnlyList<SyntaxToken> comments();
 	boolean isTestCase();
 
+	String moduleDocumentation();
+	String extractLineComment(int line);
+
 	ISyntaxTree syntaxTree();
 	ReadOnlyList<IReferencableNode> referencableNodes();
 

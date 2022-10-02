@@ -9,6 +9,7 @@ import org.amshove.natparse.natural.project.NaturalFileType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class NaturalModule
 	// TODO: Clean up once new subclasses happen. Remove public then
@@ -142,4 +143,32 @@ public class NaturalModule
 	{
 		return ReadOnlyList.from(referencableNodes);
 	}
+
+	public String moduleDocumentation()
+	{
+		if(comments().isEmpty())
+		{
+			return "";
+		}
+
+		var firstLineOfCode = syntaxTree().descendants().first().diagnosticPosition().line();
+
+		return comments.stream()
+			.takeWhile(t -> t.line() < firstLineOfCode)
+			.map(SyntaxToken::source)
+			.filter(l -> !l.startsWith("* >") && !l.startsWith("* <") && !l.startsWith("* :"))
+			.filter(l -> !l.trim().endsWith("*"))
+			.collect(Collectors.joining(System.lineSeparator()));
+	}
+
+	@Override
+	public String extractLineComment(int line)
+	{
+		return comments.stream()
+			.filter(t -> t.line() == line)
+			.map(SyntaxToken::source)
+			.findFirst()
+			.orElse("");
+	}
+
 }

@@ -1,25 +1,18 @@
 package org.amshove.natls.hover;
 
-import java.nio.file.Path;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
-
 import org.amshove.natls.markupcontent.IMarkupContentBuilder;
 import org.amshove.natls.markupcontent.MarkupContentBuilderFactory;
-import org.amshove.natls.project.LanguageServerFile;
-import org.amshove.natls.project.LanguageServerProject;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.lexing.SyntaxKind;
-import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IHasDefineData;
 import org.amshove.natparse.natural.IModuleReferencingNode;
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.ISymbolReferenceNode;
-import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.ITypedVariableNode;
 import org.amshove.natparse.natural.IUsingNode;
 import org.amshove.natparse.natural.IVariableNode;
@@ -31,12 +24,6 @@ import org.eclipse.lsp4j.Hover;
 public class HoverProvider
 {
 	private static final Hover EMPTY_HOVER = null; // This should be null according to the LSP spec
-	private final LanguageServerProject project;
-
-	public HoverProvider(LanguageServerProject project)
-	{
-		this.project = project;
-	}
 
 	public Hover createHover(HoverContext context)
 	{
@@ -97,8 +84,7 @@ public class HoverProvider
 			contentBuilder.appendItalic("File: %s".formatted(module.file().getFilenameWithoutExtension())).appendNewline();
 		}
 
-		var calledFile = project.findFile(module.file());
-		var documentation = calledFile.extractModuleDocumentation();
+		var documentation = module.moduleDocumentation();
 		if(documentation != null && !documentation.trim().isEmpty())
 		{
 			contentBuilder.appendCode(documentation);
@@ -148,7 +134,7 @@ public class HoverProvider
 	private Hover hoverVariable(IVariableNode variable, HoverContext context)
 	{
 		var contentBuilder = MarkupContentBuilderFactory.newBuilder();
-		var declaration = formatVariableDeclaration(variable);
+		var declaration = formatVariableDeclaration(context.file().module(), variable);
 		contentBuilder.appendCode(declaration.declaration);
 		if(!declaration.comment.isEmpty())
 		{
@@ -177,7 +163,7 @@ public class HoverProvider
 		return new Hover(contentBuilder.build());
 	}
 
-	private VariableDeclarationFormat formatVariableDeclaration(IVariableNode variable)
+	private VariableDeclarationFormat formatVariableDeclaration(INaturalModule module, IVariableNode variable)
 	{
 		var declaration = "%s %d %s".formatted(variable.scope().toString(), variable.level(), variable.name());
 		if(variable instanceof ITypedVariableNode typedVariableNode)
@@ -190,7 +176,7 @@ public class HoverProvider
 			declaration += " OPTIONAL";
 		}
 
-		var comment = getLineComment(variable);
+		var comment = module.extractLineComment(variable.position().line());
 		return new VariableDeclarationFormat(declaration, comment);
 	}
 
@@ -211,9 +197,9 @@ public class HoverProvider
 			return;
 		}
 
-		Function<IUsingNode, String> usingFormatter = (using) -> "PARAMETER USING %s %s".formatted(using.target().source(), getLineComment(using));
+		Function<IUsingNode, String> usingFormatter = (using) -> "PARAMETER USING %s %s".formatted(using.target().source(), module.extractLineComment(using.position().line()));
 		Function<IVariableNode, String> variableFormatter = (variable) -> {
-			var declaration = formatVariableDeclaration(variable);
+			var declaration = formatVariableDeclaration(module, variable);
 			return "%s%s".formatted(
 				declaration.declaration,
 				!declaration.comment.isEmpty()
@@ -239,12 +225,6 @@ public class HoverProvider
 
 			nested.appendCode(parameterBlock.toString().stripIndent().trim());
 		});
-	}
-
-	private String getLineComment(ISyntaxNode node)
-	{
-		var file = project.findFile(node.position().filePath());
-		return file.extractLineComment(node.position().line());
 	}
 
 	private record VariableDeclarationFormat(String declaration, String comment)
