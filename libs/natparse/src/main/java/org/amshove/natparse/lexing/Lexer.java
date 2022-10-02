@@ -31,7 +31,7 @@ public class Lexer
 		line = 0;
 		currentLineStartOffset = 0;
 
-		while (!scanner.isAtEnd() && scanner.peek() != '$')
+		while (!scanner.isAtEnd())
 		{
 			if (consumeComment())
 			{
@@ -1017,8 +1017,21 @@ public class Lexer
 	{
 		scanner.start();
 		scanner.advance();
-		while (scanner.peek() != c && !scanner.isAtEnd() && !isLineEnd())
+		while (!scanner.isAtEnd() && !isLineEnd())
 		{
+			if(scanner.peek() == c && scanner.peek(1) == c)
+			{
+				// escaped ' or "
+				scanner.advance();
+				scanner.advance();
+				continue;
+			}
+
+			if(scanner.peek() == c)
+			{
+				break; // closing character will be consumed later
+			}
+
 			scanner.advance();
 		}
 

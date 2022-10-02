@@ -1,5 +1,6 @@
 package org.amshove.natparse.natural;
 
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxToken;
 
 public interface IModuleReferencingNode extends ISyntaxNode
@@ -13,4 +14,6 @@ public interface IModuleReferencingNode extends ISyntaxNode
 	 * Contains the name {@link SyntaxToken} which holds the name of the called module.
 	 */
 	SyntaxToken referencingToken();
+
+	ReadOnlyList<IOperandNode> providedParameter();
 }

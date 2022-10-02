@@ -28,10 +28,6 @@ public class NaturalParser
 		var moduleProviderToUse = moduleProvider;
 		if (moduleProviderToUse == null)
 		{
-			// The caching module provider uses a static field to cache, so
-			// we can instantiate it new for every module to be parsed.
-			// In fact, currently it has to be instantiated every time, because
-			// it saves the file to get the library.
 			moduleProviderToUse = new DefaultModuleProvider(file);
 		}
 		return parseModule(file, moduleProviderToUse, tokens);
@@ -42,6 +38,7 @@ public class NaturalParser
 		var naturalModule = new NaturalModule(file);
 		naturalModule.addDiagnostics(tokens.diagnostics());
 		var topLevelNodes = new ArrayList<ISyntaxNode>();
+		naturalModule.setComments(tokens.comments());
 
 		if(file.getFiletype() == NaturalFileType.FUNCTION) // skip over DEFINE FUNCTION
 		{

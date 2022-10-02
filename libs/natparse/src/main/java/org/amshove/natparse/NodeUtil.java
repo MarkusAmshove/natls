@@ -3,6 +3,7 @@ package org.amshove.natparse;
 import org.amshove.natparse.natural.*;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class NodeUtil
 {
@@ -134,5 +135,29 @@ public class NodeUtil
 		}
 
 		return (IVariableNode) owner;
+	}
+
+	public static Optional<IStatementNode> findStatementInLine(int line, IStatementListNode statementList)
+	{
+		for (var statement : statementList.statements())
+		{
+			if(statement.diagnosticPosition().line()  == line)
+			{
+				return Optional.of(statement);
+			}
+
+			if(statement instanceof IStatementWithBodyNode withBody
+				&& withBody.descendants().first().diagnosticPosition().line() <= line
+				&& withBody.descendants().last().diagnosticPosition().line() >= line)
+			{
+				var childStatement = findStatementInLine(line, withBody.body());
+				if (childStatement.isPresent())
+				{
+					return childStatement;
+				}
+			}
+		}
+
+		return Optional.empty();
 	}
 }

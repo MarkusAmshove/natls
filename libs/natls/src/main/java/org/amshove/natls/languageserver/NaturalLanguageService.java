@@ -1,17 +1,7 @@
 package org.amshove.natls.languageserver;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.amshove.natls.DiagnosticTool;
 import org.amshove.natls.codeactions.CodeActionRegistry;
 import org.amshove.natls.codeactions.RefactoringContext;
@@ -26,6 +16,7 @@ import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natls.project.LanguageServerProject;
 import org.amshove.natls.project.ModuleReferenceParser;
 import org.amshove.natls.project.ParseStrategy;
+import org.amshove.natls.signaturehelp.SignatureHelpProvider;
 import org.amshove.natls.snippets.SnippetEngine;
 import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
@@ -34,68 +25,31 @@ import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
-import org.amshove.natparse.natural.DataFormat;
-import org.amshove.natparse.natural.IArrayDimension;
-import org.amshove.natparse.natural.IDefineData;
-import org.amshove.natparse.natural.IGroupNode;
-import org.amshove.natparse.natural.IHasDefineData;
-import org.amshove.natparse.natural.IModuleReferencingNode;
-import org.amshove.natparse.natural.INaturalModule;
-import org.amshove.natparse.natural.IRedefinitionNode;
-import org.amshove.natparse.natural.IReferencableNode;
-import org.amshove.natparse.natural.ISubroutineNode;
-import org.amshove.natparse.natural.ISymbolReferenceNode;
-import org.amshove.natparse.natural.ISyntaxNode;
-import org.amshove.natparse.natural.ITokenNode;
-import org.amshove.natparse.natural.ITypedVariableNode;
-import org.amshove.natparse.natural.IVariableNode;
-import org.amshove.natparse.natural.VariableScope;
+import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
 import org.amshove.natparse.parsing.DefineDataParser;
 import org.amshove.natparse.parsing.project.BuildFileProjectReader;
-import org.eclipse.lsp4j.CallHierarchyIncomingCall;
-import org.eclipse.lsp4j.CallHierarchyItem;
-import org.eclipse.lsp4j.CallHierarchyOutgoingCall;
-import org.eclipse.lsp4j.CallHierarchyPrepareParams;
-import org.eclipse.lsp4j.CodeAction;
-import org.eclipse.lsp4j.CodeActionParams;
-import org.eclipse.lsp4j.CompletionItem;
-import org.eclipse.lsp4j.CompletionItemKind;
-import org.eclipse.lsp4j.CompletionParams;
-import org.eclipse.lsp4j.DefinitionParams;
-import org.eclipse.lsp4j.DocumentSymbol;
-import org.eclipse.lsp4j.Hover;
-import org.eclipse.lsp4j.InlayHint;
-import org.eclipse.lsp4j.InlayHintParams;
-import org.eclipse.lsp4j.Location;
-import org.eclipse.lsp4j.MarkupContent;
-import org.eclipse.lsp4j.MarkupKind;
-import org.eclipse.lsp4j.ParameterInformation;
-import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.PrepareRenameParams;
-import org.eclipse.lsp4j.PrepareRenameResult;
-import org.eclipse.lsp4j.PublishDiagnosticsParams;
-import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.ReferenceParams;
-import org.eclipse.lsp4j.RenameParams;
-import org.eclipse.lsp4j.SignatureHelp;
-import org.eclipse.lsp4j.SignatureInformation;
-import org.eclipse.lsp4j.SymbolInformation;
-import org.eclipse.lsp4j.SymbolKind;
-import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.eclipse.lsp4j.WorkDoneProgressCreateParams;
-import org.eclipse.lsp4j.WorkspaceEdit;
+import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.ResponseErrorException;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseError;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class NaturalLanguageService implements LanguageClientAware
 {
@@ -112,6 +66,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	private HoverProvider hoverProvider;
 	private final RenameSymbolAction renameComputer = new RenameSymbolAction();
 	private SnippetEngine snippetEngine;
+	private final SignatureHelpProvider signatureHelp = new SignatureHelpProvider();
 
 	public void indexProject(Path workspaceRoot, IProgressMonitor progressMonitor)
 	{
@@ -130,7 +85,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		preParseDataAreas(progressMonitor);
 		snippetEngine = new SnippetEngine(languageServerProject);
 		initialized = true;
-		hoverProvider = new HoverProvider(languageServerProject);
+		hoverProvider = new HoverProvider();
 	}
 
 	public List<DocumentSymbol> findSymbolsInFile(TextDocumentIdentifier textDocument)
@@ -143,7 +98,8 @@ public class NaturalLanguageService implements LanguageClientAware
 	public void createdFile(String uri)
 	{
 		var path = LspUtil.uriToPath(uri);
-		languageServerProject.addFile(path);
+		var lspFile = languageServerProject.addFile(path);
+		lspFile.parse();
 	}
 
 	public List<? extends SymbolInformation> findWorkspaceSymbols(String query, CancelChecker cancelChecker)
@@ -188,7 +144,16 @@ public class NaturalLanguageService implements LanguageClientAware
 		}
 
 		var module = file.module();
+
+		// special case for the callnat string containing the called module
 		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), module);
+		if(node instanceof ITokenNode tokenNode
+			&& node.parent() instanceof IModuleReferencingNode moduleReference
+			&& moduleReference.referencingToken().equals(tokenNode.token()))
+		{
+			node = moduleReference;
+		}
+
 		var symbolToSearchFor = findTokenAtPosition(filepath, position); // TODO: Actually look for a node, could be ISymbolReferenceNode
 		var providedHover = hoverProvider.createHover(new HoverContext(node, symbolToSearchFor, file));
 		if(providedHover != null)
@@ -352,7 +317,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	private String getLineComment(int line, LanguageServerFile file)
 	{
-		return file.comments().stream()
+		return file.module().comments().stream()
 			.filter(t -> t.line() == line)
 			.map(SyntaxToken::source)
 			.findFirst()
@@ -607,43 +572,9 @@ public class NaturalLanguageService implements LanguageClientAware
 	public SignatureHelp signatureHelp(TextDocumentIdentifier textDocument, Position position)
 	{
 		var filePath = LspUtil.uriToPath(textDocument.getUri());
-
-		var token = findTokenAtPosition(filePath, position);
-		if (token == null || token.kind() != SyntaxKind.STRING_LITERAL)
-		{
-			return null;
-		}
-
-		var calledModule = token.stringValue();
-		var calledFile = languageServerProject.findFileByReferableName(calledModule);
-		var module = (INaturalModule) calledFile.module();
-
-		if (!(module instanceof IHasDefineData hasDefineData))
-		{
-			return null;
-		}
-		var defineData = hasDefineData.defineData();
-
-		var parameter = defineData.variables().stream()
-			.filter(v -> v.scope().isParameter())
-			.filter(v -> v.level() == 1)
-			.map(v -> (ITypedVariableNode) v)
-			.toList();
-
-		var help = new SignatureHelp();
-		var signatureInformation = new SignatureInformation(module.name());
-		var parameterInfos = new ArrayList<ParameterInformation>();
-		for (var p : parameter)
-		{
-			var parameterInfo = new ParameterInformation();
-			parameterInfo.setLabel(p.name());
-			parameterInfo.setDocumentation(new MarkupContent(MarkupKind.MARKDOWN, formatVariableHover(p)));
-			parameterInfos.add(parameterInfo);
-		}
-		signatureInformation.setParameters(parameterInfos);
-		help.setSignatures(List.of(signatureInformation));
-		// TODO: This needs to actually set the correct current parameter position, once we have a callnat statement
-		return help;
+		var file = findNaturalFile(filePath);
+		var module = file.module();
+		return signatureHelp.provideSignatureHelp(module, position);
 	}
 
 	public List<CompletionItem> complete(CompletionParams completionParams)

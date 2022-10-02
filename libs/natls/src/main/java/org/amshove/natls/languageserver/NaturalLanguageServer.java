@@ -46,7 +46,6 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			capabilities.setReferencesProvider(true);
 			capabilities.setCompletionProvider(new CompletionOptions(true, List.of(".")));
 			// capabilities.setCodeLensProvider(new CodeLensOptions(true)); // Temporary
-			capabilities.setSignatureHelpProvider(new SignatureHelpOptions()); // Maybe < for Functions?
 			capabilities.setCallHierarchyProvider(true);
 			capabilities.setCodeActionProvider(CodeActionRegistry.INSTANCE.registeredCodeActionCount() > 0);
 			capabilities.setRenameProvider(new RenameOptions(true));
@@ -54,6 +53,8 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			inlayHintRegistrationOptions.setId("natls");
 			inlayHintRegistrationOptions.setResolveProvider(true);
 			capabilities.setInlayHintProvider(inlayHintRegistrationOptions);
+
+			capabilities.setSignatureHelpProvider(new SignatureHelpOptions());
 
 			var workspace = new WorkspaceServerCapabilities();
 			var fileOperations = new FileOperationsServerCapabilities();

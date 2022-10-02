@@ -49,7 +49,7 @@ abstract class AbstractParser<T>
 		return relocatedDiagnosticPosition != null;
 	}
 
-	protected INaturalModule sideloadModule(String referableName, ITokenNode importNode)
+	protected INaturalModule sideloadModule(String referableName, SyntaxToken moduleIdentifierToken)
 	{
 		if (moduleProvider == null)
 		{
@@ -60,7 +60,7 @@ abstract class AbstractParser<T>
 
 		if (module == null && !(referableName.startsWith("USR") && referableName.endsWith("N")))
 		{
-			report(ParserErrors.unresolvedImport(importNode));
+			report(ParserErrors.unresolvedImport(moduleIdentifierToken));
 		}
 
 		return module;
@@ -68,7 +68,7 @@ abstract class AbstractParser<T>
 
 	protected IHasDefineData sideloadDefineData(TokenNode importNode)
 	{
-		if (sideloadModule(importNode.token().symbolName(), importNode) instanceof IHasDefineData hasDefineData)
+		if (sideloadModule(importNode.token().symbolName(), importNode.token()) instanceof IHasDefineData hasDefineData)
 		{
 			return hasDefineData;
 		}
@@ -328,7 +328,7 @@ abstract class AbstractParser<T>
 		var functionName = new TokenNode(token);
 		node.setReferencingToken(token);
 		node.addNode(functionName);
-		var module = sideloadModule(token.symbolName(), functionName);
+		var module = sideloadModule(token.symbolName(), functionName.token());
 		node.setReferencedModule((NaturalModule) module);
 
 		consumeMandatory(node, SyntaxKind.LPAREN);
@@ -344,14 +344,14 @@ abstract class AbstractParser<T>
 
 		while (!isAtEnd() && !peekKind(SyntaxKind.GREATER_SIGN))
 		{
-			if (peekKind(SyntaxKind.IDENTIFIER))
-			{
-				node.addNode(identifierReference());
-			}
-			else
-			{
-				consume(node);
-			}
+			var parameter = consumeModuleParameter(node);
+			node.addParameter(parameter);
+			consumeOptionally(node, SyntaxKind.COMMA);
+		}
+
+		if(previousToken().kind() == SyntaxKind.COMMA)
+		{
+			report(ParserErrors.trailingToken(previousToken()));
 		}
 
 		consumeMandatory(node, SyntaxKind.GREATER_SIGN);
@@ -383,6 +383,24 @@ abstract class AbstractParser<T>
 			consumeMandatory(node, SyntaxKind.RPAREN);
 		}
 		return operand;
+	}
+
+	protected IOperandNode consumeModuleParameter(BaseSyntaxNode node) throws ParseError
+	{
+		if(peekKind(SyntaxKind.OPERAND_SKIP))
+		{
+			return consumeSkipOperand(node);
+		}
+
+		return consumeOperandNode(node);
+	}
+
+	private IOperandNode consumeSkipOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var skip = new SkipOperandNode();
+		node.addNode(skip);
+		consumeMandatory(skip, SyntaxKind.OPERAND_SKIP);
+		return skip;
 	}
 
 	protected IOperandNode consumeOperandNode(BaseSyntaxNode node) throws ParseError
@@ -549,8 +567,16 @@ abstract class AbstractParser<T>
 		node.addNode(translate);
 		consumeMandatory(translate, SyntaxKind.TRANSLATE);
 		consumeMandatory(translate, SyntaxKind.LPAREN);
-		var reference = consumeVariableReferenceNode(translate);
-		translate.setToTranslate(reference);
+		if(peekKind(SyntaxKind.STRING_LITERAL))
+		{
+			var literal = consumeLiteralNode(translate, SyntaxKind.STRING_LITERAL);
+			translate.setToTranslate(literal);
+		}
+		else
+		{
+			var reference = consumeVariableReferenceNode(translate);
+			translate.setToTranslate(reference);
+		}
 		consumeMandatory(translate, SyntaxKind.COMMA);
 		var translationToken = consumeAny(List.of(SyntaxKind.UPPER, SyntaxKind.LOWER));
 		translate.setToUpper(translationToken.kind() == SyntaxKind.UPPER);
@@ -566,8 +592,9 @@ abstract class AbstractParser<T>
 		previousNode = reference;
 		node.addNode(reference);
 
-		if(consumeOptionally(reference, SyntaxKind.LPAREN))
+		if(peekKind(SyntaxKind.LPAREN) && !peekKind(1, SyntaxKind.AD))
 		{
+			consumeMandatory(reference, SyntaxKind.LPAREN);
 			reference.addDimension(consumeArrayAccess(reference));
 			while(peekKind(SyntaxKind.COMMA))
 			{
@@ -637,6 +664,16 @@ abstract class AbstractParser<T>
 
 		diagnostics.add(ParserErrors.unexpectedToken(acceptedKinds, tokens.peek()));
 		throw new ParseError(peek());
+	}
+
+	protected void consumeAttributeDefinition(BaseSyntaxNode node) throws ParseError
+	{
+		// we don't do anything special yet, need some experience on where attribute definitions are allowed
+		// this was built for CALLNAT, where a variable reference as parameter can have attribute definitions (only AD)
+		// might be reusable for WRITE, DISPLAY, etc. for all kind of operands, but has to be fleshed out then
+		consumeMandatory(node, SyntaxKind.LPAREN);
+		consumeMandatory(node, SyntaxKind.AD);
+		consumeMandatory(node, SyntaxKind.RPAREN);
 	}
 
 	protected boolean peekAny(List<SyntaxKind> acceptedKinds)
@@ -749,6 +786,23 @@ abstract class AbstractParser<T>
 
 		report(ParserErrors.unexpectedToken(acceptedKinds, peek()));
 		tokens.advance();
+		return false;
+	}
+
+	protected boolean peekKindInLine(SyntaxKind kind)
+	{
+		var line = peek().line();
+		var offset = 0;
+		while(!isAtEnd(offset) && peek(offset).line() == line)
+		{
+			if(peek(offset).kind() == kind)
+			{
+				return true;
+			}
+
+			offset++;
+		}
+
 		return false;
 	}
 

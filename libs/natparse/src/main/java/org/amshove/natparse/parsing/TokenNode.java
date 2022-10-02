@@ -44,4 +44,13 @@ class TokenNode extends BaseSyntaxNode implements ITokenNode
 	{
 		return "TokenNode{token=%s}".formatted(token);
 	}
+
+	@Override
+	public boolean enclosesPosition(int line, int column)
+	{
+		var position = token.diagnosticPosition();
+		return position.line() == line
+			&& position.offsetInLine() <= column
+			&& position.endOffset() >= column;
+	}
 }

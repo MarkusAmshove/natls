@@ -87,7 +87,7 @@ public class SyntaxToken implements IPosition
 
 	public String stringValue()
 	{
-		return source.substring(1, source.length() - 1);
+		return source.substring(1, source.length() - 1).replace("''", "'");
 	}
 
 	/**

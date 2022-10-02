@@ -2,38 +2,21 @@ package org.amshove.natls.hover;
 
 import org.amshove.natls.markupcontent.IMarkupContentBuilder;
 import org.amshove.natls.markupcontent.MarkupContentBuilderFactory;
-import org.amshove.natls.project.LanguageServerFile;
-import org.amshove.natls.project.LanguageServerProject;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.NodeUtil;
-import org.amshove.natparse.ReadOnlyList;
-import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
-import org.amshove.natparse.lexing.SyntaxToken;
-import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.builtin.BuiltInFunctionTable;
 import org.amshove.natparse.natural.builtin.SystemFunctionDefinition;
 import org.amshove.natparse.natural.builtin.SystemVariableDefinition;
 import org.eclipse.lsp4j.Hover;
 
-import javax.annotation.Nonnull;
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class HoverProvider
 {
 	private static final Hover EMPTY_HOVER = null; // This should be null according to the LSP spec
-	private final LanguageServerProject project;
-
-	public HoverProvider(LanguageServerProject project)
-	{
-		this.project = project;
-	}
 
 	public Hover createHover(HoverContext context)
 	{
@@ -52,7 +35,7 @@ public class HoverProvider
 
 		if(context.nodeToHover() instanceof IModuleReferencingNode moduleReferencingNode)
 		{
-			return hoverExternalModule(moduleReferencingNode, context);
+			return hoverExternalModule(moduleReferencingNode);
 		}
 
 		if(context.nodeToHover() instanceof IVariableNode variableNode)
@@ -72,7 +55,7 @@ public class HoverProvider
 		return EMPTY_HOVER;
 	}
 
-	private Hover hoverExternalModule(IModuleReferencingNode moduleReferencingNode, HoverContext context)
+	private Hover hoverExternalModule(IModuleReferencingNode moduleReferencingNode)
 	{
 		var module = moduleReferencingNode.reference();
 		if(module == null)
@@ -94,13 +77,13 @@ public class HoverProvider
 			contentBuilder.appendItalic("File: %s".formatted(module.file().getFilenameWithoutExtension())).appendNewline();
 		}
 
-		var documentation = extractModuleDocumentation(module);
+		var documentation = module.moduleDocumentation();
 		if(documentation != null && !documentation.trim().isEmpty())
 		{
 			contentBuilder.appendCode(documentation);
 		}
 
-		addModuleParameter(contentBuilder, module, context);
+		addModuleParameter(contentBuilder, module);
 
 		return new Hover(contentBuilder.build());
 	}
@@ -144,7 +127,7 @@ public class HoverProvider
 	private Hover hoverVariable(IVariableNode variable, HoverContext context)
 	{
 		var contentBuilder = MarkupContentBuilderFactory.newBuilder();
-		var declaration = formatVariableDeclaration(variable);
+		var declaration = formatVariableDeclaration(context.file().module(), variable);
 		contentBuilder.appendCode(declaration.declaration);
 		if(!declaration.comment.isEmpty())
 		{
@@ -173,7 +156,7 @@ public class HoverProvider
 		return new Hover(contentBuilder.build());
 	}
 
-	private VariableDeclarationFormat formatVariableDeclaration(IVariableNode variable)
+	private VariableDeclarationFormat formatVariableDeclaration(INaturalModule module, IVariableNode variable)
 	{
 		var declaration = "%s %d %s".formatted(variable.scope().toString(), variable.level(), variable.name());
 		if(variable instanceof ITypedVariableNode typedVariableNode)
@@ -186,7 +169,7 @@ public class HoverProvider
 			declaration += " OPTIONAL";
 		}
 
-		var comment = getLineComment(variable.position().line(), variable.position().filePath());
+		var comment = module.extractLineComment(variable.position().line());
 		return new VariableDeclarationFormat(declaration, comment);
 	}
 
@@ -200,64 +183,16 @@ public class HoverProvider
 		}
 	}
 
-	private String getLineComment(int line, Path filePath)
-	{
-		return getLineComment(line, project.findFile(filePath));
-	}
-
-	private @Nonnull String getLineComment(int line, LanguageServerFile file)
-	{
-		file.module(); // make sure we get comments
-		return file.comments().stream()
-			.filter(t -> t.line() == line)
-			.map(SyntaxToken::source)
-			.findFirst()
-			.orElse("");
-	}
-
-	private TokenList lexPath(Path path)
-	{
-		try
-		{
-			return new Lexer().lex(Files.readString(path), path);
-		}
-		catch (IOException e)
-		{
-			throw new UncheckedIOException(e);
-		}
-	}
-
-	private String extractModuleDocumentation(INaturalModule module)
-	{
-		var tokens = lexPath(module.file().getPath());
-		return extractDocumentation(tokens.comments(), tokens.subrange(0, 0).first().line());
-	}
-
-	private String extractDocumentation(ReadOnlyList<SyntaxToken> comments, int firstLineOfCode)
-	{
-		if(comments.isEmpty())
-		{
-			return null;
-		}
-
-		return comments.stream()
-			.takeWhile(t -> t.line() < firstLineOfCode)
-			.map(SyntaxToken::source)
-			.filter(l -> !l.startsWith("* >") && !l.startsWith("* <") && !l.startsWith("* :"))
-			.filter(l -> !l.trim().endsWith("*"))
-			.collect(Collectors.joining(System.lineSeparator()));
-	}
-
-	private void addModuleParameter(IMarkupContentBuilder contentBuilder, INaturalModule module, HoverContext context)
+	private void addModuleParameter(IMarkupContentBuilder contentBuilder, INaturalModule module)
 	{
 		if(!(module instanceof IHasDefineData hasDefineData) || hasDefineData.defineData() == null)
 		{
 			return;
 		}
 
-		Function<IUsingNode, String> usingFormatter = (using) -> "PARAMETER USING %s %s".formatted(using.target().source(), getLineComment(using.position().line(), context.file()));
-		Function<IVariableNode, String> variableFormatter = (variable) -> {
-			var declaration = formatVariableDeclaration(variable);
+		Function<IUsingNode, String> usingFormatter = using -> "PARAMETER USING %s %s".formatted(using.target().source(), module.extractLineComment(using.position().line()));
+		Function<IVariableNode, String> variableFormatter = variable -> {
+			var declaration = formatVariableDeclaration(module, variable);
 			return "%s%s".formatted(
 				declaration.declaration,
 				!declaration.comment.isEmpty()
