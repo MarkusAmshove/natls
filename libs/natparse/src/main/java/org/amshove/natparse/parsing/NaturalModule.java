@@ -146,7 +146,7 @@ public class NaturalModule
 
 	public String moduleDocumentation()
 	{
-		if(comments().isEmpty())
+		if(comments == null || comments.isEmpty())
 		{
 			return "";
 		}
@@ -164,6 +164,11 @@ public class NaturalModule
 	@Override
 	public String extractLineComment(int line)
 	{
+		if(comments == null)
+		{
+			return "";
+		}
+
 		return comments.stream()
 			.filter(t -> t.line() == line)
 			.map(SyntaxToken::source)

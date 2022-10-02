@@ -69,7 +69,7 @@ class SignatureHelpForCallnatShould extends SignatureHelpTest
 			1 P-OPTIONAL (A10) OPTIONAL
 			1 P-NUMBER (N12)
 			END-DEFINE
-						
+
 			END
 			""";
 	}

@@ -20,6 +20,29 @@ class SignatureHelpForFunctionsShould extends SignatureHelpTest
 	}
 
 	@Test
+	void includeTheDocumentationOfTheFunction() throws ExecutionException, InterruptedException, TimeoutException
+	{
+		var help = getSignatureHelpForModuleCall("ISSTH(<${}$>)");
+		var documentation = help.getSignatures().get(0).getDocumentation().getRight();
+		assertThat(documentation.getValue()).isEqualTo("""
+```natural
+/* Function
+/* Documentation
+```""");
+	}
+
+	@Test
+	void includeTheDocumentationOfFunctionParameter() throws ExecutionException, InterruptedException, TimeoutException
+	{
+		var help = getSignatureHelpForModuleCall("ISSTH(<${}$>)");
+		var documentation = help.getSignatures().get(0).getParameters().get(0).getDocumentation().getRight();
+		assertThat(documentation.getValue()).isEqualTo("""
+```natural
+/* Parameter documentation
+```""");
+	}
+
+	@Test
 	void haveTheFirstParameterActiveWhenCursorIsAfterModuleName() throws ExecutionException, InterruptedException, TimeoutException
 	{
 		var help = getSignatureHelpForModuleCall("ISSTH(<${}$>)");
@@ -98,11 +121,13 @@ class SignatureHelpForFunctionsShould extends SignatureHelpTest
 	protected String getCalledModuleSource()
 	{
 		return """
+			/* Function
+			/* Documentation
 			DEFINE FUNCTION ISSTH
 			RETURNS (L)
 
 			DEFINE DATA
-			PARAMETER 1 P-PARAM (A10)
+			PARAMETER 1 P-PARAM (A10) /* Parameter documentation
 			PARAMETER USING THEPDA
 			PARAMETER 1 P-OPTIONAL (A) DYNAMIC OPTIONAL
 			END-DEFINE

@@ -1,5 +1,6 @@
 package org.amshove.natls.signaturehelp;
 
+import org.amshove.natls.markupcontent.MarkupContentBuilderFactory;
 import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
@@ -64,9 +65,14 @@ public class SignatureHelpProvider
 		var signatureHelp = createDefaultSignatureHelp();
 		setActiveParameter(moduleReference, position, signatureHelp);
 		var signatureInformation = signatureHelp.getSignatures().get(0);
+		var moduleDocumentation = calledModule.moduleDocumentation();
+		if(!moduleDocumentation.isEmpty())
+		{
+			signatureInformation.setDocumentation(MarkupContentBuilderFactory.newBuilder().appendCode(moduleDocumentation).build());
+		}
 
 		hasDefineData.defineData().parameterInOrder().stream()
-			.map(this::mapToParameterInformation)
+			.map(pi -> mapToParameterInformation(calledModule, pi))
 			.forEach(p -> signatureInformation.getParameters().add(p));
 
 		var parameterSignature = signatureInformation.getParameters().stream().map(pi -> pi.getLabel().getLeft()).collect(Collectors.joining(", "));
@@ -148,7 +154,7 @@ public class SignatureHelpProvider
 		}
 	}
 
-	private ParameterInformation mapToParameterInformation(IParameterDefinitionNode parameter)
+	private ParameterInformation mapToParameterInformation(INaturalModule module, IParameterDefinitionNode parameter)
 	{
 		var information = new ParameterInformation();
 		if (parameter instanceof IVariableNode variableNode)
@@ -168,6 +174,12 @@ public class SignatureHelpProvider
 		if (parameter instanceof IUsingNode using)
 		{
 			information.setLabel("USING " + using.target().symbolName());
+		}
+
+		var parameterDocumentation = module.extractLineComment(parameter.position().line());
+		if(!parameterDocumentation.isEmpty())
+		{
+			information.setDocumentation(MarkupContentBuilderFactory.newBuilder().appendCode(parameterDocumentation).build());
 		}
 
 		return information;
