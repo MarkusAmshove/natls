@@ -131,7 +131,7 @@ class DefinitionEndpointTests extends LanguageServerTest
 	@Test
 	void definitionShouldResolveLocalVariables()
 	{
-   		assertSingleDefinitionInSameModule("""
+		assertSingleDefinitionInSameModule("""
 			DEFINE DATA LOCAL
 			1 #VAR (A10)
 			END-DEFINE
