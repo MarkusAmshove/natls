@@ -147,7 +147,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		// special case for the callnat string containing the called module
 		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), module);
-		if(node instanceof ITokenNode tokenNode
+		if (node instanceof ITokenNode tokenNode
 			&& node.parent() instanceof IModuleReferencingNode moduleReference
 			&& moduleReference.referencingToken().equals(tokenNode.token()))
 		{
@@ -156,7 +156,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		var symbolToSearchFor = findTokenAtPosition(filepath, position); // TODO: Actually look for a node, could be ISymbolReferenceNode
 		var providedHover = hoverProvider.createHover(new HoverContext(node, symbolToSearchFor, file));
-		if(providedHover != null)
+		if (providedHover != null)
 		{
 			return providedHover;
 		}
@@ -173,7 +173,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		}
 
 		var externalSubroutineHover = hoverExternalModule(symbolToSearchFor);
-		if(externalSubroutineHover != EMPTY_HOVER)
+		if (externalSubroutineHover != EMPTY_HOVER)
 		{
 			return externalSubroutineHover;
 		}
@@ -204,7 +204,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	private Hover hoverExternalModule(SyntaxToken symbolToSearchFor)
 	{
-		if(symbolToSearchFor.kind() != SyntaxKind.STRING_LITERAL && symbolToSearchFor.kind() != SyntaxKind.IDENTIFIER)
+		if (symbolToSearchFor.kind() != SyntaxKind.STRING_LITERAL && symbolToSearchFor.kind() != SyntaxKind.IDENTIFIER)
 		{
 			return EMPTY_HOVER;
 		}
@@ -222,20 +222,20 @@ public class NaturalLanguageService implements LanguageClientAware
 		}
 
 		var hoverText = "**%s.%s**".formatted(module.getLibrary().getName(), module.getReferableName());
-		if(!module.getFilenameWithoutExtension().equals(module.getReferableName()))
+		if (!module.getFilenameWithoutExtension().equals(module.getReferableName()))
 		{
 			hoverText += " (%s)".formatted(module.getFilenameWithoutExtension());
 		}
 
 		var documentation = extractDocumentation(tokens.comments(), tokens.subrange(0, 0).first().line());
-		if(documentation != null && !documentation.isEmpty())
+		if (documentation != null && !documentation.isEmpty())
 		{
 			hoverText += "\n```natural\n";
 			hoverText += "\n" + documentation;
 			hoverText += "\n```";
 		}
 
-		if(module.getFiletype() == NaturalFileType.SUBROUTINE
+		if (module.getFiletype() == NaturalFileType.SUBROUTINE
 			|| module.getFiletype() == NaturalFileType.SUBPROGRAM
 			|| module.getFiletype() == NaturalFileType.PROGRAM
 			|| module.getFiletype() == NaturalFileType.FUNCTION)
@@ -273,7 +273,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	private String extractDocumentation(ReadOnlyList<SyntaxToken> comments, int firstLineOfCode)
 	{
-		if(comments.isEmpty())
+		if (comments.isEmpty())
 		{
 			return null;
 		}
@@ -330,13 +330,13 @@ public class NaturalLanguageService implements LanguageClientAware
 		hoverText += "\n";
 
 		var hasUsingComment = false;
-		if(!originalModule.file().getPath().equals(v.position().filePath()))
+		if (!originalModule.file().getPath().equals(v.position().filePath()))
 		{
 			// This is an imported variable
 			var importedFile = findNaturalFile(v.position().filePath());
 			var importedModule = importedFile.module();
-			var using = ((IHasDefineData)originalModule).defineData().usings().stream().filter(u -> u.target().symbolName().equals(importedModule.name())).findFirst().orElse(null);
-			if(using != null)
+			var using = ((IHasDefineData) originalModule).defineData().usings().stream().filter(u -> u.target().symbolName().equals(importedModule.name())).findFirst().orElse(null);
+			if (using != null)
 			{
 				var usingComment = getLineComment(using.position().line(), using.position().filePath());
 				if (usingComment != null)
@@ -406,12 +406,12 @@ public class NaturalLanguageService implements LanguageClientAware
 			}
 		}
 
-		if(v.findDescendantToken(SyntaxKind.OPTIONAL) != null)
+		if (v.findDescendantToken(SyntaxKind.OPTIONAL) != null)
 		{
 			hoverText += " OPTIONAL";
 		}
 
-		if(closeMarkdown)
+		if (closeMarkdown)
 		{
 			hoverText += "\n```";
 		}
@@ -464,22 +464,22 @@ public class NaturalLanguageService implements LanguageClientAware
 		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), file.module());
 		// TOOD: qualified variables
 
-		if(node instanceof ISymbolReferenceNode symbolReferenceNode)
+		if (node instanceof IVariableReferenceNode variableReferenceNode)
 		{
-			return List.of(LspUtil.toLocation(symbolReferenceNode.reference()));
+			return List.of(LspUtil.toLocation(variableReferenceNode.reference()));
 		}
 
-		if(node instanceof IModuleReferencingNode moduleReferencingNode)
+		if (node instanceof IModuleReferencingNode moduleReferencingNode)
 		{
 			return List.of(LspUtil.toLocation(moduleReferencingNode.reference()));
 		}
 
-		if(node instanceof ITokenNode && node.parent() instanceof ISymbolReferenceNode symbolReferenceNode)
+		if (node instanceof ITokenNode && node.parent() instanceof ISymbolReferenceNode symbolReferenceNode)
 		{
 			return List.of(LspUtil.toLocation(symbolReferenceNode.reference()));
 		}
 
-		if(node instanceof ITokenNode && node.parent() instanceof IModuleReferencingNode moduleReferencingNode)
+		if (node instanceof ITokenNode && node.parent() instanceof IModuleReferencingNode moduleReferencingNode)
 		{
 			return List.of(LspUtil.toLocation(moduleReferencingNode.reference()));
 		}
@@ -495,24 +495,24 @@ public class NaturalLanguageService implements LanguageClientAware
 		var file = findNaturalFile(filePath);
 
 		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), file.module());
-		if(node instanceof ITokenNode && node.parent() instanceof ISubroutineNode)
+		if (node instanceof ITokenNode && node.parent() instanceof ISubroutineNode)
 		{
 			node = (ISyntaxNode) node.parent();
 		}
 
 		var references = new ArrayList<Location>();
 
-		if(node instanceof IReferencableNode referencableNode)
+		if (node instanceof IReferencableNode referencableNode)
 		{
 			references.addAll(resolveReferences(params, referencableNode));
 		}
 
-		if(node instanceof ISymbolReferenceNode symbolReferenceNode)
+		if (node instanceof ISymbolReferenceNode symbolReferenceNode)
 		{
 			references.addAll(resolveReferences(params, symbolReferenceNode.reference()));
 		}
 
-		if(node instanceof IModuleReferencingNode moduleReferencingNode)
+		if (node instanceof IModuleReferencingNode moduleReferencingNode)
 		{
 			references.addAll(moduleReferencingNode.reference().callers().stream()
 				.map(caller -> LspUtil.toLocation(caller.referencingToken()))
@@ -520,7 +520,7 @@ public class NaturalLanguageService implements LanguageClientAware
 			);
 		}
 
-		if(references.isEmpty())
+		if (references.isEmpty())
 		{
 			// If we didn't find any references, lets test the ergonomics of returning the references
 			// of the current module.
@@ -530,12 +530,12 @@ public class NaturalLanguageService implements LanguageClientAware
 			var thresholdToDenyLookup = thresholdForExpensiveLookup * 2;
 			var amountOfIncomingReferences = file.getIncomingReferences().size();
 
-			if(amountOfIncomingReferences > thresholdToDenyLookup)
+			if (amountOfIncomingReferences > thresholdToDenyLookup)
 			{
 				return references;
 			}
 
-			if(amountOfIncomingReferences > thresholdForExpensiveLookup)
+			if (amountOfIncomingReferences > thresholdForExpensiveLookup)
 			{
 				// Getting real positions would be too expensive currently.
 				references.addAll(
@@ -561,7 +561,7 @@ public class NaturalLanguageService implements LanguageClientAware
 			.map(r -> LspUtil.toLocation(r.referencingToken()))
 			.forEach(references::add);
 
-		if(params.getContext().isIncludeDeclaration())
+		if (params.getContext().isIncludeDeclaration())
 		{
 			references.add(LspUtil.toLocation(referencableNode.declaration()));
 		}
@@ -586,7 +586,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		// var position = completionParams.getPosition();
 
 		var file = findNaturalFile(filePath);
-		if(!file.getType().canHaveBody())
+		if (!file.getType().canHaveBody())
 		{
 			return List.of();
 		}
@@ -601,7 +601,7 @@ public class NaturalLanguageService implements LanguageClientAware
 			.map(n -> createCompletionItem(n, file, module.referencableNodes()))
 			.filter(Objects::nonNull)
 			.peek(i -> {
-				if(i.getKind() == CompletionItemKind.Variable)
+				if (i.getKind() == CompletionItemKind.Variable)
 				{
 					i.setData(new UnresolvedCompletionInfo((String) i.getData(), filePath.toUri().toString()));
 				}
@@ -613,22 +613,22 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	public CompletionItem resolveComplete(CompletionItem item)
 	{
-		if(item.getKind() != CompletionItemKind.Variable)
+		if (item.getKind() != CompletionItemKind.Variable)
 		{
 			return item;
 		}
 
-		var jsonData = (JsonObject)item.getData();
+		var jsonData = (JsonObject) item.getData();
 		var info = new Gson().fromJson(jsonData, UnresolvedCompletionInfo.class);
 		var file = findNaturalFile(LspUtil.uriToPath(info.getUri()));
 		var module = file.module();
-		if(!(module instanceof IHasDefineData hasDefineData))
+		if (!(module instanceof IHasDefineData hasDefineData))
 		{
 			return item;
 		}
 
 		var variableNode = hasDefineData.defineData().variables().stream().filter(v -> v.qualifiedName().equals(info.getQualifiedName())).findFirst().orElse(null);
-		if(variableNode == null)
+		if (variableNode == null)
 		{
 			return item;
 		}
@@ -665,7 +665,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var item = new CompletionItem();
 		var variableName = variableNode.name();
 
-		if(referencableNodes.stream().filter(n -> n.declaration().symbolName().equals(variableNode.name())).count() > 1)
+		if (referencableNodes.stream().filter(n -> n.declaration().symbolName().equals(variableNode.name())).count() > 1)
 		{
 			variableName = variableNode.qualifiedName();
 		}
@@ -736,10 +736,11 @@ public class NaturalLanguageService implements LanguageClientAware
 	private void publishDiagnosticsOfFile(LanguageServerFile file)
 	{
 		var allDiagnostics = file.allDiagnostics();
-		var shouldIncludeLinterDiagnostics = switch (file.getType()) {
-			case LDA, GDA, PDA, MAP, DDM -> false;
-			default -> true;
-		};
+		var shouldIncludeLinterDiagnostics = switch (file.getType())
+			{
+				case LDA, GDA, PDA, MAP, DDM -> false;
+				default -> true;
+			};
 
 		var diagnosticsToReport = shouldIncludeLinterDiagnostics ? allDiagnostics
 			: allDiagnostics.stream().filter(d -> !d.getSource().equals(DiagnosticTool.NATLINT.getId())).toList();
@@ -872,7 +873,9 @@ public class NaturalLanguageService implements LanguageClientAware
 				switch (file.getType())
 				{
 					case PROGRAM, SUBPROGRAM, SUBROUTINE, FUNCTION -> parser.parseReferences(file);
-					default -> {}
+					default ->
+					{
+					}
 				}
 				processedFiles++;
 			}
@@ -954,7 +957,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var file = findNaturalFile(LspUtil.uriToPath(params.getTextDocument().getUri()));
 		var token = findTokenAtPosition(file.getPath(), params.getRange().getStart());
 		var node = NodeUtil.findNodeAtPosition(params.getRange().getStart().getLine(), params.getRange().getStart().getCharacter(), file.module());
-		if(node == null)
+		if (node == null)
 		{
 			return List.of();
 		}
@@ -972,17 +975,17 @@ public class NaturalLanguageService implements LanguageClientAware
 		var node = NodeUtil.findNodeAtPosition(params.getPosition().getLine(), params.getPosition().getCharacter(), file.module());
 
 		String placeholder = null;
-		if(node instanceof ISymbolReferenceNode symbolReferenceNode)
+		if (node instanceof ISymbolReferenceNode symbolReferenceNode)
 		{
 			placeholder = symbolReferenceNode.reference().declaration().symbolName();
 		}
 
-		if(node instanceof IReferencableNode rNode)
+		if (node instanceof IReferencableNode rNode)
 		{
 			placeholder = rNode.declaration().symbolName();
 		}
 
-		if(placeholder == null)
+		if (placeholder == null)
 		{
 			// Nothing we can rename
 			throw new ResponseErrorException(new ResponseError(1, "Can't rename %s".formatted(node.getClass().getSimpleName()), null));
@@ -1004,17 +1007,17 @@ public class NaturalLanguageService implements LanguageClientAware
 		var file = findNaturalFile(path);
 
 		var node = NodeUtil.findNodeAtPosition(params.getPosition().getLine(), params.getPosition().getCharacter(), file.module());
-		if(node instanceof ISymbolReferenceNode symbolReferenceNode)
+		if (node instanceof ISymbolReferenceNode symbolReferenceNode)
 		{
 			return renameComputer.rename(symbolReferenceNode, params.getNewName());
 		}
 
-		if(node instanceof IReferencableNode referencableNode)
+		if (node instanceof IReferencableNode referencableNode)
 		{
 			return renameComputer.rename(referencableNode, params.getNewName());
 		}
 
-		if(node instanceof ITokenNode && node.parent() instanceof IReferencableNode referencableNode)
+		if (node instanceof ITokenNode && node.parent() instanceof IReferencableNode referencableNode)
 		{
 			return renameComputer.rename(referencableNode, params.getNewName());
 		}
@@ -1025,7 +1028,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	private void assertCanRenameInFile(LanguageServerFile file)
 	{
 		var referenceLimit = 300; // Some arbitrary tested value
-		if(file.getIncomingReferences().size() > referenceLimit)
+		if (file.getIncomingReferences().size() > referenceLimit)
 		{
 			throw new ResponseErrorException(new ResponseError(1, "Won't rename inside %s because it has more than %d referrers (%d)".formatted(file.getReferableName(), referenceLimit, file.getIncomingReferences().size()), null));
 		}
@@ -1034,21 +1037,21 @@ public class NaturalLanguageService implements LanguageClientAware
 	public void invalidateStowCache(LanguageServerFile file)
 	{
 		var cacheFile = workspaceRoot.resolve("cache_deploy_Incr_VERSIS.properties");
-		try(var lines = Files.lines(cacheFile))
+		try (var lines = Files.lines(cacheFile))
 		{
 			var newLines = lines.map(l -> {
-				if(l.startsWith(file.getPath().toString()))
-				{
-					return file.getPath().toString() + "=";
-				}
+					if (l.startsWith(file.getPath().toString()))
+					{
+						return file.getPath().toString() + "=";
+					}
 
-				return l;
-			})
-			.collect(Collectors.joining(System.lineSeparator()));
+					return l;
+				})
+				.collect(Collectors.joining(System.lineSeparator()));
 
 			Files.writeString(cacheFile, newLines);
 		}
-		catch(IOException e)
+		catch (IOException e)
 		{
 			throw new UncheckedIOException(e);
 		}

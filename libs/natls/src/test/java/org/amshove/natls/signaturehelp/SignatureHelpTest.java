@@ -60,6 +60,6 @@ abstract class SignatureHelpTest extends LanguageServerTest
 				caller,
 				sourceWithCursor.toSinglePosition())
 			)
-			.get(5, TimeUnit.HOURS);
+			.get(5, TimeUnit.SECONDS);
 	}
 }
