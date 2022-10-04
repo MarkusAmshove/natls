@@ -1,12 +1,15 @@
 package org.amshove.natls.languageserver;
 
 import org.amshove.natparse.natural.IHasDefineData;
+import org.amshove.natparse.natural.IModuleWithBody;
+import org.amshove.natparse.natural.ISubroutineNode;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.jsonrpc.messages.Either3;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -77,45 +80,32 @@ public class NaturalDocumentService implements TextDocumentService
 	public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params)
 	{
 		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> {
+			var codelens = new ArrayList<CodeLens>();
 			var path = LspUtil.uriToPath(params.getTextDocument().getUri());
 			var file = languageService.findNaturalFile(path);
-			if (file == null)
-			{
-				return List.of();
-			}
-
-			var codelens = new ArrayList<CodeLens>();
+			var module = file.module();
 
 			var moduleReferenceCodeLens = new CodeLens();
+			moduleReferenceCodeLens.setRange(LspUtil.toRange(module.syntaxTree().descendants().first().position()));
 			moduleReferenceCodeLens.setCommand(
-				new Command(
-					file.getIncomingReferences().size() + " references",
-					"")
+					new Command(
+						file.getIncomingReferences().size() + " references",
+						"natls.codelens.showReferences",
+						Arrays.asList(file.getUri(), moduleReferenceCodeLens.getRange())
+					)
 			);
+			codelens.add(moduleReferenceCodeLens);
 
-			var module = file.module();
-			if (module instanceof IHasDefineData naturalModule && naturalModule.defineData() != null)
+			if(module instanceof IModuleWithBody hasBody && hasBody.body() != null && hasBody.body().descendants().hasItems())
 			{
-				moduleReferenceCodeLens.setRange(LspUtil.toRange(
-					naturalModule.defineData().position()
-				));
-				// TODO(code-lens): Add an actual command
-				naturalModule
-					.defineData()
-					.variables()
-					.stream()
-					.filter(v -> v.references().size() > 0)
-					.map(v -> new CodeLens(
-						LspUtil.toRange(v.declaration()),
-						new Command(v.references().size() + " references", ""),
-						new Object()
-					))
+				hasBody.body().statements().stream()
+					.filter(s -> s instanceof ISubroutineNode)
+					.map(ISubroutineNode.class::cast)
+					.map(s -> new CodeLens(
+								LspUtil.toRange(s.declaration()),
+								new Command(s.references().size() + " references", "natls.codelens.showReferences", Arrays.asList(file.getUri(), LspUtil.toRange(s.declaration()))),
+								Arrays.asList(file.getUri(), LspUtil.toRange(s.declaration()))))
 					.forEach(codelens::add);
-			}
-
-			if(!file.getIncomingReferences().isEmpty())
-			{
-				codelens.add(moduleReferenceCodeLens);
 			}
 
 			return codelens;

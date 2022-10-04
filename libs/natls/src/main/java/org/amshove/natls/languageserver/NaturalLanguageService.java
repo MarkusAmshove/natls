@@ -764,6 +764,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		file.save();
 		publishDiagnostics(file);
+		client.refreshCodeLenses();
 	}
 
 	public void fileClosed(Path path)
@@ -800,6 +801,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		file.changed(newSource);
 		publishDiagnostics(file);
+		client.refreshCodeLenses();
 	}
 
 	public void parseAll(IProgressMonitor monitor)
