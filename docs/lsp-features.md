@@ -23,6 +23,12 @@ Hovering is also implemented for system functions and variables:
 
 Code completion that tells you where variables come from, what type they are, array dimensions and much more
 
+# Signature help
+
+![signature_help](/assets/lsp_features/signature_help.gif)
+
+Get signature help for calling external modules, including the documentation of the module and the parameter with their documentation.
+
 # Go-to definition
 
 ![goto_definition](/assets/lsp_features/goto_definition.gif)

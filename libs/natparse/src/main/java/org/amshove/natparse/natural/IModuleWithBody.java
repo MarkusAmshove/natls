@@ -1,6 +1,6 @@
 package org.amshove.natparse.natural;
 
-public interface IHasBody
+public interface IModuleWithBody
 {
 	IStatementListNode body();
 }

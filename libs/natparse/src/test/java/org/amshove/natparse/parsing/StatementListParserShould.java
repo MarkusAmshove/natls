@@ -79,12 +79,92 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseParameterForCallnats()
+	{
+		var calledSubprogram = new NaturalModule(null);
+		moduleProvider.addModule("A-MODULE", calledSubprogram);
+
+		var callnat = assertParsesSingleStatement("CALLNAT 'A-module' #VAR 10 'String' TRUE 1X", ICallnatNode.class);
+		assertThat(callnat.providedParameter()).hasSize(5);
+		assertNodeType(callnat.providedParameter().get(0), IVariableReferenceNode.class);
+		assertNodeType(callnat.providedParameter().get(1), ILiteralNode.class);
+		assertNodeType(callnat.providedParameter().get(2), ILiteralNode.class);
+		assertNodeType(callnat.providedParameter().get(3), ILiteralNode.class);
+		assertNodeType(callnat.providedParameter().get(4), ISkipOperandNode.class);
+	}
+
+	@Test
+	void parseParameterForCallnatsWithAttributeDefinition()
+	{
+		var calledSubprogram = new NaturalModule(null);
+		moduleProvider.addModule("A-MODULE", calledSubprogram);
+
+		var callnat = assertParsesSingleStatement("CALLNAT 'A-module' #VAR (AD=O) #VAR2 (AD=M) #VAR3 (AD=A)", ICallnatNode.class);
+		assertThat(callnat.providedParameter()).hasSize(3);
+
+		var first = assertNodeType(callnat.providedParameter().get(0), IVariableReferenceNode.class);
+		assertThat(first.findDescendantToken(SyntaxKind.AD)).isNotNull();
+
+		var second = assertNodeType(callnat.providedParameter().get(1), IVariableReferenceNode.class);
+		assertThat(second.findDescendantToken(SyntaxKind.AD)).isNotNull();
+
+		var third = assertNodeType(callnat.providedParameter().get(2), IVariableReferenceNode.class);
+		assertThat(third.findDescendantToken(SyntaxKind.AD)).isNotNull();
+	}
+
+	@Test
+	void parseCallnatWithUsing()
+	{
+		var calledSubprogram = new NaturalModule(null);
+		moduleProvider.addModule("A-MODULE", calledSubprogram);
+
+		var callnat = assertParsesSingleStatement("CALLNAT 'A-module' USING #VAR", ICallnatNode.class);
+		assertThat(callnat.providedParameter()).hasSize(1);
+		assertThat(assertNodeType(callnat.providedParameter().get(0), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"#VAR5 := 1",
+		"#VAR5(2) := 10",
+		"*ERROR-NR := 5"
+	})
+	void distinguishBetweenCallnatParameterAndVariableAssignment(String nextLine)
+	{
+
+		var calledSubprogram = new NaturalModule(null);
+		moduleProvider.addModule("A-MODULE", calledSubprogram);
+
+		var statements = assertParsesWithoutDiagnostics("""
+			CALLNAT 'A-module' #VAR #VAR
+				#VARNEWLINE
+			%s
+			""".formatted(nextLine)).statements();
+
+		assertThat(statements.size()).isGreaterThan(1); // Assignment not parsed yet. Change this to two when this test breaks from implementing assignments
+		var callnat = assertNodeType(statements.first(), ICallnatNode.class);
+		assertThat(assertNodeType(callnat.providedParameter().last(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VARNEWLINE");
+	}
+
+	@Test
 	void parseASimpleInclude()
 	{
 		ignoreModuleProvider();
 		var include = assertParsesSingleStatement("INCLUDE L4NLOGIT", IIncludeNode.class);
 		assertThat(include.referencingToken().kind()).isEqualTo(SyntaxKind.IDENTIFIER);
 		assertThat(include.referencingToken().symbolName()).isEqualTo("L4NLOGIT");
+	}
+
+	@Test
+	void parseAnIncludeWithParameter()
+	{
+		ignoreModuleProvider();
+		var include = assertParsesSingleStatement("INCLUDE THECC '''Literal''' '#VAR' '5' '*OCC(#ARR)'", IIncludeNode.class);
+		assertThat(include.providedParameter()).hasSize(4);
+		assertThat(assertNodeType(include.providedParameter().get(0), ILiteralNode.class).token().stringValue()).isEqualTo("'Literal'");
+		assertThat(assertNodeType(include.providedParameter().get(1), ILiteralNode.class).token().stringValue()).isEqualTo("#VAR");
+		assertThat(assertNodeType(include.providedParameter().get(2), ILiteralNode.class).token().stringValue()).isEqualTo("5");
+		assertThat(assertNodeType(include.providedParameter().get(3), ILiteralNode.class).token().stringValue()).isEqualTo("*OCC(#ARR)");
 	}
 
 	@Test
@@ -206,10 +286,10 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	void parseASubroutineWithoutSubroutineKeywordButKeywordAsName()
 	{
 		var subroutine = assertParsesSingleStatementWithDiagnostic("""
-			 DEFINE RESULT
-			 IGNORE
-			 END-SUBROUTINE
-			""",
+				 DEFINE RESULT
+				 IGNORE
+				 END-SUBROUTINE
+				""",
 			ISubroutineNode.class,
 			ParserError.KEYWORD_USED_AS_IDENTIFIER);
 
@@ -310,6 +390,40 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseAndResolveExternalPerformCallsWithParameter()
+	{
+		var calledSubroutine = new NaturalModule(null);
+		moduleProvider.addModule("EXTERNAL-SUB", calledSubroutine);
+
+		var perform = assertParsesSingleStatement("PERFORM EXTERNAL-SUB PDA1 'Literal' 5 #VAR", IExternalPerformNode.class);
+		assertThat(perform.reference()).isEqualTo(calledSubroutine);
+		assertThat(calledSubroutine.callers()).contains(perform);
+		assertThat(perform.providedParameter()).hasSize(4);
+		assertThat(assertNodeType(perform.providedParameter().get(0), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("PDA1");
+		assertThat(assertNodeType(perform.providedParameter().get(1), ILiteralNode.class).token().stringValue()).isEqualTo("Literal");
+		assertThat(assertNodeType(perform.providedParameter().get(2), ILiteralNode.class).token().intValue()).isEqualTo(5);
+		assertThat(assertNodeType(perform.providedParameter().get(3), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+	}
+
+	@Test
+	void distinguishBetweenPerformParameterAndVariableAssignment()
+	{
+
+		var calledSubroutine = new NaturalModule(null);
+		moduleProvider.addModule("A-MODULE", calledSubroutine);
+
+		var statements = assertParsesWithoutDiagnostics("""
+			PERFORM A-MODULE #VAR #VAR
+				#VARNEWLINE
+			#VAR5 := 1
+			""").statements();
+
+		assertThat(statements.size()).isEqualTo(4); // Assignment not parsed yet. Change this to two when this test breaks from implementing assignments
+		var perform = assertNodeType(statements.first(), IExternalPerformNode.class);
+		assertThat(assertNodeType(perform.providedParameter().last(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VARNEWLINE");
+	}
+
+	@Test
 	void parseAFunctionCallWithoutParameter()
 	{
 		var calledFunction = new NaturalModule(null);
@@ -329,7 +443,18 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		var call = assertParsesSingleStatement("ISSTH(<5>)", IFunctionCallNode.class);
 		assertThat(call.reference()).isEqualTo(calledFunction);
 		assertThat(calledFunction.callers()).contains(call);
-		assertThat(call.position().offsetInLine()).isEqualTo(0);
+		assertThat(call.position().offsetInLine()).isZero();
+		assertThat(call.providedParameter()).hasSize(1);
+		assertThat(assertNodeType(call.providedParameter().first(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+	}
+
+	@Test
+	void reportADiagnosticForFunctionCallsWithTrailingCommas()
+	{
+		var calledFunction = new NaturalModule(null);
+		moduleProvider.addModule("ISSTH", calledFunction);
+
+		assertDiagnostic("ISSTH(<5,>)", ParserError.TRAILING_TOKEN);
 	}
 
 	@Test
@@ -357,7 +482,6 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(ifStatement.body().statements()).hasSize(1);
 		assertThat(ifStatement.descendants()).hasSize(4);
 	}
-
 
 	@Test
 	void allowIfStatementsToContainTheThenKeyword()
@@ -1309,17 +1433,17 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	void parseDecideForCondition()
 	{
 		var decide = assertParsesSingleStatement("""
-			DECIDE FOR CONDITION
-			WHEN 5 < 2
-				IGNORE
-			WHEN ANY
-				IGNORE
-			WHEN ALL
-				IGNORE
-			WHEN NONE
-				IGNORE
-			END-DECIDE
-		""", IDecideForConditionNode.class);
+				DECIDE FOR CONDITION
+				WHEN 5 < 2
+					IGNORE
+				WHEN ANY
+					IGNORE
+				WHEN ALL
+					IGNORE
+				WHEN NONE
+					IGNORE
+				END-DECIDE
+			""", IDecideForConditionNode.class);
 
 		assertThat(decide.whenNone().statements()).hasSize(1);
 		assertNodeType(decide.whenNone().statements().first(), IIgnoreNode.class);
@@ -1347,30 +1471,30 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	void parseDecideForConditionWithEveryAndFirst(String permutation)
 	{
 		assertParsesSingleStatement("""
-			DECIDE FOR %s CONDITION
-			WHEN 5 < 2
-				IGNORE
-			WHEN NONE
-				IGNORE
-			END-DECIDE
-		""".formatted(permutation), IDecideForConditionNode.class);
+				DECIDE FOR %s CONDITION
+				WHEN 5 < 2
+					IGNORE
+				WHEN NONE
+					IGNORE
+				END-DECIDE
+			""".formatted(permutation), IDecideForConditionNode.class);
 	}
 
 	@Test
 	void parseDecideForWithComplexConditions()
 	{
 		var decide = assertParsesSingleStatement("""
-			DECIDE FOR CONDITION
-			WHEN (#VAR IS (N4))
-				IGNORE
-			WHEN #VAR = 'Hello' AND #VAR2 = 2
-				IGNORE
-			WHEN (#VAR = 'Hello' OR *OCC(#ARR) = 5)
-				IGNORE
-			WHEN NONE
-				IGNORE
-			END-DECIDE
-		""", IDecideForConditionNode.class);
+				DECIDE FOR CONDITION
+				WHEN (#VAR IS (N4))
+					IGNORE
+				WHEN #VAR = 'Hello' AND #VAR2 = 2
+					IGNORE
+				WHEN (#VAR = 'Hello' OR *OCC(#ARR) = 5)
+					IGNORE
+				WHEN NONE
+					IGNORE
+				END-DECIDE
+			""", IDecideForConditionNode.class);
 
 		assertThat(decide.branches()).hasSize(3);
 	}

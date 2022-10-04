@@ -1072,6 +1072,23 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		internalPerform.setReferenceNode(referenceNode);
 		internalPerform.addNode(referenceNode);
 
+		if(!isStatementStart() && isModuleParameter())
+		{
+			var externalPerform = new ExternalPerformNode(internalPerform);
+			while (!isAtEnd() && !isStatementStart() && isModuleParameter())
+			{
+				var operand = consumeModuleParameter(externalPerform);
+				externalPerform.addParameter(operand);
+			}
+			var foundModule = sideloadModule(externalPerform.referencingToken().trimmedSymbolName(32), externalPerform.referencingToken());
+			if(foundModule != null)
+			{
+				externalPerform.setReference(foundModule);
+			}
+
+			return externalPerform;
+		}
+
 		unresolvedReferences.add(internalPerform);
 		return internalPerform;
 	}
@@ -1126,8 +1143,20 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		if (consumeOptionally(callnat, SyntaxKind.STRING_LITERAL))
 		{
 			callnat.setReferencingToken(previousToken());
-			var referencedModule = sideloadModule(callnat.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode());
+			var referencedModule = sideloadModule(callnat.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token());
 			callnat.setReferencedModule((NaturalModule) referencedModule);
+		}
+
+		consumeOptionally(callnat, SyntaxKind.USING);
+
+		while(!isAtEnd() && !isStatementStart() && isModuleParameter())
+		{
+			var operand = consumeModuleParameter(callnat);
+			callnat.addParameter(operand);
+			if(peekKind(SyntaxKind.LPAREN) && peekKind(1, SyntaxKind.AD))
+			{
+				consumeAttributeDefinition((BaseSyntaxNode) operand);
+			}
 		}
 
 		return callnat;
@@ -1142,7 +1171,13 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var referencingToken = consumeMandatoryIdentifier(include);
 		include.setReferencingToken(referencingToken);
 
-		var referencedModule = sideloadModule(referencingToken.symbolName(), previousTokenNode());
+		while(!isAtEnd() && peekKind(SyntaxKind.STRING_LITERAL))
+		{
+			var parameter = consumeLiteralNode(include, SyntaxKind.STRING_LITERAL);
+			include.addParameter(parameter);
+		}
+
+		var referencedModule = sideloadModule(referencingToken.symbolName(), previousTokenNode().token());
 		include.setReferencedModule((NaturalModule) referencedModule);
 
 		if (referencedModule != null)
@@ -1223,7 +1258,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		if (consumeOptionally(fetch, SyntaxKind.STRING_LITERAL))
 		{
 			fetch.setReferencingToken(previousToken());
-			var referencedModule = sideloadModule(fetch.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode());
+			var referencedModule = sideloadModule(fetch.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token());
 			fetch.setReferencedModule((NaturalModule) referencedModule);
 		}
 
@@ -1787,15 +1822,20 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var lookahead = isAtEnd(1) ? null : peek(1).kind();
 
 		return
-			(peekKind(SyntaxKind.IDENTIFIER) && lookahead != SyntaxKind.COLON_EQUALS_SIGN)
+			(peekKind(SyntaxKind.IDENTIFIER) && !peekKindInLine(SyntaxKind.COLON_EQUALS_SIGN))
 				|| peek().kind().isSystemFunction()
-				|| peek().kind().isSystemVariable()
+				|| (peek().kind().isSystemVariable() && lookahead != SyntaxKind.COLON_EQUALS_SIGN)
 				|| peek().kind().isLiteralOrConst()
 				|| peekKind(SyntaxKind.VAL)
 				|| peekKind(SyntaxKind.ABS)
 				|| peekKind(SyntaxKind.POS)
-				|| (peekKind(SyntaxKind.MINUS) && peekKind(1, SyntaxKind.NUMBER_LITERAL))
-				|| (peek().kind().canBeIdentifier() && lookahead != SyntaxKind.COLON_EQUALS_SIGN); // this should hopefully catch the begin of statements
+				|| (peekKind(SyntaxKind.MINUS) && lookahead == SyntaxKind.NUMBER_LITERAL)
+				|| (peek().kind().canBeIdentifier() && !peekKindInLine(SyntaxKind.COLON_EQUALS_SIGN));  // hopefully this fixes `#ARR(10) :=` being recognized as operand and has no side effects :)
+	}
+
+	private boolean isModuleParameter()
+	{
+		return isOperand() || peekKind(SyntaxKind.OPERAND_SKIP);
 	}
 
 	private boolean isNotCallnatOrFetchModule()
@@ -1809,9 +1849,11 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		for (var unresolvedReference : unresolvedReferences)
 		{
+
+			// external subroutines which don't pass parameter couldn't be distinguished from local subroutines up to this point
 			if (unresolvedReference instanceof InternalPerformNode internalPerformNode)
 			{
-				var foundModule = sideloadModule(unresolvedReference.token().trimmedSymbolName(32), internalPerformNode.tokenNode());
+				var foundModule = sideloadModule(unresolvedReference.token().trimmedSymbolName(32), internalPerformNode.tokenNode().token());
 				if (foundModule != null)
 				{
 					var externalPerform = new ExternalPerformNode(((InternalPerformNode) unresolvedReference));
@@ -1868,7 +1910,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		return switch (currentKind)
 			{
-				case ACCEPT, ADD, ASSIGN, CALL, CALLNAT, CLOSE, COMMIT, COMPRESS, COMPUTE, DECIDE, DEFINE, DELETE, DISPLAY, DIVIDE, DO, DOEND, DOWNLOAD, EJECT, END, ESCAPE, EXAMINE, EXPAND, FETCH, FIND, FOR, FORMAT, GET, HISTOGRAM, IF, IGNORE, INCLUDE, INPUT, INSERT, INTERFACE, LIMIT, LOOP, METHOD, MOVE, MULTIPLY, NEWPAGE, OBTAIN, OPTIONS, PASSW, PERFORM, PRINT, PROCESS, PROPERTY, READ, REDEFINE, REDUCE, REINPUT, REJECT, RELEASE, REPEAT, RESET, RESIZE, RETRY, ROLLBACK, RUN, SELECT, SEPARATE, SET, SKIP, SORT, STACK, STOP, STORE, SUBTRACT, TERMINATE, UPDATE, WRITE ->
+				case ACCEPT, ADD, ASSIGN, BEFORE, CALL, CALLNAT, CLOSE, COMMIT, COMPRESS, COMPUTE, DECIDE, DEFINE, DELETE, DISPLAY, DIVIDE, DO, DOEND, DOWNLOAD, EJECT, END, ESCAPE, EXAMINE, EXPAND, FETCH, FIND, FOR, FORMAT, GET, HISTOGRAM, IF, IGNORE, INCLUDE, INPUT, INSERT, INTERFACE, LIMIT, LOOP, METHOD, MOVE, MULTIPLY, NEWPAGE, OBTAIN, OPTIONS, PASSW, PERFORM, PRINT, PROCESS, PROPERTY, READ, REDEFINE, REDUCE, REINPUT, REJECT, RELEASE, REPEAT, RESET, RESIZE, RETRY, ROLLBACK, RUN, SELECT, SEPARATE, SET, SKIP, SORT, STACK, STOP, STORE, SUBTRACT, TERMINATE, UPDATE, WRITE ->
 					true;
 				case ON -> peekKind(1, SyntaxKind.ERROR);
 				case OPEN -> peekKind(1, SyntaxKind.CONVERSATION);
@@ -1879,35 +1921,5 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 				case UPLOAD -> peekKind(1, SyntaxKind.PC) && peekKind(2, SyntaxKind.FILE);
 				default -> false;
 			};
-	}
-
-	private UnaryLogicalCriteriaNode unaryVariableOrFunctionCall() throws ParseError
-	{
-		var unary = new UnaryLogicalCriteriaNode();
-		if (peekKind(1, SyntaxKind.LPAREN) && peekKind(2, SyntaxKind.LESSER_SIGN))
-		{
-			var functionName = consumeIdentifierTokenOnly();
-			unary.setNode(functionCall(functionName));
-		}
-		else
-		{
-			unary.setNode(consumeVariableReferenceNode(unary));
-		}
-		return unary;
-	}
-
-	private UnaryLogicalCriteriaNode constantUnary() throws ParseError
-	{
-		var unary = new UnaryLogicalCriteriaNode();
-		if (peekKind(SyntaxKind.TRUE))
-		{
-			unary.setNode(consumeLiteralNode(unary, SyntaxKind.TRUE));
-		}
-		else
-		{
-			unary.setNode(consumeLiteralNode(unary, SyntaxKind.FALSE));
-		}
-
-		return unary;
 	}
 }

@@ -6,7 +6,6 @@ import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.Lexer;
-import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
 import org.amshove.natparse.natural.project.NaturalFile;
@@ -36,7 +35,6 @@ public class LanguageServerFile implements IModuleProvider
 	private LanguageServerLibrary library;
 	private final Set<LanguageServerFile> outgoingReferences = new HashSet<>();
 	private final Set<LanguageServerFile> incomingReferences = new HashSet<>();
-	private final List<SyntaxToken> comments = new ArrayList<>();
 
 	private byte[] defineDataHash;
 	private boolean hasBeenAnalyzed;
@@ -261,8 +259,6 @@ public class LanguageServerFile implements IModuleProvider
 
 		var lexer = new Lexer();
 		var tokenList = lexer.lex(source, file.getPath());
-		comments.clear();
-		comments.addAll(tokenList.comments().toList());
 		var parser = new NaturalParser(this);
 
 		module = parser.parse(file, tokenList);
@@ -279,7 +275,7 @@ public class LanguageServerFile implements IModuleProvider
 			hasDefineData.defineData().descendants().forEach(ISyntaxNode::destroy);
 		}
 
-		if (module instanceof IHasBody hasBody && hasBody.body() != null)
+		if (module instanceof IModuleWithBody hasBody && hasBody.body() != null)
 		{
 			hasBody.body().destroy();
 		}
@@ -435,11 +431,6 @@ public class LanguageServerFile implements IModuleProvider
 	public NaturalFile getNaturalFile()
 	{
 		return file;
-	}
-
-	public ReadOnlyList<SyntaxToken> comments()
-	{
-		return ReadOnlyList.from(comments);
 	}
 
 	private byte[] hashDefineData(String source)

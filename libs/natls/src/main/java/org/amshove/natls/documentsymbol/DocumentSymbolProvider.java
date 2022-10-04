@@ -21,7 +21,7 @@ public class DocumentSymbolProvider
 			rootChildren.addAll(createDefineDataSymbols(hasDefineData.defineData()));
 		}
 
-		if(module instanceof IHasBody hasBody && hasBody.body() != null)
+		if(module instanceof IModuleWithBody hasBody && hasBody.body() != null)
 		{
 			rootChildren.addAll(createBodySymbols(hasBody.body()));
 		}

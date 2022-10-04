@@ -4,11 +4,10 @@ import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.ITranslateSystemFunctionNode;
-import org.amshove.natparse.natural.IVariableReferenceNode;
 
 class TranslateSystemFunctionNode extends BaseSyntaxNode implements ITranslateSystemFunctionNode
 {
-	private IVariableReferenceNode toTranslate;
+	private IOperandNode toTranslate;
 	private boolean isToUpper;
 
 	@Override
@@ -24,7 +23,7 @@ class TranslateSystemFunctionNode extends BaseSyntaxNode implements ITranslateSy
 	}
 
 	@Override
-	public IVariableReferenceNode toTranslate()
+	public IOperandNode toTranslate()
 	{
 		return toTranslate;
 	}
@@ -40,7 +39,7 @@ class TranslateSystemFunctionNode extends BaseSyntaxNode implements ITranslateSy
 		isToUpper = toUpper;
 	}
 
-	void setToTranslate(IVariableReferenceNode toTranslate)
+	void setToTranslate(IOperandNode toTranslate)
 	{
 		this.toTranslate = toTranslate;
 	}
