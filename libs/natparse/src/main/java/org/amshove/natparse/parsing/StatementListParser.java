@@ -997,7 +997,12 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 				{
 					var literal = consumeLiteralNode(printer, SyntaxKind.STRING_LITERAL);
 					printer.setOutput(literal);
-					if (!literal.token().stringValue().matches("LPT\\d+"))
+					var outputName = literal.token().stringValue();
+					if (!outputName.matches("LPT\\d+")
+						&& !outputName.equals("DUMMY")
+						&& !outputName.equals("INFOLINE")
+						&& !outputName.equals("SOURCE")
+						&& !outputName.equals("NOM"))
 					{
 						report(ParserErrors.invalidPrinterOutputFormat(literal.token()));
 					}

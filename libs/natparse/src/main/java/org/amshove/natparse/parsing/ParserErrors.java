@@ -351,7 +351,7 @@ class ParserErrors
 	public static IDiagnostic invalidPrinterOutputFormat(SyntaxToken token)
 	{
 		return ParserDiagnostic.create(
-			"Printer output '%s' is invalid. It has to be in the form of 'LTPn' ('LTP1' - 'LTP31')",
+			"Printer output '%s' is invalid. It has to be in the form of 'LTPn' ('LTP1' - 'LTP31'), DUMMY, INFOLINE, SOURCE or NOM".formatted(token.kind()),
 			token,
 			ParserError.INVALID_PRINTER_OUTPUT_FORMAT
 		);
