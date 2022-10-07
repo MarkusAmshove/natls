@@ -533,6 +533,16 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void notComplainAboutMissingEndForWhenSortIsFollowing()
+	{
+		assertParsesWithoutDiagnostics("""
+			FOR #I := 1 TO 10
+			    FOR #J := 1 TO 20
+			        WRITE #I #J
+			END-ALL""");
+	}
+
+	@Test
 	void parseForEqToStatements()
 	{
 		var forLoopNode = assertParsesSingleStatement("""
