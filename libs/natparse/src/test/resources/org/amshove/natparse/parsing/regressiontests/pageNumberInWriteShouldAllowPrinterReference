@@ -1,0 +1,7 @@
+define data local
+end-define
+
+write (SH12) NOTITLE
+  122T 'Page' *PAGE-NUMBER(SH12) (EM=ZZZZ9) /* this raised unresolved variable for SH12
+
+end
