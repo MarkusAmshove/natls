@@ -248,6 +248,15 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						}
 						// FALLTHROUGH TO DEFAULT INTENDED
 					default:
+
+						if(peek().kind().isSystemFunction())
+						{
+							// this came up for *PAGE-NUMBER(PRINTERREP) in a WRITE statement, because we don't parse WRITE operands yet
+							// Can be removed in the future
+							consumeSystemFunctionNode(statementList);
+							break;
+						}
+
 						// While the parser is incomplete, we just add a node for every token
 						var tokenStatementNode = new SyntheticTokenStatementNode();
 						consume(tokenStatementNode);
