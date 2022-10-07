@@ -22,10 +22,9 @@ class NatlintCliShould
 	private PrintStream previousStdErr;
 
 	@Test
-	void returnNonZeroExitCodeWhenDiagnosticsAreFound(@ProjectName("unusedimports") NaturalProject project)
+	void returnNonZeroExitCodeWhenDiagnosticsAreFound(@ProjectName("clitest") NaturalProject project)
 	{
 		var result = runNatlint("-w", project.getRootPath().toAbsolutePath().toString());
-
 		assertThat(result.exitCode).isPositive();
 	}
 
