@@ -253,7 +253,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						{
 							// this came up for *PAGE-NUMBER(PRINTERREP) in a WRITE statement, because we don't parse WRITE operands yet
 							// Can be removed in the future
-							consumeSystemFunctionNode(statementList);
+							consumeOperandNode(statementList);
 							break;
 						}
 
