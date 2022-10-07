@@ -792,6 +792,17 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(printer.output()).map(ILiteralNode.class::cast).map(ILiteralNode::token).map(SyntaxToken::stringValue).hasValue("LPT1");
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"DUMMY", "INFOLINE", "SOURCE", "NOM"
+	})
+	void parseADefinePrinterWithAllowedBuiltInOutputNames(String output)
+	{
+		var printer = assertParsesSingleStatement("DEFINE PRINTER (4) OUTPUT '%s'".formatted(output), IDefinePrinterNode.class);
+		assertThat(printer.output()).hasValueSatisfying(n -> assertThat(n).isInstanceOf(ILiteralNode.class));
+		assertThat(printer.output()).map(ILiteralNode.class::cast).map(ILiteralNode::token).map(SyntaxToken::stringValue).hasValue(output);
+	}
+
 	@Test
 	void reportADiagnosticIfDefinePrinterHasAnInvalidOutputStringFormat()
 	{
