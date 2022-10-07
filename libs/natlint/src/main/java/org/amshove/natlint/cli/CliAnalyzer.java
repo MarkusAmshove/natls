@@ -11,7 +11,6 @@ import org.amshove.natparse.parsing.NaturalParser;
 import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,9 +22,11 @@ public class CliAnalyzer
 	private final List<Predicate<IDiagnostic>> diagnosticPredicates;
 	private final ActualFilesystem filesystem;
 	private final IDiagnosticSink diagnosticSink;
+	private Path workingDirectory;
 
-	public CliAnalyzer(IDiagnosticSink sink, List<Predicate<NaturalFile>> filePredicates, List<Predicate<IDiagnostic>> diagnosticPredicates)
+	public CliAnalyzer(Path workingDirectory, IDiagnosticSink sink, List<Predicate<NaturalFile>> filePredicates, List<Predicate<IDiagnostic>> diagnosticPredicates)
 	{
+		this.workingDirectory = workingDirectory;
 		this.filePredicates = filePredicates;
 		this.diagnosticPredicates = diagnosticPredicates;
 		filesystem = new ActualFilesystem();
@@ -34,8 +35,6 @@ public class CliAnalyzer
 
 	public int run()
 	{
-		var workingDirectoryPath = System.getProperty("user.dir");
-		var workingDirectory = Paths.get(workingDirectoryPath);
 		var filesystem = new ActualFilesystem();
 
 		while (!workingDirectory.getRoot().equals(workingDirectory) && filesystem.findNaturalProjectFile(workingDirectory).isEmpty())

@@ -15,6 +15,9 @@ import java.util.function.Predicate;
 @CommandLine.Command(name = "analyze", description = "Analyze the Natural project in the current working directory", mixinStandardHelpOptions = true)
 public class AnalyzeCommand implements Callable<Integer>
 {
+	@CommandLine.Option(names = {"-w", "--workdir"}, description = "Sets the working directory to a different path than the current one")
+	String workingDirectory;
+
 	@CommandLine.Option(names = { "-f", "--file" }, description = "Only analyze modules matching any of the qualified module name in the form of LIBRARY.MODULENAME (e.g. LIB1.SUBPROG)")
 	List<String> qualifiedNames;
 
@@ -87,8 +90,11 @@ public class AnalyzeCommand implements Callable<Integer>
 		{
 			sinkType = DiagnosticSinkType.CI_CSV;
 		}
+		var workingDirectoryPath = workingDirectory != null ? workingDirectory : System.getProperty("user.dir");
+		var workingDirectory = Paths.get(workingDirectoryPath);
 
 		var analyzer = new CliAnalyzer(
+			workingDirectory,
 			sinkType.createSink(),
 			modulePredicates.isEmpty() ? DEFAULT_MODULE_PREDICATES : modulePredicates,
 			diagnosticPredicates.isEmpty() ? DEFAULT_DIAGNOSTIC_PREDICATES : diagnosticPredicates
