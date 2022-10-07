@@ -63,7 +63,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			try
 			{
-				if (peekKind(endTokenKind) || peekKind(SyntaxKind.END_ALL))
+				if (endTokenKind != null
+					&& (peekKind(endTokenKind)
+					|| (peekKind(SyntaxKind.END_ALL) && END_KINDS_THAT_END_ALL_ENDS.contains(endTokenKind))))
 				{
 					break;
 				}
