@@ -184,6 +184,11 @@ abstract class AbstractParser<T>
 
 	protected SyntaxToken consumeMandatoryClosing(BaseSyntaxNode node, SyntaxKind closingTokenType, SyntaxToken openingToken) throws ParseError
 	{
+		if(peekKind(SyntaxKind.END_ALL)) // sort
+		{
+			return peek();
+		}
+
 		if(!consumeOptionally(node, closingTokenType))
 		{
 			diagnostics.add(ParserErrors.missingClosingToken(closingTokenType, openingToken));
