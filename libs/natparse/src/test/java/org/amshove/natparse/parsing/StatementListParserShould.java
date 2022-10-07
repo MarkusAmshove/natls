@@ -533,6 +533,16 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void notComplainAboutMissingEndForWhenSortIsFollowing()
+	{
+		assertParsesWithoutDiagnostics("""
+			FOR #I := 1 TO 10
+			    FOR #J := 1 TO 20
+			        WRITE #I #J
+			END-ALL""");
+	}
+
+	@Test
 	void parseForEqToStatements()
 	{
 		var forLoopNode = assertParsesSingleStatement("""
@@ -790,6 +800,17 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		var printer = assertParsesSingleStatement("DEFINE PRINTER(5) OUTPUT 'LPT1'", IDefinePrinterNode.class);
 		assertThat(printer.output()).hasValueSatisfying(n -> assertThat(n).isInstanceOf(ILiteralNode.class));
 		assertThat(printer.output()).map(ILiteralNode.class::cast).map(ILiteralNode::token).map(SyntaxToken::stringValue).hasValue("LPT1");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"DUMMY", "INFOLINE", "SOURCE", "NOM"
+	})
+	void parseADefinePrinterWithAllowedBuiltInOutputNames(String output)
+	{
+		var printer = assertParsesSingleStatement("DEFINE PRINTER (4) OUTPUT '%s'".formatted(output), IDefinePrinterNode.class);
+		assertThat(printer.output()).hasValueSatisfying(n -> assertThat(n).isInstanceOf(ILiteralNode.class));
+		assertThat(printer.output()).map(ILiteralNode.class::cast).map(ILiteralNode::token).map(SyntaxToken::stringValue).hasValue(output);
 	}
 
 	@Test
