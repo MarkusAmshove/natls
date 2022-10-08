@@ -56,12 +56,15 @@ To build the project and run tests use `./gradlew build`.
 
 To create standalone jar files (fat jars that include all dependencies) run `./gradlew shadowJar`.
 
-## Project state
+## Project state/Limitations
 
 The current state of the project is considered as early development.
 
+The language server can be used for daily development in Natural, but it does have some limitations:
+
 The parser is still [incomplete](docs/implemented-statements.md) and has some rough edges where the Natural language is context sensitive.
-It also currently uses some hard coded assumptions about the language settings that should be configurable by the `.natural` file (like thousands seperators).
+It also currently uses some hard coded assumptions about the language settings that should be configurable by the `.natural` file (like thousands seperators), which means that e.g. regional settings aren't considered.
+Reporting Mode hasn't been considered yet, so currently only the structured mode syntax of statements is parsed correctly.
 
 Some analyzers assume a coding style that might not fit your needs. This will be [configurable](https://github.com/MarkusAmshove/natls/issues/62) in the future.
 
