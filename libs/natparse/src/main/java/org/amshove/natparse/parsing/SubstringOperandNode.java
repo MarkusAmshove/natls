@@ -3,6 +3,8 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.ISubstringOperandNode;
 
+import java.util.Optional;
+
 class SubstringOperandNode extends BaseSyntaxNode implements ISubstringOperandNode
 {
 	private IOperandNode operand;
@@ -16,15 +18,15 @@ class SubstringOperandNode extends BaseSyntaxNode implements ISubstringOperandNo
 	}
 
 	@Override
-	public IOperandNode startPosition()
+	public Optional<IOperandNode> startPosition()
 	{
-		return startingPosition;
+		return Optional.ofNullable(startingPosition);
 	}
 
 	@Override
-	public IOperandNode length()
+	public Optional<IOperandNode> length()
 	{
-		return length;
+		return Optional.ofNullable(length);
 	}
 
 	void setOperand(IOperandNode operand)
