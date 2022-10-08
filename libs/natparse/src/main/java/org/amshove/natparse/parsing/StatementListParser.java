@@ -824,9 +824,14 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 		else
 		{
-			substring.setStartingPosition(consumeOperandNode(substring));
-			consumeMandatory(node, SyntaxKind.COMMA);
-			substring.setLength(consumeOperandNode(substring));
+			if(!peekKind(SyntaxKind.COMMA))
+			{
+				substring.setStartingPosition(consumeOperandNode(substring));
+			}
+			if(consumeOptionally(node, SyntaxKind.COMMA))
+			{
+				substring.setLength(consumeOperandNode(substring));
+			}
 		}
 		consumeMandatory(node, SyntaxKind.RPAREN);
 

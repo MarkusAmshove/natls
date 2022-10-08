@@ -1,9 +1,11 @@
 package org.amshove.natparse.natural;
 
+import java.util.Optional;
+
 // TODO: (type-checking) check operand for typ(A, B, U)
 public interface ISubstringOperandNode extends IOperandNode
 {
 	IOperandNode operand();
-	IOperandNode startPosition();
-	IOperandNode length();
+	Optional<IOperandNode> startPosition();
+	Optional<IOperandNode> length();
 }
