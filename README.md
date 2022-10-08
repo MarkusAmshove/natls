@@ -18,9 +18,8 @@ The language server supports, but isn't limited to:
 - Quickfixes and refactorings
 - Outline
 - Code Snippets
-
-A more in-depth documentation with examples of features can be found [here](docs/lsp-features.md).
-
+- Signature Help for modules
+- [and many more](docs/lsp-features.md)
 
 ## Contributing
 
