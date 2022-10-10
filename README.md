@@ -6,7 +6,7 @@
 
 This repository contains a language server implementation for the [Natural language](https://en.wikipedia.org/wiki/ADABAS#Natural_(4GL)) created by Software AG.
 
-The latest unstable build of the `main` branch can always be downloaded from the [nightly tag](https://github.com/MarkusAmshove/natls/releases/tag/unstable).
+The latest release and changelog can be found at [GitHub Releases](https://github.com/MarkusAmshove/natls/releases/).
 
 The language server supports, but isn't limited to:
 
@@ -118,8 +118,7 @@ Analyze the Natural project in the current working directory
 
 The language server is tested primarily with two clients:
 
-TODO:
-- `natls-vscode`
+- [vscode-natural](https://github.com/markusamshove/vscode-natural)
 - neovim via `nvim-lspconfig`
 
 ## Running natqube
