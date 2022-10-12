@@ -6,6 +6,7 @@ import org.amshove.natls.DiagnosticTool;
 import org.amshove.natls.codeactions.CodeActionRegistry;
 import org.amshove.natls.codeactions.RefactoringContext;
 import org.amshove.natls.codeactions.RenameSymbolAction;
+import org.amshove.natls.codelens.CodeLensService;
 import org.amshove.natls.documentsymbol.DocumentSymbolProvider;
 import org.amshove.natls.hover.HoverContext;
 import org.amshove.natls.hover.HoverProvider;
@@ -66,6 +67,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	private HoverProvider hoverProvider;
 	private final RenameSymbolAction renameComputer = new RenameSymbolAction();
 	private SnippetEngine snippetEngine;
+	private CodeLensService codeLensService = new CodeLensService();
 	private final SignatureHelpProvider signatureHelp = new SignatureHelpProvider();
 
 	public void indexProject(Path workspaceRoot, IProgressMonitor progressMonitor)
@@ -1057,6 +1059,13 @@ public class NaturalLanguageService implements LanguageClientAware
 		{
 			throw new UncheckedIOException(e);
 		}
+	}
+
+	public List<CodeLens> codeLens(CodeLensParams params)
+	{
+		var path = LspUtil.uriToPath(params.getTextDocument().getUri());
+		var file = findNaturalFile(path);
+		return codeLensService.provideCodeLens(file);
 	}
 
 	public List<InlayHint> inlayHints(InlayHintParams params)

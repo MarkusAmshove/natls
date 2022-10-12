@@ -36,7 +36,7 @@ public abstract class LanguageServerTest
 			Files.writeString(filePath, source);
 
 			var fileUri = filePath.toUri().toString();
-			if(existed)
+			if (existed)
 			{
 				getContext().languageService().fileSaved(filePath);
 			}

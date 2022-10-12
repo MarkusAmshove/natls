@@ -1,15 +1,10 @@
 package org.amshove.natls.languageserver;
 
-import org.amshove.natparse.natural.IHasDefineData;
-import org.amshove.natparse.natural.IModuleWithBody;
-import org.amshove.natparse.natural.ISubroutineNode;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.jsonrpc.messages.Either3;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -79,37 +74,7 @@ public class NaturalDocumentService implements TextDocumentService
 	@Override
 	public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params)
 	{
-		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> {
-			var codelens = new ArrayList<CodeLens>();
-			var path = LspUtil.uriToPath(params.getTextDocument().getUri());
-			var file = languageService.findNaturalFile(path);
-			var module = file.module();
-
-			var moduleReferenceCodeLens = new CodeLens();
-			moduleReferenceCodeLens.setRange(LspUtil.toRange(module.syntaxTree().descendants().first().position()));
-			moduleReferenceCodeLens.setCommand(
-					new Command(
-						file.getIncomingReferences().size() + " references",
-						"natls.codelens.showReferences",
-						Arrays.asList(file.getUri(), moduleReferenceCodeLens.getRange())
-					)
-			);
-			codelens.add(moduleReferenceCodeLens);
-
-			if(module instanceof IModuleWithBody hasBody && hasBody.body() != null && hasBody.body().descendants().hasItems())
-			{
-				hasBody.body().statements().stream()
-					.filter(s -> s instanceof ISubroutineNode)
-					.map(ISubroutineNode.class::cast)
-					.map(s -> new CodeLens(
-								LspUtil.toRange(s.declaration()),
-								new Command(s.references().size() + " references", "natls.codelens.showReferences", Arrays.asList(file.getUri(), LspUtil.toRange(s.declaration()))),
-								Arrays.asList(file.getUri(), LspUtil.toRange(s.declaration()))))
-					.forEach(codelens::add);
-			}
-
-			return codelens;
-		}));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.codeLens(params)));
 	}
 
 	@Override
