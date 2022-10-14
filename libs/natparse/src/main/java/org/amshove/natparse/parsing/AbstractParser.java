@@ -11,6 +11,7 @@ import org.amshove.natparse.natural.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 abstract class AbstractParser<T>
 {
@@ -21,6 +22,8 @@ abstract class AbstractParser<T>
 
 	private List<IDiagnostic> diagnostics = new ArrayList<>();
 	protected IPosition relocatedDiagnosticPosition;
+
+	protected static final Set<SyntaxKind> END_KINDS_THAT_END_ALL_ENDS = Set.of(SyntaxKind.END_REPEAT, SyntaxKind.END_FOR, SyntaxKind.END_FILE, SyntaxKind.END_LOOP, SyntaxKind.END_SORT, SyntaxKind.END_WORK, SyntaxKind.END_READ, SyntaxKind.END_FIND, SyntaxKind.END_HISTOGRAM);
 
 	public AbstractParser(IModuleProvider moduleProvider)
 	{
@@ -184,6 +187,11 @@ abstract class AbstractParser<T>
 
 	protected SyntaxToken consumeMandatoryClosing(BaseSyntaxNode node, SyntaxKind closingTokenType, SyntaxToken openingToken) throws ParseError
 	{
+		if(peekKind(SyntaxKind.END_ALL) && END_KINDS_THAT_END_ALL_ENDS.contains(closingTokenType)) // sort
+		{
+			return peek();
+		}
+
 		if(!consumeOptionally(node, closingTokenType))
 		{
 			diagnostics.add(ParserErrors.missingClosingToken(closingTokenType, openingToken));

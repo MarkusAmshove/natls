@@ -533,6 +533,16 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void notComplainAboutMissingEndForWhenSortIsFollowing()
+	{
+		assertParsesWithoutDiagnostics("""
+			FOR #I := 1 TO 10
+			    FOR #J := 1 TO 20
+			        WRITE #I #J
+			END-ALL""");
+	}
+
+	@Test
 	void parseForEqToStatements()
 	{
 		var forLoopNode = assertParsesSingleStatement("""
@@ -792,6 +802,17 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(printer.output()).map(ILiteralNode.class::cast).map(ILiteralNode::token).map(SyntaxToken::stringValue).hasValue("LPT1");
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"DUMMY", "INFOLINE", "SOURCE", "NOM"
+	})
+	void parseADefinePrinterWithAllowedBuiltInOutputNames(String output)
+	{
+		var printer = assertParsesSingleStatement("DEFINE PRINTER (4) OUTPUT '%s'".formatted(output), IDefinePrinterNode.class);
+		assertThat(printer.output()).hasValueSatisfying(n -> assertThat(n).isInstanceOf(ILiteralNode.class));
+		assertThat(printer.output()).map(ILiteralNode.class::cast).map(ILiteralNode::token).map(SyntaxToken::stringValue).hasValue(output);
+	}
+
 	@Test
 	void reportADiagnosticIfDefinePrinterHasAnInvalidOutputStringFormat()
 	{
@@ -956,8 +977,18 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(examine.examined()).isNotNull();
 		var substringOperand = assertNodeType(examine.examined(), ISubstringOperandNode.class);
 		assertThat(assertNodeType(substringOperand.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
-		assertThat(assertNodeType(substringOperand.startPosition(), ILiteralNode.class).token().intValue()).isEqualTo(1);
-		assertThat(assertNodeType(substringOperand.length(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+		assertThat(assertNodeType(substringOperand.startPosition().orElseThrow(), ILiteralNode.class).token().intValue()).isEqualTo(1);
+		assertThat(assertNodeType(substringOperand.length().orElseThrow(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"SUBSTRING(#VAR, 1)",
+		"SUBSTRING(#VAR, ,10)",
+	})
+	void parseSubstringWithOmittedParameter(String substring)
+	{
+		assertParsesWithoutDiagnostics("EXAMINE %s FOR 'Hi'".formatted(substring));
 	}
 
 	@ParameterizedTest

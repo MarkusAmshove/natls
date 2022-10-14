@@ -63,7 +63,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			try
 			{
-				if (tokens.peek().kind() == endTokenKind)
+				if (endTokenKind != null
+					&& (peekKind(endTokenKind)
+					|| (peekKind(SyntaxKind.END_ALL) && END_KINDS_THAT_END_ALL_ENDS.contains(endTokenKind))))
 				{
 					break;
 				}
@@ -248,6 +250,15 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						}
 						// FALLTHROUGH TO DEFAULT INTENDED
 					default:
+
+						if(peek().kind().isSystemFunction())
+						{
+							// this came up for *PAGE-NUMBER(PRINTERREP) in a WRITE statement, because we don't parse WRITE operands yet
+							// Can be removed in the future
+							consumeOperandNode(statementList);
+							break;
+						}
+
 						// While the parser is incomplete, we just add a node for every token
 						var tokenStatementNode = new SyntheticTokenStatementNode();
 						consume(tokenStatementNode);
@@ -813,9 +824,14 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 		else
 		{
-			substring.setStartingPosition(consumeOperandNode(substring));
-			consumeMandatory(node, SyntaxKind.COMMA);
-			substring.setLength(consumeOperandNode(substring));
+			if(!peekKind(SyntaxKind.COMMA))
+			{
+				substring.setStartingPosition(consumeOperandNode(substring));
+			}
+			if(consumeOptionally(node, SyntaxKind.COMMA))
+			{
+				substring.setLength(consumeOperandNode(substring));
+			}
 		}
 		consumeMandatory(node, SyntaxKind.RPAREN);
 
@@ -997,7 +1013,12 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 				{
 					var literal = consumeLiteralNode(printer, SyntaxKind.STRING_LITERAL);
 					printer.setOutput(literal);
-					if (!literal.token().stringValue().matches("LPT\\d+"))
+					var outputName = literal.token().stringValue();
+					if (!outputName.matches("LPT\\d+")
+						&& !outputName.equals("DUMMY")
+						&& !outputName.equals("INFOLINE")
+						&& !outputName.equals("SOURCE")
+						&& !outputName.equals("NOM"))
 					{
 						report(ParserErrors.invalidPrinterOutputFormat(literal.token()));
 					}

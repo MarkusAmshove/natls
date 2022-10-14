@@ -47,6 +47,10 @@ class DefaultModuleProvider implements IModuleProvider
 		}
 
 		var callerLib = caller.getLibrary();
+		if (callerLib == null)
+		{
+			return null;
+		}
 		var foundFile = callerLib.findFileByReferableName(referableName, true);
 		if (foundFile == null)
 		{

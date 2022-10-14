@@ -6,7 +6,7 @@
 
 This repository contains a language server implementation for the [Natural language](https://en.wikipedia.org/wiki/ADABAS#Natural_(4GL)) created by Software AG.
 
-The latest unstable build of the `main` branch can always be downloaded from the [nightly tag](https://github.com/MarkusAmshove/natls/releases/tag/unstable).
+The latest release and changelog can be found at [GitHub Releases](https://github.com/MarkusAmshove/natls/releases/).
 
 The language server supports, but isn't limited to:
 
@@ -18,9 +18,8 @@ The language server supports, but isn't limited to:
 - Quickfixes and refactorings
 - Outline
 - Code Snippets
-
-A more in-depth documentation with examples of features can be found [here](docs/lsp-features.md).
-
+- Signature Help for modules
+- [and many more](docs/lsp-features.md)
 
 ## Contributing
 
@@ -57,12 +56,15 @@ To build the project and run tests use `./gradlew build`.
 
 To create standalone jar files (fat jars that include all dependencies) run `./gradlew shadowJar`.
 
-## Project state
+## Project state/Limitations
 
 The current state of the project is considered as early development.
 
+The language server can be used for daily development in Natural, but it does have some limitations:
+
 The parser is still [incomplete](docs/implemented-statements.md) and has some rough edges where the Natural language is context sensitive.
-It also currently uses some hard coded assumptions about the language settings that should be configurable by the `.natural` file (like thousands seperators).
+It also currently uses some hard coded assumptions about the language settings that should be configurable by the `.natural` file (like thousands seperators), which means that e.g. regional settings aren't considered.
+Reporting Mode hasn't been considered yet, so currently only the structured mode syntax of statements is parsed correctly.
 
 Some analyzers assume a coding style that might not fit your needs. This will be [configurable](https://github.com/MarkusAmshove/natls/issues/62) in the future.
 
@@ -116,8 +118,7 @@ Analyze the Natural project in the current working directory
 
 The language server is tested primarily with two clients:
 
-TODO:
-- `natls-vscode`
+- [vscode-natural](https://github.com/markusamshove/vscode-natural)
 - neovim via `nvim-lspconfig`
 
 ## Running natqube

@@ -11,9 +11,9 @@ import org.amshove.natparse.parsing.NaturalParser;
 import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
 public class CliAnalyzer
@@ -22,9 +22,11 @@ public class CliAnalyzer
 	private final List<Predicate<IDiagnostic>> diagnosticPredicates;
 	private final ActualFilesystem filesystem;
 	private final IDiagnosticSink diagnosticSink;
+	private Path workingDirectory;
 
-	public CliAnalyzer(IDiagnosticSink sink, List<Predicate<NaturalFile>> filePredicates, List<Predicate<IDiagnostic>> diagnosticPredicates)
+	public CliAnalyzer(Path workingDirectory, IDiagnosticSink sink, List<Predicate<NaturalFile>> filePredicates, List<Predicate<IDiagnostic>> diagnosticPredicates)
 	{
+		this.workingDirectory = workingDirectory;
 		this.filePredicates = filePredicates;
 		this.diagnosticPredicates = diagnosticPredicates;
 		filesystem = new ActualFilesystem();
@@ -33,8 +35,6 @@ public class CliAnalyzer
 
 	public int run()
 	{
-		var workingDirectoryPath = System.getProperty("user.dir");
-		var workingDirectory = Paths.get(workingDirectoryPath);
 		var filesystem = new ActualFilesystem();
 
 		while (!workingDirectory.getRoot().equals(workingDirectory) && filesystem.findNaturalProjectFile(workingDirectory).isEmpty())
@@ -65,6 +65,13 @@ public class CliAnalyzer
 		return analyze(projectFile.get());
 	}
 
+	private SlowestModule slowestLexedModule = new SlowestModule(Long.MIN_VALUE, "NONE");
+	private SlowestModule slowestParsedModule = new SlowestModule(Long.MIN_VALUE, "NONE");
+	private SlowestModule slowestLintedModule = new SlowestModule(Long.MIN_VALUE, "NONE");
+	private AtomicInteger filesChecked = new AtomicInteger();
+	private AtomicInteger totalDiagnostics = new AtomicInteger();
+	private AtomicInteger exceptions = new AtomicInteger();
+
 	private int analyze(Path projectFilePath)
 	{
 		var indexStartTime = System.currentTimeMillis();
@@ -72,28 +79,20 @@ public class CliAnalyzer
 		new NaturalProjectFileIndexer().indexProject(project);
 		var indexEndTime = System.currentTimeMillis();
 
-		var slowestLexedModule = new SlowestModule(Long.MIN_VALUE, "NONE");
-		var slowestParsedModule = new SlowestModule(Long.MIN_VALUE, "NONE");
-		var slowestLintedModule = new SlowestModule(Long.MIN_VALUE, "NONE");
-
-		var lexer = new Lexer();
-		var parser = new NaturalParser();
-		var linter = new NaturalLinter();
-		var filesChecked = 0;
-		var totalDiagnostics = 0;
-		var exceptions = 0;
-
 		var startCheck = System.currentTimeMillis();
 		for (var library : project.getLibraries())
 		{
-			for (var file : library.files())
-			{
+			library.files().parallelStream().forEach(file -> {
 				if (filePredicates.stream().noneMatch(p -> p.test(file)))
 				{
-					continue;
+					return;
 				}
 
-				filesChecked++;
+				var lexer = new Lexer();
+				var parser = new NaturalParser();
+				var linter = new NaturalLinter();
+
+				filesChecked.incrementAndGet();
 				var filePath = file.getPath();
 				try
 				{
@@ -126,17 +125,17 @@ public class CliAnalyzer
 
 					allDiagnosticsInFile.addAll(filterDiagnostics(linterDiagnostics));
 
-					totalDiagnostics += allDiagnosticsInFile.size();
+					totalDiagnostics.addAndGet(allDiagnosticsInFile.size());
 
-					diagnosticSink.printDiagnostics(filesChecked, filePath, allDiagnosticsInFile);
+					diagnosticSink.printDiagnostics(filesChecked.get(), filePath, allDiagnosticsInFile);
 				}
 				catch (Exception e)
 				{
-					exceptions++;
+					exceptions.incrementAndGet();
 					System.err.println(filePath);
 					e.printStackTrace();
 				}
-			}
+			});
 		}
 
 		var endCheck = System.currentTimeMillis();
@@ -149,16 +148,16 @@ public class CliAnalyzer
 		System.out.println("Index time: " + indexTime + " ms");
 		System.out.println("Check time: " + checkTime + " ms");
 		System.out.println("Total: " + (indexTime + checkTime) + " ms (" + ((indexTime + checkTime) / 1000) + "s)");
-		System.out.println("Files checked: " + filesChecked);
-		System.out.println("Total diagnostics: " + totalDiagnostics);
-		System.out.println("Exceptions: " + exceptions);
+		System.out.println("Files checked: " + filesChecked.get());
+		System.out.println("Total diagnostics: " + totalDiagnostics.get());
+		System.out.println("Exceptions: " + exceptions.get());
 		System.out.println("Slowest lexed module: " + slowestLexedModule);
 		System.out.println("Slowest parsed module: " + slowestParsedModule);
 		System.out.println("Slowest linted module: " + slowestLintedModule);
 
 		System.out.println();
 
-		return totalDiagnostics > 0 ? 1 : 0;
+		return totalDiagnostics.get() > 0 ? 1 : 0;
 	}
 
 	private List<? extends IDiagnostic> filterDiagnostics(ReadOnlyList<? extends IDiagnostic> diagnostics)
