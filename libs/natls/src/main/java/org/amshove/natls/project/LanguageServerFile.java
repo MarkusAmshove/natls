@@ -257,6 +257,7 @@ public class LanguageServerFile implements IModuleProvider
 		outgoingReferences.clear(); // Will be re-added during parse
 		clearDiagnosticsByTool(DiagnosticTool.NATPARSE);
 
+		// TODO: Evict myself from ModuleReferenceCache
 		var lexer = new Lexer();
 		var tokenList = lexer.lex(source, file.getPath());
 		var parser = new NaturalParser(this);
@@ -402,6 +403,7 @@ public class LanguageServerFile implements IModuleProvider
 				}
 			}
 		}
+
 		incomingReferences.remove(caller);
 	}
 

@@ -30,6 +30,7 @@ public class ModuleReferenceParser
 			{
 				if (calledModule != null)
 				{
+					// TODO: Add to ModuleReferenceCache
 					var calledFile = file.getLibrary().provideNaturalFile(calledModule.referredModule, true);
 					if (calledFile != null)
 					{
