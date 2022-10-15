@@ -135,7 +135,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 	@Override
 	public void exit()
 	{
-
+		System.exit(0);
 	}
 
 	public NaturalLanguageService getLanguageService()
