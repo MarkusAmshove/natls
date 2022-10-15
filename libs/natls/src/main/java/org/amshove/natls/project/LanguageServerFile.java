@@ -18,8 +18,6 @@ import org.amshove.natparse.parsing.ddm.DdmParser;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -31,8 +29,6 @@ import java.util.*;
 
 public class LanguageServerFile implements IModuleProvider
 {
-	private static final Logger log = LoggerFactory.getLogger(LanguageServerFile.class);
-
 	private final NaturalFile file;
 	private final Map<String, List<Diagnostic>> diagnosticsByTool = new HashMap<>();
 	private INaturalModule module;
@@ -231,7 +227,6 @@ public class LanguageServerFile implements IModuleProvider
 			}
 			catch (Exception e)
 			{
-				log.error("Exception occured while reparsing callers", e);
 				addDiagnostic(DiagnosticTool.NATPARSE,
 					new Diagnostic(
 						new Range(
@@ -331,7 +326,6 @@ public class LanguageServerFile implements IModuleProvider
 		}
 		catch (Exception e)
 		{
-			log.error("Exception occured while parsing DEFINE DATA only", e);
 			addDiagnostic(DiagnosticTool.NATPARSE,
 				new Diagnostic(
 					new Range(
@@ -395,7 +389,6 @@ public class LanguageServerFile implements IModuleProvider
 		}
 		catch (IOException e)
 		{
-			log.error("Exception occured trying to find DDM", e);
 			throw new UncheckedIOException(e);
 		}
 	}
