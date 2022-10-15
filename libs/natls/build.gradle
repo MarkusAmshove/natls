@@ -3,9 +3,9 @@ plugins {
 }
 
 dependencies {
-    implementation libraries.slf4j_simple
     implementation libraries.lsp4j
     implementation libraries.reflections
+	implementation libraries.slf4j_utillogging
     implementation project(':natparse')
     implementation project(':natlint')
 

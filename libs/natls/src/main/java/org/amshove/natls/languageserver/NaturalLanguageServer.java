@@ -20,9 +20,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Logger;
 
 public class NaturalLanguageServer implements LanguageServer, LanguageClientAware
 {
+	private static final Logger log = Logger.getAnonymousLogger();
 	private final NaturalWorkspaceService workspaceService = new NaturalWorkspaceService();
 	private final NaturalDocumentService documentService = new NaturalDocumentService();
 	private final NaturalLanguageService languageService = new NaturalLanguageService();
@@ -33,6 +35,8 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 	public CompletableFuture<InitializeResult> initialize(InitializeParams params)
 	{
 		return CompletableFuture.supplyAsync(() -> {
+			var initStart = System.currentTimeMillis();
+			log.info("Starting initialization");
 			var capabilities = new ServerCapabilities();
 
 			capabilities.setWorkspaceSymbolProvider(true);
@@ -122,6 +126,8 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 
 			var lspName = App.class.getPackage().getImplementationTitle();
 			var lspVersion = App.class.getPackage().getImplementationVersion();
+			var initEnd = System.currentTimeMillis();
+			log.info("Initialization done. Took %dms".formatted(initEnd - initStart));
 			return new InitializeResult(capabilities, new ServerInfo(lspName != null ? lspName : "natls", lspVersion != null ? lspVersion : "dev"));
 		});
 	}
@@ -135,6 +141,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 	@Override
 	public void exit()
 	{
+		log.info("Exit signal received");
 		System.exit(0);
 	}
 

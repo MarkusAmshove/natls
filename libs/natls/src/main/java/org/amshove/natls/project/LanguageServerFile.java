@@ -18,6 +18,8 @@ import org.amshove.natparse.parsing.ddm.DdmParser;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -29,6 +31,7 @@ import java.util.*;
 
 public class LanguageServerFile implements IModuleProvider
 {
+	private static final Logger log = LoggerFactory.getLogger(LanguageServerFile.class);
 	private final NaturalFile file;
 	private final Map<String, List<Diagnostic>> diagnosticsByTool = new HashMap<>();
 	private INaturalModule module;
@@ -135,6 +138,7 @@ public class LanguageServerFile implements IModuleProvider
 		}
 		catch (Exception e)
 		{
+			log.error("Error during parse from <%s>".formatted(file.getPath()), e);
 			addDiagnostic(DiagnosticTool.NATPARSE,
 				new Diagnostic(
 					new Range(
@@ -187,6 +191,7 @@ public class LanguageServerFile implements IModuleProvider
 		}
 		catch (Exception e)
 		{
+			log.error("Error during parseAndAnalyze <%s>".formatted(file.getPath()), e);
 			addDiagnostic(DiagnosticTool.NATPARSE,
 				new Diagnostic(
 					new Range(
@@ -227,6 +232,7 @@ public class LanguageServerFile implements IModuleProvider
 			}
 			catch (Exception e)
 			{
+				log.error("Error during reparseCallers from <%s> for <%s>".formatted(file.getPath(), languageServerFile.getPath()), e);
 				addDiagnostic(DiagnosticTool.NATPARSE,
 					new Diagnostic(
 						new Range(
@@ -326,6 +332,7 @@ public class LanguageServerFile implements IModuleProvider
 		}
 		catch (Exception e)
 		{
+			log.error("Error during parseDefineDataOnly from <%s>".formatted(file.getPath()), e);
 			addDiagnostic(DiagnosticTool.NATPARSE,
 				new Diagnostic(
 					new Range(
@@ -389,6 +396,7 @@ public class LanguageServerFile implements IModuleProvider
 		}
 		catch (IOException e)
 		{
+			log.error("Error during findDdm from <%s>".formatted(file.getPath()), e);
 			throw new UncheckedIOException(e);
 		}
 	}

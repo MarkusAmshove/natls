@@ -16,6 +16,7 @@ ext {
 		slf4j_api	: "org.slf4j:slf4j-api:${SLF4J_VERSION}",
 		slf4j_simple : "org.slf4j:slf4j-simple:${SLF4J_VERSION}",
 		slf4j_nop	: "org.slf4j:slf4j-nop:${SLF4J_VERSION}",
+		slf4j_utillogging : "org.slf4j:slf4j-jdk14:${SLF4J_VERSION}",
 		reflections  : 'org.reflections:reflections:0.10.2',
 		picocli : 'info.picocli:picocli:4.6.3',
         sonarqube_api   : "org.sonarsource.sonarqube:sonar-plugin-api:${SONAR_VERSION}",
