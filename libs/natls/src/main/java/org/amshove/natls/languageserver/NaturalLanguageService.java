@@ -527,37 +527,6 @@ public class NaturalLanguageService implements LanguageClientAware
 			references.addAll(file.module().callers().stream().map(LspUtil::toLocation).toList());
 		}
 
-//		if (references.isEmpty())
-//		{
-//			// If we didn't find any references, lets test the ergonomics of returning the references
-//			// of the current module.
-//			// However, this current approach is super expensive, therefor we limit it.
-//			// The correct way to do this will be getting the actual positions in ModuleReferenceParser.
-//			var thresholdForExpensiveLookup = 100;
-//			var thresholdToDenyLookup = thresholdForExpensiveLookup * 2;
-//			var amountOfIncomingReferences = file.getIncomingReferences().size();
-//
-//			if (amountOfIncomingReferences > thresholdToDenyLookup)
-//			{
-//				return references;
-//			}
-//
-//			if (amountOfIncomingReferences > thresholdForExpensiveLookup)
-//			{
-//				// Getting real positions would be too expensive currently.
-//				references.addAll(
-//					languageServerProject.provideAllFiles().filter(f -> f.getOutgoingReferences().contains(file)).map(f -> new Location(f.getUri(), LspUtil.toRange(new Position(0, 0)))).toList()
-//				);
-//			}
-//			else
-//			{
-//				languageServerProject.provideAllFiles().filter(f -> f.getOutgoingReferences().contains(file)).forEach(f -> f.parse());
-//				references.addAll(
-//					file.module().callers().stream().filter(n -> n != null).map(n -> LspUtil.toLocation(n.referencingToken())).toList()
-//				);
-//			}
-//		}
-
 		return references;
 	}
 

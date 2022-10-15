@@ -30,7 +30,6 @@ public class ModuleReferenceParser
 			{
 				if (calledModule != null)
 				{
-					// TODO: Add to ModuleReferenceCache
 					var calledFile = file.getLibrary().provideNaturalFile(calledModule.referredModule, true);
 					if (calledFile != null)
 					{
@@ -56,14 +55,14 @@ public class ModuleReferenceParser
 		{
 			switch (tokens.peek().kind())
 			{
-				case USING -> calledModules.add(processUsing(tokens));
+				case USING -> calledModules.add(processUsingOrPerform(tokens));
 				case DEFINE -> {
 					if (tokens.peek(1).kind() != SyntaxKind.DATA)
 					{
 						definedSubroutines.add(processSubroutine(tokens));
 					}
 				}
-				case PERFORM -> calledSubroutines.add(processPerform(tokens));
+				case PERFORM -> calledSubroutines.add(processUsingOrPerform(tokens));
 				case CALLNAT -> calledModules.add(processCallnat(tokens));
 				case FETCH -> calledModules.add(processFetch(tokens));
 				case INCLUDE -> calledModules.add(processCopycode(tokens));
@@ -142,15 +141,9 @@ public class ModuleReferenceParser
 		return tokens.peek().symbolName();
 	}
 
-	private FoundReference processUsing(TokenList tokens)
+	private FoundReference processUsingOrPerform(TokenList tokens)
 	{
-		tokens.advance(); // using
-		return new FoundReference(tokens.peek().symbolName(), tokens.peek());
-	}
-
-	private FoundReference processPerform(TokenList tokens)
-	{
-		tokens.advance(); // perform
+		tokens.advance(); // using/perform
 		return new FoundReference(tokens.peek().symbolName(), tokens.peek());
 	}
 
