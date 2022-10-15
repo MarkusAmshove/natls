@@ -169,6 +169,14 @@ public class LspUtil
 		);
 	}
 
+	public static Range newLineRange(int startLine, int startColumn, int endColumn)
+	{
+		return new Range(
+			new Position(startLine, startColumn),
+			new Position(startLine, endColumn)
+		);
+	}
+
 	public static Range newRange(int startLine, int startColumn, int endLine, int endColumn)
 	{
 		return new Range(

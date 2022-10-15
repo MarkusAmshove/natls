@@ -1,12 +1,10 @@
 package org.amshove.natls.languageserver;
 
-import org.amshove.natparse.natural.IHasDefineData;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.jsonrpc.messages.Either3;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -76,50 +74,7 @@ public class NaturalDocumentService implements TextDocumentService
 	@Override
 	public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params)
 	{
-		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> {
-			var path = LspUtil.uriToPath(params.getTextDocument().getUri());
-			var file = languageService.findNaturalFile(path);
-			if (file == null)
-			{
-				return List.of();
-			}
-
-			var codelens = new ArrayList<CodeLens>();
-
-			var moduleReferenceCodeLens = new CodeLens();
-			moduleReferenceCodeLens.setCommand(
-				new Command(
-					file.getIncomingReferences().size() + " references",
-					"")
-			);
-
-			var module = file.module();
-			if (module instanceof IHasDefineData naturalModule && naturalModule.defineData() != null)
-			{
-				moduleReferenceCodeLens.setRange(LspUtil.toRange(
-					naturalModule.defineData().position()
-				));
-				// TODO(code-lens): Add an actual command
-				naturalModule
-					.defineData()
-					.variables()
-					.stream()
-					.filter(v -> v.references().size() > 0)
-					.map(v -> new CodeLens(
-						LspUtil.toRange(v.declaration()),
-						new Command(v.references().size() + " references", ""),
-						new Object()
-					))
-					.forEach(codelens::add);
-			}
-
-			if(!file.getIncomingReferences().isEmpty())
-			{
-				codelens.add(moduleReferenceCodeLens);
-			}
-
-			return codelens;
-		}));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.codeLens(params)));
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package org.amshove.natls.project;
 
+import org.amshove.natparse.IPosition;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.TokenList;
@@ -29,9 +30,10 @@ public class ModuleReferenceParser
 			{
 				if (calledModule != null)
 				{
-					var calledFile = file.getLibrary().provideNaturalFile(calledModule, true);
+					var calledFile = file.getLibrary().provideNaturalFile(calledModule.referredModule, true);
 					if (calledFile != null)
 					{
+						ModuleReferenceCache.addEntry(calledFile, calledModule.referencingPosition);
 						calledFile.addIncomingReference(file);
 						file.addOutgoingReference(calledFile);
 					}
@@ -44,23 +46,23 @@ public class ModuleReferenceParser
 		}
 	}
 
-	private Set<String> processReferences(TokenList tokens)
+	private Set<FoundReference> processReferences(TokenList tokens)
 	{
-		var calledModules = new HashSet<String>();
+		var calledModules = new HashSet<FoundReference>();
 		var definedSubroutines = new HashSet<String>();
-		var calledSubroutines = new HashSet<String>();
+		var calledSubroutines = new HashSet<FoundReference>();
 		while (!tokens.isAtEnd())
 		{
 			switch (tokens.peek().kind())
 			{
-				case USING -> calledModules.add(processUsing(tokens));
+				case USING -> calledModules.add(processUsingOrPerform(tokens));
 				case DEFINE -> {
 					if (tokens.peek(1).kind() != SyntaxKind.DATA)
 					{
 						definedSubroutines.add(processSubroutine(tokens));
 					}
 				}
-				case PERFORM -> calledSubroutines.add(processPerform(tokens));
+				case PERFORM -> calledSubroutines.add(processUsingOrPerform(tokens));
 				case CALLNAT -> calledModules.add(processCallnat(tokens));
 				case FETCH -> calledModules.add(processFetch(tokens));
 				case INCLUDE -> calledModules.add(processCopycode(tokens));
@@ -78,7 +80,7 @@ public class ModuleReferenceParser
 
 		for (var calledSubroutine : calledSubroutines)
 		{
-			if (!definedSubroutines.contains(calledSubroutine))
+			if (!definedSubroutines.contains(calledSubroutine.referredModule))
 			{
 				calledModules.add(calledSubroutine);
 			}
@@ -87,44 +89,44 @@ public class ModuleReferenceParser
 		return calledModules;
 	}
 
-	private String processFunction(TokenList tokens)
+	private FoundReference processFunction(TokenList tokens)
 	{
 		if(tokens.peek().kind().isIdentifier())
 		{
-			return tokens.peek().symbolName();
+			return new FoundReference(tokens.peek().symbolName(), tokens.peek());
 		}
 
 		return null;
 	}
 
-	private String processCopycode(TokenList tokens)
+	private FoundReference processCopycode(TokenList tokens)
 	{
 		tokens.advance(); // include
 		if(tokens.peek().kind().isIdentifier())
 		{
-			return tokens.peek().symbolName();
+			return new FoundReference(tokens.peek().symbolName(), tokens.peek());
 		}
 
 		return null;
 	}
 
-	private String processFetch(TokenList tokens)
+	private FoundReference processFetch(TokenList tokens)
 	{
 		tokens.advance(); // fetch
 		tokens.advance(); // repeat/return
 		if (tokens.peek().kind() == SyntaxKind.STRING_LITERAL)
 		{
-			return tokens.peek().stringValue().toUpperCase();
+			return new FoundReference(tokens.peek().stringValue().toUpperCase(), tokens.peek());
 		}
 		return null; // variable
 	}
 
-	private String processCallnat(TokenList tokens)
+	private FoundReference processCallnat(TokenList tokens)
 	{
 		tokens.advance(); // callnat
 		if (tokens.peek().kind() == SyntaxKind.STRING_LITERAL)
 		{
-			return tokens.peek().stringValue().toUpperCase();
+			return new FoundReference(tokens.peek().stringValue().toUpperCase(), tokens.peek());
 		}
 		return null; // variable
 	}
@@ -139,15 +141,11 @@ public class ModuleReferenceParser
 		return tokens.peek().symbolName();
 	}
 
-	private String processUsing(TokenList tokens)
+	private FoundReference processUsingOrPerform(TokenList tokens)
 	{
-		tokens.advance(); // using
-		return tokens.peek().symbolName();
+		tokens.advance(); // using/perform
+		return new FoundReference(tokens.peek().symbolName(), tokens.peek());
 	}
 
-	private String processPerform(TokenList tokens)
-	{
-		tokens.advance(); // perform
-		return tokens.peek().symbolName();
-	}
+	record FoundReference(String referredModule, IPosition referencingPosition) {}
 }

@@ -6,16 +6,14 @@ import org.amshove.natls.DiagnosticTool;
 import org.amshove.natls.codeactions.CodeActionRegistry;
 import org.amshove.natls.codeactions.RefactoringContext;
 import org.amshove.natls.codeactions.RenameSymbolAction;
+import org.amshove.natls.codelens.CodeLensService;
 import org.amshove.natls.documentsymbol.DocumentSymbolProvider;
 import org.amshove.natls.hover.HoverContext;
 import org.amshove.natls.hover.HoverProvider;
 import org.amshove.natls.inlayhints.InlayHintProvider;
 import org.amshove.natls.progress.IProgressMonitor;
 import org.amshove.natls.progress.ProgressTasks;
-import org.amshove.natls.project.LanguageServerFile;
-import org.amshove.natls.project.LanguageServerProject;
-import org.amshove.natls.project.ModuleReferenceParser;
-import org.amshove.natls.project.ParseStrategy;
+import org.amshove.natls.project.*;
 import org.amshove.natls.signaturehelp.SignatureHelpProvider;
 import org.amshove.natls.snippets.SnippetEngine;
 import org.amshove.natparse.NodeUtil;
@@ -66,6 +64,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	private HoverProvider hoverProvider;
 	private final RenameSymbolAction renameComputer = new RenameSymbolAction();
 	private SnippetEngine snippetEngine;
+	private CodeLensService codeLensService = new CodeLensService();
 	private final SignatureHelpProvider signatureHelp = new SignatureHelpProvider();
 
 	public void indexProject(Path workspaceRoot, IProgressMonitor progressMonitor)
@@ -520,35 +519,12 @@ public class NaturalLanguageService implements LanguageClientAware
 			);
 		}
 
-		if (references.isEmpty())
+		if(references.isEmpty())
 		{
-			// If we didn't find any references, lets test the ergonomics of returning the references
-			// of the current module.
-			// However, this current approach is super expensive, therefor we limit it.
-			// The correct way to do this will be getting the actual positions in ModuleReferenceParser.
-			var thresholdForExpensiveLookup = 100;
-			var thresholdToDenyLookup = thresholdForExpensiveLookup * 2;
-			var amountOfIncomingReferences = file.getIncomingReferences().size();
+			var cachedPositions = ModuleReferenceCache.retrieveCachedPositions(file);
+			cachedPositions.forEach(p -> references.add(LspUtil.toLocation(p)));
 
-			if (amountOfIncomingReferences > thresholdToDenyLookup)
-			{
-				return references;
-			}
-
-			if (amountOfIncomingReferences > thresholdForExpensiveLookup)
-			{
-				// Getting real positions would be too expensive currently.
-				references.addAll(
-					languageServerProject.provideAllFiles().filter(f -> f.getOutgoingReferences().contains(file)).map(f -> new Location(f.getUri(), LspUtil.toRange(new Position(0, 0)))).toList()
-				);
-			}
-			else
-			{
-				languageServerProject.provideAllFiles().filter(f -> f.getOutgoingReferences().contains(file)).forEach(f -> f.parse());
-				references.addAll(
-					file.module().callers().stream().filter(n -> n != null).map(n -> LspUtil.toLocation(n.referencingToken())).toList()
-				);
-			}
+			references.addAll(file.module().callers().stream().map(LspUtil::toLocation).toList());
 		}
 
 		return references;
@@ -764,6 +740,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		file.save();
 		publishDiagnostics(file);
+		client.refreshCodeLenses();
 	}
 
 	public void fileClosed(Path path)
@@ -800,6 +777,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		file.changed(newSource);
 		publishDiagnostics(file);
+		client.refreshCodeLenses();
 	}
 
 	public void parseAll(IProgressMonitor monitor)
@@ -1055,6 +1033,13 @@ public class NaturalLanguageService implements LanguageClientAware
 		{
 			throw new UncheckedIOException(e);
 		}
+	}
+
+	public List<CodeLens> codeLens(CodeLensParams params)
+	{
+		var path = LspUtil.uriToPath(params.getTextDocument().getUri());
+		var file = findNaturalFile(path);
+		return codeLensService.provideCodeLens(file);
 	}
 
 	public List<InlayHint> inlayHints(InlayHintParams params)

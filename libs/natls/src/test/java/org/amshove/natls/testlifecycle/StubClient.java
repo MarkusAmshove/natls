@@ -101,6 +101,6 @@ public class StubClient implements LanguageClient
 	@Override
 	public CompletableFuture<Void> refreshCodeLenses()
 	{
-		return LanguageClient.super.refreshCodeLenses();
+		return new CompletableFuture<>();
 	}
 }

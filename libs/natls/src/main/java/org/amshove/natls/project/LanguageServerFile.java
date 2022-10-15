@@ -253,6 +253,14 @@ public class LanguageServerFile implements IModuleProvider
 			destroyPresentNodes();
 		}
 
+		// Evict ourselves from cached module references, as we're about to parse outgoing
+		// references by parsed Nodes.
+		// Perf: Only do so if we have outgoing references, as evicting is expensive.
+		if(!outgoingReferences.isEmpty())
+		{
+			ModuleReferenceCache.evictMyReferences(this);
+		}
+
 		outgoingReferences.forEach(ref -> ref.removeIncomingReference(this));
 		outgoingReferences.clear(); // Will be re-added during parse
 		clearDiagnosticsByTool(DiagnosticTool.NATPARSE);
@@ -402,6 +410,7 @@ public class LanguageServerFile implements IModuleProvider
 				}
 			}
 		}
+
 		incomingReferences.remove(caller);
 	}
 
