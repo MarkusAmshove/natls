@@ -34,6 +34,7 @@ public class ModuleReferenceParser
 					var calledFile = file.getLibrary().provideNaturalFile(calledModule.referredModule, true);
 					if (calledFile != null)
 					{
+						ModuleReferenceCache.addEntry(calledFile, calledModule.referencingPosition);
 						calledFile.addIncomingReference(file);
 						file.addOutgoingReference(calledFile);
 					}

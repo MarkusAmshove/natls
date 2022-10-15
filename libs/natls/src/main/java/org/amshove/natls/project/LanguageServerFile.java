@@ -18,6 +18,8 @@ import org.amshove.natparse.parsing.ddm.DdmParser;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -29,6 +31,8 @@ import java.util.*;
 
 public class LanguageServerFile implements IModuleProvider
 {
+	private static final Logger log = LoggerFactory.getLogger(LanguageServerFile.class);
+
 	private final NaturalFile file;
 	private final Map<String, List<Diagnostic>> diagnosticsByTool = new HashMap<>();
 	private INaturalModule module;
@@ -227,6 +231,7 @@ public class LanguageServerFile implements IModuleProvider
 			}
 			catch (Exception e)
 			{
+				log.error("Exception occured while reparsing callers", e);
 				addDiagnostic(DiagnosticTool.NATPARSE,
 					new Diagnostic(
 						new Range(
@@ -253,11 +258,18 @@ public class LanguageServerFile implements IModuleProvider
 			destroyPresentNodes();
 		}
 
+		// Evict ourselves from cached module references, as we're about to parse outgoing
+		// references by parsed Nodes.
+		// Perf: Only do so if we have outgoing references, as evicting is expensive.
+		if(!outgoingReferences.isEmpty())
+		{
+			ModuleReferenceCache.evictMyReferences(this);
+		}
+
 		outgoingReferences.forEach(ref -> ref.removeIncomingReference(this));
 		outgoingReferences.clear(); // Will be re-added during parse
 		clearDiagnosticsByTool(DiagnosticTool.NATPARSE);
 
-		// TODO: Evict myself from ModuleReferenceCache
 		var lexer = new Lexer();
 		var tokenList = lexer.lex(source, file.getPath());
 		var parser = new NaturalParser(this);
@@ -319,6 +331,7 @@ public class LanguageServerFile implements IModuleProvider
 		}
 		catch (Exception e)
 		{
+			log.error("Exception occured while parsing DEFINE DATA only", e);
 			addDiagnostic(DiagnosticTool.NATPARSE,
 				new Diagnostic(
 					new Range(
@@ -382,6 +395,7 @@ public class LanguageServerFile implements IModuleProvider
 		}
 		catch (IOException e)
 		{
+			log.error("Exception occured trying to find DDM", e);
 			throw new UncheckedIOException(e);
 		}
 	}
