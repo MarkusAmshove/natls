@@ -1,8 +1,10 @@
 package org.amshove.natls.hovering;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-public class VariableHoverTests extends HoveringTest
+class VariableHoverTests extends HoveringTest
 {
 	@Test
 	void levelOneVariablesShouldBeHoveredCorrectly()
@@ -17,6 +19,22 @@ public class VariableHoverTests extends HoveringTest
 ```natural
 LOCAL 1 #MYVAR (A10)
 ```""");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"CONST", "INIT"})
+	void initAndConstValuesShouldBeIncludedInHover(String keyword)
+	{
+		assertHover("""
+			DEFINE DATA
+			LOCAL 1 #MY${}$VAR (A10) %s<'ABC'>
+			END-DEFINE
+			END
+			""".formatted(keyword),
+			"""
+```natural
+LOCAL 1 #MYVAR (A10) %s<'ABC'>
+```""".formatted(keyword));
 	}
 
 	@Test

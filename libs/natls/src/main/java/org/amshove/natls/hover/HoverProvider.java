@@ -162,6 +162,13 @@ public class HoverProvider
 		if(variable instanceof ITypedVariableNode typedVariableNode)
 		{
 			declaration += " %s".formatted(typedVariableNode.type().toShortString());
+			if(typedVariableNode.type().initialValue() != null)
+			{
+				declaration += " %s<%s>".formatted(
+					typedVariableNode.type().isConstant() ? "CONST" : "INIT",
+					typedVariableNode.type().initialValue().source()
+				);
+			}
 		}
 
 		if(variable.findDescendantToken(SyntaxKind.OPTIONAL) != null)
