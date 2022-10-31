@@ -288,11 +288,6 @@ abstract class AbstractParser<T>
 			throw new ParseError(peek());
 		}
 
-		if(currentToken.kind() != SyntaxKind.IDENTIFIER)
-		{
-			diagnostics.add(ParserErrors.keywordUsedAsIdentifier(currentToken));
-		}
-
 		var identifierToken = currentToken.withKind(SyntaxKind.IDENTIFIER);
 		tokens.advance();
 		return identifierToken;
