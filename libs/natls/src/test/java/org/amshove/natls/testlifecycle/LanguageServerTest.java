@@ -5,10 +5,16 @@ import org.eclipse.lsp4j.TextDocumentIdentifier;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
+import java.util.logging.LogManager;
 
 @LspTest
 public abstract class LanguageServerTest
 {
+	public LanguageServerTest()
+	{
+		LogManager.getLogManager().reset();
+	}
+
 	protected abstract LspTestContext getContext();
 
 	protected TextDocumentIdentifier textDocumentIdentifier(String library, String name)

@@ -4,12 +4,18 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-public class LexerForSystemVariablesShould extends AbstractLexerTest
+class LexerForSystemVariablesShould extends AbstractLexerTest
 {
 	@Test
 	void lexTimX()
 	{
 		assertTokens("*TIMX", token(SyntaxKind.TIMX, "*TIMX"));
+	}
+
+	@Test
+	void lexSystemVariablesAndFunctionsCaseInsensitive()
+	{
+		assertTokens("*timX", token(SyntaxKind.TIMX, "*timX"));
 	}
 
 	@Test
