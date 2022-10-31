@@ -74,7 +74,7 @@ public class NatUnitTestNameAnalyzer extends AbstractAnalyzer
 		var testName = nameToken.stringValue();
 		if (definedTestCases.containsKey(context.getModule()) && definedTestCases.get(context.getModule()).containsKey(testName))
 		{
-			var line = definedTestCases.get(context.getModule()).get(testName);
+			var line = definedTestCases.get(context.getModule()).get(testName) + 1; // line numbers are 0 based
 			context.report(DUPLICATED_TEST_NAME.createFormattedDiagnostic(nameToken, line));
 		}
 		else
