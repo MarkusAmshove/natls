@@ -4,6 +4,7 @@ import org.amshove.natparse.IPosition;
 import org.checkerframework.dataflow.qual.Pure;
 
 import java.nio.file.Path;
+import java.util.Optional;
 
 import static org.amshove.natparse.lexing.SyntaxKind.IDENTIFIER;
 
@@ -11,6 +12,7 @@ public class SyntaxToken implements IPosition
 {
 
 	private final SyntaxKind kind;
+	private SyntaxKind originalKind;
 	private final int offset;
 	private final int offsetInLine;
 	private final int line;
@@ -141,6 +143,10 @@ public class SyntaxToken implements IPosition
 			filePath
 		);
 		newToken.setDiagnosticPosition(diagnosticPosition);
+		if(kind != newKind)
+		{
+			newToken.originalKind = kind;
+		}
 		return newToken;
 	}
 
@@ -155,6 +161,15 @@ public class SyntaxToken implements IPosition
 			source + other.source,
 			filePath
 		);
+	}
+
+	/**
+	 * If the Token was constructed from a different token, with just the kind adjusted, then this will return the original {@link SyntaxKind} it originated from.<br/>
+	 * This might be the case for e.g. keywords that are used as identifiers.
+	 */
+	public Optional<SyntaxKind> originalKind()
+	{
+		return Optional.ofNullable(originalKind);
 	}
 
 	@Override

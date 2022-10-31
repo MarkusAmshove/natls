@@ -1,6 +1,5 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
@@ -326,16 +325,6 @@ class ParserErrors
 			"Import with name %s is already defined".formatted(identifier.symbolName()),
 			identifier,
 			ParserError.DUPLICATED_IMPORT
-		);
-	}
-
-	public static IDiagnostic keywordUsedAsIdentifier(SyntaxToken currentToken)
-	{
-		return ParserDiagnostic.create(
-			"Keywords used as identifier are discouraged. Consider prefixing it with a #: %s".formatted(currentToken.kind()),
-			currentToken,
-			ParserError.KEYWORD_USED_AS_IDENTIFIER,
-			DiagnosticSeverity.WARNING
 		);
 	}
 
