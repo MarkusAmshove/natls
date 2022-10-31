@@ -1,0 +1,6 @@
+name: Keyword is used as identifier
+priority: MAJOR
+tags: clumsy, brain-overload
+type: CODE_SMELL
+description:
+Keywords should not be used as identifier.

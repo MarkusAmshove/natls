@@ -1,6 +1,6 @@
-name: Invalid length for literal
+name: Invalid operator for extended relational expression
 priority: BLOCKER
-tags: natparse-internal
+tags: compile-time
 type: BUG
 description:
-Length for literal at this position is incorrect.
+Extended relational expression only works with ``=``, ``EQ``, ``EQUAL`` and ``EQUAL TO``

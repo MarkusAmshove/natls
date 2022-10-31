@@ -1,6 +1,6 @@
-name: Invalid operator for extended relational expression
+name: Invalid operator for MASK or SCAN expression
 priority: BLOCKER
 tags: compile-time
 type: BUG
 description:
-Extended relational expression only works with ``=``, ``EQ``, ``EQUAL`` and ``EQUAL TO``
+``MASK`` and ``SCAN`` can only be used with direct equality operators ``=``, ``<>``, ``EQ``, ``NE``.
