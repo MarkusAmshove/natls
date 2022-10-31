@@ -371,6 +371,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.TIMX);
 			return;
 		}
+		if (scanner.advanceIf("TIMD"))
+		{
+			createAndAdd(SyntaxKind.TIMD);
+			return;
+		}
 		if (scanner.advanceIf("TIMN"))
 		{
 			createAndAdd(SyntaxKind.TIMN);
