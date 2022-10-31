@@ -285,13 +285,12 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	@Test
 	void parseASubroutineWithoutSubroutineKeywordButKeywordAsName()
 	{
-		var subroutine = assertParsesSingleStatementWithDiagnostic("""
+		var subroutine = assertParsesSingleStatement("""
 				 DEFINE RESULT
 				 IGNORE
 				 END-SUBROUTINE
 				""",
-			ISubroutineNode.class,
-			ParserError.KEYWORD_USED_AS_IDENTIFIER);
+			ISubroutineNode.class);
 
 		assertThat(subroutine.declaration().symbolName()).isEqualTo("RESULT");
 	}
