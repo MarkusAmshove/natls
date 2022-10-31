@@ -30,6 +30,23 @@ public class BuiltInFunctionTable
 			unmodifiableVariable(SyntaxKind.TIMX, "Returns the current time of the day as builtin time format", TIME, 0.0),
 			unmodifiableVariable(SyntaxKind.TIMESTMP, "Returns the machine-internal clock value", BINARY, 8.0),
 			unmodifiableVariable(SyntaxKind.TIMN, "Returns the current time of the day as numeric format", NUMERIC, 7.0),
+			function(SyntaxKind.TIMD, """
+					Returns the time passed since the `SET TIME` statement which is referred to by the first parameter.
+					
+					The format returned is: `HHISST` (hour hour minute second second tenth-second).
+					
+					Example:
+					
+					```
+					T1. SET TIME
+					PERFORM EXPENSIVE-COMPUTATION
+					WRITE 'Computation took' *TIMD(T1.)
+					```
+					""",
+				NUMERIC,
+				7.0,
+				labelParameter(true)
+			),
 			unmodifiableVariable(SyntaxKind.DATD, "Returns the current date in the format `DD.MM.YY`", ALPHANUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.DATG, "Returns the current date in gregorian format `DDmonthnameYYYY`", ALPHANUMERIC, 15.0),
 			unmodifiableVariable(SyntaxKind.DAT4D, "Returns the current date in the format `DD.MM.YYYY`", ALPHANUMERIC, 10.0),
@@ -196,7 +213,7 @@ public class BuiltInFunctionTable
 				#ISN := *ISN
 				#ISN := *ISN(R1.)
 				```
-				""", PACKED, 10, new BuiltInFunctionParameter("label", new DataType(NONE, 0), false)),
+				""", PACKED, 10, labelParameter(false)),
 			function(SyntaxKind.COUNTER, """
 				Returns the number of times a processing loop initiated by `FIND`, `READ`, `HISTOGRAM` or `PARSE` has been entered.
 
@@ -209,7 +226,7 @@ public class BuiltInFunctionTable
 				#I := *COUNTER
 				#I := *COUNTER(RD.)
 				```
-				""", PACKED, 10, new BuiltInFunctionParameter("label", new DataType(DataFormat.NONE, 1), false)),
+				""", PACKED, 10, labelParameter(false)),
 			function(SyntaxKind.OCCURRENCE, "See `*OCC`", INTEGER, 4,
 				new BuiltInFunctionParameter("array", new DataType(DataFormat.NONE, 1), true),
 				new BuiltInFunctionParameter("dimension", new DataType(DataFormat.NONE, 1), false)
@@ -305,6 +322,11 @@ public class BuiltInFunctionTable
 				Level 1 is the main program.
 				""", NUMERIC, 2)
 		);
+	}
+
+	private static BuiltInFunctionParameter labelParameter(boolean mandatory)
+	{
+		return new BuiltInFunctionParameter("label", new DataType(DataFormat.NONE, 1), mandatory);
 	}
 
 	private static Map.Entry<SyntaxKind, SystemVariableDefinition> unmodifiableVariable(SyntaxKind kind, String documentation, DataFormat format, double length)

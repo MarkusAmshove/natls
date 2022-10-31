@@ -37,6 +37,7 @@ public enum SyntaxKind
 	APPLIC_ID(false, true, false),
 	INIT_ID(false, true, false),
 	TIMX(false, true, false),
+	TIMD(false, false, true),
 	TIMN(false, true, false),
 	DATD(false, true, false),
 	DATG(false, true, false),
