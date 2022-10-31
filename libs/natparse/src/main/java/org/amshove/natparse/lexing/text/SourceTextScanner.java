@@ -91,6 +91,31 @@ public class SourceTextScanner
 		return true;
 	}
 
+	/**
+	 * Advances the position if the given text is matched. If not matched it will remain on the original position.<br/>
+	 *
+	 * Comparison will be made case-insensitive.
+	 *
+	 * @param expectedText the text to be matched
+	 * @return true if matched, otherwise false
+	 */
+	public boolean advanceIfIgnoreCase(String expectedText)
+	{
+		var expectedLength = expectedText.length();
+
+		for (var i = 0; i < expectedLength; i++)
+		{
+			// Could be a problem with non ASCII letters
+			if (Character.toLowerCase(peek(i)) != Character.toLowerCase(expectedText.charAt(i)))
+			{
+				return false;
+			}
+		}
+
+		advance(expectedLength);
+		return true;
+	}
+
 	public int lexemeStart()
 	{
 		return currentLexemeStart;
