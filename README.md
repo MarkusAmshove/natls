@@ -74,7 +74,7 @@ Natlint ships with a CLI interface to run it within a Natural project for in a C
 
 To use the jar, simply run `java -jar natlint.jar` within your Natural project root directory.
 
-To run via docker, use `docker run -w "/workspace" -v "$PWD:/workspace" ghcr.io/markusamshove/natlint:main`.
+To run via docker, use `docker run -w "/workspace" -v "$PWD:/workspace" ghcr.io/markusamshove/natlint:latest`.
 
 Given no arguments, the program will analyze all Natural sources that can be found in the Natural project of the working directory. The project is identified by either a `.natural` or `_naturalBuild` file.
 
