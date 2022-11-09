@@ -78,7 +78,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 				? new WorkDoneProgressMonitor(params.getWorkDoneToken().getLeft(), client)
 				: new MessageProgressMonitor(client);
 
-			if (params.getCapabilities().getWindow().getWorkDoneProgress())
+			if (params.getCapabilities().getWindow() != null && params.getCapabilities().getWindow().getWorkDoneProgress())
 			{
 				ProgressTasks.setClientProgressType(ClientProgressType.WORK_DONE);
 			}
