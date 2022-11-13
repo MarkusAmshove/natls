@@ -201,6 +201,17 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 			dynamicTest("with hypen in both", () -> assertTokens("QUALI-FIER.VARI-ABLE", token(SyntaxKind.IDENTIFIER, "QUALI-FIER.VARI-ABLE"))));
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"#VÄRIABLE", "ÖL",
+		"ÆRO", "Øresund",
+		"å"
+	})
+	void allowUtf8Characters(String identifierName)
+	{
+		assertTokens(identifierName, token(SyntaxKind.IDENTIFIER, identifierName));
+	}
+
 	@Test
 	void recogniceAVariableStartingWithPfAsIdentifier()
 	{

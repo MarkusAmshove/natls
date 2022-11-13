@@ -218,6 +218,12 @@ public class Lexer
 					continue;
 
 				default:
+					if(isValidIdentifierCharacter(scanner.peek())) // handle identifier that start with a UTF-8 sequence
+					{
+						consumeIdentifier();
+						continue;
+					}
+
 					diagnostics.add(LexerDiagnostic.create(
 						"Unknown character [%c]".formatted(scanner.peek()),
 						scanner.position(),
@@ -638,7 +644,8 @@ public class Lexer
 
 	private boolean isValidIdentifierCharacter(char character)
 	{
-		return Character.isAlphabetic(character) || Character.isDigit(character) || character == '-' || character == '/' || character == '@' || character == '$' || character == '&' || character == '#' || character == '.' || character == '_';
+		return Character.isAlphabetic(character) || Character.isDigit(character) || character == '-' || character == '/' || character == '@' || character == '$' || character == '&' || character == '#' || character == '.' || character == '_'
+			|| Character.isJavaIdentifierPart(character); // this one should handle UTF-8
 	}
 
 	private void consumeIdentifierOrKeyword()

@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.amshove.natparse.IDiagnostic;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class AbstractLexerTest
@@ -96,7 +98,10 @@ public class AbstractLexerTest
 		for (var diagnostic : diagnostics)
 		{
 			assertThat(foundDiagnostics)
-				.as("Expected lex result to contain diagnostic [%s]", diagnostic)
+				.as("Expected lex result to contain diagnostic [%s]. Gotten\n%s",
+					diagnostic,
+					foundDiagnostics.stream().map(d -> "%s %d:%d %d:%d".formatted(d, d.line(), d.offsetInLine(), d.offset(), d.length())).collect(Collectors.joining(System.lineSeparator()))
+				)
 				.contains(diagnostic);
 		}
 

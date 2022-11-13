@@ -56,10 +56,8 @@ public class LexerShould extends AbstractLexerTest
 	@Test
 	void storeUnknownCharacters()
 	{
-		assertDiagnostics("\u2412\u4123\u1234",
-			assertedDiagnostic(0, 0, 0, 1, LexerError.UNKNOWN_CHARACTER),
-			assertedDiagnostic(1, 1, 0, 1, LexerError.UNKNOWN_CHARACTER),
-			assertedDiagnostic(2, 2, 0, 1, LexerError.UNKNOWN_CHARACTER)
+		assertDiagnostics("\u2412",
+			assertedDiagnostic(0, 0, 0, 1, LexerError.UNKNOWN_CHARACTER)
 		);
 	}
 
@@ -67,9 +65,7 @@ public class LexerShould extends AbstractLexerTest
 	void storeUnknownCharactersAfterTokens()
 	{
 		assertDiagnostics("WRITE #var\n\u2412\u4123\u1234",
-			assertedDiagnostic(11, 0, 1, 1, LexerError.UNKNOWN_CHARACTER),
-			assertedDiagnostic(12, 1, 1, 1, LexerError.UNKNOWN_CHARACTER),
-			assertedDiagnostic(13, 2, 1, 1, LexerError.UNKNOWN_CHARACTER)
+			assertedDiagnostic(11, 0, 1, 1, LexerError.UNKNOWN_CHARACTER)
 		);
 	}
 
