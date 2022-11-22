@@ -9,7 +9,7 @@ public class EditorConfigParser
 {
 	public EditorConfig parse(String content)
 	{
-		var scanner = new LinewiseTextScanner(content.split(System.lineSeparator()));
+		var scanner = new LinewiseTextScanner(content.split("[\\r\\n]+"));
 		var config = new EditorConfig();
 
 		while (!scanner.isAtEnd())
