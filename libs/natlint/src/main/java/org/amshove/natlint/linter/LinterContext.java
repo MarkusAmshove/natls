@@ -1,6 +1,7 @@
 package org.amshove.natlint.linter;
 
 import org.amshove.natlint.api.*;
+import org.amshove.natlint.editorconfig.EditorConfig;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.ISyntaxNode;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public enum LinterContext implements ILinterContext
 {
@@ -20,6 +22,8 @@ public enum LinterContext implements ILinterContext
 	private List<AbstractAnalyzer> registeredAnalyzers;
 	private final Map<Class<? extends ISyntaxNode>, List<INodeAnalyzingFunction>> nodeAnalyzerFunctions = new HashMap<>();
 	private final Map<SyntaxKind, List<ITokenAnalyzingFunction>> tokenAnalyzerFunctions = new HashMap<>();
+
+	private EditorConfig editorConfig;
 
 	LinterContext()
 	{
@@ -64,6 +68,11 @@ public enum LinterContext implements ILinterContext
 			.add(analyzingFunction);
 	}
 
+	public void updateEditorConfig(EditorConfig config)
+	{
+		editorConfig = config;
+	}
+
 	void analyze(ISyntaxNode syntaxNode, IAnalyzeContext context)
 	{
 		try
@@ -102,11 +111,17 @@ public enum LinterContext implements ILinterContext
 		registeredAnalyzers.forEach(a -> a.afterAnalyzing(context));
 	}
 
+	Optional<EditorConfig> editorConfig()
+	{
+		return Optional.ofNullable(editorConfig);
+	}
+
 	/* test */ void reset()
 	{
 		registeredAnalyzers.clear();
 		nodeAnalyzerFunctions.clear();
 		tokenAnalyzerFunctions.clear();
+		editorConfig = null;
 		initialized = false;
 	}
 

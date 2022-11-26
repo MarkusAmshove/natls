@@ -15,6 +15,7 @@ public class NaturalLinter
 		var linterContext = LinterContext.INSTANCE;
 		var diagnostics = new ArrayList<LinterDiagnostic>();
 		var analyzeContext = new AnalyzeContext(module, diagnostics::add);
+		linterContext.editorConfig().ifPresent(analyzeContext::setEditorConfig);
 
 		linterContext.beforeAnalyzing(analyzeContext);
 

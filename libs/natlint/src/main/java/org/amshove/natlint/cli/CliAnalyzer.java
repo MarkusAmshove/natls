@@ -1,5 +1,7 @@
 package org.amshove.natlint.cli;
 
+import org.amshove.natlint.editorconfig.EditorConfigParser;
+import org.amshove.natlint.linter.LinterContext;
 import org.amshove.natlint.linter.NaturalLinter;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
@@ -10,6 +12,7 @@ import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
 import org.amshove.natparse.parsing.NaturalParser;
 import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +50,13 @@ public class CliAnalyzer
 		if (workingDirectory.getRoot().equals(workingDirectory) || projectFile.isEmpty())
 		{
 			throw new RuntimeException("Project root could not be determined. .natural or _naturalBuild file not found");
+		}
+
+		var editorconfigPath = projectFile.get().getParent().resolve(".editorconfig");
+		if (editorconfigPath.toFile().exists())
+		{
+			System.out.println(".editorconfig picked up");
+			LinterContext.INSTANCE.updateEditorConfig(new EditorConfigParser().parse(filesystem.readFile(editorconfigPath)));
 		}
 
 		System.out.printf("""
