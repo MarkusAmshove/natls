@@ -95,6 +95,7 @@ public class KeywordTable
 				case "cos" -> SyntaxKind.COS;
 				case "count" -> SyntaxKind.COUNT;
 				case "coupled" -> SyntaxKind.COUPLED;
+				case "cpu-time" -> SyntaxKind.CPU_TIME;
 				case "cs" -> SyntaxKind.CS;
 				case "current" -> SyntaxKind.CURRENT;
 				case "cursor" -> SyntaxKind.CURSOR;
@@ -192,6 +193,7 @@ public class KeywordTable
 				case "errors" -> SyntaxKind.ERRORS;
 				case "es" -> SyntaxKind.ES;
 				case "escape" -> SyntaxKind.ESCAPE;
+				case "etid" -> SyntaxKind.ETID;
 				case "even" -> SyntaxKind.EVEN;
 				case "event" -> SyntaxKind.EVENT;
 				case "every" -> SyntaxKind.EVERY;
@@ -283,6 +285,7 @@ public class KeywordTable
 				case "indexed" -> SyntaxKind.INDEXED;
 				case "indicator" -> SyntaxKind.INDICATOR;
 				case "init" -> SyntaxKind.INIT;
+				case "init-program" -> SyntaxKind.INIT_PROGRAM;
 				case "initial" -> SyntaxKind.INITIAL;
 				case "inner" -> SyntaxKind.INNER;
 				case "input" -> SyntaxKind.INPUT;
@@ -310,6 +313,7 @@ public class KeywordTable
 				case "keys" -> SyntaxKind.KEYS;
 				case "language" -> SyntaxKind.LANGUAGE;
 				case "last" -> SyntaxKind.LAST;
+				case "lbound" -> SyntaxKind.LBOUND;
 				case "lc" -> SyntaxKind.LC;
 				case "le" -> SyntaxKind.LE;
 				case "leave" -> SyntaxKind.LEAVE;
@@ -582,6 +586,7 @@ public class KeywordTable
 				case "ts" -> SyntaxKind.TS;
 				case "type" -> SyntaxKind.TYPE;
 				case "types" -> SyntaxKind.TYPES;
+				case "ubound" -> SyntaxKind.UBOUND;
 				case "uc" -> SyntaxKind.UC;
 				case "underlined" -> SyntaxKind.UNDERLINED;
 				case "union" -> SyntaxKind.UNION;

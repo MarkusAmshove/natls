@@ -1,15 +1,15 @@
 package org.amshove.natlint.analyzers;
 
+import static org.junit.jupiter.api.DynamicTest.dynamicTest;
+
+import java.util.Arrays;
+import java.util.stream.Stream;
+
 import org.amshove.natlint.linter.AbstractAnalyzerTest;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
-
-import java.util.Arrays;
-import java.util.stream.Stream;
-
-import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 class KeywordAsIdentifierAnalyzerShould extends AbstractAnalyzerTest
 {

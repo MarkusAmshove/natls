@@ -820,6 +820,66 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void notRaiseADiagnosticIfRedefineEvenPackedField()
+	{
+		var source = """
+			   DEFINE DATA
+			   LOCAL
+			   1 #PACKED (P20)
+			   1 REDEFINE #PACKED
+				2 #ALFA (A11)
+			   END-DEFINE
+			""";
+
+		assertParsesWithoutDiagnostics(source);
+	}
+
+	@Test
+	void notRaiseADiagnosticIfRedefineOddPackedField()
+	{
+		var source = """
+			   DEFINE DATA
+			   LOCAL
+			   1 #PACKED (P21)
+			   1 REDEFINE #PACKED
+				2 #ALFA (A11)
+			   END-DEFINE
+			""";
+
+		assertParsesWithoutDiagnostics(source);
+	}
+
+	@Test
+	void raiseADiagnosticIfRedefineEvenPackedField()
+	{
+		var source = """
+			   DEFINE DATA
+			   LOCAL
+			   1 #PACKED (P20)
+			   1 REDEFINE #PACKED
+				2 #ALFA (A12)
+			   END-DEFINE
+			""";
+
+		assertDiagnostic(source, ParserError.REDEFINE_LENGTH_EXCEEDS_TARGET_LENGTH);
+	}
+
+	@Test
+	void raiseADiagnosticIfRedefineOddPackedField()
+	{
+		var source = """
+			   DEFINE DATA
+			   LOCAL
+			   1 #PACKED (P21)
+			   1 REDEFINE #PACKED
+				2 #ALFA (A12)
+			   END-DEFINE
+			""";
+
+		assertDiagnostic(source, ParserError.REDEFINE_LENGTH_EXCEEDS_TARGET_LENGTH);
+	}
+
+	@Test
 	void parseViews()
 	{
 		var source = """

@@ -1,11 +1,12 @@
 package org.amshove.natparse.natural.project;
 
+import java.nio.file.Path;
+
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.infrastructure.IFilesystem;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
-
-import java.nio.file.Path;
+import org.amshove.natparse.lexing.TokenList;
 
 public class NaturalProjectFileIndexer
 {
@@ -28,14 +29,20 @@ public class NaturalProjectFileIndexer
 			filesystem.streamFilesRecursively(library.getSourcePath())
 				.filter(NaturalFileType::isNaturalFile)
 				.map(this::toNaturalFile)
+				.filter(f -> f.isStructured() && !f.isFailedOnInit())
 				.forEach(library::addFile);
 		}
 	}
 
 	public NaturalFile toNaturalFile(Path path, NaturalLibrary library)
 	{
+		var lexemes = new Lexer().lex(filesystem.readFile(path), path);
 		var filetype = NaturalFileType.fromExtension(path.getFileName().toString().split("\\.")[1]);
-		return new NaturalFile(getReferableName(path, filetype), path, filetype);
+		try {
+			return new NaturalFile(getReferableName(path, filetype, lexemes), path, filetype, lexemes.sourceHeader());
+		} catch (Exception e) {
+			return new NaturalFile(path, filetype);
+		}
 	}
 
 	private NaturalFile toNaturalFile(Path path)
@@ -43,33 +50,27 @@ public class NaturalProjectFileIndexer
 		return toNaturalFile(path, null);
 	}
 
-	private String getReferableName(Path path, NaturalFileType type)
+	private String getReferableName(Path path, NaturalFileType type, TokenList lexemes)
 	{
+		// Lexing everything now to get hold of the NaturalHeader for each file
 		var filename = path.getFileName().toString().split("\\.")[0];
 		return switch(type) {
-			case SUBPROGRAM, LDA, PDA, MAP, DDM, PROGRAM, GDA, FUNCTION, COPYCODE -> filename;
-			case SUBROUTINE -> extractSubroutineName(path);
+			case SUBPROGRAM, DDM, LDA, PDA, GDA, PROGRAM, FUNCTION, COPYCODE, MAP, HELPROUTINE -> filename;
+			case SUBROUTINE -> extractSubroutineName(path, lexemes);
 		};
 	}
 
-	private String extractSubroutineName(Path path)
+	private String extractSubroutineName(Path path, TokenList lexemes)
 	{
-		var lexemes = new Lexer().lex(filesystem.readFile(path), path);
-
-		// Skip define data
-		if(!lexemes.advanceAfterNext(SyntaxKind.END_DEFINE))
+		// Advance directly past the subroutine name, if possible
+		if (!lexemes.advanceAfterNextIfFound(SyntaxKind.SUBROUTINE))
 		{
-			throw new RuntimeException("Could not find end of DEFINE DATA");
-		}
-
-		if(!lexemes.advanceAfterNext(SyntaxKind.DEFINE))
-		{
-			throw new RuntimeException("Could not find DEFINE SUBSROUTINE");
-		}
-
-		if(!lexemes.advanceAfterNext(SyntaxKind.SUBROUTINE))
-		{
-			throw new RuntimeException("Could not find keyword SUBROUTINE after DEFINE");
+			// else advance to END-DEFINE if it exists
+			lexemes.advanceAfterNextIfFound(SyntaxKind.END_DEFINE);
+			// After this, the first DEFINE token MUST be from the DEFINE [SUBROUTINE]
+			if (!lexemes.advanceAfterNext(SyntaxKind.DEFINE)) {
+				throw new RuntimeException("Could not find DEFINE SUBSROUTINE");
+			}
 		}
 
 		return lexemes.peek().symbolName();

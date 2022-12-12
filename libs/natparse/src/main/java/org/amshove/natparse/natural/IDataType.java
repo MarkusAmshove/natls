@@ -79,13 +79,7 @@ public interface IDataType
 
 	private int calculatePackedSize()
 	{
-		var numericSize = calculateNumericSize() / 2;
-		if(numericSize % 2 != 0)
-		{
-			numericSize++;
-		}
-
-		return Math.max(1, numericSize);
+		return Math.max(1, (int)(Math.round((calculateNumericSize() + 1) / 2.0)));
 	}
 
 	private int calculateDigitsAfterDecimalPoint()

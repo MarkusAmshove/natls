@@ -82,6 +82,7 @@ public class LexerForMultiCharacterOperatorsShould extends AbstractLexerTest
 	void lexNotEqualsSigns()
 	{
 		assertTokens("<>", token(SyntaxKind.LESSER_GREATER, "<>"));
+		assertTokens("^=", token(SyntaxKind.CIRCUMFLEX_EQUAL , "^="));
 	}
 
 	@TestFactory

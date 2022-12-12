@@ -1,26 +1,25 @@
 package org.amshove.natparse.natural.builtin;
 
-import org.amshove.natparse.lexing.SyntaxKind;
-import org.amshove.natparse.natural.DataFormat;
-import org.amshove.natparse.natural.DataType;
+import static org.amshove.natparse.natural.DataFormat.ALPHANUMERIC;
+import static org.amshove.natparse.natural.DataFormat.BINARY;
+import static org.amshove.natparse.natural.DataFormat.DATE;
+import static org.amshove.natparse.natural.DataFormat.FLOAT;
+import static org.amshove.natparse.natural.DataFormat.INTEGER;
+import static org.amshove.natparse.natural.DataFormat.NONE;
+import static org.amshove.natparse.natural.DataFormat.NUMERIC;
+import static org.amshove.natparse.natural.DataFormat.PACKED;
+import static org.amshove.natparse.natural.DataFormat.TIME;
 
 import java.util.Arrays;
 import java.util.Map;
 
-import static org.amshove.natparse.natural.DataFormat.*;
+import org.amshove.natparse.lexing.SyntaxKind;
+import org.amshove.natparse.natural.DataFormat;
+import org.amshove.natparse.natural.DataType;
 
 public class BuiltInFunctionTable
 {
-	private BuiltInFunctionTable()
-	{
-	}
-
 	private static final Map<SyntaxKind, IBuiltinFunctionDefinition> TABLE;
-
-	public static IBuiltinFunctionDefinition getDefinition(SyntaxKind kind)
-	{
-		return TABLE.get(kind);
-	}
 
 	static
 	{
@@ -32,11 +31,11 @@ public class BuiltInFunctionTable
 			unmodifiableVariable(SyntaxKind.TIMN, "Returns the current time of the day as numeric format", NUMERIC, 7.0),
 			function(SyntaxKind.TIMD, """
 					Returns the time passed since the `SET TIME` statement which is referred to by the first parameter.
-					
+
 					The format returned is: `HHISST` (hour hour minute second second tenth-second).
-					
+
 					Example:
-					
+
 					```
 					T1. SET TIME
 					PERFORM EXPENSIVE-COMPUTATION
@@ -48,12 +47,20 @@ public class BuiltInFunctionTable
 				labelParameter(true)
 			),
 			unmodifiableVariable(SyntaxKind.DATD, "Returns the current date in the format `DD.MM.YY`", ALPHANUMERIC, 8.0),
+			unmodifiableVariable(SyntaxKind.DATE, "Returns the current date in the format `DD/MM/YY`", ALPHANUMERIC, 8.0),
+			unmodifiableVariable(SyntaxKind.DAT4E, "Returns the current date in the format `DD/MM/YYYY`", ALPHANUMERIC, 10.0),
 			unmodifiableVariable(SyntaxKind.DATG, "Returns the current date in gregorian format `DDmonthnameYYYY`", ALPHANUMERIC, 15.0),
 			unmodifiableVariable(SyntaxKind.DAT4D, "Returns the current date in the format `DD.MM.YYYY`", ALPHANUMERIC, 10.0),
 			unmodifiableVariable(SyntaxKind.DATI, "Returns the current date in the format `YY-MM-DD`", ALPHANUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.DAT4I, "Returns the current date in the format `YYYY-MM-DD`", ALPHANUMERIC, 10.0),
-			unmodifiableVariable(SyntaxKind.DATX, "Returns the current date as internal date format", DATE, 0.0),
+			unmodifiableVariable(SyntaxKind.DATJ, "Returns the current date in the format `YYJJJ` (Julian date)", ALPHANUMERIC, 5.0),
+			unmodifiableVariable(SyntaxKind.DAT4J, "Returns the current date in the format `YYYYJJJ` (Julian date)", ALPHANUMERIC, 7.0),
+			unmodifiableVariable(SyntaxKind.DATX, "Returns the current date as internal date for	mat", DATE, 0.0),
 			unmodifiableVariable(SyntaxKind.DATN, "Returns the current date in the format `YYYYMMDD`", ALPHANUMERIC, 10.0),
+			unmodifiableVariable(SyntaxKind.DATU, "Returns the current date in the format `MM/DD/YY`", ALPHANUMERIC, 8.0),
+			unmodifiableVariable(SyntaxKind.DAT4U, "Returns the current date in the format `MM/DD/YYYY`", ALPHANUMERIC, 10.0),
+			unmodifiableVariable(SyntaxKind.DATV, "Returns the current date in the format `DD-MON-YY`, where MON is the name of the month", ALPHANUMERIC, 11.0),
+			unmodifiableVariable(SyntaxKind.DATVS, "Returns the current date in the format `DDMONYYYY`, where MON is the name of the month", ALPHANUMERIC, 9.0),
 			unmodifiableVariable(SyntaxKind.LINESIZE, "Returns the physical line size of the I/O device Natural was started with. For vertical look at `*PAGESIZE`", NUMERIC, 7.0),
 			unmodifiableVariable(SyntaxKind.PAGESIZE, "Returns the physical page size of the I/O device Natural was started with. For horizontal look at `*LINESIZE`", NUMERIC, 7.0),
 			unmodifiableVariable(SyntaxKind.MACHINE_CLASS, """
@@ -153,6 +160,26 @@ public class BuiltInFunctionTable
 				`TTY`: With a teletype or other start/stop device
 				`PC`: Natural connection with profile parameter `PC=ON` or terminal command `%+`
 				""", ALPHANUMERIC, 8),
+			unmodifiableVariable(SyntaxKind.CPU_TIME, """
+				Returns the CPU time currently used by the Natural process in units of 10 ms.
+				""", INTEGER, 4),
+			unmodifiableVariable(SyntaxKind.ETID, """
+				Returns the current identifier of transaction data for Adabas.
+
+				The default value is one of the following:
+
+				- the value of the Natural profile parameter ETID,
+				- the value from the security profile of the currently active user (applies only under Natural Security).
+				""", ALPHANUMERIC, 8),
+			unmodifiableVariable(SyntaxKind.INIT_PROGRAM, """
+				Return the name of program (transaction) currently executing as Natural.
+				""", ALPHANUMERIC, 8),
+			unmodifiableVariable(SyntaxKind.LBOUND, """
+				Returns the current lower boundary (index value) of an array for the specified dimension(s) (1, 2 or 3) or for all dimensions (asterisk (*) notation).
+					""", INTEGER, 4),
+			unmodifiableVariable(SyntaxKind.UBOUND, """
+				Returns the current upper boundary (index value) of an array for the specified dimension(s) (1, 2 or 3) or for all dimensions (asterisk (*) notation).
+					""", INTEGER, 4),
 			unmodifiableVariable(SyntaxKind.TPSYS, """
 				Returns the Natural name of the TP monitor or environment.
 
@@ -324,6 +351,11 @@ public class BuiltInFunctionTable
 		);
 	}
 
+	public static IBuiltinFunctionDefinition getDefinition(SyntaxKind kind)
+	{
+		return TABLE.get(kind);
+	}
+
 	private static BuiltInFunctionParameter labelParameter(boolean mandatory)
 	{
 		return new BuiltInFunctionParameter("label", new DataType(DataFormat.NONE, 1), mandatory);
@@ -349,5 +381,9 @@ public class BuiltInFunctionTable
 	{
 		var name = kind.toString().replace("_", "-");
 		return Map.entry(kind, new SystemFunctionDefinition("*%s".formatted(name), documentation, new DataType(format, length), Arrays.asList(parameter)));
+	}
+
+	private BuiltInFunctionTable()
+	{
 	}
 }

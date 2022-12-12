@@ -62,7 +62,7 @@ public class SubroutineNameMismatchAnalyzerShould extends AbstractAnalyzerTest
 	{
 		testDiagnostics(
 			project.findModule("SUB"),
-			expectDiagnostic(2, SubroutineNameMismatchAnalyzer.SUBROUTINE_NAME_MISMATCH)
+			expectDiagnostic(6, SubroutineNameMismatchAnalyzer.SUBROUTINE_NAME_MISMATCH)
 		);
 	}
 
@@ -71,7 +71,7 @@ public class SubroutineNameMismatchAnalyzerShould extends AbstractAnalyzerTest
 	{
 		testDiagnostics(
 			project.findModule("SUB2"),
-			expectDiagnostic(2, SubroutineNameMismatchAnalyzer.SUBROUTINE_NAME_MISMATCH)
+			expectDiagnostic(6, SubroutineNameMismatchAnalyzer.SUBROUTINE_NAME_MISMATCH)
 		);
 	}
 }

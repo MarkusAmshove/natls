@@ -7,6 +7,8 @@ import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
+import org.amshove.natparse.natural.project.NaturalHeader;
+import org.amshove.natparse.natural.project.NaturalProgrammingMode;
 import org.amshove.testhelpers.ResourceHelper;
 import org.junit.jupiter.api.DynamicTest;
 
@@ -20,96 +22,6 @@ import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 public abstract class ResourceFolderBasedTest
 {
-	protected Iterable<DynamicTest> testFolder(String relativeFolderPath)
-	{
-		var testFiles = ResourceHelper.findRelativeResourceFiles(relativeFolderPath, getClass());
-
-		if (testFiles.isEmpty())
-		{
-			throw new RuntimeException("No Testfiles found in %s".formatted(relativeFolderPath));
-		}
-
-		return testFiles.stream()
-			.flatMap(testFile -> {
-				var testFilePath = Path.of(testFile);
-				var testFileName = testFilePath.getFileName().toString();
-				var source = ResourceHelper.readResourceFile(testFile, getClass());
-				if (source.isEmpty())
-				{
-					throw new RuntimeException("Empty source read or no source found for %s".formatted(testFilePath));
-				}
-
-				var testsInFile = new ArrayList<DynamicTest>();
-				var expectedDiagnostics = findExpectedDiagnostics(source);
-
-				var lexer = new Lexer();
-				var tokens = lexer.lex(source, testFilePath);
-				var diagnostics = new ArrayList<>(tokens.diagnostics().toList());
-				var parser = new NaturalParser();
-				var parseResult = parser.parse(new NaturalFile(testFileName, testFilePath, NaturalFileType.SUBPROGRAM), tokens);
-				parseResult.diagnostics().stream()
-					.filter(d -> !d.id().equals(ParserError.UNRESOLVED_IMPORT.id()))
-					.forEach(diagnostics::add);
-
-				for (var diagnostic : diagnostics)
-				{
-					testsInFile.add(dynamicTest(testFileName + ": Actual diagnostic in line " + (diagnostic.line() + 1), () -> {
-						if (expectedDiagnostics.stream().noneMatch(d -> d.matches(diagnostic)))
-						{
-							fail("Diagnostic [%s] not expected but found".formatted(diagnostic));
-						}
-					}));
-				}
-
-				if (expectedDiagnostics.isEmpty())
-				{
-					testsInFile.add(dynamicTest(testFileName + ": Expected no diagnostics", () -> {
-						assertThat(diagnostics).isEmpty();
-					}));
-				}
-
-				for (var expectedDiagnostic : expectedDiagnostics)
-				{
-					testsInFile.add(dynamicTest(testFileName + ": Expected diagnostic in line " + (expectedDiagnostic.line + 1) + " not found", () -> {
-						if (diagnostics.stream().noneMatch(d -> ExpectedDiagnostic.doMatch(expectedDiagnostic, d)))
-						{
-							fail("Diagnostic [%s] expected but not found".formatted(expectedDiagnostic));
-						}
-					}));
-				}
-
-				return testsInFile.stream();
-			})
-			.toList();
-	}
-
-	private static List<ExpectedDiagnostic> findExpectedDiagnostics(String source)
-	{
-		var lines = source.split("\n");
-		var expectedDiagnostics = new ArrayList<ExpectedDiagnostic>();
-
-		for (var i = 0; i < lines.length; i++)
-		{
-			var line = lines[i];
-			if (!line.contains("!{D:"))
-			{
-				continue;
-			}
-
-			var split = line.split("!\\{D:");
-			for (var diagnosticIndex = 1; diagnosticIndex < split.length; diagnosticIndex++)
-			{
-				var severityAndId = split[diagnosticIndex].split(":");
-				var severity = DiagnosticSeverity.valueOf(severityAndId[0]);
-				var id = severityAndId[1].split("}")[0];
-
-				expectedDiagnostics.add(new ExpectedDiagnostic(i, id, severity));
-			}
-		}
-
-		return expectedDiagnostics;
-	}
-
 	public record ResouceFileBasedTest(Path filepath, List<ExpectedDiagnostic> expectedDiagnostics)
 	{
 	}
@@ -149,5 +61,95 @@ public abstract class ResourceFolderBasedTest
 		{
 			return null;
 		}
+	}
+
+	private static List<ExpectedDiagnostic> findExpectedDiagnostics(String source)
+	{
+		var lines = source.split("\n");
+		var expectedDiagnostics = new ArrayList<ExpectedDiagnostic>();
+
+		for (var i = 0; i < lines.length; i++)
+		{
+			var line = lines[i];
+			if (!line.contains("!{D:"))
+			{
+				continue;
+			}
+
+			var split = line.split("!\\{D:");
+			for (var diagnosticIndex = 1; diagnosticIndex < split.length; diagnosticIndex++)
+			{
+				var severityAndId = split[diagnosticIndex].split(":");
+				var severity = DiagnosticSeverity.valueOf(severityAndId[0]);
+				var id = severityAndId[1].split("}")[0];
+
+				expectedDiagnostics.add(new ExpectedDiagnostic(i, id, severity));
+			}
+		}
+
+		return expectedDiagnostics;
+	}
+
+	protected Iterable<DynamicTest> testFolder(String relativeFolderPath)
+	{
+		var testFiles = ResourceHelper.findRelativeResourceFiles(relativeFolderPath, getClass());
+
+		if (testFiles.isEmpty())
+		{
+			throw new RuntimeException("No Testfiles found in %s".formatted(relativeFolderPath));
+		}
+
+		return testFiles.stream()
+			.flatMap(testFile -> {
+				var testFilePath = Path.of(testFile);
+				var testFileName = testFilePath.getFileName().toString();
+				var source = ResourceHelper.readResourceFile(testFile, getClass());
+				if (source.isEmpty())
+				{
+					throw new RuntimeException("Empty source read or no source found for %s".formatted(testFilePath));
+				}
+
+				var testsInFile = new ArrayList<DynamicTest>();
+				var expectedDiagnostics = findExpectedDiagnostics(source);
+
+				var lexer = new Lexer();
+				var tokens = lexer.lex(source, testFilePath);
+				var diagnostics = new ArrayList<>(tokens.diagnostics().toList());
+				var parser = new NaturalParser();
+				var parseResult = parser.parse(new NaturalFile(testFileName, testFilePath, NaturalFileType.SUBPROGRAM, new NaturalHeader(NaturalProgrammingMode.STRUCTURED, 10)), tokens);
+				parseResult.diagnostics().stream()
+					.filter(d -> !d.id().equals(ParserError.UNRESOLVED_IMPORT.id()))
+					.forEach(diagnostics::add);
+
+				for (var diagnostic : diagnostics)
+				{
+					testsInFile.add(dynamicTest(testFileName + ": Actual diagnostic in line " + (diagnostic.line() + 1), () -> {
+						if (expectedDiagnostics.stream().noneMatch(d -> d.matches(diagnostic)))
+						{
+							fail("Diagnostic [%s] not expected but found".formatted(diagnostic));
+						}
+					}));
+				}
+
+				if (expectedDiagnostics.isEmpty())
+				{
+					testsInFile.add(dynamicTest(testFileName + ": Expected no diagnostics", () -> {
+						assertThat(diagnostics).isEmpty();
+					}));
+				}
+
+				for (var expectedDiagnostic : expectedDiagnostics)
+				{
+					testsInFile.add(dynamicTest(testFileName + ": Expected diagnostic in line " + (expectedDiagnostic.line + 1) + " not found", () -> {
+						if (diagnostics.stream().noneMatch(d -> ExpectedDiagnostic.doMatch(expectedDiagnostic, d)))
+						{
+							fail("Diagnostic [%s] expected but not found".formatted(expectedDiagnostic));
+						}
+					}));
+				}
+
+				return testsInFile.stream();
+			})
+			.toList();
 	}
 }

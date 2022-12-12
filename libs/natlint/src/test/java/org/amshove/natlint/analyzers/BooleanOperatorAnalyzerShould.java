@@ -64,7 +64,7 @@ public class BooleanOperatorAnalyzerShould extends AbstractAnalyzerTest
 	{
 		testDiagnostics(
 			project.findModule("TCTEST"),
-			expectDiagnostic(4, BooleanOperatorAnalyzer.INVALID_NATUNIT_COMPARISON_OPERATOR)
+			expectDiagnostic(8, BooleanOperatorAnalyzer.INVALID_NATUNIT_COMPARISON_OPERATOR)
 		);
 	}
 }

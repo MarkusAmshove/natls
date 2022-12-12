@@ -1,84 +1,75 @@
 package org.amshove.natparse.lexing;
 
-import org.amshove.natparse.IDiagnostic;
-import org.amshove.natparse.ReadOnlyList;
-
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class TokenList
-{
+import org.amshove.natparse.IDiagnostic;
+import org.amshove.natparse.ReadOnlyList;
+import org.amshove.natparse.natural.project.NaturalHeader;
+
+public class TokenList {
+	public static TokenList fromTokens(Path filePath, List<SyntaxToken> tokenList) {
+		return new TokenList(filePath, tokenList);
+	}
+
+	public static TokenList fromTokensAndDiagnostics(Path filePath, List<SyntaxToken> tokenList,
+			List<LexerDiagnostic> diagnostics, List<SyntaxToken> comments, NaturalHeader sourceHeader) {
+		return new TokenList(filePath, tokenList, diagnostics, comments, sourceHeader);
+	}
+
 	private final List<SyntaxToken> tokens;
 	private final List<LexerDiagnostic> diagnostics;
 	private final List<SyntaxToken> comments;
 	private final Path filePath;
-
+	private NaturalHeader sourceHeader;
 	private int currentOffset = 0;
 
-	TokenList(Path filePath, List<SyntaxToken> tokens)
-	{
+	TokenList(Path filePath, List<SyntaxToken> tokens) {
 		this.tokens = tokens;
 		diagnostics = List.of();
 		comments = List.of();
 		this.filePath = filePath;
 	}
 
-	TokenList(Path filePath, List<SyntaxToken> tokens, List<LexerDiagnostic> diagnostics, List<SyntaxToken> comments)
-	{
+	TokenList(Path filePath, List<SyntaxToken> tokens, List<LexerDiagnostic> diagnostics, List<SyntaxToken> comments, NaturalHeader sourceHeader) {
 		this.tokens = tokens;
 		this.diagnostics = diagnostics;
 		this.comments = comments;
 		this.filePath = filePath;
+		this.sourceHeader = sourceHeader;
 	}
 
-	public static TokenList fromTokens(Path filePath, List<SyntaxToken> tokenList)
-	{
-		return new TokenList(filePath, tokenList);
-	}
-
-	public static TokenList fromTokensAndDiagnostics(Path filePath, List<SyntaxToken> tokenList, List<LexerDiagnostic> diagnostics, List<SyntaxToken> comments)
-	{
-		return new TokenList(filePath, tokenList, diagnostics, comments);
-	}
-
-	public ReadOnlyList<IDiagnostic> diagnostics()
-	{
-		return ReadOnlyList.from(diagnostics.stream().map(d -> (IDiagnostic)d).toList()); // TODO: Perf
+	public ReadOnlyList<IDiagnostic> diagnostics() {
+		return ReadOnlyList.from(diagnostics.stream().map(d -> (IDiagnostic) d).toList()); // TODO: Perf
 	}
 
 	// TODO: ReadOnlyList
-	public List<SyntaxToken> tokensUntilNext(SyntaxKind kind)
-	{
+	public List<SyntaxToken> tokensUntilNext(SyntaxKind kind) {
 		var startOffset = currentOffset;
-		if(!advanceUntil(kind))
-		{
+		if (!advanceUntil(kind)) {
 			return List.of();
 		}
 		return List.copyOf(tokens.subList(startOffset, currentOffset));
 	}
 
-	public Path filePath()
-	{
+	public Path filePath() {
 		return filePath;
 	}
 
 	/**
 	 * Peeks the next token.
 	 */
-	public SyntaxToken peek()
-	{
+	public SyntaxToken peek() {
 		return peek(0);
 	}
 
 	/**
 	 * Peeks the token `offset` times ahead.
 	 */
-	public SyntaxToken peek(int offset)
-	{
+	public SyntaxToken peek(int offset) {
 		var index = currentOffset + offset;
-		if(exceedsEnd(index))
-		{
+		if (exceedsEnd(index)) {
 			return null;
 		}
 		return tokens.get(index);
@@ -87,8 +78,7 @@ public class TokenList
 	/**
 	 * Advances over the current token.
 	 */
-	public SyntaxToken advance()
-	{
+	public SyntaxToken advance() {
 		var token = peek();
 		currentOffset++;
 		return token;
@@ -97,46 +87,30 @@ public class TokenList
 	/**
 	 * Resets the position offset times back.
 	 */
-	public void rollback(int offset)
-	{
+	public void rollback(int offset) {
 		currentOffset -= offset;
 	}
 
-	public boolean isAtEnd()
-	{
+	public boolean isAtEnd() {
 		return exceedsEnd(currentOffset);
 	}
 
 	/**
 	 * Checks if the given offset relative to the current offset is out of bounds.
+	 *
 	 * @param offset - The offset added to the current position
 	 * @return true if end is passed, false if in bounds
 	 */
-	public boolean isAtEnd(int offset)
-	{
+	public boolean isAtEnd(int offset) {
 		return exceedsEnd(currentOffset + offset);
 	}
 
-	private boolean exceedsEnd(int totalOffset)
-	{
-		return totalOffset >= tokens.size() || totalOffset < 0;
-	}
-
-	public int size()
-	{
+	public int size() {
 		return tokens.size();
 	}
 
-	// TODO: ReadOnlyList
-	List<SyntaxToken> allTokens()
-	{
-		return List.copyOf(tokens);
-	}
-
-	public boolean advanceAfterNext(SyntaxKind kind)
-	{
-		if(advanceUntil(kind))
-		{
+	public boolean advanceAfterNext(SyntaxKind kind) {
+		if (advanceUntil(kind)) {
 			advance();
 			return !isAtEnd();
 		}
@@ -144,34 +118,44 @@ public class TokenList
 		return false;
 	}
 
-	public boolean advanceUntil(SyntaxKind kind)
-	{
-		while(!isAtEnd() && peek().kind() != kind)
-		{
+	public boolean advanceUntil(SyntaxKind kind) {
+		while (!isAtEnd() && peek().kind() != kind) {
 			advance();
 		}
 
 		return !isAtEnd();
 	}
 
-	// TODO: Figure out a better name
-	public TokenList newResetted()
-	{
-		return TokenList.fromTokensAndDiagnostics(filePath, tokens, diagnostics, comments);
+	public boolean advanceAfterNextIfFound(SyntaxKind kind) {
+		int index = currentOffset;
+		while (!exceedsEnd(index)) {
+			if (peek(index).kind() == kind) {
+				setCurrentOffset(index);
+				return advanceAfterNext(kind);
+			}
+			index++;
+		}
+		return false;
 	}
 
-	public ReadOnlyList<SyntaxToken> comments()
-	{
+	// TODO: Figure out a better name - unused for now, it seems
+	//public TokenList newResetted() {
+	//	return TokenList.fromTokensAndDiagnostics(filePath, tokens, diagnostics, comments, null);
+	//}
+
+	public ReadOnlyList<SyntaxToken> comments() {
 		return ReadOnlyList.from(comments); // TODO: Perf
+	}
+
+	public NaturalHeader sourceHeader() {
+		return sourceHeader;
 	}
 
 	/**
 	 * Consumes the current token if it matches the kind and then advances.
 	 */
-	public boolean consume(SyntaxKind kind)
-	{
-		if(!isAtEnd() && peek().kind() == kind)
-		{
+	public boolean consume(SyntaxKind kind) {
+		if (!isAtEnd() && peek().kind() == kind) {
 			advance();
 			return true;
 		}
@@ -179,23 +163,36 @@ public class TokenList
 		return false;
 	}
 
-	public int getCurrentOffset()
-	{
+	public int getCurrentOffset() {
 		return currentOffset;
 	}
 
 	/**
 	 * Returns all tokens from start to end.
+	 *
 	 * @param start Inclusive index of the first token.
-	 * @param end Inclusive index of the last token.
+	 * @param end   Inclusive index of the last token.
 	 */
-	public ReadOnlyList<SyntaxToken> subrange(int start, int end)
-	{
+	public ReadOnlyList<SyntaxToken> subrange(int start, int end) {
 		return ReadOnlyList.from(tokens.subList(start, end + 1));
 	}
 
-	public Stream<SyntaxToken> stream()
-	{
+	public Stream<SyntaxToken> stream() {
 		return tokens.stream();
+	}
+
+	// TODO: ReadOnlyList
+	List<SyntaxToken> allTokens() {
+		return List.copyOf(tokens);
+	}
+
+	private void setCurrentOffset(int newOffset) {
+		if (!exceedsEnd(newOffset)) {
+			currentOffset = newOffset;
+		}
+	}
+
+	private boolean exceedsEnd(int totalOffset) {
+		return totalOffset >= tokens.size() || totalOffset < 0;
 	}
 }
