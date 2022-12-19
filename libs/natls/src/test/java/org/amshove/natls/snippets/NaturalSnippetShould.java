@@ -1,5 +1,9 @@
 package org.amshove.natls.snippets;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natls.testlifecycle.LspProjectName;
 import org.amshove.natls.testlifecycle.LspTest;
@@ -11,9 +15,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @LspTest
 public class NaturalSnippetShould
@@ -89,7 +90,7 @@ public class NaturalSnippetShould
 
 		var usingInsert = completion.getAdditionalTextEdits().get(0);
 		assertThat(usingInsert.getNewText()).isEqualTo("LOCAL USING SNIPLDA%n".formatted());
-		assertThat(usingInsert.getRange().getStart().getLine()).isEqualTo(1);
+		assertThat(usingInsert.getRange().getStart().getLine()).isEqualTo(6);
 		assertThat(usingInsert.getRange().getStart().getCharacter()).isEqualTo(0);
 	}
 
@@ -113,7 +114,7 @@ public class NaturalSnippetShould
 			.createCompletion(testContext.project().findFileByReferableName("SUB2"));
 
 		var insert = completion.getAdditionalTextEdits().get(0);
-		assertThat(insert.getRange().getStart().getLine()).isEqualTo(1);
+		assertThat(insert.getRange().getStart().getLine()).isEqualTo(6);
 		assertThat(insert.getRange().getStart().getCharacter()).isEqualTo(0);
 	}
 
@@ -126,7 +127,7 @@ public class NaturalSnippetShould
 			.createCompletion(testContext.project().findFileByReferableName("EMPTDEF"));
 
 		var insert = completion.getAdditionalTextEdits().get(0);
-		assertThat(insert.getRange().getStart().getLine()).isEqualTo(1);
+		assertThat(insert.getRange().getStart().getLine()).isEqualTo(6);
 		assertThat(insert.getRange().getStart().getCharacter()).isEqualTo(0);
 	}
 

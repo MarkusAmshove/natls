@@ -209,7 +209,7 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 			DEFINE DATA
 			LOCAL
 			END-DEFINE
-			   
+
 			INCLUDE TH${}$ECC
 			END
 			""");
@@ -222,7 +222,7 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 				LOCAL
 				1 #THE-VAR-I-NEED (A) DYNAMIC
 				END-DEFINE
-				   
+
 				INCLUDE THECC
 				END
 					""");

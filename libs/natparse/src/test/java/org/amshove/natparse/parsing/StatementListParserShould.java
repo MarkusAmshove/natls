@@ -1,15 +1,62 @@
 package org.amshove.natparse.parsing;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
-import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.IBeforeBreakNode;
+import org.amshove.natparse.natural.IBreakOfNode;
+import org.amshove.natparse.natural.ICallnatNode;
+import org.amshove.natparse.natural.IClosePrinterNode;
+import org.amshove.natparse.natural.IDecideForConditionNode;
+import org.amshove.natparse.natural.IDefinePrinterNode;
+import org.amshove.natparse.natural.IDefineWindowNode;
+import org.amshove.natparse.natural.IDescriptorNode;
+import org.amshove.natparse.natural.IDisplayNode;
+import org.amshove.natparse.natural.IEjectNode;
+import org.amshove.natparse.natural.IEndNode;
+import org.amshove.natparse.natural.IEndOfDataNode;
+import org.amshove.natparse.natural.IEndOfPageNode;
+import org.amshove.natparse.natural.IEscapeNode;
+import org.amshove.natparse.natural.IExamineNode;
+import org.amshove.natparse.natural.IExternalPerformNode;
+import org.amshove.natparse.natural.IFetchNode;
+import org.amshove.natparse.natural.IFindNode;
+import org.amshove.natparse.natural.IForLoopNode;
+import org.amshove.natparse.natural.IFormatNode;
+import org.amshove.natparse.natural.IFunctionCallNode;
+import org.amshove.natparse.natural.IHistogramNode;
+import org.amshove.natparse.natural.IIfNoRecordNode;
+import org.amshove.natparse.natural.IIfStatementNode;
+import org.amshove.natparse.natural.IIgnoreNode;
+import org.amshove.natparse.natural.IIncludeNode;
+import org.amshove.natparse.natural.IInternalPerformNode;
+import org.amshove.natparse.natural.ILiteralNode;
+import org.amshove.natparse.natural.INewPageNode;
+import org.amshove.natparse.natural.IResetStatementNode;
+import org.amshove.natparse.natural.IResizeArrayNode;
+import org.amshove.natparse.natural.IResizeDynamicNode;
+import org.amshove.natparse.natural.ISelectNode;
+import org.amshove.natparse.natural.ISetKeyNode;
+import org.amshove.natparse.natural.ISkipOperandNode;
+import org.amshove.natparse.natural.ISkipStatementNode;
+import org.amshove.natparse.natural.IStackNode;
+import org.amshove.natparse.natural.IStartOfDataNode;
+import org.amshove.natparse.natural.IStatementListNode;
+import org.amshove.natparse.natural.IStatementNode;
+import org.amshove.natparse.natural.ISubroutineNode;
+import org.amshove.natparse.natural.ISubstringOperandNode;
+import org.amshove.natparse.natural.ISymbolReferenceNode;
+import org.amshove.natparse.natural.ISystemFunctionNode;
+import org.amshove.natparse.natural.ITopOfPageNode;
+import org.amshove.natparse.natural.IVariableReferenceNode;
+import org.amshove.natparse.natural.IWriteNode;
 import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
 import org.amshove.testhelpers.IntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @IntegrationTest
 class StatementListParserShould extends AbstractParserTest<IStatementListNode>
@@ -1431,6 +1478,19 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		"#VAR",
 		"#VAR LINES"
 	})
+
+	@Test
+	void parseASimpleSelect()
+	{
+		var select = assertParsesSingleStatement("""
+			SELECT THE-COLUMN INTO THE-VAR FROM THE-VIEW
+			IGNORE
+			END-SELECT""", ISelectNode.class);
+		//assertThat(select.views().hasItems().
+		//assertThat(select.coloumList().size()).isEqualTo("THE-DESC");
+	}
+
+
 	void parseSkipStatement(String skipOperands)
 	{
 		var skip = assertParsesSingleStatement("SKIP %s".formatted(skipOperands), ISkipStatementNode.class);

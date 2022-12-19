@@ -1,21 +1,36 @@
 package org.amshove.natparse.parsing;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.DynamicTest.dynamicTest;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.amshove.natparse.lexing.SyntaxKind;
-import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.DataFormat;
+import org.amshove.natparse.natural.IDefineData;
+import org.amshove.natparse.natural.IGroupNode;
+import org.amshove.natparse.natural.IParameterDefinitionNode;
+import org.amshove.natparse.natural.IRedefinitionNode;
+import org.amshove.natparse.natural.IReferencableNode;
+import org.amshove.natparse.natural.IScopeNode;
+import org.amshove.natparse.natural.ISymbolReferenceNode;
+import org.amshove.natparse.natural.ISyntaxNode;
+import org.amshove.natparse.natural.ISystemVariableNode;
+import org.amshove.natparse.natural.ITokenNode;
+import org.amshove.natparse.natural.ITypedVariableNode;
+import org.amshove.natparse.natural.IUsingNode;
+import org.amshove.natparse.natural.IVariableNode;
+import org.amshove.natparse.natural.IViewNode;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 class DefineDataParserShould extends AbstractParserTest<IDefineData>
 {
@@ -517,6 +532,17 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void parseAnArrayWithWhitespaceAfterTheSlash()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data
+			local
+			01 #DATN (N8/ 1)
+			end-define
+			""");
+	}
+
+	@Test
 	void parseAnArrayWithMultipleCommasAndReferences()
 	{
 		assertParsesWithoutDiagnostics("""
@@ -597,6 +623,23 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		assertThat(myArr.dimensions().first().lowerBound()).isEqualTo(1);
 		assertThat(myArr.dimensions().first().upperBound()).isEqualTo(2);
+	}
+
+	@ParameterizedTest //CLAES to be extended after code has been modified
+	@ValueSource(strings = {
+		"(A1/#length)",
+		"(A1 /#length)",
+//		"(A1/ #length)"	,
+		"(A1 / #length)"
+	})
+	void parseAnArrayThatHasAConstReferenceAsDimensionAndArrayHasConstElements(String variable)
+	{
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 #length (N2) const <2>
+			1 #myarray %s const<'a','b'>
+			end-define
+			""".formatted(variable));
 	}
 
 	@Test
