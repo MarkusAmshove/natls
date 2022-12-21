@@ -8,6 +8,7 @@ import org.amshove.natparse.natural.conditionals.ChainedCriteriaOperator;
 import org.amshove.natparse.natural.conditionals.ComparisonOperator;
 import org.amshove.natparse.natural.conditionals.IHasComparisonOperator;
 import org.amshove.natparse.natural.conditionals.ILogicalConditionCriteriaNode;
+import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -133,6 +134,9 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						break;
 					case HISTOGRAM:
 						statementList.addStatement(histogram());
+						break;
+					case SELECT:
+						statementList.addStatement(select());
 						break;
 					case START:
 						statementList.addStatement(parseAtPositionOf(SyntaxKind.START, SyntaxKind.DATA, SyntaxKind.END_START, true, new StartOfDataNode()));
@@ -437,6 +441,64 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatoryClosing(histogram, SyntaxKind.END_HISTOGRAM, start);
 
 		return histogram;
+	}
+
+	private StatementNode select() throws ParseError
+	{
+		var select = new SelectNode();
+		consumeMandatory(select, SyntaxKind.SELECT);
+		var start = previousToken();
+
+		consumeAnyOptionally(select, List.of(SyntaxKind.ALL, SyntaxKind.SINGLE, SyntaxKind.DISTINCT, SyntaxKind.ASTERISK));
+
+		// * = all columns, else this should be a list of columns (scalar-expressions, really - but
+		// as of now only column names are supported TODO: support for scalar-expressions).
+		if (previousToken().kind() == SyntaxKind.ASTERISK)
+			consumeMandatory(getPreviousNode(), SyntaxKind.ASTERISK);
+		else
+		{
+ 			while (!tokens.isAtEnd() && !peekKind(SyntaxKind.FROM))
+			{
+				consumeAnyOptionally(getPreviousNode(), List.of(SyntaxKind.INTO, SyntaxKind.AS, SyntaxKind.INDICATOR));
+				consumeOptionally(getPreviousNode(), SyntaxKind.VIEW);
+				if (isOperand())
+					consumeOperandNode(select);
+				else
+					consumeMandatory(getPreviousNode(), SyntaxKind.COMMA);
+			}
+		}
+
+		consumeMandatory(getPreviousNode(), SyntaxKind.FROM);
+
+		IDataDefinitionModule ddm = null;
+		String correlationName = "";
+		var tablesDone = false;
+
+		while (!tokens.isAtEnd() && !peekKind(SyntaxKind.END_SELECT)) {
+			tablesDone = tablesDone || consumeAnyOptionally(getPreviousNode(),
+				List.of(SyntaxKind.WHERE, SyntaxKind.GROUP, SyntaxKind.HAVING, SyntaxKind.ORDER, SyntaxKind.FETCH, SyntaxKind.IF,
+						SyntaxKind.OPTIMIZE, SyntaxKind.QUERYNO, SyntaxKind.WITH, SyntaxKind.UNION, SyntaxKind.EXCEPT, SyntaxKind.INTERSECT));
+
+			if (!tablesDone) {
+				var targetDdm = consumeMandatoryIdentifier(select);
+				ddm = moduleProvider.findDdm(targetDdm.symbolName());
+
+				if (peekKind(SyntaxKind.COMMA)) {
+					correlationName = targetDdm.symbolName();
+					consumeMandatory(getPreviousNode(), SyntaxKind.COMMA);
+				} else {
+					correlationName = tokens.peek().source();
+					consumeIdentifierTokenOnly();
+					consumeOptionally(getPreviousNode(), SyntaxKind.COMMA);
+				}
+			} else break;
+		}
+
+		resolveUnresolvedSelects(ddm, correlationName);
+		select.setBody(statementList(SyntaxKind.END_SELECT));
+		consumeMandatoryClosing(select, SyntaxKind.END_SELECT, start);
+
+		return select;
 	}
 
 	private StatementNode beforeBreak() throws ParseError
@@ -1908,6 +1970,29 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 				{
 					referencableNode.addReference(unresolvedReference);
 					resolvedReferences.add(unresolvedReference);
+				}
+			}
+		}
+
+		unresolvedReferences.removeAll(resolvedReferences);
+	}
+
+	private void resolveUnresolvedSelects(IDataDefinitionModule ddm, String correlationName)
+	{
+		var resolvedReferences = new ArrayList<ISymbolReferenceNode>();
+
+		for (var ddmfield : ddm.fields())
+		{
+			for (var unresolvedReference : unresolvedReferences)
+			{
+				if (unresolvedReference.parent() instanceof SelectNode)
+				{
+					String prefixedName = correlationName + "." + ddmfield.name();
+
+					if (unresolvedReference.token().symbolName().equals(ddmfield.name()) || unresolvedReference.token().symbolName().equals(prefixedName))
+					{
+						resolvedReferences.add(unresolvedReference);
+					}
 				}
 			}
 		}
