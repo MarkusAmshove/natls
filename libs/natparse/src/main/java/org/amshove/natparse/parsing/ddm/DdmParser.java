@@ -27,7 +27,8 @@ public class DdmParser
 		"- - -- ---------------",
 		"T L DB Name",
 		"Natural Source Header",
-		":CP");
+		":CP"
+	);
 
 	private DataDefinitionModule ddm;
 	private List<SuperdescriptorChild> childrenToReference;
@@ -100,9 +101,11 @@ public class DdmParser
 		{
 			if (!setMatchingReference(child, ddm.fields()))
 			{
-				throw new NaturalParseException(String.format(
-					"Could not find field referenced by superdescriptor child \"%s\"",
-					child.name())
+				throw new NaturalParseException(
+					String.format(
+						"Could not find field referenced by superdescriptor child \"%s\"",
+						child.name()
+					)
 				);
 			}
 		}
@@ -150,7 +153,8 @@ public class DdmParser
 	private void parseGroup(
 		LinewiseTextScanner scanner,
 		GroupField currentField,
-		ImmutableList.Builder<IDdmField> groupMembers)
+		ImmutableList.Builder<IDdmField> groupMembers
+	)
 	{
 		while (!scanner.isAtEnd())
 		{

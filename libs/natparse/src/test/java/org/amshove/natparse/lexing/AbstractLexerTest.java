@@ -12,7 +12,7 @@ public class AbstractLexerTest
 	protected SyntaxToken lexSingle(String source, int index)
 	{
 		var tokenList = new Lexer().lex(source, Paths.get("TEST.NSN"));
-		for(var i = 0; i < index; i++)
+		for (var i = 0; i < index; i++)
 		{
 			tokenList.advance();
 		}
@@ -58,12 +58,14 @@ public class AbstractLexerTest
 			var actualToken = lexemes.peek();
 
 			assertThat(actualToken.kind())
-				.as("Expected Token %d to be [%s] but was [%s]: '%s'. %s",
+				.as(
+					"Expected Token %d to be [%s] but was [%s]: '%s'. %s",
 					i + 1,
 					expectedToken.kind,
 					actualToken.kind(),
 					actualToken.source(),
-					allTokensMessage)
+					allTokensMessage
+				)
 				.isEqualTo(expectedToken.kind);
 
 			if (expectedToken.source != null)
@@ -126,6 +128,5 @@ public class AbstractLexerTest
 	}
 
 	protected record ExpectedSyntaxToken(SyntaxKind kind, String source)
-	{
-	}
+	{}
 }

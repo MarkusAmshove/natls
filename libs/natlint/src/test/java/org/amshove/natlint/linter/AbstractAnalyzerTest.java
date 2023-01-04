@@ -34,7 +34,8 @@ public abstract class AbstractAnalyzerTest
 {
 	private final AbstractAnalyzer analyzerUnderTest;
 	private final List<String> allowedParserErrors = new ArrayList<>();
-	@TempDir Path directoryForSyntheticFiles;
+	@TempDir
+	Path directoryForSyntheticFiles;
 
 	@Test
 	void analyzerShouldExportRules()
@@ -49,7 +50,7 @@ public abstract class AbstractAnalyzerTest
 
 	protected void testDiagnostics(@Nullable NaturalFile file, DiagnosticAssertion... diagnosticAssertions)
 	{
-		if(file == null)
+		if (file == null)
 		{
 			throw new RuntimeException("Natural file could not be found");
 		}
@@ -64,16 +65,22 @@ public abstract class AbstractAnalyzerTest
 		{
 			assertDescriptionIsExported(expectedDiagnostic.description());
 		}
-		assertAll("Expected and unexpected diagnostics",
-			() -> assertAll("Expected Diagostics",
+		assertAll(
+			"Expected and unexpected diagnostics",
+			() -> assertAll(
+				"Expected Diagostics",
 				Arrays.stream(diagnosticAssertions)
 					.map(e -> e.checkAssertion(diagnostics.toList()))
 			),
-			() -> assertAll("Unexpected Diagnostics",
+			() -> assertAll(
+				"Unexpected Diagnostics",
 				diagnostics.stream()
-					.map(d -> () -> assertThat(diagnosticAssertions)
-						.as("Expected diagnostic %s to not be present, but was", d)
-						.anyMatch(e -> e.matches(d))))
+					.map(
+						d -> () -> assertThat(diagnosticAssertions)
+							.as("Expected diagnostic %s to not be present, but was", d)
+							.anyMatch(e -> e.matches(d))
+					)
+			)
 		);
 	}
 

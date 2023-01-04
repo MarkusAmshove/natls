@@ -81,7 +81,8 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 	@Test
 	void notAllowCountAsteriskToBeAtAnotherLocationThan2()
 	{
-		assertTokens("CN*AMES",
+		assertTokens(
+			"CN*AMES",
 			token(SyntaxKind.IDENTIFIER, "CN"),
 			token(SyntaxKind.ASTERISK),
 			token(SyntaxKind.IDENTIFIER, "AMES")
@@ -120,7 +121,8 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"R1.", "R.", "R-1.", "#like-a-var.", "another-var.", "A.", "X.", "A123.", "#WAT."
 	})
 	void recognizeJumpLabelsAsLabelIdentifiers(String source)
@@ -131,7 +133,7 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 	@Test
 	void addADiagnosticForRecognizedIdentifiersThatEndWithADot()
 	{
-		assertDiagnostic("C*WHODOESTHIS.", assertedDiagnostic(0,0,0,14, LexerError.INVALID_IDENTIFIER));
+		assertDiagnostic("C*WHODOESTHIS.", assertedDiagnostic(0, 0, 0, 14, LexerError.INVALID_IDENTIFIER));
 	}
 
 	@Test
@@ -181,7 +183,8 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 	@Test
 	void notIncludeTheCommaInArrayIndexNotation()
 	{
-		assertTokens("LAPDA.LAVARIABLE(I-INDEX-VAR,*)",
+		assertTokens(
+			"LAPDA.LAVARIABLE(I-INDEX-VAR,*)",
 			token(SyntaxKind.IDENTIFIER),
 			token(SyntaxKind.LPAREN),
 			token(SyntaxKind.IDENTIFIER, "I-INDEX-VAR"),
@@ -198,7 +201,8 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 			dynamicTest("plain qualified variable", () -> assertTokens("QUALIFIER.VARIABLE", token(SyntaxKind.IDENTIFIER, "QUALIFIER.VARIABLE"))),
 			dynamicTest("with hyphen in qualifier", () -> assertTokens("QUALIFIED-VARIABLE.VARI", token(SyntaxKind.IDENTIFIER, "QUALIFIED-VARIABLE.VARI"))),
 			dynamicTest("with hyphen in variable", () -> assertTokens("QUALIFIER.VARI-ABLE", token(SyntaxKind.IDENTIFIER, "QUALIFIER.VARI-ABLE"))),
-			dynamicTest("with hypen in both", () -> assertTokens("QUALI-FIER.VARI-ABLE", token(SyntaxKind.IDENTIFIER, "QUALI-FIER.VARI-ABLE"))));
+			dynamicTest("with hypen in both", () -> assertTokens("QUALI-FIER.VARI-ABLE", token(SyntaxKind.IDENTIFIER, "QUALI-FIER.VARI-ABLE")))
+		);
 	}
 
 	@Test

@@ -44,14 +44,14 @@ public class TokenList
 
 	public ReadOnlyList<IDiagnostic> diagnostics()
 	{
-		return ReadOnlyList.from(diagnostics.stream().map(d -> (IDiagnostic)d).toList()); // TODO: Perf
+		return ReadOnlyList.from(diagnostics.stream().map(d -> (IDiagnostic) d).toList()); // TODO: Perf
 	}
 
 	// TODO: ReadOnlyList
 	public List<SyntaxToken> tokensUntilNext(SyntaxKind kind)
 	{
 		var startOffset = currentOffset;
-		if(!advanceUntil(kind))
+		if (!advanceUntil(kind))
 		{
 			return List.of();
 		}
@@ -77,7 +77,7 @@ public class TokenList
 	public SyntaxToken peek(int offset)
 	{
 		var index = currentOffset + offset;
-		if(exceedsEnd(index))
+		if (exceedsEnd(index))
 		{
 			return null;
 		}
@@ -109,6 +109,7 @@ public class TokenList
 
 	/**
 	 * Checks if the given offset relative to the current offset is out of bounds.
+	 * 
 	 * @param offset - The offset added to the current position
 	 * @return true if end is passed, false if in bounds
 	 */
@@ -135,7 +136,7 @@ public class TokenList
 
 	public boolean advanceAfterNext(SyntaxKind kind)
 	{
-		if(advanceUntil(kind))
+		if (advanceUntil(kind))
 		{
 			advance();
 			return !isAtEnd();
@@ -146,7 +147,7 @@ public class TokenList
 
 	public boolean advanceUntil(SyntaxKind kind)
 	{
-		while(!isAtEnd() && peek().kind() != kind)
+		while (!isAtEnd() && peek().kind() != kind)
 		{
 			advance();
 		}
@@ -170,7 +171,7 @@ public class TokenList
 	 */
 	public boolean consume(SyntaxKind kind)
 	{
-		if(!isAtEnd() && peek().kind() == kind)
+		if (!isAtEnd() && peek().kind() == kind)
 		{
 			advance();
 			return true;
@@ -186,6 +187,7 @@ public class TokenList
 
 	/**
 	 * Returns all tokens from start to end.
+	 * 
 	 * @param start Inclusive index of the first token.
 	 * @param end Inclusive index of the last token.
 	 */

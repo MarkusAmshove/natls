@@ -18,6 +18,7 @@ class SignatureHelpForCallnatToModuleWithoutParameterShould extends SignatureHel
 		var signature = help.getSignatures().get(0);
 		assertThat(signature.getLabel()).isEqualTo("CALLED ()");
 	}
+
 	@Override
 	protected String getCalledModuleFilename()
 	{

@@ -24,7 +24,7 @@ public class NaturalSnippet
 
 	public NaturalSnippet(String label)
 	{
-		if(label.contains(" "))
+		if (label.contains(" "))
 		{
 			throw new SnippetInitializationException("Label should not contain whitespace");
 		}
@@ -58,17 +58,17 @@ public class NaturalSnippet
 
 	public CompletionItem createCompletion(LanguageServerFile file)
 	{
-		if(!fileTypeConstraints.isEmpty() && !fileTypeConstraints.contains(file.getType()))
+		if (!fileTypeConstraints.isEmpty() && !fileTypeConstraints.contains(file.getType()))
 		{
 			return null;
 		}
 
-		if(!fileConstraints.isEmpty() && !fileConstraints.stream().allMatch(filter -> filter.test(file)))
+		if (!fileConstraints.isEmpty() && !fileConstraints.stream().allMatch(filter -> filter.test(file)))
 		{
 			return null;
 		}
 
-		if((!neededLocalUsings.isEmpty() || !neededParameterUsings.isEmpty())&& file.module() instanceof IHasDefineData hasDefineData && hasDefineData.defineData() == null)
+		if ((!neededLocalUsings.isEmpty() || !neededParameterUsings.isEmpty()) && file.module()instanceof IHasDefineData hasDefineData && hasDefineData.defineData() == null)
 		{
 			throw new ResponseErrorException(new ResponseError(1, "Can't complete snippet because no DEFINE DATA was found", null));
 		}
@@ -80,7 +80,7 @@ public class NaturalSnippet
 
 		// TODO: Use IMarkupContentBuilder once hoverprovider is merged
 		StringBuilder documentationBuilder = new StringBuilder("```natural");
-		if(file.getType().canHaveDefineData())
+		if (file.getType().canHaveDefineData())
 		{
 			var additionalEdits = new ArrayList<TextEdit>();
 
@@ -88,7 +88,7 @@ public class NaturalSnippet
 			additionalEdits.addAll(addUsings(file, neededParameterUsings, documentationBuilder));
 			additionalEdits.addAll(addUsings(file, neededLocalUsings, documentationBuilder));
 
-			if(!additionalEdits.isEmpty())
+			if (!additionalEdits.isEmpty())
 			{
 				item.setAdditionalTextEdits(additionalEdits);
 				documentationBuilder.append("%n```%n---%n```natural".formatted());
@@ -111,7 +111,7 @@ public class NaturalSnippet
 		{
 			documentationBuilder.append("%n%s USING%s".formatted(using.scope(), using.name()));
 			var edit = TextEdits.addUsing(file, using);
-			if(edit != null)
+			if (edit != null)
 			{
 				textEdits.add(edit);
 			}

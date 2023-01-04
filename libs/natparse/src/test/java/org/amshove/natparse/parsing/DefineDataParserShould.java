@@ -255,7 +255,11 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@ParameterizedTest
-	@CsvSource({ "A,true", "B,true", "C,false", "D,false", "F4,false", "I4,false", "L,false", "N4,false", "P4,false", "T,false", "U,true" })
+	@CsvSource(
+		{
+			"A,true", "B,true", "C,false", "D,false", "F4,false", "I4,false", "L,false", "N4,false", "P4,false", "T,false", "U,true"
+		}
+	)
 	void addDiagnosticsForTypesIfTheyDoNotAllowDynamicLength(String type, boolean canHaveDynamicLength)
 	{
 		if (canHaveDynamicLength)
@@ -269,7 +273,10 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "F", "I", "N", "P", "A", "B", "U" })
+	@ValueSource(strings =
+	{
+		"F", "I", "N", "P", "A", "B", "U"
+	})
 	void addDiagnosticsForTypesMissingALength(String type)
 	{
 		assertDiagnostic("define data local 1 #m (%s) end-define".formatted(type), ParserError.VARIABLE_LENGTH_MISSING);
@@ -348,14 +355,22 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@ParameterizedTest
-	@CsvSource({ "N,\"Hi\"", "I,\"Hello\"", "P,TRUE", "F,FALSE" })
+	@CsvSource(
+		{
+			"N,\"Hi\"", "I,\"Hello\"", "P,TRUE", "F,FALSE"
+		}
+	)
 	void addADiagnosticForTypeMismatchesInInitialValues(String type, String literal)
 	{
 		assertDiagnostic("define data local 1 #var (%s4) init <%s> end-define".formatted(type, literal), ParserError.INITIAL_VALUE_TYPE_MISMATCH);
 	}
 
 	@ParameterizedTest
-	@CsvSource({ "N,\"Hi\"", "I,\"Hello\"", "P,TRUE", "F,FALSE" })
+	@CsvSource(
+		{
+			"N,\"Hi\"", "I,\"Hello\"", "P,TRUE", "F,FALSE"
+		}
+	)
 	void addADiagnosticForTypeMismatchesInConstValues(String type, String literal)
 	{
 		assertDiagnostic("define data local 1 #var (%s4) const <%s> end-define".formatted(type, literal), ParserError.INITIAL_VALUE_TYPE_MISMATCH);
@@ -467,15 +482,9 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"(T/2)",
-		"(T/1:10)",
-		"(T/1:*)",
-		"(T/*,1:5)",
-		"(T/*:10)",
-		"(A10/1:10)",
-		"(T/1:10,50:*,*:20)",
-		"(A20/1:10,50:*,*:20)",
+	@ValueSource(strings =
+	{
+		"(T/2)", "(T/1:10)", "(T/1:*)", "(T/*,1:5)", "(T/*:10)", "(A10/1:10)", "(T/1:10,50:*,*:20)", "(A20/1:10,50:*,*:20)",
 	})
 	void parseArrayDefinitions(String variable)
 	{
@@ -487,13 +496,9 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"(1:10,20:*)",
-		"(1:10)",
-		"(1:*)",
-		"(*:5)",
-		"(*)",
-		"(5)"
+	@ValueSource(strings =
+	{
+		"(1:10,20:*)", "(1:10)", "(1:*)", "(*:5)", "(*)", "(5)"
 	})
 	void parseArrayDefinitionsForGroups(String variable)
 	{
@@ -1135,11 +1140,9 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"EM=9999",
-		"EMU=9999",
-		"HD='header'",
-		"PM=952"
+	@ValueSource(strings =
+	{
+		"EM=9999", "EMU=9999", "HD='header'", "PM=952"
 	})
 	void parseEditMasks(String mask)
 	{
@@ -1151,24 +1154,9 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"AD=D",
-		"AD=B",
-		"AD=I",
-		"AD=N",
-		"AD=V",
-		"AD=U",
-		"AD=C",
-		"AD=Y",
-		"AD=P",
-		"CD=BL",
-		"CD=GR",
-		"CD=NE",
-		"CD=PI",
-		"CD=RE",
-		"CD=TU",
-		"CD=YE",
-		"AD=I CD=BL"
+	@ValueSource(strings =
+	{
+		"AD=D", "AD=B", "AD=I", "AD=N", "AD=V", "AD=U", "AD=C", "AD=Y", "AD=P", "CD=BL", "CD=GR", "CD=NE", "CD=PI", "CD=RE", "CD=TU", "CD=YE", "AD=I CD=BL"
 	})
 	void parseAttributeConstantsAsInit(String attribute)
 	{
@@ -1304,7 +1292,8 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	@Test
 	void addADiagnosticIfRedefiningXArray()
 	{
-		assertDiagnostic("""
+		assertDiagnostic(
+			"""
 				 define data local
 				 1 #arr (I4/1:*)
 				 1 redefine #arr
@@ -1313,7 +1302,8 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 				 2 #r3 (i4)
 				 end-define
 				""",
-			ParserError.REDEFINE_TARGET_CANT_BE_X_ARRAY);
+			ParserError.REDEFINE_TARGET_CANT_BE_X_ARRAY
+		);
 	}
 
 	@Test
@@ -1347,7 +1337,8 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	@Test
 	void showADiagnosticForRedefinesWhenThereAreMoreMembersThanArrayDimensions()
 	{
-		assertDiagnostic("""
+		assertDiagnostic(
+			"""
 				 define data local
 				 1 #arr (I4/1:2)
 				 1 redefine #arr
@@ -1356,16 +1347,19 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 				 2 #r3 (i4)
 				 end-define
 				""",
-			ParserError.REDEFINE_LENGTH_EXCEEDS_TARGET_LENGTH);
+			ParserError.REDEFINE_LENGTH_EXCEEDS_TARGET_LENGTH
+		);
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"1", "3", "5", "7", "9", "11", "32"
 	})
 	void showADiagnosticForInvalidFloatLengths(String length)
 	{
-		assertDiagnostic("""
+		assertDiagnostic(
+			"""
 				define data local
 				1 #fl (F%s)
 				end-define
@@ -1375,12 +1369,14 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"3", "5", "8", "12", "24", "32"
 	})
 	void showADiagnosticForInvalidIntegerLengths(String length)
 	{
-		assertDiagnostic("""
+		assertDiagnostic(
+			"""
 				define data local
 				1 #fl (I%s)
 				end-define
@@ -1390,12 +1386,14 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"30", "32"
 	})
 	void showADiagnosticForInvalidNumericLengths(String length)
 	{
-		assertDiagnostic("""
+		assertDiagnostic(
+			"""
 				define data local
 				1 #fl (N%s)
 				end-define
@@ -1405,12 +1403,14 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"30", "32"
 	})
 	void showADiagnosticForInvalidPackedLengths(String length)
 	{
-		assertDiagnostic("""
+		assertDiagnostic(
+			"""
 				define data local
 				1 #fl (P%s)
 				end-define
@@ -1420,12 +1420,14 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"C", "D", "L", "T"
 	})
 	void showADiagnosticForLengthsWithTypesThatCantSpecifyLength(String type)
 	{
-		assertDiagnostic("""
+		assertDiagnostic(
+			"""
 				define data local
 				1 #fl (%s1)
 				end-define
@@ -1435,7 +1437,8 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"TRUE", "FALSE"
 	})
 	void showNoDiagnosticForInitiatingAnAlphanumericWithBoolean(String bool)
@@ -1450,14 +1453,16 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	@Test
 	void reportADiagnosticIfVariableNamesAreDuplicated()
 	{
-		assertDiagnostic("""
+		assertDiagnostic(
+			"""
 				define data
 				local
 				1 #MYSTR (A1)
 				1 #MYSTR (A1)
 				end-define
 				""",
-			ParserError.DUPLICATED_SYMBOL);
+			ParserError.DUPLICATED_SYMBOL
+		);
 	}
 
 	@Test
@@ -1527,13 +1532,13 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	private <T extends IParameterDefinitionNode> void assertParameter(IParameterDefinitionNode node, Class<T> parameterType, String identifier)
 	{
 		var typedNode = assertNodeType(node, parameterType);
-		if(typedNode instanceof IUsingNode usingNode)
+		if (typedNode instanceof IUsingNode usingNode)
 		{
 			assertThat(usingNode.target().source()).isEqualTo(identifier);
 		}
 		else
 		{
-			assertThat(((IVariableNode)typedNode).name()).isEqualTo(identifier);
+			assertThat(((IVariableNode) typedNode).name()).isEqualTo(identifier);
 		}
 	}
 
@@ -1541,7 +1546,8 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	{
 		return dynamicTest(
 			source,
-			() -> {
+			() ->
+			{
 				var defineDataSource = """
 					define data
 					local

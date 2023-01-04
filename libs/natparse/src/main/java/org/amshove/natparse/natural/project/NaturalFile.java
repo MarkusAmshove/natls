@@ -13,7 +13,7 @@ public class NaturalFile
 	public NaturalFile(String referableName, Path path, NaturalFileType filetype)
 	{
 		this.referableName = referableName;
-		if(filetype == NaturalFileType.SUBROUTINE && referableName.length() > 32)
+		if (filetype == NaturalFileType.SUBROUTINE && referableName.length() > 32)
 		{
 			originalName = referableName;
 			this.referableName = originalName.substring(0, 32);
@@ -34,10 +34,8 @@ public class NaturalFile
 	}
 
 	/**
-	 * Returns the original name.
-	 * This only differs from getReferableName if the file type is subroutine
-	 * and the declared name is longer than 32 characters.
-	 * Then this returns the full name.
+	 * Returns the original name. This only differs from getReferableName if the file type is subroutine and the
+	 * declared name is longer than 32 characters. Then this returns the full name.
 	 */
 	public String getOriginalName()
 	{
@@ -57,7 +55,7 @@ public class NaturalFile
 	public String getFilenameWithoutExtension()
 	{
 		var fileName = path.getFileName().toString();
-		if(!fileName.contains("."))
+		if (!fileName.contains("."))
 		{
 			return fileName;
 		}

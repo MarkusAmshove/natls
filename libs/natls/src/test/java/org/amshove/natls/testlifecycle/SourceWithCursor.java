@@ -12,8 +12,8 @@ public record SourceWithCursor(String source, Range cursorPosition)
 	private static final String CURSOR_END = "}$";
 
 	/**
-	 * Constructs a {@link SourceWithCursor} from a single source string containing the cursor
-	 * or selection denoted by ${}$. <br/>
+	 * Constructs a {@link SourceWithCursor} from a single source string containing the cursor or selection denoted by
+	 * ${}$. <br/>
 	 * Examples:<br/>
 	 * - DEFINE DA${TA}$: Means TA is selected<br/>
 	 * - DEFINE DA${}$TA: Means the cursor is between A and T<br/>
@@ -57,7 +57,7 @@ public record SourceWithCursor(String source, Range cursorPosition)
 			}
 		}
 
-		if(cursorPosition == null)
+		if (cursorPosition == null)
 		{
 			throw new RuntimeException("No cursor position found");
 		}

@@ -34,12 +34,12 @@ public class ForLoopAnalyzer extends AbstractAnalyzer
 
 	private void analyzeFor(ISyntaxNode iSyntaxNode, IAnalyzeContext context)
 	{
-		if(context.getModule().file().getFiletype() == NaturalFileType.COPYCODE)
+		if (context.getModule().file().getFiletype() == NaturalFileType.COPYCODE)
 		{
 			return;
 		}
 
-		if(!iSyntaxNode.diagnosticPosition().isSameFileAs(iSyntaxNode.position()))
+		if (!iSyntaxNode.diagnosticPosition().isSameFileAs(iSyntaxNode.position()))
 		{
 			return;
 		}
@@ -47,17 +47,17 @@ public class ForLoopAnalyzer extends AbstractAnalyzer
 		var forLoop = (IForLoopNode) iSyntaxNode;
 
 		var upperBound = forLoop.upperBound();
-		if(upperBound == null)
+		if (upperBound == null)
 		{
 			return;
 		}
 
-		if(!(upperBound instanceof ISystemFunctionNode sysFuncNode))
+		if (!(upperBound instanceof ISystemFunctionNode sysFuncNode))
 		{
 			return;
 		}
 
-		if(sysFuncNode.systemFunction() == SyntaxKind.OCC || sysFuncNode.systemFunction() == SyntaxKind.OCCURRENCE)
+		if (sysFuncNode.systemFunction() == SyntaxKind.OCC || sysFuncNode.systemFunction() == SyntaxKind.OCCURRENCE)
 		{
 			context.report(UPPER_BOUND_OCC.createDiagnostic(sysFuncNode));
 		}

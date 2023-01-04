@@ -44,7 +44,7 @@ public class UnusedVariableAnalyzer extends AbstractAnalyzer
 				return;
 		}
 
-		if(!NodeUtil.moduleContainsNode(context.getModule(), syntaxNode))
+		if (!NodeUtil.moduleContainsNode(context.getModule(), syntaxNode))
 		{
 			return;
 		}
@@ -65,10 +65,10 @@ public class UnusedVariableAnalyzer extends AbstractAnalyzer
 
 		var level = variable.level();
 		var references = 0;
-		while(level > 1)
+		while (level > 1)
 		{
 			var parent = variable.parent();
-			if(!(parent instanceof IVariableNode parentVariable))
+			if (!(parent instanceof IVariableNode parentVariable))
 			{
 				break;
 			}

@@ -8,7 +8,6 @@ class RangedArrayAccessNode extends BaseSyntaxNode implements IRangedArrayAccess
 	private IOperandNode lowerBound;
 	private IOperandNode upperBound;
 
-
 	@Override
 	public IOperandNode lowerBound()
 	{

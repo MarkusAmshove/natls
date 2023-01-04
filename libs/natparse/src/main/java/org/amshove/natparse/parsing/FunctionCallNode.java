@@ -7,4 +7,3 @@ class FunctionCallNode extends ModuleReferencingNode implements IFunctionCallNod
 {
 
 }
-

@@ -43,7 +43,7 @@ public class LanguageServerProject
 		{
 			for (var file : library.files())
 			{
-				if(file.getPath().equals(filePath))
+				if (file.getPath().equals(filePath))
 				{
 					return file;
 				}
@@ -59,9 +59,9 @@ public class LanguageServerProject
 	{
 		for (var lib : libraries.values())
 		{
-			for(var file : lib.files())
+			for (var file : lib.files())
 			{
-				if(file.getReferableName().equalsIgnoreCase(referableName))
+				if (file.getReferableName().equalsIgnoreCase(referableName))
 				{
 					return file;
 				}

@@ -116,7 +116,8 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 			Map.entry("GREATER EQUAL", ComparisonOperator.GREATER_OR_EQUAL)
 		);
 		return operatorMappings.entrySet().stream()
-			.map(e -> dynamicTest("%s should be operator %s".formatted(e.getKey(), e.getValue()), () -> {
+			.map(e -> dynamicTest("%s should be operator %s".formatted(e.getKey(), e.getValue()), () ->
+			{
 				var criteria = assertParsesCriteria("1 %s 2".formatted(e.getKey()), IRelationalCriteriaNode.class);
 				var left = assertNodeType(criteria.left(), ILiteralNode.class);
 				var right = assertNodeType(criteria.right(), ILiteralNode.class);
@@ -153,7 +154,8 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"GT", "LT", "<", ">", ">=", "<=", "NE", "<>"
 	})
 	void reportADiagnosticIfExtendedRelationalExpressionIsNotUsedWithEqualComparison(String operator)
@@ -176,7 +178,8 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"GT", "LT", "<", ">", ">=", "<=", "NE", "<>"
 	})
 	void reportADiagnosticIfRangedExtendedRelationalExpressionIsNotUsedWithEqualComparison(String operator)
@@ -261,10 +264,11 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	Stream<DynamicTest> parseChainedCriteria()
 	{
 		return Map.of(
-				"AND", ChainedCriteriaOperator.AND,
-				"OR", ChainedCriteriaOperator.OR
-			).entrySet().stream()
-			.map(e -> dynamicTest(e.getKey(), () -> {
+			"AND", ChainedCriteriaOperator.AND,
+			"OR", ChainedCriteriaOperator.OR
+		).entrySet().stream()
+			.map(e -> dynamicTest(e.getKey(), () ->
+			{
 				var chained = assertParsesCriteria("#VAR = #VAR2 %s #VAR3 <> #VAR4".formatted(e.getKey()), IChainedCriteriaNode.class);
 				assertThat(chained.operator()).isEqualTo(e.getValue());
 				var left = assertNodeType(chained.left(), IRelationalCriteriaNode.class);
@@ -345,7 +349,8 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"=", "EQ", "EQUAL", "EQUAL TO", "NE", "NOT EQUAL", "<>"
 	})
 	void parseMaskWithConstantDefinition(String operator)
@@ -360,7 +365,8 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"=", "EQ", "EQUAL", "EQUAL TO", "NE", "NOT EQUAL", "<>"
 	})
 	void parseScanWithVariableReference(String operator)
@@ -379,7 +385,8 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		">", "<", "GT", "GE", "LT", "LE", "LESS THAN", "GREATER THAN", "<=", ">=", "LESS EQUAL", "GREATER EQUAL"
 	})
 	void reportDiagnosticsForUnsupportedScanComparisonOperators(String operator)
@@ -392,7 +399,8 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		">", "<", "GT", "GE", "LT", "LE", "LESS THAN", "GREATER THAN", "<=", ">=", "LESS EQUAL", "GREATER EQUAL"
 	})
 	void reportDiagnosticsForUnsupportedMaskComparisonOperators(String operator)

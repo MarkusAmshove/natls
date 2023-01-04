@@ -131,20 +131,23 @@ class DefinitionEndpointTests extends LanguageServerTest
 	@Test
 	void definitionShouldResolveLocalVariables()
 	{
-		assertSingleDefinitionInSameModule("""
+		assertSingleDefinitionInSameModule(
+			"""
 			DEFINE DATA LOCAL
 			1 #VAR (A10)
 			END-DEFINE
 			WRITE #VA${}$R
 			END
 			""",
-			1, 2);
+			1, 2
+		);
 	}
 
 	@Test
 	void definitionShouldResolveLocalSubroutines()
 	{
-		assertSingleDefinitionInSameModule("""
+		assertSingleDefinitionInSameModule(
+			"""
 			DEFINE DATA LOCAL
 			END-DEFINE
 			PERFORM THE-S${}$UB
@@ -153,14 +156,14 @@ class DefinitionEndpointTests extends LanguageServerTest
 			END-SUBROUTINE
 			END
 			""",
-			3, 18);
+			3, 18
+		);
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"PERFORM ANOTHER-EXTERNAL-SU${}$B",
-		"CALLNAT 'NONEXI${}$ST' ",
-		"NOE${}$X(<>)"
+	@ValueSource(strings =
+	{
+		"PERFORM ANOTHER-EXTERNAL-SU${}$B", "CALLNAT 'NONEXI${}$ST' ", "NOE${}$X(<>)"
 	})
 	void definitionShouldReturnAnEmptyListIfNoDefinitionIsFound(String call)
 	{
@@ -183,21 +186,22 @@ class DefinitionEndpointTests extends LanguageServerTest
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"CALLNAT 'CALLED' #VA${}$R",
-		"PERFORM EXTERNAL-SUBROUTINE #V${}$AR",
-		"ISSTH(<#${}$VAR>)"
+	@ValueSource(strings =
+	{
+		"CALLNAT 'CALLED' #VA${}$R", "PERFORM EXTERNAL-SUBROUTINE #V${}$AR", "ISSTH(<#${}$VAR>)"
 	})
 	void definitionsShouldReturnTheVariableDefinitionWhenInvokedFromAParameterPosition(String call)
 	{
-		assertSingleDefinitionInSameModule("""
+		assertSingleDefinitionInSameModule(
+			"""
 			DEFINE DATA LOCAL
 			1 #VAR (A10)
 			END-DEFINE
 			%s
 			END
 			""".formatted(call),
-			1, 2);
+			1, 2
+		);
 	}
 
 	@Override
@@ -239,7 +243,7 @@ class DefinitionEndpointTests extends LanguageServerTest
 			var position = source.toSinglePosition();
 			var params = new DefinitionParams(identifier, position);
 			var result = context.documentService().definition(params).get(5, TimeUnit.SECONDS);
-			if(result != null)
+			if (result != null)
 			{
 				assertThat(result.getLeft()).isEmpty();
 			}

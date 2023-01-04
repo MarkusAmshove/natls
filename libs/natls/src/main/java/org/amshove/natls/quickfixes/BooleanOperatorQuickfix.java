@@ -22,8 +22,10 @@ public class BooleanOperatorQuickfix extends AbstractQuickFix
 		var diagnostic = quickFixContext.diagnostic();
 		return new CodeActionBuilder("Change operator to EQ", CodeActionKind.QuickFix)
 			.fixesDiagnostic(diagnostic)
-			.appliesWorkspaceEdit(new WorkspaceEditBuilder()
-				.changesText(quickFixContext.fileUri(), diagnostic.getRange(), "EQ"))
+			.appliesWorkspaceEdit(
+				new WorkspaceEditBuilder()
+					.changesText(quickFixContext.fileUri(), diagnostic.getRange(), "EQ")
+			)
 			.build();
 	}
 
@@ -38,9 +40,12 @@ public class BooleanOperatorQuickfix extends AbstractQuickFix
 
 		return new CodeActionBuilder(
 			"Change operator to %s".formatted(preferredOperator),
-			CodeActionKind.QuickFix)
-			.appliesWorkspaceEdit(new WorkspaceEditBuilder()
-				.changesText(quickFixContext.fileUri(), quickFixContext.diagnostic().getRange(), preferredOperator))
+			CodeActionKind.QuickFix
+		)
+			.appliesWorkspaceEdit(
+				new WorkspaceEditBuilder()
+					.changesText(quickFixContext.fileUri(), quickFixContext.diagnostic().getRange(), preferredOperator)
+			)
 			.fixesDiagnostic(diagnostic)
 			.build();
 	}

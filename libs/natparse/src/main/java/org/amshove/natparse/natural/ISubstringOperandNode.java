@@ -6,6 +6,8 @@ import java.util.Optional;
 public interface ISubstringOperandNode extends IOperandNode
 {
 	IOperandNode operand();
+
 	Optional<IOperandNode> startPosition();
+
 	Optional<IOperandNode> length();
 }

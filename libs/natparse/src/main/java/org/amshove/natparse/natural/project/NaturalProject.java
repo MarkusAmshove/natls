@@ -33,7 +33,7 @@ public class NaturalProject
 		{
 			for (var file : library.files())
 			{
-				if(file.getPath().equals(path))
+				if (file.getPath().equals(path))
 				{
 					return file;
 				}
@@ -50,7 +50,7 @@ public class NaturalProject
 		{
 			for (var file : library.files())
 			{
-				if(file.getReferableName().equals(moduleName))
+				if (file.getReferableName().equals(moduleName))
 				{
 					return file;
 				}
@@ -65,14 +65,14 @@ public class NaturalProject
 	{
 		for (var library : libraries)
 		{
-			if(!library.getName().equalsIgnoreCase(libName))
+			if (!library.getName().equalsIgnoreCase(libName))
 			{
 				continue;
 			}
 
 			for (var file : library.files())
 			{
-				if(file.getReferableName().equalsIgnoreCase(moduleName))
+				if (file.getReferableName().equalsIgnoreCase(moduleName))
 				{
 					return file;
 				}

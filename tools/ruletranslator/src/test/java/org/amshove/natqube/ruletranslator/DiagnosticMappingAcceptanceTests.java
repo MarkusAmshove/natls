@@ -32,8 +32,12 @@ class DiagnosticMappingAcceptanceTests
 
 		var rules = RuleRepository.getRuleMappings();
 		return Stream.concat(parserErrorIds, linterDiagnosticIds)
-			.map(id -> DynamicTest.dynamicTest("%s should have a mapping to SonarQube".formatted(id), () -> assertThat(rules)
-				.containsKey(id)));
+			.map(
+				id -> DynamicTest.dynamicTest(
+					"%s should have a mapping to SonarQube".formatted(id), () -> assertThat(rules)
+						.containsKey(id)
+				)
+			);
 	}
 
 	@TestFactory
@@ -41,30 +45,32 @@ class DiagnosticMappingAcceptanceTests
 	{
 		var rules = RuleRepository.getRules();
 		return rules.stream()
-			.map(r -> DynamicContainer.dynamicContainer(r.key(), Stream.of(
-						DynamicTest.dynamicTest("name should be filled", () ->
-							assertThat(r.name()).isNotBlank()
+			.map(
+				r -> DynamicContainer.dynamicContainer(
+					r.key(), Stream.of(
+						DynamicTest.dynamicTest(
+							"name should be filled", () -> assertThat(r.name()).isNotBlank()
 						),
-						DynamicTest.dynamicTest("priority should be filled and valid", () ->
-							assertAll(
+						DynamicTest.dynamicTest(
+							"priority should be filled and valid", () -> assertAll(
 								() -> assertThat(r.priority()).isNotBlank(),
 								() -> assertThat(VALID_PRIORITIES).contains(r.priority())
 							)
 						),
-						DynamicTest.dynamicTest("tags should be filled and valid", () ->
-							assertAll(
+						DynamicTest.dynamicTest(
+							"tags should be filled and valid", () -> assertAll(
 								() -> assertThat(r.tags()).isNotEmpty(),
 								() -> assertThat(VALID_TAGS).containsAll(r.tags())
 							)
 						),
-						DynamicTest.dynamicTest("type should be filled and valid", () ->
-							assertAll(
+						DynamicTest.dynamicTest(
+							"type should be filled and valid", () -> assertAll(
 								() -> assertThat(r.type()).isNotBlank(),
 								() -> assertThat(VALID_TYPES).contains(r.type())
 							)
 						),
-						DynamicTest.dynamicTest("description should be filled", () ->
-							assertThat(r.description()).isNotBlank()
+						DynamicTest.dynamicTest(
+							"description should be filled", () -> assertThat(r.description()).isNotBlank()
 						)
 					)
 				)
@@ -76,18 +82,20 @@ class DiagnosticMappingAcceptanceTests
 	{
 		var rules = RuleRepository.getRules();
 		return rules.stream()
-			.map(r -> DynamicContainer.dynamicContainer(r.key(), Stream.of(
-						DynamicTest.dynamicTest("headings should use = instead of #", () ->
-							assertThat(r.description()).doesNotContain("# ")
+			.map(
+				r -> DynamicContainer.dynamicContainer(
+					r.key(), Stream.of(
+						DynamicTest.dynamicTest(
+							"headings should use = instead of #", () -> assertThat(r.description()).doesNotContain("# ")
 						),
-						DynamicTest.dynamicTest("code should always use double backticks", () ->
-							assertThat(r.description()).doesNotContain("```")
+						DynamicTest.dynamicTest(
+							"code should always use double backticks", () -> assertThat(r.description()).doesNotContain("```")
 						),
-						DynamicTest.dynamicTest("code should always use double backticks", () ->
-							assertThat(r.description().lines()).noneMatch(l -> l.matches("((?!`))`"))
+						DynamicTest.dynamicTest(
+							"code should always use double backticks", () -> assertThat(r.description().lines()).noneMatch(l -> l.matches("((?!`))`"))
 						),
-						DynamicTest.dynamicTest("bold should use single star only", () ->
-							assertThat(r.description().lines()).noneMatch(l -> l.matches("\\*\\*(.*)?\\*\\*"))
+						DynamicTest.dynamicTest(
+							"bold should use single star only", () -> assertThat(r.description().lines()).noneMatch(l -> l.matches("\\*\\*(.*)?\\*\\*"))
 						)
 					)
 				)

@@ -71,7 +71,7 @@ abstract class AbstractParser<T>
 
 	protected IHasDefineData sideloadDefineData(TokenNode importNode)
 	{
-		if (sideloadModule(importNode.token().symbolName(), importNode.token()) instanceof IHasDefineData hasDefineData)
+		if (sideloadModule(importNode.token().symbolName(), importNode.token())instanceof IHasDefineData hasDefineData)
 		{
 			return hasDefineData;
 		}
@@ -123,8 +123,7 @@ abstract class AbstractParser<T>
 	}
 
 	/**
-	 * Consumes the current token only if the kind matches.
-	 * This will not add any diagnostics.
+	 * Consumes the current token only if the kind matches. This will not add any diagnostics.
 	 *
 	 * @param node the node to add the token to
 	 * @param kind the kind of the token that should be consumed
@@ -142,11 +141,10 @@ abstract class AbstractParser<T>
 	}
 
 	/**
-	 * Consumes either firstKind, secondKind or none.
-	 * This will not add any diagnostics.
+	 * Consumes either firstKind, secondKind or none. This will not add any diagnostics.
 	 *
-	 * @param node       the node to add the token to
-	 * @param firstKind  the first possible kind
+	 * @param node the node to add the token to
+	 * @param firstKind the first possible kind
 	 * @param secondKind the second possible kind
 	 * @return Whether any token was consumed or not
 	 */
@@ -187,12 +185,12 @@ abstract class AbstractParser<T>
 
 	protected SyntaxToken consumeMandatoryClosing(BaseSyntaxNode node, SyntaxKind closingTokenType, SyntaxToken openingToken) throws ParseError
 	{
-		if(peekKind(SyntaxKind.END_ALL) && END_KINDS_THAT_END_ALL_ENDS.contains(closingTokenType)) // sort
+		if (peekKind(SyntaxKind.END_ALL) && END_KINDS_THAT_END_ALL_ENDS.contains(closingTokenType)) // sort
 		{
 			return peek();
 		}
 
-		if(!consumeOptionally(node, closingTokenType))
+		if (!consumeOptionally(node, closingTokenType))
 		{
 			diagnostics.add(ParserErrors.missingClosingToken(closingTokenType, openingToken));
 			throw new ParseError(peek());
@@ -203,7 +201,7 @@ abstract class AbstractParser<T>
 
 	protected ILiteralNode consumeLiteralNode(BaseSyntaxNode node) throws ParseError
 	{
-		if(peekKind(SyntaxKind.LPAREN))
+		if (peekKind(SyntaxKind.LPAREN))
 		{
 			var attribute = new AttributeNode(peek());
 			node.addNode(attribute);
@@ -217,7 +215,7 @@ abstract class AbstractParser<T>
 			return attribute;
 		}
 
-		if(peekKind(SyntaxKind.MINUS) && peekKind(1, SyntaxKind.NUMBER_LITERAL))
+		if (peekKind(SyntaxKind.MINUS) && peekKind(1, SyntaxKind.NUMBER_LITERAL))
 		{
 			var combinedLiteral = peek().combine(peek(1), SyntaxKind.NUMBER_LITERAL);
 			var literal = new LiteralNode(combinedLiteral);
@@ -236,7 +234,7 @@ abstract class AbstractParser<T>
 	protected ILiteralNode consumeLiteralNode(BaseSyntaxNode node, SyntaxKind literalKind) throws ParseError
 	{
 		var literal = consumeLiteralNode(node);
-		if(literal.token().kind() != literalKind)
+		if (literal.token().kind() != literalKind)
 		{
 			report(ParserErrors.unexpectedToken(literalKind, literal.token()));
 		}
@@ -282,7 +280,7 @@ abstract class AbstractParser<T>
 	protected SyntaxToken consumeIdentifierTokenOnly() throws ParseError
 	{
 		var currentToken = tokens.peek();
-		if(tokens.isAtEnd() || (currentToken.kind() != SyntaxKind.IDENTIFIER && !currentToken.kind().canBeIdentifier()))
+		if (tokens.isAtEnd() || (currentToken.kind() != SyntaxKind.IDENTIFIER && !currentToken.kind().canBeIdentifier()))
 		{
 			diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens));
 			throw new ParseError(peek());
@@ -335,7 +333,7 @@ abstract class AbstractParser<T>
 		node.setReferencedModule((NaturalModule) module);
 
 		consumeMandatory(node, SyntaxKind.LPAREN);
-		if(peekKind(SyntaxKind.LESSER_GREATER) && peekKind(1, SyntaxKind.RPAREN))
+		if (peekKind(SyntaxKind.LESSER_GREATER) && peekKind(1, SyntaxKind.RPAREN))
 		{
 			// function call wihtout parameter
 			consumeMandatory(node, SyntaxKind.LESSER_GREATER);
@@ -352,7 +350,7 @@ abstract class AbstractParser<T>
 			consumeOptionally(node, SyntaxKind.COMMA);
 		}
 
-		if(previousToken().kind() == SyntaxKind.COMMA)
+		if (previousToken().kind() == SyntaxKind.COMMA)
 		{
 			report(ParserErrors.trailingToken(previousToken()));
 		}
@@ -364,11 +362,12 @@ abstract class AbstractParser<T>
 	}
 
 	protected static final List<SyntaxKind> ARITHMETIC_OPERATOR_KINDS = List.of(SyntaxKind.PLUS, SyntaxKind.MINUS, SyntaxKind.ASTERISK, SyntaxKind.SLASH);
+
 	protected IOperandNode consumeArithmeticExpression(BaseSyntaxNode node) throws ParseError
 	{
 		var needRParen = consumeOptionally(node, SyntaxKind.LPAREN);
 		var operand = consumeOperandNode(node);
-		if(peekAny(ARITHMETIC_OPERATOR_KINDS))
+		if (peekAny(ARITHMETIC_OPERATOR_KINDS))
 		{
 			var arithmetic = new ArithmeticExpressionNode();
 			arithmetic.addNode((BaseSyntaxNode) operand);
@@ -381,7 +380,7 @@ abstract class AbstractParser<T>
 			operand = arithmetic;
 		}
 
-		if(needRParen)
+		if (needRParen)
 		{
 			consumeMandatory(node, SyntaxKind.RPAREN);
 		}
@@ -390,7 +389,7 @@ abstract class AbstractParser<T>
 
 	protected IOperandNode consumeModuleParameter(BaseSyntaxNode node) throws ParseError
 	{
-		if(peekKind(SyntaxKind.OPERAND_SKIP))
+		if (peekKind(SyntaxKind.OPERAND_SKIP))
 		{
 			return consumeSkipOperand(node);
 		}
@@ -408,9 +407,9 @@ abstract class AbstractParser<T>
 
 	protected IOperandNode consumeOperandNode(BaseSyntaxNode node) throws ParseError
 	{
-		if(peekKind(SyntaxKind.IDENTIFIER))
+		if (peekKind(SyntaxKind.IDENTIFIER))
 		{
-			if(peekKind(1, SyntaxKind.LPAREN) && (peekKind(2, SyntaxKind.LESSER_SIGN) || peekKind(2, SyntaxKind.LESSER_GREATER)))
+			if (peekKind(1, SyntaxKind.LPAREN) && (peekKind(2, SyntaxKind.LESSER_SIGN) || peekKind(2, SyntaxKind.LESSER_GREATER)))
 			{
 				var token = peek();
 				discard(); // this is kinda strange. reiterate on why functionCall() needs to get the token
@@ -420,38 +419,38 @@ abstract class AbstractParser<T>
 			}
 			return consumeVariableReferenceNode(node);
 		}
-		if(peek().kind().isSystemVariable() && peek().kind().isSystemFunction()) // can be both, like *COUNTER
+		if (peek().kind().isSystemVariable() && peek().kind().isSystemFunction()) // can be both, like *COUNTER
 		{
 			return peekKind(1, SyntaxKind.LPAREN) ? consumeSystemFunctionNode(node) : consumeSystemVariableNode(node);
 		}
-		if(peek().kind().isSystemVariable())
+		if (peek().kind().isSystemVariable())
 		{
 			return consumeSystemVariableNode(node);
 		}
-		if(peek().kind().isSystemFunction())
+		if (peek().kind().isSystemFunction())
 		{
 			return consumeSystemFunctionNode(node);
 		}
-		if(peek().kind() == SyntaxKind.VAL)
+		if (peek().kind() == SyntaxKind.VAL)
 		{
 			return valOperand(node);
 		}
-		if(peek().kind() == SyntaxKind.ABS)
+		if (peek().kind() == SyntaxKind.ABS)
 		{
 			return absOperand(node);
 		}
 
-		if(peek().kind() == SyntaxKind.POS)
+		if (peek().kind() == SyntaxKind.POS)
 		{
 			return posOperand(node);
 		}
 
-		if(peek().kind() == SyntaxKind.LABEL_IDENTIFIER)
+		if (peek().kind() == SyntaxKind.LABEL_IDENTIFIER)
 		{
 			return consumeLabelIdentifier(node);
 		}
 
-		if(peek().kind().canBeIdentifier())
+		if (peek().kind().canBeIdentifier())
 		{
 			return consumeVariableReferenceNode(node);
 		}
@@ -503,13 +502,13 @@ abstract class AbstractParser<T>
 
 	protected ISystemFunctionNode consumeSystemFunctionNode(BaseSyntaxNode node) throws ParseError
 	{
-		if(peek().kind() == SyntaxKind.TRANSLATE)
+		if (peek().kind() == SyntaxKind.TRANSLATE)
 		{
 			return consumeTranslateSystemFunction(node);
 		}
 
-		if(peek().kind() == SyntaxKind.PAGE_NUMBER || peek().kind() == SyntaxKind.LINE_COUNT)
-			// TODO: Get the entry for the function from BuiltInFunctionTable and check if it takes one parameter that is rep
+		if (peek().kind() == SyntaxKind.PAGE_NUMBER || peek().kind() == SyntaxKind.LINE_COUNT)
+		// TODO: Get the entry for the function from BuiltInFunctionTable and check if it takes one parameter that is rep
 		{
 			return consumeSystemFunctionWithRepParameter(node, peek().kind());
 		}
@@ -518,20 +517,20 @@ abstract class AbstractParser<T>
 		systemFunction.setSystemFunction(peek().kind());
 		consume(systemFunction);
 		consumeMandatory(systemFunction, SyntaxKind.LPAREN);
-		if(consumeOptionally(systemFunction, SyntaxKind.LPAREN)
+		if (consumeOptionally(systemFunction, SyntaxKind.LPAREN)
 			&& (systemFunction.systemFunction() == SyntaxKind.MAXVAL || systemFunction.systemFunction() == SyntaxKind.MINVAL)
 			&& peek().kind() == SyntaxKind.IDENTIFIER && peek().symbolName().equals("IR"))
 		{
 			consumeMandatory(systemFunction, SyntaxKind.IDENTIFIER); // IR
 			consumeMandatory(systemFunction, SyntaxKind.EQUALS_SIGN);
-			while(!isAtEnd() && tokens.peek().kind() != SyntaxKind.RPAREN)
+			while (!isAtEnd() && tokens.peek().kind() != SyntaxKind.RPAREN)
 			{
 				consume(systemFunction);
 			}
 			consumeMandatory(systemFunction, SyntaxKind.RPAREN);
 		}
 		systemFunction.addParameter(consumeOperandNode(systemFunction));
-		while(consumeOptionally(systemFunction, SyntaxKind.COMMA))
+		while (consumeOptionally(systemFunction, SyntaxKind.COMMA))
 		{
 			systemFunction.addParameter(consumeOperandNode(systemFunction));
 		}
@@ -546,7 +545,7 @@ abstract class AbstractParser<T>
 		node.addNode(systemFunction);
 		consumeMandatory(systemFunction, kind);
 		systemFunction.setSystemFunction(kind);
-		if(consumeOptionally(systemFunction, SyntaxKind.LPAREN))
+		if (consumeOptionally(systemFunction, SyntaxKind.LPAREN))
 		{
 			systemFunction.addParameter(consumeReportSpecificationOperand(systemFunction));
 			consumeMandatory(systemFunction, SyntaxKind.RPAREN);
@@ -570,7 +569,7 @@ abstract class AbstractParser<T>
 		node.addNode(translate);
 		consumeMandatory(translate, SyntaxKind.TRANSLATE);
 		consumeMandatory(translate, SyntaxKind.LPAREN);
-		if(peekKind(SyntaxKind.STRING_LITERAL))
+		if (peekKind(SyntaxKind.STRING_LITERAL))
 		{
 			var literal = consumeLiteralNode(translate, SyntaxKind.STRING_LITERAL);
 			translate.setToTranslate(literal);
@@ -595,11 +594,11 @@ abstract class AbstractParser<T>
 		previousNode = reference;
 		node.addNode(reference);
 
-		if(peekKind(SyntaxKind.LPAREN) && !peekKind(1, SyntaxKind.AD))
+		if (peekKind(SyntaxKind.LPAREN) && !peekKind(1, SyntaxKind.AD))
 		{
 			consumeMandatory(reference, SyntaxKind.LPAREN);
 			reference.addDimension(consumeArrayAccess(reference));
-			while(peekKind(SyntaxKind.COMMA))
+			while (peekKind(SyntaxKind.COMMA))
 			{
 				consume(reference);
 				reference.addDimension(consumeArrayAccess(reference));
@@ -614,7 +613,7 @@ abstract class AbstractParser<T>
 	protected IOperandNode consumeArrayAccess(VariableReferenceNode reference) throws ParseError
 	{
 		var access = consumeArithmeticExpression(reference);
-		if(peekKind(SyntaxKind.COLON))
+		if (peekKind(SyntaxKind.COLON))
 		{
 			return consumeRangedArrayAccess(reference, access);
 		}
@@ -646,7 +645,7 @@ abstract class AbstractParser<T>
 	{
 		for (SyntaxKind acceptedKind : acceptedKinds)
 		{
-			if(consumeOptionally(node, acceptedKind))
+			if (consumeOptionally(node, acceptedKind))
 			{
 				return true;
 			}
@@ -659,7 +658,7 @@ abstract class AbstractParser<T>
 	{
 		for (SyntaxKind acceptedKind : acceptedKinds)
 		{
-			if(consumeOptionally(node, acceptedKind))
+			if (consumeOptionally(node, acceptedKind))
 			{
 				return;
 			}
@@ -782,7 +781,7 @@ abstract class AbstractParser<T>
 
 	protected boolean peekAnyMandatoryOrAdvance(List<SyntaxKind> acceptedKinds)
 	{
-		if(peekAny(acceptedKinds))
+		if (peekAny(acceptedKinds))
 		{
 			return true;
 		}
@@ -796,9 +795,9 @@ abstract class AbstractParser<T>
 	{
 		var line = peek().line();
 		var offset = 0;
-		while(!isAtEnd(offset) && peek(offset).line() == line)
+		while (!isAtEnd(offset) && peek(offset).line() == line)
 		{
-			if(peek(offset).kind() == kind)
+			if (peek(offset).kind() == kind)
 			{
 				return true;
 			}

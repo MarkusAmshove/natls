@@ -13,8 +13,9 @@ import java.nio.file.Paths;
 public class TestProjectLoader
 {
 	/**
-	 * Copies the project folder from test/resources to the destination.
-	 * Make sure to use JUnit TempDir for destinationDirectory
+	 * Copies the project folder from test/resources to the destination. Make sure to use JUnit TempDir for
+	 * destinationDirectory
+	 * 
 	 * @param projectNameInResources relative path to the project from test/resources/projects
 	 */
 	public static LanguageServerProject loadProjectFromResources(Path destinationDirectory, String projectNameInResources)
@@ -32,26 +33,27 @@ public class TestProjectLoader
 
 	private static void copyProjectToTemporaryFolder(Path destinationDirectory, Path sourceDirectoryLocation)
 	{
-		try(var walk = Files.walk(sourceDirectoryLocation))
+		try (var walk = Files.walk(sourceDirectoryLocation))
 		{
-				walk.forEach(source -> {
-					var target = destinationDirectory.resolve(sourceDirectoryLocation.relativize(source));
+			walk.forEach(source ->
+			{
+				var target = destinationDirectory.resolve(sourceDirectoryLocation.relativize(source));
 
-					// Root folder
-					if(target.equals(destinationDirectory))
-					{
-						return;
-					}
+				// Root folder
+				if (target.equals(destinationDirectory))
+				{
+					return;
+				}
 
-					try
-					{
-						Files.copy(source, target);
-					}
-					catch (IOException e)
-					{
-						throw new UncheckedIOException(e);
-					}
-				});
+				try
+				{
+					Files.copy(source, target);
+				}
+				catch (IOException e)
+				{
+					throw new UncheckedIOException(e);
+				}
+			});
 		}
 		catch (IOException e)
 		{

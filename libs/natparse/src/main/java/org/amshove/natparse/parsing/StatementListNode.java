@@ -28,10 +28,10 @@ class StatementListNode extends StatementNode implements IStatementListNode
 	protected void replaceChild(BaseSyntaxNode oldChild, BaseSyntaxNode newChild)
 	{
 		super.replaceChild(oldChild, newChild);
-		if(oldChild instanceof StatementNode oldStatement && newChild instanceof StatementNode newStatement)
+		if (oldChild instanceof StatementNode oldStatement && newChild instanceof StatementNode newStatement)
 		{
 			var oldIndex = statements.indexOf(oldStatement);
-			if(oldIndex < 0)
+			if (oldIndex < 0)
 			{
 				return;
 			}

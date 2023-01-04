@@ -47,7 +47,7 @@ public class AnsiDiagnosticSink implements IDiagnosticSink
 			printed++;
 		}
 
-		if(printed > 0)
+		if (printed > 0)
 		{
 			System.out.println();
 		}
@@ -82,7 +82,7 @@ public class AnsiDiagnosticSink implements IDiagnosticSink
 	private String readDiagnosticSourceLine(IDiagnostic diagnostic)
 	{
 		var diagnosticLocationLine = readSourcePosition(diagnostic, diagnostic.severity());
-		if(!diagnostic.originalPosition().filePath().equals(diagnostic.filePath()))
+		if (!diagnostic.originalPosition().filePath().equals(diagnostic.filePath()))
 		{
 			var originalLocationLine = readSourcePosition(diagnostic.originalPosition(), diagnostic.severity());
 			return new StringBuilder()

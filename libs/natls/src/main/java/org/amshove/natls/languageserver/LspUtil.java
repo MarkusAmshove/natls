@@ -14,8 +14,7 @@ import java.nio.file.Paths;
 public class LspUtil
 {
 	private LspUtil()
-	{
-	}
+	{}
 
 	public static Path uriToPath(String uri)
 	{
@@ -30,8 +29,8 @@ public class LspUtil
 	public static Position toPosition(IPosition position)
 	{
 		return new Position(
-				position.line(),
-				position.offsetInLine()
+			position.line(),
+			position.offsetInLine()
 		);
 	}
 
@@ -60,18 +59,18 @@ public class LspUtil
 	private static DiagnosticSeverity mapSeverity(IDiagnostic diagnostic)
 	{
 		return switch (diagnostic.severity())
-			{
-				case ERROR -> DiagnosticSeverity.Error;
-				case WARNING -> DiagnosticSeverity.Warning;
-				case INFO -> DiagnosticSeverity.Information;
-			};
+		{
+			case ERROR -> DiagnosticSeverity.Error;
+			case WARNING -> DiagnosticSeverity.Warning;
+			case INFO -> DiagnosticSeverity.Information;
+		};
 	}
 
 	public static Range toRange(Position position)
 	{
 		return new Range(
-				position,
-				position
+			position,
+			position
 		);
 	}
 
@@ -157,7 +156,9 @@ public class LspUtil
 	}
 
 	/**
-	 * Converts the {@link IPosition} to an LSP position which is <strong>after</strong> the {@link IPosition} (using {@link IPosition#endOffset()})
+	 * Converts the {@link IPosition} to an LSP position which is <strong>after</strong> the {@link IPosition} (using
+	 * {@link IPosition#endOffset()})
+	 * 
 	 * @param position
 	 * @return
 	 */

@@ -57,13 +57,12 @@ public class SyntaxToken implements IPosition
 	}
 
 	/**
-	 * Returns the position which can be used for Diagnostics.
-	 * The return value only differs from the tokens actual Position
-	 * if the token is used e.g. via INCLUDE.
+	 * Returns the position which can be used for Diagnostics. The return value only differs from the tokens actual
+	 * Position if the token is used e.g. via INCLUDE.
 	 */
 	public IPosition diagnosticPosition()
 	{
-		if(diagnosticPosition == null)
+		if (diagnosticPosition == null)
 		{
 			return this;
 		}
@@ -79,7 +78,7 @@ public class SyntaxToken implements IPosition
 	// TODO: Introduce `LiteralToken`?
 	public int intValue()
 	{
-		if(kind.isSystemVariable())
+		if (kind.isSystemVariable())
 		{
 			// TODO(system-variables): Check actual lengths
 			return 8;
@@ -113,7 +112,7 @@ public class SyntaxToken implements IPosition
 	public String trimmedSymbolName(int maxLength)
 	{
 		var name = symbolName();
-		if(name.length() < maxLength)
+		if (name.length() < maxLength)
 		{
 			return name;
 		}
@@ -143,7 +142,7 @@ public class SyntaxToken implements IPosition
 			filePath
 		);
 		newToken.setDiagnosticPosition(diagnosticPosition);
-		if(kind != newKind)
+		if (kind != newKind)
 		{
 			newToken.originalKind = kind;
 		}
@@ -164,7 +163,8 @@ public class SyntaxToken implements IPosition
 	}
 
 	/**
-	 * If the Token was constructed from a different token, with just the kind adjusted, then this will return the original {@link SyntaxKind} it originated from.<br/>
+	 * If the Token was constructed from a different token, with just the kind adjusted, then this will return the
+	 * original {@link SyntaxKind} it originated from.<br/>
 	 * This might be the case for e.g. keywords that are used as identifiers.
 	 */
 	public Optional<SyntaxKind> originalKind()
@@ -175,13 +175,15 @@ public class SyntaxToken implements IPosition
 	@Override
 	public String toString()
 	{
-		return String.format("T[Kind=%s; Source='%s'; Offset=%d; Length=%d; Line=%d; LineOffset=%d]",
+		return String.format(
+			"T[Kind=%s; Source='%s'; Offset=%d; Length=%d; Line=%d; LineOffset=%d]",
 			kind,
 			source,
 			offset,
 			length(),
 			line,
-			offsetInLine);
+			offsetInLine
+		);
 	}
 
 	public boolean isQualified()

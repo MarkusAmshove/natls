@@ -6,4 +6,3 @@ public record BuiltInFunctionParameter(String name, IDataType type, boolean mand
 {
 
 }
-

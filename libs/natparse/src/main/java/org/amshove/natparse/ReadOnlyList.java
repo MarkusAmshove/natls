@@ -22,7 +22,7 @@ public class ReadOnlyList<T> implements Iterable<T>
 
 	public static <T> ReadOnlyList<T> from(Collection<T> collection)
 	{
-		if(collection == null)
+		if (collection == null)
 		{
 			return empty();
 		}
@@ -43,7 +43,7 @@ public class ReadOnlyList<T> implements Iterable<T>
 	@SafeVarargs
 	public static <T> ReadOnlyList<T> of(T... items)
 	{
-		if(items.length == 0)
+		if (items.length == 0)
 		{
 			return empty();
 		}
@@ -128,7 +128,8 @@ public class ReadOnlyList<T> implements Iterable<T>
 		@Override
 		public BinaryOperator<ArrayList<T>> combiner()
 		{
-			return (left, right) -> {
+			return (left, right) ->
+			{
 				left.addAll(right);
 				return left;
 			};
