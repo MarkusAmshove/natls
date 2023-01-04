@@ -457,7 +457,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			consumeMandatory(getPreviousNode(), SyntaxKind.ASTERISK);
 		else
 		{
- 			while (!tokens.isAtEnd() && !peekKind(SyntaxKind.FROM))
+			while (!tokens.isAtEnd() && !peekKind(SyntaxKind.FROM))
 			{
 				consumeAnyOptionally(getPreviousNode(), List.of(SyntaxKind.INTO, SyntaxKind.AS, SyntaxKind.INDICATOR));
 				consumeOptionally(getPreviousNode(), SyntaxKind.VIEW);
