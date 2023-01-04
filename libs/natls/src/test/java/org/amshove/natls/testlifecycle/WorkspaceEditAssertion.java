@@ -61,7 +61,8 @@ public record WorkspaceEditAssertion(WorkspaceEdit edit)
 					+ ". There were however edits (or none) in lines "
 					+ editsForFile.stream()
 						.map(e -> Integer.toString(e.getRange().getStart().getLine()))
-					.collect(Collectors.joining(",")))
+						.collect(Collectors.joining(","))
+			)
 			.isPresent();
 
 		var edit = maybeEdit.get();

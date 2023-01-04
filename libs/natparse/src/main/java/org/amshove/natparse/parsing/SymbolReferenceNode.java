@@ -33,7 +33,7 @@ class SymbolReferenceNode extends TokenNode implements ISymbolReferenceNode
 	@Override
 	public void destroy()
 	{
-		if(reference == null)
+		if (reference == null)
 		{
 			return;
 		}

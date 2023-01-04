@@ -23,7 +23,8 @@ class ModuleCodeLensTests extends CodeLensTest
 			END
 			""");
 
-		testCodeLens(identifier, lenses -> {
+		testCodeLens(identifier, lenses ->
+		{
 			assertThat(lenses).hasSize(1);
 			var lens = lenses.get(0);
 			var soft = new SoftAssertions();
@@ -51,7 +52,8 @@ class ModuleCodeLensTests extends CodeLensTest
 			END
 			""");
 
-		testCodeLens(identifier, lenses -> {
+		testCodeLens(identifier, lenses ->
+		{
 			assertThat(lenses).hasSize(1);
 			var lens = lenses.get(0);
 			var soft = new SoftAssertions();

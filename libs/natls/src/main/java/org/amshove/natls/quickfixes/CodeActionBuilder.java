@@ -44,7 +44,7 @@ public class CodeActionBuilder
 		var action = new CodeAction(title);
 		action.setEdit(workspaceEdit);
 		action.setKind(codeActionKind);
-		if(!diagnostics.isEmpty())
+		if (!diagnostics.isEmpty())
 		{
 			action.setDiagnostics(diagnostics);
 		}

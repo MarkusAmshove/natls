@@ -15,6 +15,9 @@ public class Natural extends AbstractLanguage
 	@Override
 	public String[] getFileSuffixes()
 	{
-		return new String[] { ".NSN", ".NSL", ".NSP", ".NSS", ".NSD", ".NSA", ".NSG", ".NSM", ".NSC", ".NS7" };
+		return new String[]
+		{
+			".NSN", ".NSL", ".NSP", ".NSS", ".NSD", ".NSA", ".NSG", ".NSM", ".NSC", ".NS7"
+		};
 	}
 }

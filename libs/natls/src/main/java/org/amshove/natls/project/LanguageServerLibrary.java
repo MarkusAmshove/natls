@@ -50,7 +50,7 @@ public class LanguageServerLibrary
 	public List<LanguageServerFile> getModulesOfType(NaturalFileType type, boolean includeStepLibs)
 	{
 		var filesOfType = files.values().stream().filter(f -> f.getType() == type).collect(Collectors.toCollection(ArrayList::new));
-		if(includeStepLibs)
+		if (includeStepLibs)
 		{
 			stepLibs.forEach(l -> filesOfType.addAll(l.getModulesOfType(type, false)));
 		}
@@ -65,17 +65,17 @@ public class LanguageServerLibrary
 
 	LanguageServerFile provideNaturalFile(String referableName, boolean includeStepLibs)
 	{
-		if(files.containsKey(referableName))
+		if (files.containsKey(referableName))
 		{
 			return files.get(referableName);
 		}
 
-		if(includeStepLibs)
+		if (includeStepLibs)
 		{
 			for (var stepLib : stepLibs)
 			{
 				var foundModule = stepLib.provideNaturalFile(referableName, false);
-				if(foundModule != null)
+				if (foundModule != null)
 				{
 					return foundModule;
 				}
@@ -99,9 +99,8 @@ public class LanguageServerLibrary
 	}
 
 	/**
-	 * Checks wether the file is within the library, determined by the Path.
-	 * This can be used for files with haven't been indexed yet or are created
-	 * at runtime.
+	 * Checks wether the file is within the library, determined by the Path. This can be used for files with haven't
+	 * been indexed yet or are created at runtime.
 	 */
 	boolean residesInLibrary(Path path)
 	{

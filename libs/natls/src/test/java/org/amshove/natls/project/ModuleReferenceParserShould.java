@@ -30,12 +30,12 @@ public class ModuleReferenceParserShould
 	@AfterAll
 	static void cleanup() throws IOException
 	{
-		if(System.getenv().containsKey("GITHUB_ACTIONS"))
+		if (System.getenv().containsKey("GITHUB_ACTIONS"))
 		{
 			return;
 		}
 
-		try(var walk = Files.walk(projectDirectory))
+		try (var walk = Files.walk(projectDirectory))
 		{
 			walk
 				.map(Path::toFile)
@@ -83,7 +83,7 @@ public class ModuleReferenceParserShould
 	@Test
 	void resolveFunctionCalls()
 	{
-		assertThatFileReferences(module("PROG1"), module("ISTRUE"))	;
+		assertThatFileReferences(module("PROG1"), module("ISTRUE"));
 	}
 
 	private void assertThatFileReferences(LanguageServerFile fileWithOutgoingReference, LanguageServerFile fileWithIncomingReference)

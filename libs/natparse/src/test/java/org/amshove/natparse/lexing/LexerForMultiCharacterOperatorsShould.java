@@ -29,7 +29,8 @@ public class LexerForMultiCharacterOperatorsShould extends AbstractLexerTest
 			dynamicTest("GE", () -> assertTokens("GE", token(SyntaxKind.GE, "GE"))),
 			dynamicTest("ge", () -> assertTokens("ge", token(SyntaxKind.GE, "ge"))),
 			dynamicTest("gE", () -> assertTokens("gE", token(SyntaxKind.GE, "gE"))),
-			dynamicTest("Ge", () -> assertTokens("Ge", token(SyntaxKind.GE, "Ge"))));
+			dynamicTest("Ge", () -> assertTokens("Ge", token(SyntaxKind.GE, "Ge")))
+		);
 	}
 
 	@TestFactory
@@ -39,7 +40,8 @@ public class LexerForMultiCharacterOperatorsShould extends AbstractLexerTest
 			dynamicTest("GT", () -> assertTokens("GT", token(SyntaxKind.GT, "GT"))),
 			dynamicTest("gt", () -> assertTokens("gt", token(SyntaxKind.GT, "gt"))),
 			dynamicTest("gT", () -> assertTokens("gT", token(SyntaxKind.GT, "gT"))),
-			dynamicTest("Gt", () -> assertTokens("Gt", token(SyntaxKind.GT, "Gt"))));
+			dynamicTest("Gt", () -> assertTokens("Gt", token(SyntaxKind.GT, "Gt")))
+		);
 	}
 
 	@Test
@@ -55,7 +57,8 @@ public class LexerForMultiCharacterOperatorsShould extends AbstractLexerTest
 			dynamicTest("LE", () -> assertTokens("LE", token(SyntaxKind.LE, "LE"))),
 			dynamicTest("le", () -> assertTokens("le", token(SyntaxKind.LE, "le"))),
 			dynamicTest("lE", () -> assertTokens("lE", token(SyntaxKind.LE, "lE"))),
-			dynamicTest("Le", () -> assertTokens("Le", token(SyntaxKind.LE, "Le"))));
+			dynamicTest("Le", () -> assertTokens("Le", token(SyntaxKind.LE, "Le")))
+		);
 	}
 
 	@TestFactory
@@ -65,7 +68,8 @@ public class LexerForMultiCharacterOperatorsShould extends AbstractLexerTest
 			dynamicTest("LT", () -> assertTokens("LT", token(SyntaxKind.LT, "LT"))),
 			dynamicTest("lt", () -> assertTokens("lt", token(SyntaxKind.LT, "lt"))),
 			dynamicTest("lT", () -> assertTokens("lT", token(SyntaxKind.LT, "lT"))),
-			dynamicTest("Lt", () -> assertTokens("Lt", token(SyntaxKind.LT, "Lt"))));
+			dynamicTest("Lt", () -> assertTokens("Lt", token(SyntaxKind.LT, "Lt")))
+		);
 	}
 
 	@TestFactory
@@ -75,7 +79,8 @@ public class LexerForMultiCharacterOperatorsShould extends AbstractLexerTest
 			dynamicTest("EQ", () -> assertTokens("EQ", token(SyntaxKind.EQ, "EQ"))),
 			dynamicTest("eq", () -> assertTokens("eq", token(SyntaxKind.EQ, "eq"))),
 			dynamicTest("eQ", () -> assertTokens("eQ", token(SyntaxKind.EQ, "eQ"))),
-			dynamicTest("Eq", () -> assertTokens("Eq", token(SyntaxKind.EQ, "Eq"))));
+			dynamicTest("Eq", () -> assertTokens("Eq", token(SyntaxKind.EQ, "Eq")))
+		);
 	}
 
 	@Test
@@ -91,6 +96,7 @@ public class LexerForMultiCharacterOperatorsShould extends AbstractLexerTest
 			dynamicTest("NE", () -> assertTokens("NE", token(SyntaxKind.NE, "NE"))),
 			dynamicTest("ne", () -> assertTokens("ne", token(SyntaxKind.NE, "ne"))),
 			dynamicTest("nE", () -> assertTokens("nE", token(SyntaxKind.NE, "nE"))),
-			dynamicTest("Ne", () -> assertTokens("Ne", token(SyntaxKind.NE, "Ne"))));
+			dynamicTest("Ne", () -> assertTokens("Ne", token(SyntaxKind.NE, "Ne")))
+		);
 	}
 }

@@ -14,15 +14,17 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class NaturalBuildFileParserShould {
+class NaturalBuildFileParserShould
+{
 
 	private static final Path TEST_BUILDFILE = Paths.get("/some/directory/_naturalBuild");
 
 	@Test
-	void findANaturalLibraryFromABuildFile() {
+	void findANaturalLibraryFromABuildFile()
+	{
 		IFilesystem fileSystem = new BuildFileBuilder(TEST_BUILDFILE)
-				.addLibrary("FIRSTLIB")
-				.toFileSystem();
+			.addLibrary("FIRSTLIB")
+			.toFileSystem();
 
 		var sut = new NaturalBuildFileParser(fileSystem);
 		var libraries = sut.parseLibraries(TEST_BUILDFILE);
@@ -31,25 +33,27 @@ class NaturalBuildFileParserShould {
 	}
 
 	@Test
-	void findANaturalLibraryWithSteplibs() {
+	void findANaturalLibraryWithSteplibs()
+	{
 		IFilesystem fileSystem = new BuildFileBuilder(TEST_BUILDFILE)
-				.addLibrary("FIRSTLIB", "SECONDLIB")
-				.addLibrary("SECONDLIB")
-				.toFileSystem();
+			.addLibrary("FIRSTLIB", "SECONDLIB")
+			.addLibrary("SECONDLIB")
+			.toFileSystem();
 
 		var naturalLibraries = parseBuildFile(fileSystem);
 		assertThat(naturalLibraries).hasSize(2);
 		assertLibraryContainsSteplibs(naturalLibraries.get(0), "SECONDLIB");
 		AssertionsForClassTypes.assertThat(naturalLibraries.get(1).getName())
-				.isEqualToIgnoringCase("SECONDLIB");
+			.isEqualToIgnoringCase("SECONDLIB");
 	}
 
 	@Test
-	void findNaturalLibrariesWithRingDependencies() {
+	void findNaturalLibrariesWithRingDependencies()
+	{
 		IFilesystem fileSystem = new BuildFileBuilder(TEST_BUILDFILE)
-				.addLibrary("FIRSTLIB", "SECONDLIB")
-				.addLibrary("SECONDLIB", "FIRSTLIB")
-				.toFileSystem();
+			.addLibrary("FIRSTLIB", "SECONDLIB")
+			.addLibrary("SECONDLIB", "FIRSTLIB")
+			.toFileSystem();
 
 		var naturalLibraries = parseBuildFile(fileSystem);
 		assertLibraryContainsSteplibs(naturalLibraries.get(0), "SECONDLIB");
@@ -57,26 +61,31 @@ class NaturalBuildFileParserShould {
 	}
 
 	@Test
-	void throwAnExceptionWhenTheBuildFileCouldNotBeRead() {
+	void throwAnExceptionWhenTheBuildFileCouldNotBeRead()
+	{
 		var fileSystem = mock(IFilesystem.class);
 		when(fileSystem.readFile(TEST_BUILDFILE)).thenReturn("<nonvalidxmlfile>");
 
 		assertThat(catchThrowable(() -> parseBuildFile(fileSystem)))
-				.isInstanceOf(BuildFileParserException.class);
+			.isInstanceOf(BuildFileParserException.class);
 	}
 
-	private void assertLibraryContainsSteplibs(XmlNaturalLibrary library, String... steplibs) {
+	private void assertLibraryContainsSteplibs(XmlNaturalLibrary library, String... steplibs)
+	{
 		var assertions = AssertionsForClassTypes.assertThat(library);
-		for (var steplib : steplibs) {
+		for (var steplib : steplibs)
+		{
 			assertions.matches(containsSteplib(steplib), "Expected library " + library.getName() + " to contain Steplib " + steplib);
 		}
 	}
 
-	private Predicate<? super XmlNaturalLibrary> containsSteplib(String secondlib) {
+	private Predicate<? super XmlNaturalLibrary> containsSteplib(String secondlib)
+	{
 		return naturalLibrary -> naturalLibrary.getSteplibs().stream().anyMatch(l -> l.equalsIgnoreCase(secondlib));
 	}
 
-	private List<XmlNaturalLibrary> parseBuildFile(IFilesystem fileSystem) {
+	private List<XmlNaturalLibrary> parseBuildFile(IFilesystem fileSystem)
+	{
 		var sut = new NaturalBuildFileParser(fileSystem);
 		return sut.parseLibraries(TEST_BUILDFILE);
 	}

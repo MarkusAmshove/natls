@@ -21,7 +21,7 @@ public enum CodeActionRegistry
 		{
 			try
 			{
-				if(Modifier.isAbstract(codeActionClass.getModifiers()))
+				if (Modifier.isAbstract(codeActionClass.getModifiers()))
 				{
 					continue;
 				}

@@ -18,7 +18,8 @@ class DdmField implements IDdmField
 	private final DescriptorType descriptor;
 	private final String remark;
 
-	DdmField(FieldType fieldType,
+	DdmField(
+		FieldType fieldType,
 		int level,
 		String shortname,
 		String name,
@@ -26,7 +27,8 @@ class DdmField implements IDdmField
 		double length,
 		NullValueSuppression suppression,
 		DescriptorType descriptor,
-		String remark)
+		String remark
+	)
 	{
 		this.fieldType = fieldType;
 		this.level = level;

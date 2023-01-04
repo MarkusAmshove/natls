@@ -53,46 +53,49 @@ public class NatlintSensor implements Sensor
 
 		try
 		{
-			var diagnostics = diagnosticFile.contents().lines().skip(1).map(l -> {
-					var split = l.split(";");
-					if(split.length != 7)
-					{
-						return null;
-					}
-					var absolutePath = Path.of(split[0]).toUri();
-					var id = split[1];
-					var line = split[4];
-					var offset = split[5];
-					var length = split[6];
-					var message = split[3];
-					return new CsvDiagnostic(id, absolutePath, Integer.parseInt(line), Integer.parseInt(offset), Integer.parseInt(length), message);
-				})
+			var diagnostics = diagnosticFile.contents().lines().skip(1).map(l ->
+			{
+				var split = l.split(";");
+				if (split.length != 7)
+				{
+					return null;
+				}
+				var absolutePath = Path.of(split[0]).toUri();
+				var id = split[1];
+				var line = split[4];
+				var offset = split[5];
+				var length = split[6];
+				var message = split[3];
+				return new CsvDiagnostic(id, absolutePath, Integer.parseInt(line), Integer.parseInt(offset), Integer.parseInt(length), message);
+			})
 				.filter(Objects::nonNull)
 				.collect(Collectors.groupingBy(CsvDiagnostic::getFileUri));
 
-			context.fileSystem().inputFiles(f -> !f.filename().endsWith(".NSM")).forEach(f -> {
-				if(!diagnostics.containsKey(f.uri()))
+			context.fileSystem().inputFiles(f -> !f.filename().endsWith(".NSM")).forEach(f ->
+			{
+				if (!diagnostics.containsKey(f.uri()))
 				{
 					return;
 				}
 
 				var fileDiagnostics = diagnostics.get(f.uri());
-				for(var diagnostic : fileDiagnostics)
+				for (var diagnostic : fileDiagnostics)
 				{
 					try
 					{
 						var issue = context.newIssue();
-						issue.at(issue.newLocation()
-							.on(f)
-							.at(f.newRange(diagnostic.getLine(), diagnostic.getOffsetInLine(), diagnostic.getLine(), diagnostic.getOffsetInLine() + diagnostic.getLength()))
-							.message(diagnostic.getMessage()));
+						issue.at(
+							issue.newLocation()
+								.on(f)
+								.at(f.newRange(diagnostic.getLine(), diagnostic.getOffsetInLine(), diagnostic.getLine(), diagnostic.getOffsetInLine() + diagnostic.getLength()))
+								.message(diagnostic.getMessage())
+						);
 						issue
 							.forRule(RuleKey.of(NaturalRuleRepository.REPOSITORY, diagnostic.getId()))
 							.save();
 					}
 					catch (Exception e)
-					{
-					}
+					{}
 				}
 			});
 		}

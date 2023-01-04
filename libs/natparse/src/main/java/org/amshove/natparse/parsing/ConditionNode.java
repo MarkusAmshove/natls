@@ -15,7 +15,7 @@ class ConditionNode extends BaseSyntaxNode implements IConditionNode
 
 	void setCriteria(ILogicalConditionCriteriaNode criteria)
 	{
-		addNode((BaseSyntaxNode)criteria);
+		addNode((BaseSyntaxNode) criteria);
 		this.criteria = criteria;
 	}
 }

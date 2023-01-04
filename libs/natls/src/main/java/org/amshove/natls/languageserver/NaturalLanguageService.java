@@ -130,13 +130,15 @@ public class NaturalLanguageService implements LanguageClientAware
 	public List<? extends SymbolInformation> findWorkspaceSymbols(String query, CancelChecker cancelChecker)
 	{
 		return project.getLibraries().stream()
-			.flatMap(l -> {
+			.flatMap(l ->
+			{
 				cancelChecker.checkCanceled();
 				return l.files().stream();
 			})
 			.filter(f -> f.getReferableName().toLowerCase().contains(query.toLowerCase()))
 			.limit(100)
-			.map(f -> {
+			.map(f ->
+			{
 				cancelChecker.checkCanceled();
 				return convertToSymbolInformation(f);
 			})
@@ -173,7 +175,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		// special case for the callnat string containing the called module
 		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), module);
 		if (node instanceof ITokenNode tokenNode
-			&& node.parent() instanceof IModuleReferencingNode moduleReference
+			&& node.parent()instanceof IModuleReferencingNode moduleReference
 			&& moduleReference.referencingToken().equals(tokenNode.token()))
 		{
 			node = moduleReference;
@@ -215,8 +217,8 @@ public class NaturalLanguageService implements LanguageClientAware
 			.defineData()
 			.variables().stream()
 			.filter(variableFilter)
-			.map(v ->
-				new Hover(
+			.map(
+				v -> new Hover(
 					new MarkupContent(
 						MarkupKind.MARKDOWN,
 						createHoverMarkdownText(v, module)
@@ -499,12 +501,12 @@ public class NaturalLanguageService implements LanguageClientAware
 			return List.of(LspUtil.toLocation(moduleReferencingNode.reference()));
 		}
 
-		if (node instanceof ITokenNode && node.parent() instanceof ISymbolReferenceNode symbolReferenceNode)
+		if (node instanceof ITokenNode && node.parent()instanceof ISymbolReferenceNode symbolReferenceNode)
 		{
 			return List.of(LspUtil.toLocation(symbolReferenceNode.reference()));
 		}
 
-		if (node instanceof ITokenNode && node.parent() instanceof IModuleReferencingNode moduleReferencingNode)
+		if (node instanceof ITokenNode && node.parent()instanceof IModuleReferencingNode moduleReferencingNode)
 		{
 			return List.of(LspUtil.toLocation(moduleReferencingNode.reference()));
 		}
@@ -539,13 +541,14 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		if (node instanceof IModuleReferencingNode moduleReferencingNode)
 		{
-			references.addAll(moduleReferencingNode.reference().callers().stream()
-				.map(caller -> LspUtil.toLocation(caller.referencingToken()))
-				.toList()
+			references.addAll(
+				moduleReferencingNode.reference().callers().stream()
+					.map(caller -> LspUtil.toLocation(caller.referencingToken()))
+					.toList()
 			);
 		}
 
-		if(references.isEmpty())
+		if (references.isEmpty())
 		{
 			var cachedPositions = ModuleReferenceCache.retrieveCachedPositions(file);
 			cachedPositions.forEach(p -> references.add(LspUtil.toLocation(p)));
@@ -598,17 +601,20 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		completionItems.addAll(snippetEngine.provideSnippets(file));
 
-		completionItems.addAll(module.referencableNodes().stream()
-			.filter(v -> !(v instanceof IRedefinitionNode)) // this is the `REDEFINE #VAR`, which results in the variable being doubled in completion
-			.map(n -> createCompletionItem(n, file, module.referencableNodes()))
-			.filter(Objects::nonNull)
-			.peek(i -> {
-				if (i.getKind() == CompletionItemKind.Variable)
+		completionItems.addAll(
+			module.referencableNodes().stream()
+				.filter(v -> !(v instanceof IRedefinitionNode)) // this is the `REDEFINE #VAR`, which results in the variable being doubled in completion
+				.map(n -> createCompletionItem(n, file, module.referencableNodes()))
+				.filter(Objects::nonNull)
+				.peek(i ->
 				{
-					i.setData(new UnresolvedCompletionInfo((String) i.getData(), filePath.toUri().toString()));
-				}
-			})
-			.toList());
+					if (i.getKind() == CompletionItemKind.Variable)
+					{
+						i.setData(new UnresolvedCompletionInfo((String) i.getData(), filePath.toUri().toString()));
+					}
+				})
+				.toList()
+		);
 
 		return completionItems;
 	}
@@ -635,8 +641,12 @@ public class NaturalLanguageService implements LanguageClientAware
 			return item;
 		}
 
-		item.setDocumentation(new MarkupContent(MarkupKind.MARKDOWN,
-			hoverProvider.createHover(new HoverContext(variableNode, variableNode.declaration(), file)).getContents().getRight().getValue()));
+		item.setDocumentation(
+			new MarkupContent(
+				MarkupKind.MARKDOWN,
+				hoverProvider.createHover(new HoverContext(variableNode, variableNode.declaration(), file)).getContents().getRight().getValue()
+			)
+		);
 		return item;
 	}
 
@@ -739,10 +749,10 @@ public class NaturalLanguageService implements LanguageClientAware
 	{
 		var allDiagnostics = file.allDiagnostics();
 		var shouldIncludeLinterDiagnostics = switch (file.getType())
-			{
-				case LDA, GDA, PDA, MAP, DDM -> false;
-				default -> true;
-			};
+		{
+			case LDA, GDA, PDA, MAP, DDM -> false;
+			default -> true;
+		};
 
 		var diagnosticsToReport = shouldIncludeLinterDiagnostics ? allDiagnostics
 			: allDiagnostics.stream().filter(d -> !d.getSource().equals(DiagnosticTool.NATLINT.getId())).toList();
@@ -878,8 +888,7 @@ public class NaturalLanguageService implements LanguageClientAware
 				{
 					case PROGRAM, SUBPROGRAM, SUBROUTINE, FUNCTION -> parser.parseReferences(file);
 					default ->
-					{
-					}
+					{}
 				}
 				processedFiles++;
 			}
@@ -895,7 +904,8 @@ public class NaturalLanguageService implements LanguageClientAware
 	{
 		var file = findNaturalFile(LspUtil.uriToPath(item.getUri()));
 		return file.getOutgoingReferences().stream()
-			.map(r -> {
+			.map(r ->
+			{
 				var call = new CallHierarchyOutgoingCall();
 				call.setTo(callHierarchyItem(r));
 				call.setFromRanges(List.of(item.getRange()));
@@ -908,7 +918,8 @@ public class NaturalLanguageService implements LanguageClientAware
 	{
 		var file = findNaturalFile(LspUtil.uriToPath(item.getUri()));
 		return file.module().callers().stream()
-			.map(r -> {
+			.map(r ->
+			{
 				var call = new CallHierarchyIncomingCall();
 				call.setFrom(callHierarchyItem(r, findNaturalFile(r.referencingToken().filePath()).getReferableName()));
 				call.setFromRanges(List.of(new Range(new Position(0, 0), new Position(0, 0))));
@@ -1021,7 +1032,7 @@ public class NaturalLanguageService implements LanguageClientAware
 			return renameComputer.rename(referencableNode, params.getNewName());
 		}
 
-		if (node instanceof ITokenNode && node.parent() instanceof IReferencableNode referencableNode)
+		if (node instanceof ITokenNode && node.parent()instanceof IReferencableNode referencableNode)
 		{
 			return renameComputer.rename(referencableNode, params.getNewName());
 		}
@@ -1043,14 +1054,15 @@ public class NaturalLanguageService implements LanguageClientAware
 		var cacheFile = workspaceRoot.resolve("cache_deploy_Incr_VERSIS.properties");
 		try (var lines = Files.lines(cacheFile))
 		{
-			var newLines = lines.map(l -> {
-					if (l.startsWith(file.getPath().toString()))
-					{
-						return file.getPath().toString() + "=";
-					}
+			var newLines = lines.map(l ->
+			{
+				if (l.startsWith(file.getPath().toString()))
+				{
+					return file.getPath().toString() + "=";
+				}
 
-					return l;
-				})
+				return l;
+			})
 				.collect(Collectors.joining(System.lineSeparator()));
 
 			Files.writeString(cacheFile, newLines);

@@ -8,8 +8,11 @@ import javax.annotation.Nullable;
 public interface IDefineData extends ISyntaxNode
 {
 	ReadOnlyList<IUsingNode> usings();
+
 	ReadOnlyList<IUsingNode> localUsings();
+
 	ReadOnlyList<IUsingNode> parameterUsings();
+
 	ReadOnlyList<IUsingNode> globalUsings();
 
 	/**
@@ -24,6 +27,9 @@ public interface IDefineData extends ISyntaxNode
 
 	ReadOnlyList<IVariableNode> variables();
 
-	@Nullable IVariableNode findVariable(String symbolName);
-	@Nullable IDdmField findDdmField(String symbolName);
+	@Nullable
+	IVariableNode findVariable(String symbolName);
+
+	@Nullable
+	IDdmField findDdmField(String symbolName);
 }

@@ -53,28 +53,30 @@ public class BooleanOperatorAnalyzer extends AbstractAnalyzer
 
 	private void analyzeToken(SyntaxToken syntaxToken, IAnalyzeContext context)
 	{
-		if(context.getModule().isTestCase())
+		if (context.getModule().isTestCase())
 		{
 			return;
 		}
 
 		var preferredOperator = PREFERRED_OPERATORS.get(syntaxToken.kind());
-		context.report(DISCOURAGED_BOOLEAN_OPERATOR.createFormattedDiagnostic(
-			syntaxToken,
-			syntaxToken.source(),
-			preferredOperator
-		));
+		context.report(
+			DISCOURAGED_BOOLEAN_OPERATOR.createFormattedDiagnostic(
+				syntaxToken,
+				syntaxToken.source(),
+				preferredOperator
+			)
+		);
 	}
 
 	private void analyzeEquals(SyntaxToken syntaxToken, IAnalyzeContext context)
 	{
-		if(!context.getModule().isTestCase())
+		if (!context.getModule().isTestCase())
 		{
 			return;
 		}
 
 		var node = NodeUtil.findNodeAtPosition(syntaxToken.line(), syntaxToken.offsetInLine(), context.getModule());
-		if(node == null || !(node.parent() instanceof IRelationalCriteriaNode relationalCriteria))
+		if (node == null || !(node.parent()instanceof IRelationalCriteriaNode relationalCriteria))
 		{
 			return;
 		}

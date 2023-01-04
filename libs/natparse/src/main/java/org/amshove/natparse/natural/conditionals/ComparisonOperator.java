@@ -20,7 +20,8 @@ public enum ComparisonOperator
 	 */
 	public static @Nullable ComparisonOperator ofSyntaxKind(SyntaxKind kind)
 	{
-		return switch (kind) {
+		return switch (kind)
+		{
 			case EQUALS_SIGN, EQ -> EQUAL;
 			case LESSER_GREATER, NE -> NOT_EQUAL;
 			case LESSER_SIGN, LT -> LESS_THAN;

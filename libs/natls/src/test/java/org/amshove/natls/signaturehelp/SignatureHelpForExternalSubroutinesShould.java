@@ -30,9 +30,9 @@ class SignatureHelpForExternalSubroutinesShould extends SignatureHelpTest
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"PERFORM THESUB APDA ${}$",
-		"PERFORM THESUB APDA 'Lit${}$eral'"
+	@ValueSource(strings =
+	{
+		"PERFORM THESUB APDA ${}$", "PERFORM THESUB APDA 'Lit${}$eral'"
 	})
 	void haveTheSecondParameterActiveOnDifferentCursorPositions(String call) throws ExecutionException, InterruptedException, TimeoutException
 	{

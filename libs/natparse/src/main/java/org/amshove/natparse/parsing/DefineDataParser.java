@@ -15,8 +15,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	private static final List<SyntaxKind> SCOPE_SYNTAX_KINDS = List.of(SyntaxKind.LOCAL, SyntaxKind.PARAMETER, SyntaxKind.GLOBAL, SyntaxKind.INDEPENDENT);
 
 	/**
-	 * Do not use this directly, use getDeclaredVariable or isVariableDeclared for proper case handling.
-	 * Also use addDeclaredVariable for error handling.
+	 * Do not use this directly, use getDeclaredVariable or isVariableDeclared for proper case handling. Also use
+	 * addDeclaredVariable for error handling.
 	 */
 	private Map<String, VariableNode> declaredVariables;
 
@@ -228,19 +228,18 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			: new GroupNode(variable);
 
 		var previousRedefine = currentRedefineNode;
-		if(groupNode instanceof RedefinitionNode redefine)
+		if (groupNode instanceof RedefinitionNode redefine)
 		{
 			currentRedefineNode = redefine;
 		}
 
-		if(variable.dimensions().hasItems())
+		if (variable.dimensions().hasItems())
 		{
 			for (var dimension : variable.dimensions())
 			{
 				groupNode.addDimension((ArrayDimension) dimension);
 			}
 		}
-
 
 		if (previousToken().kind() == SyntaxKind.LPAREN)
 		{
@@ -257,7 +256,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 			if (peek(1).kind() == SyntaxKind.FILLER && currentRedefineNode != null)
 			{
-				if(mightBeFillerBytes(peek(1), peek(2)))
+				if (mightBeFillerBytes(peek(1), peek(2)))
 				{
 					parseRedefineFiller(currentRedefineNode);
 					continue;
@@ -301,7 +300,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		consume(redefinitionNode, SyntaxKind.FILLER);
 		var fillerToken = previousToken();
 		var errored = false;
-		if(!consumeOptionally(redefinitionNode, SyntaxKind.OPERAND_SKIP))
+		if (!consumeOptionally(redefinitionNode, SyntaxKind.OPERAND_SKIP))
 		{
 			report(ParserErrors.fillerMustHaveXKeyword(fillerToken));
 			consume(redefinitionNode, SyntaxKind.NUMBER_LITERAL);
@@ -314,7 +313,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			: Integer.parseInt(fillerBytesToken.source().substring(0, fillerBytesToken.length() - 1));
 		redefinitionNode.addFillerBytes(fillerBytes);
 
-		if(errored)
+		if (errored)
 		{
 			skipToNextLineAsRecovery(fillerToken.line());
 		}
@@ -325,7 +324,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		var typedVariable = new TypedVariableNode(variable);
 		var type = new VariableType();
 
-		if(peekKind(SyntaxKind.RPAREN))
+		if (peekKind(SyntaxKind.RPAREN))
 		{
 			report(ParserErrors.incompleteArrayDefinition(variable));
 			throw new ParseError(peek());
@@ -416,7 +415,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				else
 				{
 					consumeMandatory(typedVariable, SyntaxKind.LESSER_SIGN);
-					if(peek().kind().isSystemVariable())
+					if (peek().kind().isSystemVariable())
 					{
 						type.setInitialValue(consumeSystemVariableNode(typedVariable).token());
 					}
@@ -537,21 +536,20 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		for (var presentUsing : defineData.usings())
 		{
-			if(presentUsing.target().symbolName().equals(identifier.symbolName()))
+			if (presentUsing.target().symbolName().equals(identifier.symbolName()))
 			{
 				report(ParserErrors.duplicatedImport(identifier));
 			}
 		}
 
-
 		var defineDataModule = sideloadDefineData(identifierTokenNode);
-		if(defineDataModule != null)
+		if (defineDataModule != null)
 		{
-			using.setReferencingModule((NaturalModule)defineDataModule);
+			using.setReferencingModule((NaturalModule) defineDataModule);
 			using.setDefineData(defineDataModule.defineData());
 			for (var variable : defineDataModule.defineData().variables())
 			{
-				if(variable.level() == 1)
+				if (variable.level() == 1)
 				{
 					addDeclaredVariable((VariableNode) variable);
 				}
@@ -613,26 +611,30 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		{
 			switch (variable.type().format())
 			{
-				case ALPHANUMERIC, BINARY, UNICODE -> {
+				case ALPHANUMERIC, BINARY, UNICODE ->
+				{
 					if (variableLength < 1 || variableLength > VariableType.ONE_GIGABYTE)
 					{
 						report(ParserErrors.invalidLengthForDataTypeRange(variable, 1, VariableType.ONE_GIGABYTE));
 					}
 				}
 				case CONTROL, DATE, LOGIC, TIME -> report(ParserErrors.typeCantHaveLength(variable));
-				case FLOAT -> {
+				case FLOAT ->
+				{
 					if (variableLength != 4 && variableLength != 8)
 					{
 						report(ParserErrors.invalidLengthForDataType(variable, 4, 8));
 					}
 				}
-				case INTEGER -> {
+				case INTEGER ->
+				{
 					if (variableLength != 1 && variableLength != 2 && variableLength != 4)
 					{
 						report(ParserErrors.invalidLengthForDataType(variable, 1, 2, 4));
 					}
 				}
-				case NUMERIC, PACKED -> {
+				case NUMERIC, PACKED ->
+				{
 					var sumOfDigits = variable.type().sumOfDigits();
 					if (sumOfDigits < 1 || sumOfDigits > 29)
 					{
@@ -713,7 +715,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	{
 		for (var expectedKind : expectedKinds)
 		{
-			if(variableNode.type().initialValue().kind() == expectedKind)
+			if (variableNode.type().initialValue().kind() == expectedKind)
 			{
 				return;
 			}
@@ -849,8 +851,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	// TODO: Try to generify bound detection with workarounds once tests are green
 
 	/**
-	 * Workaround when the lower bound of an array was consumed as identifier, because
-	 * apparently / is a valid character for identifiers.
+	 * Workaround when the lower bound of an array was consumed as identifier, because apparently / is a valid character
+	 * for identifiers.
 	 *
 	 * @param typedVariable the variable to add the dimensions to.
 	 */
@@ -897,8 +899,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 
 		var lowerBound = consumeOptionally(dimension, SyntaxKind.ASTERISK)
-			? ArrayDimension.UNBOUND_VALUE :
-			extractArrayBound(boundToken, dimension);
+			? ArrayDimension.UNBOUND_VALUE : extractArrayBound(boundToken, dimension);
 		var upperBound = ArrayDimension.UNBOUND_VALUE;
 
 		var workaroundNextDimension = false;
@@ -962,11 +963,11 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	}
 
 	/**
-	 * Workaround when the previous array dimension had a numeric upper bound
-	 * and the current dimension has a numeric lower bound.
+	 * Workaround when the previous array dimension had a numeric upper bound and the current dimension has a numeric
+	 * lower bound.
 	 * <p>
-	 * This is because in (T/1:10,50:*) the 10,50 is recognized as a single number,
-	 * although the comma means a separation here.
+	 * This is because in (T/1:10,50:*) the 10,50 is recognized as a single number, although the comma means a
+	 * separation here.
 	 *
 	 * @param variable the variable to add the dimensions to.
 	 */
@@ -1169,24 +1170,24 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private void addDeclaredVariable(VariableNode variable)
 	{
-		if(variable instanceof GroupNode groupNode)
+		if (variable instanceof GroupNode groupNode)
 		{
 			for (var nestedVariable : groupNode.variables())
 			{
-				addDeclaredVariable((VariableNode)nestedVariable);
+				addDeclaredVariable((VariableNode) nestedVariable);
 			}
 		}
 
-		if(variable instanceof IRedefinitionNode)
+		if (variable instanceof IRedefinitionNode)
 		{
 			// Nested variables are already handled above. The #VAR in `REDEFINE #VAR` doesn't need to be added
 			return;
 		}
 
-		if(declaredVariables.containsKey(variable.name()))
+		if (declaredVariables.containsKey(variable.name()))
 		{
 			var alreadyDefined = declaredVariables.get(variable.name());
-			if(!variable.qualifiedName().equals(alreadyDefined.qualifiedName()))
+			if (!variable.qualifiedName().equals(alreadyDefined.qualifiedName()))
 			{
 				declaredVariables.remove(variable.name());
 				declaredVariables.put(alreadyDefined.qualifiedName(), alreadyDefined);

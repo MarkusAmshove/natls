@@ -7,7 +7,8 @@ public class LexerForAttributeControlsShould extends AbstractLexerTest
 	@Test
 	void consumeEverythingBelongingToAnEditorMask()
 	{
-		assertTokens("(EM=YYYY-MM-DD)",
+		assertTokens(
+			"(EM=YYYY-MM-DD)",
 			token(SyntaxKind.LPAREN),
 			token(SyntaxKind.EM, "EM=YYYY-MM-DD"),
 			token(SyntaxKind.RPAREN)
@@ -17,7 +18,8 @@ public class LexerForAttributeControlsShould extends AbstractLexerTest
 	@Test
 	void recognizeEmWhenFollowingAnIdentifier()
 	{
-		assertTokens("#FIRST-VAR-LEVEL.SECOND-LEVEL(EM=YY-MM-DD)",
+		assertTokens(
+			"#FIRST-VAR-LEVEL.SECOND-LEVEL(EM=YY-MM-DD)",
 			token(SyntaxKind.IDENTIFIER, "#FIRST-VAR-LEVEL.SECOND-LEVEL"),
 			token(SyntaxKind.LPAREN),
 			token(SyntaxKind.EM),
@@ -28,7 +30,8 @@ public class LexerForAttributeControlsShould extends AbstractLexerTest
 	@Test
 	void consumeAttributeDefinition()
 	{
-		assertTokens("#PAGE(AD=MI)",
+		assertTokens(
+			"#PAGE(AD=MI)",
 			token(SyntaxKind.IDENTIFIER, "#PAGE"),
 			token(SyntaxKind.LPAREN),
 			token(SyntaxKind.AD),
@@ -39,7 +42,8 @@ public class LexerForAttributeControlsShould extends AbstractLexerTest
 	@Test
 	void consumeColorDefinition()
 	{
-		assertTokens("MOVE (CD=RE)",
+		assertTokens(
+			"MOVE (CD=RE)",
 			token(SyntaxKind.MOVE),
 			token(SyntaxKind.LPAREN),
 			token(SyntaxKind.CD),

@@ -26,7 +26,7 @@ public class SignatureHelpProvider
 
 		// If we find a module referencing statement, that's the most likely match
 		var maybeStatement = NodeUtil.findStatementInLine(position.getLine(), hasBody.body());
-		if (maybeStatement.isPresent() && maybeStatement.get() instanceof IModuleReferencingNode moduleReferencingNode)
+		if (maybeStatement.isPresent() && maybeStatement.get()instanceof IModuleReferencingNode moduleReferencingNode)
 		{
 			return provideSignatureForStatement(moduleReferencingNode, position);
 		}
@@ -39,7 +39,7 @@ public class SignatureHelpProvider
 		}
 
 		// We most likely landed on a Token, which could be a parameter
-		if (node != null && node.parent() instanceof IModuleReferencingNode moduleReferencingNode)
+		if (node != null && node.parent()instanceof IModuleReferencingNode moduleReferencingNode)
 		{
 			return provideSignatureForStatement(moduleReferencingNode, position);
 		}
@@ -66,7 +66,7 @@ public class SignatureHelpProvider
 		setActiveParameter(moduleReference, position, signatureHelp);
 		var signatureInformation = signatureHelp.getSignatures().get(0);
 		var moduleDocumentation = calledModule.moduleDocumentation();
-		if(!moduleDocumentation.isEmpty())
+		if (!moduleDocumentation.isEmpty())
 		{
 			signatureInformation.setDocumentation(MarkupContentBuilderFactory.newBuilder().appendCode(moduleDocumentation).build());
 		}
@@ -93,7 +93,8 @@ public class SignatureHelpProvider
 		setActiveParameter(include, position, help);
 
 		var copyCodeParameter = new ArrayList<String>();
-		include.body().accept(n -> {
+		include.body().accept(n ->
+		{
 			if (n instanceof ITokenNode tokenNode && tokenNode.token().kind() == SyntaxKind.IDENTIFIER && tokenNode.token().source().matches(".*?&\\d+&"))
 			{
 				copyCodeParameter.add(tokenNode.token().source());
@@ -103,17 +104,20 @@ public class SignatureHelpProvider
 		copyCodeParameter
 			.stream()
 			.distinct()
-			.map(p -> {
+			.map(p ->
+			{
 				var information = new ParameterInformation();
 				information.setLabel(p);
 				return information;
 			})
 			.forEach(i -> signature.getParameters().add(i));
 
-		signature.setLabel("%s (%s)".formatted(
-			include.referencingToken().symbolName(),
-			signature.getParameters().stream().map(i -> i.getLabel().getLeft()).collect(Collectors.joining(", "))
-		));
+		signature.setLabel(
+			"%s (%s)".formatted(
+				include.referencingToken().symbolName(),
+				signature.getParameters().stream().map(i -> i.getLabel().getLeft()).collect(Collectors.joining(", "))
+			)
+		);
 
 		return help;
 	}
@@ -162,7 +166,8 @@ public class SignatureHelpProvider
 			information.setLabel(variableNode.name());
 			if (variableNode instanceof ITypedVariableNode typedVariableNode)
 			{
-				information.setLabel("%s :%s%s".formatted(
+				information.setLabel(
+					"%s :%s%s".formatted(
 						information.getLabel().getLeft(),
 						typedVariableNode.type().toShortString(),
 						typedVariableNode.findDescendantToken(SyntaxKind.OPTIONAL) != null ? " OPTIONAL" : ""
@@ -177,7 +182,7 @@ public class SignatureHelpProvider
 		}
 
 		var parameterDocumentation = module.extractLineComment(parameter.position().line());
-		if(!parameterDocumentation.isEmpty())
+		if (!parameterDocumentation.isEmpty())
 		{
 			information.setDocumentation(MarkupContentBuilderFactory.newBuilder().appendCode(parameterDocumentation).build());
 		}

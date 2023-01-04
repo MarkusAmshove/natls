@@ -19,7 +19,7 @@ public class VariableScopeShould
 			Arguments.of(SyntaxKind.LOCAL, VariableScope.LOCAL),
 			Arguments.of(SyntaxKind.GLOBAL, VariableScope.GLOBAL),
 			Arguments.of(SyntaxKind.PARAMETER, VariableScope.PARAMETER)
-//			Arguments.of(SyntaxKind.INDEPENDENT, VariableScope.INDEPENDENT)
+			//			Arguments.of(SyntaxKind.INDEPENDENT, VariableScope.INDEPENDENT)
 		);
 	}
 

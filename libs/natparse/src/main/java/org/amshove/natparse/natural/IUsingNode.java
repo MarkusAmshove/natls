@@ -12,6 +12,8 @@ public non-sealed interface IUsingNode extends ISyntaxNode, IModuleReferencingNo
 	IDefineData defineData();
 
 	boolean isLocalUsing();
+
 	boolean isGlobalUsing();
+
 	boolean isParameterUsing();
 }

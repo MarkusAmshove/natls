@@ -74,12 +74,12 @@ class DataDefinitionModule implements IDataDefinitionModule
 	{
 		for (var field : fields)
 		{
-			if(field.name().equalsIgnoreCase(name))
+			if (field.name().equalsIgnoreCase(name))
 			{
 				return field;
 			}
 
-			if(field instanceof IGroupField groupField)
+			if (field instanceof IGroupField groupField)
 			{
 				var foundInGroup = findField(name, groupField.members());
 				if (foundInGroup != null)

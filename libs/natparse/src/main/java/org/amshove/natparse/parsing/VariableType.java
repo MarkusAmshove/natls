@@ -7,7 +7,6 @@ import org.amshove.natparse.natural.IVariableType;
 class VariableType implements IVariableType
 {
 
-
 	private boolean hasDynamicLength;
 	private DataFormat format;
 	private double length;

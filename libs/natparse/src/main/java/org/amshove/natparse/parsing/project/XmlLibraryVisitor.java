@@ -121,4 +121,3 @@ class XmlLibraryVisitor implements Visitor
 		// Ignored
 	}
 }
-

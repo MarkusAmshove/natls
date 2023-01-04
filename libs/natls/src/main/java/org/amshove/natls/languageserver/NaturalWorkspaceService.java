@@ -101,16 +101,17 @@ public class NaturalWorkspaceService implements WorkspaceService
 							var theAssertionLine = Files.readLines(naturalFile.getPath().toFile(), Charset.defaultCharset()).get(line);
 							var startIndex = theAssertionLine.length() - theAssertionLine.trim().length();
 
-							naturalFile.addDiagnostic(DiagnosticTool.NATUNIT, new Diagnostic(
-								new Range(new Position(line, startIndex), new Position(line, theAssertionLine.length())),
-								"Assertion Failure: " + actualFailureMessage,
-								DiagnosticSeverity.Error,
-								DiagnosticTool.NATUNIT.getId()
-							));
+							naturalFile.addDiagnostic(
+								DiagnosticTool.NATUNIT, new Diagnostic(
+									new Range(new Position(line, startIndex), new Position(line, theAssertionLine.length())),
+									"Assertion Failure: " + actualFailureMessage,
+									DiagnosticSeverity.Error,
+									DiagnosticTool.NATUNIT.getId()
+								)
+							);
 						}
 						catch (Exception e)
-						{
-						}
+						{}
 					}
 				}
 
@@ -160,13 +161,15 @@ public class NaturalWorkspaceService implements WorkspaceService
 				}
 
 				filesWithCatError.put(file.getUri(), file);
-				file.addDiagnostic(DiagnosticTool.CATALOG, new Diagnostic(
-					LspUtil.toSingleRange(catalogResult.line() + 3, 0),
-					catalogResult.text(),
-					DiagnosticSeverity.Error,
-					DiagnosticTool.CATALOG.getId(),
-					catalogResult.text().split(" ")[0]
-				));
+				file.addDiagnostic(
+					DiagnosticTool.CATALOG, new Diagnostic(
+						LspUtil.toSingleRange(catalogResult.line() + 3, 0),
+						catalogResult.text(),
+						DiagnosticSeverity.Error,
+						DiagnosticTool.CATALOG.getId(),
+						catalogResult.text().split(" ")[0]
+					)
+				);
 				languageService.publishDiagnostics(file);
 				languageService.invalidateStowCache(file);
 			}

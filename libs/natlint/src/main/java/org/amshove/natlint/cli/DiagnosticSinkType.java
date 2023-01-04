@@ -12,11 +12,11 @@ public enum DiagnosticSinkType
 	public IDiagnosticSink createSink()
 	{
 		return switch (this)
-			{
-				case STDOUT -> new AnsiDiagnosticSink();
-				case NONE -> new NullDiagnosticSink();
-				case CSV -> new CsvDiagnosticSink(Paths.get("diagnostics.csv"));
-				case CI_CSV -> new CiCsvDiagnosticSink(Paths.get("diagnostics.csv"));
-			};
+		{
+			case STDOUT -> new AnsiDiagnosticSink();
+			case NONE -> new NullDiagnosticSink();
+			case CSV -> new CsvDiagnosticSink(Paths.get("diagnostics.csv"));
+			case CI_CSV -> new CiCsvDiagnosticSink(Paths.get("diagnostics.csv"));
+		};
 	}
 }
