@@ -50,7 +50,8 @@ public class CreateRedefineRefactoringShould extends CodeActionTest
 	@Test
 	void notBeApplicableWhenHoveringOverAParameter()
 	{
-		assertNoCodeAction("LIBONE",
+		assertNoCodeAction(
+			"LIBONE",
 			"SUBN.NSN",
 			""" 
 				DEFINE DATA
@@ -66,7 +67,8 @@ public class CreateRedefineRefactoringShould extends CodeActionTest
 	@Test
 	void notBeApplicableWhenHoveringOverAGlobalVariable()
 	{
-		assertNoCodeAction("LIBONE",
+		assertNoCodeAction(
+			"LIBONE",
 			"SUBN.NSN",
 			""" 
 				DEFINE DATA
@@ -81,7 +83,8 @@ public class CreateRedefineRefactoringShould extends CodeActionTest
 	@Test
 	void notBeApplicableWhenHoveringOverAnIndependentVariable()
 	{
-		assertNoCodeAction("LIBONE",
+		assertNoCodeAction(
+			"LIBONE",
 			"SUBN.NSN",
 			""" 
 				DEFINE DATA

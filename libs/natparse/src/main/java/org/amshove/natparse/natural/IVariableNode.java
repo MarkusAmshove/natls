@@ -6,9 +6,13 @@ public non-sealed interface IVariableNode extends IReferencableNode, IParameterD
 {
 	// TODO: Might need "effectiveScope"? Beacuse when LOCAL USING a PDA this returns parameter
 	VariableScope scope();
+
 	int level();
+
 	String name();
+
 	String qualifiedName();
+
 	ReadOnlyList<IArrayDimension> dimensions();
 
 	default boolean isArray()

@@ -24,9 +24,11 @@ public class AnalyzerAcceptanceTest
 	Stream<DynamicTest> allAnalyzersShouldExportDiagnosticDescriptions()
 	{
 		return LinterContext.INSTANCE.registeredAnalyzers().stream()
-			.map( a -> dynamicTest(
-				"%s should export diagnostic descriptions".formatted(a.getClass().getSimpleName()),
-				() -> assertThat(a.getDiagnosticDescriptions()).isNotEmpty())
+			.map(
+				a -> dynamicTest(
+					"%s should export diagnostic descriptions".formatted(a.getClass().getSimpleName()),
+					() -> assertThat(a.getDiagnosticDescriptions()).isNotEmpty()
+				)
 			);
 	}
 
@@ -36,23 +38,25 @@ public class AnalyzerAcceptanceTest
 		var allAnalyzers = LinterContext.INSTANCE.registeredAnalyzers();
 		return allAnalyzers.stream()
 			.flatMap(a -> a.getDiagnosticDescriptions().stream())
-			.map(testedDescription -> dynamicTest(
-				"Diagnostic id %s should be unique".formatted(testedDescription.getId()),
-				() -> assertThat(
-					allAnalyzers.stream()
-						.flatMap(a -> a.getDiagnosticDescriptions().stream())
-						.filter(dDescription -> dDescription.getId().equals(testedDescription.getId()))
-						.count()
-				)
-					.as(
-						"Diagnostic id is exported by the following analyzers:  %s",
+			.map(
+				testedDescription -> dynamicTest(
+					"Diagnostic id %s should be unique".formatted(testedDescription.getId()),
+					() -> assertThat(
+						allAnalyzers.stream()
+							.flatMap(a -> a.getDiagnosticDescriptions().stream())
+							.filter(dDescription -> dDescription.getId().equals(testedDescription.getId()))
+							.count()
+					)
+						.as(
+							"Diagnostic id is exported by the following analyzers:  %s",
 							allAnalyzers.stream()
 								.filter(a -> a.getDiagnosticDescriptions().stream().anyMatch(dDescription -> dDescription.getId().equals(testedDescription.getId())))
 								.map(a -> a.getClass().getSimpleName())
 								.collect(Collectors.joining(", "))
 						)
-					.isEqualTo(1L)
-			));
+						.isEqualTo(1L)
+				)
+			);
 	}
 
 	@TestFactory
@@ -60,9 +64,11 @@ public class AnalyzerAcceptanceTest
 	{
 		return LinterContext.INSTANCE.registeredAnalyzers().stream()
 			.flatMap(a -> a.getDiagnosticDescriptions().stream())
-			.map( dd -> dynamicTest(
-				"%s should start with NL".formatted(dd.getId()),
-				() -> assertThat(dd.getId()).startsWith("NL"))
+			.map(
+				dd -> dynamicTest(
+					"%s should start with NL".formatted(dd.getId()),
+					() -> assertThat(dd.getId()).startsWith("NL")
+				)
 			);
 	}
 
@@ -76,7 +82,8 @@ public class AnalyzerAcceptanceTest
 			.sorted()
 			.toList();
 		allNumericIds.stream().max(Integer::compareTo)
-			.ifPresent(highestId -> {
+			.ifPresent(highestId ->
+			{
 				for (var i = 1; i <= highestId; i++)
 				{
 					assertThat(allNumericIds).contains(i);

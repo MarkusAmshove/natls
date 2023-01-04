@@ -27,7 +27,9 @@ class FieldParserShould
 
 	@ParameterizedTest(name = "parseTheFieldType [DdmType, Expectation: {argumentsWithNames}]")
 	@CsvSource(value =
-	{ "G,GROUP", "M,MULTIPLE", "P,PERIODIC", ",NONE" })
+	{
+		"G,GROUP", "M,MULTIPLE", "P,PERIODIC", ",NONE"
+	})
 	void parseTheFieldTypeOfTheField(String type, String expectedType)
 	{
 		// CsvSource passes null for empty
@@ -50,7 +52,9 @@ class FieldParserShould
 
 	@ParameterizedTest(name = "parseTheLevelOfFields [Level = {argumentsWithNames}]")
 	@ValueSource(ints =
-	{ 1, 2, 3, 4 })
+	{
+		1, 2, 3, 4
+	})
 	void parseTheLevelOfFields(int level)
 	{
 		assertThat(parsedField(fieldBuilder().withLevel(level)).level()).isEqualTo(level);
@@ -58,7 +62,9 @@ class FieldParserShould
 
 	@ParameterizedTest(name = "parseTheAdabasShortname [{argumentsWithNames}]")
 	@ValueSource(strings =
-	{ "AA", "CB", "YX", "ZA" })
+	{
+		"AA", "CB", "YX", "ZA"
+	})
 	void parseTheAdabasShortname(String shortname)
 	{
 		assertThat(parsedField(fieldBuilder().withDbShortname(shortname)).shortname()).isEqualTo(shortname);
@@ -66,7 +72,9 @@ class FieldParserShould
 
 	@ParameterizedTest(name = "parseTheFieldname [{argumentsWithNames}]")
 	@ValueSource(strings =
-	{ "SOME-FIELD", "FIELD", "SOME-LONG-FIELD-NAME" })
+	{
+		"SOME-FIELD", "FIELD", "SOME-LONG-FIELD-NAME"
+	})
 	void parseTheFieldname(String fieldname)
 	{
 		assertThat(parsedField(fieldBuilder().withName(fieldname)).name()).isEqualTo(fieldname);
@@ -74,7 +82,9 @@ class FieldParserShould
 
 	@ParameterizedTest(name = "parseTheFormat [Type, ExpectedType = {argumentsWithNames}]")
 	@CsvSource(value =
-	{ "A,ALPHANUMERIC", "B,BINARY", "C,CONTROL", "D,DATE", "F,FLOAT", "I,INTEGER", "L,LOGIC", "N,NUMERIC", "P,PACKED", "T,TIME", "U,UNICODE" })
+	{
+		"A,ALPHANUMERIC", "B,BINARY", "C,CONTROL", "D,DATE", "F,FLOAT", "I,INTEGER", "L,LOGIC", "N,NUMERIC", "P,PACKED", "T,TIME", "U,UNICODE"
+	})
 	void parseTheFormat(String format, String expectedFormat)
 	{
 		var expectedTypedFormat = DataFormat.valueOf(expectedFormat);
@@ -91,7 +101,9 @@ class FieldParserShould
 
 	@ParameterizedTest(name = "parseTheLengthOfTheFormat [Length, ExpectedLength = {argumentsWithNames}]")
 	@CsvSource(value =
-	{ "12;12", "1;1", "12,7;12.7", "12.7;12.7", "120;120" }, delimiterString = ";")
+	{
+		"12;12", "1;1", "12,7;12.7", "12.7;12.7", "120;120"
+	}, delimiterString = ";")
 	void parseTheLengthOfTheFormat(String ddmLength, double expectedLength)
 	{
 		assertThat(parsedField(fieldBuilder().withLength(ddmLength)).length()).isEqualTo(expectedLength);
@@ -107,7 +119,9 @@ class FieldParserShould
 
 	@ParameterizedTest(name = "parseTheNullValueSuppresion [Supression, ExpectedSupression = {argumentsWithNames}]")
 	@CsvSource(value =
-	{ "N,NULL_SUPRESSION", "F,FIXED_STORAGE", ",NONE" })
+	{
+		"N,NULL_SUPRESSION", "F,FIXED_STORAGE", ",NONE"
+	})
 	void parseTheNullValueSuppresion(String source, String expectedSupression)
 	{
 		// CsvSource passes null for empty
@@ -131,7 +145,9 @@ class FieldParserShould
 
 	@ParameterizedTest(name = "parseTheDescriptorType [Descriptor, ExpectedType = {argumentsWithNames}]")
 	@CsvSource(value =
-	{ "D,DESCRIPTOR", "S,SUPERDESCRIPTOR", "P,PHONETIC", ",NONE" })
+	{
+		"D,DESCRIPTOR", "S,SUPERDESCRIPTOR", "P,PHONETIC", ",NONE"
+	})
 	void parseTheDescriptorType(String descriptorLiteral, String expectedDescriptorType)
 	{
 		if (descriptorLiteral == null)
@@ -162,7 +178,9 @@ class FieldParserShould
 
 	@ParameterizedTest(name = "parseTheRemark [Remark = {argumentsWithNames}]")
 	@CsvSource(value =
-	{ "Remark", "Long remark", "Super long remark", "Would this remark even fit?" })
+	{
+		"Remark", "Long remark", "Super long remark", "Would this remark even fit?"
+	})
 	void parseTheRemark(String remark)
 	{
 		assertThat(parsedField(fieldBuilder().withRemark(remark)).remark()).isEqualTo(remark);
@@ -205,7 +223,10 @@ class FieldParserShould
 
 	private LinewiseTextScanner createScanner(String text)
 	{
-		return new LinewiseTextScanner(new String[] { text });
+		return new LinewiseTextScanner(new String[]
+		{
+			text
+		});
 	}
 
 	private DdmField parsedField(DdmFieldBuilder builder)
@@ -286,17 +307,21 @@ class FieldParserShould
 
 		LinewiseTextScanner build()
 		{
-			return new LinewiseTextScanner(new String[]{ String.format(
-				"%-1s %-1s %-2s %-32s  %-1s %4s  %-1s %-1s %-24s",
-				type,
-				level,
-				shortname,
-				name,
-				format,
-				length,
-				supression,
-				descriptor,
-				remark)});
+			return new LinewiseTextScanner(new String[]
+			{
+				String.format(
+					"%-1s %-1s %-2s %-32s  %-1s %4s  %-1s %-1s %-24s",
+					type,
+					level,
+					shortname,
+					name,
+					format,
+					length,
+					supression,
+					descriptor,
+					remark
+				)
+			});
 		}
 	}
 }

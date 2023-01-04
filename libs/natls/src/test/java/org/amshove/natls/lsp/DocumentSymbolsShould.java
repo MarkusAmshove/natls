@@ -37,7 +37,8 @@ class DocumentSymbolsShould extends LanguageServerTest
 	{
 		var symbols = findSymbols("MANYSYM");
 		return List.of(
-			DynamicTest.dynamicTest("Module root symbol should be included", () -> {
+			DynamicTest.dynamicTest("Module root symbol should be included", () ->
+			{
 				assertThat(symbols.get(0).getKind()).isEqualTo(SymbolKind.Class);
 				assertThat(symbols.get(0).getName()).isEqualTo("MANYSYM");
 			}),
@@ -69,7 +70,8 @@ class DocumentSymbolsShould extends LanguageServerTest
 
 	private DynamicTest testThatSymbolIsIncluded(String symbolName, SymbolKind kind, List<DocumentSymbol> informationList)
 	{
-		return DynamicTest.dynamicTest("%s: %s".formatted(kind, symbolName), () -> {
+		return DynamicTest.dynamicTest("%s: %s".formatted(kind, symbolName), () ->
+		{
 			assertThat(informationList.stream().flatMap(ds -> ds.getChildren().stream()))
 				.as("Expected symbol %s to be present".formatted(symbolName))
 				.anyMatch(si -> si.getKind() == kind && si.getName().equals(symbolName));

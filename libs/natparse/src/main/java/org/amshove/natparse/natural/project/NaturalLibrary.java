@@ -52,12 +52,12 @@ public class NaturalLibrary
 
 	public NaturalFile findFileByReferableName(String referableName, boolean includeStepLibs)
 	{
-		if(files.containsKey(referableName))
+		if (files.containsKey(referableName))
 		{
 			return files.get(referableName);
 		}
 
-		if(includeStepLibs)
+		if (includeStepLibs)
 		{
 			for (var stepLib : stepLibs)
 			{

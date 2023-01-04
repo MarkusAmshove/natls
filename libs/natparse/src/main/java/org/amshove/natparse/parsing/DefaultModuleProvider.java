@@ -23,7 +23,7 @@ class DefaultModuleProvider implements IModuleProvider
 	public IDataDefinitionModule findDdm(String referableName)
 	{
 		var calledFile = caller.getLibrary().findFileByReferableName(referableName, true);
-		if(calledFile == null)
+		if (calledFile == null)
 		{
 			return null;
 		}

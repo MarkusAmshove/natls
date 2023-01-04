@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.*;
 
-
 class LexerForStringsShould extends AbstractLexerTest
 {
 	@Test
@@ -82,7 +81,8 @@ class LexerForStringsShould extends AbstractLexerTest
 	@Test
 	void lexConcatenatedString()
 	{
-		assertTokens("""
+		assertTokens(
+			"""
 				INPUT
 				'Hello'
 				 - ' World'

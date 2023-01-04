@@ -16,7 +16,7 @@ public interface ITypedVariableNode extends IVariableNode
 			details += "%s".formatted(DataFormat.formatLength(type().length()));
 		}
 
-		if(isArray())
+		if (isArray())
 		{
 			details += "/";
 			details += dimensions().stream()

@@ -104,7 +104,7 @@ public class LanguageServerFile implements IModuleProvider
 			parse();
 		}
 
-		if(!hasBeenAnalyzed)
+		if (!hasBeenAnalyzed)
 		{
 			analyze();
 		}
@@ -139,7 +139,8 @@ public class LanguageServerFile implements IModuleProvider
 		catch (Exception e)
 		{
 			log.error("Error during parse from <%s>".formatted(file.getPath()), e);
-			addDiagnostic(DiagnosticTool.NATPARSE,
+			addDiagnostic(
+				DiagnosticTool.NATPARSE,
 				new Diagnostic(
 					new Range(
 						new Position(0, 0),
@@ -171,7 +172,7 @@ public class LanguageServerFile implements IModuleProvider
 	{
 		try
 		{
-			var previousCallers = module != null ? module.callers() : ReadOnlyList.<IModuleReferencingNode>from(List.of());
+			var previousCallers = module != null ? module.callers() : ReadOnlyList.<IModuleReferencingNode> from(List.of());
 			reparseWithoutAnalyzing(source);
 
 			analyze();
@@ -192,7 +193,8 @@ public class LanguageServerFile implements IModuleProvider
 		catch (Exception e)
 		{
 			log.error("Error during parseAndAnalyze <%s>".formatted(file.getPath()), e);
-			addDiagnostic(DiagnosticTool.NATPARSE,
+			addDiagnostic(
+				DiagnosticTool.NATPARSE,
 				new Diagnostic(
 					new Range(
 						new Position(0, 0),
@@ -220,7 +222,8 @@ public class LanguageServerFile implements IModuleProvider
 		var callers = new ArrayList<>(incomingReferences);
 		incomingReferences.clear();
 		// TODO: Add LSP Progress
-		callers.forEach(languageServerFile -> {
+		callers.forEach(languageServerFile ->
+		{
 			if (languageServerFile == this)
 			{
 				// recursive calls, we don't need to parse ourselves again
@@ -233,7 +236,8 @@ public class LanguageServerFile implements IModuleProvider
 			catch (Exception e)
 			{
 				log.error("Error during reparseCallers from <%s> for <%s>".formatted(file.getPath(), languageServerFile.getPath()), e);
-				addDiagnostic(DiagnosticTool.NATPARSE,
+				addDiagnostic(
+					DiagnosticTool.NATPARSE,
 					new Diagnostic(
 						new Range(
 							new Position(0, 0),
@@ -262,7 +266,7 @@ public class LanguageServerFile implements IModuleProvider
 		// Evict ourselves from cached module references, as we're about to parse outgoing
 		// references by parsed Nodes.
 		// Perf: Only do so if we have outgoing references, as evicting is expensive.
-		if(!outgoingReferences.isEmpty())
+		if (!outgoingReferences.isEmpty())
 		{
 			ModuleReferenceCache.evictMyReferences(this);
 		}
@@ -333,7 +337,8 @@ public class LanguageServerFile implements IModuleProvider
 		catch (Exception e)
 		{
 			log.error("Error during parseDefineDataOnly from <%s>".formatted(file.getPath()), e);
-			addDiagnostic(DiagnosticTool.NATPARSE,
+			addDiagnostic(
+				DiagnosticTool.NATPARSE,
 				new Diagnostic(
 					new Range(
 						new Position(0, 0),
@@ -385,7 +390,7 @@ public class LanguageServerFile implements IModuleProvider
 	public IDataDefinitionModule findDdm(String referableName)
 	{
 		var calledFile = library.provideNaturalFile(referableName, true);
-		if(calledFile == null)
+		if (calledFile == null)
 		{
 			return null;
 		}

@@ -33,11 +33,11 @@ public class UnusedImportAnalyzer extends AbstractAnalyzer
 	private void analyzeUsing(ISyntaxNode node, IAnalyzeContext context)
 	{
 		var using = (IUsingNode) node;
-		if(using.defineData() == null)
+		if (using.defineData() == null)
 		{
 			return;
 		}
-		if(using.defineData().variables().stream().flatMap(v -> v.references().stream()).noneMatch(r -> NodeUtil.moduleContainsNodeByDiagnosticPosition(context.getModule(), r)))
+		if (using.defineData().variables().stream().flatMap(v -> v.references().stream()).noneMatch(r -> NodeUtil.moduleContainsNodeByDiagnosticPosition(context.getModule(), r)))
 		{
 			context.report(UNUSED_IMPORT.createFormattedDiagnostic(using.target(), using.target().symbolName()));
 		}

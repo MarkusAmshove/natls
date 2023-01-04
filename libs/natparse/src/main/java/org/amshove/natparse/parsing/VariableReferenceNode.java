@@ -11,6 +11,7 @@ import java.util.List;
 class VariableReferenceNode extends SymbolReferenceNode implements IVariableReferenceNode
 {
 	private final List<IOperandNode> dimensions = new ArrayList<>();
+
 	public VariableReferenceNode(SyntaxToken token)
 	{
 		super(token);

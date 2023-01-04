@@ -18,15 +18,15 @@ public class BuiltInFunctionTableAcceptanceTest
 	{
 		return Arrays.stream(SyntaxKind.values())
 			.filter(sk -> sk.isSystemFunction() || sk.isSystemVariable())
-			.map(k -> dynamicContainer(k.toString(), Stream.of(
-				dynamicTest("%s should be represented".formatted(k), () ->
-					assertThat(BuiltInFunctionTable.getDefinition(k)).isNotNull()),
-				dynamicTest("%s should have a name".formatted(k), () ->
-					assertThat(BuiltInFunctionTable.getDefinition(k).name()).isNotNull()),
-				dynamicTest("%s should have documentation".formatted(k), () ->
-					assertThat(BuiltInFunctionTable.getDefinition(k).documentation()).isNotNull()),
-				dynamicTest("%s should have a data format".formatted(k), () ->
-					assertThat(BuiltInFunctionTable.getDefinition(k).type()).isNotNull())
-			)));
+			.map(
+				k -> dynamicContainer(
+					k.toString(), Stream.of(
+						dynamicTest("%s should be represented".formatted(k), () -> assertThat(BuiltInFunctionTable.getDefinition(k)).isNotNull()),
+						dynamicTest("%s should have a name".formatted(k), () -> assertThat(BuiltInFunctionTable.getDefinition(k).name()).isNotNull()),
+						dynamicTest("%s should have documentation".formatted(k), () -> assertThat(BuiltInFunctionTable.getDefinition(k).documentation()).isNotNull()),
+						dynamicTest("%s should have a data format".formatted(k), () -> assertThat(BuiltInFunctionTable.getDefinition(k).type()).isNotNull())
+					)
+				)
+			);
 	}
 }

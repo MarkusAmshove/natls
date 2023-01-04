@@ -17,7 +17,7 @@ class GroupNode extends VariableNode implements IGroupNode
 	public GroupNode(VariableNode variable)
 	{
 		setLevel(variable.level());
-		if(variable.declaration() != null)
+		if (variable.declaration() != null)
 		{
 			setDeclaration(variable.declaration());
 		}
@@ -35,7 +35,7 @@ class GroupNode extends VariableNode implements IGroupNode
 
 	void addVariable(VariableNode node)
 	{
-		if(level() >= node.level())
+		if (level() >= node.level())
 		{
 			throw new NaturalParseException("Can not add child variable with lower level than group");
 		}
@@ -51,7 +51,7 @@ class GroupNode extends VariableNode implements IGroupNode
 
 		for (var variable : variables)
 		{
-			((VariableNode)variable).setScope(scope);
+			((VariableNode) variable).setScope(scope);
 		}
 	}
 

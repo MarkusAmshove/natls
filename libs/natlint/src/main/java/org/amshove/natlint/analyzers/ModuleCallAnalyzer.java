@@ -44,7 +44,7 @@ public class ModuleCallAnalyzer extends AbstractAnalyzer
 
 	private static void checkModuleName(SyntaxToken moduleName, IAnalyzeContext context)
 	{
-		if(moduleName.stringValue().length() != moduleName.stringValue().trim().length())
+		if (moduleName.stringValue().length() != moduleName.stringValue().trim().length())
 		{
 			context.report(CALLED_MODULE_NAME_TRAILING_WHITESPACE.createDiagnostic(moduleName));
 		}

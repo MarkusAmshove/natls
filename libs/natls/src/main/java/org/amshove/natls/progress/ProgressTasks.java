@@ -38,7 +38,8 @@ public class ProgressTasks
 
 	private static CompletableFuture<Void> startNewMessageBased(String title, LanguageClient client, Consumer<IProgressMonitor> task)
 	{
-		return CompletableFuture.supplyAsync(() -> {
+		return CompletableFuture.supplyAsync(() ->
+		{
 			var taskId = UUID.randomUUID().toString();
 			var progressMonitor = new MessageProgressMonitor(client);
 			runningTasks.put(taskId, progressMonitor);
@@ -67,7 +68,8 @@ public class ProgressTasks
 		params.setToken(taskId);
 		var progressMonitor = new WorkDoneProgressMonitor(taskId, client);
 		runningTasks.put(taskId, progressMonitor);
-		return client.createProgress(params).thenRunAsync(() -> {
+		return client.createProgress(params).thenRunAsync(() ->
+		{
 			try
 			{
 				var begin = new WorkDoneProgressBegin();

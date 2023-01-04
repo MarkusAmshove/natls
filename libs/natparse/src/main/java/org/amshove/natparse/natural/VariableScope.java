@@ -12,7 +12,8 @@ public enum VariableScope
 
 	public static VariableScope fromSyntaxKind(SyntaxKind kind)
 	{
-		return switch(kind) {
+		return switch (kind)
+		{
 			case LOCAL -> LOCAL;
 			case PARAMETER -> PARAMETER;
 			case GLOBAL -> GLOBAL;

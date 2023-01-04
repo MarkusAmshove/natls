@@ -26,11 +26,15 @@ public class AmbiguousReferenceQuickFix extends AbstractQuickFix
 		var suggestions = extractSuggestions(suggestionPart);
 
 		return suggestions.stream()
-			.map(suggestion -> new CodeActionBuilder("Use %s".formatted(suggestion), CodeActionKind.QuickFix)
-				.fixesDiagnostic(diagnostic)
-				.appliesWorkspaceEdit(new WorkspaceEditBuilder()
-					.changesText(quickFixContext.fileUri(), diagnostic.getRange(), suggestion))
-				.build())
+			.map(
+				suggestion -> new CodeActionBuilder("Use %s".formatted(suggestion), CodeActionKind.QuickFix)
+					.fixesDiagnostic(diagnostic)
+					.appliesWorkspaceEdit(
+						new WorkspaceEditBuilder()
+							.changesText(quickFixContext.fileUri(), diagnostic.getRange(), suggestion)
+					)
+					.build()
+			)
 			.toList();
 	}
 

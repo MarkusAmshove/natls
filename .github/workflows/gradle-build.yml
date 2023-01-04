@@ -46,6 +46,9 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Check Formatting
+        run: ./gradlew spotlessCheck
+
       - name: Build
         run: ./gradlew check cover shadowJar --no-daemon
 

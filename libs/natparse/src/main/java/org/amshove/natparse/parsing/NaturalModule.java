@@ -146,7 +146,7 @@ public class NaturalModule
 
 	public String moduleDocumentation()
 	{
-		if(comments == null || comments.isEmpty())
+		if (comments == null || comments.isEmpty())
 		{
 			return "";
 		}
@@ -164,7 +164,7 @@ public class NaturalModule
 	@Override
 	public String extractLineComment(int line)
 	{
-		if(comments == null)
+		if (comments == null)
 		{
 			return "";
 		}

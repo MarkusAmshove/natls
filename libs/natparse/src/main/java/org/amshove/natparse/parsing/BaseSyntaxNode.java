@@ -34,12 +34,12 @@ class BaseSyntaxNode implements ISyntaxNode
 
 	void addNode(BaseSyntaxNode node)
 	{
-		if(node == null)
+		if (node == null)
 		{
 			return;
 		}
 
-		if(nodes.isEmpty())
+		if (nodes.isEmpty())
 		{
 			nodes = new ArrayList<>(); // perf: We reuse an empty list because we expect a lot of nodes to not have descendants.
 		}

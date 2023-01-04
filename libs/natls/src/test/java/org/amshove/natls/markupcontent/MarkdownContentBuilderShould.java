@@ -28,10 +28,11 @@ public class MarkdownContentBuilderShould extends MarkupContentBuilderTest
 	void appendASection()
 	{
 		assertContent(
-			sut.appendSection("the heading", nested ->
-				nested
+			sut.appendSection(
+				"the heading", nested -> nested
 					.appendCode("Code")
-					.append("Text")),
+					.append("Text")
+			),
 			"""
 				*the heading:*
 				```natural

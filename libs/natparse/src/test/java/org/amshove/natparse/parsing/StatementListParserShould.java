@@ -124,10 +124,9 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"#VAR5 := 1",
-		"#VAR5(2) := 10",
-		"*ERROR-NR := 5"
+	@ValueSource(strings =
+	{
+		"#VAR5 := 1", "#VAR5(2) := 10", "*ERROR-NR := 5"
 	})
 	void distinguishBetweenCallnatParameterAndVariableAssignment(String nextLine)
 	{
@@ -201,10 +200,9 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"",
-		"REPEAT",
-		"RETURN"
+	@ValueSource(strings =
+	{
+		"", "REPEAT", "RETURN"
 	})
 	void parseAFetchWithVariables(String fetchType)
 	{
@@ -215,10 +213,9 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"",
-		"REPEAT",
-		"RETURN"
+	@ValueSource(strings =
+	{
+		"", "REPEAT", "RETURN"
 	})
 	void parseAFetchWithQualifiedVariables(String fetchType)
 	{
@@ -229,10 +226,9 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"",
-		"RETURN",
-		"REPEAT"
+	@ValueSource(strings =
+	{
+		"", "RETURN", "REPEAT"
 	})
 	void resolveExternalModulesForAFetchStatement(String fetchSource)
 	{
@@ -285,12 +281,14 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	@Test
 	void parseASubroutineWithoutSubroutineKeywordButKeywordAsName()
 	{
-		var subroutine = assertParsesSingleStatement("""
+		var subroutine = assertParsesSingleStatement(
+			"""
 				 DEFINE RESULT
 				 IGNORE
 				 END-SUBROUTINE
 				""",
-			ISubroutineNode.class);
+			ISubroutineNode.class
+		);
 
 		assertThat(subroutine.declaration().symbolName()).isEqualTo("RESULT");
 	}
@@ -684,31 +682,9 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"SET KEY ALL",
-		"SET KEY PF2",
-		"SET KEY PF2=PGM",
-		"SET KEY OFF",
-		"SET KEY ON",
-		"SET KEY PF2=OFF",
-		"SET KEY PF2=ON",
-		"SET KEY PF4='SAVE'",
-		"SET KEY PF4=#XYX",
-		"SET KEY PF6='LIST MAP *'",
-		"SET KEY PF2='%%'",
-		"SET KEY PF9=' '",
-		"SET KEY PF12=DATA 'YES'",
-		"SET KEY PF4=COMMAND OFF",
-		"SET KEY PF4=COMMAND ON",
-		"SET KEY COMMAND OFF",
-		"SET KEY COMMAND ON",
-		"SET KEY PF1=HELP",
-		"SET KEY PF10=DISABLED",
-		"SET KEY ENTR NAMED 'EXEC'",
-		"SET KEY PF3 NAMED 'EXIT'",
-		"SET KEY PF3 NAMED OFF",
-		"SET KEY NAMED OFF",
-		"SET KEY PF4='AP1' NAMED 'APPL1'"
+	@ValueSource(strings =
+	{
+		"SET KEY ALL", "SET KEY PF2", "SET KEY PF2=PGM", "SET KEY OFF", "SET KEY ON", "SET KEY PF2=OFF", "SET KEY PF2=ON", "SET KEY PF4='SAVE'", "SET KEY PF4=#XYX", "SET KEY PF6='LIST MAP *'", "SET KEY PF2='%%'", "SET KEY PF9=' '", "SET KEY PF12=DATA 'YES'", "SET KEY PF4=COMMAND OFF", "SET KEY PF4=COMMAND ON", "SET KEY COMMAND OFF", "SET KEY COMMAND ON", "SET KEY PF1=HELP", "SET KEY PF10=DISABLED", "SET KEY ENTR NAMED 'EXEC'", "SET KEY PF3 NAMED 'EXIT'", "SET KEY PF3 NAMED OFF", "SET KEY NAMED OFF", "SET KEY PF4='AP1' NAMED 'APPL1'"
 	})
 	void parseSetKeyExamples(String statement)
 	{
@@ -802,7 +778,8 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"DUMMY", "INFOLINE", "SOURCE", "NOM"
 	})
 	void parseADefinePrinterWithAllowedBuiltInOutputNames(String output)
@@ -845,7 +822,8 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"HOLD", "KEEP", "DEL"
 	})
 	void parseADefinePrinterWithDisp(String disp)
@@ -860,10 +838,9 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"PROFILE 'PROF' DISP KEEP COPIES 5",
-		"COPIES 3 PROFILE 'PROF' DISP DEL",
-		"DISP HOLD COPES 2 DISP HOLD"
+	@ValueSource(strings =
+	{
+		"PROFILE 'PROF' DISP KEEP COPIES 5", "COPIES 3 PROFILE 'PROF' DISP DEL", "DISP HOLD COPES 2 DISP HOLD"
 	})
 	void parseADefinePrinterWithAnyOrderOfDispProfileAndCopies(String order)
 	{
@@ -981,9 +958,9 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"SUBSTRING(#VAR, 1)",
-		"SUBSTRING(#VAR, ,10)",
+	@ValueSource(strings =
+	{
+		"SUBSTRING(#VAR, 1)", "SUBSTRING(#VAR, ,10)",
 	})
 	void parseSubstringWithOmittedParameter(String substring)
 	{
@@ -991,10 +968,9 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"DELIMITER", "DELIMITERS",
-		"DELIMITER ' '", "DELIMITERS ' '",
-		"DELIMITER #DEL", "DELIMITERS #DEL",
+	@ValueSource(strings =
+	{
+		"DELIMITER", "DELIMITERS", "DELIMITER ' '", "DELIMITERS ' '", "DELIMITER #DEL", "DELIMITERS #DEL",
 	})
 	void parseAnExamineWithDelimiters(String delimiter)
 	{
@@ -1111,11 +1087,9 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"AT END OF PAGE",
-		"END PAGE",
-		"END OF PAGE",
-		"AT END PAGE"
+	@ValueSource(strings =
+	{
+		"AT END OF PAGE", "END PAGE", "END OF PAGE", "AT END PAGE"
 	})
 	void parseMultipleHeaderOptionsForEndOfPage(String header)
 	{
@@ -1153,11 +1127,9 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"AT TOP OF PAGE",
-		"TOP PAGE",
-		"TOP OF PAGE",
-		"AT TOP PAGE"
+	@ValueSource(strings =
+	{
+		"AT TOP OF PAGE", "TOP PAGE", "TOP OF PAGE", "AT TOP PAGE"
 	})
 	void parseMultipleHeaderOptionsForTopOfPage(String header)
 	{
@@ -1169,11 +1141,9 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"AT START OF DATA (R1.)",
-		"START DATA",
-		"START OF DATA",
-		"AT START DATA (R5.)"
+	@ValueSource(strings =
+	{
+		"AT START OF DATA (R1.)", "START DATA", "START OF DATA", "AT START DATA (R5.)"
 	})
 	void parseAtStartOfData(String header)
 	{
@@ -1187,11 +1157,9 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"AT END OF DATA (R1.)",
-		"END DATA",
-		"END OF DATA",
-		"AT END DATA (R5.)"
+	@ValueSource(strings =
+	{
+		"AT END OF DATA (R1.)", "END DATA", "END OF DATA", "AT END DATA (R5.)"
 	})
 	void parseAtEndOfData(String header)
 	{
@@ -1205,11 +1173,9 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"AT BREAK (RD.) OF #VAR /5/",
-		"BREAK #VARIABLE",
-		"AT BREAK #VAR",
-		"BREAK (R1.) OF #VAR /10/"
+	@ValueSource(strings =
+	{
+		"AT BREAK (RD.) OF #VAR /5/", "BREAK #VARIABLE", "AT BREAK #VAR", "BREAK (R1.) OF #VAR /10/"
 	})
 	void parseAtBreakOf(String header)
 	{
@@ -1223,21 +1189,9 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"EJECT ON (0)",
-		"EJECT OFF (PRNT)",
-		"EJECT OFF",
-		"EJECT ON",
-		"EJECT (PRNT)",
-		"EJECT (5)",
-		"EJECT",
-		"EJECT IF LESS THAN 10 LINES LEFT",
-		"EJECT WHEN LESS THAN #VAR LINES LEFT",
-		"EJECT (10) LESS #VAR",
-		"EJECT (10) WHEN LESS #VAR",
-		"EJECT (10) WHEN LESS THAN #VAR",
-		"EJECT (10) WHEN LESS THAN #VAR LEFT",
-		"EJECT (PRNT) IF LESS THAN 10 LINES LEFT",
+	@ValueSource(strings =
+	{
+		"EJECT ON (0)", "EJECT OFF (PRNT)", "EJECT OFF", "EJECT ON", "EJECT (PRNT)", "EJECT (5)", "EJECT", "EJECT IF LESS THAN 10 LINES LEFT", "EJECT WHEN LESS THAN #VAR LINES LEFT", "EJECT (10) LESS #VAR", "EJECT (10) WHEN LESS #VAR", "EJECT (10) WHEN LESS THAN #VAR", "EJECT (10) WHEN LESS THAN #VAR LEFT", "EJECT (PRNT) IF LESS THAN 10 LINES LEFT",
 	})
 	void parseEject(String eject)
 	{
@@ -1261,17 +1215,9 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"ESCAPE TOP REPOSITION",
-		"ESCAPE TOP",
-		"ESCAPE BOTTOM IMMEDIATE",
-		"ESCAPE BOTTOM (RD.) IMMEDIATE",
-		"ESCAPE BOTTOM",
-		"ESCAPE BOTTOM (R1.)",
-		"ESCAPE ROUTINE IMMEDIATE",
-		"ESCAPE ROUTINE",
-		"ESCAPE MODULE IMMEDIATE",
-		"ESCAPE MODULE"
+	@ValueSource(strings =
+	{
+		"ESCAPE TOP REPOSITION", "ESCAPE TOP", "ESCAPE BOTTOM IMMEDIATE", "ESCAPE BOTTOM (RD.) IMMEDIATE", "ESCAPE BOTTOM", "ESCAPE BOTTOM (R1.)", "ESCAPE ROUTINE IMMEDIATE", "ESCAPE ROUTINE", "ESCAPE MODULE IMMEDIATE", "ESCAPE MODULE"
 	})
 	void parseEscapes(String escape)
 	{
@@ -1279,7 +1225,8 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"TOP", "BOTTOM", "ROUTINE", "MODULE"
 	})
 	void parseEscapeDirectionOfEscapeNode(String direction)
@@ -1310,12 +1257,9 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"STACK TOP COMMAND 'ASD' #VAR 'ASDF'",
-		"STACK 'MOD'",
-		"STACK DATA FORMATTED #DATA1 #DATA2 #DATA3",
-		"STACK TOP DATA #VAR1 #VAR2",
-		"STACK TOP FORMATTED #VAR1 #VAR2"
+	@ValueSource(strings =
+	{
+		"STACK TOP COMMAND 'ASD' #VAR 'ASDF'", "STACK 'MOD'", "STACK DATA FORMATTED #DATA1 #DATA2 #DATA3", "STACK TOP DATA #VAR1 #VAR2", "STACK TOP FORMATTED #VAR1 #VAR2"
 	})
 	void parseStack(String stack)
 	{
@@ -1337,11 +1281,9 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"BEFORE BREAK PROCESSING",
-		"BEFORE BREAK",
-		"BEFORE",
-		"BEFORE PROCESSING"
+	@ValueSource(strings =
+	{
+		"BEFORE BREAK PROCESSING", "BEFORE BREAK", "BEFORE", "BEFORE PROCESSING"
 	})
 	void parseBeforeBreakProcessing(String header)
 	{
@@ -1385,7 +1327,8 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"ON", "OFF"
 	})
 	void parseHistogramWithMultiFetch(String multifetch)
@@ -1406,15 +1349,9 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"IN ASCENDING SEQUENCE",
-		"IN DESCENDING SEQUENCE",
-		"IN ASC",
-		"IN DESC",
-		"ASC",
-		"DESC",
-		"IN VARIABLE #VAR2",
-		"DYNAMIC #VAR2"
+	@ValueSource(strings =
+	{
+		"IN ASCENDING SEQUENCE", "IN DESCENDING SEQUENCE", "IN ASC", "IN DESC", "ASC", "DESC", "IN VARIABLE #VAR2", "DYNAMIC #VAR2"
 	})
 	void parseHistogramWithSorting(String sorting)
 	{
@@ -1425,11 +1362,9 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"10",
-		"5 LINES",
-		"#VAR",
-		"#VAR LINES"
+	@ValueSource(strings =
+	{
+		"10", "5 LINES", "#VAR", "#VAR LINES"
 	})
 	void parseSkipStatement(String skipOperands)
 	{
@@ -1495,7 +1430,8 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"EVERY", "FIRST"
 	})
 	void parseDecideForConditionWithEveryAndFirst(String permutation)
@@ -1530,11 +1466,9 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"SIZE OF DYNAMIC VARIABLE",
-		"DYNAMIC",
-		"DYNAMIC VARIABLE",
-		"SIZE OF DYNAMIC",
+	@ValueSource(strings =
+	{
+		"SIZE OF DYNAMIC VARIABLE", "DYNAMIC", "DYNAMIC VARIABLE", "SIZE OF DYNAMIC",
 	})
 	void parseResizeDynamic(String combination)
 	{
@@ -1545,10 +1479,9 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"AND RESET OCCURRENCES OF",
-		"AND RESET",
-		"OCCURRENCES OF",
+	@ValueSource(strings =
+	{
+		"AND RESET OCCURRENCES OF", "AND RESET", "OCCURRENCES OF",
 	})
 	void parseResizeArray(String combination)
 	{

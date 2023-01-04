@@ -21,14 +21,16 @@ public class RemoveUnusedSubroutineQuickfix extends AbstractQuickFix
 	{
 		var diagnostic = quickFixContext.diagnostic();
 		var node = quickFixContext.nodeAtPosition();
-		if(node instanceof ITokenNode)
+		if (node instanceof ITokenNode)
 		{
 			node = (ISyntaxNode) node.parent();
 		}
 		return new CodeActionBuilder("Remove unused subroutine", CodeActionKind.QuickFix)
 			.fixesDiagnostic(diagnostic)
-			.appliesWorkspaceEdit(new WorkspaceEditBuilder()
-				.removesNode(node))
+			.appliesWorkspaceEdit(
+				new WorkspaceEditBuilder()
+					.removesNode(node)
+			)
 			.build();
 	}
 }

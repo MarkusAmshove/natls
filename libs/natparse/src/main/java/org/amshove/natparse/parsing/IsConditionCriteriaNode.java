@@ -8,7 +8,7 @@ class IsConditionCriteriaNode extends BaseSyntaxNode implements IIsConditionCrit
 {
 	private IOperandNode left;
 	private SyntaxToken checkedType;
-	
+
 	@Override
 	public IOperandNode left()
 	{

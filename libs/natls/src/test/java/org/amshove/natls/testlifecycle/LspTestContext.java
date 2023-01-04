@@ -9,7 +9,8 @@ public record LspTestContext(
 	LanguageServerProject project,
 	StubClient client,
 	NaturalLanguageServer server,
-	NaturalLanguageService languageService)
+	NaturalLanguageService languageService
+)
 {
 	public TextDocumentService documentService()
 	{

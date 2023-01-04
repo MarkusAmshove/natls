@@ -4,8 +4,8 @@ import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 
 /**
- * Used to pool strings within the heap.
- * Using this for Strings that can appear often, like keywords, heavily reduced the load on the heap.
+ * Used to pool strings within the heap. Using this for Strings that can appear often, like keywords, heavily reduced
+ * the load on the heap.
  */
 public class StringPool
 {

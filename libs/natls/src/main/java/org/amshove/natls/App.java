@@ -12,10 +12,9 @@ public class App
 	private static final String APP_NAME = App.class.getPackage().getImplementationTitle();
 	private static final String APP_VERSION = App.class.getPackage().getImplementationVersion();
 
-
 	public static void main(String[] args) throws IOException
 	{
-		if(args.length > 0)
+		if (args.length > 0)
 		{
 			System.out.printf("%s - Version %s%n", APP_NAME, APP_VERSION);
 			return;

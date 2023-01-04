@@ -11,10 +11,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * A light parser that just looks for outgoing references of a
- * {@link LanguageServerFile} based on tokens.
- * It does not analyze anything else and is intended to fastly build
- * the dependency tree of a project.
+ * A light parser that just looks for outgoing references of a {@link LanguageServerFile} based on tokens. It does not
+ * analyze anything else and is intended to fastly build the dependency tree of a project.
  */
 public class ModuleReferenceParser
 {
@@ -56,7 +54,8 @@ public class ModuleReferenceParser
 			switch (tokens.peek().kind())
 			{
 				case USING -> calledModules.add(processUsingOrPerform(tokens));
-				case DEFINE -> {
+				case DEFINE ->
+				{
 					if (tokens.peek(1).kind() != SyntaxKind.DATA)
 					{
 						definedSubroutines.add(processSubroutine(tokens));
@@ -67,12 +66,12 @@ public class ModuleReferenceParser
 				case FETCH -> calledModules.add(processFetch(tokens));
 				case INCLUDE -> calledModules.add(processCopycode(tokens));
 				case IDENTIFIER ->
+				{
+					if (tokens.peek(1).kind() == SyntaxKind.LPAREN && tokens.peek(2).kind() == SyntaxKind.LESSER_SIGN)
 					{
-						if(tokens.peek(1).kind() == SyntaxKind.LPAREN && tokens.peek(2).kind() == SyntaxKind.LESSER_SIGN)
-						{
-							calledModules.add(processFunction(tokens));
-						}
+						calledModules.add(processFunction(tokens));
 					}
+				}
 			}
 
 			tokens.advance();
@@ -91,7 +90,7 @@ public class ModuleReferenceParser
 
 	private FoundReference processFunction(TokenList tokens)
 	{
-		if(tokens.peek().kind().isIdentifier())
+		if (tokens.peek().kind().isIdentifier())
 		{
 			return new FoundReference(tokens.peek().symbolName(), tokens.peek());
 		}
@@ -102,7 +101,7 @@ public class ModuleReferenceParser
 	private FoundReference processCopycode(TokenList tokens)
 	{
 		tokens.advance(); // include
-		if(tokens.peek().kind().isIdentifier())
+		if (tokens.peek().kind().isIdentifier())
 		{
 			return new FoundReference(tokens.peek().symbolName(), tokens.peek());
 		}
@@ -147,5 +146,6 @@ public class ModuleReferenceParser
 		return new FoundReference(tokens.peek().symbolName(), tokens.peek());
 	}
 
-	record FoundReference(String referredModule, IPosition referencingPosition) {}
+	record FoundReference(String referredModule, IPosition referencingPosition)
+	{}
 }

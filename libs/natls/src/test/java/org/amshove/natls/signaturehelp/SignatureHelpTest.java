@@ -56,9 +56,11 @@ abstract class SignatureHelpTest extends LanguageServerTest
 
 		return testContext
 			.documentService()
-			.signatureHelp(new SignatureHelpParams(
-				caller,
-				sourceWithCursor.toSinglePosition())
+			.signatureHelp(
+				new SignatureHelpParams(
+					caller,
+					sourceWithCursor.toSinglePosition()
+				)
 			)
 			.get(5, TimeUnit.SECONDS);
 	}

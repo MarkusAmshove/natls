@@ -29,10 +29,14 @@ public class CodeConsistencyAnalyzer extends AbstractAnalyzer
 
 	private void registerTokenPreference(ILinterContext context, SyntaxKind unwantedToken, SyntaxKind preferredToken)
 	{
-		context.registerTokenAnalyzer(unwantedToken, (token, analyzerContext) -> analyzerContext.report(PREFER_DIFFERENT_TOKEN.createFormattedDiagnostic(
-			token,
-			preferredToken.toString(),
-			unwantedToken.toString()
-		)));
+		context.registerTokenAnalyzer(
+			unwantedToken, (token, analyzerContext) -> analyzerContext.report(
+				PREFER_DIFFERENT_TOKEN.createFormattedDiagnostic(
+					token,
+					preferredToken.toString(),
+					unwantedToken.toString()
+				)
+			)
+		);
 	}
 }

@@ -15,12 +15,14 @@ public class BooleanOperatorAnalyzerShould extends AbstractAnalyzerTest
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		">", "<", ">=", "<=", "<>", "="
 	})
 	void reportNoDiagnosticForPreferredOperators(String operator)
 	{
-		testDiagnostics("""
+		testDiagnostics(
+			"""
 			DEFINE DATA LOCAL
 			END-DEFINE
 
@@ -29,16 +31,19 @@ public class BooleanOperatorAnalyzerShould extends AbstractAnalyzerTest
 			END-IF
 			END
 			""".formatted(operator),
-			expectNoDiagnosticOfType(BooleanOperatorAnalyzer.DISCOURAGED_BOOLEAN_OPERATOR));
+			expectNoDiagnosticOfType(BooleanOperatorAnalyzer.DISCOURAGED_BOOLEAN_OPERATOR)
+		);
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"GT", "LT", "GE", "LE", "NE", "EQ"
 	})
 	void reportDiagnosticsForOperatorsThatAreNotPreferred(String operator)
 	{
-		testDiagnostics("""
+		testDiagnostics(
+			"""
 			DEFINE DATA LOCAL
 			END-DEFINE
 
@@ -47,11 +52,12 @@ public class BooleanOperatorAnalyzerShould extends AbstractAnalyzerTest
 			END-IF
 			END
 			""".formatted(operator),
-			expectDiagnostic(3, BooleanOperatorAnalyzer.DISCOURAGED_BOOLEAN_OPERATOR));
+			expectDiagnostic(3, BooleanOperatorAnalyzer.DISCOURAGED_BOOLEAN_OPERATOR)
+		);
 	}
 
 	@Test
-	void notEnforceEqualsOverEqForNatUnitTests(@ProjectName("natunit")NaturalProject project)
+	void notEnforceEqualsOverEqForNatUnitTests(@ProjectName("natunit") NaturalProject project)
 	{
 		testDiagnostics(
 			project.findModule("TCEQTEST"),
@@ -60,7 +66,7 @@ public class BooleanOperatorAnalyzerShould extends AbstractAnalyzerTest
 	}
 
 	@Test
-	void enforceEqOverEqualsForNatUnitTests(@ProjectName("natunit")NaturalProject project)
+	void enforceEqOverEqualsForNatUnitTests(@ProjectName("natunit") NaturalProject project)
 	{
 		testDiagnostics(
 			project.findModule("TCTEST"),

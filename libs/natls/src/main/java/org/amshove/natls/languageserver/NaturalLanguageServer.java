@@ -34,7 +34,8 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 	@SuppressWarnings("deprecation") // Further support old LSP versions
 	public CompletableFuture<InitializeResult> initialize(InitializeParams params)
 	{
-		return CompletableFuture.supplyAsync(() -> {
+		return CompletableFuture.supplyAsync(() ->
+		{
 			var initStart = System.currentTimeMillis();
 			log.info("Starting initialization");
 			var capabilities = new ServerCapabilities();
@@ -62,13 +63,18 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 
 			var workspace = new WorkspaceServerCapabilities();
 			var fileOperations = new FileOperationsServerCapabilities();
-			fileOperations.setDidCreate(new FileOperationOptions(
-				Arrays.stream(NaturalFileType.values()).
-					map(ft -> new FileOperationFilter(new FileOperationPattern(
-						"**/Natural-Libraries/**/*.%s".formatted(ft.getExtension())
-					)))
-					.toList()
-			));
+			fileOperations.setDidCreate(
+				new FileOperationOptions(
+					Arrays.stream(NaturalFileType.values()).map(
+						ft -> new FileOperationFilter(
+							new FileOperationPattern(
+								"**/Natural-Libraries/**/*.%s".formatted(ft.getExtension())
+							)
+						)
+					)
+						.toList()
+				)
+			);
 			workspace.setFileOperations(fileOperations);
 			capabilities.setWorkspace(workspace);
 

@@ -31,9 +31,9 @@ public class UnresolvedReferenceQuickFix extends AbstractQuickFix
 		var unresolvedReference = context.diagnostic().getMessage().replace("Unresolved reference:", "").trim().toUpperCase();
 
 		return Stream.concat(
-				createUsingImportCandidates(context, unresolvedReference),
-				Stream.of(createDeclareVariableEdit(context, unresolvedReference))
-			)
+			createUsingImportCandidates(context, unresolvedReference),
+			Stream.of(createDeclareVariableEdit(context, unresolvedReference))
+		)
 			.toList();
 	}
 
@@ -41,8 +41,9 @@ public class UnresolvedReferenceQuickFix extends AbstractQuickFix
 	{
 		return new CodeActionBuilder("Declare variable %s".formatted(unresolvedReference), CodeActionKind.QuickFix)
 			.fixesDiagnostic(context.diagnostic())
-			.appliesWorkspaceEdit(new WorkspaceEditBuilder()
-				.addsVariable(context.file(), unresolvedReference, "(A) DYNAMIC", VariableScope.LOCAL)
+			.appliesWorkspaceEdit(
+				new WorkspaceEditBuilder()
+					.addsVariable(context.file(), unresolvedReference, "(A) DYNAMIC", VariableScope.LOCAL)
 			)
 			.build();
 	}
@@ -55,12 +56,15 @@ public class UnresolvedReferenceQuickFix extends AbstractQuickFix
 		residingLibrary.getStepLibs().stream().map(l -> findVariableCandidatesInLibrary(unresolvedReference, l)).forEach(candidates::addAll);
 
 		return candidates.stream()
-			.map(c -> new CodeActionBuilder("Add USING to %s (from %s)".formatted(c.module.name(), c.module.file().getLibrary().getName()), CodeActionKind.QuickFix)
-				.fixesDiagnostic(context.diagnostic())
-				.appliesWorkspaceEdit(new WorkspaceEditBuilder()
-					.addsUsing(context.file(), c.module.name())
-				)
-				.build());
+			.map(
+				c -> new CodeActionBuilder("Add USING to %s (from %s)".formatted(c.module.name(), c.module.file().getLibrary().getName()), CodeActionKind.QuickFix)
+					.fixesDiagnostic(context.diagnostic())
+					.appliesWorkspaceEdit(
+						new WorkspaceEditBuilder()
+							.addsUsing(context.file(), c.module.name())
+					)
+					.build()
+			);
 	}
 
 	private List<VariableCandidate> findVariableCandidatesInLibrary(String variableName, LanguageServerLibrary library)
@@ -68,7 +72,8 @@ public class UnresolvedReferenceQuickFix extends AbstractQuickFix
 		return library.files().stream()
 			.filter(f -> f.getType() == NaturalFileType.LDA || f.getType() == NaturalFileType.PDA)
 			.map(languageServerFile -> languageServerFile.module(ParseStrategy.WITHOUT_CALLERS))
-			.map(m -> {
+			.map(m ->
+			{
 				try
 				{
 					return new VariableCandidate(m, ((IHasDefineData) m).defineData().findVariable(variableName));
