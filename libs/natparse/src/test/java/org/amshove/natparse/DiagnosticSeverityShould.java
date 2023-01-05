@@ -33,10 +33,12 @@ class DiagnosticSeverityShould
 			.getMessage();
 		assertThat(message).isEqualTo("Invalid severity: unknown");
 	}
+
 	private DynamicTest testMapping(String text, DiagnosticSeverity severity)
 	{
-		return DynamicTest.dynamicTest("%s -> %s".formatted(text, severity), () ->
-			assertThat(DiagnosticSeverity.fromString(text)).isEqualTo(severity)
+		return DynamicTest.dynamicTest(
+			"%s -> %s".formatted(text, severity),
+			() -> assertThat(DiagnosticSeverity.fromString(text)).isEqualTo(severity)
 		);
 	}
 }
