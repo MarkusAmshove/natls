@@ -47,7 +47,7 @@ public abstract class ResourceFolderBasedTest
 				var tokens = lexer.lex(source, testFilePath);
 				var diagnostics = new ArrayList<>(tokens.diagnostics().toList());
 				var parser = new NaturalParser();
-				var parseResult = parser.parse(new NaturalFile(testFileName, testFilePath, NaturalFileType.SUBPROGRAM), tokens);
+				var parseResult = parser.parse(new NaturalFile(testFileName, testFilePath, NaturalFileType.SUBPROGRAM, new NaturalHeader(NaturalProgrammingMode.STRUCTURED, 10)), tokens);
 				parseResult.diagnostics().stream()
 					.filter(d -> !d.id().equals(ParserError.UNRESOLVED_IMPORT.id()))
 					.forEach(diagnostics::add);
