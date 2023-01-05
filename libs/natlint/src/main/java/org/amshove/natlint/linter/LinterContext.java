@@ -111,7 +111,7 @@ public enum LinterContext implements ILinterContext
 		registeredAnalyzers.forEach(a -> a.afterAnalyzing(context));
 	}
 
-	Optional<EditorConfig> editorConfig()
+	public Optional<EditorConfig> editorConfig()
 	{
 		return Optional.ofNullable(editorConfig);
 	}
