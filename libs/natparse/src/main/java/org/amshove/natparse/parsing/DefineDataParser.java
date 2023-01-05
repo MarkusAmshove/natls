@@ -206,7 +206,6 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	private BlockNode block() throws ParseError
 	{
 		var block = new BlockNode();
-		//consumeAny(SCOPE_SYNTAX_KINDS);
 		consumeOptionally(block, SyntaxKind.BLOCK);
 
 		var identifier = consumeIdentifierTokenOnly();
