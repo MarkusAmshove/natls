@@ -1,4 +1,4 @@
-DB: 000 FILE: 100  - COMPLETE-DDM                      DEFAULT SEQUENCE: 
+DB: 000 FILE: 100  - COMPLETE-DDM                      DEFAULT SEQUENCE:
 TYPE: ADABAS
 
 T L DB Name                              F Leng  S D Remark
@@ -34,4 +34,9 @@ G 2 GC TOP-LEVEL-GROUP-GROUP             N    5  N
 *      -------- SOURCE FIELD(S) -------
 *      SOME-NUMBER (1-5)
 *      TOP-LEVEL-GROUP-CHILD (5-12)
+  1 AI UNIQUE-SUPER-WITH-SUBRANGE        A   32  N U
+*      -------- SOURCE FIELD(S) -------
+*      SOME-NUMBER (1-5)
+*      ANOTHER-NUMBER(1-12)
+*      ALPHA-FIELD   (1-8)
 ******DDM OUTPUT TERMINATED******
