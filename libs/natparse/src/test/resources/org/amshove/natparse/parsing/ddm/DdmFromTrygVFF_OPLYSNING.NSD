@@ -1,0 +1,58 @@
+DB:   250 FILE:     1  - VFF_OPLYSNING                    DEFAULT SEQUENCE: 
+
+T L DB Name                              F Leng  S D Remark
+- - -- --------------------------------  - ----  - - ------------------------
+*      >Natural Source Header 000000
+*      :CP
+*      UTF-8
+*
+*      <Natural Source Header
+*      Generated from table VFF_OPLYSNI
+  1 OA FF_NR                             P 20.0    D NOT NULL WITH DEF.
+*      SQLTYPE=484
+  1 AA FF_TYPE                           A    1    D NOT NULL WITH DEF.
+*      SQLTYPE=452
+  1 AB SOIGNERING_KODE                   A    3    D NOT NULL WITH DEF.
+*      SQLTYPE=452
+  1 AC KVALITET_KODE                     A    1    D NOT NULL WITH DEF.
+*      SQLTYPE=452
+  1 AD NAVN_AENDR_AARSAG                 A    2    D NOT NULL WITH DEF.
+*      SQLTYPE=452
+  1 AE NAVN_AENDR_DOK                    A    2    D NOT NULL WITH DEF.
+*      SQLTYPE=452
+  1 AF FF_STATUS                         A    1    D NOT NULL WITH DEF.
+*      SQLTYPE=452
+  1 AG KUNDE_TYPE                        A    2    D NOT NULL WITH DEF.
+*      SQLTYPE=452
+  1 AH FF_UDVALGT                        A    1    D NOT NULL WITH DEF.
+*      SQLTYPE=452
+  1 AI SIKKERHED_GRUPPE1                 A    8    D NOT NULL WITH DEF.
+*      SQLTYPE=452
+  1 AJ SIKKERHED_GRUPPE2                 A    8    D NOT NULL WITH DEF.
+*      SQLTYPE=452
+  1 AK SIKKERHED_GRUPPE3                 A    8    D NOT NULL WITH DEF.
+*      SQLTYPE=452
+  1 AL OPRET_SBH                         A    8    D NOT NULL WITH DEF.
+*      SQLTYPE=452
+  1 AM OPRET_TIMESTAMP                   A   26    D TIMESTMP NOT NULL WI
+*      SQLTYPE=392
+  1 AN RET_SBH                           A    8    D NOT NULL WITH DEF.
+*      SQLTYPE=452
+  1 AO RET_TIMESTAMP                     A   26    D TIMESTMP NOT NULL WI
+*      SQLTYPE=392
+  1 AP MARKEDSFOERING                    A    2    D NOT NULL WITH DEF.
+*      SQLTYPE=452
+  1 AQ MF_TIMESTAMP                      A   26    D TIMESTMP NOT NULL WI
+*      SQLTYPE=392
+  1 AR MF_KILDE                          A    2    D NOT NULL WITH DEF.
+*      SQLTYPE=452
+  1 AS INFO_MF                           A    1    D NOT NULL WITH DEF.
+*      SQLTYPE=452
+  1 AT VIDEREGIV_MF                      A    1    D NOT NULL WITH DEF.
+*      SQLTYPE=452
+  1 AU ELEKTRONISK_MF                    A    1    D NOT NULL WITH DEF.
+*      SQLTYPE=452
+  1 AV AFSKREVET_SALDO                   P  9.2    D NOT NULL WITH DEF.
+*      SQLTYPE=484
+  1 AW EBOKS                             A    1    D NOT NULL WITH DEF.
+*      SQLTYPE=452
