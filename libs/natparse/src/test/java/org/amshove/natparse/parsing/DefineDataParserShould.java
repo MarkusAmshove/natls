@@ -615,11 +615,12 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		assertThat(myArr.dimensions().first().upperBound()).isEqualTo(2);
 	}
 
-	@ParameterizedTest //CLAES to be extended after code has been modified
-	@ValueSource(strings = {
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
 		"(A1/#length)",
 		"(A1 /#length)",
-//		"(A1/ #length)"	,
+		//		TODO: "(A1/ #length)"
 		"(A1 / #length)"
 	})
 	void parseAnArrayThatHasAConstReferenceAsDimensionAndArrayHasConstElements(String variable)
