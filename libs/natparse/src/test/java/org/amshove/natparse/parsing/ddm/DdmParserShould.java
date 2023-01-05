@@ -1,16 +1,23 @@
 package org.amshove.natparse.parsing.ddm;
 
-import org.amshove.natparse.NaturalParseException;
-import org.amshove.natparse.natural.DataFormat;
-import org.amshove.natparse.natural.ddm.*;
-import org.amshove.testhelpers.ResourceHelper;
-import org.assertj.core.util.Lists;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 
 import java.util.stream.Collectors;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
+import org.amshove.natparse.NaturalParseException;
+import org.amshove.natparse.natural.DataFormat;
+import org.amshove.natparse.natural.ddm.DdmType;
+import org.amshove.natparse.natural.ddm.DescriptorType;
+import org.amshove.natparse.natural.ddm.FieldType;
+import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
+import org.amshove.natparse.natural.ddm.IDdmField;
+import org.amshove.natparse.natural.ddm.IGroupField;
+import org.amshove.natparse.natural.ddm.ISuperdescriptor;
+import org.amshove.natparse.natural.ddm.ISuperdescriptorChild;
+import org.amshove.testhelpers.ResourceHelper;
+import org.assertj.core.util.Lists;
+import org.junit.jupiter.api.Test;
 
 public class DdmParserShould
 {
@@ -53,7 +60,7 @@ public class DdmParserShould
 
 		var fields = ddm.fields();
 
-		assertThat(ddm.fields().size()).isEqualTo(10);
+		assertThat(ddm.fields().size()).isEqualTo(11);
 		var topLevelFields = fields.stream().map(IDdmField::name).collect(Collectors.toList());
 
 		assertThat(topLevelFields)
@@ -67,7 +74,8 @@ public class DdmParserShould
 					"NUMERIC-WITH-FLOATING",
 					"A-SUPERDESCRIPTOR",
 					"ANOTHER-SUPERDESCRIPTOR",
-					"SUPERDESCRIPTOR-WITH-SUBRANGE"
+					"SUPERDESCRIPTOR-WITH-SUBRANGE",
+					"UNIQUE-SUPER-WITH-SUBRANGE"
 				)
 			);
 
