@@ -13,7 +13,8 @@ class EditorConfigTest
 	private final EditorConfigParser sut = new EditorConfigParser();
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"*", "*.NSN", "*.{NSN,NSP,NSL}"
 	})
 	void parseASection(String pattern)

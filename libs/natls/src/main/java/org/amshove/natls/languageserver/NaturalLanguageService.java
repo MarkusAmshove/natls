@@ -80,7 +80,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		}
 		var project = new BuildFileProjectReader().getNaturalProject(projectFile.get());
 		var editorconfigPath = projectFile.get().getParent().resolve(".editorconfig");
-		if(editorconfigPath.toFile().exists())
+		if (editorconfigPath.toFile().exists())
 		{
 			loadEditorConfig(editorconfigPath);
 		}

@@ -33,7 +33,7 @@ class AnalyzeContext implements IAnalyzeContext
 	@Override
 	public void report(LinterDiagnostic diagnostic)
 	{
-		if(editorConfig == null)
+		if (editorConfig == null)
 		{
 			diagnosticReporter.report(diagnostic);
 			return;
@@ -42,7 +42,7 @@ class AnalyzeContext implements IAnalyzeContext
 		var newSeverityName = editorConfig
 			.getProperty(module.file().getPath(), "natls.%s.severity".formatted(diagnostic.id()), diagnostic.severity().toString());
 
-		if(newSeverityName.equals("none"))
+		if (newSeverityName.equals("none"))
 		{
 			return;
 		}
