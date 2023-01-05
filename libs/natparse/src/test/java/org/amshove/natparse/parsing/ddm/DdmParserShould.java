@@ -1,23 +1,16 @@
 package org.amshove.natparse.parsing.ddm;
 
+import org.amshove.natparse.NaturalParseException;
+import org.amshove.natparse.natural.DataFormat;
+import org.amshove.natparse.natural.ddm.*;
+import org.amshove.testhelpers.ResourceHelper;
+import org.assertj.core.util.Lists;
+import org.junit.jupiter.api.Test;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 
 import java.util.stream.Collectors;
-
-import org.amshove.natparse.NaturalParseException;
-import org.amshove.natparse.natural.DataFormat;
-import org.amshove.natparse.natural.ddm.DdmType;
-import org.amshove.natparse.natural.ddm.DescriptorType;
-import org.amshove.natparse.natural.ddm.FieldType;
-import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
-import org.amshove.natparse.natural.ddm.IDdmField;
-import org.amshove.natparse.natural.ddm.IGroupField;
-import org.amshove.natparse.natural.ddm.ISuperdescriptor;
-import org.amshove.natparse.natural.ddm.ISuperdescriptorChild;
-import org.amshove.testhelpers.ResourceHelper;
-import org.assertj.core.util.Lists;
-import org.junit.jupiter.api.Test;
 
 public class DdmParserShould
 {
