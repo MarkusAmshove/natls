@@ -1,5 +1,7 @@
 package org.amshove.natparse.parsing.ddm;
 
+import java.util.stream.Collectors;
+
 import org.amshove.natparse.NaturalParseException;
 import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.ddm.*;
@@ -9,8 +11,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
-
-import java.util.stream.Collectors;
 
 public class DdmParserShould
 {
