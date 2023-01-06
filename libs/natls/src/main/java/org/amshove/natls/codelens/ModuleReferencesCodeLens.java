@@ -25,14 +25,16 @@ public class ModuleReferencesCodeLens implements ICodeLensProvider
 			);
 		}
 
-		return List.of(new CodeLens(
-			firstNodeRange,
-			new Command(
-				"%d references".formatted(references),
-				CustomCommands.CODELENS_SHOW_REFERENCES,
-				Arrays.asList(file.getUri(), firstNodeRange)
-			),
-			null
-		));
+		return List.of(
+			new CodeLens(
+				firstNodeRange,
+				new Command(
+					"%d references".formatted(references),
+					CustomCommands.CODELENS_SHOW_REFERENCES,
+					Arrays.asList(file.getUri(), firstNodeRange)
+				),
+				null
+			)
+		);
 	}
 }

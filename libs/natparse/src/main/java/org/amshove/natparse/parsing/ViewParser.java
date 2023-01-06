@@ -39,7 +39,7 @@ class ViewParser extends AbstractParser<ViewNode>
 			var targetDdm = consumeMandatoryIdentifier(view);
 			view.setDdmNameToken(targetDdm);
 
-			if(moduleProvider != null)
+			if (moduleProvider != null)
 			{
 				var ddm = moduleProvider.findDdm(targetDdm.symbolName());
 				view.setDdm(ddm);
@@ -83,19 +83,19 @@ class ViewParser extends AbstractParser<ViewNode>
 		var name = consumeMandatoryIdentifier(variable);
 		variable.setDeclaration(name);
 
-		if(consumeOptionally(variable, SyntaxKind.LPAREN))
+		if (consumeOptionally(variable, SyntaxKind.LPAREN))
 		{
 			// Maybe Group Array
-			if(peek().kind() == SyntaxKind.ASTERISK || peek().kind() == SyntaxKind.NUMBER_LITERAL)
+			if (peek().kind() == SyntaxKind.ASTERISK || peek().kind() == SyntaxKind.NUMBER_LITERAL)
 			{
 				var firstTokenInNextLine = peekNextLine();
-				if(firstTokenInNextLine.kind() == SyntaxKind.NUMBER_LITERAL && firstTokenInNextLine.intValue() > variable.level())
+				if (firstTokenInNextLine.kind() == SyntaxKind.NUMBER_LITERAL && firstTokenInNextLine.intValue() > variable.level())
 				{
 					return group(variable);
 				}
 			}
 
-			if(peek().kind() == SyntaxKind.NUMBER_LITERAL || (peek().kind().isIdentifier() && isVariableDeclared(peek().symbolName())))
+			if (peek().kind() == SyntaxKind.NUMBER_LITERAL || (peek().kind().isIdentifier() && isVariableDeclared(peek().symbolName())))
 			{
 				addArrayDimension(variable);
 				var typedDdmArrayVariable = typedVariableFromDdm(variable);
@@ -106,7 +106,7 @@ class ViewParser extends AbstractParser<ViewNode>
 			return typedVariable(variable);
 		}
 
-		if(peek().kind() == SyntaxKind.NUMBER_LITERAL && peek().intValue() > level.intValue())
+		if (peek().kind() == SyntaxKind.NUMBER_LITERAL && peek().intValue() > level.intValue())
 		{
 			return group(variable);
 		}
@@ -121,7 +121,7 @@ class ViewParser extends AbstractParser<ViewNode>
 
 		var dataType = consumeMandatoryIdentifier(typedVariable).source();
 
-		if(declaredVariables.containsKey(dataType))
+		if (declaredVariables.containsKey(dataType))
 		{
 			addArrayDimension(typedVariable);
 			return typedVariable;
@@ -154,7 +154,7 @@ class ViewParser extends AbstractParser<ViewNode>
 			arrayConsumed = true;
 		}
 
-		if(consumeOptionally(typedVariable, SyntaxKind.SLASH) && !arrayConsumed)
+		if (consumeOptionally(typedVariable, SyntaxKind.SLASH) && !arrayConsumed)
 		{
 			addArrayDimension(typedVariable);
 		}
@@ -191,11 +191,11 @@ class ViewParser extends AbstractParser<ViewNode>
 				break;
 			}
 
-			if(peekKind(1, SyntaxKind.FILLER) && group instanceof RedefinitionNode)
+			if (peekKind(1, SyntaxKind.FILLER) && group instanceof RedefinitionNode)
 			{
-				if(mightBeFillerBytes(peek(1), peek(2)))
+				if (mightBeFillerBytes(peek(1), peek(2)))
 				{
-					parseRedefineFiller((RedefinitionNode)group);
+					parseRedefineFiller((RedefinitionNode) group);
 					continue;
 				}
 			}
@@ -352,8 +352,8 @@ class ViewParser extends AbstractParser<ViewNode>
 	// TODO: Try to generify bound detection with workarounds once tests are green
 
 	/**
-	 * Workaround when the lower bound of an array was consumed as identifier, because
-	 * apparently / is a valid character for identifiers.
+	 * Workaround when the lower bound of an array was consumed as identifier, because apparently / is a valid character
+	 * for identifiers.
 	 *
 	 * @param typedVariable the variable to add the dimensions to.
 	 */
@@ -380,8 +380,7 @@ class ViewParser extends AbstractParser<ViewNode>
 		var dimension = new ArrayDimension();
 		dimension.addNode(boundToken);
 		var lowerBound = consumeOptionally(dimension, SyntaxKind.ASTERISK)
-			? ArrayDimension.UNBOUND_VALUE :
-			extractArrayBound(boundToken, dimension);
+			? ArrayDimension.UNBOUND_VALUE : extractArrayBound(boundToken, dimension);
 		var upperBound = ArrayDimension.UNBOUND_VALUE;
 
 		var workaroundNextDimension = false;
@@ -431,11 +430,11 @@ class ViewParser extends AbstractParser<ViewNode>
 	}
 
 	/**
-	 * Workaround when the previous array dimension had a numeric upper bound
-	 * and the current dimension has a numeric lower bound.
+	 * Workaround when the previous array dimension had a numeric upper bound and the current dimension has a numeric
+	 * lower bound.
 	 * <p>
-	 * This is because in (T/1:10,50:*) the 10,50 is recognized as a single number,
-	 * although the comma means a separation here.
+	 * This is because in (T/1:10,50:*) the 10,50 is recognized as a single number, although the comma means a
+	 * separation here.
 	 *
 	 * @param variable the variable to add the dimensions to.
 	 */
@@ -445,7 +444,7 @@ class ViewParser extends AbstractParser<ViewNode>
 		variable.addNode(syntheticSeparator);
 
 		var numbers = peek().source().split(",");
-		if(numbers.length < 2) // There is a whitespace in between, so not actual the lower bound
+		if (numbers.length < 2) // There is a whitespace in between, so not actual the lower bound
 		{
 			discard();
 			// Back to normal, yay \o/
@@ -531,7 +530,7 @@ class ViewParser extends AbstractParser<ViewNode>
 		consume(redefinitionNode, SyntaxKind.FILLER);
 		var fillerToken = previousToken();
 		var errored = false;
-		if(!consumeOptionally(redefinitionNode, SyntaxKind.OPERAND_SKIP))
+		if (!consumeOptionally(redefinitionNode, SyntaxKind.OPERAND_SKIP))
 		{
 			report(ParserErrors.fillerMustHaveXKeyword(fillerToken));
 			consume(redefinitionNode, SyntaxKind.NUMBER_LITERAL);
@@ -544,7 +543,7 @@ class ViewParser extends AbstractParser<ViewNode>
 			: Integer.parseInt(fillerBytesToken.source().substring(0, fillerBytesToken.length() - 1));
 		redefinitionNode.addFillerBytes(fillerBytes);
 
-		if(errored)
+		if (errored)
 		{
 			skipToNextLineAsRecovery(fillerToken.line());
 		}

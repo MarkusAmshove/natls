@@ -66,7 +66,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			{
 				if (endTokenKind != null
 					&& (peekKind(endTokenKind)
-					|| (peekKind(SyntaxKind.END_ALL) && END_KINDS_THAT_END_ALL_ENDS.contains(endTokenKind))))
+						|| (peekKind(SyntaxKind.END_ALL) && END_KINDS_THAT_END_ALL_ENDS.contains(endTokenKind))))
 				{
 					break;
 				}
@@ -255,7 +255,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 						// FALLTHROUGH TO DEFAULT INTENDED
 					default:
 
-						if(peek().kind().isSystemFunction())
+						if (peek().kind().isSystemFunction())
 						{
 							// this came up for *PAGE-NUMBER(PRINTERREP) in a WRITE statement, because we don't parse WRITE operands yet
 							// Can be removed in the future
@@ -297,12 +297,12 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		var resize = new ResizeArrayNode();
 		consumeMandatory(resize, SyntaxKind.RESIZE);
-		if(consumeOptionally(resize, SyntaxKind.AND))
+		if (consumeOptionally(resize, SyntaxKind.AND))
 		{
 			consumeMandatory(resize, SyntaxKind.RESET);
 		}
 
-		if(consumeOptionally(resize, SyntaxKind.OCCURRENCES))
+		if (consumeOptionally(resize, SyntaxKind.OCCURRENCES))
 		{
 			consumeMandatory(resize, SyntaxKind.OF);
 		}
@@ -313,7 +313,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(resize, SyntaxKind.TO);
 
 		consumeMandatory(resize, SyntaxKind.LPAREN);
-		while(!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+		while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
 		{
 			consume(resize);
 		}
@@ -646,17 +646,18 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	 * StatementBody<br/>
 	 * {@code statementEndTokenType}
 	 *
-	 * @param location          the "location", e.g. START, TOP, END
-	 * @param statementType     the type, e.g. PAGE, DATA
+	 * @param location the "location", e.g. START, TOP, END
+	 * @param statementType the type, e.g. PAGE, DATA
 	 * @param statementEndToken the token which ends the body
-	 * @param node              the resulting node
+	 * @param node the resulting node
 	 */
 	private <T extends StatementWithBodyNode & ICanSetReportSpecification> StatementNode parseAtPositionOf(
 		SyntaxKind location,
 		SyntaxKind statementType,
 		SyntaxKind statementEndToken,
 		boolean canHaveLabelIdentifier,
-		T node) throws ParseError
+		T node
+	) throws ParseError
 	{
 		consumeOptionally(node, SyntaxKind.AT);
 		var openingToken = consumeMandatory(node, location);
@@ -886,11 +887,11 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 		else
 		{
-			if(!peekKind(SyntaxKind.COMMA))
+			if (!peekKind(SyntaxKind.COMMA))
 			{
 				substring.setStartingPosition(consumeOperandNode(substring));
 			}
-			if(consumeOptionally(node, SyntaxKind.COMMA))
+			if (consumeOptionally(node, SyntaxKind.COMMA))
 			{
 				substring.setLength(consumeOperandNode(substring));
 			}
@@ -975,8 +976,10 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return write;
 	}
 
-	private static final Set<SyntaxKind> FORMAT_MODIFIERS = Set.of(SyntaxKind.AD, SyntaxKind.AL, SyntaxKind.CD, SyntaxKind.DF, SyntaxKind.DL, SyntaxKind.EM, SyntaxKind.ES, SyntaxKind.FC, SyntaxKind.FL, SyntaxKind.GC, SyntaxKind.HC, SyntaxKind.HW, SyntaxKind.IC, SyntaxKind.IP, SyntaxKind.IS, SyntaxKind.KD, SyntaxKind.LC, SyntaxKind.LS, SyntaxKind.MC, SyntaxKind.MP, SyntaxKind.MS, SyntaxKind.NL,
-		SyntaxKind.PC, SyntaxKind.PM, SyntaxKind.PS, SyntaxKind.SF, SyntaxKind.SG, SyntaxKind.TC, SyntaxKind.UC, SyntaxKind.ZP);
+	private static final Set<SyntaxKind> FORMAT_MODIFIERS = Set.of(
+		SyntaxKind.AD, SyntaxKind.AL, SyntaxKind.CD, SyntaxKind.DF, SyntaxKind.DL, SyntaxKind.EM, SyntaxKind.ES, SyntaxKind.FC, SyntaxKind.FL, SyntaxKind.GC, SyntaxKind.HC, SyntaxKind.HW, SyntaxKind.IC, SyntaxKind.IP, SyntaxKind.IS, SyntaxKind.KD, SyntaxKind.LC, SyntaxKind.LS, SyntaxKind.MC, SyntaxKind.MP, SyntaxKind.MS, SyntaxKind.NL,
+		SyntaxKind.PC, SyntaxKind.PM, SyntaxKind.PS, SyntaxKind.SF, SyntaxKind.SG, SyntaxKind.TC, SyntaxKind.UC, SyntaxKind.ZP
+	);
 
 	private StatementNode formatNode() throws ParseError
 	{
@@ -1155,7 +1158,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		internalPerform.setReferenceNode(referenceNode);
 		internalPerform.addNode(referenceNode);
 
-		if(!isStatementStart() && isModuleParameter())
+		if (!isStatementStart() && isModuleParameter())
 		{
 			var externalPerform = new ExternalPerformNode(internalPerform);
 			while (!isAtEnd() && !isStatementStart() && isModuleParameter())
@@ -1164,7 +1167,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 				externalPerform.addParameter(operand);
 			}
 			var foundModule = sideloadModule(externalPerform.referencingToken().trimmedSymbolName(32), externalPerform.referencingToken());
-			if(foundModule != null)
+			if (foundModule != null)
 			{
 				externalPerform.setReference(foundModule);
 			}
@@ -1232,11 +1235,11 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		consumeOptionally(callnat, SyntaxKind.USING);
 
-		while(!isAtEnd() && !isStatementStart() && isModuleParameter())
+		while (!isAtEnd() && !isStatementStart() && isModuleParameter())
 		{
 			var operand = consumeModuleParameter(callnat);
 			callnat.addParameter(operand);
-			if(peekKind(SyntaxKind.LPAREN) && peekKind(1, SyntaxKind.AD))
+			if (peekKind(SyntaxKind.LPAREN) && peekKind(1, SyntaxKind.AD))
 			{
 				consumeAttributeDefinition((BaseSyntaxNode) operand);
 			}
@@ -1254,7 +1257,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var referencingToken = consumeMandatoryIdentifier(include);
 		include.setReferencingToken(referencingToken);
 
-		while(!isAtEnd() && peekKind(SyntaxKind.STRING_LITERAL))
+		while (!isAtEnd() && peekKind(SyntaxKind.STRING_LITERAL))
 		{
 			var parameter = consumeLiteralNode(include, SyntaxKind.STRING_LITERAL);
 			include.addParameter(parameter);
@@ -1295,7 +1298,8 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 				}
 				unresolvedReferences.addAll(nestedParser.unresolvedReferences);
 				referencableNodes.addAll(nestedParser.referencableNodes);
-				include.setBody(statementList.result(),
+				include.setBody(
+					statementList.result(),
 					shouldRelocateDiagnostics()
 						? relocatedDiagnosticPosition
 						: referencingToken
@@ -1310,7 +1314,8 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			var unresolvedBody = new StatementListNode();
 			unresolvedBody.setParent(include);
-			include.setBody(unresolvedBody,
+			include.setBody(
+				unresolvedBody,
 				shouldRelocateDiagnostics()
 					? relocatedDiagnosticPosition
 					: referencingToken
@@ -1410,12 +1415,12 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return chain;
 	}
 
-	private static final Set<SyntaxKind> CONDITIONAL_OPERATOR_START =
-		Set.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL, SyntaxKind.LESSER_GREATER, SyntaxKind.NE, SyntaxKind.NOT, SyntaxKind.LESSER_SIGN, SyntaxKind.LT, SyntaxKind.LESS, SyntaxKind.LESSER_EQUALS_SIGN, SyntaxKind.LE, SyntaxKind.GREATER_SIGN, SyntaxKind.GT, SyntaxKind.GREATER, SyntaxKind.GREATER_EQUALS_SIGN, SyntaxKind.GE);
+	private static final Set<SyntaxKind> CONDITIONAL_OPERATOR_START = Set
+		.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL, SyntaxKind.LESSER_GREATER, SyntaxKind.NE, SyntaxKind.NOT, SyntaxKind.LESSER_SIGN, SyntaxKind.LT, SyntaxKind.LESS, SyntaxKind.LESSER_EQUALS_SIGN, SyntaxKind.LE, SyntaxKind.GREATER_SIGN, SyntaxKind.GT, SyntaxKind.GREATER, SyntaxKind.GREATER_EQUALS_SIGN, SyntaxKind.GE);
 
 	private ILogicalConditionCriteriaNode conditionCriteria() throws ParseError
 	{
-		if (peekKind(SyntaxKind.LPAREN) && containsNoArithmeticUntilClosingParensOrComparingOperator(SyntaxKind.RPAREN))  // we're not bamboozled by grouping arithmetics or nested comparisons
+		if (peekKind(SyntaxKind.LPAREN) && containsNoArithmeticUntilClosingParensOrComparingOperator(SyntaxKind.RPAREN)) // we're not bamboozled by grouping arithmetics or nested comparisons
 		{
 			return groupedConditionCriteria();
 		}
@@ -1699,37 +1704,37 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return switch (kind)
+		{
+			case EQUAL ->
 			{
-				case EQUAL ->
+				consume(node);
+				consumeOptionally(node, SyntaxKind.TO);
+				yield ComparisonOperator.EQUAL;
+			}
+			case NOT ->
+			{
+				consume(node);
+				consumeAnyMandatory(node, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL));
+				if (previousToken().kind() == SyntaxKind.EQUAL)
 				{
-					consume(node);
 					consumeOptionally(node, SyntaxKind.TO);
-					yield ComparisonOperator.EQUAL;
 				}
-				case NOT ->
-				{
-					consume(node);
-					consumeAnyMandatory(node, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL));
-					if (previousToken().kind() == SyntaxKind.EQUAL)
-					{
-						consumeOptionally(node, SyntaxKind.TO);
-					}
-					yield ComparisonOperator.NOT_EQUAL;
-				}
-				case LESS ->
-				{
-					consume(node);
-					consumeAnyMandatory(node, List.of(SyntaxKind.THAN, SyntaxKind.EQUAL));
-					yield previousToken().kind() == SyntaxKind.THAN ? ComparisonOperator.LESS_THAN : ComparisonOperator.LESS_OR_EQUAL;
-				}
-				case GREATER ->
-				{
-					consume(node);
-					consumeAnyMandatory(node, List.of(SyntaxKind.THAN, SyntaxKind.EQUAL));
-					yield previousToken().kind() == SyntaxKind.THAN ? ComparisonOperator.GREATER_THAN : ComparisonOperator.GREATER_OR_EQUAL;
-				}
-				default -> throw new RuntimeException("unreachable: All SyntaxKinds should have been checked beforehand");
-			};
+				yield ComparisonOperator.NOT_EQUAL;
+			}
+			case LESS ->
+			{
+				consume(node);
+				consumeAnyMandatory(node, List.of(SyntaxKind.THAN, SyntaxKind.EQUAL));
+				yield previousToken().kind() == SyntaxKind.THAN ? ComparisonOperator.LESS_THAN : ComparisonOperator.LESS_OR_EQUAL;
+			}
+			case GREATER ->
+			{
+				consume(node);
+				consumeAnyMandatory(node, List.of(SyntaxKind.THAN, SyntaxKind.EQUAL));
+				yield previousToken().kind() == SyntaxKind.THAN ? ComparisonOperator.GREATER_THAN : ComparisonOperator.GREATER_OR_EQUAL;
+			}
+			default -> throw new RuntimeException("unreachable: All SyntaxKinds should have been checked beforehand");
+		};
 	}
 
 	private IfNoRecordNode ifNoRecord() throws ParseError
@@ -1904,16 +1909,15 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		var lookahead = isAtEnd(1) ? null : peek(1).kind();
 
-		return
-			(peekKind(SyntaxKind.IDENTIFIER) && !peekKindInLine(SyntaxKind.COLON_EQUALS_SIGN))
-				|| peek().kind().isSystemFunction()
-				|| (peek().kind().isSystemVariable() && lookahead != SyntaxKind.COLON_EQUALS_SIGN)
-				|| peek().kind().isLiteralOrConst()
-				|| peekKind(SyntaxKind.VAL)
-				|| peekKind(SyntaxKind.ABS)
-				|| peekKind(SyntaxKind.POS)
-				|| (peekKind(SyntaxKind.MINUS) && lookahead == SyntaxKind.NUMBER_LITERAL)
-				|| (peek().kind().canBeIdentifier() && !peekKindInLine(SyntaxKind.COLON_EQUALS_SIGN));  // hopefully this fixes `#ARR(10) :=` being recognized as operand and has no side effects :)
+		return (peekKind(SyntaxKind.IDENTIFIER) && !peekKindInLine(SyntaxKind.COLON_EQUALS_SIGN))
+			|| peek().kind().isSystemFunction()
+			|| (peek().kind().isSystemVariable() && lookahead != SyntaxKind.COLON_EQUALS_SIGN)
+			|| peek().kind().isLiteralOrConst()
+			|| peekKind(SyntaxKind.VAL)
+			|| peekKind(SyntaxKind.ABS)
+			|| peekKind(SyntaxKind.POS)
+			|| (peekKind(SyntaxKind.MINUS) && lookahead == SyntaxKind.NUMBER_LITERAL)
+			|| (peek().kind().canBeIdentifier() && !peekKindInLine(SyntaxKind.COLON_EQUALS_SIGN)); // hopefully this fixes `#ARR(10) :=` being recognized as operand and has no side effects :)
 	}
 
 	private boolean isModuleParameter()
@@ -2015,17 +2019,16 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return switch (currentKind)
-			{
-				case ACCEPT, ADD, ASSIGN, BEFORE, CALL, CALLNAT, CLOSE, COMMIT, COMPRESS, COMPUTE, DECIDE, DEFINE, DELETE, DISPLAY, DIVIDE, DO, DOEND, DOWNLOAD, EJECT, END, ESCAPE, EXAMINE, EXPAND, FETCH, FIND, FOR, FORMAT, GET, HISTOGRAM, IF, IGNORE, INCLUDE, INPUT, INSERT, INTERFACE, LIMIT, LOOP, METHOD, MOVE, MULTIPLY, NEWPAGE, OBTAIN, OPTIONS, PASSW, PERFORM, PRINT, PROCESS, PROPERTY, READ, REDEFINE, REDUCE, REINPUT, REJECT, RELEASE, REPEAT, RESET, RESIZE, RETRY, ROLLBACK, RUN, SELECT, SEPARATE, SET, SKIP, SORT, STACK, STOP, STORE, SUBTRACT, TERMINATE, UPDATE, WRITE ->
-					true;
-				case ON -> peekKind(1, SyntaxKind.ERROR);
-				case OPEN -> peekKind(1, SyntaxKind.CONVERSATION);
-				case PARSE -> peekKind(1, SyntaxKind.XML);
-				case REQUEST -> peekKind(1, SyntaxKind.DOCUMENT);
-				case SEND -> peekKind(1, SyntaxKind.METHOD);
-				case SUSPEND -> peekKind(1, SyntaxKind.IDENTICAL) && peekKind(2, SyntaxKind.SUPPRESS);
-				case UPLOAD -> peekKind(1, SyntaxKind.PC) && peekKind(2, SyntaxKind.FILE);
-				default -> false;
-			};
+		{
+			case ACCEPT, ADD, ASSIGN, BEFORE, CALL, CALLNAT, CLOSE, COMMIT, COMPRESS, COMPUTE, DECIDE, DEFINE, DELETE, DISPLAY, DIVIDE, DO, DOEND, DOWNLOAD, EJECT, END, ESCAPE, EXAMINE, EXPAND, FETCH, FIND, FOR, FORMAT, GET, HISTOGRAM, IF, IGNORE, INCLUDE, INPUT, INSERT, INTERFACE, LIMIT, LOOP, METHOD, MOVE, MULTIPLY, NEWPAGE, OBTAIN, OPTIONS, PASSW, PERFORM, PRINT, PROCESS, PROPERTY, READ, REDEFINE, REDUCE, REINPUT, REJECT, RELEASE, REPEAT, RESET, RESIZE, RETRY, ROLLBACK, RUN, SELECT, SEPARATE, SET, SKIP, SORT, STACK, STOP, STORE, SUBTRACT, TERMINATE, UPDATE, WRITE -> true;
+			case ON -> peekKind(1, SyntaxKind.ERROR);
+			case OPEN -> peekKind(1, SyntaxKind.CONVERSATION);
+			case PARSE -> peekKind(1, SyntaxKind.XML);
+			case REQUEST -> peekKind(1, SyntaxKind.DOCUMENT);
+			case SEND -> peekKind(1, SyntaxKind.METHOD);
+			case SUSPEND -> peekKind(1, SyntaxKind.IDENTICAL) && peekKind(2, SyntaxKind.SUPPRESS);
+			case UPLOAD -> peekKind(1, SyntaxKind.PC) && peekKind(2, SyntaxKind.FILE);
+			default -> false;
+		};
 	}
 }

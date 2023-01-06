@@ -47,13 +47,16 @@ public class StatementSnippetProviderShould extends LanguageServerTest
 	Stream<DynamicTest> provideEachSnippetWhenTheFileTypeAllowsStatements()
 	{
 		return EXPECTED_SNIPPETS.stream()
-			.flatMap(expectedSnippet ->
-				Arrays.stream(NaturalFileType.values())
+			.flatMap(
+				expectedSnippet -> Arrays.stream(NaturalFileType.values())
 					.filter(NaturalFileType::canHaveBody)
-					.map(ft -> dynamicTest("%s should be applicable to %s".formatted(expectedSnippet, ft), () ->
-						assertThat(sut.provideSnippets(fileUnderTest))
-							.as("Expected snippet %s not found".formatted(expectedSnippet))
-							.anyMatch(ci -> ci.getLabel().equals(expectedSnippet))))
+					.map(
+						ft -> dynamicTest(
+							"%s should be applicable to %s".formatted(expectedSnippet, ft), () -> assertThat(sut.provideSnippets(fileUnderTest))
+								.as("Expected snippet %s not found".formatted(expectedSnippet))
+								.anyMatch(ci -> ci.getLabel().equals(expectedSnippet))
+						)
+					)
 			);
 	}
 
@@ -61,13 +64,16 @@ public class StatementSnippetProviderShould extends LanguageServerTest
 	Stream<DynamicTest> notProvideTheSnippetWhenTheFileTypeDoesntAllowStatements()
 	{
 		return EXPECTED_SNIPPETS.stream()
-			.flatMap(expectedSnippet ->
-				Arrays.stream(NaturalFileType.values())
+			.flatMap(
+				expectedSnippet -> Arrays.stream(NaturalFileType.values())
 					.filter(not(NaturalFileType::canHaveBody))
-					.map(ft -> dynamicTest("%s should not be applicable to %s, but is".formatted(expectedSnippet, ft), () ->
-						assertThat(sut.provideSnippets(fileUnderTest))
-							.as("Expected snippet %s not found".formatted(expectedSnippet))
-							.anyMatch(ci -> ci.getLabel().equals(expectedSnippet))))
+					.map(
+						ft -> dynamicTest(
+							"%s should not be applicable to %s, but is".formatted(expectedSnippet, ft), () -> assertThat(sut.provideSnippets(fileUnderTest))
+								.as("Expected snippet %s not found".formatted(expectedSnippet))
+								.anyMatch(ci -> ci.getLabel().equals(expectedSnippet))
+						)
+					)
 			);
 	}
 }

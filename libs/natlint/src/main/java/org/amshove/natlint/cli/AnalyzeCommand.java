@@ -15,31 +15,58 @@ import java.util.function.Predicate;
 @CommandLine.Command(name = "analyze", description = "Analyze the Natural project in the current working directory", mixinStandardHelpOptions = true)
 public class AnalyzeCommand implements Callable<Integer>
 {
-	@CommandLine.Option(names = {"-w", "--workdir"}, description = "Sets the working directory to a different path than the current one")
+	@CommandLine.Option(names =
+	{
+		"-w", "--workdir"
+	}, description = "Sets the working directory to a different path than the current one")
 	String workingDirectory;
 
-	@CommandLine.Option(names = { "-f", "--file" }, description = "Only analyze modules matching any of the qualified module name in the form of LIBRARY.MODULENAME (e.g. LIB1.SUBPROG)")
+	@CommandLine.Option(names =
+	{
+		"-f", "--file"
+	}, description = "Only analyze modules matching any of the qualified module name in the form of LIBRARY.MODULENAME (e.g. LIB1.SUBPROG)")
 	List<String> qualifiedNames;
 
-	@CommandLine.Option(names = { "-r", "--relative" }, description = "Only analyze modules matching any of the relative paths. Path should be relative to project root.")
+	@CommandLine.Option(names =
+	{
+		"-r", "--relative"
+	}, description = "Only analyze modules matching any of the relative paths. Path should be relative to project root.")
 	List<String> relativePaths;
 
-	@CommandLine.Option(names = { "-l", "--library" }, description = "Only analyze modules that reside in any of the given libraries.")
+	@CommandLine.Option(names =
+	{
+		"-l", "--library"
+	}, description = "Only analyze modules that reside in any of the given libraries.")
 	List<String> libraries;
 
-	@CommandLine.Option(names = { "-g", "--glob" }, description = "Only analyze modules that match the given glob pattern.")
+	@CommandLine.Option(names =
+	{
+		"-g", "--glob"
+	}, description = "Only analyze modules that match the given glob pattern.")
 	List<String> globs;
 
-	@CommandLine.Option(names = { "-s", "--severity" }, description = "Filter out diagnostics that are below the given severity. Valid values: ${COMPLETION-CANDIDATES}", defaultValue = "INFO")
+	@CommandLine.Option(names =
+	{
+		"-s", "--severity"
+	}, description = "Filter out diagnostics that are below the given severity. Valid values: ${COMPLETION-CANDIDATES}", defaultValue = "INFO")
 	DiagnosticSeverity minimumSeverity;
 
-	@CommandLine.Option(names = { "-d", "--diagnostic" }, description = "Filter out every diagnostic that does not match the given id. Example: --diagnostic NLP011")
+	@CommandLine.Option(names =
+	{
+		"-d", "--diagnostic"
+	}, description = "Filter out every diagnostic that does not match the given id. Example: --diagnostic NLP011")
 	List<String> diagnosticIds;
 
-	@CommandLine.Option(names = { "--sink" }, description = "Sets the output sink where the diagnostics are printed to. Defaults to STDOUT. Valid values: ${COMPLETION-CANDIDATES}", defaultValue = "STDOUT")
+	@CommandLine.Option(names =
+	{
+		"--sink"
+	}, description = "Sets the output sink where the diagnostics are printed to. Defaults to STDOUT. Valid values: ${COMPLETION-CANDIDATES}", defaultValue = "STDOUT")
 	DiagnosticSinkType sinkType;
 
-	@CommandLine.Option(names = { "--ci" }, description = "Analyzer will return exit code 0, even when diagnostics are found. Will also use the CSV sink", defaultValue = "false")
+	@CommandLine.Option(names =
+	{
+		"--ci"
+	}, description = "Analyzer will return exit code 0, even when diagnostics are found. Will also use the CSV sink", defaultValue = "false")
 	boolean ciMode;
 
 	private static final List<Predicate<NaturalFile>> DEFAULT_MODULE_PREDICATES = List.of(f -> true);
@@ -101,7 +128,7 @@ public class AnalyzeCommand implements Callable<Integer>
 		);
 
 		var exitCode = analyzer.run();
-		if(ciMode)
+		if (ciMode)
 		{
 			return 0;
 		}

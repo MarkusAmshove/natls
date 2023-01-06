@@ -12,8 +12,7 @@ import static org.amshove.natparse.natural.DataFormat.*;
 public class BuiltInFunctionTable
 {
 	private BuiltInFunctionTable()
-	{
-	}
+	{}
 
 	private static final Map<SyntaxKind, IBuiltinFunctionDefinition> TABLE;
 
@@ -30,7 +29,8 @@ public class BuiltInFunctionTable
 			unmodifiableVariable(SyntaxKind.TIMX, "Returns the current time of the day as builtin time format", TIME, 0.0),
 			unmodifiableVariable(SyntaxKind.TIMESTMP, "Returns the machine-internal clock value", BINARY, 8.0),
 			unmodifiableVariable(SyntaxKind.TIMN, "Returns the current time of the day as numeric format", NUMERIC, 7.0),
-			function(SyntaxKind.TIMD, """
+			function(
+				SyntaxKind.TIMD, """
 					Returns the time passed since the `SET TIME` statement which is referred to by the first parameter.
 					
 					The format returned is: `HHISST` (hour hour minute second second tenth-second).
@@ -227,11 +227,13 @@ public class BuiltInFunctionTable
 				#I := *COUNTER(RD.)
 				```
 				""", PACKED, 10, labelParameter(false)),
-			function(SyntaxKind.OCCURRENCE, "See `*OCC`", INTEGER, 4,
+			function(
+				SyntaxKind.OCCURRENCE, "See `*OCC`", INTEGER, 4,
 				new BuiltInFunctionParameter("array", new DataType(DataFormat.NONE, 1), true),
 				new BuiltInFunctionParameter("dimension", new DataType(DataFormat.NONE, 1), false)
 			),
-			function(SyntaxKind.OCC, """
+			function(
+				SyntaxKind.OCC, """
 					Returns the current length of an array.
 
 					The optional `dimension` parameter handles for which dimension the length is returned. Defaults to 1 if not specified.
@@ -262,7 +264,8 @@ public class BuiltInFunctionTable
 				new BuiltInFunctionParameter("array", new DataType(DataFormat.NONE, 1), true),
 				new BuiltInFunctionParameter("dimension", new DataType(DataFormat.NONE, 1), false)
 			),
-			function(SyntaxKind.MINVAL, """
+			function(
+				SyntaxKind.MINVAL, """
 					Returns the minimal value of all given operand values.
 
 					The result type can be optionally specified with `(IR=`, e.g. `(IR=F8)`. Otherwise the biggest data type of the operands is chosen.
@@ -275,7 +278,8 @@ public class BuiltInFunctionTable
 				new BuiltInFunctionParameter("operand2", new DataType(NONE, 1), false),
 				new BuiltInFunctionParameter("operand3", new DataType(NONE, 1), false)
 			),
-			function(SyntaxKind.MAXVAL, """
+			function(
+				SyntaxKind.MAXVAL, """
 					Returns the maximum value of all given operand values.
 
 					The result type can be optionally specified with `(IR=`, e.g. `(IR=F8)`. Otherwise the biggest data type of the operands is chosen.
@@ -288,7 +292,8 @@ public class BuiltInFunctionTable
 				new BuiltInFunctionParameter("operand2", new DataType(NONE, 1), false),
 				new BuiltInFunctionParameter("operand3", new DataType(NONE, 1), false)
 			),
-			function(SyntaxKind.TRIM, """
+			function(
+				SyntaxKind.TRIM, """
 					Remove all leading and trailing whitespace from an alphanumeric or binary string.
 
 					The content of the passed variable is not modified.

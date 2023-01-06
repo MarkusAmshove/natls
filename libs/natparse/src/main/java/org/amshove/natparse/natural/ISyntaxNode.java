@@ -9,6 +9,7 @@ public interface ISyntaxNode extends ISyntaxTree
 	ISyntaxTree parent();
 
 	IPosition position();
+
 	IPosition diagnosticPosition();
 
 	default boolean enclosesPosition(int line, int column)
@@ -21,8 +22,7 @@ public interface ISyntaxNode extends ISyntaxTree
 	boolean isInFile(Path path);
 
 	/**
-	 * Clean up resources that may leak, like references.
-	 * Called when a Node is no longer valid.
+	 * Clean up resources that may leak, like references. Called when a Node is no longer valid.
 	 */
 	void destroy();
 }

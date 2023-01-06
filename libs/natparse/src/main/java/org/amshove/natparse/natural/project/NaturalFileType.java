@@ -28,19 +28,19 @@ public enum NaturalFileType
 	public static NaturalFileType fromExtension(String extension)
 	{
 		return switch (extension)
-			{
-				case "NSN" -> SUBPROGRAM;
-				case "NSP" -> PROGRAM;
-				case "NSS" -> SUBROUTINE;
-				case "NSL" -> LDA;
-				case "NSD" -> DDM;
-				case "NSA" -> PDA;
-				case "NSM" -> MAP;
-				case "NSG" -> GDA;
-				case "NSC" -> COPYCODE;
-				case "NS7" -> FUNCTION;
-				default -> throw new RuntimeException(extension);
-			};
+		{
+			case "NSN" -> SUBPROGRAM;
+			case "NSP" -> PROGRAM;
+			case "NSS" -> SUBROUTINE;
+			case "NSL" -> LDA;
+			case "NSD" -> DDM;
+			case "NSA" -> PDA;
+			case "NSM" -> MAP;
+			case "NSG" -> GDA;
+			case "NSC" -> COPYCODE;
+			case "NS7" -> FUNCTION;
+			default -> throw new RuntimeException(extension);
+		};
 	}
 
 	public static boolean isNaturalFile(Path filepath)
@@ -61,18 +61,18 @@ public enum NaturalFileType
 	public boolean canHaveDefineData()
 	{
 		return switch (this)
-			{
-				case SUBPROGRAM, PROGRAM, SUBROUTINE, LDA, PDA, GDA, FUNCTION -> true;
-				default -> false;
-			};
+		{
+			case SUBPROGRAM, PROGRAM, SUBROUTINE, LDA, PDA, GDA, FUNCTION -> true;
+			default -> false;
+		};
 	}
 
 	public boolean canHaveBody()
 	{
 		return switch (this)
-			{
-				case SUBPROGRAM, PROGRAM, SUBROUTINE, FUNCTION, COPYCODE -> true;
-				default -> false;
-			};
+		{
+			case SUBPROGRAM, PROGRAM, SUBROUTINE, FUNCTION, COPYCODE -> true;
+			default -> false;
+		};
 	}
 }

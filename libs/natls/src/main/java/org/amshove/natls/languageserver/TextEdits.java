@@ -22,7 +22,7 @@ public class TextEdits
 
 	public static TextEdit addUsing(LanguageServerFile file, UsingToAdd neededUsing)
 	{
-		if(alreadyHasUsing(neededUsing.name(), file))
+		if (alreadyHasUsing(neededUsing.name(), file))
 		{
 			return null;
 		}
@@ -47,7 +47,7 @@ public class TextEdits
 			? defineData.parameterUsings()
 			: defineData.localUsings();
 
-		if(usings.hasItems())
+		if (usings.hasItems())
 		{
 			var firstUsing = usings.first();
 			return LspUtil.toSingleRange(firstUsing.position().line(), 0);
@@ -78,12 +78,12 @@ public class TextEdits
 	private static Optional<Range> findRangeOfFirstVariableWithScope(LanguageServerFile file, VariableScope scope)
 	{
 		var defineData = ((IHasDefineData) file.module()).defineData();
-		if(defineData.variables().hasItems())
+		if (defineData.variables().hasItems())
 		{
 			return defineData.variables().stream().filter(v -> v.scope() == scope)
 				.filter(v -> v.position().filePath().equals(file.getPath()))
 				.findFirst()
-				.map(v -> (ISyntaxNode)v.parent()) // Scope node
+				.map(v -> (ISyntaxNode) v.parent()) // Scope node
 				.map(v -> LspUtil.toSingleRange(v.position().line() + 1, 0));
 		}
 
@@ -103,5 +103,6 @@ public class TextEdits
 		);
 	}
 
-	private record VariableInsert(String insertPrefix, Range range) {}
+	private record VariableInsert(String insertPrefix, Range range)
+	{}
 }

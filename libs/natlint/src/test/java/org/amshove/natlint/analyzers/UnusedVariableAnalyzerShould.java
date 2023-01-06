@@ -13,7 +13,8 @@ public class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
 	@Test
 	void reportNoDiagnosticIfAVariableIsUsed()
 	{
-		testDiagnostics("""
+		testDiagnostics(
+			"""
 				define data
 				local
 				1 #myvar (a10)
@@ -21,13 +22,15 @@ public class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
 				write #myvar
 				end
 				""",
-			expectNoDiagnostic(2, UnusedVariableAnalyzer.UNUSED_VARIABLE));
+			expectNoDiagnostic(2, UnusedVariableAnalyzer.UNUSED_VARIABLE)
+		);
 	}
 
 	@Test
 	void reportADiagnosticIfAVariableIsUnused()
 	{
-		testDiagnostics("""
+		testDiagnostics(
+			"""
 				define data
 				local
 				1 #myvar (a10)
@@ -41,7 +44,8 @@ public class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
 	@Test
 	void notReportADiagnosticForTheGroupIfAVariableWithinIsUsed()
 	{
-		testDiagnostics("""
+		testDiagnostics(
+			"""
 				define data
 				local
 				1 #group
@@ -57,7 +61,8 @@ public class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
 	@Test
 	void notReportADiagnosticForNestedGroupsIfAVariableWithinIsUsed()
 	{
-		testDiagnostics("""
+		testDiagnostics(
+			"""
 			define data
 			local
 			1 #group
@@ -76,7 +81,8 @@ public class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
 	@Test
 	void notReportADiagnosticIfTheGroupNameIsReferenced()
 	{
-		testDiagnostics("""
+		testDiagnostics(
+			"""
                define data
                local
                1 #group

@@ -29,7 +29,10 @@ public class NaturalSnippetShould
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { " mylabel", "my label", "mylabel " })
+	@ValueSource(strings =
+	{
+		" mylabel", "my label", "mylabel "
+	})
 	void validateThatTheLabelDoesNotContainSpaces(String label)
 	{
 		assertThatThrownBy(() -> new NaturalSnippet(label))
@@ -137,7 +140,7 @@ public class NaturalSnippetShould
 			.insertsText("hi")
 			.needsLocalUsing("SOMELDA");
 
-		assertThatThrownBy(()-> snippet.createCompletion(testContext.project().findFileByReferableName("PROG3")))
+		assertThatThrownBy(() -> snippet.createCompletion(testContext.project().findFileByReferableName("PROG3")))
 			.isInstanceOf(ResponseErrorException.class)
 			.hasMessage("Can't complete snippet because no DEFINE DATA was found");
 	}

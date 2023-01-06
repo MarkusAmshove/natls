@@ -20,16 +20,17 @@ public class InternalSubroutineReferencesCodeLens implements ICodeLensProvider
 		var module = file.module();
 		var codelens = new ArrayList<CodeLens>();
 
-		if(module instanceof IModuleWithBody hasBody && hasBody.body() != null && hasBody.body().descendants().hasItems())
+		if (module instanceof IModuleWithBody hasBody && hasBody.body() != null && hasBody.body().descendants().hasItems())
 		{
 			hasBody.body().statements().stream()
 				.filter(ISubroutineNode.class::isInstance)
 				.map(ISubroutineNode.class::cast)
-				.map(s -> {
+				.map(s ->
+				{
 					var references = s.references().size();
 					var declarationRange = LspUtil.toRange(s.declaration());
 
-					if(references == 0)
+					if (references == 0)
 					{
 						return codeLensWithoutCommand("No references", declarationRange);
 					}
@@ -37,10 +38,13 @@ public class InternalSubroutineReferencesCodeLens implements ICodeLensProvider
 					var uri = file.getUri();
 					return new CodeLens(
 						declarationRange,
-								new Command("%d references".formatted(references),
-									CustomCommands.CODELENS_SHOW_REFERENCES,
-									Arrays.asList(uri, declarationRange)),
-								null);
+						new Command(
+							"%d references".formatted(references),
+							CustomCommands.CODELENS_SHOW_REFERENCES,
+							Arrays.asList(uri, declarationRange)
+						),
+						null
+					);
 				})
 				.forEach(codelens::add);
 		}

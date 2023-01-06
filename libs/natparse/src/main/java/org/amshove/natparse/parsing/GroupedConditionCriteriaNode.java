@@ -12,7 +12,7 @@ class GroupedConditionCriteriaNode extends BaseSyntaxNode implements IGroupedCon
 	{
 		return criteria;
 	}
-	
+
 	void setCriteria(ILogicalConditionCriteriaNode criteria)
 	{
 		addNode(((BaseSyntaxNode) criteria));

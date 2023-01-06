@@ -23,13 +23,13 @@ public interface IDataType
 		var details = "";
 
 		details += "(%s".formatted(format().identifier());
-		if(length() > 0.0)
+		if (length() > 0.0)
 		{
 			details += "%s".formatted(DataFormat.formatLength(length()));
 		}
 		details += ")";
 
-		if(hasDynamicLength())
+		if (hasDynamicLength())
 		{
 			details += " DYNAMIC";
 		}
@@ -43,22 +43,22 @@ public interface IDataType
 	default int byteSize()
 	{
 		return switch (format())
-			{
-				case ALPHANUMERIC, BINARY -> hasDynamicLength()
-					? ONE_GIGABYTE // max internal length in bytes
-					: (int)length();
-				case FLOAT, INTEGER -> (int) length();
-				case CONTROL -> 2;
-				case DATE -> 4;
-				case LOGIC -> 1;
-				case NUMERIC -> calculateNumericSize();
-				case PACKED -> calculatePackedSize();
-				case TIME -> 7;
-				case UNICODE -> hasDynamicLength()
-					? ONE_GIGABYTE // max internal length in bytes
-					: Math.max((int) length(), 2);
-				case NONE -> 0;
-			};
+		{
+			case ALPHANUMERIC, BINARY -> hasDynamicLength()
+				? ONE_GIGABYTE // max internal length in bytes
+				: (int) length();
+			case FLOAT, INTEGER -> (int) length();
+			case CONTROL -> 2;
+			case DATE -> 4;
+			case LOGIC -> 1;
+			case NUMERIC -> calculateNumericSize();
+			case PACKED -> calculatePackedSize();
+			case TIME -> 7;
+			case UNICODE -> hasDynamicLength()
+				? ONE_GIGABYTE // max internal length in bytes
+				: Math.max((int) length(), 2);
+			case NONE -> 0;
+		};
 	}
 
 	/**
@@ -80,7 +80,7 @@ public interface IDataType
 	private int calculatePackedSize()
 	{
 		var numericSize = calculateNumericSize() / 2;
-		if(numericSize % 2 != 0)
+		if (numericSize % 2 != 0)
 		{
 			numericSize++;
 		}

@@ -25,7 +25,7 @@ public class ForLoopOccQuickFix extends AbstractQuickFix
 		var systemFunctionNode = (ISystemFunctionNode) quickFixContext.nodeAtPosition();
 		var forLoop = (IForLoopNode) systemFunctionNode.parent();
 		var operand = systemFunctionNode.parameter().first();
-		if(!(operand instanceof IVariableReferenceNode variableReferenceNode))
+		if (!(operand instanceof IVariableReferenceNode variableReferenceNode))
 		{
 			return null;
 		}
@@ -34,14 +34,15 @@ public class ForLoopOccQuickFix extends AbstractQuickFix
 		var sizeVariableName = "#S-%s".formatted(targetVariableName);
 		return new CodeActionBuilder("Use a variable for the upper bound", CodeActionKind.QuickFix)
 			.fixesDiagnostic(quickFixContext.diagnostic())
-			.appliesWorkspaceEdit(new WorkspaceEditBuilder()
-				.addsVariable(quickFixContext.file(), sizeVariableName, "(I4)", VariableScope.LOCAL)
-				.changesNode(systemFunctionNode, sizeVariableName)
-				.changesText(
-					quickFixContext.fileUri(),
-					LspUtil.toSingleRange(forLoop.position().line(), 0),
-					"%s := *OCC(%s)%n".formatted(sizeVariableName, targetVariableName)
-				)
+			.appliesWorkspaceEdit(
+				new WorkspaceEditBuilder()
+					.addsVariable(quickFixContext.file(), sizeVariableName, "(I4)", VariableScope.LOCAL)
+					.changesNode(systemFunctionNode, sizeVariableName)
+					.changesText(
+						quickFixContext.fileUri(),
+						LspUtil.toSingleRange(forLoop.position().line(), 0),
+						"%s := *OCC(%s)%n".formatted(sizeVariableName, targetVariableName)
+					)
 			)
 			.build();
 	}

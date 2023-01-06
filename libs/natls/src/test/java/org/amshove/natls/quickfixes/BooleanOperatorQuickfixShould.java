@@ -36,13 +36,9 @@ public class BooleanOperatorQuickfixShould extends CodeActionTest
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"GT,>",
-		"LT,<",
-		"EQ,=",
-		"NE,<>",
-		"GE,>=",
-		"LE,<="
+	@ValueSource(strings =
+	{
+		"GT,>", "LT,<", "EQ,=", "NE,<>", "GE,>=", "LE,<="
 	})
 	void recognizeTheQuickfixAndReplacementForEveryOperator(String operators)
 	{

@@ -34,10 +34,12 @@ public class KeywordAsIdentifierAnalyzer extends AbstractAnalyzer
 		var symbolNode = ((ISymbolNode) node);
 		if (symbolNode.declaration() != null && symbolNode.declaration().originalKind().isPresent())
 		{
-			context.report((KEYWORD_USED_AS_IDENTIFIER.createFormattedDiagnostic(
-				symbolNode.declaration(),
-				symbolNode.declaration().source()
-			)));
+			context.report(
+				(KEYWORD_USED_AS_IDENTIFIER.createFormattedDiagnostic(
+					symbolNode.declaration(),
+					symbolNode.declaration().source()
+				))
+			);
 		}
 	}
 }

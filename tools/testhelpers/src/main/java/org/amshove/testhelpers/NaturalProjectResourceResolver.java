@@ -10,10 +10,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Allows test method parameter to be annotated with {@link ProjectName} which will
- * resolve the project using {@link TestProjectLoader}.
- * Project directory will be copied to the systems temporary folder and deleted after the test,
- * if it is not run in CI.
+ * Allows test method parameter to be annotated with {@link ProjectName} which will resolve the project using
+ * {@link TestProjectLoader}. Project directory will be copied to the systems temporary folder and deleted after the
+ * test, if it is not run in CI.
  */
 public class NaturalProjectResourceResolver implements ParameterResolver
 {
@@ -48,12 +47,12 @@ public class NaturalProjectResourceResolver implements ParameterResolver
 		@Override
 		public void close() throws Throwable
 		{
-			if(System.getenv().containsKey("GITHUB_ACTIONS"))
+			if (System.getenv().containsKey("GITHUB_ACTIONS"))
 			{
 				return;
 			}
 
-			try(var walk = Files.walk(path))
+			try (var walk = Files.walk(path))
 			{
 				walk
 					.map(Path::toFile)

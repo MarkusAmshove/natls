@@ -57,16 +57,19 @@ public class DdmParserShould
 		var topLevelFields = fields.stream().map(IDdmField::name).collect(Collectors.toList());
 
 		assertThat(topLevelFields)
-			.containsAll(Lists.newArrayList(
-				"SOME-NUMBER",
-				"ANOTHER-NUMBER",
-				"ALPHA-FIELD",
-				"ALPHANUMERIC-DESCRIPTOR",
-				"NUMERIC-DESCRIPTOR",
-				"NUMERIC-WITH-FLOATING",
-				"A-SUPERDESCRIPTOR",
-				"ANOTHER-SUPERDESCRIPTOR",
-				"SUPERDESCRIPTOR-WITH-SUBRANGE"));
+			.containsAll(
+				Lists.newArrayList(
+					"SOME-NUMBER",
+					"ANOTHER-NUMBER",
+					"ALPHA-FIELD",
+					"ALPHANUMERIC-DESCRIPTOR",
+					"NUMERIC-DESCRIPTOR",
+					"NUMERIC-WITH-FLOATING",
+					"A-SUPERDESCRIPTOR",
+					"ANOTHER-SUPERDESCRIPTOR",
+					"SUPERDESCRIPTOR-WITH-SUBRANGE"
+				)
+			);
 
 		var topLevelGroup = findField(ddm, "TOP-LEVEL-GROUP");
 		var topLevelGroupField = assertIsGroupField(topLevelGroup);
@@ -79,18 +82,18 @@ public class DdmParserShould
 
 		var aSuperdescriptor = assertIsSuperdescriptor(findField(ddm, "A-SUPERDESCRIPTOR"));
 		assertThat(aSuperdescriptor.fields()).hasSize(2);
-		assertSuperdescriptorHasField(aSuperdescriptor, "ALPHA-FIELD",1,8);
-		assertSuperdescriptorHasField(aSuperdescriptor, "ANOTHER-NUMBER",1,12);
+		assertSuperdescriptorHasField(aSuperdescriptor, "ALPHA-FIELD", 1, 8);
+		assertSuperdescriptorHasField(aSuperdescriptor, "ANOTHER-NUMBER", 1, 12);
 
 		var anotherSuperdescriptor = assertIsSuperdescriptor(findField(ddm, "ANOTHER-SUPERDESCRIPTOR"));
 		assertThat(anotherSuperdescriptor.fields()).hasSize(2);
-		assertSuperdescriptorHasField(anotherSuperdescriptor, "ALPHA-FIELD",1,8);
-		assertSuperdescriptorHasField(anotherSuperdescriptor, "ANOTHER-NUMBER",1,12);
+		assertSuperdescriptorHasField(anotherSuperdescriptor, "ALPHA-FIELD", 1, 8);
+		assertSuperdescriptorHasField(anotherSuperdescriptor, "ANOTHER-NUMBER", 1, 12);
 
 		var superdescriptorWithSubrange = assertIsSuperdescriptor(findField(ddm, "SUPERDESCRIPTOR-WITH-SUBRANGE"));
 		assertThat(superdescriptorWithSubrange.fields()).hasSize(2);
-		assertSuperdescriptorHasField(superdescriptorWithSubrange, "SOME-NUMBER",1,5);
-		assertSuperdescriptorHasField(superdescriptorWithSubrange, "TOP-LEVEL-GROUP-CHILD",5,12);
+		assertSuperdescriptorHasField(superdescriptorWithSubrange, "SOME-NUMBER", 1, 5);
+		assertSuperdescriptorHasField(superdescriptorWithSubrange, "TOP-LEVEL-GROUP-CHILD", 5, 12);
 	}
 
 	@Test

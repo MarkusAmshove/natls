@@ -22,15 +22,19 @@ public class RenameSymbolAction
 		var workspaceEdit = new WorkspaceEdit();
 		var changesPerFile = new HashMap<String, List<TextEdit>>();
 
-		referencableNode.references().stream().forEach(ref -> {
+		referencableNode.references().stream().forEach(ref ->
+		{
 			var changes = changesPerFile.computeIfAbsent(LspUtil.pathToUri(ref.position().filePath()), k -> new ArrayList<>());
 			var edit = new TextEdit();
-			if(ref.referencingToken().isQualified())
+			if (ref.referencingToken().isQualified())
 			{
-				edit.setNewText(String.format("%s.%s",
-					ref.referencingToken().symbolName().split("\\.")[0],
-					newName
-				));
+				edit.setNewText(
+					String.format(
+						"%s.%s",
+						ref.referencingToken().symbolName().split("\\.")[0],
+						newName
+					)
+				);
 			}
 			else
 			{

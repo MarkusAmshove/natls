@@ -63,7 +63,8 @@ class FieldParser
 			length,
 			suppression,
 			descriptorType,
-			remark);
+			remark
+		);
 	}
 
 	private static FieldType parseFieldType(String line)

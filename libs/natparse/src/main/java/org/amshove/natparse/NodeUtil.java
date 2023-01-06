@@ -8,12 +8,11 @@ import java.util.Optional;
 public class NodeUtil
 {
 	private NodeUtil()
-	{
-	}
+	{}
 
 	/**
-	 * Checks whether the module contains the given node.
-	 * The comparison is done by the position of the node, comparing its file path to the module file path.
+	 * Checks whether the module contains the given node. The comparison is done by the position of the node, comparing
+	 * its file path to the module file path.
 	 */
 	public static boolean moduleContainsNode(INaturalModule module, ISyntaxNode node)
 	{
@@ -23,8 +22,8 @@ public class NodeUtil
 	}
 
 	/**
-	 * Checks whether the module contains the given node.
-	 * The comparison is done by the DiagnosticPosition, which is e.g. the copy code name in an INCULDE.
+	 * Checks whether the module contains the given node. The comparison is done by the DiagnosticPosition, which is
+	 * e.g. the copy code name in an INCULDE.
 	 */
 	public static boolean moduleContainsNodeByDiagnosticPosition(INaturalModule module, ISyntaxNode node)
 	{
@@ -39,8 +38,8 @@ public class NodeUtil
 	}
 
 	/**
-	 * Tries to find the node at the given position.
-	 * It does try to not return an {@link ITokenNode}, but the node that contains the {@link ITokenNode}.
+	 * Tries to find the node at the given position. It does try to not return an {@link ITokenNode}, but the node that
+	 * contains the {@link ITokenNode}.
 	 */
 	public static @Nullable ISyntaxNode findNodeAtPosition(int line, int character, ISyntaxTree syntaxTree)
 	{
@@ -72,7 +71,7 @@ public class NodeUtil
 				if (node.descendants().hasItems())
 				{
 					var descendant = findNodeAtPosition(line, character, node);
-					if(descendant != null && !(descendant instanceof ITokenNode))
+					if (descendant != null && !(descendant instanceof ITokenNode))
 					{
 						return descendant;
 					}
@@ -141,12 +140,12 @@ public class NodeUtil
 	{
 		for (var statement : statementList.statements())
 		{
-			if(statement.diagnosticPosition().line()  == line)
+			if (statement.diagnosticPosition().line() == line)
 			{
 				return Optional.of(statement);
 			}
 
-			if(statement instanceof IStatementWithBodyNode withBody
+			if (statement instanceof IStatementWithBodyNode withBody
 				&& withBody.descendants().first().diagnosticPosition().line() <= line
 				&& withBody.descendants().last().diagnosticPosition().line() >= line)
 			{

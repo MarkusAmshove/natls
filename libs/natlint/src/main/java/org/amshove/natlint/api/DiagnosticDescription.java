@@ -45,8 +45,8 @@ public class DiagnosticDescription
 	}
 
 	/**
-	 *	Create a diagnostic with a formatted message.<br/>
-	 *	The message of the {@link DiagnosticDescription} should have format marks understandable by String.format.
+	 * Create a diagnostic with a formatted message.<br/>
+	 * The message of the {@link DiagnosticDescription} should have format marks understandable by String.format.
 	 */
 	public LinterDiagnostic createFormattedDiagnostic(IPosition position, Object... formatArgs)
 	{
@@ -54,9 +54,9 @@ public class DiagnosticDescription
 	}
 
 	/**
-	 *	Create a diagnostic with a formatted message.<br/>
-	 *	Supports passing the original location of the diagnostic. See {@link IDiagnostic#originalPosition()} <br/>
-	 *	The message of the {@link DiagnosticDescription} should have format marks understandable by String.format. <br/>
+	 * Create a diagnostic with a formatted message.<br/>
+	 * Supports passing the original location of the diagnostic. See {@link IDiagnostic#originalPosition()} <br/>
+	 * The message of the {@link DiagnosticDescription} should have format marks understandable by String.format. <br/>
 	 */
 	public LinterDiagnostic createFormattedDiagnostic(IPosition position, IPosition originalPosition, Object... formatArgs)
 	{
@@ -64,9 +64,9 @@ public class DiagnosticDescription
 	}
 
 	/**
-	 *	Create a diagnostic with a formatted message.<br/>
-	 *	Supports passing the original location of the diagnostic. See {@link IDiagnostic#originalPosition()} <br/>
-	 *	The message of the {@link DiagnosticDescription} should have format marks understandable by String.format. <br/>
+	 * Create a diagnostic with a formatted message.<br/>
+	 * Supports passing the original location of the diagnostic. See {@link IDiagnostic#originalPosition()} <br/>
+	 * The message of the {@link DiagnosticDescription} should have format marks understandable by String.format. <br/>
 	 */
 	public LinterDiagnostic createFormattedDiagnostic(SyntaxToken token, Object... formatArgs)
 	{

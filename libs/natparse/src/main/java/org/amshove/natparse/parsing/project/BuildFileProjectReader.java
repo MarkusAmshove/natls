@@ -77,7 +77,7 @@ public class BuildFileProjectReader
 					.addStepLib(libraryMap.get(stepLib));
 			}
 
-			if(libraryMap.containsKey("SYSTEM"))
+			if (libraryMap.containsKey("SYSTEM"))
 			{
 				theLibrary.addStepLib(libraryMap.get("SYSTEM"));
 			}

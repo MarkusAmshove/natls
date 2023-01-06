@@ -33,7 +33,6 @@ INCLUDE L4NLOGIT${0}
 			.applicableWhen(f -> f.getType().canHaveBody());
 	}
 
-
 	@Override
 	public List<CompletionItem> provideSnippets(LanguageServerFile file)
 	{

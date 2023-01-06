@@ -34,8 +34,10 @@ public class RemoveUnusedVariableQuickfix extends AbstractQuickFix
 		var diagnostic = context.diagnostic();
 		return new CodeActionBuilder("Remove unused %s".formatted(name), CodeActionKind.QuickFix)
 			.fixesDiagnostic(diagnostic)
-			.appliesWorkspaceEdit(new WorkspaceEditBuilder()
-				.removesLine(context.fileUri(), new Range(new Position(diagnostic.getRange().getStart().getLine(), 0), new Position(diagnostic.getRange().getEnd().getLine() + 1, 0))).build())
+			.appliesWorkspaceEdit(
+				new WorkspaceEditBuilder()
+					.removesLine(context.fileUri(), new Range(new Position(diagnostic.getRange().getStart().getLine(), 0), new Position(diagnostic.getRange().getEnd().getLine() + 1, 0))).build()
+			)
 			.build();
 	}
 }

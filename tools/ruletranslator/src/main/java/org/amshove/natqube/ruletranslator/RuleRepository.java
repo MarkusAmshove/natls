@@ -7,8 +7,7 @@ import java.util.*;
 public class RuleRepository
 {
 	private RuleRepository()
-	{
-	}
+	{}
 
 	private static final Map<String, SonarRule> rules = new HashMap<>();
 

@@ -15,7 +15,8 @@ public class SubroutineNameMismatchAnalyzerShould extends AbstractAnalyzerTest
 	@Test
 	void reportADiagnosticWhenNamesMismatchAfter32Characters()
 	{
-		testDiagnostics("""
+		testDiagnostics(
+			"""
 			define data local
 			end-define
 			define subroutine this-is-a-very-long-name-no-one-should-ever-do-this
@@ -24,13 +25,15 @@ public class SubroutineNameMismatchAnalyzerShould extends AbstractAnalyzerTest
 			perform this-is-a-very-long-name-no-one-does-not-matter-whats-here
 			end
 			""",
-			expectDiagnostic(5, SubroutineNameMismatchAnalyzer.SUBROUTINE_NAME_MISMATCH));
+			expectDiagnostic(5, SubroutineNameMismatchAnalyzer.SUBROUTINE_NAME_MISMATCH)
+		);
 	}
 
 	@Test
 	void notReportADiagnosticIfNamesMatchEvenAfter32Characters()
 	{
-		testDiagnostics("""
+		testDiagnostics(
+			"""
 			define data local
 			end-define
 			define subroutine this-is-a-very-long-name-no-one-should-ever-do-this
@@ -39,13 +42,15 @@ public class SubroutineNameMismatchAnalyzerShould extends AbstractAnalyzerTest
 			perform this-is-a-very-long-name-no-one-should-ever-do-this
 			end
 			""",
-			expectNoDiagnosticOfType(SubroutineNameMismatchAnalyzer.SUBROUTINE_NAME_MISMATCH));
+			expectNoDiagnosticOfType(SubroutineNameMismatchAnalyzer.SUBROUTINE_NAME_MISMATCH)
+		);
 	}
 
 	@Test
 	void notReportADiagnosticIfNamesMatchOnShorterSubroutines()
 	{
-		testDiagnostics("""
+		testDiagnostics(
+			"""
 			define data local
 			end-define
 			define subroutine this-is-okay
@@ -54,7 +59,8 @@ public class SubroutineNameMismatchAnalyzerShould extends AbstractAnalyzerTest
 			perform this-is-okay
 			end
 			""",
-			expectNoDiagnosticOfType(SubroutineNameMismatchAnalyzer.SUBROUTINE_NAME_MISMATCH));
+			expectNoDiagnosticOfType(SubroutineNameMismatchAnalyzer.SUBROUTINE_NAME_MISMATCH)
+		);
 	}
 
 	@Test

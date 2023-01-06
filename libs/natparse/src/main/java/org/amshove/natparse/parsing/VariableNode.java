@@ -77,7 +77,7 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 				return qualifiedName;
 			}
 
-			parent = ((ISyntaxNode)parent).parent();
+			parent = ((ISyntaxNode) parent).parent();
 		}
 
 		throw new NaturalParseException("Could not determine qualified name");

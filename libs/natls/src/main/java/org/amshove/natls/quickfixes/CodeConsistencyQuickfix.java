@@ -25,8 +25,10 @@ public class CodeConsistencyQuickfix extends AbstractQuickFix
 
 		return new CodeActionBuilder("Replace %s with %s".formatted(oldToken.source(), newTokenSource), CodeActionKind.QuickFix)
 			.fixesDiagnostic(quickFixContext.diagnostic())
-			.appliesWorkspaceEdit(new WorkspaceEditBuilder()
-				.changesText(oldToken, newTokenSource))
+			.appliesWorkspaceEdit(
+				new WorkspaceEditBuilder()
+					.changesText(oldToken, newTokenSource)
+			)
 			.build();
 	}
 }

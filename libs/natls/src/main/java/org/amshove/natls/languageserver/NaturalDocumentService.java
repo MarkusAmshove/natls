@@ -28,7 +28,8 @@ public class NaturalDocumentService implements TextDocumentService
 
 	@Override
 	public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> definition(
-		DefinitionParams params)
+		DefinitionParams params
+	)
 	{
 		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> Either.forLeft(languageService.gotoDefinition(params))));
 	}
@@ -86,7 +87,7 @@ public class NaturalDocumentService implements TextDocumentService
 	@Override
 	public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbol(DocumentSymbolParams params)
 	{
-		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.findSymbolsInFile(params.getTextDocument()).stream().map(Either::<SymbolInformation, DocumentSymbol>forRight).toList()));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.findSymbolsInFile(params.getTextDocument()).stream().map(Either::<SymbolInformation, DocumentSymbol> forRight).toList()));
 	}
 
 	@Override
@@ -104,7 +105,7 @@ public class NaturalDocumentService implements TextDocumentService
 	@Override
 	public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(CodeActionParams params)
 	{
-		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.codeAction(params).stream().map(Either::<Command, CodeAction>forRight).toList()));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.codeAction(params).stream().map(Either::<Command, CodeAction> forRight).toList()));
 	}
 
 	@Override
@@ -123,7 +124,7 @@ public class NaturalDocumentService implements TextDocumentService
 	@Override
 	public CompletableFuture<List<CallHierarchyItem>> prepareCallHierarchy(CallHierarchyPrepareParams params)
 	{
-		return wrapSafe(() -> CompletableFuture.supplyAsync(()->languageService.createCallHierarchyItems(params)));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.createCallHierarchyItems(params)));
 	}
 
 	@Override
@@ -157,8 +158,9 @@ public class NaturalDocumentService implements TextDocumentService
 
 	private <R> CompletableFuture<R> wrapSafe(Supplier<CompletableFuture<R>> function)
 	{
-		return function.get().handle((r, e) -> {
-			if(e != null)
+		return function.get().handle((r, e) ->
+		{
+			if (e != null)
 			{
 				// TODO: log exception
 				return null;

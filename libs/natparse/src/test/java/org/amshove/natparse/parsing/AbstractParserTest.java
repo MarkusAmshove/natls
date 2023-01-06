@@ -46,13 +46,15 @@ public abstract class AbstractParserTest<NodeType>
 		assertThat(lexResult.diagnostics().size())
 			.as(
 				"Expected the source to lex without diagnostics%n%s"
-					.formatted(lexResult.diagnostics().stream().map(IDiagnostic::message).collect(Collectors.joining("\n"))))
+					.formatted(lexResult.diagnostics().stream().map(IDiagnostic::message).collect(Collectors.joining("\n")))
+			)
 			.isZero();
 		var parseResult = sut.parse(lexResult);
 		assertThat(parseResult.diagnostics().size())
 			.as(
 				"Expected the source to parse without diagnostics%n%s"
-					.formatted(parseResult.diagnostics().stream().map(IDiagnostic::message).collect(Collectors.joining("\n"))))
+					.formatted(parseResult.diagnostics().stream().map(IDiagnostic::message).collect(Collectors.joining("\n")))
+			)
 			.isZero();
 
 		return parseResult.result();
@@ -76,7 +78,7 @@ public abstract class AbstractParserTest<NodeType>
 	protected <T extends ISyntaxNode> T assertNodeType(ISyntaxNode node, Class<T> expectedType)
 	{
 		assertThat(node).isInstanceOf(expectedType);
-		var castedNode = (T)node;
+		var castedNode = (T) node;
 		return assertValidNode(castedNode);
 	}
 
@@ -97,7 +99,7 @@ public abstract class AbstractParserTest<NodeType>
 		assertThat(node.parent()).as("Parent for node %s was not set".formatted(node.getClass().getSimpleName())).isNotNull();
 		assertThat(node.position()).as("Position for node was not set").isNotNull();
 
-		if(!(node instanceof ITokenNode))
+		if (!(node instanceof ITokenNode))
 		{
 			assertThat(node.descendants().size()).as("No child were added to node").isPositive();
 		}

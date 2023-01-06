@@ -13,7 +13,7 @@ public class CreateRedefineRefactoring implements ICodeActionProvider
 	@Override
 	public boolean isApplicable(RefactoringContext context)
 	{
-		return context.nodeAtPosition() instanceof ITypedVariableNode typedVariableNode && typedVariableNode.scope().isLocal();
+		return context.nodeAtPosition()instanceof ITypedVariableNode typedVariableNode && typedVariableNode.scope().isLocal();
 	}
 
 	@Override

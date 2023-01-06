@@ -40,12 +40,12 @@ class NatlintCliShould
 		return new CliResult(
 			exitCode,
 			stdOutStream.toString(StandardCharsets.UTF_8),
-			stdErrStream.toString(StandardCharsets.UTF_8));
+			stdErrStream.toString(StandardCharsets.UTF_8)
+		);
 	}
 
 	record CliResult(int exitCode, String stdOut, String stdErr)
-	{
-	}
+	{}
 
 	@BeforeEach
 	void beforeEach()

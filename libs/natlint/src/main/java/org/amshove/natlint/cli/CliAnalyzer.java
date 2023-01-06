@@ -82,7 +82,8 @@ public class CliAnalyzer
 		var startCheck = System.currentTimeMillis();
 		for (var library : project.getLibraries())
 		{
-			library.files().parallelStream().forEach(file -> {
+			library.files().parallelStream().forEach(file ->
+			{
 				if (filePredicates.stream().noneMatch(p -> p.test(file)))
 				{
 					return;

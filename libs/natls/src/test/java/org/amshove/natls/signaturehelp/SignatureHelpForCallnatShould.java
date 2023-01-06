@@ -40,10 +40,9 @@ class SignatureHelpForCallnatShould extends SignatureHelpTest
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
-		"CALLNAT 'CALLED' APDA ${}$",
-		"CALLNAT 'CALLED' APDA 'Lit${}$eral'",
-		"CALLNAT 'CALLED' APDA\n 'Lit${}$eral'"
+	@ValueSource(strings =
+	{
+		"CALLNAT 'CALLED' APDA ${}$", "CALLNAT 'CALLED' APDA 'Lit${}$eral'", "CALLNAT 'CALLED' APDA\n 'Lit${}$eral'"
 	})
 	void haveTheSecondParameterActiveOnDifferentPositionsForSecondParameter(String moduleCall) throws ExecutionException, InterruptedException, TimeoutException
 	{

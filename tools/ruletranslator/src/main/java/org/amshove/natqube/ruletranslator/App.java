@@ -13,7 +13,7 @@ public class App
 		System.out.println("Exporting rules to %s".formatted(args[0]));
 		var targetPath = Paths.get(args[0]);
 		var parentPath = targetPath.getParent();
-		if(!parentPath.toFile().exists())
+		if (!parentPath.toFile().exists())
 		{
 			parentPath.toFile().mkdirs();
 		}
