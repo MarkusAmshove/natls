@@ -1,14 +1,15 @@
 package org.amshove.natparse.lexing;
 
-import org.amshove.natparse.IPosition;
-import org.amshove.natparse.lexing.text.SourceTextScanner;
-
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+
 import org.amshove.natparse.natural.project.NaturalHeader;
 import org.amshove.natparse.natural.project.NaturalProgrammingMode;
+import org.amshove.natparse.IPosition;
+import org.amshove.natparse.lexing.text.SourceTextScanner;
+
 
 public class Lexer
 {
@@ -135,6 +136,7 @@ public class Lexer
 					{
 						continue;
 					}
+
 					createAndAddCurrentSingleToken(SyntaxKind.CARET);
 					continue;
 				case '%':
@@ -244,6 +246,11 @@ public class Lexer
 			}
 		}
 		return TokenList.fromTokensAndDiagnostics(filePath, tokens, diagnostics, comments, sourceHeader);
+	}
+
+	public void relocateDiagnosticPosition(IPosition diagnosticPosition)
+	{
+		this.relocatedDiagnosticPosition = diagnosticPosition;
 	}
 
 	private void consumeMinusOrStringConcat()
@@ -1279,11 +1286,6 @@ public class Lexer
 		token.setDiagnosticPosition(relocatedDiagnosticPosition);
 		tokens.add(token);
 		scanner.reset();
-	}
-
-	public void relocateDiagnosticPosition(IPosition diagnosticPosition)
-	{
-		this.relocatedDiagnosticPosition = diagnosticPosition;
 	}
 
 	private boolean isValidAivStartAfterPlus(char character)
