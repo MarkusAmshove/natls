@@ -134,7 +134,6 @@ public class Lexer
 					{
 						continue;
 					}
-
 					createAndAddCurrentSingleToken(SyntaxKind.CARET);
 					continue;
 				case '%':
@@ -403,6 +402,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.TIMN);
 			return;
 		}
+		if (scanner.advanceIfIgnoreCase("DAT4E"))
+		{
+			createAndAdd(SyntaxKind.DAT4E);
+			return;
+		}
 		if (scanner.advanceIfIgnoreCase("DATE"))
 		{
 			createAndAdd(SyntaxKind.DATE);
@@ -443,6 +447,36 @@ public class Lexer
 			createAndAdd(SyntaxKind.DATG);
 			return;
 		}
+		if (scanner.advanceIfIgnoreCase("DAT4J"))
+		{
+			createAndAdd(SyntaxKind.DAT4J);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("DATJ"))
+		{
+			createAndAdd(SyntaxKind.DATJ);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("DAT4U"))
+		{
+			createAndAdd(SyntaxKind.DAT4U);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("DATU"))
+		{
+			createAndAdd(SyntaxKind.DATU);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("DATVS"))
+		{
+			createAndAdd(SyntaxKind.DATVS);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("DATV"))
+		{
+			createAndAdd(SyntaxKind.DATV);
+			return;
+		}
 		if (scanner.advanceIfIgnoreCase("LANGUAGE"))
 		{
 			createAndAdd(SyntaxKind.LANGUAGE);
@@ -461,6 +495,31 @@ public class Lexer
 		if (scanner.advanceIfIgnoreCase("PROGRAM"))
 		{
 			createAndAdd(SyntaxKind.PROGRAM);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("CPU-TIME"))
+		{
+			createAndAdd(SyntaxKind.CPU_TIME);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("ETID"))
+		{
+			createAndAdd(SyntaxKind.ETID);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("INIT-PROGRAM"))
+		{
+			createAndAdd(SyntaxKind.INIT_PROGRAM);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("LBOUND"))
+		{
+			createAndAdd(SyntaxKind.LBOUND);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("UBOUND"))
+		{
+			createAndAdd(SyntaxKind.UBOUND);
 			return;
 		}
 		if (scanner.advanceIfIgnoreCase("USER"))
