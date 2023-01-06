@@ -4,12 +4,10 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import org.amshove.natparse.natural.project.NaturalHeader;
 import org.amshove.natparse.natural.project.NaturalProgrammingMode;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.lexing.text.SourceTextScanner;
-
 
 public class Lexer
 {
