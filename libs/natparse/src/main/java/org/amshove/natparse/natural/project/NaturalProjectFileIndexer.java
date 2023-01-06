@@ -3,6 +3,7 @@ package org.amshove.natparse.natural.project;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.infrastructure.IFilesystem;
 import org.amshove.natparse.lexing.Lexer;
+import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.lexing.SyntaxKind;
 
 import java.nio.file.Path;

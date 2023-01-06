@@ -188,7 +188,7 @@ class ParserErrors
 	public static ParserDiagnostic unresolvedReference(ITokenNode node)
 	{
 		return ParserDiagnostic.create(
-			"Unresolved reference: %s in line number %s of %s".formatted(node.token().source(), node.token().line(), node.token().fileNameWithoutExtension()),
+			"Unresolved reference: %s".formatted(node.token().source()),
 			node.token(),
 			ParserError.UNRESOLVED_REFERENCE
 		);

@@ -7,6 +7,8 @@ import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
+import org.amshove.natparse.natural.project.NaturalHeader;
+import org.amshove.natparse.natural.project.NaturalProgrammingMode;
 import org.amshove.testhelpers.ResourceHelper;
 import org.junit.jupiter.api.DynamicTest;
 
