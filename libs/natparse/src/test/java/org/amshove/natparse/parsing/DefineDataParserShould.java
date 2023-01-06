@@ -521,6 +521,17 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""");
 	}
 
+	/*	@Test TODO: make this work
+		void parseAnArrayWithWhitespaceAfterTheSlash()
+		{
+			assertParsesWithoutDiagnostics("""
+			define data
+			local
+			01 #DATN (N8/ 1)
+			end-define
+			""");
+		} */
+
 	@Test
 	void parseAnArrayWithMultipleCommasAndReferences()
 	{
@@ -602,6 +613,24 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		assertThat(myArr.dimensions().first().lowerBound()).isEqualTo(1);
 		assertThat(myArr.dimensions().first().upperBound()).isEqualTo(2);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"(A1/#length)",
+		"(A1 /#length)",
+		//		TODO: "(A1/ #length)"
+		"(A1 / #length)"
+	})
+	void parseAnArrayThatHasAConstReferenceAsDimensionAndArrayHasConstElements(String variable)
+	{
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 #length (N2) const <2>
+			1 #myarray %s const<'a','b'>
+			end-define
+			""".formatted(variable));
 	}
 
 	@Test
