@@ -179,7 +179,7 @@ class ParserErrors
 	public static ParserDiagnostic redefinitionLengthIsTooLong(RedefinitionNode node, double redefinitionLength, double maxLength)
 	{
 		return ParserDiagnostic.create(
-			"Length of redefinition (%s bytes) exceeds target length (%s bytes)".formatted(DataFormat.formatLength(redefinitionLength), DataFormat.formatLength(maxLength)),
+			"Length of redefinition (%s bytes) exceeds target length (%s bytes) of %s".formatted(DataFormat.formatLength(redefinitionLength), DataFormat.formatLength(maxLength), node.declaration().source()),
 			node,
 			ParserError.REDEFINE_LENGTH_EXCEEDS_TARGET_LENGTH
 		);
@@ -188,7 +188,7 @@ class ParserErrors
 	public static ParserDiagnostic unresolvedReference(ITokenNode node)
 	{
 		return ParserDiagnostic.create(
-			"Unresolved reference: %s".formatted(node.token().source()),
+			"Unresolved reference: %s in line number %s of %s".formatted(node.token().source(), node.token().line(), node.token().fileNameWithoutExtension()),
 			node.token(),
 			ParserError.UNRESOLVED_REFERENCE
 		);
@@ -224,7 +224,7 @@ class ParserErrors
 	public static IDiagnostic trailingToken(SyntaxToken token)
 	{
 		return ParserDiagnostic.create(
-			"Trailing token <%s> not allowed here".formatted(token.kind()),
+			"Trailing token <%s> not allowed here, line number <%s>".formatted(token.kind(), token.line()),
 			new TokenNode(token),
 			ParserError.TRAILING_TOKEN
 		);
