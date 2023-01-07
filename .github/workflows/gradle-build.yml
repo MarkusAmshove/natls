@@ -55,7 +55,7 @@ jobs:
 
       - name: Gather test results
         if: failure()
-        run: ./gradlew restReport --no-daemon
+        run: ./gradlew testReport --no-daemon
 
       - name: Archive test results
         if: failure()
