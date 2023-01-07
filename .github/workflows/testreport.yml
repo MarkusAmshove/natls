@@ -10,6 +10,7 @@ permissions:
 jobs:
   checks:
     runs-on: ubuntu-latest
+    name: Test reports from ${{ matrix.os }}
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest ]
