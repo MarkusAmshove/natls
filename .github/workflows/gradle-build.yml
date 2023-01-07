@@ -53,12 +53,13 @@ jobs:
       - name: Build
         run: ./gradlew check cover shadowJar --no-daemon
 
-      - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v3
+      - name: Upload Test Report
+        uses: actions/upload-artifact@v3
         if: always()
         with:
-          check_name: Test reports on ${{ matrix.os }}
-          report_paths: '**/build/test-results/test/TEST-*.xml'
+          name: junit-test-results-${{ matrix.os }}
+          path: '**/build/test-results/test/TEST-*.xml'
+          retention-days: 1
 
       - name: Save PR number
         if: github.event_name == 'pull_request'
