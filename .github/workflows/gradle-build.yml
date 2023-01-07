@@ -14,6 +14,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
+      fail-fast: false
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -50,7 +51,14 @@ jobs:
         run: ./gradlew spotlessCheck
 
       - name: Build
-        run: ./gradlew check cover shadowJar --no-daemon
+        run: ./gradlew check cover shadowJar testReport --no-daemon
+
+      - name: Archive test results
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: junit_report_${{ matrix.os }}
+          path: build/reports/allTests
 
       - name: Save PR number
         if: github.event_name == 'pull_request'
