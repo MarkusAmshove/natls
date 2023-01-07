@@ -16,14 +16,16 @@ public class NaturalProperties
 
 	static
 	{
-		propertyDefinitions.add(PropertyDefinition.builder(NATLINT_ISSUE_FILE_KEY)
+		propertyDefinitions.add(
+			PropertyDefinition.builder(NATLINT_ISSUE_FILE_KEY)
 				.category(Natural.NAME)
 				.subCategory(CATEGORY_ANALYZER)
 				.defaultValue(DEFAULT_NATLINT_ISSUE_FILE)
 				.name("Diagnostics file")
 				.description("Relative path to CSV file with diagnostics")
 				.onQualifiers(Qualifiers.APP, Qualifiers.PROJECT)
-			.build());
+				.build()
+		);
 	}
 
 	static List<PropertyDefinition> getProperties()

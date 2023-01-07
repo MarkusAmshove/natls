@@ -17,7 +17,7 @@ public class MessageProgressMonitor implements IProgressMonitor
 	@Override
 	public void progress(String message, int percentage)
 	{
-		if(percentage / 10 > lasteTenthPercentage)
+		if (percentage / 10 > lasteTenthPercentage)
 		{
 			// for client messages, only show every tenth entry to reduce spam
 			lasteTenthPercentage = percentage / 10;

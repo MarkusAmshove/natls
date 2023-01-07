@@ -84,6 +84,7 @@ public class PlaintextContentBuilder implements IMarkupContentBuilder
 	{
 		return new MarkupContent(
 			MarkupKind.PLAINTEXT,
-			builder.toString());
+			builder.toString()
+		);
 	}
 }

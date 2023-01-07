@@ -83,7 +83,7 @@ public class UnusedLocalSubroutineAnalyzerShould extends AbstractAnalyzerTest
 	}
 
 	@Test
-	void notReportADiagnosticForAnUnusedSubroutineDeclaredInACopycode(@ProjectName("unusedsubroutines")NaturalProject project)
+	void notReportADiagnosticForAnUnusedSubroutineDeclaredInACopycode(@ProjectName("unusedsubroutines") NaturalProject project)
 	{
 		testDiagnostics(
 			project.findModule("UNUSEDSUBINCC"),
@@ -92,7 +92,7 @@ public class UnusedLocalSubroutineAnalyzerShould extends AbstractAnalyzerTest
 	}
 
 	@Test
-	void notReportADiagnosticForIfASubroutineIsUsedFromWithinACopyCode(@ProjectName("unusedsubroutines")NaturalProject project)
+	void notReportADiagnosticForIfASubroutineIsUsedFromWithinACopyCode(@ProjectName("unusedsubroutines") NaturalProject project)
 	{
 		testDiagnostics(
 			project.findModule("DECLARINGSUB"),
@@ -101,7 +101,7 @@ public class UnusedLocalSubroutineAnalyzerShould extends AbstractAnalyzerTest
 	}
 
 	@Test
-	void notReportAnExternalSubroutineAsLocallyUnused(@ProjectName("unusedsubroutines")NaturalProject project)
+	void notReportAnExternalSubroutineAsLocallyUnused(@ProjectName("unusedsubroutines") NaturalProject project)
 	{
 		testDiagnostics(
 			project.findModule("EXTERNAL-SUBROUTINE"),
@@ -110,7 +110,7 @@ public class UnusedLocalSubroutineAnalyzerShould extends AbstractAnalyzerTest
 	}
 
 	@Test
-	void reportADiagnosticForUnusedLocalSubroutinesWithinExternalSubroutines(@ProjectName("unusedsubroutines")NaturalProject project)
+	void reportADiagnosticForUnusedLocalSubroutinesWithinExternalSubroutines(@ProjectName("unusedsubroutines") NaturalProject project)
 	{
 		testDiagnostics(
 			project.findModule("EXTERNAL-WITH-LOCAL"),

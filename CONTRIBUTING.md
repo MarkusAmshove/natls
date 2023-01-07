@@ -70,6 +70,8 @@ If you want to get information about code coverage, you can run `gradlew cover` 
 To adhere to the formatting of the project, you can find formatter profiles in the repository, namely `EclipseFormatter.xml` and `IntelliFormatter.xml`.
 Additionally, the formatting is checked by [Spotless](https://github.com/diffplug/spotless) in the Gradle build.
 
+Formatting can also be run with `gradlew spotlessApply`.
+
 # How-To implement X
 
 - [Parsing new statements](/docs/parsing-statements.md)

@@ -7,5 +7,6 @@ import java.util.List;
 public interface ICodeActionProvider
 {
 	boolean isApplicable(RefactoringContext context);
+
 	List<CodeAction> createCodeAction(RefactoringContext context);
 }

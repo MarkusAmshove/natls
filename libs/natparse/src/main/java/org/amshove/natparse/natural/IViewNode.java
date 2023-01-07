@@ -6,5 +6,6 @@ import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
 public interface IViewNode extends IGroupNode
 {
 	SyntaxToken ddmNameToken();
+
 	IDataDefinitionModule ddm();
 }

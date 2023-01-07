@@ -28,7 +28,7 @@ public class NatUnitResultParser
 				var item = (Element) nodes.item(i);
 				var name = item.getAttribute("name");
 				var childNodes = item.getElementsByTagName("failure");
-				if(childNodes.getLength() == 0)
+				if (childNodes.getLength() == 0)
 				{
 					result.addTestResult(new NatUnitTestResult(name, false, ""));
 				}

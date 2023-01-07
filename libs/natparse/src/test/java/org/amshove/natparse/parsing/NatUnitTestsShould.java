@@ -9,7 +9,7 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 public class NatUnitTestsShould extends ParserIntegrationTest
 {
 	@Test
-	void notReportAnUnresolvedSubroutineForSetup(@ProjectName("natunittests")NaturalProject project)
+	void notReportAnUnresolvedSubroutineForSetup(@ProjectName("natunittests") NaturalProject project)
 	{
 		var module = project.findModule("NATUNIT", "TCSETUP");
 		var subprogram = assertParsesWithoutAnyDiagnostics(module);
@@ -17,7 +17,7 @@ public class NatUnitTestsShould extends ParserIntegrationTest
 	}
 
 	@Test
-	void notReportAnUnresolvedSubroutineForTeardown(@ProjectName("natunittests")NaturalProject project)
+	void notReportAnUnresolvedSubroutineForTeardown(@ProjectName("natunittests") NaturalProject project)
 	{
 		var module = project.findModule("NATUNIT", "TCTEAR");
 		var subprogram = assertParsesWithoutAnyDiagnostics(module);

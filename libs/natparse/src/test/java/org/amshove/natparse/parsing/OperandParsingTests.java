@@ -69,7 +69,10 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "MINVAL", "MAXVAL" })
+	@ValueSource(strings =
+	{
+		"MINVAL", "MAXVAL"
+	})
 	void parseMinAndMaxValWithExplicitReturnType(String function)
 	{
 		var node = parseOperands("""
@@ -308,19 +311,20 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(access.dimensions()).hasSize(1);
 		var rangedAccess = assertNodeType(access.dimensions().first(), IRangedArrayAccessNode.class);
 
-		var lower = assertNodeType(rangedAccess.lowerBound(),IArithmeticExpressionNode.class);
+		var lower = assertNodeType(rangedAccess.lowerBound(), IArithmeticExpressionNode.class);
 		assertThat(assertNodeType(lower.left(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#DOWN");
 		assertThat(lower.operator()).isEqualTo(SyntaxKind.MINUS);
 		assertThat(assertNodeType(lower.right(), ILiteralNode.class).token().intValue()).isEqualTo(5);
 
-		var upper = assertNodeType(rangedAccess.upperBound(),IArithmeticExpressionNode.class);
+		var upper = assertNodeType(rangedAccess.upperBound(), IArithmeticExpressionNode.class);
 		assertThat(assertNodeType(upper.left(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#UP");
 		assertThat(upper.operator()).isEqualTo(SyntaxKind.PLUS);
 		assertThat(assertNodeType(upper.right(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#DOWN");
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"#VAR(2, 1:10)", "#VAR(1:10, 2)"
 	})
 	void parseArrayAccessWithMultipleDimensionsAndRanges(String operandSource)

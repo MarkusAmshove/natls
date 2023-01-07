@@ -56,7 +56,6 @@ public class VariableReferenceTests extends ParserIntegrationTest
 		assertThat(variable.references()).hasSize(1);
 	}
 
-
 	@Test
 	void includeShouldAddABidirectionalReference(@ProjectName("variablereferencetests") NaturalProject project)
 	{

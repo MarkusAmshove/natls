@@ -6,8 +6,7 @@ import org.eclipse.lsp4j.MessageType;
 public class ClientMessage
 {
 	private ClientMessage()
-	{
-	}
+	{}
 
 	public static MessageParams log(String message)
 	{

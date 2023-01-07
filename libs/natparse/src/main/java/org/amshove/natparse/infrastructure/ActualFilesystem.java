@@ -10,7 +10,10 @@ import java.util.stream.Stream;
 
 public class ActualFilesystem implements IFilesystem
 {
-	private static final String[] PROJECT_FILE_NAMES = new String[] { ".natural", "_naturalBuild" };
+	private static final String[] PROJECT_FILE_NAMES = new String[]
+	{
+		".natural", "_naturalBuild"
+	};
 
 	public String readFile(Path path)
 	{
@@ -72,8 +75,7 @@ public class ActualFilesystem implements IFilesystem
 			for (var projectFileName : PROJECT_FILE_NAMES)
 			{
 				try (var filteredFiles = Files.list(root)
-					.filter(f -> f.getFileName().toString().equalsIgnoreCase(projectFileName))
-				)
+					.filter(f -> f.getFileName().toString().equalsIgnoreCase(projectFileName)))
 				{
 					var foundFile = filteredFiles.findFirst();
 

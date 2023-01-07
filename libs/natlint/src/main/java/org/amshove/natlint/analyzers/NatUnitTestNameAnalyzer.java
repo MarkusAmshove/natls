@@ -50,12 +50,12 @@ public class NatUnitTestNameAnalyzer extends AbstractAnalyzer
 		var ifStatement = (IIfStatementNode) node;
 
 		var condition = ifStatement.condition();
-		if (!(condition.criteria() instanceof IRelationalCriteriaNode relationalNode))
+		if (!(condition.criteria()instanceof IRelationalCriteriaNode relationalNode))
 		{
 			return;
 		}
 
-		if (!(relationalNode.left() instanceof ISymbolReferenceNode testedVariable))
+		if (!(relationalNode.left()instanceof ISymbolReferenceNode testedVariable))
 		{
 			return;
 		}
@@ -65,7 +65,7 @@ public class NatUnitTestNameAnalyzer extends AbstractAnalyzer
 			return;
 		}
 
-		if (!(relationalNode.right() instanceof ILiteralNode nameNode))
+		if (!(relationalNode.right()instanceof ILiteralNode nameNode))
 		{
 			return;
 		}

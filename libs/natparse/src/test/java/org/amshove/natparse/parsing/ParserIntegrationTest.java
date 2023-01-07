@@ -40,6 +40,6 @@ public abstract class ParserIntegrationTest
 	{
 		var module = parse(file);
 		assertThat(module).isInstanceOfAny(moduleType);
-		return (T)module;
+		return (T) module;
 	}
 }

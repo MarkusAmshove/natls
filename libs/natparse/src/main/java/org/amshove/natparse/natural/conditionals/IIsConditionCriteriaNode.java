@@ -6,5 +6,6 @@ import org.amshove.natparse.natural.IOperandNode;
 public non-sealed interface IIsConditionCriteriaNode extends ILogicalConditionCriteriaNode
 {
 	IOperandNode left();
+
 	SyntaxToken checkedType();
 }

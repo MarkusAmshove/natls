@@ -30,7 +30,8 @@ public abstract class ResourceFolderBasedTest
 		}
 
 		return testFiles.stream()
-			.flatMap(testFile -> {
+			.flatMap(testFile ->
+			{
 				var testFilePath = Path.of(testFile);
 				var testFileName = testFilePath.getFileName().toString();
 				var source = ResourceHelper.readResourceFile(testFile, getClass());
@@ -53,7 +54,8 @@ public abstract class ResourceFolderBasedTest
 
 				for (var diagnostic : diagnostics)
 				{
-					testsInFile.add(dynamicTest(testFileName + ": Actual diagnostic in line " + (diagnostic.line() + 1), () -> {
+					testsInFile.add(dynamicTest(testFileName + ": Actual diagnostic in line " + (diagnostic.line() + 1), () ->
+					{
 						if (expectedDiagnostics.stream().noneMatch(d -> d.matches(diagnostic)))
 						{
 							fail("Diagnostic [%s] not expected but found".formatted(diagnostic));
@@ -63,14 +65,16 @@ public abstract class ResourceFolderBasedTest
 
 				if (expectedDiagnostics.isEmpty())
 				{
-					testsInFile.add(dynamicTest(testFileName + ": Expected no diagnostics", () -> {
+					testsInFile.add(dynamicTest(testFileName + ": Expected no diagnostics", () ->
+					{
 						assertThat(diagnostics).isEmpty();
 					}));
 				}
 
 				for (var expectedDiagnostic : expectedDiagnostics)
 				{
-					testsInFile.add(dynamicTest(testFileName + ": Expected diagnostic in line " + (expectedDiagnostic.line + 1) + " not found", () -> {
+					testsInFile.add(dynamicTest(testFileName + ": Expected diagnostic in line " + (expectedDiagnostic.line + 1) + " not found", () ->
+					{
 						if (diagnostics.stream().noneMatch(d -> ExpectedDiagnostic.doMatch(expectedDiagnostic, d)))
 						{
 							fail("Diagnostic [%s] expected but not found".formatted(expectedDiagnostic));
@@ -111,8 +115,7 @@ public abstract class ResourceFolderBasedTest
 	}
 
 	public record ResouceFileBasedTest(Path filepath, List<ExpectedDiagnostic> expectedDiagnostics)
-	{
-	}
+	{}
 
 	public record ExpectedDiagnostic(int line, String id, DiagnosticSeverity severity)
 	{

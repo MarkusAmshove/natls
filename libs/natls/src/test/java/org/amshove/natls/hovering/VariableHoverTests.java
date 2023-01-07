@@ -9,7 +9,8 @@ class VariableHoverTests extends HoveringTest
 	@Test
 	void levelOneVariablesShouldBeHoveredCorrectly()
 	{
-		assertHover("""
+		assertHover(
+			"""
 			DEFINE DATA
 			LOCAL 1 #MY${}$VAR (A10)
 			END-DEFINE
@@ -18,14 +19,19 @@ class VariableHoverTests extends HoveringTest
 			"""
 ```natural
 LOCAL 1 #MYVAR (A10)
-```""");
+```"""
+		);
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {"CONST", "INIT"})
+	@ValueSource(strings =
+	{
+		"CONST", "INIT"
+	})
 	void initAndConstValuesShouldBeIncludedInHover(String keyword)
 	{
-		assertHover("""
+		assertHover(
+			"""
 			DEFINE DATA
 			LOCAL 1 #MY${}$VAR (A10) %s<'ABC'>
 			END-DEFINE
@@ -34,13 +40,15 @@ LOCAL 1 #MYVAR (A10)
 			"""
 ```natural
 LOCAL 1 #MYVAR (A10) %s<'ABC'>
-```""".formatted(keyword));
+```""".formatted(keyword)
+		);
 	}
 
 	@Test
 	void arrayDimensionsShouldBeIncluded()
 	{
-		assertHover("""
+		assertHover(
+			"""
 			DEFINE DATA
 			LOCAL 1 #MY${}$VAR (A10/1:*,1:5)
 			END-DEFINE
@@ -53,12 +61,15 @@ LOCAL 1 #MYVAR (A10)
 
 *dimensions:*
 - 1:*
-- 1:5""");
+- 1:5"""
+		);
 	}
 
 	@Test
 	void levelOneVariablesShouldBeHoveredCorrectlyEvenWhenHoveringTheReference()
-	{assertHover("""
+	{
+		assertHover(
+			"""
 			DEFINE DATA
 			LOCAL 1 #MYVAR (A10)
 			END-DEFINE
@@ -68,13 +79,15 @@ LOCAL 1 #MYVAR (A10)
 			"""
 ```natural
 LOCAL 1 #MYVAR (A10)
-```""");
+```"""
+		);
 	}
 
 	@Test
 	void inlineCommentsShouldBeIncluded()
 	{
-		assertHover("""
+		assertHover(
+			"""
 				DEFINE DATA
 				LOCAL 1 #MY${}$VAR (A10) /* Inline comment
 				END-DEFINE
@@ -88,7 +101,8 @@ LOCAL 1 #MYVAR (A10)
 				*comment:*
 				```natural
 				/* Inline comment
-				```""");
+				```"""
+		);
 	}
 
 	@Test
@@ -100,7 +114,8 @@ LOCAL 1 #MYVAR (A10)
 			END-DEFINE
 			""");
 
-		assertHover("""
+		assertHover(
+			"""
 			DEFINE DATA
 			LOCAL USING MYLDA
 			END-DEFINE
@@ -114,13 +129,15 @@ LOCAL 1 #MYVAR (A10)
 
 *source:*
 
-- LIBONE.MYLDA""");
+- LIBONE.MYLDA"""
+		);
 	}
 
 	@Test
 	void theLevelOneVariableShouldBeAddedIfHoveringANestedVariable()
 	{
-		assertHover("""
+		assertHover(
+			"""
 			DEFINE DATA
 			LOCAL
 			1 #MYGROUP
@@ -137,6 +154,7 @@ LOCAL 2 #VARINGROUP (N4)
 
 ```natural
 LOCAL 1 #MYGROUP
-```""");
+```"""
+		);
 	}
 }

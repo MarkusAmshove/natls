@@ -38,8 +38,9 @@ class DefineDataNode extends BaseSyntaxNode implements IDefineData
 	public ReadOnlyList<IParameterDefinitionNode> parameterInOrder()
 	{
 		var allParameter = Stream.of(
-				parameterUsings().stream(),
-				variables.stream().filter(v -> v.position().isSameFileAs(position()) && v.scope().isParameter() && !(v instanceof IRedefinitionNode)))
+			parameterUsings().stream(),
+			variables.stream().filter(v -> v.position().isSameFileAs(position()) && v.scope().isParameter() && !(v instanceof IRedefinitionNode))
+		)
 			.flatMap(s -> s)
 			.sorted(Comparator.comparingInt(n -> n.diagnosticPosition().line()));
 

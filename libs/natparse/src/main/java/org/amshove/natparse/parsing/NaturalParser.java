@@ -40,10 +40,10 @@ public class NaturalParser
 		var topLevelNodes = new ArrayList<ISyntaxNode>();
 		naturalModule.setComments(tokens.comments());
 
-		if(file.getFiletype() == NaturalFileType.FUNCTION) // skip over DEFINE FUNCTION
+		if (file.getFiletype() == NaturalFileType.FUNCTION) // skip over DEFINE FUNCTION
 		{
 			// TODO: Implement proper when implementing different NaturalModules
-			while(!(tokens.peek().kind() == SyntaxKind.DEFINE && tokens.peek(1).kind() == SyntaxKind.DATA))
+			while (!(tokens.peek().kind() == SyntaxKind.DEFINE && tokens.peek(1).kind() == SyntaxKind.DATA))
 			{
 				tokens.advance();
 			}
@@ -71,7 +71,7 @@ public class NaturalParser
 		var result = defineDataParser.parse(tokens);
 		naturalModule.addDiagnostics(result.diagnostics());
 		var defineData = result.result();
-		if(defineData != null)
+		if (defineData != null)
 		{
 			naturalModule.setDefineData(defineData);
 			naturalModule.addReferencableNodes(defineData.variables().stream().map(n -> (IReferencableNode) n).toList());
@@ -95,9 +95,9 @@ public class NaturalParser
 	{
 		for (var diagnostic : result.diagnostics())
 		{
-			if(diagnostic.id().equals(ParserError.UNRESOLVED_IMPORT.id()))
+			if (diagnostic.id().equals(ParserError.UNRESOLVED_IMPORT.id()))
 			{
-				if(naturalModule.isTestCase() && diagnostic.message().contains("module TEARDOWN") || diagnostic.message().contains("module SETUP"))
+				if (naturalModule.isTestCase() && diagnostic.message().contains("module TEARDOWN") || diagnostic.message().contains("module SETUP"))
 				{
 					// Skip these unresolved subroutines.
 					// These are special cases for NatUnit, because it doesn't force you to implement them.
@@ -106,9 +106,9 @@ public class NaturalParser
 				}
 			}
 
-			if(naturalModule.file().getFiletype() == NaturalFileType.COPYCODE)
+			if (naturalModule.file().getFiletype() == NaturalFileType.COPYCODE)
 			{
-				if(ParserError.isUnresolvedError(diagnostic.id()))
+				if (ParserError.isUnresolvedError(diagnostic.id()))
 				{
 					// When parsing a copycode we don't want to report any unresolved references, because we simply don't know
 					// if they are declared where the copycode is used.
@@ -135,7 +135,7 @@ public class NaturalParser
 
 		for (var unresolvedReference : statementParser.getUnresolvedReferences())
 		{
-			if(unresolvedReference.referencingToken().symbolName().startsWith("&")
+			if (unresolvedReference.referencingToken().symbolName().startsWith("&")
 				|| (unresolvedReference.referencingToken().symbolName().contains(".")
 					&& unresolvedReference.referencingToken().symbolName().split("\\.")[1].startsWith("&")))
 			{
@@ -143,40 +143,39 @@ public class NaturalParser
 				continue;
 			}
 
-			if(tryFindAndReference(unresolvedReference.token().symbolName(), unresolvedReference, defineData, module))
+			if (tryFindAndReference(unresolvedReference.token().symbolName(), unresolvedReference, defineData, module))
 			{
 				continue;
 			}
 
-			if(unresolvedReference.token().symbolName().startsWith("+")
+			if (unresolvedReference.token().symbolName().startsWith("+")
 				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(1), unresolvedReference, defineData, module))
 			{
 				// TODO(hack, expressions): This should be handled when parsing expressions.
 				continue;
 			}
 
-
-			if(unresolvedReference.token().symbolName().startsWith("C*")
+			if (unresolvedReference.token().symbolName().startsWith("C*")
 				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(2), unresolvedReference, defineData, module))
 			{
 				continue;
 			}
 
-			if(unresolvedReference.token().symbolName().startsWith("T*")
-				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(2), unresolvedReference, defineData, module))
-			{
-				// TODO(hack, write-statement): This will be obsolete when the WRITE statement is parsed
-				continue;
-			}
-
-			if(unresolvedReference.token().symbolName().startsWith("P*")
+			if (unresolvedReference.token().symbolName().startsWith("T*")
 				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(2), unresolvedReference, defineData, module))
 			{
 				// TODO(hack, write-statement): This will be obsolete when the WRITE statement is parsed
 				continue;
 			}
 
-			if(unresolvedReference.token().kind() == SyntaxKind.IDENTIFIER)
+			if (unresolvedReference.token().symbolName().startsWith("P*")
+				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(2), unresolvedReference, defineData, module))
+			{
+				// TODO(hack, write-statement): This will be obsolete when the WRITE statement is parsed
+				continue;
+			}
+
+			if (unresolvedReference.token().kind() == SyntaxKind.IDENTIFIER)
 			{
 				// We don't handle IDENTIFIER_OR_KEYWORD because we can't be sure if it a variable.
 				// As long as IDENTIFIER_OR_KEYWORD exists as a SyntaxKind, we only report a diagnostic if we're sure that its meant to be a reference.
@@ -187,9 +186,9 @@ public class NaturalParser
 
 	private boolean tryFindAndReference(String symbolName, ISymbolReferenceNode referenceNode, IDefineData defineData, NaturalModule module)
 	{
-		var foundVariables = ((DefineDataNode)defineData).findVariablesWithName(symbolName);
+		var foundVariables = ((DefineDataNode) defineData).findVariablesWithName(symbolName);
 
-		if(foundVariables.size() > 1)
+		if (foundVariables.size() > 1)
 		{
 			var possibleQualifications = new StringBuilder();
 			for (var foundVariable : foundVariables)
@@ -197,14 +196,14 @@ public class NaturalParser
 				possibleQualifications.append(foundVariable.qualifiedName()).append(" ");
 			}
 
-			if(defineData.findDdmField(symbolName) != null) // TODO: Currently only necessary here because we don't parse FIND or READ yet
+			if (defineData.findDdmField(symbolName) != null) // TODO: Currently only necessary here because we don't parse FIND or READ yet
 			{
 				return true;
 			}
 			module.addDiagnostic(ParserErrors.ambiguousSymbolReference(referenceNode, possibleQualifications.toString()));
 		}
 
-		if(!foundVariables.isEmpty())
+		if (!foundVariables.isEmpty())
 		{
 			foundVariables.get(0).addReference(referenceNode);
 			return true;

@@ -33,13 +33,17 @@ public class CodeConsistencyAnalyzerTests extends AbstractAnalyzerTest
 		);
 
 		return preferences.stream()
-			.flatMap(config ->
-				Stream.of(
-					dynamicTest("%s should report a diagnostic to prefer %s".formatted(config.unwantedToken, config.preferredToken),
-						() -> testDiagnostics(config.createSadPathCode(), expectDiagnostic(config.line, CodeConsistencyAnalyzer.PREFER_DIFFERENT_TOKEN))),
+			.flatMap(
+				config -> Stream.of(
+					dynamicTest(
+						"%s should report a diagnostic to prefer %s".formatted(config.unwantedToken, config.preferredToken),
+						() -> testDiagnostics(config.createSadPathCode(), expectDiagnostic(config.line, CodeConsistencyAnalyzer.PREFER_DIFFERENT_TOKEN))
+					),
 
-					dynamicTest("%s should not report a diagnostic to prefer anything else".formatted(config.preferredToken),
-						() -> testDiagnostics(config.createHappyPathCode(), expectNoDiagnosticOfType(CodeConsistencyAnalyzer.PREFER_DIFFERENT_TOKEN)))
+					dynamicTest(
+						"%s should not report a diagnostic to prefer anything else".formatted(config.preferredToken),
+						() -> testDiagnostics(config.createHappyPathCode(), expectNoDiagnosticOfType(CodeConsistencyAnalyzer.PREFER_DIFFERENT_TOKEN))
+					)
 				)
 			);
 	}

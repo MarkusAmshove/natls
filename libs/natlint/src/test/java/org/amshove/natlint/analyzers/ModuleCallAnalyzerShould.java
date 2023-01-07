@@ -14,77 +14,89 @@ public class ModuleCallAnalyzerShould extends AbstractAnalyzerTest
 	void reportNoDiagnosticIfACallnatHasNoTrailingWhitespace()
 	{
 		allowParserError("NPP026");
-		testDiagnostics("""
+		testDiagnostics(
+			"""
 			define data
 			end-define
 			callnat 'MODULE'
 			end
 			""",
-			expectNoDiagnosticOfType(ModuleCallAnalyzer.CALLED_MODULE_NAME_TRAILING_WHITESPACE));
+			expectNoDiagnosticOfType(ModuleCallAnalyzer.CALLED_MODULE_NAME_TRAILING_WHITESPACE)
+		);
 	}
 
 	@Test
 	void reportNoDiagnosticIfAFetchReturnHasNoTrailingWhitespace()
 	{
 		allowParserError("NPP026");
-		testDiagnostics("""
+		testDiagnostics(
+			"""
 			define data
 			end-define
 			FETCH RETURN 'MODULE'
 			end
 			""",
-			expectNoDiagnosticOfType(ModuleCallAnalyzer.CALLED_MODULE_NAME_TRAILING_WHITESPACE));
+			expectNoDiagnosticOfType(ModuleCallAnalyzer.CALLED_MODULE_NAME_TRAILING_WHITESPACE)
+		);
 	}
 
 	@Test
 	void reportNoDiagnosticIfAFetchRepeatHasNoTrailingWhitespace()
 	{
 		allowParserError("NPP026");
-		testDiagnostics("""
+		testDiagnostics(
+			"""
 			define data
 			end-define
 			FETCH REPEAT 'MODULE'
 			end
 			""",
-			expectNoDiagnosticOfType(ModuleCallAnalyzer.CALLED_MODULE_NAME_TRAILING_WHITESPACE));
+			expectNoDiagnosticOfType(ModuleCallAnalyzer.CALLED_MODULE_NAME_TRAILING_WHITESPACE)
+		);
 	}
 
 	@Test
 	void reportADiagnosticIfACallnatHasTrailingWhitespace()
 	{
 		allowParserError("NPP026");
-		testDiagnostics("""
+		testDiagnostics(
+			"""
 			define data
 			end-define
 			callnat 'MODULE '
 			end
 			""",
-			expectDiagnostic(2, ModuleCallAnalyzer.CALLED_MODULE_NAME_TRAILING_WHITESPACE));
+			expectDiagnostic(2, ModuleCallAnalyzer.CALLED_MODULE_NAME_TRAILING_WHITESPACE)
+		);
 	}
 
 	@Test
 	void reportADiagnosticIfAFetchReturnHasTrailingWhitespace()
 	{
 		allowParserError("NPP026");
-		testDiagnostics("""
+		testDiagnostics(
+			"""
 			define data
 			end-define
 			FETCH RETURN 'MODULE '
 			end
 			""",
-			expectDiagnostic(2, ModuleCallAnalyzer.CALLED_MODULE_NAME_TRAILING_WHITESPACE));
+			expectDiagnostic(2, ModuleCallAnalyzer.CALLED_MODULE_NAME_TRAILING_WHITESPACE)
+		);
 	}
 
 	@Test
 	void reportADiagnosticIfAFetchRepeatHasTrailingWhitespace()
 	{
 		allowParserError("NPP026");
-		testDiagnostics("""
+		testDiagnostics(
+			"""
 			define data
 			end-define
 			FETCH REPEAT 'MODULE '
 			end
 			""",
-			expectDiagnostic(2, ModuleCallAnalyzer.CALLED_MODULE_NAME_TRAILING_WHITESPACE));
+			expectDiagnostic(2, ModuleCallAnalyzer.CALLED_MODULE_NAME_TRAILING_WHITESPACE)
+		);
 	}
 }

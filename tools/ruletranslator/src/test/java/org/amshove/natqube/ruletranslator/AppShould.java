@@ -18,7 +18,8 @@ class AppShould
 	{
 		System.setOut(new PrintStream(new ByteArrayOutputStream())); // ignore stdout
 		var file = directory.resolve("rules.xml");
-		App.main(new String[] {
+		App.main(new String[]
+		{
 			file.toString()
 		});
 		assertThat(Files.readString(file)).isNotBlank();

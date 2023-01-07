@@ -14,7 +14,10 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 public class L4nSnippetProviderShould
 {
 	@ParameterizedTest
-	@ValueSource(strings = { "ENTER-LEAVE", "DEBUG", "INFO", "WARNING", "ERROR", "FATAL" })
+	@ValueSource(strings =
+	{
+		"ENTER-LEAVE", "DEBUG", "INFO", "WARNING", "ERROR", "FATAL"
+	})
 	void addSnippetsForEveryLogLevel(String level, @LspProjectName("modrefparser") LspTestContext testContext)
 	{
 		var file = testContext.project().findFileByReferableName("SUB");
@@ -33,7 +36,8 @@ public class L4nSnippetProviderShould
 					L4N-LOGLEVEL := C-LOGLEVEL-%s
 					COMPRESS ${1:'text'} INTO L4N-LOGTEXT
 					INCLUDE L4NLOGIT${0}
-					""".formatted(level)),
+					""".formatted(level)
+			),
 			() -> assertThat(snippet.getInsertTextFormat()).isEqualTo(InsertTextFormat.Snippet)
 		);
 	}

@@ -26,7 +26,8 @@ class SubroutineCodeLensTests extends CodeLensTest
 			END
 			""");
 
-		testCodeLens(document, lenses -> {
+		testCodeLens(document, lenses ->
+		{
 			assertThat(lenses).hasSize(2); // TODO(configuration): Once we can disable the others, this should be 1
 
 			var lens = lenses.stream().filter(l -> l.getRange().getStart().getLine() > 0).findFirst().orElseThrow();
@@ -58,7 +59,8 @@ class SubroutineCodeLensTests extends CodeLensTest
 			END
 			""");
 
-		testCodeLens(document, lenses -> {
+		testCodeLens(document, lenses ->
+		{
 			assertThat(lenses).hasSize(2); // TODO(configuration): Once we can disable the others, this should be 1
 
 			var lens = lenses.stream().filter(l -> l.getRange().getStart().getLine() > 0).findFirst().orElseThrow();

@@ -11,8 +11,8 @@ import java.util.Set;
 /**
  * Cache of module references base on the {@linkplain ModuleReferenceParser}.</br>
  * This is built during indexing phase of a project.</br>
- * Entries will be evicted one a module gets parsed, as the referencing will then be done
- * by the actual {@linkplain org.amshove.natparse.parsing.NaturalParser}
+ * Entries will be evicted one a module gets parsed, as the referencing will then be done by the actual
+ * {@linkplain org.amshove.natparse.parsing.NaturalParser}
  */
 // This class is super perf sensitive. It adds a lot to the start time if not tuned correctly.
 public class ModuleReferenceCache
@@ -31,7 +31,7 @@ public class ModuleReferenceCache
 	 */
 	public static Set<IPosition> retrieveCachedPositions(LanguageServerFile calledFile)
 	{
-		if(!cache.containsKey(calledFile))
+		if (!cache.containsKey(calledFile))
 		{
 			return Set.of();
 		}
@@ -44,14 +44,14 @@ public class ModuleReferenceCache
 	 */
 	public static synchronized void evictMyReferences(LanguageServerFile callingFile)
 	{
-		if(evictedEntries.contains(callingFile.getPath()))
+		if (evictedEntries.contains(callingFile.getPath()))
 		{
 			return;
 		}
 
 		for (var outgoingReference : callingFile.getOutgoingReferences())
 		{
-			if(!cache.containsKey(outgoingReference))
+			if (!cache.containsKey(outgoingReference))
 			{
 				continue;
 			}
@@ -62,5 +62,6 @@ public class ModuleReferenceCache
 		evictedEntries.add(callingFile.getPath());
 	}
 
-	private ModuleReferenceCache() {}
+	private ModuleReferenceCache()
+	{}
 }

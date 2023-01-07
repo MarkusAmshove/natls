@@ -20,7 +20,6 @@ class ResizeDynamicNode extends StatementNode implements IResizeDynamicNode
 		return sizeToResizeTo;
 	}
 
-
 	void setVariableToResize(IVariableReferenceNode variableToResize)
 	{
 		this.variableToResize = variableToResize;

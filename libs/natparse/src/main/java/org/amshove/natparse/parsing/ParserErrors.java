@@ -272,7 +272,8 @@ class ParserErrors
 			"Invalid length: %s. Has to be in range of %d to %d".formatted(
 				DataFormat.formatLength(typeNode.type().length()),
 				lowestValue,
-				highestValue),
+				highestValue
+			),
 			typeNode,
 			ParserError.INVALID_LENGTH_FOR_DATA_TYPE
 		);
@@ -283,7 +284,8 @@ class ParserErrors
 		return ParserDiagnostic.create(
 			"Invalid length: %s. Has to be one of %s".formatted(
 				DataFormat.formatLength(typeNode.type().length()),
-				Arrays.stream(possibleValues).mapToObj(Integer::toString).collect(Collectors.joining(","))),
+				Arrays.stream(possibleValues).mapToObj(Integer::toString).collect(Collectors.joining(","))
+			),
 			typeNode,
 			ParserError.INVALID_LENGTH_FOR_DATA_TYPE
 		);

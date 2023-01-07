@@ -9,7 +9,8 @@ public enum ChainedCriteriaOperator
 
 	public static ChainedCriteriaOperator fromSyntax(SyntaxKind kind)
 	{
-		return switch(kind) {
+		return switch (kind)
+		{
 			case AND -> AND;
 			case OR -> OR;
 			default -> throw new RuntimeException("unreachable: ChainedCriteriaOperator can't be converted from %s".formatted(kind));

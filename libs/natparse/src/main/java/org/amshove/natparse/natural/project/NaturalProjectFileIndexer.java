@@ -46,7 +46,8 @@ public class NaturalProjectFileIndexer
 	private String getReferableName(Path path, NaturalFileType type)
 	{
 		var filename = path.getFileName().toString().split("\\.")[0];
-		return switch(type) {
+		return switch (type)
+		{
 			case SUBPROGRAM, LDA, PDA, MAP, DDM, PROGRAM, GDA, FUNCTION, COPYCODE -> filename;
 			case SUBROUTINE -> extractSubroutineName(path);
 		};
@@ -57,17 +58,17 @@ public class NaturalProjectFileIndexer
 		var lexemes = new Lexer().lex(filesystem.readFile(path), path);
 
 		// Skip define data
-		if(!lexemes.advanceAfterNext(SyntaxKind.END_DEFINE))
+		if (!lexemes.advanceAfterNext(SyntaxKind.END_DEFINE))
 		{
 			throw new RuntimeException("Could not find end of DEFINE DATA");
 		}
 
-		if(!lexemes.advanceAfterNext(SyntaxKind.DEFINE))
+		if (!lexemes.advanceAfterNext(SyntaxKind.DEFINE))
 		{
 			throw new RuntimeException("Could not find DEFINE SUBSROUTINE");
 		}
 
-		if(!lexemes.advanceAfterNext(SyntaxKind.SUBROUTINE))
+		if (!lexemes.advanceAfterNext(SyntaxKind.SUBROUTINE))
 		{
 			throw new RuntimeException("Could not find keyword SUBROUTINE after DEFINE");
 		}
