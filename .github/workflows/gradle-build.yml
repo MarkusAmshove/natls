@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    name: Build/Test on ${{ matrix.os }}
+    name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -53,23 +53,12 @@ jobs:
       - name: Build
         run: ./gradlew check cover shadowJar --no-daemon
 
-      - name: Gather test results
-        uses: actions/upload-artifact@v2
-        if: success() || failure()
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v3
+        if: always()
         with:
-          name: test-results
-          path: libs/**/test-results/**/*.xml
-
-        #      - name: Gather test results
-        #        if: failure()
-        #        run: ./gradlew testReport -x test --no-daemon
-        #
-        #      - name: Archive test results
-        #        if: failure()
-        #        uses: actions/upload-artifact@v3
-        #        with:
-        #          name: junit_report_${{ matrix.os }}
-        #          path: build/reports/allTests
+          check_name: Test reports on ${{ matrix.os }}
+          report_paths: '**/build/test-results/test/TEST-*.xml'
 
       - name: Save PR number
         if: github.event_name == 'pull_request'
