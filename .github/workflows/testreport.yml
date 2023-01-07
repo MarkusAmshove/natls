@@ -1,0 +1,29 @@
+name: Test reports
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  checks: write
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest ]
+    steps:
+      - name: Download Test Report from ${{ matrix.os }}
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          name: junit-test-results-${{ matrix.os }}
+          workflow: ${{ github.event.workflow.id }}
+          run_id: ${{ github.event.workflow_run.id }}
+
+      - name: Publish Test Report on ${{ matrix.os }}
+        uses: mikepenz/action-junit-report@v3
+        with:
+          commit: ${{github.event.workflow_run.head_sha}}
+          check_name: Test reports on ${{ matrix.os }}
+          report_paths: '**/build/test-results/test/TEST-*.xml'
