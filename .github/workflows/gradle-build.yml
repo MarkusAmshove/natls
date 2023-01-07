@@ -57,7 +57,7 @@ jobs:
         uses: mikepenz/action-junit-report@v3
         if: always()
         with:
-          check_name: Tests {{ runner.os }}
+          check_name: Test reports on ${{ matrix.os }}
           report_paths: '**/build/test-results/test/TEST-*.xml'
 
       - name: Save PR number
