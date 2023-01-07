@@ -51,7 +51,11 @@ jobs:
         run: ./gradlew spotlessCheck
 
       - name: Build
-        run: ./gradlew check cover shadowJar testReport --no-daemon
+        run: ./gradlew check cover shadowJar --no-daemon
+
+      - name: Gather test results
+        if: failure()
+        run: ./gradlew restReport --no-daemon
 
       - name: Archive test results
         if: failure()
