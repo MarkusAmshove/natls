@@ -5,7 +5,7 @@ on:
     branches:
       - main
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [ opened, synchronize, reopened ]
 
 jobs:
   build:
@@ -13,7 +13,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ ubuntu-latest, windows-latest ]
+      fail-fast: false
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -51,6 +52,24 @@ jobs:
 
       - name: Build
         run: ./gradlew check cover shadowJar --no-daemon
+
+      - name: Gather test results
+        uses: actions/upload-artifact@v2
+        if: success() || failure()
+        with:
+          name: test-results
+          path: libs/**/test-results/**/*.xml
+
+        #      - name: Gather test results
+        #        if: failure()
+        #        run: ./gradlew testReport -x test --no-daemon
+        #
+        #      - name: Archive test results
+        #        if: failure()
+        #        uses: actions/upload-artifact@v3
+        #        with:
+        #          name: junit_report_${{ matrix.os }}
+        #          path: build/reports/allTests
 
       - name: Save PR number
         if: github.event_name == 'pull_request'
