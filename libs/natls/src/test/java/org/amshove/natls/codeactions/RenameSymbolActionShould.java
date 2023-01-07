@@ -33,7 +33,7 @@ public class RenameSymbolActionShould extends LanguageServerTest
 			""");
 
 		var file = createOrSaveFile("LIBONE", "RENAM.NSN", source);
-		var edit = testContext.languageService().rename(new RenameParams(file, source.toSinglePosition(), "#NEWVAR"));
+		var edit = testContext.languageService().rename(new RenameParams(file, source.toSinglePosition(), "##NEWVAR"));
 
 		WorkspaceEditAssertion.assertThatEdit(edit)
 			.changesText(1, "1 #MYVAR (N2)", "1 #NEWVAR (N2)", file)
