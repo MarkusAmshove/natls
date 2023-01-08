@@ -129,6 +129,28 @@ To do this, simply add the `natqube.jar` that comes out of `gradlew shadowJar` i
 
 `natqube` currently expects to find a `diagnostics.csv` file within the scanners root working directory (e.g. the root of the repository). This file is created by running the `natlint` CLI with either `--sink=CSV` or `--ci`. Using `--ci` is recommended for build servers, because it also forces `natlint` to exit gracefully to not break pipelines when encountering diagnostics.
 
+## Configuration
+
+The code analysis of `natlint` (and therefore `natqube` and `natls`) can be configured through an `.editorconfig` ([editorconfig.org](https://editorconfig.org/)) file.
+
+This makes it possible to configure the severity of diagnostics and pass analyzer specific settings.
+
+Example:
+
+```editorconfig
+[*]
+natls.NL002.severity = none
+```
+
+The severity can be one of:
+
+- `none`: Disables the diagnostic
+- `info`
+- `warn`
+- `error`
+
+Analyzer specific can be found in the [analyzer configuration documentation](docs/analyzer-config.md).
+
 ## Acknowledgements and dependencies
 
 The logo was created by [Duffed](https://github.com/Duffed)
