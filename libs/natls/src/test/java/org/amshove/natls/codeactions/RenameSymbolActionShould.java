@@ -22,8 +22,7 @@ public class RenameSymbolActionShould extends LanguageServerTest
 	}
 
 	@Test
-	void renameALocalVariableThroughItsDeclaration()
-	{
+	void renameALocalVariableThroughItsDeclaration() {
 		var source = SourceWithCursor.fromSourceWithCursor("""
 			DEFINE DATA LOCAL
 			1 #MY${}$VAR (N2)
