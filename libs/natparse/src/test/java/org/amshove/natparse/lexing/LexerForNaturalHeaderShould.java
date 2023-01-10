@@ -18,7 +18,7 @@ public class LexerForNaturalHeaderShould extends AbstractLexerTest
 		""";
 
 		var tokenList = lexSource(source);
-		assertThat(tokenList.sourceHeader().isStructuredMode()).isEqualTo(true);
+		assertThat(tokenList.sourceHeader().isStructuredMode()).isTrue();
 		assertThat(tokenList.sourceHeader().getLineIncrement()).isEqualTo(10);
 	}
 
@@ -34,7 +34,7 @@ public class LexerForNaturalHeaderShould extends AbstractLexerTest
 		""";
 
 		var tokenList = lexSource(source);
-		assertThat(tokenList.sourceHeader().isStructuredMode()).isEqualTo(true);
+		assertThat(tokenList.sourceHeader().isStructuredMode()).isTrue();
 		assertThat(tokenList.sourceHeader().getLineIncrement()).isEqualTo(5);
 	}
 
@@ -49,7 +49,7 @@ public class LexerForNaturalHeaderShould extends AbstractLexerTest
 		""";
 
 		var tokenList = lexSource(source);
-		assertThat(tokenList.sourceHeader().isReportingMode()).isEqualTo(true);
+		assertThat(tokenList.sourceHeader().isReportingMode()).isTrue();
 		assertThat(tokenList.sourceHeader().getLineIncrement()).isEqualTo(10);
 	}
 
@@ -65,7 +65,7 @@ public class LexerForNaturalHeaderShould extends AbstractLexerTest
 		""";
 
 		var tokenList = lexSource(source);
-		assertThat(tokenList.sourceHeader().isReportingMode()).isEqualTo(true);
+		assertThat(tokenList.sourceHeader().isReportingMode()).isTrue();
 		assertThat(tokenList.sourceHeader().getLineIncrement()).isEqualTo(5);
 	}
 
@@ -81,7 +81,7 @@ public class LexerForNaturalHeaderShould extends AbstractLexerTest
 		""";
 
 		var tokenList = lexSource(source);
-		assertThat(tokenList.sourceHeader().isStructuredMode()).isEqualTo(true);
+		assertThat(tokenList.sourceHeader().isStructuredMode()).isTrue();
 		assertThat(tokenList.sourceHeader().getLineIncrement()).isEqualTo(10);
 	}
 
@@ -97,7 +97,7 @@ public class LexerForNaturalHeaderShould extends AbstractLexerTest
 		""";
 
 		var tokenList = lexSource(source);
-		assertThat(tokenList.sourceHeader().isStructuredMode()).isEqualTo(true);
+		assertThat(tokenList.sourceHeader().isStructuredMode()).isTrue();
 		assertThat(tokenList.sourceHeader().getLineIncrement()).isEqualTo(5);
 	}
 
@@ -112,7 +112,7 @@ public class LexerForNaturalHeaderShould extends AbstractLexerTest
 		""";
 
 		var tokenList = lexSource(source);
-		assertThat(tokenList.sourceHeader().isReportingMode()).isEqualTo(true);
+		assertThat(tokenList.sourceHeader().isReportingMode()).isTrue();
 		assertThat(tokenList.sourceHeader().getLineIncrement()).isEqualTo(10);
 	}
 
@@ -128,7 +128,7 @@ public class LexerForNaturalHeaderShould extends AbstractLexerTest
 		""";
 
 		var tokenList = lexSource(source);
-		assertThat(tokenList.sourceHeader().isReportingMode()).isEqualTo(true);
+		assertThat(tokenList.sourceHeader().isReportingMode()).isTrue();
 		assertThat(tokenList.sourceHeader().getLineIncrement()).isEqualTo(5);
 	}
 

@@ -60,11 +60,11 @@ public class NaturalProjectFileIndexer
 		return switch (type)
 		{
 			case SUBPROGRAM, DDM, LDA, PDA, GDA, PROGRAM, FUNCTION, COPYCODE, MAP, HELPROUTINE -> filename;
-			case SUBROUTINE -> extractSubroutineName(path, lexemes);
+			case SUBROUTINE -> extractSubroutineName(lexemes);
 		};
 	}
 
-	private String extractSubroutineName(Path path, TokenList lexemes)
+	private String extractSubroutineName(TokenList lexemes)
 	{
 		// Advance directly past the subroutine name, if possible
 		if (!lexemes.advanceAfterNextIfFound(SyntaxKind.SUBROUTINE))

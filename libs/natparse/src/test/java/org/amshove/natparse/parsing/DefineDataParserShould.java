@@ -522,8 +522,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""");
 	}
 
-	@Disabled
-	// TODO(lexermode): make this work
+	@Disabled("Does not work yet")
 	void parseAnArrayWithWhitespaceAfterTheSlash()
 	{
 		assertParsesWithoutDiagnostics("""

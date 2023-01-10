@@ -961,7 +961,6 @@ public class Lexer
 
 	private boolean consumeComment()
 	{
-		var lookahead = scanner.peek(1);
 		var isInlineComment = isInlineComment();
 
 		if (isInlineComment && tokens.size() > 2)
