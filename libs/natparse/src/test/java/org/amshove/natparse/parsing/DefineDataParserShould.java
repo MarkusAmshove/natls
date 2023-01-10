@@ -5,6 +5,7 @@ import org.amshove.natparse.natural.*;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -521,16 +522,17 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""");
 	}
 
-	/*	@Test TODO: make this work
-		void parseAnArrayWithWhitespaceAfterTheSlash()
-		{
-			assertParsesWithoutDiagnostics("""
+	@Disabled
+	// TODO(lexermode): make this work
+	void parseAnArrayWithWhitespaceAfterTheSlash()
+	{
+		assertParsesWithoutDiagnostics("""
 			define data
 			local
 			01 #DATN (N8/ 1)
 			end-define
 			""");
-		} */
+	}
 
 	@Test
 	void parseAnArrayWithMultipleCommasAndReferences()
@@ -620,7 +622,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	{
 		"(A1/#length)",
 		"(A1 /#length)",
-		//		TODO: "(A1/ #length)"
+		//		TODO(lexermode): "(A1/ #length)"
 		"(A1 / #length)"
 	})
 	void parseAnArrayThatHasAConstReferenceAsDimensionAndArrayHasConstElements(String variable)

@@ -222,3 +222,5 @@ gradle-app.setting
 
 # End of https://www.gitignore.io/api/gradle,java,intellij,eclipse,maven
 
+.vscode/settings.json
+.vscode/launch.json

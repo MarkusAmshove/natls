@@ -6,7 +6,7 @@ public enum NaturalProgrammingMode
 	REPORTING("R"),
 	UNKNOWN("?");
 
-	public static final NaturalProgrammingMode[] VALUES = NaturalProgrammingMode.values();
+	private static final NaturalProgrammingMode[] VALUES = NaturalProgrammingMode.values();
 
 	public static NaturalProgrammingMode fromString(String mode)
 	{
