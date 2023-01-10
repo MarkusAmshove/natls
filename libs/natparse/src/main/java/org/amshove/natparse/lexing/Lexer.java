@@ -912,11 +912,7 @@ public class Lexer
 
 	private boolean consumeNaturalHeader()
 	{
-		if (isAtLineStart() && (isSingleAsteriskComment() || isInlineComment()))
-		{
-			//NOOP
-		}
-		else
+		if (!(isAtLineStart() && (isSingleAsteriskComment() || isInlineComment())))
 		{
 			return false;
 		}
@@ -935,18 +931,14 @@ public class Lexer
 				sourceHeader = new NaturalHeader(mode, lineIncrement);
 				sourceHeaderDone = true;
 			}
-			else
+			if (s.contains("* :Mode"))
 			{
-				if (s.contains("* :Mode"))
-				{
-					mode = NaturalProgrammingMode.fromString(s.substring(s.length() - 1));
-				}
-				else
-					if (s.contains("* :LineIncrement"))
-					{
-						s = s.replaceAll("\\D", "");
-						lineIncrement = (Integer.parseInt(s));
-					}
+				mode = NaturalProgrammingMode.fromString(s.substring(s.length() - 1));
+			}
+			if (s.contains("* :LineIncrement"))
+			{
+				s = s.replaceAll("\\D", "");
+				lineIncrement = (Integer.parseInt(s));
 			}
 		}
 		else

@@ -29,7 +29,7 @@ public class NaturalProjectFileIndexer
 			filesystem.streamFilesRecursively(library.getSourcePath())
 				.filter(NaturalFileType::isNaturalFile)
 				.map(this::toNaturalFile)
-				.filter(f -> f.isStructured() && !f.isFailedOnInit())
+				.filter(f -> (!(f.isReporting() && f.isFailedOnInit())))
 				.forEach(library::addFile);
 		}
 	}
