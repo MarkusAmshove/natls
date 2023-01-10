@@ -2,134 +2,31 @@ package org.amshove.natparse.lexing;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 public class LexerForNaturalHeaderShould extends AbstractLexerTest
 {
-	@Test
-	void lexNaturalHeaderStructuredModeLineIncr10()
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"S,10", "S,5", "R,10", "R,5"
+		}
+	)
+
+	void lexNaturalHeader(String mode, Integer increment)
 	{
 		var source = """
 		* >Natural Source Header 000000
-		* :Mode S
+		* :Mode %s
 		* :CP
-		* :LineIncrement 10
+		* :LineIncrement %d
 		* <Natural Source Header
-		""";
+		""".formatted(mode, increment);
 
 		var tokenList = lexSource(source);
-		assertThat(tokenList.sourceHeader().isStructuredMode()).isTrue();
-		assertThat(tokenList.sourceHeader().getLineIncrement()).isEqualTo(10);
-	}
-
-	@Test
-	void lexNaturalHeaderStructuredModeLineIncr5()
-	{
-		var source = """
-		* >Natural Source Header 000000
-		* :Mode S
-		* :CP
-		* :LineIncrement 5
-		* <Natural Source Header
-		""";
-
-		var tokenList = lexSource(source);
-		assertThat(tokenList.sourceHeader().isStructuredMode()).isTrue();
-		assertThat(tokenList.sourceHeader().getLineIncrement()).isEqualTo(5);
-	}
-
-	void lexNaturalHeaderReportingModeLineIncr10()
-	{
-		var source = """
-		* >Natural Source Header 000000
-		* :Mode R
-		* :CP
-		* :LineIncrement 10
-		* <Natural Source Header
-		""";
-
-		var tokenList = lexSource(source);
-		assertThat(tokenList.sourceHeader().isReportingMode()).isTrue();
-		assertThat(tokenList.sourceHeader().getLineIncrement()).isEqualTo(10);
-	}
-
-	@Test
-	void lexNaturalHeaderReportingModeLineIncr5()
-	{
-		var source = """
-		* >Natural Source Header 000000
-		* :Mode R
-		* :CP
-		* :LineIncrement 5
-		* <Natural Source Header
-		""";
-
-		var tokenList = lexSource(source);
-		assertThat(tokenList.sourceHeader().isReportingMode()).isTrue();
-		assertThat(tokenList.sourceHeader().getLineIncrement()).isEqualTo(5);
-	}
-
-	@Test
-	void lexNaturalHeaderInlineStructuredModeLineIncr10()
-	{
-		var source = """
-		/* >Natural Source Header 000000
-		/* :Mode S
-		/* :CP
-		/* :LineIncrement 10
-		/* <Natural Source Header
-		""";
-
-		var tokenList = lexSource(source);
-		assertThat(tokenList.sourceHeader().isStructuredMode()).isTrue();
-		assertThat(tokenList.sourceHeader().getLineIncrement()).isEqualTo(10);
-	}
-
-	@Test
-	void lexNaturalHeaderInlineStructuredModeLineIncr5()
-	{
-		var source = """
-		/* >Natural Source Header 000000
-		/* :Mode S
-		/* :CP
-		/* :LineIncrement 5
-		/* <Natural Source Header
-		""";
-
-		var tokenList = lexSource(source);
-		assertThat(tokenList.sourceHeader().isStructuredMode()).isTrue();
-		assertThat(tokenList.sourceHeader().getLineIncrement()).isEqualTo(5);
-	}
-
-	void lexNaturalHeaderInlineReportingModeLineIncr10()
-	{
-		var source = """
-		/* >Natural Source Header 000000
-		/* :Mode R
-		/* :CP
-		/* :LineIncrement 10
-		/* <Natural Source Header
-		""";
-
-		var tokenList = lexSource(source);
-		assertThat(tokenList.sourceHeader().isReportingMode()).isTrue();
-		assertThat(tokenList.sourceHeader().getLineIncrement()).isEqualTo(10);
-	}
-
-	@Test
-	void lexNaturalHeaderInlineReportingModeLineIncr5()
-	{
-		var source = """
-		/* >Natural Source Header 000000
-		/* :Mode R
-		/* :CP
-		/* :LineIncrement 5
-		/* <Natural Source Header
-		""";
-
-		var tokenList = lexSource(source);
-		assertThat(tokenList.sourceHeader().isReportingMode()).isTrue();
-		assertThat(tokenList.sourceHeader().getLineIncrement()).isEqualTo(5);
+		assertThat(tokenList.sourceHeader().getProgrammingMode().getMode().equals(mode));
+		assertThat(tokenList.sourceHeader().getLineIncrement()).isEqualTo(increment);
 	}
 
 }
