@@ -1,21 +1,11 @@
 package org.amshove.natparse.natural.builtin;
 
-import static org.amshove.natparse.natural.DataFormat.ALPHANUMERIC;
-import static org.amshove.natparse.natural.DataFormat.BINARY;
-import static org.amshove.natparse.natural.DataFormat.DATE;
-import static org.amshove.natparse.natural.DataFormat.FLOAT;
-import static org.amshove.natparse.natural.DataFormat.INTEGER;
-import static org.amshove.natparse.natural.DataFormat.NONE;
-import static org.amshove.natparse.natural.DataFormat.NUMERIC;
-import static org.amshove.natparse.natural.DataFormat.PACKED;
-import static org.amshove.natparse.natural.DataFormat.TIME;
-
-import java.util.Arrays;
-import java.util.Map;
-
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.DataType;
+
+import java.util.Arrays;
+import java.util.Map;
 
 public class BuiltInFunctionTable
 {

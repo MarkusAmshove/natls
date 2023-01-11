@@ -224,7 +224,7 @@ class ParserErrors
 	public static IDiagnostic trailingToken(SyntaxToken token)
 	{
 		return ParserDiagnostic.create(
-			"Trailing token <%s> not allowed here, line number <%s>".formatted(token.kind(), token.line()),
+			"Trailing token <%s> not allowed here".formatted(token.kind()),
 			new TokenNode(token),
 			ParserError.TRAILING_TOKEN
 		);
