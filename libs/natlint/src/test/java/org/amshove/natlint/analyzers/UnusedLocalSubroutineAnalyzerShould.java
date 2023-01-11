@@ -18,13 +18,13 @@ public class UnusedLocalSubroutineAnalyzerShould extends AbstractAnalyzerTest
 		testDiagnostics("""
 			DEFINE DATA LOCAL
 			END-DEFINE
-			
+
 			PERFORM MY-SUB
-			
+
 			DEFINE SUBROUTINE MY-SUB
 			IGNORE
 			END-SUBROUTINE
-			
+
 			END
 			""", expectNoDiagnosticOfType(UnusedLocalSubroutineAnalyzer.UNUSED_SUBROUTINE));
 	}
@@ -35,13 +35,13 @@ public class UnusedLocalSubroutineAnalyzerShould extends AbstractAnalyzerTest
 		testDiagnostics("""
 			DEFINE DATA LOCAL
 			END-DEFINE
-			
+
 			DEFINE SUBROUTINE MY-SUB
 			IGNORE
 			END-SUBROUTINE
-			
+
 			PERFORM MY-SUB
-			
+
 			END
 			""", expectNoDiagnosticOfType(UnusedLocalSubroutineAnalyzer.UNUSED_SUBROUTINE));
 	}
@@ -52,17 +52,17 @@ public class UnusedLocalSubroutineAnalyzerShould extends AbstractAnalyzerTest
 		testDiagnostics("""
 			DEFINE DATA LOCAL
 			END-DEFINE
-			
+
 			DEFINE SUBROUTINE MY-SUB
 			PERFORM MY-SECOND-SUB
 			END-SUBROUTINE
-			
+
 			DEFINE SUBROUTINE MY-SECOND-SUB
 			IGNORE
 			END-SUBROUTINE
-			
+
 			PERFORM MY-SUB
-			
+
 			END
 			""", expectNoDiagnosticOfType(UnusedLocalSubroutineAnalyzer.UNUSED_SUBROUTINE));
 	}
@@ -73,11 +73,11 @@ public class UnusedLocalSubroutineAnalyzerShould extends AbstractAnalyzerTest
 		testDiagnostics("""
 			DEFINE DATA LOCAL
 			END-DEFINE
-			
+
 			DEFINE SUBROUTINE MY-SUB
 			IGNORE
 			END-SUBROUTINE
-			
+
 			END
 			""", expectDiagnostic(3, UnusedLocalSubroutineAnalyzer.UNUSED_SUBROUTINE, "Subroutine MY-SUB is unused"));
 	}
@@ -114,7 +114,7 @@ public class UnusedLocalSubroutineAnalyzerShould extends AbstractAnalyzerTest
 	{
 		testDiagnostics(
 			project.findModule("EXTERNAL-WITH-LOCAL"),
-			expectDiagnostic(5, UnusedLocalSubroutineAnalyzer.UNUSED_SUBROUTINE)
+			expectDiagnostic(9, UnusedLocalSubroutineAnalyzer.UNUSED_SUBROUTINE)
 		);
 	}
 }

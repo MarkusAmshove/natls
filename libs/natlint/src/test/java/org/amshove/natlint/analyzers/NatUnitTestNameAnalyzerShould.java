@@ -21,6 +21,6 @@ public class NatUnitTestNameAnalyzerShould extends AbstractAnalyzerTest
 	@Test
 	void raiseADiagnosticIfATestNameIsDuplicated(@ProjectName("natunit") NaturalProject project)
 	{
-		testDiagnostics(project.findModule("TCDUP"), expectDiagnostic(7, NatUnitTestNameAnalyzer.DUPLICATED_TEST_NAME));
+		testDiagnostics(project.findModule("TCDUP"), expectDiagnostic(11, NatUnitTestNameAnalyzer.DUPLICATED_TEST_NAME));
 	}
 }

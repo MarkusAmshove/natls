@@ -30,7 +30,7 @@ public class CopyCodesShould extends ParserIntegrationTest
 		assertThat(subprogram.diagnostics()).hasSize(2);
 		for (var diagnostic : subprogram.diagnostics())
 		{
-			assertThat(diagnostic.line()).as("Line mismatch for: " + diagnostic.message()).isEqualTo(2);
+			assertThat(diagnostic.line()).as("Line mismatch for: " + diagnostic.message()).isEqualTo(6);
 			assertThat(diagnostic.offsetInLine()).isEqualTo(8);
 		}
 	}
@@ -42,7 +42,7 @@ public class CopyCodesShould extends ParserIntegrationTest
 		assertThat(subprogram.diagnostics()).hasSize(2);
 		for (var diagnostic : subprogram.diagnostics())
 		{
-			assertThat(diagnostic.line()).as("Line mismatch for: " + diagnostic.message()).isEqualTo(4);
+			assertThat(diagnostic.line()).as("Line mismatch for: " + diagnostic.message()).isEqualTo(8);
 			assertThat(diagnostic.offsetInLine()).isEqualTo(8);
 		}
 	}
@@ -61,7 +61,7 @@ public class CopyCodesShould extends ParserIntegrationTest
 		assertThat(subprogram.diagnostics()).hasSize(2);
 		for (var diagnostic : subprogram.diagnostics())
 		{
-			assertThat(diagnostic.line()).as("Line mismatch for: " + diagnostic.message()).isEqualTo(2);
+			assertThat(diagnostic.line()).as("Line mismatch for: " + diagnostic.message()).isEqualTo(6);
 			assertThat(diagnostic.offsetInLine()).isEqualTo(8);
 		}
 	}

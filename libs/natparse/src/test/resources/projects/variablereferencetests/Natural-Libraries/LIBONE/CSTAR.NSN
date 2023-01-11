@@ -1,3 +1,7 @@
+* >Natural Source Header 000000
+* :Mode S
+* :LineIncrement 10
+* <Natural Source Header
 DEFINE DATA LOCAL
 1 #MYVAR (A1)
 END-DEFINE
@@ -5,4 +9,3 @@ END-DEFINE
 WRITE C*#MYVAR
 
 END
-

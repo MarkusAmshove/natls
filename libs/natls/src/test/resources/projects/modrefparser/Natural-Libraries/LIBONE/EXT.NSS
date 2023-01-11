@@ -1,3 +1,8 @@
+* >Natural Source Header 000000
+* :Mode S
+* :CP
+* :LineIncrement 10
+* <Natural Source Header
 DEFINE DATA
 PARAMETER 1 #P-PARA (A1)
 END-DEFINE
