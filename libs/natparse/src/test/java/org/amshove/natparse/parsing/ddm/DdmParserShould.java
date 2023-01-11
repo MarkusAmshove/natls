@@ -53,7 +53,7 @@ public class DdmParserShould
 
 		var fields = ddm.fields();
 
-		assertThat(ddm.fields().size()).isEqualTo(10);
+		assertThat(ddm.fields().size()).isEqualTo(11);
 		var topLevelFields = fields.stream().map(IDdmField::name).collect(Collectors.toList());
 
 		assertThat(topLevelFields)
@@ -67,7 +67,8 @@ public class DdmParserShould
 					"NUMERIC-WITH-FLOATING",
 					"A-SUPERDESCRIPTOR",
 					"ANOTHER-SUPERDESCRIPTOR",
-					"SUPERDESCRIPTOR-WITH-SUBRANGE"
+					"SUPERDESCRIPTOR-WITH-SUBRANGE",
+					"UNIQUE-SUPER-WITH-SUBRANGE"
 				)
 			);
 
