@@ -1,3 +1,7 @@
+* >Natural Source Header 000000
+* :Mode S
+* :LineIncrement 10
+* <Natural Source Header
 define data local
 end-define
 include HASQVAR
