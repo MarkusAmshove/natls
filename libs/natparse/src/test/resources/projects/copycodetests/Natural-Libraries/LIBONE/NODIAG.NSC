@@ -1,3 +1,7 @@
+* >Natural Source Header 000000
+* :Mode S
+* :LineIncrement 10
+* <Natural Source Header
 /* No diagnostics should be reported for this file. because we can't figure out if those things are declared.
 
 WRITE #SOMEVAR

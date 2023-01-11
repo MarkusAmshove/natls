@@ -92,7 +92,7 @@ public class NaturalSnippetShould
 
 		var usingInsert = completion.getAdditionalTextEdits().get(0);
 		assertThat(usingInsert.getNewText()).isEqualTo("LOCAL USING SNIPLDA%n".formatted());
-		assertThat(usingInsert.getRange().getStart().getLine()).isEqualTo(1);
+		assertThat(usingInsert.getRange().getStart().getLine()).isEqualTo(6);
 		assertThat(usingInsert.getRange().getStart().getCharacter()).isEqualTo(0);
 	}
 
@@ -116,7 +116,7 @@ public class NaturalSnippetShould
 			.createCompletion(testContext.project().findFileByReferableName("SUB2"));
 
 		var insert = completion.getAdditionalTextEdits().get(0);
-		assertThat(insert.getRange().getStart().getLine()).isEqualTo(1);
+		assertThat(insert.getRange().getStart().getLine()).isEqualTo(6);
 		assertThat(insert.getRange().getStart().getCharacter()).isEqualTo(0);
 	}
 
@@ -129,7 +129,7 @@ public class NaturalSnippetShould
 			.createCompletion(testContext.project().findFileByReferableName("EMPTDEF"));
 
 		var insert = completion.getAdditionalTextEdits().get(0);
-		assertThat(insert.getRange().getStart().getLine()).isEqualTo(1);
+		assertThat(insert.getRange().getStart().getLine()).isEqualTo(6);
 		assertThat(insert.getRange().getStart().getCharacter()).isEqualTo(0);
 	}
 
