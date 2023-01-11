@@ -7,6 +7,8 @@ import org.amshove.natparse.natural.DataType;
 import java.util.Arrays;
 import java.util.Map;
 
+import static org.amshove.natparse.natural.DataFormat.*;
+
 public class BuiltInFunctionTable
 {
 	private static final Map<SyntaxKind, IBuiltinFunctionDefinition> TABLE;
