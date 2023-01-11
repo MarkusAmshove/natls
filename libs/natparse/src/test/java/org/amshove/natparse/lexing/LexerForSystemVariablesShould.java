@@ -19,6 +19,18 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 	}
 
 	@Test
+	void lexDatE()
+	{
+		assertTokens("*DATE", token(SyntaxKind.DATE, "*DATE"));
+	}
+
+	@Test
+	void lexDat4E()
+	{
+		assertTokens("*DAT4E", token(SyntaxKind.DAT4E, "*DAT4E"));
+	}
+
+	@Test
 	void lexDatX()
 	{
 		assertTokens("*DATX", token(SyntaxKind.DATX, "*DATX"));
@@ -327,4 +339,71 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 	{
 		assertTokens("*TIMD", token(SyntaxKind.TIMD, "*TIMD"));
 	}
+
+	@Test
+	void lexCpuTime()
+	{
+		assertTokens("*CPU-TIME", token(SyntaxKind.CPU_TIME, "*CPU-TIME"));
+	}
+
+	@Test
+	void lexEtid()
+	{
+		assertTokens("*ETID", token(SyntaxKind.ETID, "*ETID"));
+	}
+
+	@Test
+	void lexInitProgram()
+	{
+		assertTokens("*INIT-PROGRAM", token(SyntaxKind.INIT_PROGRAM, "*INIT-PROGRAM"));
+	}
+
+	@Test
+	void lexLbound()
+	{
+		assertTokens("*LBOUND", token(SyntaxKind.LBOUND, "*LBOUND"));
+	}
+
+	@Test
+	void lexUbound()
+	{
+		assertTokens("*UBOUND", token(SyntaxKind.UBOUND, "*UBOUND"));
+	}
+
+	@Test
+	void lexDat4J()
+	{
+		assertTokens("*DAT4J", token(SyntaxKind.DAT4J, "*DAT4J"));
+	}
+
+	@Test
+	void lexDatJ()
+	{
+		assertTokens("*DATJ", token(SyntaxKind.DATJ, "*DATJ"));
+	}
+
+	@Test
+	void lexDat4U()
+	{
+		assertTokens("*DAT4U", token(SyntaxKind.DAT4U, "*DAT4U"));
+	}
+
+	@Test
+	void lexDatU()
+	{
+		assertTokens("*DATU", token(SyntaxKind.DATU, "*DATU"));
+	}
+
+	@Test
+	void lexDatVS()
+	{
+		assertTokens("*DATVS", token(SyntaxKind.DATVS, "*DATVS"));
+	}
+
+	@Test
+	void lexDatV()
+	{
+		assertTokens("*DATV", token(SyntaxKind.DATV, "*DATV"));
+	}
+
 }
