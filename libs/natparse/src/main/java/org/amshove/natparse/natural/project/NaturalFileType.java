@@ -5,38 +5,37 @@ import java.util.Arrays;
 
 public enum NaturalFileType
 {
+	DDM("NSD"),
 	SUBPROGRAM("NSN"),
 	PROGRAM("NSP"),
 	SUBROUTINE("NSS"),
-	LDA("NSL"),
-	DDM("NSD"),
-	PDA("NSA"),
+	HELPROUTINE("NSH"),
 	GDA("NSG"),
+	LDA("NSL"),
+	PDA("NSA"),
 	MAP("NSM"),
 	COPYCODE("NSC"),
 	FUNCTION("NS7");
+	// TEXT
+	// CLASS NS4
+	// ADAPTER
+	// RESOURCE
 
 	public static final NaturalFileType[] VALUES = NaturalFileType.values();
-
-	private final String extension;
-
-	NaturalFileType(String extension)
-	{
-		this.extension = extension;
-	}
 
 	public static NaturalFileType fromExtension(String extension)
 	{
 		return switch (extension)
 		{
+			case "NSD" -> DDM;
 			case "NSN" -> SUBPROGRAM;
 			case "NSP" -> PROGRAM;
 			case "NSS" -> SUBROUTINE;
+			case "NSH" -> HELPROUTINE;
+			case "NSG" -> GDA;
 			case "NSL" -> LDA;
-			case "NSD" -> DDM;
 			case "NSA" -> PDA;
 			case "NSM" -> MAP;
-			case "NSG" -> GDA;
 			case "NSC" -> COPYCODE;
 			case "NS7" -> FUNCTION;
 			default -> throw new RuntimeException(extension);
@@ -46,6 +45,13 @@ public enum NaturalFileType
 	public static boolean isNaturalFile(Path filepath)
 	{
 		return Arrays.stream(VALUES).anyMatch(t -> t.matches(filepath));
+	}
+
+	private final String extension;
+
+	NaturalFileType(String extension)
+	{
+		this.extension = extension;
 	}
 
 	public String getExtension()
@@ -62,7 +68,7 @@ public enum NaturalFileType
 	{
 		return switch (this)
 		{
-			case SUBPROGRAM, PROGRAM, SUBROUTINE, LDA, PDA, GDA, FUNCTION -> true;
+			case SUBPROGRAM, PROGRAM, SUBROUTINE, HELPROUTINE, LDA, PDA, GDA, FUNCTION -> true;
 			default -> false;
 		};
 	}
@@ -71,7 +77,7 @@ public enum NaturalFileType
 	{
 		return switch (this)
 		{
-			case SUBPROGRAM, PROGRAM, SUBROUTINE, FUNCTION, COPYCODE -> true;
+			case SUBPROGRAM, PROGRAM, SUBROUTINE, HELPROUTINE, FUNCTION, COPYCODE -> true;
 			default -> false;
 		};
 	}

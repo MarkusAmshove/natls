@@ -1,3 +1,8 @@
+* >Natural Source Header 000000
+* :Mode S
+* :CP
+* :LineIncrement 10
+* <Natural Source Header
 define data local
 1 #first (n1)
 1 #second (n1)
