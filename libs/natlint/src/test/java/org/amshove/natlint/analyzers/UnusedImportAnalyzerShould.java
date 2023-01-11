@@ -17,7 +17,7 @@ public class UnusedImportAnalyzerShould extends AbstractAnalyzerTest
 	{
 		testDiagnostics(
 			project.findModule("SUBTWO"),
-			expectDiagnostic(1, UnusedImportAnalyzer.UNUSED_IMPORT, "Using MYLDA is unused")
+			expectDiagnostic(5, UnusedImportAnalyzer.UNUSED_IMPORT, "Using MYLDA is unused")
 		);
 	}
 

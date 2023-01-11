@@ -4,6 +4,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amshove.natparse.natural.project.NaturalHeader;
+import org.amshove.natparse.natural.project.NaturalProgrammingMode;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.lexing.text.SourceTextScanner;
 
@@ -15,10 +17,15 @@ public class Lexer
 	private int line;
 	private int currentLineStartOffset;
 	private Path filePath;
+	private NaturalHeader sourceHeader;
 	private IPosition relocatedDiagnosticPosition;
 
 	private boolean inParens;
+	private boolean inSourceHeader;
+	private boolean sourceHeaderDone;
 
+	private NaturalProgrammingMode mode = NaturalProgrammingMode.UNKNOWN;
+	private int lineIncrement = 10;
 	private List<LexerDiagnostic> diagnostics;
 
 	public TokenList lex(String source, Path filePath)
@@ -28,11 +35,17 @@ public class Lexer
 		diagnostics = new ArrayList<>();
 		comments = new ArrayList<>();
 		scanner = new SourceTextScanner(source);
+		sourceHeader = new NaturalHeader(NaturalProgrammingMode.UNKNOWN, 0);
 		line = 0;
 		currentLineStartOffset = 0;
 
 		while (!scanner.isAtEnd())
 		{
+			if (!sourceHeaderDone && consumeNaturalHeader())
+			{
+				continue;
+			}
+
 			if (consumeComment())
 			{
 				continue;
@@ -45,13 +58,11 @@ public class Lexer
 				case '\r':
 					scanner.advance();
 					continue;
-
 				case '\n':
 					line++;
 					scanner.advance();
 					currentLineStartOffset = scanner.position();
 					continue;
-
 				case '(':
 					inParens = true;
 					createAndAddCurrentSingleToken(SyntaxKind.LPAREN);
@@ -114,14 +125,12 @@ public class Lexer
 				case ',':
 					createAndAddCurrentSingleToken(SyntaxKind.COMMA);
 					continue;
-
 				case '\'':
 					consumeString('\'');
 					continue;
 				case '"':
 					consumeString('"');
 					continue;
-
 				case '^':
 					if (tryCreateIfFollowedBy('=', SyntaxKind.CIRCUMFLEX_EQUAL))
 					{
@@ -130,15 +139,12 @@ public class Lexer
 
 					createAndAddCurrentSingleToken(SyntaxKind.CARET);
 					continue;
-
 				case '%':
 					createAndAddCurrentSingleToken(SyntaxKind.PERCENT);
 					continue;
-
 				case '?':
 					createAndAddCurrentSingleToken(SyntaxKind.QUESTIONMARK);
 					continue;
-
 				case 'h':
 				case 'H':
 					if (scanner.peek(1) == '\'')
@@ -150,7 +156,6 @@ public class Lexer
 						consumeIdentifierOrKeyword();
 					}
 					continue;
-
 				case 'a':
 				case 'A':
 				case 'b':
@@ -201,14 +206,18 @@ public class Lexer
 				case 'Y':
 				case 'z':
 				case 'Z':
+				case '\u00C5': // (char) 0xc385: // AA
+				case '\u00C6': // (char) 0xc386: // AE
+				case '\u00D8': // (char) 0xc398: // OE
+				case '\u00E6': // (char) 0xc3a6: // ae
+				case '\u00E5': // (char) 0xc3a5: // aa
+				case '\u00F8': // (char) 0xc3b8: // oe
 					consumeIdentifierOrKeyword();
 					continue;
-
 				case '#':
 				case '&':
 					consumeIdentifier();
 					continue;
-
 				case '0':
 				case '1':
 				case '2':
@@ -221,7 +230,6 @@ public class Lexer
 				case '9':
 					consumeNumber();
 					continue;
-
 				default:
 					diagnostics.add(
 						LexerDiagnostic.create(
@@ -237,7 +245,7 @@ public class Lexer
 					scanner.advance();
 			}
 		}
-		return TokenList.fromTokensAndDiagnostics(filePath, tokens, diagnostics, comments);
+		return TokenList.fromTokensAndDiagnostics(filePath, tokens, diagnostics, comments, sourceHeader);
 	}
 
 	public void relocateDiagnosticPosition(IPosition diagnosticPosition)
@@ -250,7 +258,8 @@ public class Lexer
 		var lookaheadIndex = findNextNonWhitespaceLookaheadOffset();
 		var lookahead = scanner.peek(lookaheadIndex);
 		var previousToken = previous();
-		var isStringConcatenation = previousToken != null && previousToken.kind() == SyntaxKind.STRING_LITERAL && (lookahead == '\'' || lookahead == '"');
+		var isStringConcatenation = previousToken != null && previousToken.kind() == SyntaxKind.STRING_LITERAL
+			&& (lookahead == '\'' || lookahead == '"');
 		if (isStringConcatenation)
 		{
 			var previousString = previousUnsafe();
@@ -610,7 +619,8 @@ public class Lexer
 		var text = scanner.lexemeText();
 		if (text.startsWith("+"))
 		{
-			// Special case. Starting with + could be an AIV, but +123 is meant arithmetically
+			// Special case. Starting with + could be an AIV, but +123 is meant
+			// arithmetically
 			var onlyDigits = true;
 			for (int i = 1; i < text.length(); i++)
 			{
@@ -635,7 +645,8 @@ public class Lexer
 		if (cStarAtStart || cStarQualified)
 		{
 			scanner.advance();
-			while (!scanner.isAtEnd() && !isLineEnd() && isNoWhitespace() && isValidIdentifierCharacter(scanner.peek()))
+			while (!scanner.isAtEnd() && !isLineEnd() && isNoWhitespace()
+				&& isValidIdentifierCharacter(scanner.peek()))
 			{
 				scanner.advance();
 			}
@@ -653,7 +664,9 @@ public class Lexer
 
 	private boolean isValidIdentifierCharacter(char character)
 	{
-		return Character.isAlphabetic(character) || Character.isDigit(character) || character == '-' || character == '/' || character == '@' || character == '$' || character == '&' || character == '#' || character == '.' || character == '_';
+		return Character.isAlphabetic(character) || Character.isDigit(character) || character == '-' || character == '/'
+			|| character == '@' || character == '$' || character == '&' || character == '#' || character == '.'
+			|| character == '_';
 	}
 
 	private void consumeIdentifierOrKeyword()
@@ -716,13 +729,14 @@ public class Lexer
 			}
 
 			if (scanner.peek() == '/')
-			{
+			{ // TODO: this does not work for "KEYWORD/*", eg. END-SUBROUTINE/* bla bla
 				kindHint = SyntaxKind.IDENTIFIER;
 
 				if (scanner.peek(1) == '*' && tokens.get(tokens.size() - 1).kind() == SyntaxKind.INCLUDE)
 				{
 					// The slash belongs to a comment, and we aren't parsing an array definition.
-					// TODO(lexermode): This should no longer be needed when the array definition is handled by a parser mode.
+					// TODO(lexermode): This should no longer be needed when the array definition is
+					// handled by a parser mode.
 					break;
 				}
 			}
@@ -730,17 +744,20 @@ public class Lexer
 			scanner.advance();
 		}
 
-		if ((scanner.peek() == ',' || scanner.peek() == '.') && !isValidIdentifierCharacter(scanner.peek(1)) && !isWhitespace(1))
+		if ((scanner.peek() == ',' || scanner.peek() == '.') && !isValidIdentifierCharacter(scanner.peek(1))
+			&& !isWhitespace(1))
 		{
-			// TODO(lexermode): This is only needed because the Define Data Parser relies on DataFormats to be identifiers currently.
-			//		With a fitting lexer mode we can build this better.
+			// TODO(lexermode): This is only needed because the Define Data Parser relies on
+			// DataFormats to be identifiers currently.
+			// With a fitting lexer mode we can build this better.
 			var somethingAsideOfCommaOrDotConsumed = false;
 			while (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd() && Character.isDigit(scanner.peek()))
 			{
 				somethingAsideOfCommaOrDotConsumed = true;
 				scanner.advance();
 			}
-			if (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd() && scanner.peek() == '.' || scanner.peek() == ',')
+			if (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd() && scanner.peek() == '.'
+				|| scanner.peek() == ',')
 			{
 				scanner.advance();
 			}
@@ -771,7 +788,8 @@ public class Lexer
 		if (cStarAtStart || cStarQualified)
 		{
 			scanner.advance();
-			while (!scanner.isAtEnd() && !isLineEnd() && isNoWhitespace() && isValidIdentifierCharacter(scanner.peek()))
+			while (!scanner.isAtEnd() && !isLineEnd() && isNoWhitespace()
+				&& isValidIdentifierCharacter(scanner.peek()))
 			{
 				scanner.advance();
 			}
@@ -851,7 +869,8 @@ public class Lexer
 
 	private boolean isWhitespace(int offset)
 	{
-		return scanner.peek(offset) == ' ' || scanner.peek(offset) == '\t' || scanner.peek(offset) == '\r' || scanner.peek(offset) == '\n';
+		return scanner.peek(offset) == ' ' || scanner.peek(offset) == '\t' || scanner.peek(offset) == '\r'
+			|| scanner.peek(offset) == '\n';
 	}
 
 	private boolean isAtLineStart()
@@ -891,20 +910,50 @@ public class Lexer
 		return floatingPointCount < 2;
 	}
 
+	private boolean consumeNaturalHeader()
+	{
+		if (!(isAtLineStart() && (isSingleAsteriskComment() || isInlineComment())))
+		{
+			return false;
+		}
+
+		scanner.start();
+		while (!isLineEnd() && !scanner.isAtEnd())
+		{
+			scanner.advance();
+		}
+		String s = scanner.lexemeText().stripTrailing();
+
+		if (inSourceHeader)
+		{
+			if (s.contains("* <Natural Source Header"))
+			{
+				sourceHeader = new NaturalHeader(mode, lineIncrement);
+				sourceHeaderDone = true;
+			}
+			if (s.contains("* :Mode"))
+			{
+				mode = NaturalProgrammingMode.fromString(s.substring(s.length() - 1));
+			}
+			if (s.contains("* :LineIncrement"))
+			{
+				s = s.replaceAll("\\D", "");
+				lineIncrement = (Integer.parseInt(s));
+			}
+		}
+		else
+		{
+			inSourceHeader = s.contains("* >Natural Source Header");
+		}
+		if (!inSourceHeader)
+			scanner.rollbackCurrentLexeme();
+
+		return inSourceHeader;
+	}
+
 	private boolean consumeComment()
 	{
-		var lookahead = scanner.peek(1);
-		var isSingleAsteriskComment = isAtLineStart()
-			&& scanner.peek() == '*'
-			&&
-			(lookahead == ' '
-				|| lookahead == '*'
-				|| lookahead == '\t'
-				|| lookahead == '\n'
-				|| lookahead == '\r'
-				|| lookahead == '/'
-				|| lookahead == SourceTextScanner.END_CHARACTER);
-		var isInlineComment = scanner.peek() == '/' && lookahead == '*';
+		var isInlineComment = isInlineComment();
 
 		if (isInlineComment && tokens.size() > 2)
 		{
@@ -918,7 +967,7 @@ public class Lexer
 			}
 		}
 
-		if (isSingleAsteriskComment || isInlineComment)
+		if (isSingleAsteriskComment() || isInlineComment)
 		{
 			scanner.start();
 			while (!isLineEnd() && !scanner.isAtEnd())
@@ -940,6 +989,26 @@ public class Lexer
 			return true;
 		}
 		return false;
+	}
+
+	private boolean isSingleAsteriskComment()
+	{
+		var lookahead = scanner.peek(1);
+		return isAtLineStart()
+			&& scanner.peek() == '*'
+			&&
+			(lookahead == ' '
+				|| lookahead == '*'
+				|| lookahead == '\t'
+				|| lookahead == '\n'
+				|| lookahead == '\r'
+				|| lookahead == '/'
+				|| lookahead == SourceTextScanner.END_CHARACTER);
+	}
+
+	private boolean isInlineComment()
+	{
+		return scanner.peek() == '/' && scanner.peek(1) == '*';
 	}
 
 	private void createAndAddCurrentSingleToken(SyntaxKind kind)
@@ -1027,7 +1096,8 @@ public class Lexer
 			return;
 		}
 
-		// We don't evaluate the content. Is it worth it? We could convert it to the actual characters.
+		// We don't evaluate the content. Is it worth it? We could convert it to the
+		// actual characters.
 
 		scanner.advance();
 		createAndAdd(SyntaxKind.STRING_LITERAL);
@@ -1063,14 +1133,18 @@ public class Lexer
 				scanner.advance();
 			}
 
-			addDiagnostic("Unterminated String literal, expecting closing [%c]".formatted(c), LexerError.UNTERMINATED_STRING);
+			addDiagnostic(
+				"Unterminated String literal, expecting closing [%c]".formatted(c),
+				LexerError.UNTERMINATED_STRING
+			);
 
 			// We can still produce a valid token, although it is unterminated
 			createAndAdd(SyntaxKind.STRING_LITERAL);
 			return;
 		}
 
-		// The current character is the terminating string literal (' or "), therefore it needs to be consumed
+		// The current character is the terminating string literal (' or "), therefore
+		// it needs to be consumed
 		// to be included.
 		scanner.advance();
 		createAndAdd(SyntaxKind.STRING_LITERAL);
