@@ -2,10 +2,11 @@ package org.amshove.natparse.lexing;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-public class LexerForNaturalHeaderShould extends AbstractLexerTest
+class LexerForNaturalHeaderShould extends AbstractLexerTest
 {
 	@ParameterizedTest
 	@CsvSource(
@@ -27,6 +28,36 @@ public class LexerForNaturalHeaderShould extends AbstractLexerTest
 		var tokenList = lexSource(source);
 		assertThat(tokenList.sourceHeader().getProgrammingMode().getMode().equals(mode));
 		assertThat(tokenList.sourceHeader().getLineIncrement()).isEqualTo(increment);
+	}
+
+	@Test
+	void lexForStructuredMode()
+	{
+		var source = """
+			* >Natural Source Header 000000
+			* :Mode S
+			* :CP
+			* :LineIncrement 10
+			* <Natural Source Header
+			""";
+
+		var tokenList = lexSource(source);
+		assertThat(tokenList.sourceHeader().isStructuredMode()).isEqualTo(true);
+	}
+
+	@Test
+	void lexForReportingMode()
+	{
+		var source = """
+			* >Natural Source Header 000000
+			* :Mode R
+			* :CP
+			* :LineIncrement 10
+			* <Natural Source Header
+			""";
+
+		var tokenList = lexSource(source);
+		assertThat(tokenList.sourceHeader().isReportingMode()).isEqualTo(true);
 	}
 
 }
