@@ -76,5 +76,4 @@ class LexerForNaturalHeaderShould extends AbstractLexerTest
 		assertThat(tokenList.sourceHeader().isReportingMode()).isFalse();
 		assertThat(tokenList.sourceHeader().getProgrammingMode()).isEqualTo(NaturalProgrammingMode.UNKNOWN);
 	}
-
 }
