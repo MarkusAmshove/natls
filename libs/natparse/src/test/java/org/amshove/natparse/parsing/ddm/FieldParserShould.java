@@ -146,7 +146,7 @@ class FieldParserShould
 	@ParameterizedTest(name = "parseTheDescriptorType [Descriptor, ExpectedType = {argumentsWithNames}]")
 	@CsvSource(value =
 	{
-		"D,DESCRIPTOR", "S,SUPERDESCRIPTOR", "P,PHONETIC", "U,UNIQUE", "NONE"
+		"D,DESCRIPTOR", "S,SUPERDESCRIPTOR", "P,PHONETIC", "U,UNIQUE", ",NONE"
 	})
 	void parseTheDescriptorType(String descriptorLiteral, String expectedDescriptorType)
 	{
