@@ -53,7 +53,7 @@ public class DdmParserShould
 
 		var fields = ddm.fields();
 
-		assertThat(ddm.fields().size()).isEqualTo(10);
+		assertThat(ddm.fields().size()).isEqualTo(11);
 		var topLevelFields = fields.stream().map(IDdmField::name).collect(Collectors.toList());
 
 		assertThat(topLevelFields)
@@ -67,7 +67,8 @@ public class DdmParserShould
 					"NUMERIC-WITH-FLOATING",
 					"A-SUPERDESCRIPTOR",
 					"ANOTHER-SUPERDESCRIPTOR",
-					"SUPERDESCRIPTOR-WITH-SUBRANGE"
+					"SUPERDESCRIPTOR-WITH-SUBRANGE",
+					"UNIQUE-SUPER-WITH-SUBRANGE"
 				)
 			);
 
@@ -100,18 +101,22 @@ public class DdmParserShould
 	void parseAComplexSqlDdm()
 	{
 		var ddm = parseFromResource("ComplexSqlTypeDdm.NSD");
-
+		assertThat(ddm.type()).isEqualTo(DdmType.SQL);
 		assertThat(findField(ddm, "ID").descriptor()).isEqualTo(DescriptorType.DESCRIPTOR);
-
 		assertThat(findField(ddm, "L@LONG-VARCHAR").shortname()).isEqualTo("I_");
-
 		assertThat(findField(ddm, "LONG-VARCHAR").length()).isEqualTo(2500);
-
 		assertThat(findField(ddm, "L@DYNAMIC-CLOB").format()).isEqualTo(DataFormat.INTEGER);
-
 		assertThat(findField(ddm, "DYNAMIC-CLOB").length()).isEqualTo(9999);
-
 		assertThat(findField(ddm, "N@DYNAMIC-CLOB").length()).isEqualTo(2);
+	}
+
+	@Test
+	void parseAComplexSqlDdmAndUseIt()
+	{
+		var ddm = parseFromResource("DdmFromTrygVFF_OPLYSNING.NSD");
+		assertThat(findField(ddm, "FF_NR").descriptor()).isEqualTo(DescriptorType.DESCRIPTOR);
+		assertThat(findField(ddm, "FF_NR").format()).isEqualTo(DataFormat.PACKED);
+		//assertThat(ddm.type()).isEqualTo(DdmType.SQL); TODO(lexermode): DdmType is undefined because Type: is not present in the DDM source. What can we do?
 	}
 
 	@Test

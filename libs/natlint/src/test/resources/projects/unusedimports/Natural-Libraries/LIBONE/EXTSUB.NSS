@@ -1,3 +1,7 @@
+* >Natural Source Header 000000
+* :Mode S
+* :CP
+* <Natural Source Header
 DEFINE DATA
 PARAMETER USING MYPDA
 END-DEFINE

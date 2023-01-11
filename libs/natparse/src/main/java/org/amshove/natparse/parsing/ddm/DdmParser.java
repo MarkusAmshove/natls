@@ -23,10 +23,14 @@ public class DdmParser
 
 	private static final List<String> linesToSkip = Lists.newArrayList(
 		"DDM OUTPUT TERMINATED",
+		"                              Cataloged by",
+		"       EM=",
+		"       HD=",
 		"SOURCE FIELD(S)",
 		"- - -- ---------------",
 		"T L DB Name",
 		"Natural Source Header",
+		"CODEPAGE:",
 		":CP"
 	);
 
