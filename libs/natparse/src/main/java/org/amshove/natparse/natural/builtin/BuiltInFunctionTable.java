@@ -56,7 +56,7 @@ public class BuiltInFunctionTable
 			unmodifiableVariable(SyntaxKind.DAT4I, "Returns the current date in the format `YYYY-MM-DD`", ALPHANUMERIC, 10.0),
 			unmodifiableVariable(SyntaxKind.DATJ, "Returns the current date in the format `YYJJJ` (Julian date)", ALPHANUMERIC, 5.0),
 			unmodifiableVariable(SyntaxKind.DAT4J, "Returns the current date in the format `YYYYJJJ` (Julian date)", ALPHANUMERIC, 7.0),
-			unmodifiableVariable(SyntaxKind.DATX, "Returns the current date as internal date for	mat", DATE, 0.0),
+			unmodifiableVariable(SyntaxKind.DATX, "Returns the current date as internal date for mat", DATE, 0.0),
 			unmodifiableVariable(SyntaxKind.DATN, "Returns the current date in the format `YYYYMMDD`", ALPHANUMERIC, 10.0),
 			unmodifiableVariable(SyntaxKind.DATU, "Returns the current date in the format `MM/DD/YY`", ALPHANUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.DAT4U, "Returns the current date in the format `MM/DD/YYYY`", ALPHANUMERIC, 10.0),
@@ -177,10 +177,10 @@ public class BuiltInFunctionTable
 				""", ALPHANUMERIC, 8),
 			unmodifiableVariable(SyntaxKind.LBOUND, """
 				Returns the current lower boundary (index value) of an array for the specified dimension(s) (1, 2 or 3) or for all dimensions (asterisk (*) notation).
-					""", INTEGER, 4),
+				""", INTEGER, 4),
 			unmodifiableVariable(SyntaxKind.UBOUND, """
 				Returns the current upper boundary (index value) of an array for the specified dimension(s) (1, 2 or 3) or for all dimensions (asterisk (*) notation).
-					""", INTEGER, 4),
+				""", INTEGER, 4),
 			unmodifiableVariable(SyntaxKind.TPSYS, """
 				Returns the Natural name of the TP monitor or environment.
 

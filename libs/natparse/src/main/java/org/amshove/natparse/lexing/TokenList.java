@@ -175,11 +175,6 @@ public class TokenList
 		return false;
 	}
 
-	// TODO: Figure out a better name - unused for now, it seems
-	//public TokenList newResetted() {
-	//	return TokenList.fromTokensAndDiagnostics(filePath, tokens, diagnostics, comments, null);
-	//}
-
 	public ReadOnlyList<SyntaxToken> comments()
 	{
 		return ReadOnlyList.from(comments); // TODO: Perf
