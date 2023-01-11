@@ -2,6 +2,7 @@ package org.amshove.natparse.lexing;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+import org.amshove.natparse.natural.project.NaturalProgrammingMode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -36,13 +37,13 @@ class LexerForNaturalHeaderShould extends AbstractLexerTest
 		var source = """
 			* >Natural Source Header 000000
 			* :Mode S
-			* :CP
 			* :LineIncrement 10
 			* <Natural Source Header
 			""";
 
 		var tokenList = lexSource(source);
-		assertThat(tokenList.sourceHeader().isStructuredMode()).isEqualTo(true);
+		assertThat(tokenList.sourceHeader().isStructuredMode()).isTrue();
+		assertThat(tokenList.sourceHeader().isReportingMode()).isFalse();
 	}
 
 	@Test
@@ -51,13 +52,29 @@ class LexerForNaturalHeaderShould extends AbstractLexerTest
 		var source = """
 			* >Natural Source Header 000000
 			* :Mode R
-			* :CP
 			* :LineIncrement 10
 			* <Natural Source Header
 			""";
 
 		var tokenList = lexSource(source);
-		assertThat(tokenList.sourceHeader().isReportingMode()).isEqualTo(true);
+		assertThat(tokenList.sourceHeader().isStructuredMode()).isFalse();
+		assertThat(tokenList.sourceHeader().isReportingMode()).isTrue();
+	}
+
+	@Test
+	void lexForUnknownMode()
+	{
+		var source = """
+			* >Natural Source Header 000000
+			* :Mode Unknown
+			* :LineIncrement 10
+			* <Natural Source Header
+			""";
+
+		var tokenList = lexSource(source);
+		assertThat(tokenList.sourceHeader().isStructuredMode()).isFalse();
+		assertThat(tokenList.sourceHeader().isReportingMode()).isFalse();
+		assertThat(tokenList.sourceHeader().getProgrammingMode()).isEqualTo(NaturalProgrammingMode.UNKNOWN);
 	}
 
 }
