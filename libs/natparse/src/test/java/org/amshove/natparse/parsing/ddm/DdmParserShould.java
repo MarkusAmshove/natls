@@ -115,7 +115,7 @@ public class DdmParserShould
 		var ddm = parseFromResource("DdmFromTrygVFF_OPLYSNING.NSD");
 		assertThat(findField(ddm, "FF_NR").descriptor()).isEqualTo(DescriptorType.DESCRIPTOR);
 		assertThat(findField(ddm, "FF_NR").format()).isEqualTo(DataFormat.PACKED);
-		//assertThat(ddm.type()).isEqualTo(DdmType.SQL);
+		//assertThat(ddm.type()).isEqualTo(DdmType.SQL); TODO(lexermode): DdmType is undefined because Type: is not present in the DDM source. What can we do?
 	}
 
 	@Test

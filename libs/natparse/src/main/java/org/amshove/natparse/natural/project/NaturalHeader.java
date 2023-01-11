@@ -11,11 +11,6 @@ public class NaturalHeader
 		this.lineIncrement = lineIncrement;
 	}
 
-	public void setLineIncrement(int lineIncrement)
-	{
-		this.lineIncrement = lineIncrement;
-	}
-
 	public NaturalProgrammingMode getProgrammingMode()
 	{
 		return programmingMode;

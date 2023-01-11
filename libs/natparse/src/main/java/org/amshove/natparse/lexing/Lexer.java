@@ -20,7 +20,9 @@ public class Lexer
 	private NaturalHeader sourceHeader;
 	private IPosition relocatedDiagnosticPosition;
 
-	private boolean inParens, inHdr, hdrDone;
+	private boolean inParens;
+	private boolean inSourceHeader;
+	private boolean sourceHeaderDone;
 
 	private NaturalProgrammingMode mode = NaturalProgrammingMode.UNKNOWN;
 	private int lineIncrement = 10;
@@ -39,7 +41,7 @@ public class Lexer
 
 		while (!scanner.isAtEnd())
 		{
-			if (!hdrDone && consumeNaturalHeader())
+			if (!sourceHeaderDone && consumeNaturalHeader())
 			{
 				continue;
 			}
@@ -974,12 +976,10 @@ public class Lexer
 
 	private boolean consumeNaturalHeader()
 	{
-		if (isAtLineStart() && (isSingleAsteriskComment() || isInlineComment()))
+		if (!(isAtLineStart() && (isSingleAsteriskComment() || isInlineComment())))
 		{
-			//NOOP
-		}
-		else
 			return false;
+		}
 
 		scanner.start();
 		while (!isLineEnd() && !scanner.isAtEnd())
@@ -988,50 +988,35 @@ public class Lexer
 		}
 		String s = scanner.lexemeText().stripTrailing();
 
-		if (inHdr)
+		if (inSourceHeader)
 		{
 			if (s.contains("* <Natural Source Header"))
 			{
 				sourceHeader = new NaturalHeader(mode, lineIncrement);
-				hdrDone = true;
+				sourceHeaderDone = true;
 			}
-			else
+			if (s.contains("* :Mode"))
 			{
-				if (s.contains("* :Mode"))
-				{
-					mode = NaturalProgrammingMode.fromString(s.substring(s.length() - 1));
-				}
-				else
-					if (s.contains("* :LineIncrement"))
-					{
-						s = s.replaceAll("[^0-9]+", "");
-						lineIncrement = (Integer.parseInt(s));
-					}
+				mode = NaturalProgrammingMode.fromString(s.substring(s.length() - 1));
+			}
+			if (s.contains("* :LineIncrement"))
+			{
+				s = s.replaceAll("\\D", "");
+				lineIncrement = (Integer.parseInt(s));
 			}
 		}
 		else
 		{
-			inHdr = s.contains("* >Natural Source Header");
+			inSourceHeader = s.contains("* >Natural Source Header");
 		}
-		if (!inHdr)
+		if (!inSourceHeader)
 			scanner.rollbackCurrentLexeme();
 
-		return inHdr;
+		return inSourceHeader;
 	}
 
 	private boolean consumeComment()
 	{
-		var lookahead = scanner.peek(1);
-		var isSingleAsteriskComment = isAtLineStart()
-			&& scanner.peek() == '*'
-			&&
-			(lookahead == ' '
-				|| lookahead == '*'
-				|| lookahead == '\t'
-				|| lookahead == '\n'
-				|| lookahead == '\r'
-				|| lookahead == '/'
-				|| lookahead == SourceTextScanner.END_CHARACTER);
 		var isInlineComment = isInlineComment();
 
 		if (isInlineComment && tokens.size() > 2)
