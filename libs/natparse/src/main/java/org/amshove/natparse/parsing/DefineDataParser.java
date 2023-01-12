@@ -170,12 +170,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		using.addNode(identifierTokenNode);
 
 		// For "GLOBAL USING WITH BLOCK"
-		if (using.isGlobalUsing())
+		if (using.isGlobalUsing() && consumeOptionally(using, SyntaxKind.WITH))
 		{
-			if (consumeOptionally(using, SyntaxKind.WITH))
-			{
-				identifier = consumeIdentifierTokenOnly();
-			}
+			identifier = consumeIdentifierTokenOnly();
 		}
 
 		for (var presentUsing : defineData.usings())
@@ -211,12 +208,11 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		var identifier = consumeIdentifierTokenOnly();
 		block.setBlock(identifier);
 
-		if (consumeOptionally(block, SyntaxKind.CHILD))
-			if (consumeOptionally(block, SyntaxKind.OF))
-			{
-				identifier = consumeIdentifierTokenOnly();
-				block.setParent(identifier);
-			}
+		if (consumeOptionally(block, SyntaxKind.CHILD) && consumeOptionally(block, SyntaxKind.OF))
+		{
+			identifier = consumeIdentifierTokenOnly();
+			block.setParent(identifier);
+		}
 
 		return block;
 	}
