@@ -838,20 +838,44 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		assertThat(redefinition.variables().first().qualifiedName()).isEqualTo("+MY-AIV.#INSIDE");
 	}
 
-	@Test
-	void notRaiseADiagnosticIfRedefineHasSmallerLength()
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"N8,N4", "P20,A11", "P21,A11", "D,A4", "D,I4", "T,A7", "T,I4"
+		}
+	)
+	void notRaiseADiagnosticIfRedefineHasSmallerOrEqualLength(String varFormat, String redefVarFormat)
 	{
 		var source = """
-			   DEFINE DATA
-			   LOCAL
-			   1 #DATE (N8)
-			   1 REDEFINE #DATE
-				2 #YEAR (N4)
-				2 #MONTH (N2)
-			   END-DEFINE
-			""";
+			DEFINE DATA
+			LOCAL
+			1 #FIELD (%s)
+			1 REDEFINE #FIELD
+			  2 #REDEF-FIELD (%s)
+		    END-DEFINE
+			""".formatted(varFormat, redefVarFormat);
 
 		assertParsesWithoutDiagnostics(source);
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"N10,P20", "P20,A12", "P21,A12", "D,A5", "D,P10", "T,A9"
+		}
+	)
+	void raiseADiagnosticIfRedefineHasGreaterLength(String varFormat, String redefVarFormat)
+	{
+		var source = """
+			DEFINE DATA
+			LOCAL
+			1 #FIELD (%s)
+			1 REDEFINE #FIELD
+			 2 #REDEF-FIELD (%s)
+			END-DEFINE
+		 """.formatted(varFormat, redefVarFormat);
+
+		assertDiagnostic(source, ParserError.REDEFINE_LENGTH_EXCEEDS_TARGET_LENGTH);
 	}
 
 	@Test
