@@ -3,6 +3,7 @@ package org.amshove.natlint.api;
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.IPosition;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.nio.file.Path;
 
@@ -97,5 +98,17 @@ public class LinterDiagnostic implements IDiagnostic
 	public boolean hasOriginalPosition()
 	{
 		return originalPosition != null;
+	}
+
+	@Pure
+	public LinterDiagnostic withSeverity(DiagnosticSeverity newSeverity)
+	{
+		return new LinterDiagnostic(
+			id,
+			position,
+			originalPosition,
+			newSeverity,
+			message
+		);
 	}
 }
