@@ -512,6 +512,7 @@ public class KeywordTable
 			case "separate" -> SyntaxKind.SEPARATE;
 			case "sequence" -> SyntaxKind.SEQUENCE;
 			case "server" -> SyntaxKind.SERVER;
+			case "server-type" -> SyntaxKind.SERVER_TYPE;
 			case "set" -> SyntaxKind.SET;
 			case "sets" -> SyntaxKind.SETS;
 			case "settime" -> SyntaxKind.SETTIME;

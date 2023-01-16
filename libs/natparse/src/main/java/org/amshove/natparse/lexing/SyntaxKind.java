@@ -99,6 +99,7 @@ public enum SyntaxKind
 	CPU_TIME(false, true, false),
 	LBOUND(false, true, false),
 	UBOUND(false, true, false),
+	SERVER_TYPE(false, true, false),
 
 	// Kcheck reserved keywords
 	ABS(false, false, false),

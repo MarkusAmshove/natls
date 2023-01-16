@@ -371,6 +371,12 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 	}
 
 	@Test
+	void lexServerType()
+	{
+		assertTokens("*SERVER-TYPE", token(SyntaxKind.SERVER_TYPE, "*SERVER-TYPE"));
+	}
+
+	@Test
 	void lexDat4J()
 	{
 		assertTokens("*DAT4J", token(SyntaxKind.DAT4J, "*DAT4J"));

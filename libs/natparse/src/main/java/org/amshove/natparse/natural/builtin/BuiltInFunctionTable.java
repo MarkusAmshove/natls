@@ -173,6 +173,16 @@ public class BuiltInFunctionTable
 			unmodifiableVariable(SyntaxKind.UBOUND, """
 				Returns the current upper boundary (index value) of an array for the specified dimension(s) (1, 2 or 3) or for all dimensions (asterisk (*) notation).
 				""", INTEGER, 4),
+			unmodifiableVariable(SyntaxKind.SERVER_TYPE, """
+				This system variable indicates the server type Natural has been started as. It can contain one of the following values:
+
+				- DB2-SP	Natural DB2 Stored Procedures server
+				- DEVELOP	Natural development server
+				- RPC		Natural RPC server
+				- WEBIO		Natural Web I/O Interface server
+
+				If Natural is not started as a server, *SERVER-TYPE is set to blanks.
+				""", ALPHANUMERIC, 32),
 			unmodifiableVariable(SyntaxKind.TPSYS, """
 				Returns the Natural name of the TP monitor or environment.
 

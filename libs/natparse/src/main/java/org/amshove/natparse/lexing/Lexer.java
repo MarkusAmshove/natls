@@ -619,6 +619,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.APPLIC_ID);
 			return;
 		}
+		if (scanner.advanceIfIgnoreCase("SERVER-TYPE"))
+		{
+			createAndAdd(SyntaxKind.SERVER_TYPE);
+			return;
+		}
 		if (scanner.advanceIfIgnoreCase("STARTUP"))
 		{
 			createAndAdd(SyntaxKind.STARTUP);
