@@ -40,6 +40,7 @@ public enum SyntaxKind
 	TIMX(false, true, false),
 	TIMD(false, false, true),
 	TIMN(false, true, false),
+	TIME_OUT(false, true, false),
 	DATD(false, true, false),
 	DATG(false, true, false),
 	DATE(false, true, false),

@@ -404,6 +404,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.TIMN);
 			return;
 		}
+		if (scanner.advanceIfIgnoreCase("TIME-OUT"))
+		{
+			createAndAdd(SyntaxKind.TIME_OUT);
+			return;
+		}
 		if (scanner.advanceIfIgnoreCase("DAT4E"))
 		{
 			createAndAdd(SyntaxKind.DAT4E);

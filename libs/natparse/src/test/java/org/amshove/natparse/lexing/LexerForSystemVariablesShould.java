@@ -191,6 +191,12 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 	}
 
 	@Test
+	void lexTimeOut()
+	{
+		assertTokens("*TIME-OUT", token(SyntaxKind.TIME_OUT, "*TIME-OUT"));
+	}
+
+	@Test
 	void lexOpSys()
 	{
 		assertTokens("*OPSYS", token(SyntaxKind.OPSYS, "*OPSYS"));

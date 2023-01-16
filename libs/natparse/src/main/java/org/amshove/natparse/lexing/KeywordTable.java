@@ -570,6 +570,7 @@ public class KeywordTable
 			case "then" -> SyntaxKind.THEN;
 			case "thru" -> SyntaxKind.THRU;
 			case "time" -> SyntaxKind.TIME;
+			case "time-out" -> SyntaxKind.TIME_OUT;
 			case "timestamp" -> SyntaxKind.TIMESTAMP;
 			case "timezone" -> SyntaxKind.TIMEZONE;
 			case "title" -> SyntaxKind.TITLE;

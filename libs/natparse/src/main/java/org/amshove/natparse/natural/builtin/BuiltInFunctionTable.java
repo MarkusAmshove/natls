@@ -20,6 +20,7 @@ public class BuiltInFunctionTable
 			unmodifiableVariable(SyntaxKind.INIT_ID, "Returns the ID of the device that Natural invoked", ALPHANUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.TIMX, "Returns the current time of the day as builtin time format", TIME, 0.0),
 			unmodifiableVariable(SyntaxKind.TIMESTMP, "Returns the machine-internal clock value", BINARY, 8.0),
+			unmodifiableVariable(SyntaxKind.TIME_OUT, "Contains the number of seconds remaining before the current transaction will be timed out (Natural Security only).", NUMERIC, 5.0),
 			unmodifiableVariable(SyntaxKind.TIMN, "Returns the current time of the day as numeric format", NUMERIC, 7.0),
 			function(
 				SyntaxKind.TIMD, """
