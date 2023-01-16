@@ -97,12 +97,6 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 	}
 
 	@Test
-	void lexErrorNoNr()
-	{
-		assertTokens("*ERROR", token(SyntaxKind.SV_ERROR, "*ERROR"));
-	}
-
-	@Test
 	void lexErrorLine()
 	{
 		assertTokens("*ERROR-LINE", token(SyntaxKind.ERROR_LINE, "*ERROR-LINE"));
@@ -112,6 +106,12 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 	void lexErrorTa()
 	{
 		assertTokens("*ERROR-TA", token(SyntaxKind.ERROR_TA, "*ERROR-TA"));
+	}
+
+	@Test
+	void lexErrorNoNr()
+	{
+		assertTokens("*ERROR", token(SyntaxKind.SV_ERROR, "*ERROR"));
 	}
 
 	@Test
@@ -290,6 +290,12 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 	void lexNumber()
 	{
 		assertTokens("*NUMBER", token(SyntaxKind.SV_NUMBER, "*NUMBER"));
+	}
+
+	@Test
+	void lexLength()
+	{
+		assertTokens("*LENGTH", token(SyntaxKind.SV_LENGTH, "*LENGTH"));
 	}
 
 	@Test

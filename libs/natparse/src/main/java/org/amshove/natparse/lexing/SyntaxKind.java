@@ -85,6 +85,7 @@ public enum SyntaxKind
 	SV_DATA(false, true, false),
 	SV_LEVEL(false, true, false),
 	SV_NUMBER(false, true, true),
+	SV_LENGTH(false, false, true),
 	TRANSLATE(true, false, true),
 	TIMESTMP(false, true, false),
 	PF_KEY(false, true, false),

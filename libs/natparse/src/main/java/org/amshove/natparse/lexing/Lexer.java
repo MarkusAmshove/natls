@@ -379,14 +379,19 @@ public class Lexer
 			createAndAdd(SyntaxKind.ERROR_NR);
 			return;
 		}
-		if (scanner.advanceIfIgnoreCase("ERROR"))
-		{
-			createAndAdd(SyntaxKind.SV_ERROR);
-			return;
-		}
 		if (scanner.advanceIfIgnoreCase("ERROR-LINE"))
 		{
 			createAndAdd(SyntaxKind.ERROR_LINE);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("ERROR-TA"))
+		{
+			createAndAdd(SyntaxKind.ERROR_TA);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("ERROR"))
+		{
+			createAndAdd(SyntaxKind.SV_ERROR);
 			return;
 		}
 		if (scanner.advanceIfIgnoreCase("LINE"))
@@ -544,6 +549,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.SV_NUMBER);
 			return;
 		}
+		if (scanner.advanceIfIgnoreCase("LENGTH"))
+		{
+			createAndAdd(SyntaxKind.SV_LENGTH);
+			return;
+		}
 		if (scanner.advanceIfIgnoreCase("CURRENT-UNIT"))
 		{
 			createAndAdd(SyntaxKind.CURRENT_UNIT);
@@ -562,11 +572,6 @@ public class Lexer
 		if (scanner.advanceIfIgnoreCase("CURS-FIELD"))
 		{
 			createAndAdd(SyntaxKind.CURS_FIELD);
-			return;
-		}
-		if (scanner.advanceIfIgnoreCase("ERROR-TA"))
-		{
-			createAndAdd(SyntaxKind.ERROR_TA);
 			return;
 		}
 		if (scanner.advanceIfIgnoreCase("INIT-USER"))
