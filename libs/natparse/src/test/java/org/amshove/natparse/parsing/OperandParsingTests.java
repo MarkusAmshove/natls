@@ -154,8 +154,8 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	void parseAbs()
 	{
 		var operand = parseOperands("ABS(#THEVAR)");
-		var valNode = assertNodeType(operand.get(0), IAbsOperandNode.class);
-		var parameter = assertNodeType(valNode.parameter(), IVariableReferenceNode.class);
+		var absNode = assertNodeType(operand.get(0), IAbsOperandNode.class);
+		var parameter = assertNodeType(absNode.parameter(), IVariableReferenceNode.class);
 		assertThat(parameter.referencingToken().symbolName()).isEqualTo("#THEVAR");
 	}
 
@@ -167,6 +167,15 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		var abs = assertNodeType(operand.get(0), IAbsOperandNode.class);
 		var functionAsParameter = assertNodeType(abs.parameter(), IFunctionCallNode.class);
 		assertThat(functionAsParameter.referencingToken().symbolName()).isEqualTo("FUNC");
+	}
+
+	@Test
+	void parseFrac()
+	{
+		var operand = parseOperands("FRAC(#THEVAR)");
+		var fracNode = assertNodeType(operand.get(0), IFracOperandNode.class);
+		var parameter = assertNodeType(fracNode.parameter(), IVariableReferenceNode.class);
+		assertThat(parameter.referencingToken().symbolName()).isEqualTo("#THEVAR");
 	}
 
 	@Test
