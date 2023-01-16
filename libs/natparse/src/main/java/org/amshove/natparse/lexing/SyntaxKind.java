@@ -72,6 +72,7 @@ public enum SyntaxKind
 	OCC(false, false, true),
 	OCCURRENCE(false, false, true),
 	ERROR_NR(false, true, false),
+	SV_ERROR(false, true, false), // *ERROR is equivalent of *ERROR-NR
 	ERROR_LINE(false, true, false),
 	ERROR_TA(false, true, false),
 	LINE(false, true, false),

@@ -97,6 +97,12 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 	}
 
 	@Test
+	void lexErrorNoNr()
+	{
+		assertTokens("*ERROR", token(SyntaxKind.SV_ERROR, "*ERROR"));
+	}
+
+	@Test
 	void lexErrorLine()
 	{
 		assertTokens("*ERROR-LINE", token(SyntaxKind.ERROR_LINE, "*ERROR-LINE"));

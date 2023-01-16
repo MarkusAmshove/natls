@@ -379,6 +379,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.ERROR_NR);
 			return;
 		}
+		if (scanner.advanceIfIgnoreCase("ERROR"))
+		{
+			createAndAdd(SyntaxKind.SV_ERROR);
+			return;
+		}
 		if (scanner.advanceIfIgnoreCase("ERROR-LINE"))
 		{
 			createAndAdd(SyntaxKind.ERROR_LINE);
