@@ -469,6 +469,14 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseRelationalCriteriaWithFrac()
+	{
+		var criteria = assertParsesCriteria("FRAC(#VAR1) <> ABS(0)", IRelationalCriteriaNode.class);
+		assertNodeType(criteria.left(), IFracOperandNode.class);
+		assertNodeType(criteria.right(), IAbsOperandNode.class);
+	}
+
+	@Test
 	void parseIsTestWithComma()
 	{
 		var criteria = assertParsesCriteria("#VAR IS (N12,7)", IIsConditionCriteriaNode.class);

@@ -1854,6 +1854,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			|| peekKind(SyntaxKind.VAL)
 			|| peekKind(SyntaxKind.ABS)
 			|| peekKind(SyntaxKind.POS)
+			|| peekKind(SyntaxKind.FRAC)
 			|| (peekKind(SyntaxKind.MINUS) && lookahead == SyntaxKind.NUMBER_LITERAL)
 			|| (peek().kind().canBeIdentifier() && !peekKindInLine(SyntaxKind.COLON_EQUALS_SIGN)); // hopefully this fixes `#ARR(10) :=` being recognized as operand and has no side effects :)
 	}
