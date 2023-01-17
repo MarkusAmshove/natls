@@ -1707,6 +1707,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(statement, SyntaxKind.BREAK);
 		consumeOptionally(statement, SyntaxKind.OF);
 
+		statement.setCondition(conditionNode());
 		consumeOptionally(statement, SyntaxKind.THEN);
 		statement.setBody(statementList(SyntaxKind.END_IF));
 
@@ -1726,6 +1727,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		statement.setCondition(conditionNode());
 		consumeOptionally(statement, SyntaxKind.THEN);
 		statement.setBody(statementList(SyntaxKind.END_IF));
+
 		consumeMandatoryClosing(statement, SyntaxKind.END_IF, opening);
 
 		return statement;
