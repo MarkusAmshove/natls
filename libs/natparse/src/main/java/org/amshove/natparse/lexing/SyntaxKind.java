@@ -40,6 +40,7 @@ public enum SyntaxKind
 	TIMX(false, true, false),
 	TIMD(false, false, true),
 	TIMN(false, true, false),
+	TIME_OUT(false, true, false),
 	DATD(false, true, false),
 	DATG(false, true, false),
 	DATE(false, true, false),
@@ -71,6 +72,7 @@ public enum SyntaxKind
 	OCC(false, false, true),
 	OCCURRENCE(false, false, true),
 	ERROR_NR(false, true, false),
+	SV_ERROR(false, true, false), // *ERROR is equivalent of *ERROR-NR
 	ERROR_LINE(false, true, false),
 	ERROR_TA(false, true, false),
 	LINE(false, true, false),
@@ -83,6 +85,7 @@ public enum SyntaxKind
 	SV_DATA(false, true, false),
 	SV_LEVEL(false, true, false),
 	SV_NUMBER(false, true, true),
+	SV_LENGTH(false, false, true),
 	TRANSLATE(true, false, true),
 	TIMESTMP(false, true, false),
 	PF_KEY(false, true, false),
@@ -99,6 +102,7 @@ public enum SyntaxKind
 	CPU_TIME(false, true, false),
 	LBOUND(false, true, false),
 	UBOUND(false, true, false),
+	SERVER_TYPE(false, true, false),
 
 	// Kcheck reserved keywords
 	ABS(false, false, false),

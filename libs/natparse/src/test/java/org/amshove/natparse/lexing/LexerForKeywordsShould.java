@@ -518,6 +518,7 @@ public class LexerForKeywordsShould extends AbstractLexerTest
 			keywordTest("SEPARATE", SyntaxKind.SEPARATE),
 			keywordTest("SEQUENCE", SyntaxKind.SEQUENCE),
 			keywordTest("SERVER", SyntaxKind.SERVER),
+			keywordTest("SERVER-TYPE", SyntaxKind.SERVER_TYPE),
 			keywordTest("SET", SyntaxKind.SET),
 			keywordTest("SETS", SyntaxKind.SETS),
 			keywordTest("SETTIME", SyntaxKind.SETTIME),
