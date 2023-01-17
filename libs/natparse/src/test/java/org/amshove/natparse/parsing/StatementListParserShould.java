@@ -7,6 +7,7 @@ import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
 import org.amshove.testhelpers.IntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -502,6 +503,42 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 			    IGNORE
 			END-IF
 			""", IIfStatementNode.class);
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"BREAK, #TEST", "BREAK OF, #TEST", "BREAK #TEST, THEN", "BREAK OF #TEST, THEN",
+		}
+	)
+
+	void parseIfBreakStatements(String keywords, String variables)
+	{
+		var source = """
+			IF %s %s
+				IGNORE
+			END-IF
+			""".formatted(keywords, variables);
+
+		assertParsesSingleStatement(source, IIfBreakNode.class);
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"SELECTION, #A #B", "SELECTION NOT, #A #B", "SELECTION NOT UNIQUE, #A #B", "SELECTION NOT UNIQUE IN FIELDS #A #B, THEN",
+		}
+	)
+
+	void parseIfSeelctionNotUniqueStatements(String keywords, String variables)
+	{
+		var source = """
+			IF %s %s
+				IGNORE
+			END-IF
+			""".formatted(keywords, variables);
+
+		assertParsesSingleStatement(source, IIfSelectionNode.class);
 	}
 
 	@Test
