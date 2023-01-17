@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.internal.matchers.Null;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
@@ -508,7 +509,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	@ParameterizedTest
 	@CsvSource(
 		{
-			"BREAK, #TEST", "BREAK OF, #TEST", "BREAK #TEST, THEN", "BREAK OF #TEST, THEN",
+			"BREAK, #TEST", "BREAK OF, #TEST", "BREAK #TEST, THEN", "BREAK OF #TEST, THEN", "BREAK OF #TEST /3/, THEN"
 		}
 	)
 
@@ -520,7 +521,10 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 			END-IF
 			""".formatted(keywords, variables);
 
-		assertParsesSingleStatement(source, IIfBreakNode.class);
+		var ifStatement = assertParsesSingleStatement(source, IIfBreakNode.class);
+		assertThat(ifStatement.body().statements()).hasSize(1);
+		var i = source.split("[ |\\/]").length + 2;
+		assertThat(ifStatement.descendants()).hasSize(i);
 	}
 
 	@ParameterizedTest

@@ -1706,8 +1706,13 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		var opening = consumeMandatory(statement, SyntaxKind.IF);
 		consumeMandatory(statement, SyntaxKind.BREAK);
 		consumeOptionally(statement, SyntaxKind.OF);
+		consumeMandatoryIdentifier(statement);
+		if (consumeOptionally(statement, SyntaxKind.SLASH))
+		{
+			consumeMandatory(statement, SyntaxKind.NUMBER_LITERAL).intValue();
+			consumeMandatory(statement, SyntaxKind.SLASH);
+		}
 
-		statement.setCondition(conditionNode());
 		consumeOptionally(statement, SyntaxKind.THEN);
 		statement.setBody(statementList(SyntaxKind.END_IF));
 
