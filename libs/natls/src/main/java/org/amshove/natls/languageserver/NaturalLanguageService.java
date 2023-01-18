@@ -2,6 +2,9 @@ package org.amshove.natls.languageserver;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+
+import org.amshove.natlint.editorconfig.EditorConfigParser;
+import org.amshove.natlint.linter.LinterContext;
 import org.amshove.natls.DiagnosticTool;
 import org.amshove.natls.codeactions.CodeActionRegistry;
 import org.amshove.natls.codeactions.RefactoringContext;
@@ -76,6 +79,12 @@ public class NaturalLanguageService implements LanguageClientAware
 			throw new RuntimeException("Could not load Natural project. .natural or _naturalBuild not found");
 		}
 		var project = new BuildFileProjectReader().getNaturalProject(projectFile.get());
+		var editorconfigPath = projectFile.get().getParent().resolve(".editorconfig");
+		if (editorconfigPath.toFile().exists())
+		{
+			loadEditorConfig(editorconfigPath);
+		}
+
 		var indexer = new NaturalProjectFileIndexer();
 		indexer.indexProject(project);
 		this.project = project;
@@ -85,6 +94,23 @@ public class NaturalLanguageService implements LanguageClientAware
 		snippetEngine = new SnippetEngine(languageServerProject);
 		initialized = true;
 		hoverProvider = new HoverProvider();
+	}
+
+	public void loadEditorConfig(Path path)
+	{
+		try
+		{
+			var content = Files.readString(path);
+			var config = new EditorConfigParser().parse(content);
+			LinterContext.INSTANCE.updateEditorConfig(config);
+		}
+		catch (Exception e)
+		{
+			if (client != null)
+			{
+				client.logMessage(ClientMessage.warn("Error reading editorconfig: " + e.getMessage()));
+			}
+		}
 	}
 
 	public List<DocumentSymbol> findSymbolsInFile(TextDocumentIdentifier textDocument)

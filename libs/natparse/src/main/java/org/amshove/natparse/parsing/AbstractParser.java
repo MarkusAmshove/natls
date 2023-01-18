@@ -439,12 +439,14 @@ abstract class AbstractParser<T>
 		{
 			return absOperand(node);
 		}
-
 		if (peek().kind() == SyntaxKind.POS)
 		{
 			return posOperand(node);
 		}
-
+		if (peek().kind() == SyntaxKind.FRAC)
+		{
+			return fracOperand(node);
+		}
 		if (peek().kind() == SyntaxKind.LABEL_IDENTIFIER)
 		{
 			return consumeLabelIdentifier(node);
@@ -489,6 +491,17 @@ abstract class AbstractParser<T>
 		absOperand.setParameter(consumeOperandNode(absOperand));
 		consumeMandatory(absOperand, SyntaxKind.RPAREN);
 		return absOperand;
+	}
+
+	private IOperandNode fracOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var fracOperand = new FracOperandNode();
+		node.addNode(fracOperand);
+		consumeMandatory(fracOperand, SyntaxKind.FRAC);
+		consumeMandatory(fracOperand, SyntaxKind.LPAREN);
+		fracOperand.setParameter(consumeOperandNode(fracOperand));
+		consumeMandatory(fracOperand, SyntaxKind.RPAREN);
+		return fracOperand;
 	}
 
 	private IOperandNode consumeLabelIdentifier(BaseSyntaxNode node) throws ParseError
