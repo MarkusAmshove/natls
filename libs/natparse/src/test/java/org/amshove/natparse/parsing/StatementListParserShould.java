@@ -781,7 +781,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"DUMMY", "INFOLINE", "SOURCE", "NOM"
+		"DUMMY", "INFOLINE", "SOURCE", "NOM", "ANYTHING GOES!"
 	})
 	void parseADefinePrinterWithAllowedBuiltInOutputNames(String output)
 	{
