@@ -1709,7 +1709,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatoryIdentifier(statement);
 		if (consumeOptionally(statement, SyntaxKind.SLASH))
 		{
-			consumeMandatory(statement, SyntaxKind.NUMBER_LITERAL).intValue();
+			consumeLiteralNode(statement, SyntaxKind.NUMBER_LITERAL);
 			consumeMandatory(statement, SyntaxKind.SLASH);
 		}
 
