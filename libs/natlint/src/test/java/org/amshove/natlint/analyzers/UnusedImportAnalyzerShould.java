@@ -5,7 +5,7 @@ import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.testhelpers.ProjectName;
 import org.junit.jupiter.api.Test;
 
-public class UnusedImportAnalyzerShould extends AbstractAnalyzerTest
+class UnusedImportAnalyzerShould extends AbstractAnalyzerTest
 {
 	protected UnusedImportAnalyzerShould()
 	{

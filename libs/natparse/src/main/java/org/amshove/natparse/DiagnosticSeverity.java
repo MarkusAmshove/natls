@@ -17,4 +17,15 @@ public enum DiagnosticSeverity
 	{
 		return this.weight >= other.weight;
 	}
+
+	public static DiagnosticSeverity fromString(String sev)
+	{
+		return switch (sev.toUpperCase())
+		{
+			case "WARN", "WARNING" -> WARNING;
+			case "INFO" -> INFO;
+			case "ERROR" -> ERROR;
+			default -> throw new IllegalArgumentException("Invalid severity: " + sev);
+		};
+	}
 }

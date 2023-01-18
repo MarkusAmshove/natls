@@ -3,6 +3,8 @@ package org.amshove.natlint.linter;
 import org.amshove.natlint.api.AbstractAnalyzer;
 import org.amshove.natlint.api.DiagnosticDescription;
 import org.amshove.natlint.api.LinterDiagnostic;
+import org.amshove.natlint.editorconfig.EditorConfig;
+import org.amshove.natlint.editorconfig.EditorConfigParser;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.Lexer;
@@ -11,6 +13,7 @@ import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.parsing.NaturalParser;
 import org.amshove.testhelpers.IntegrationTest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.io.TempDir;
@@ -34,6 +37,7 @@ public abstract class AbstractAnalyzerTest
 {
 	private final AbstractAnalyzer analyzerUnderTest;
 	private final List<String> allowedParserErrors = new ArrayList<>();
+	private EditorConfig editorConfigToUse;
 	@TempDir
 	Path directoryForSyntheticFiles;
 
@@ -46,6 +50,18 @@ public abstract class AbstractAnalyzerTest
 	protected AbstractAnalyzerTest(AbstractAnalyzer analyzerUnderTest)
 	{
 		this.analyzerUnderTest = analyzerUnderTest;
+	}
+
+	protected void configureEditorConfig(String editorConfig)
+	{
+		var parser = new EditorConfigParser();
+		editorConfigToUse = parser.parse(editorConfig);
+	}
+
+	@AfterEach
+	void afterEach()
+	{
+		editorConfigToUse = null;
 	}
 
 	protected void testDiagnostics(@Nullable NaturalFile file, DiagnosticAssertion... diagnosticAssertions)
@@ -102,6 +118,7 @@ public abstract class AbstractAnalyzerTest
 		LinterContext.INSTANCE.reset();
 		LinterContext.INSTANCE.registerAnalyzer(analyzerUnderTest);
 		LinterContext.INSTANCE.initializeAnalyzers();
+		LinterContext.INSTANCE.updateEditorConfig(editorConfigToUse);
 		var linter = new NaturalLinter();
 		return linter.lint(module);
 	}

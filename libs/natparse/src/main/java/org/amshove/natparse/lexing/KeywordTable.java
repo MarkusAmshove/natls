@@ -512,6 +512,7 @@ public class KeywordTable
 			case "separate" -> SyntaxKind.SEPARATE;
 			case "sequence" -> SyntaxKind.SEQUENCE;
 			case "server" -> SyntaxKind.SERVER;
+			case "server-type" -> SyntaxKind.SERVER_TYPE;
 			case "set" -> SyntaxKind.SET;
 			case "sets" -> SyntaxKind.SETS;
 			case "settime" -> SyntaxKind.SETTIME;
@@ -569,6 +570,7 @@ public class KeywordTable
 			case "then" -> SyntaxKind.THEN;
 			case "thru" -> SyntaxKind.THRU;
 			case "time" -> SyntaxKind.TIME;
+			case "time-out" -> SyntaxKind.TIME_OUT;
 			case "timestamp" -> SyntaxKind.TIMESTAMP;
 			case "timezone" -> SyntaxKind.TIMEZONE;
 			case "title" -> SyntaxKind.TITLE;

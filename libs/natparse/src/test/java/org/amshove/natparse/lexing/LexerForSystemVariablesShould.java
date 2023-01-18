@@ -109,6 +109,12 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 	}
 
 	@Test
+	void lexErrorNoNr()
+	{
+		assertTokens("*ERROR", token(SyntaxKind.SV_ERROR, "*ERROR"));
+	}
+
+	@Test
 	void lexInitUser()
 	{
 		assertTokens("*INIT-USER", token(SyntaxKind.INIT_USER, "*INIT-USER"));
@@ -188,6 +194,12 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 	void lexTimN()
 	{
 		assertTokens("*TIMN", token(SyntaxKind.TIMN, "*TIMN"));
+	}
+
+	@Test
+	void lexTimeOut()
+	{
+		assertTokens("*TIME-OUT", token(SyntaxKind.TIME_OUT, "*TIME-OUT"));
 	}
 
 	@Test
@@ -281,6 +293,12 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 	}
 
 	@Test
+	void lexLength()
+	{
+		assertTokens("*LENGTH", token(SyntaxKind.SV_LENGTH, "*LENGTH"));
+	}
+
+	@Test
 	void lexTranslate()
 	{
 		assertTokens("*TRANSLATE", token(SyntaxKind.TRANSLATE, "*TRANSLATE"));
@@ -368,6 +386,12 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 	void lexUbound()
 	{
 		assertTokens("*UBOUND", token(SyntaxKind.UBOUND, "*UBOUND"));
+	}
+
+	@Test
+	void lexServerType()
+	{
+		assertTokens("*SERVER-TYPE", token(SyntaxKind.SERVER_TYPE, "*SERVER-TYPE"));
 	}
 
 	@Test

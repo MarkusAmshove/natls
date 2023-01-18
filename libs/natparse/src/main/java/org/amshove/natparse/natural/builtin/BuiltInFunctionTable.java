@@ -20,6 +20,7 @@ public class BuiltInFunctionTable
 			unmodifiableVariable(SyntaxKind.INIT_ID, "Returns the ID of the device that Natural invoked", ALPHANUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.TIMX, "Returns the current time of the day as builtin time format", TIME, 0.0),
 			unmodifiableVariable(SyntaxKind.TIMESTMP, "Returns the machine-internal clock value", BINARY, 8.0),
+			unmodifiableVariable(SyntaxKind.TIME_OUT, "Contains the number of seconds remaining before the current transaction will be timed out (Natural Security only).", NUMERIC, 5.0),
 			unmodifiableVariable(SyntaxKind.TIMN, "Returns the current time of the day as numeric format", NUMERIC, 7.0),
 			function(
 				SyntaxKind.TIMD, """
@@ -85,6 +86,7 @@ public class BuiltInFunctionTable
 				#LOWER := *TRANSLATE(#VAR2, LOWER)
 				""", ALPHANUMERIC, 0),
 			modifiableVariable(SyntaxKind.SV_NUMBER, "Get or set the number of record a FIND or HISTOGRAM statement. Uses the innermost statement if no label identifier is passed.", PACKED, 10),
+			modifiableVariable(SyntaxKind.SV_LENGTH, "This system variable returns the currently used length of a field defined as dynamic variable in terms of code units; for A and B format the size of one code unit is 1 byte and for U format the size of one code unit is 2 bytes (UTF-16). *LENGTH(field) applies to dynamic variables only.", INTEGER, 4),
 			unmodifiableVariable(SyntaxKind.LINEX, """
 				Returns the line number of the invocation of this variable.
 				When this variable is used within copycodes, it contains the line numbers of all includes leading to this variable.
@@ -102,6 +104,7 @@ public class BuiltInFunctionTable
 				In this case the variable returns `0100/0200/0300`.
 				""".stripIndent(), ALPHANUMERIC, 100),
 			unmodifiableVariable(SyntaxKind.CURRENT_UNIT, "Returns the name of the current executing unit.", ALPHANUMERIC, 32.0),
+			modifiableVariable(SyntaxKind.SV_ERROR, "Short form of *ERROR-NR (discouraged)", NUMERIC, 7.0),
 			modifiableVariable(SyntaxKind.ERROR_NR, """
 				Get or set the current error number.
 
@@ -173,6 +176,16 @@ public class BuiltInFunctionTable
 			unmodifiableVariable(SyntaxKind.UBOUND, """
 				Returns the current upper boundary (index value) of an array for the specified dimension(s) (1, 2 or 3) or for all dimensions (asterisk (*) notation).
 				""", INTEGER, 4),
+			unmodifiableVariable(SyntaxKind.SERVER_TYPE, """
+				This system variable indicates the server type Natural has been started as. It can contain one of the following values:
+
+				- DB2-SP	Natural DB2 Stored Procedures server
+				- DEVELOP	Natural development server
+				- RPC		Natural RPC server
+				- WEBIO		Natural Web I/O Interface server
+
+				If Natural is not started as a server, *SERVER-TYPE is set to blanks.
+				""", ALPHANUMERIC, 32),
 			unmodifiableVariable(SyntaxKind.TPSYS, """
 				Returns the Natural name of the TP monitor or environment.
 
