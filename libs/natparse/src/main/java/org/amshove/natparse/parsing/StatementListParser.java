@@ -373,7 +373,11 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		if (consumeOptionally(histogram, SyntaxKind.MULTI_FETCH))
 		{
-			consumeAnyMandatory(histogram, List.of(SyntaxKind.ON, SyntaxKind.OFF));
+			if (!consumeAnyOptionally(histogram, List.of(SyntaxKind.ON, SyntaxKind.OFF)))
+			{
+				consumeOptionally(histogram, SyntaxKind.OF);
+				consumeOperandNode(histogram); // number to fetch
+			}
 		}
 
 		consumeOptionally(histogram, SyntaxKind.IN);
@@ -1792,7 +1796,11 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 		if (consumeOptionally(find, SyntaxKind.MULTI_FETCH))
 		{
-			consumeAnyMandatory(find, List.of(SyntaxKind.ON, SyntaxKind.OFF));
+			if (!consumeAnyOptionally(find, List.of(SyntaxKind.ON, SyntaxKind.OFF)))
+			{
+				consumeOptionally(find, SyntaxKind.OF);
+				consumeOperandNode(find); // number to fetch
+			}
 		}
 
 		consumeEitherOptionally(find, SyntaxKind.RECORDS, SyntaxKind.RECORD);
