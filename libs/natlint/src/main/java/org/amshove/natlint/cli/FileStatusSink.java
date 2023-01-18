@@ -42,16 +42,16 @@ public class FileStatusSink
 
 	protected final CharSink sink;
 
-	protected HashSet<String> filenames = new HashSet<String>();
+	protected HashSet<String> filenames = new HashSet<>();
 
 	protected boolean isEnabled = true;
 
 	public FileStatusSink(Path filePath)
 	{
-		filePath.toFile().delete();
-		this.sink = Files.asCharSink(filePath.toFile(), StandardCharsets.UTF_8, FileWriteMode.APPEND);
 		try
 		{
+			java.nio.file.Files.delete(filePath);
+			this.sink = Files.asCharSink(filePath.toFile(), StandardCharsets.UTF_8, FileWriteMode.APPEND);
 			sink.write("FilePath;Type;Message;Count%n".formatted());
 		}
 		catch (IOException e)
@@ -69,30 +69,6 @@ public class FileStatusSink
 	public boolean isEnabled()
 	{
 		return isEnabled;
-	}
-
-	public void print(Path filePath, MessageType messageType, String message, int count)
-	{
-		if (!this.isEnabled)
-		{
-			return;
-		}
-
-		try
-		{
-			// var filename = filePath.toString().replace('\\', '/');
-			if (filenames.contains(filePath.toString()))
-			{
-				return;
-			}
-
-			sink.write("%s;%s;%s;%d%n".formatted(filePath, messageType.toString(), message, count));
-			filenames.add(filePath.toString());
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
 	}
 
 	public void printStatus(Path filePath, MessageType messageType)
@@ -115,5 +91,28 @@ public class FileStatusSink
 			return;
 		}
 		print(filePath, messageType, diagnostics.get(0).message(), diagnostics.size());
+	}
+
+	private void print(Path filePath, MessageType messageType, String message, int count)
+	{
+		if (!this.isEnabled)
+		{
+			return;
+		}
+
+		if (filenames.contains(filePath.toString()))
+		{
+			return;
+		}
+
+		try
+		{
+			sink.write("%s;%s;%s;%d%n".formatted(filePath, messageType.toString(), message, count));
+			filenames.add(filePath.toString());
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 }
