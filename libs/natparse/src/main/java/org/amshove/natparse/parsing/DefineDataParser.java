@@ -172,7 +172,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		// For "GLOBAL USING WITH BLOCK"
 		if (using.isGlobalUsing() && consumeOptionally(using, SyntaxKind.WITH))
 		{
-			identifier = consumeIdentifierTokenOnly();
+			using.setWithBlock(consumeIdentifierTokenOnly());
 		}
 
 		for (var presentUsing : defineData.usings())

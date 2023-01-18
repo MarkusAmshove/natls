@@ -174,7 +174,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	{
 		var source = """
 			   DEFINE DATA
-			   GLOBAL USING SOMEGDA
+			   GLOBAL USING SOMEGDA WITH SOMEBLK
 			   LOCAL USING SOMELDA
 			   PARAMETER USING SOMEPDA
 			   LOCAL USING ALDA
@@ -198,6 +198,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			() -> assertTokenNode(defineData.descendants().get(7), n -> n.token().kind())
 				.isEqualTo(SyntaxKind.END_DEFINE)
 		);
+		assertThat(defineData.usings().get(0).withBlock().source()).isEqualTo("SOMEBLK");
 	}
 
 	@Test

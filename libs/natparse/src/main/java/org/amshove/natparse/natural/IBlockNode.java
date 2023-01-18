@@ -8,6 +8,4 @@ public interface IBlockNode extends ISyntaxNode
 
 	SyntaxToken block();
 
-	IDefineData defineData();
-
 }
