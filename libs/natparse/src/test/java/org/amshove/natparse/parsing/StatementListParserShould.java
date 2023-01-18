@@ -791,6 +791,12 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void reportADiagnosticIfDefinePrinterHasAnInvalidOutputFormat()
+	{
+		assertDiagnostic("DEFINE PRINTER (2) OUTPUT 10", ParserError.UNEXPECTED_TOKEN);
+	}
+
+	@Test
 	void reportADiagnosticIfDefinePrinterHasAnInvalidTokenKind()
 	{
 		assertDiagnostic("DEFINE PRINTER (2) OUTPUT 5", ParserError.UNEXPECTED_TOKEN);
