@@ -10,7 +10,7 @@ public class NaturalFile
 	private final NaturalFileType filetype;
 	private NaturalLibrary library;
 	private NaturalHeader header;
-	private boolean failedOnInit;
+	private Exception initException;
 
 	public NaturalFile(String referableName, Path path, NaturalFileType filetype, NaturalHeader header)
 	{
@@ -31,16 +31,16 @@ public class NaturalFile
 		this.library = library;
 	}
 
-	public NaturalFile(Path path, NaturalFileType filetype)
+	public NaturalFile(Path path, NaturalFileType filetype, Exception e)
 	{
 		this.path = path;
 		this.filetype = filetype;
-		this.failedOnInit = true;
+		this.initException = e;
 	}
 
 	public boolean isFailedOnInit()
 	{
-		return failedOnInit;
+		return initException != null;
 	}
 
 	public String getReferableName()
@@ -92,6 +92,11 @@ public class NaturalFile
 	public NaturalHeader getNaturalHeader()
 	{
 		return header;
+	}
+
+	public Exception getInitException()
+	{
+		return initException;
 	}
 
 	public boolean isStructured()

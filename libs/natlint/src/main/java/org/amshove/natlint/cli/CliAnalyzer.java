@@ -1,5 +1,7 @@
 package org.amshove.natlint.cli;
 
+import org.amshove.natlint.api.LinterDiagnostic;
+import org.amshove.natlint.cli.FileStatusSink.MessageType;
 import org.amshove.natlint.editorconfig.EditorConfigParser;
 import org.amshove.natlint.linter.LinterContext;
 import org.amshove.natlint.linter.NaturalLinter;
@@ -7,11 +9,15 @@ import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.lexing.Lexer;
+import org.amshove.natparse.lexing.TokenList;
+import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.project.NaturalFile;
+import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
 import org.amshove.natparse.parsing.NaturalParser;
 import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,14 +31,16 @@ public class CliAnalyzer
 	private final ActualFilesystem filesystem;
 	private final IDiagnosticSink diagnosticSink;
 	private Path workingDirectory;
+	private final FileStatusSink fileStatusSink;
 
-	public CliAnalyzer(Path workingDirectory, IDiagnosticSink sink, List<Predicate<NaturalFile>> filePredicates, List<Predicate<IDiagnostic>> diagnosticPredicates)
+	public CliAnalyzer(Path workingDirectory, IDiagnosticSink sink, FileStatusSink fileStatusSink, List<Predicate<NaturalFile>> filePredicates, List<Predicate<IDiagnostic>> diagnosticPredicates)
 	{
 		this.workingDirectory = workingDirectory;
 		this.filePredicates = filePredicates;
 		this.diagnosticPredicates = diagnosticPredicates;
 		filesystem = new ActualFilesystem();
 		diagnosticSink = sink;
+		this.fileStatusSink = fileStatusSink;
 	}
 
 	public int run()
@@ -85,7 +93,7 @@ public class CliAnalyzer
 	{
 		var indexStartTime = System.currentTimeMillis();
 		var project = new BuildFileProjectReader(filesystem).getNaturalProject(projectFilePath);
-		new NaturalProjectFileIndexer().indexProject(project);
+		new NaturalProjectFileIndexer().indexProject(project, true);
 		var indexEndTime = System.currentTimeMillis();
 
 		var startCheck = System.currentTimeMillis();
@@ -93,71 +101,66 @@ public class CliAnalyzer
 		{
 			library.files().parallelStream().forEach(file ->
 			{
+				if (file.isFailedOnInit())
+				{
+					fileStatusSink.printError(file.getPath(), MessageType.INDEX_EXCEPTION, file.getInitException());
+					return;
+				}
+				if (file.isReporting())
+				{
+					fileStatusSink.printStatus(file.getPath(), MessageType.REPORTING_TYPE);
+					return;
+				}
 				if (filePredicates.stream().noneMatch(p -> p.test(file)))
+				{
+					fileStatusSink.printStatus(file.getPath(), MessageType.FILE_EXCLUDED);
+					return;
+				}
+
+				filesChecked.incrementAndGet();
+				var allDiagnosticsInFile = new ArrayList<IDiagnostic>();
+
+				var tokens = lex(file, allDiagnosticsInFile);
+				if (tokens == null)
 				{
 					return;
 				}
 
-				var lexer = new Lexer();
-				var parser = new NaturalParser();
-				var linter = new NaturalLinter();
-
-				filesChecked.incrementAndGet();
-				var filePath = file.getPath();
-				try
+				var module = parse(file, tokens, allDiagnosticsInFile);
+				if (module == null)
 				{
-					var lexStart = System.currentTimeMillis();
-					var tokens = lexer.lex(filesystem.readFile(filePath), filePath);
-					var lexEnd = System.currentTimeMillis();
-					if (slowestLexedModule.milliseconds < lexEnd - lexStart)
-					{
-						slowestLexedModule = new SlowestModule(lexEnd - lexStart, file.getProjectRelativePath().toString());
-					}
-
-					var allDiagnosticsInFile = new ArrayList<IDiagnostic>(filterDiagnostics(tokens.diagnostics()));
-
-					var parseStart = System.currentTimeMillis();
-					var module = parser.parse(file, tokens);
-					var parseEnd = System.currentTimeMillis();
-					if (slowestParsedModule.milliseconds < parseEnd - parseStart)
-					{
-						slowestParsedModule = new SlowestModule(parseEnd - parseStart, file.getProjectRelativePath().toString());
-					}
-					allDiagnosticsInFile.addAll(filterDiagnostics(module.diagnostics()));
-
-					var lintStart = System.currentTimeMillis();
-					var linterDiagnostics = linter.lint(module);
-					var lintEnd = System.currentTimeMillis();
-					if (slowestLintedModule.milliseconds < lintEnd - lintStart)
-					{
-						slowestLintedModule = new SlowestModule(lintEnd - lintStart, file.getProjectRelativePath().toString());
-					}
-
-					allDiagnosticsInFile.addAll(filterDiagnostics(linterDiagnostics));
-
-					totalDiagnostics.addAndGet(allDiagnosticsInFile.size());
-
-					diagnosticSink.printDiagnostics(filesChecked.get(), filePath, allDiagnosticsInFile);
+					return;
 				}
-				catch (Exception e)
+
+				var linterDiagnostics = lint(file, module, allDiagnosticsInFile);
+				if (linterDiagnostics == null)
 				{
-					exceptions.incrementAndGet();
-					System.err.println(filePath);
-					e.printStackTrace();
+					return;
 				}
+
+				totalDiagnostics.addAndGet(allDiagnosticsInFile.size());
+				diagnosticSink.printDiagnostics(filesChecked.get(), file.getPath(), allDiagnosticsInFile);
+				fileStatusSink.printStatus(file.getPath(), MessageType.SUCCESS);
 			});
 		}
 
 		var endCheck = System.currentTimeMillis();
 
+		var missingStartTime = System.currentTimeMillis();
+		registerMissingFiles(project);
+		var missingEndTime = System.currentTimeMillis();
+
 		var indexTime = indexEndTime - indexStartTime;
 		var checkTime = endCheck - startCheck;
+		var missTime = missingEndTime - missingStartTime;
+		var totalTime = indexTime + checkTime + missTime;
 
 		System.out.println();
 		System.out.println("Done.");
 		System.out.println("Index time: " + indexTime + " ms");
 		System.out.println("Check time: " + checkTime + " ms");
-		System.out.println("Total: " + (indexTime + checkTime) + " ms (" + ((indexTime + checkTime) / 1000) + "s)");
+		System.out.println("Miss time : " + missTime + " ms");
+		System.out.println("Total: " + totalTime + " ms (" + (totalTime / 1000) + "s)");
 		System.out.println("Files checked: " + filesChecked.get());
 		System.out.println("Total diagnostics: " + totalDiagnostics.get());
 		System.out.println("Exceptions: " + exceptions.get());
@@ -173,6 +176,108 @@ public class CliAnalyzer
 	private List<? extends IDiagnostic> filterDiagnostics(ReadOnlyList<? extends IDiagnostic> diagnostics)
 	{
 		return diagnostics.stream().filter(d -> diagnosticPredicates.stream().allMatch(p -> p.test(d))).toList();
+	}
+
+	private TokenList lex(NaturalFile file, ArrayList<IDiagnostic> allDiagnosticsInFile)
+	{
+		try
+		{
+			var lexer = new Lexer();
+			var lexStart = System.currentTimeMillis();
+			var tokens = lexer.lex(filesystem.readFile(file.getPath()), file.getPath());
+			var lexEnd = System.currentTimeMillis();
+			if (slowestLexedModule.milliseconds < lexEnd - lexStart)
+			{
+				slowestLexedModule = new SlowestModule(lexEnd - lexStart, file.getProjectRelativePath().toString());
+			}
+
+			var diagnostics = filterDiagnostics(tokens.diagnostics());
+			fileStatusSink.printDiagnostics(file.getPath(), MessageType.LEX_FAILED, diagnostics);
+			allDiagnosticsInFile.addAll(diagnostics);
+			return tokens;
+		}
+		catch (Exception e)
+		{
+			fileStatusSink.printError(file.getPath(), MessageType.LEX_EXCEPTION, e);
+			exceptions.incrementAndGet();
+			return null;
+		}
+	}
+
+	private INaturalModule parse(NaturalFile file, TokenList tokens, ArrayList<IDiagnostic> allDiagnosticsInFile)
+	{
+		try
+		{
+			var parser = new NaturalParser();
+			var parseStart = System.currentTimeMillis();
+			var module = parser.parse(file, tokens);
+			var parseEnd = System.currentTimeMillis();
+			if (slowestParsedModule.milliseconds < parseEnd - parseStart)
+			{
+				slowestParsedModule = new SlowestModule(parseEnd - parseStart, file.getProjectRelativePath().toString());
+			}
+
+			var diagnostics = filterDiagnostics(module.diagnostics());
+			fileStatusSink.printDiagnostics(file.getPath(), MessageType.PARSE_FAILED, diagnostics);
+			allDiagnosticsInFile.addAll(diagnostics);
+			return module;
+		}
+		catch (Exception e)
+		{
+			fileStatusSink.printError(file.getPath(), MessageType.PARSE_EXCEPTION, e);
+			exceptions.incrementAndGet();
+			return null;
+		}
+	}
+
+	private ReadOnlyList<LinterDiagnostic> lint(NaturalFile file, INaturalModule module, ArrayList<IDiagnostic> allDiagnosticsInFile)
+	{
+		try
+		{
+			var linter = new NaturalLinter();
+			var lintStart = System.currentTimeMillis();
+			var linterDiagnostics = linter.lint(module);
+			var lintEnd = System.currentTimeMillis();
+			if (slowestLintedModule.milliseconds < lintEnd - lintStart)
+			{
+				slowestLintedModule = new SlowestModule(lintEnd - lintStart, file.getProjectRelativePath().toString());
+			}
+
+			var diagnostics = filterDiagnostics(linterDiagnostics);
+			fileStatusSink.printDiagnostics(file.getPath(), MessageType.LINT_FAILED, diagnostics);
+			allDiagnosticsInFile.addAll(diagnostics);
+			return linterDiagnostics;
+		}
+		catch (Exception e)
+		{
+			fileStatusSink.printError(file.getPath(), MessageType.LINT_EXCEPTION, e);
+			exceptions.incrementAndGet();
+			return null;
+		}
+	}
+
+	private void registerMissingFiles(NaturalProject project)
+	{
+		if (!fileStatusSink.isEnabled())
+		{
+			return;
+		}
+
+		try
+		{
+			System.err.println("Started registration of missing files");
+			Path root = project.getRootPath().resolve("Natural-Libraries");
+			System.out.println("Root: " + root.toString());
+			Files.walk(root)
+				.filter(path -> !Files.isDirectory(path))
+				.forEach(path -> fileStatusSink.printStatus(path, MessageType.FILE_MISSING));
+			System.err.println("Finished registration of missing files");
+		}
+		catch (Exception e)
+		{
+			System.err.println("Registration of missing files failed");
+			e.printStackTrace();
+		}
 	}
 
 	record SlowestModule(long milliseconds, String module)
