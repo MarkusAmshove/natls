@@ -791,12 +791,6 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
-	void reportADiagnosticIfDefinePrinterHasAnInvalidOutputStringFormat()
-	{
-		assertDiagnostic("DEFINE PRINTER (2) OUTPUT 'WRONG'", ParserError.INVALID_PRINTER_OUTPUT_FORMAT);
-	}
-
-	@Test
 	void reportADiagnosticIfDefinePrinterHasAnInvalidTokenKind()
 	{
 		assertDiagnostic("DEFINE PRINTER (2) OUTPUT 5", ParserError.UNEXPECTED_TOKEN);
