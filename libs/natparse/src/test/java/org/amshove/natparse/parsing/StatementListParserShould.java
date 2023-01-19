@@ -7,7 +7,9 @@ import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
 import org.amshove.testhelpers.IntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.internal.matchers.Null;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
@@ -504,6 +506,45 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 			""", IIfStatementNode.class);
 	}
 
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"BREAK, #TEST", "BREAK OF, #TEST", "BREAK #TEST, THEN", "BREAK OF #TEST, THEN", "BREAK OF #TEST /3/, THEN"
+		}
+	)
+
+	void parseIfBreakStatements(String keywords, String variables)
+	{
+		var source = """
+			IF %s %s
+				IGNORE
+			END-IF
+			""".formatted(keywords, variables);
+
+		var ifStatement = assertParsesSingleStatement(source, IIfBreakNode.class);
+		assertThat(ifStatement.body().statements()).hasSize(1);
+		var i = source.split("[ |\\/]").length + 2;
+		assertThat(ifStatement.descendants()).hasSize(i);
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"SELECTION, #A #B", "SELECTION NOT, #A #B", "SELECTION NOT UNIQUE, #A #B", "SELECTION NOT UNIQUE IN FIELDS #A #B, THEN",
+		}
+	)
+
+	void parseIfSeelctionNotUniqueStatements(String keywords, String variables)
+	{
+		var source = """
+			IF %s %s
+				IGNORE
+			END-IF
+			""".formatted(keywords, variables);
+
+		assertParsesSingleStatement(source, IIfSelectionNode.class);
+	}
+
 	@Test
 	void parseForColonEqualsToStatements()
 	{
@@ -730,6 +771,19 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(findStatement.viewReference()).isNotNull();
 		assertThat(findStatement.descendants()).anyMatch(n -> n instanceof IDescriptorNode);
 		assertThat(findStatement.descendants()).hasSize(5);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"ON", "OFF", "OF 1000", "2000", "OF N", "NUMBER"
+	})
+	void parseFindWithMultiFetch(String multifetch)
+	{
+		assertParsesSingleStatement("""
+			FIND MULTI-FETCH %s THE-VIEW WITH THE-DESCRIPTOR = 'Asd'
+			IGNORE
+			END-FIND""".formatted(multifetch), IFindNode.class);
 	}
 
 	@Test
@@ -1330,7 +1384,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"ON", "OFF"
+		"ON", "OFF", "OF 1000", "2000", "OF N", "NUMBER"
 	})
 	void parseHistogramWithMultiFetch(String multifetch)
 	{
