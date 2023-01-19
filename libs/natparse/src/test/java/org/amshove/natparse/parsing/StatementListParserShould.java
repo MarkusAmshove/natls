@@ -835,7 +835,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"DUMMY", "INFOLINE", "SOURCE", "NOM"
+		"DUMMY", "INFOLINE", "SOURCE", "NOM", "ANYTHING GOES!"
 	})
 	void parseADefinePrinterWithAllowedBuiltInOutputNames(String output)
 	{
@@ -845,9 +845,9 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
-	void reportADiagnosticIfDefinePrinterHasAnInvalidOutputStringFormat()
+	void reportADiagnosticIfDefinePrinterHasAnInvalidOutputFormat()
 	{
-		assertDiagnostic("DEFINE PRINTER (2) OUTPUT 'WRONG'", ParserError.INVALID_PRINTER_OUTPUT_FORMAT);
+		assertDiagnostic("DEFINE PRINTER (2) OUTPUT 10", ParserError.UNEXPECTED_TOKEN);
 	}
 
 	@Test
