@@ -1298,6 +1298,14 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			return ifNoRecord();
 		}
+		if (peek(1).kind() == SyntaxKind.BREAK)
+		{
+			return ifBreak();
+		}
+		if (peek(1).kind() == SyntaxKind.SELECTION)
+		{
+			return ifSelection();
+		}
 
 		var ifStatement = new IfStatementNode();
 
@@ -1682,12 +1690,51 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 
 		var opening = consumeMandatory(statement, SyntaxKind.IF);
 		consumeMandatory(statement, SyntaxKind.NO);
-		consumeOptionally(statement, SyntaxKind.RECORDS);
+		consumeEitherOptionally(statement, SyntaxKind.RECORD, SyntaxKind.RECORDS);
 		consumeOptionally(statement, SyntaxKind.FOUND);
 
 		statement.setBody(statementList(SyntaxKind.END_NOREC));
 
 		consumeMandatoryClosing(statement, SyntaxKind.END_NOREC, opening);
+
+		return statement;
+	}
+
+	private IfBreakNode ifBreak() throws ParseError
+	{
+		var statement = new IfBreakNode();
+
+		var opening = consumeMandatory(statement, SyntaxKind.IF);
+		consumeMandatory(statement, SyntaxKind.BREAK);
+		consumeOptionally(statement, SyntaxKind.OF);
+		consumeMandatoryIdentifier(statement);
+		if (consumeOptionally(statement, SyntaxKind.SLASH))
+		{
+			consumeLiteralNode(statement, SyntaxKind.NUMBER_LITERAL);
+			consumeMandatory(statement, SyntaxKind.SLASH);
+		}
+
+		consumeOptionally(statement, SyntaxKind.THEN);
+		statement.setBody(statementList(SyntaxKind.END_IF));
+
+		consumeMandatoryClosing(statement, SyntaxKind.END_IF, opening);
+
+		return statement;
+	}
+
+	private IfSelectionNode ifSelection() throws ParseError
+	{
+		var statement = new IfSelectionNode();
+
+		var opening = consumeMandatory(statement, SyntaxKind.IF);
+		consumeMandatory(statement, SyntaxKind.SELECTION);
+		consumeAnyOptionally(statement, List.of(SyntaxKind.NOT, SyntaxKind.UNIQUE, SyntaxKind.IN, SyntaxKind.FIELDS));
+
+		statement.setCondition(conditionNode());
+		consumeOptionally(statement, SyntaxKind.THEN);
+		statement.setBody(statementList(SyntaxKind.END_IF));
+
+		consumeMandatoryClosing(statement, SyntaxKind.END_IF, opening);
 
 		return statement;
 	}

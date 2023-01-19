@@ -7,7 +7,9 @@ import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
 import org.amshove.testhelpers.IntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.internal.matchers.Null;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
@@ -502,6 +504,45 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 			    IGNORE
 			END-IF
 			""", IIfStatementNode.class);
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"BREAK, #TEST", "BREAK OF, #TEST", "BREAK #TEST, THEN", "BREAK OF #TEST, THEN", "BREAK OF #TEST /3/, THEN"
+		}
+	)
+
+	void parseIfBreakStatements(String keywords, String variables)
+	{
+		var source = """
+			IF %s %s
+				IGNORE
+			END-IF
+			""".formatted(keywords, variables);
+
+		var ifStatement = assertParsesSingleStatement(source, IIfBreakNode.class);
+		assertThat(ifStatement.body().statements()).hasSize(1);
+		var i = source.split("[ |\\/]").length + 2;
+		assertThat(ifStatement.descendants()).hasSize(i);
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"SELECTION, #A #B", "SELECTION NOT, #A #B", "SELECTION NOT UNIQUE, #A #B", "SELECTION NOT UNIQUE IN FIELDS #A #B, THEN",
+		}
+	)
+
+	void parseIfSeelctionNotUniqueStatements(String keywords, String variables)
+	{
+		var source = """
+			IF %s %s
+				IGNORE
+			END-IF
+			""".formatted(keywords, variables);
+
+		assertParsesSingleStatement(source, IIfSelectionNode.class);
 	}
 
 	@Test
