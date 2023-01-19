@@ -773,6 +773,19 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(findStatement.descendants()).hasSize(5);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"ON", "OFF", "OF 1000", "2000", "OF N", "NUMBER"
+	})
+	void parseFindWithMultiFetch(String multifetch)
+	{
+		assertParsesSingleStatement("""
+			FIND MULTI-FETCH %s THE-VIEW WITH THE-DESCRIPTOR = 'Asd'
+			IGNORE
+			END-FIND""".formatted(multifetch), IFindNode.class);
+	}
+
 	@Test
 	void parseResetStatements()
 	{
@@ -1371,7 +1384,7 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"ON", "OFF"
+		"ON", "OFF", "OF 1000", "2000", "OF N", "NUMBER"
 	})
 	void parseHistogramWithMultiFetch(String multifetch)
 	{
