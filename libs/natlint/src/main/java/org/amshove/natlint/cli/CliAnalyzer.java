@@ -263,14 +263,15 @@ public class CliAnalyzer
 			return;
 		}
 
-		try
+		System.err.println("Started registration of missing files");
+		var root = project.getRootPath().resolve("Natural-Libraries");
+		System.out.println("Root: " + root.toString());
+
+		try (var stream = Files.walk(root))
 		{
-			System.err.println("Started registration of missing files");
-			Path root = project.getRootPath().resolve("Natural-Libraries");
-			System.out.println("Root: " + root.toString());
-			var stream = Files.walk(root).filter(path -> !Files.isDirectory(path));
-			stream.forEach(path -> fileStatusSink.printStatus(path, MessageType.FILE_MISSING));
-			stream.close();
+			stream
+				.filter(path -> !Files.isDirectory(path))
+				.forEach(path -> fileStatusSink.printStatus(path, MessageType.FILE_MISSING));
 			System.err.println("Finished registration of missing files");
 		}
 		catch (Exception e)

@@ -50,7 +50,10 @@ public class FileStatusSink
 	{
 		try
 		{
-			java.nio.file.Files.delete(filePath);
+			if (java.nio.file.Files.exists(filePath))
+			{
+				java.nio.file.Files.delete(filePath);
+			}
 			this.sink = Files.asCharSink(filePath.toFile(), StandardCharsets.UTF_8, FileWriteMode.APPEND);
 			sink.write("FilePath;Type;Message;Count%n".formatted());
 		}
