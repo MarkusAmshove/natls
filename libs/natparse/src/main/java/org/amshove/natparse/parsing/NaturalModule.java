@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 public class NaturalModule
 	// TODO: Clean up once new subclasses happen. Remove public then
-	implements INaturalModule, IExternalSubroutine, IGlobalDataArea, ILocalDataArea, IParameterDataArea, IProgram, ISubprogram
+	implements IExternalSubroutine, IGlobalDataArea, ILocalDataArea, IParameterDataArea, IProgram, ISubprogram
 {
 	private final NaturalFile file;
 	private IDefineData defineData;

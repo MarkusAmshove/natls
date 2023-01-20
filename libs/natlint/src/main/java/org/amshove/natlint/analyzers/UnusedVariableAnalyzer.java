@@ -42,6 +42,7 @@ public class UnusedVariableAnalyzer extends AbstractAnalyzer
 			case MAP:
 			case COPYCODE:
 				return;
+			default:
 		}
 
 		if (!NodeUtil.moduleContainsNode(context.getModule(), syntaxNode))

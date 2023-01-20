@@ -72,6 +72,8 @@ public class ModuleReferenceParser
 						calledModules.add(processFunction(tokens));
 					}
 				}
+				default ->
+				{}
 			}
 
 			tokens.advance();
