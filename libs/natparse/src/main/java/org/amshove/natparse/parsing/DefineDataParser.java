@@ -90,7 +90,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private BaseSyntaxNode dataDefinition() throws ParseError
 	{
-		if (!isScopeToken(peek()))
+		if (!isScopeToken(peek()) && !peekKind(SyntaxKind.BLOCK))
 		{
 			report(ParserErrors.unexpectedToken(SCOPE_SYNTAX_KINDS, peek()));
 			discard();
@@ -98,11 +98,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 
 		if (peek(1).kind() == SyntaxKind.USING)
-		{
 			return using();
-		}
-
-		return scope();
+		else
+			return scope();
 	}
 
 	private ScopeNode scope() throws ParseError
@@ -114,10 +112,15 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		scopeNode.addNode(new TokenNode(scope));
 		scopeNode.setScope(currentScope);
 
-		while (peekKind(SyntaxKind.NUMBER_LITERAL)) // level
+		while (peekKind(SyntaxKind.NUMBER_LITERAL) || peekKind(SyntaxKind.BLOCK)) // level or BLOCK
 		{
 			try
 			{
+				if (peekKind(SyntaxKind.BLOCK))
+				{
+					/*var block = */ block(); // TODO: Maybe do something with block
+				}
+
 				var variable = variable();
 				variable.setScope(currentScope);
 				for (var dimension : variable.dimensions())
@@ -149,6 +152,69 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 
 		return scopeNode;
+	}
+
+	private UsingNode using() throws ParseError
+	{
+		var using = new UsingNode();
+
+		var scopeToken = consumeAny(SCOPE_SYNTAX_KINDS);
+		using.setScope(scopeToken.kind());
+		using.addNode(new TokenNode(scopeToken));
+
+		consume(using, SyntaxKind.USING);
+
+		var identifier = consumeIdentifierTokenOnly();
+		using.setUsingTarget(identifier);
+		var identifierTokenNode = new TokenNode(identifier);
+		using.addNode(identifierTokenNode);
+
+		// For "GLOBAL USING WITH BLOCK"
+		if (using.isGlobalUsing() && consumeOptionally(using, SyntaxKind.WITH))
+		{
+			using.setWithBlock(consumeIdentifierTokenOnly());
+		}
+
+		for (var presentUsing : defineData.usings())
+		{
+			if (presentUsing.target().symbolName().equals(identifier.symbolName()))
+			{
+				report(ParserErrors.duplicatedImport(identifier));
+			}
+		}
+
+		var defineDataModule = sideloadDefineData(identifierTokenNode);
+		if (defineDataModule != null)
+		{
+			using.setReferencingModule((NaturalModule) defineDataModule);
+			using.setDefineData(defineDataModule.defineData());
+			for (var variable : defineDataModule.defineData().variables())
+			{
+				if (variable.level() == 1)
+				{
+					addDeclaredVariable((VariableNode) variable);
+				}
+			}
+		}
+
+		return using;
+	}
+
+	private BlockNode block() throws ParseError
+	{
+		var block = new BlockNode();
+		consumeOptionally(block, SyntaxKind.BLOCK);
+
+		var identifier = consumeIdentifierTokenOnly();
+		block.setBlock(identifier);
+
+		if (consumeOptionally(block, SyntaxKind.CHILD) && consumeOptionally(block, SyntaxKind.OF))
+		{
+			identifier = consumeIdentifierTokenOnly();
+			block.setParent(identifier);
+		}
+
+		return block;
 	}
 
 	private VariableNode variable() throws ParseError
@@ -517,46 +583,6 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		dataType = dataType.split("/")[0];
 		dataType = dataType.replace(",", ".");
 		return Double.parseDouble(dataType.substring(1));
-	}
-
-	private UsingNode using() throws ParseError
-	{
-		var using = new UsingNode();
-
-		var scopeToken = consumeAny(SCOPE_SYNTAX_KINDS);
-		using.setScope(scopeToken.kind());
-		using.addNode(new TokenNode(scopeToken));
-
-		consume(using, SyntaxKind.USING);
-
-		var identifier = consumeIdentifierTokenOnly();
-		using.setUsingTarget(identifier);
-		var identifierTokenNode = new TokenNode(identifier);
-		using.addNode(identifierTokenNode);
-
-		for (var presentUsing : defineData.usings())
-		{
-			if (presentUsing.target().symbolName().equals(identifier.symbolName()))
-			{
-				report(ParserErrors.duplicatedImport(identifier));
-			}
-		}
-
-		var defineDataModule = sideloadDefineData(identifierTokenNode);
-		if (defineDataModule != null)
-		{
-			using.setReferencingModule((NaturalModule) defineDataModule);
-			using.setDefineData(defineDataModule.defineData());
-			for (var variable : defineDataModule.defineData().variables())
-			{
-				if (variable.level() == 1)
-				{
-					addDeclaredVariable((VariableNode) variable);
-				}
-			}
-		}
-
-		return using;
 	}
 
 	private boolean isScopeToken(SyntaxToken token)

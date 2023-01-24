@@ -8,6 +8,7 @@ import org.amshove.natparse.natural.*;
 class UsingNode extends BaseSyntaxNode implements IUsingNode
 {
 	private SyntaxToken using;
+	private SyntaxToken withBlock;
 	private VariableScope scope;
 	private IDefineData defineData;
 	private INaturalModule referencingModule;
@@ -16,6 +17,12 @@ class UsingNode extends BaseSyntaxNode implements IUsingNode
 	public SyntaxToken target()
 	{
 		return using;
+	}
+
+	@Override
+	public SyntaxToken withBlock()
+	{
+		return withBlock;
 	}
 
 	@Override
@@ -55,6 +62,11 @@ class UsingNode extends BaseSyntaxNode implements IUsingNode
 	void setDefineData(IDefineData defineData)
 	{
 		this.defineData = defineData;
+	}
+
+	void setWithBlock(SyntaxToken withBlock)
+	{
+		this.withBlock = withBlock;
 	}
 
 	@Override

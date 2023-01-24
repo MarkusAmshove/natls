@@ -9,6 +9,8 @@ public non-sealed interface IUsingNode extends ISyntaxNode, IModuleReferencingNo
 	 */
 	SyntaxToken target();
 
+	SyntaxToken withBlock();
+
 	IDefineData defineData();
 
 	boolean isLocalUsing();
