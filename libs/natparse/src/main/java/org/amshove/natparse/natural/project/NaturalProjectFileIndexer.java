@@ -24,13 +24,23 @@ public class NaturalProjectFileIndexer
 
 	public void indexProject(NaturalProject project)
 	{
+		indexProject(project, false);
+	}
+
+	public void indexProject(NaturalProject project, boolean skipFiltering)
+	{
 		for (var library : project.getLibraries())
 		{
-			filesystem.streamFilesRecursively(library.getSourcePath())
+			var files = filesystem.streamFilesRecursively(library.getSourcePath())
 				.filter(NaturalFileType::isNaturalFile)
-				.map(this::toNaturalFile)
-				.filter(f -> (!f.isReporting() && !f.isFailedOnInit()))
-				.forEach(library::addFile);
+				.map(this::toNaturalFile);
+
+			if (!skipFiltering)
+			{
+				files = files.filter(f -> !f.isReporting() && !f.isFailedOnInit());
+			}
+
+			files.forEach(library::addFile);
 		}
 	}
 
@@ -44,7 +54,7 @@ public class NaturalProjectFileIndexer
 		}
 		catch (Exception e)
 		{
-			return new NaturalFile(path, filetype);
+			return new NaturalFile(path, filetype, e);
 		}
 	}
 

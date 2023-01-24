@@ -75,30 +75,23 @@ public enum LinterContext implements ILinterContext
 
 	void analyze(ISyntaxNode syntaxNode, IAnalyzeContext context)
 	{
-		try
+		var analyzers = nodeAnalyzerFunctions.get(syntaxNode.getClass());
+		if (analyzers != null)
 		{
-			var analyzers = nodeAnalyzerFunctions.get(syntaxNode.getClass());
-			if (analyzers != null)
-			{
-				analyzers.forEach(analyzer -> analyzer.analyze(syntaxNode, context));
-			}
-
-			if (syntaxNode instanceof ITokenNode tokenNode)
-			{
-				var tokenAnalyzer = tokenAnalyzerFunctions.get(tokenNode.token().kind());
-				if (tokenAnalyzer != null)
-				{
-					tokenAnalyzer.forEach(a -> a.analyze(tokenNode.token(), context));
-				}
-			}
-
-			nodeAnalyzerFunctions.entrySet().stream().filter(e -> e.getKey().isAssignableFrom(syntaxNode.getClass()))
-				.forEach(e -> e.getValue().forEach(a -> a.analyze(syntaxNode, context)));
+			analyzers.forEach(analyzer -> analyzer.analyze(syntaxNode, context));
 		}
-		catch (Exception e)
+
+		if (syntaxNode instanceof ITokenNode tokenNode)
 		{
-			e.printStackTrace();
+			var tokenAnalyzer = tokenAnalyzerFunctions.get(tokenNode.token().kind());
+			if (tokenAnalyzer != null)
+			{
+				tokenAnalyzer.forEach(a -> a.analyze(tokenNode.token(), context));
+			}
 		}
+
+		nodeAnalyzerFunctions.entrySet().stream().filter(e -> e.getKey().isAssignableFrom(syntaxNode.getClass()))
+			.forEach(e -> e.getValue().forEach(a -> a.analyze(syntaxNode, context)));
 	}
 
 	void beforeAnalyzing(IAnalyzeContext context)
