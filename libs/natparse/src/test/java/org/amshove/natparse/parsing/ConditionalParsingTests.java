@@ -216,10 +216,14 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(assertNodeType(criteria.excludedUpperBound().get(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
 	}
 
-	@Test
-	void parseARelationalExpressionWithSubstring()
+	@ParameterizedTest
+	@ValueSource(strings =
 	{
-		var criteria = assertParsesCriteria("SUBSTR(#VAR, 1, #MAX) = SUBSTRING(#VAR, #MIN, #MAX)", IRelationalCriteriaNode.class);
+		"GT", "LT", "<", ">", ">=", "<=", "NE", "<>", "^=", "NOTEQUAL", "NOT EQUAL", "NOT EQUAL TO", "NOT LT", "NOT GT"
+	})
+	void parseARelationalExpressionWithSubstring(String operator)
+	{
+		var criteria = assertParsesCriteria("SUBSTR(#VAR, 1, #MAX) %s SUBSTRING(#VAR, #MIN, #MAX)".formatted(operator), IRelationalCriteriaNode.class);
 		var firstSubstring = assertNodeType(criteria.left(), ISubstringOperandNode.class);
 		assertThat(assertNodeType(firstSubstring.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
 		assertThat(assertNodeType(firstSubstring.startPosition().orElseThrow(), ILiteralNode.class).token().intValue()).isEqualTo(1);
