@@ -384,6 +384,7 @@ public class KeywordTable
 			case "normalize" -> SyntaxKind.NORMALIZE;
 			case "normalized" -> SyntaxKind.NORMALIZED;
 			case "not" -> SyntaxKind.NOT;
+			case "notequal" -> SyntaxKind.NOTEQUAL;
 			case "notit" -> SyntaxKind.NOTIT;
 			case "notitle" -> SyntaxKind.NOTITLE;
 			case "null" -> SyntaxKind.NULL;
