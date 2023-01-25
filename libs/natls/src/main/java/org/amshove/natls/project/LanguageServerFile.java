@@ -389,15 +389,21 @@ public class LanguageServerFile implements IModuleProvider
 	@Override
 	public IDataDefinitionModule findDdm(String referableName)
 	{
-		var calledFile = library.provideNaturalFile(referableName, true);
-		if (calledFile == null)
+		var possibleFiles = library.getModulesOfType(NaturalFileType.DDM, true);
+		if (possibleFiles.isEmpty())
+		{
+			return null;
+		}
+
+		var possibleDdm = possibleFiles.stream().filter(d -> d.getReferableName().equals(referableName)).findFirst();
+		if (possibleDdm.isEmpty())
 		{
 			return null;
 		}
 
 		try
 		{
-			return new DdmParser().parseDdm(Files.readString(calledFile.getPath()));
+			return new DdmParser().parseDdm(Files.readString(possibleDdm.get().getPath()));
 		}
 		catch (IOException e)
 		{

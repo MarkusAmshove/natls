@@ -4,6 +4,7 @@ import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
 import org.amshove.natparse.natural.project.NaturalFile;
+import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.parsing.ddm.DdmParser;
 
 import java.io.IOException;
@@ -22,15 +23,21 @@ class DefaultModuleProvider implements IModuleProvider
 	@Override
 	public IDataDefinitionModule findDdm(String referableName)
 	{
-		var calledFile = caller.getLibrary().findFileByReferableName(referableName, true);
-		if (calledFile == null)
+		var possibleFiles = caller.getLibrary().getModulesOfType(NaturalFileType.DDM, true);
+		if (possibleFiles.isEmpty())
+		{
+			return null;
+		}
+
+		var possibleFile = possibleFiles.stream().filter(f -> f.getReferableName().equals(referableName)).findAny();
+		if (possibleFile.isEmpty())
 		{
 			return null;
 		}
 
 		try
 		{
-			return new DdmParser().parseDdm(Files.readString(calledFile.getPath()));
+			return new DdmParser().parseDdm(Files.readString(possibleFile.get().getPath()));
 		}
 		catch (IOException e)
 		{
