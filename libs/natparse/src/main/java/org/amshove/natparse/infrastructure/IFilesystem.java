@@ -14,4 +14,6 @@ public interface IFilesystem
 	Stream<Path> streamFilesRecursively(Path startPath);
 
 	Optional<Path> findFile(String name, Path root);
+
+	Stream<String> peekFile(Path path);
 }
