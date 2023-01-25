@@ -1653,22 +1653,16 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			{
 				consume(node);
 				consumeAnyMandatory(node, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL, SyntaxKind.LESSER_SIGN, SyntaxKind.LT, SyntaxKind.GREATER_SIGN, SyntaxKind.GT));
-				switch (previousToken().kind())
+				yield switch (previousToken().kind())
 				{
-					case LT, LESSER_SIGN ->
-					{
-						yield ComparisonOperator.GREATER_OR_EQUAL;
-					}
-					case GT, GREATER_SIGN ->
-					{
-						yield ComparisonOperator.LESS_OR_EQUAL;
-					}
+					case LT, LESSER_SIGN -> ComparisonOperator.GREATER_OR_EQUAL;
+					case GT, GREATER_SIGN -> ComparisonOperator.LESS_OR_EQUAL;
 					default -> //EQUAL
 					{
 						consumeOptionally(node, SyntaxKind.TO);
 						yield ComparisonOperator.NOT_EQUAL;
 					}
-				}
+				};
 			}
 			case LESS ->
 			{
