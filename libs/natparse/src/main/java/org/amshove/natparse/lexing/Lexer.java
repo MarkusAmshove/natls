@@ -1355,8 +1355,8 @@ public class Lexer
 
 		if (!tokens.isEmpty())
 		{
-			var previous = previous().kind();
-			if (token.kind() == SyntaxKind.DATA && previous != null && previous == SyntaxKind.DEFINE)
+			var previous = previous();
+			if (token.kind() == SyntaxKind.DATA && previous != null && previous.kind() == SyntaxKind.DEFINE)
 			{
 				lexerMode = LexerMode.IN_DEFINE_DATA;
 			}
