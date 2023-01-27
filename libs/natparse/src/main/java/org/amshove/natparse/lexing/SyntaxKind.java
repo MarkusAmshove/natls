@@ -546,6 +546,7 @@ public enum SyntaxKind
 	NORMALIZE(true, false, false),
 	NORMALIZED(true, false, false),
 	NOT(true, false, false),
+	NOTEQUAL(true, false, false),
 	NOTIT(true, false, false),
 	NOTITLE(true, false, false),
 	NULL(true, false, false),
