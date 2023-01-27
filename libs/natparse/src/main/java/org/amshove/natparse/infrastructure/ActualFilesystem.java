@@ -67,6 +67,18 @@ public class ActualFilesystem implements IFilesystem
 		}
 	}
 
+	public Stream<String> peekFile(Path path)
+	{
+		try
+		{
+			return Files.lines(path);
+		}
+		catch (IOException e)
+		{
+			throw new UncheckedIOException(e);
+		}
+	}
+
 	// TODO: Move somewhere else where the priority can be tested
 	public Optional<Path> findNaturalProjectFile(Path root)
 	{

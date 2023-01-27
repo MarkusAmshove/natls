@@ -324,6 +324,18 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseChainedCriteriaWithparenthesesAndInlineComments()
+	{
+		var source = """
+				#VAR1 = #VAR2 OR
+				#VAR3 = #VAR4 OR /* CLAES
+				(#SWITCH1 OR     /* CLAES
+				NOT #SWITCH2)
+				""";
+		assertParsesCriteria(source, IChainedCriteriaNode.class);
+	}
+
+	@Test
 	void parseChainedCriteriaWithinGroupedCriteria()
 	{
 		var grouped = assertParsesCriteria("(5 > 2 AND 3 < 10)", IGroupedConditionCriteria.class);
