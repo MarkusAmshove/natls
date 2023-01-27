@@ -486,7 +486,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"(T/2)", "(T/1:10)", "(T/1:*)", "(T/*,1:5)", "(T/*:10)", "(A10/1:10)", "(T/1:10,50:*,*:20)", "(A20/1:10,50:*,*:20)",
+		"(T/*)", "(T/2)", "(T/1:10)", "(T/1:*)", "(T/*,1:5)", "(T/*:10)", "(A10/1:10)", "(T/1:10,50:*,*:20)", "(A20/1:10,50:*,*:20)",
 	})
 	void parseArrayDefinitions(String variable)
 	{
