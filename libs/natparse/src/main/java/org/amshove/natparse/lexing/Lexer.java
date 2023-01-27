@@ -1353,7 +1353,8 @@ public class Lexer
 			}
 		}
 
-		if (token.kind() == SyntaxKind.DATA && previous() != null && previous().kind() == SyntaxKind.DEFINE)
+		var previous = previous().kind();
+		if (token.kind() == SyntaxKind.DATA && previous != null && previous == SyntaxKind.DEFINE)
 		{
 			lexerMode = LexerMode.IN_DEFINE_DATA;
 		}
