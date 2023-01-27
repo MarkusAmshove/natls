@@ -1353,16 +1353,19 @@ public class Lexer
 			}
 		}
 
-		var previous =  previous().kind();
-		if (token.kind() == SyntaxKind.DATA && previous != null && previous == SyntaxKind.DEFINE)
+		if (!tokens.isEmpty())
 		{
-			lexerMode = LexerMode.IN_DEFINE_DATA;
-		}
-		else
-			if (token.kind() == SyntaxKind.END_DEFINE && lexerMode == LexerMode.IN_DEFINE_DATA)
+			var previous = previous().kind();
+			if (token.kind() == SyntaxKind.DATA && previous != null && previous == SyntaxKind.DEFINE)
 			{
-				lexerMode = LexerMode.DEFAULT;
+				lexerMode = LexerMode.IN_DEFINE_DATA;
 			}
+			else
+				if (token.kind() == SyntaxKind.END_DEFINE && lexerMode == LexerMode.IN_DEFINE_DATA)
+				{
+					lexerMode = LexerMode.DEFAULT;
+				}
+		}
 
 		token.setDiagnosticPosition(relocatedDiagnosticPosition);
 		tokens.add(token);
