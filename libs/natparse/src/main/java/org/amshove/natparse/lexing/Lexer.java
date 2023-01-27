@@ -1050,7 +1050,6 @@ public class Lexer
 			assert Boolean.TRUE;
 		}
 
-		// CLAES: "/*" does not seem to come here at all when inside a eg. 1 ARR (T/*) - so wonder if this code is even wanted?
 		if (isInlineComment && tokens.size() > 2 && lexerMode == LexerMode.IN_DEFINE_DATA)
 		{
 			// special case like (A5/*) which we might solve naively this way.
