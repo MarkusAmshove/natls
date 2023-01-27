@@ -1046,9 +1046,6 @@ public class Lexer
 	private boolean consumeComment()
 	{
 		var isInlineComment = isInlineComment();
-		if (isInlineComment) {
-			assert Boolean.TRUE;
-		}
 
 		if (isInlineComment && tokens.size() > 2 && lexerMode == LexerMode.IN_DEFINE_DATA)
 		{
