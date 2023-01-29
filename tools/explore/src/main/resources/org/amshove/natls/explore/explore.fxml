@@ -30,7 +30,7 @@
         </StackPane>
     </SplitPane>
     <HBox>
-        <Button fx:id="loadFileButton">Load file</Button>
+        <Button fx:id="loadFileButton" onAction="#onLoadFileButton">Load file</Button>
         <Button fx:id="parseButton" onAction="#onParseButton">Parse (CTRL+Return)</Button>
     </HBox>
 </VBox>

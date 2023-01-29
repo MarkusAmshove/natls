@@ -2,12 +2,14 @@ package org.amshove.natls.explore;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.TokenList;
 import org.fxmisc.richtext.CodeArea;
@@ -15,6 +17,8 @@ import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.StyledTextArea;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class ExploreController
@@ -33,7 +37,7 @@ public class ExploreController
 		tokenArea.setParagraphGraphicFactory(LineNumberFactory.get(tokenArea));
 	}
 
-	public void onParseButton(ActionEvent actionEvent)
+	public void onParseButton()
 	{
 		var lexer = new Lexer();
 		var tokens = lexer.lex(codeArea.getText(), Path.of("MODULE.NSN"));
@@ -64,7 +68,24 @@ public class ExploreController
 	{
 		if(keyEvent.isControlDown() && keyEvent.getCode() == KeyCode.ENTER)
 		{
-			onParseButton(null);
+			onParseButton();
+		}
+	}
+
+	public void onLoadFileButton(ActionEvent event)
+	{
+		var stage = ((Node)event.getSource()).getScene().getWindow();
+		var fileChooser = new FileChooser();
+		var file = fileChooser.showOpenDialog(stage);
+		try
+		{
+			var source = Files.readString(file.toPath());
+			codeArea.clear();
+			codeArea.appendText(source);
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
 		}
 	}
 }
