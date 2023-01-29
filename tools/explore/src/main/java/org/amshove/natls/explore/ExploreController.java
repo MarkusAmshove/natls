@@ -173,7 +173,7 @@ public class ExploreController
 	{
 		var fileChooser = new FileChooser();
 		var lastFolder = loadLastFolder();
-		if(lastFolder != null)
+		if(lastFolder != null && !lastFolder.isEmpty())
 		{
 			fileChooser.setInitialDirectory(new File(lastFolder));
 		}
@@ -216,7 +216,7 @@ public class ExploreController
 		}
 		catch (IOException e)
 		{
-			throw new RuntimeException(e);
+			return "";
 		}
 	}
 
