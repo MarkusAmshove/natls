@@ -23,6 +23,7 @@ import org.amshove.natparse.parsing.StatementListParser;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -171,17 +172,57 @@ public class ExploreController
 	private void loadFile(Window window)
 	{
 		var fileChooser = new FileChooser();
+		var lastFolder = loadLastFolder();
+		if(lastFolder != null)
+		{
+			fileChooser.setInitialDirectory(new File(lastFolder));
+		}
+
 		var file = fileChooser.showOpenDialog(window);
+		if(file == null)
+		{
+			return;
+		}
 		try
 		{
 			var source = Files.readString(file.toPath());
 			codeArea.clear();
 			codeArea.appendText(source);
+			saveLastFolder(file.toPath().getParent());
 		}
 		catch (IOException e)
 		{
 			throw new RuntimeException(e);
 		}
+	}
+
+	private void saveLastFolder(Path parent)
+	{
+		try
+		{
+			Files.writeString(getStorePath(), parent.toAbsolutePath().toString());
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+
+	private String loadLastFolder()
+	{
+		try
+		{
+			return Files.readString(getStorePath());
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+
+	private Path getStorePath()
+	{
+		return Path.of(System.getProperty("java.io.tmpdir"), ".natexplore");
 	}
 
 	public void codeAreaMouseClicked(MouseEvent mouseEvent)
