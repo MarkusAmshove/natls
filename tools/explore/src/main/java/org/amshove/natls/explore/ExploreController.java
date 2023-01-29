@@ -1,21 +1,20 @@
 package org.amshove.natls.explore;
 
 import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.SplitPane;
+import javafx.scene.control.TreeView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.TokenList;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
-import org.fxmisc.richtext.StyleClassedTextArea;
-import org.fxmisc.richtext.StyledTextArea;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -87,5 +86,10 @@ public class ExploreController
 		{
 			throw new RuntimeException(e);
 		}
+	}
+
+	public void codeAreaMouseClicked(MouseEvent mouseEvent)
+	{
+		tokenArea.scrollToPixel(codeArea.getEstimatedScrollX(), codeArea.getEstimatedScrollY());
 	}
 }

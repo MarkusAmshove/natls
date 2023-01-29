@@ -14,7 +14,7 @@ public class ExploreApp extends Application
 	{
 		FXMLLoader fxmlLoader = new FXMLLoader(ExploreApp.class.getResource("explore.fxml"));
 		Scene scene = new Scene(fxmlLoader.load(), 320, 240);
-		stage.setTitle("Hello!");
+		stage.setTitle("NatLS Explore");
 		stage.setScene(scene);
 		stage.show();
 	}

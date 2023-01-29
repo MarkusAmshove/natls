@@ -15,7 +15,7 @@
         <StackPane nodeOrientation="LEFT_TO_RIGHT">
             <VirtualizedScrollPane>
                 <content>
-                    <CodeArea fx:id="codeArea" onKeyPressed="#codeAreaKeyPressed">
+                    <CodeArea fx:id="codeArea" onKeyPressed="#codeAreaKeyPressed" onMouseClicked="#codeAreaMouseClicked">
                     </CodeArea>
                 </content>
             </VirtualizedScrollPane>
