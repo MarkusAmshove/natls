@@ -13,6 +13,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.stage.Window;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.TokenList;
@@ -149,19 +150,28 @@ public class ExploreController
 		}
 	}
 
-	public void codeAreaKeyPressed(KeyEvent keyEvent)
+	public void shortcutPressed(KeyEvent keyEvent)
 	{
 		if(keyEvent.isControlDown() && keyEvent.getCode() == KeyCode.ENTER)
 		{
 			onParseButton();
+		}
+		if(keyEvent.isControlDown() && keyEvent.getCode() == KeyCode.O)
+		{
+			loadFile(codeArea.getScene().getWindow());
 		}
 	}
 
 	public void onLoadFileButton(ActionEvent event)
 	{
 		var stage = ((Node)event.getSource()).getScene().getWindow();
+		loadFile(stage);
+	}
+
+	private void loadFile(Window window)
+	{
 		var fileChooser = new FileChooser();
-		var file = fileChooser.showOpenDialog(stage);
+		var file = fileChooser.showOpenDialog(window);
 		try
 		{
 			var source = Files.readString(file.toPath());

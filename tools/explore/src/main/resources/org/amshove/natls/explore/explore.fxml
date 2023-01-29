@@ -11,12 +11,13 @@
 <?import javafx.scene.control.TreeView?>
 <VBox xmlns:fx="http://javafx.com/fxml" fx:controller="org.amshove.natls.explore.ExploreController"
       spacing="5.0"
-      style="-fx-padding: 5">
+      style="-fx-padding: 5"
+      onKeyPressed="#shortcutPressed">
     <SplitPane fx:id="codePane" orientation="VERTICAL">
         <SplitPane nodeOrientation="LEFT_TO_RIGHT">
             <VirtualizedScrollPane>
                 <content>
-                    <CodeArea fx:id="codeArea" onKeyPressed="#codeAreaKeyPressed" onMouseClicked="#codeAreaMouseClicked">
+                    <CodeArea fx:id="codeArea" onMouseClicked="#codeAreaMouseClicked">
                     </CodeArea>
                 </content>
             </VirtualizedScrollPane>
@@ -34,7 +35,7 @@
         </StackPane>
     </SplitPane>
     <HBox>
-        <Button fx:id="loadFileButton" onAction="#onLoadFileButton">Load file</Button>
+        <Button fx:id="loadFileButton" onAction="#onLoadFileButton">Load file (CTRL+O)</Button>
         <Button fx:id="parseButton" onAction="#onParseButton">Parse (CTRL+Return)</Button>
     </HBox>
 </VBox>
