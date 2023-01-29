@@ -1,5 +1,6 @@
 package org.amshove.natls.explore;
 
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -15,8 +16,7 @@ import javafx.stage.FileChooser;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.TokenList;
-import org.amshove.natparse.natural.ISyntaxTree;
-import org.amshove.natparse.natural.ITokenNode;
+import org.amshove.natparse.natural.*;
 import org.amshove.natparse.parsing.DefineDataParser;
 import org.amshove.natparse.parsing.StatementListParser;
 import org.fxmisc.richtext.CodeArea;
@@ -34,13 +34,55 @@ public class ExploreController
 	public CodeArea codeArea;
 	public TreeView<NodeItem> nodeView;
 	public SplitPane codePane;
-	private Path selectedFilePath;
 
 	public void initialize()
 	{
 		VBox.setVgrow(codePane, Priority.ALWAYS);
 		codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
 		tokenArea.setParagraphGraphicFactory(LineNumberFactory.get(tokenArea));
+		nodeView.getSelectionModel().selectedItemProperty().addListener(this::syntaxNodeSelected);
+	}
+
+	@SuppressWarnings("unchecked")
+	private void syntaxNodeSelected(ObservableValue<?> observable, Object oldValue, Object newValue)
+	{
+		var item = (TreeItem<NodeItem>) newValue;
+
+		if(item == null)
+		{
+			return;
+		}
+
+		var node = (ISyntaxNode) item.getValue().node;
+		if(node == null)
+		{
+			return;
+		}
+
+		codeArea.moveTo(node.diagnosticPosition().offset());
+		var endOffset = node.diagnosticPosition().totalEndOffset();
+		if(node instanceof IIncludeNode)
+		{
+			endOffset = node.descendants().get(node.descendants().size() - 2).diagnosticPosition().totalEndOffset();
+		}
+		else if(node instanceof ITokenNode)
+		{
+			endOffset = node.diagnosticPosition().totalEndOffset();
+		}
+		else
+		{
+			if(node.descendants().last() instanceof IStatementListNode)
+			{
+				return;
+			}
+
+			endOffset = node.descendants().last().diagnosticPosition().totalEndOffset();
+		}
+
+		codeArea.moveTo(node.diagnosticPosition().offset());
+		codeArea.requestFollowCaret();
+		codeArea.selectRange(node.diagnosticPosition().offset(), endOffset);
+		tokenArea.scrollToPixel(codeArea.getEstimatedScrollX(), codeArea.getEstimatedScrollY());
 	}
 
 	public void onParseButton()
@@ -125,7 +167,6 @@ public class ExploreController
 			var source = Files.readString(file.toPath());
 			codeArea.clear();
 			codeArea.appendText(source);
-			selectedFilePath = file.toPath();
 		}
 		catch (IOException e)
 		{

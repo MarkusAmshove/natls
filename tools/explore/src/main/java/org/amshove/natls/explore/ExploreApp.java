@@ -13,7 +13,7 @@ public class ExploreApp extends Application
 	public void start(Stage stage) throws IOException
 	{
 		FXMLLoader fxmlLoader = new FXMLLoader(ExploreApp.class.getResource("explore.fxml"));
-		Scene scene = new Scene(fxmlLoader.load(), 320, 240);
+		Scene scene = new Scene(fxmlLoader.load(), 1024, 768);
 		stage.setTitle("NatLS Explore");
 		stage.setScene(scene);
 		stage.show();
