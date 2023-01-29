@@ -8,18 +8,22 @@
 <?import org.fxmisc.richtext.CodeArea?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TreeView?>
 <VBox xmlns:fx="http://javafx.com/fxml" fx:controller="org.amshove.natls.explore.ExploreController"
       spacing="5.0"
       style="-fx-padding: 5">
     <SplitPane fx:id="codePane" orientation="VERTICAL">
-        <StackPane nodeOrientation="LEFT_TO_RIGHT">
+        <SplitPane nodeOrientation="LEFT_TO_RIGHT">
             <VirtualizedScrollPane>
                 <content>
                     <CodeArea fx:id="codeArea" onKeyPressed="#codeAreaKeyPressed" onMouseClicked="#codeAreaMouseClicked">
                     </CodeArea>
                 </content>
             </VirtualizedScrollPane>
-        </StackPane>
+            <TreeView fx:id="nodeView">
+
+            </TreeView>
+        </SplitPane>
         <StackPane>
             <VirtualizedScrollPane>
                 <content>
