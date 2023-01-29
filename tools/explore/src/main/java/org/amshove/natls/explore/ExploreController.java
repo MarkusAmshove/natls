@@ -2,10 +2,12 @@ package org.amshove.natls.explore;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.TokenList;
 import org.fxmisc.richtext.CodeArea;
@@ -17,19 +19,16 @@ import java.nio.file.Path;
 
 public class ExploreController
 {
-	@FXML
 	public Button loadFileButton;
-	@FXML
 	public Button parseButton;
-	@FXML
 	public CodeArea tokenArea;
-	@FXML
 	public CodeArea codeArea;
-	@FXML
 	public TreeView nodeView;
+	public SplitPane codePane;
 
 	public void initialize()
 	{
+		VBox.setVgrow(codePane, Priority.ALWAYS);
 		codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
 		tokenArea.setParagraphGraphicFactory(LineNumberFactory.get(tokenArea));
 	}
@@ -58,6 +57,14 @@ public class ExploreController
 			}
 			tokenArea.appendText("%s[%s]".formatted(token.source(), token.kind()));
 			tokens.advance();
+		}
+	}
+
+	public void codeAreaKeyPressed(KeyEvent keyEvent)
+	{
+		if(keyEvent.isControlDown() && keyEvent.getCode() == KeyCode.ENTER)
+		{
+			onParseButton(null);
 		}
 	}
 }

@@ -7,28 +7,30 @@
 <?import org.fxmisc.flowless.VirtualizedScrollPane?>
 <?import org.fxmisc.richtext.CodeArea?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.SplitPane?>
 <VBox xmlns:fx="http://javafx.com/fxml" fx:controller="org.amshove.natls.explore.ExploreController"
       spacing="5.0"
       style="-fx-padding: 5">
-    <StackPane nodeOrientation="LEFT_TO_RIGHT">
-        <VirtualizedScrollPane>
-            <content>
-                <CodeArea fx:id="codeArea">
-                </CodeArea>
-            </content>
-        </VirtualizedScrollPane>
-    </StackPane>
+    <SplitPane fx:id="codePane" orientation="VERTICAL">
+        <StackPane nodeOrientation="LEFT_TO_RIGHT">
+            <VirtualizedScrollPane>
+                <content>
+                    <CodeArea fx:id="codeArea" onKeyPressed="#codeAreaKeyPressed">
+                    </CodeArea>
+                </content>
+            </VirtualizedScrollPane>
+        </StackPane>
+        <StackPane>
+            <VirtualizedScrollPane>
+                <content>
+                    <CodeArea fx:id="tokenArea" editable="false" style="-fx-background-color: lightgray">
+                    </CodeArea>
+                </content>
+            </VirtualizedScrollPane>
+        </StackPane>
+    </SplitPane>
     <HBox>
         <Button fx:id="loadFileButton">Load file</Button>
         <Button fx:id="parseButton" onAction="#onParseButton">Parse (CTRL+Return)</Button>
     </HBox>
-    <StackPane>
-        <VirtualizedScrollPane>
-            <content>
-                <CodeArea fx:id="tokenArea" editable="false">
-                </CodeArea>
-            </content>
-        </VirtualizedScrollPane>
-    </StackPane>
-
 </VBox>
