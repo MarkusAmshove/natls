@@ -11,6 +11,8 @@
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
 <VBox xmlns:fx="http://javafx.com/fxml" fx:controller="org.amshove.natls.explore.ExploreController"
       spacing="5.0"
       style="-fx-padding: 5"
@@ -23,29 +25,31 @@
                     </CodeArea>
                 </content>
             </VirtualizedScrollPane>
-            <VBox>
-                <TreeView fx:id="nodeView"></TreeView>
-                <HBox>
-                    <Button onAction="#navigateNodeUp">
-                        <tooltip>
-                            <Tooltip text="Navigate one Node up (ALT+Up)"></Tooltip>
-                        </tooltip>
-                        <text>/\</text>
-                    </Button>
-                    <Button onAction="#navigateNodeDown">
-                        <tooltip>
-                            <Tooltip text="Navigate one Node down (ALT+Down)"></Tooltip>
-                        </tooltip>
-                        <text>\/</text>
-                    </Button>
-                </HBox>
-            </VBox>
+            <SplitPane orientation="VERTICAL">
+                <VBox>
+                    <TreeView fx:id="nodeView"></TreeView>
+                    <HBox>
+                        <Button onAction="#navigateNodeUp">
+                            <tooltip>
+                                <Tooltip text="Navigate one Node up (ALT+Up)"></Tooltip>
+                            </tooltip>
+                            <text>/\</text>
+                        </Button>
+                        <Button onAction="#navigateNodeDown">
+                            <tooltip>
+                                <Tooltip text="Navigate one Node down (ALT+Down)"></Tooltip>
+                            </tooltip>
+                            <text>\/</text>
+                        </Button>
+                    </HBox>
+                </VBox>
+                <ListView fx:id="diagnosticList" onMouseClicked="#diagnosticListClicked"></ListView>
+            </SplitPane>
         </SplitPane>
         <StackPane>
             <VirtualizedScrollPane>
                 <content>
-                    <CodeArea fx:id="tokenArea" editable="false" style="-fx-background-color: lightgray; -fx-font-size: 16">
-                    </CodeArea>
+                    <CodeArea fx:id="tokenArea" editable="false" style="-fx-background-color: lightgray; -fx-font-size: 16"></CodeArea>
                 </content>
             </VirtualizedScrollPane>
         </StackPane>

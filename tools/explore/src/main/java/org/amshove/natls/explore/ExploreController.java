@@ -1,5 +1,6 @@
 package org.amshove.natls.explore;
 
+import javafx.beans.Observable;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
@@ -11,6 +12,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
+import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.TokenList;
@@ -19,11 +21,15 @@ import org.amshove.natparse.parsing.DefineDataParser;
 import org.amshove.natparse.parsing.StatementListParser;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
+import org.fxmisc.richtext.model.StyleSpan;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.format.TextStyle;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ExploreController
 {
@@ -34,6 +40,7 @@ public class ExploreController
 	public TreeView<NodeItem> nodeView;
 	public SplitPane codePane;
 	public TextField loadPathBox;
+	public ListView<DiagnosticItem> diagnosticList;
 
 	public void initialize()
 	{
@@ -41,6 +48,21 @@ public class ExploreController
 		codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
 		tokenArea.setParagraphGraphicFactory(LineNumberFactory.get(tokenArea));
 		nodeView.getSelectionModel().selectedItemProperty().addListener(this::syntaxNodeSelected);
+		diagnosticList.getSelectionModel().selectedItemProperty().addListener(this::diagnosticSelected);
+	}
+
+	private void diagnosticSelected(ObservableValue<?> observable, Object oldValue, Object newValue)
+	{
+		var diagnosticItem = (DiagnosticItem) newValue;
+		if(diagnosticItem == null)
+		{
+			return;
+		}
+
+		codeArea.moveTo(diagnosticItem.diagnostic.offset());
+		codeArea.requestFollowCaret();
+		codeArea.selectRange(diagnosticItem.diagnostic.offset(), diagnosticItem.diagnostic.totalEndOffset());
+		tokenArea.scrollToPixel(codeArea.getEstimatedScrollX(), codeArea.getEstimatedScrollY());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -89,8 +111,8 @@ public class ExploreController
 	{
 		var lexer = new Lexer();
 		var tokens = lexer.lex(codeArea.getText(), Path.of("MODULE.NSN"));
+		diagnosticList.getItems().clear();
 		renderTokens(tokens);
-
 		renderNodes(tokens);
 	}
 
@@ -115,6 +137,14 @@ public class ExploreController
 			addNodesRecursive(statement, root);
 		}
 
+		var allDiagnostics = new ArrayList<IDiagnostic>();
+		allDiagnostics.addAll(tokens.diagnostics().toList());
+		allDiagnostics.addAll(statements.diagnostics().toList());
+		var sortedDiagnostics = allDiagnostics.stream().sorted((d1, d2) -> d2.line() - d1.line()).toList();
+		for (var diagnostic : sortedDiagnostics)
+		{
+			diagnosticList.getItems().add(new DiagnosticItem(diagnostic));
+		}
 	}
 
 	private void addNodesRecursive(ISyntaxNode node, TreeItem<NodeItem> parent)
@@ -308,6 +338,15 @@ public class ExploreController
 		nodeView.scrollTo(newIndex);
 	}
 
+	public void diagnosticListClicked(MouseEvent mouseEvent)
+	{
+		if(diagnosticList.getSelectionModel().getSelectedItems().isEmpty())
+		{
+			return;
+		}
+		diagnosticSelected(null, null, diagnosticList.getSelectionModel().getSelectedItems().get(0));
+	}
+
 	private record NodeItem(ISyntaxNode node)
 	{
 		@Override
@@ -323,6 +362,15 @@ public class ExploreController
 				tokenSource = tokenNode.token().source();
 			}
 			return node != null ? "%s (%s)".formatted(node.getClass().getSimpleName(), tokenSource) : "root";
+		}
+	}
+
+	private record DiagnosticItem(IDiagnostic diagnostic)
+	{
+		@Override
+		public String toString()
+		{
+			return "(%s) %s".formatted(diagnostic.id(), diagnostic.message());
 		}
 	}
 }
