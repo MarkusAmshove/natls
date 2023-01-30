@@ -172,6 +172,7 @@ public class ExploreController
 		if(!loadPathBox.getText().isEmpty())
 		{
 			loadFileFromPath(Path.of(loadPathBox.getText()));
+			loadPathBox.clear();
 		}
 		else
 		{
