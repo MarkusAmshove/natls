@@ -277,6 +277,11 @@ public class ExploreController
 
 	public void codeAreaMouseClicked(MouseEvent mouseEvent)
 	{
+		if(codeArea.getText().isEmpty())
+		{
+			return;
+		}
+
 		tokenArea.scrollToPixel(codeArea.getEstimatedScrollX(), codeArea.getEstimatedScrollY());
 		var caretOffset = codeArea.getCaretPosition();
 		selectNodeAtCodeOffset(nodeView.getRoot(), caretOffset);
