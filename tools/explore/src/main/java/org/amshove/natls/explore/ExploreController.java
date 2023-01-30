@@ -117,7 +117,7 @@ public class ExploreController
 
 	}
 
-	private void addNodesRecursive(ISyntaxTree node, TreeItem<NodeItem> parent)
+	private void addNodesRecursive(ISyntaxNode node, TreeItem<NodeItem> parent)
 	{
 		var root = new TreeItem<>(new NodeItem(node));
 
@@ -239,9 +239,43 @@ public class ExploreController
 	public void codeAreaMouseClicked(MouseEvent mouseEvent)
 	{
 		tokenArea.scrollToPixel(codeArea.getEstimatedScrollX(), codeArea.getEstimatedScrollY());
+		var caretOffset = codeArea.getCaretPosition();
+		selectNodeAtCodeOffset(nodeView.getRoot(), caretOffset);
 	}
 
-	private record NodeItem(ISyntaxTree node)
+	private void selectNodeAtCodeOffset(TreeItem<NodeItem> treeNode, int nodeOffset)
+	{
+		var node = treeNode.getValue();
+		try
+		{
+			if (node.node != null && node.node.diagnosticPosition().offset() <= nodeOffset && node.node.diagnosticPosition().totalEndOffset() >= nodeOffset)
+			{
+				nodeView.getSelectionModel().select(treeNode);
+				expandNodeView(nodeView.getRoot());
+				nodeView.scrollTo(nodeView.getRow(treeNode));
+			}
+		}
+		catch (Exception e)
+		{
+			// ignore
+		}
+
+		for (var child : treeNode.getChildren())
+		{
+			selectNodeAtCodeOffset(child, nodeOffset);
+		}
+	}
+
+	private void expandNodeView(TreeItem<NodeItem> node)
+	{
+		node.setExpanded(true);
+		for(var child : node.getChildren())
+		{
+			expandNodeView(child);
+		}
+	}
+
+	private record NodeItem(ISyntaxNode node)
 	{
 		@Override
 		public String toString()
