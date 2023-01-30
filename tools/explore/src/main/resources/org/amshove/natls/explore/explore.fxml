@@ -10,6 +10,7 @@
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Tooltip?>
 <VBox xmlns:fx="http://javafx.com/fxml" fx:controller="org.amshove.natls.explore.ExploreController"
       spacing="5.0"
       style="-fx-padding: 5"
@@ -22,9 +23,23 @@
                     </CodeArea>
                 </content>
             </VirtualizedScrollPane>
-            <TreeView fx:id="nodeView">
-
-            </TreeView>
+            <VBox>
+                <TreeView fx:id="nodeView"></TreeView>
+                <HBox>
+                    <Button onAction="#navigateNodeUp">
+                        <tooltip>
+                            <Tooltip text="Navigate one Node up (ALT+Up)"></Tooltip>
+                        </tooltip>
+                        <text>/\</text>
+                    </Button>
+                    <Button onAction="#navigateNodeDown">
+                        <tooltip>
+                            <Tooltip text="Navigate one Node down (ALT+Down)"></Tooltip>
+                        </tooltip>
+                        <text>\/</text>
+                    </Button>
+                </HBox>
+            </VBox>
         </SplitPane>
         <StackPane>
             <VirtualizedScrollPane>

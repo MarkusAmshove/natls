@@ -159,6 +159,14 @@ public class ExploreController
 		{
 			loadFile(codeArea.getScene().getWindow());
 		}
+		if(keyEvent.isAltDown() && keyEvent.getCode() == KeyCode.DOWN)
+		{
+			navigateNodeDown();
+		}
+		if(keyEvent.isAltDown() && keyEvent.getCode() == KeyCode.UP)
+		{
+			navigateNodeUp();
+		}
 	}
 
 	public void onLoadFileButton(ActionEvent event)
@@ -274,6 +282,30 @@ public class ExploreController
 		{
 			expandNodeView(child);
 		}
+	}
+
+	public void navigateNodeDown()
+	{
+		navigateNode(1);
+	}
+
+	public void navigateNodeUp()
+	{
+		navigateNode(-1);
+	}
+
+	private void navigateNode(int offset)
+	{
+		if(nodeView.getRoot() == null)
+		{
+			return;
+		}
+
+		expandNodeView(nodeView.getRoot());
+		var currentIndex = nodeView.getSelectionModel().getSelectedIndex();
+		int newIndex = currentIndex + offset;
+		nodeView.getSelectionModel().select(newIndex);
+		nodeView.scrollTo(newIndex);
 	}
 
 	private record NodeItem(ISyntaxNode node)
