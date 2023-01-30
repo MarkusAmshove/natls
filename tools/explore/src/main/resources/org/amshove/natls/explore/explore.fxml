@@ -9,6 +9,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TreeView?>
+<?import javafx.scene.control.TextField?>
 <VBox xmlns:fx="http://javafx.com/fxml" fx:controller="org.amshove.natls.explore.ExploreController"
       spacing="5.0"
       style="-fx-padding: 5"
@@ -35,6 +36,7 @@
         </StackPane>
     </SplitPane>
     <HBox>
+        <TextField fx:id="loadPathBox"></TextField>
         <Button fx:id="loadFileButton" onAction="#onLoadFileButton">Load file (CTRL+O)</Button>
         <Button fx:id="parseButton" onAction="#onParseButton">Parse (CTRL+Return)</Button>
     </HBox>

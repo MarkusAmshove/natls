@@ -3,10 +3,7 @@ package org.amshove.natls.explore;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -36,6 +33,7 @@ public class ExploreController
 	public CodeArea codeArea;
 	public TreeView<NodeItem> nodeView;
 	public SplitPane codePane;
+	public TextField loadPathBox;
 
 	public void initialize()
 	{
@@ -171,24 +169,37 @@ public class ExploreController
 
 	private void loadFile(Window window)
 	{
-		var fileChooser = new FileChooser();
-		var lastFolder = loadLastFolder();
-		if(lastFolder != null && !lastFolder.isEmpty())
+		if(!loadPathBox.getText().isEmpty())
 		{
-			fileChooser.setInitialDirectory(new File(lastFolder));
+			loadFileFromPath(Path.of(loadPathBox.getText()));
 		}
+		else
+		{
+			var fileChooser = new FileChooser();
+			var lastFolder = loadLastFolder();
+			if (lastFolder != null && !lastFolder.isEmpty())
+			{
+				fileChooser.setInitialDirectory(new File(lastFolder));
+			}
 
-		var file = fileChooser.showOpenDialog(window);
-		if(file == null)
-		{
-			return;
+			var file = fileChooser.showOpenDialog(window);
+			if (file == null)
+			{
+				return;
+			}
+
+			loadFileFromPath(file.toPath());
 		}
+	}
+
+	private void loadFileFromPath(Path path)
+	{
 		try
 		{
-			var source = Files.readString(file.toPath());
+			var source = Files.readString(path);
 			codeArea.clear();
 			codeArea.appendText(source);
-			saveLastFolder(file.toPath().getParent());
+			saveLastFolder(path.getParent());
 		}
 		catch (IOException e)
 		{
