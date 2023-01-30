@@ -18,7 +18,7 @@
         <SplitPane nodeOrientation="LEFT_TO_RIGHT">
             <VirtualizedScrollPane>
                 <content>
-                    <CodeArea fx:id="codeArea" onMouseClicked="#codeAreaMouseClicked">
+                    <CodeArea fx:id="codeArea" style="-fx-font-size: 16" onMouseClicked="#codeAreaMouseClicked">
                     </CodeArea>
                 </content>
             </VirtualizedScrollPane>
@@ -29,7 +29,7 @@
         <StackPane>
             <VirtualizedScrollPane>
                 <content>
-                    <CodeArea fx:id="tokenArea" editable="false" style="-fx-background-color: lightgray">
+                    <CodeArea fx:id="tokenArea" editable="false" style="-fx-background-color: lightgray; -fx-font-size: 16">
                     </CodeArea>
                 </content>
             </VirtualizedScrollPane>
