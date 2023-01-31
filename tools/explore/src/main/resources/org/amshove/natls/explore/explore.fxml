@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import org.fxmisc.flowless.VirtualizedScrollPane?>
+<?import org.fxmisc.richtext.CodeArea?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="org.amshove.natls.explore.ExploreController"
+      spacing="5.0"
+      style="-fx-padding: 5"
+      onKeyPressed="#shortcutPressed">
+    <SplitPane fx:id="codePane" orientation="VERTICAL">
+        <SplitPane nodeOrientation="LEFT_TO_RIGHT">
+            <VirtualizedScrollPane>
+                <content>
+                    <CodeArea fx:id="codeArea" style="-fx-font-size: 16" onMouseClicked="#codeAreaMouseClicked">
+                    </CodeArea>
+                </content>
+            </VirtualizedScrollPane>
+            <SplitPane orientation="VERTICAL">
+                <VBox>
+                    <TreeView fx:id="nodeView"></TreeView>
+                    <HBox>
+                        <Button onAction="#navigateNodeUp">
+                            <tooltip>
+                                <Tooltip text="Navigate one Node up (ALT+Up)"></Tooltip>
+                            </tooltip>
+                            <text>/\</text>
+                        </Button>
+                        <Button onAction="#navigateNodeDown">
+                            <tooltip>
+                                <Tooltip text="Navigate one Node down (ALT+Down)"></Tooltip>
+                            </tooltip>
+                            <text>\/</text>
+                        </Button>
+                    </HBox>
+                </VBox>
+                <ListView fx:id="diagnosticList" onMouseClicked="#diagnosticListClicked"></ListView>
+            </SplitPane>
+        </SplitPane>
+        <StackPane>
+            <VirtualizedScrollPane>
+                <content>
+                    <CodeArea fx:id="tokenArea" editable="false" style="-fx-background-color: lightgray; -fx-font-size: 16"></CodeArea>
+                </content>
+            </VirtualizedScrollPane>
+        </StackPane>
+    </SplitPane>
+    <HBox>
+        <TextField fx:id="loadPathBox"></TextField>
+        <Button fx:id="loadFileButton" onAction="#onLoadFileButton">Load file (CTRL+O)</Button>
+        <Button fx:id="parseButton" onAction="#onParseButton">Parse (CTRL+Return)</Button>
+    </HBox>
+</VBox>

@@ -228,4 +228,11 @@ public class TokenList
 		}
 	}
 
+	/**
+	 * Resets the token index to 0.
+	 */
+	public void rollback()
+	{
+		currentOffset = 0;
+	}
 }

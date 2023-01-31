@@ -17,3 +17,6 @@ project(':tools/ruletranslator').name = 'ruletranslator'
 
 include 'libs/natqube'
 project(':libs/natqube').name = 'natqube'
+
+include 'tools/explore'
+project(':tools/explore').name = 'explore'

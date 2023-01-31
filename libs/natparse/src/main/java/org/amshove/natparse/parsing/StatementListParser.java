@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-class StatementListParser extends AbstractParser<IStatementListNode>
+public class StatementListParser extends AbstractParser<IStatementListNode>
 {
 	private List<IReferencableNode> referencableNodes;
 
@@ -26,7 +26,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return referencableNodes;
 	}
 
-	StatementListParser(IModuleProvider moduleProvider)
+	public StatementListParser(IModuleProvider moduleProvider)
 	{
 		super(moduleProvider);
 	}

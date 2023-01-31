@@ -1,0 +1,17 @@
+plugins {
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.13'
+}
+
+javafx {
+    version = "17"
+    modules = [ 'javafx.controls', 'javafx.fxml' ]
+}
+application {
+    mainClass = 'org.amshove.natls.explore.ExploreApp'
+}
+
+dependencies {
+    implementation project(':natparse')
+    implementation 'org.fxmisc.richtext:richtextfx:0.11.0'
+}
