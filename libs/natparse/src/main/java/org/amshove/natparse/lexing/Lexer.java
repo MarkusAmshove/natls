@@ -781,6 +781,24 @@ public class Lexer
 			return;
 		}
 
+		if (inParens && tokens.size() > 2)
+		{
+			var prevLastToken = tokens.get(tokens.size() - 2).kind();
+
+			if (prevLastToken == SyntaxKind.STRING_LITERAL &&
+				(scanner.peekText("TU") ||
+					scanner.peekText("NE") ||
+					scanner.peekText("RE") ||
+					scanner.peekText("YE") ||
+					scanner.peekText("BL") ||
+					scanner.peekText("GR") ||
+					scanner.peekText("PI")))
+			{
+				colorAttribute();
+				return;
+			}
+		}
+
 		var isQualified = false;
 		SyntaxKind kindHint = null;
 		scanner.start();
@@ -952,6 +970,18 @@ public class Lexer
 		}
 
 		createAndAdd(SyntaxKind.CD);
+	}
+
+	private void colorAttribute()
+	{
+		scanner.start();
+		scanner.advance(2); // YE, NE, TU etc
+		while (!scanner.isAtEnd() && isNoWhitespace() && scanner.peek() != ')')
+		{
+			scanner.advance();
+		}
+
+		createAndAdd(SyntaxKind.COLOR_ATTRIBUTE);
 	}
 
 	private boolean isNoWhitespace()
