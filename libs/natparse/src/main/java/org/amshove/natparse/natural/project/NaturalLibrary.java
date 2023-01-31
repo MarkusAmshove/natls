@@ -11,7 +11,8 @@ public class NaturalLibrary
 	private final Path path;
 	private final String libraryName;
 	private final List<NaturalLibrary> stepLibs = new ArrayList<>();
-	private final Map<String, NaturalFile> files = new HashMap<>();
+	private final Map<String, NaturalFile> modulesByReferableName = new HashMap<>();
+	private final Map<String, NaturalFile> ddmsByReferableName = new HashMap<>();
 
 	public NaturalLibrary(Path path)
 	{
@@ -41,27 +42,59 @@ public class NaturalLibrary
 
 	public List<NaturalFile> files()
 	{
-		return List.copyOf(files.values());
+		var files = new ArrayList<NaturalFile>();
+		files.addAll(modulesByReferableName.values());
+		files.addAll(ddmsByReferableName.values());
+		return files;
 	}
 
 	public void addFile(NaturalFile file)
 	{
-		files.put(file.getReferableName(), file);
+		if (file.getFiletype() == NaturalFileType.DDM)
+		{
+			ddmsByReferableName.put(file.getReferableName(), file);
+		}
+		else
+		{
+			modulesByReferableName.put(file.getReferableName(), file);
+		}
 		file.setLibrary(this);
 	}
 
-	public NaturalFile findFileByReferableName(String referableName, boolean includeStepLibs)
+	public NaturalFile findModuleByReferableName(String referableName, boolean includeStepLibs)
 	{
-		if (files.containsKey(referableName))
+		if (modulesByReferableName.containsKey(referableName))
 		{
-			return files.get(referableName);
+			return modulesByReferableName.get(referableName);
 		}
 
 		if (includeStepLibs)
 		{
 			for (var stepLib : stepLibs)
 			{
-				var foundFile = stepLib.findFileByReferableName(referableName, false);
+				var foundFile = stepLib.findModuleByReferableName(referableName, false);
+				if (foundFile != null)
+				{
+					return foundFile;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	public NaturalFile findDdmByReferableName(String referableName, boolean includeStepLibs)
+	{
+		if (ddmsByReferableName.containsKey(referableName))
+		{
+			return ddmsByReferableName.get(referableName);
+		}
+
+		if (includeStepLibs)
+		{
+			for (var stepLib : stepLibs)
+			{
+				var foundFile = stepLib.findDdmByReferableName(referableName, false);
 				if (foundFile != null)
 				{
 					return foundFile;

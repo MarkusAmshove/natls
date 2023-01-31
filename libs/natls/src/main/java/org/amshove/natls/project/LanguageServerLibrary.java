@@ -14,14 +14,16 @@ import java.util.stream.Collectors;
 public class LanguageServerLibrary
 {
 	private final NaturalLibrary library;
-	private final Map<String, LanguageServerFile> files;
+	private final Map<String, LanguageServerFile> fileByReferableName;
+	private final Map<String, LanguageServerFile> ddmsByReferableName;
 	private final List<LanguageServerLibrary> stepLibs = new ArrayList<>();
 
-	public LanguageServerLibrary(NaturalLibrary library, Map<String, LanguageServerFile> files)
+	public LanguageServerLibrary(NaturalLibrary library, Map<String, LanguageServerFile> fileByReferableName, Map<String, LanguageServerFile> ddmsByReferableName)
 	{
 		this.library = library;
-		this.files = files;
-		files.values().forEach(f -> f.setLibrary(this));
+		this.fileByReferableName = fileByReferableName;
+		this.ddmsByReferableName = ddmsByReferableName;
+		fileByReferableName.values().forEach(f -> f.setLibrary(this));
 	}
 
 	public String name()
@@ -33,23 +35,24 @@ public class LanguageServerLibrary
 	{
 		return new LanguageServerLibrary(
 			library,
-			library.files().stream().collect(Collectors.toMap(NaturalFile::getReferableName, LanguageServerFile::fromFile))
+			library.files().stream().filter(f -> f.getFiletype() != NaturalFileType.DDM).collect(Collectors.toMap(NaturalFile::getReferableName, LanguageServerFile::fromFile)),
+			library.files().stream().filter(f -> f.getFiletype() == NaturalFileType.DDM).collect(Collectors.toMap(NaturalFile::getReferableName, LanguageServerFile::fromFile))
 		);
 	}
 
 	public LanguageServerFile findFile(NaturalFile naturalFile)
 	{
-		return files.get(naturalFile.getReferableName());
+		return fileByReferableName.get(naturalFile.getReferableName());
 	}
 
 	public LanguageServerFile findFile(Path path)
 	{
-		return files.values().stream().filter(f -> f.getPath().equals(path)).findFirst().orElse(null);
+		return fileByReferableName.values().stream().filter(f -> f.getPath().equals(path)).findFirst().orElse(null);
 	}
 
 	public List<LanguageServerFile> getModulesOfType(NaturalFileType type, boolean includeStepLibs)
 	{
-		var filesOfType = files.values().stream().filter(f -> f.getType() == type).collect(Collectors.toCollection(ArrayList::new));
+		var filesOfType = fileByReferableName.values().stream().filter(f -> f.getType() == type).collect(Collectors.toCollection(ArrayList::new));
 		if (includeStepLibs)
 		{
 			stepLibs.forEach(l -> filesOfType.addAll(l.getModulesOfType(type, false)));
@@ -60,21 +63,43 @@ public class LanguageServerLibrary
 
 	public Collection<LanguageServerFile> files()
 	{
-		return files.values();
+		return fileByReferableName.values();
 	}
 
-	LanguageServerFile provideNaturalFile(String referableName, boolean includeStepLibs)
+	LanguageServerFile provideNaturalModule(String referableName, boolean includeStepLibs)
 	{
-		if (files.containsKey(referableName))
+		if (fileByReferableName.containsKey(referableName))
 		{
-			return files.get(referableName);
+			return fileByReferableName.get(referableName);
 		}
 
 		if (includeStepLibs)
 		{
 			for (var stepLib : stepLibs)
 			{
-				var foundModule = stepLib.provideNaturalFile(referableName, false);
+				var foundModule = stepLib.provideNaturalModule(referableName, false);
+				if (foundModule != null)
+				{
+					return foundModule;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	LanguageServerFile provideDdm(String referableName, boolean includeStepLibs)
+	{
+		if (ddmsByReferableName.containsKey(referableName))
+		{
+			return ddmsByReferableName.get(referableName);
+		}
+
+		if (includeStepLibs)
+		{
+			for (var stepLib : stepLibs)
+			{
+				var foundModule = stepLib.provideDdm(referableName, false);
 				if (foundModule != null)
 				{
 					return foundModule;
@@ -109,7 +134,7 @@ public class LanguageServerLibrary
 
 	public void addFile(LanguageServerFile languageServerFile)
 	{
-		files.put(languageServerFile.getReferableName(), languageServerFile);
+		fileByReferableName.put(languageServerFile.getReferableName(), languageServerFile);
 		languageServerFile.setLibrary(this);
 		library.addFile(languageServerFile.getNaturalFile());
 	}

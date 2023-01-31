@@ -375,7 +375,7 @@ public class LanguageServerFile implements IModuleProvider
 	@Override
 	public INaturalModule findNaturalModule(String referableName)
 	{
-		var calledFile = library.provideNaturalFile(referableName, true);
+		var calledFile = library.provideNaturalModule(referableName, true);
 		if (calledFile == null)
 		{
 			return null;
@@ -389,7 +389,7 @@ public class LanguageServerFile implements IModuleProvider
 	@Override
 	public IDataDefinitionModule findDdm(String referableName)
 	{
-		var calledFile = library.provideNaturalFile(referableName, true);
+		var calledFile = library.provideDdm(referableName, true);
 		if (calledFile == null)
 		{
 			return null;
