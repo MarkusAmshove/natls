@@ -33,6 +33,7 @@ public enum SyntaxKind
 	QUESTIONMARK(false, false, false),
 	OPERAND_SKIP(false, false, false),
 	TAB_SETTING(false, false, false),
+	COLOR_ATTRIBUTE(false, false, false),
 
 	// System variables and functions
 	APPLIC_ID(false, true, false),
@@ -43,7 +44,7 @@ public enum SyntaxKind
 	TIME_OUT(false, true, false),
 	DATD(false, true, false),
 	DATG(false, true, false),
-	DATE(false, true, false),
+	DATE(true, true, false),
 	DAT4E(false, true, false),
 	DAT4I(false, true, false),
 	DATI(false, true, false),
@@ -546,6 +547,7 @@ public enum SyntaxKind
 	NORMALIZE(true, false, false),
 	NORMALIZED(true, false, false),
 	NOT(true, false, false),
+	NOTEQUAL(true, false, false),
 	NOTIT(true, false, false),
 	NOTITLE(true, false, false),
 	NULL(true, false, false),

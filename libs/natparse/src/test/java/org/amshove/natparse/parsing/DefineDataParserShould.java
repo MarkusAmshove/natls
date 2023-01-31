@@ -174,7 +174,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	{
 		var source = """
 			   DEFINE DATA
-			   GLOBAL USING SOMEGDA
+			   GLOBAL USING SOMEGDA WITH SOMEBLK
 			   LOCAL USING SOMELDA
 			   PARAMETER USING SOMEPDA
 			   LOCAL USING ALDA
@@ -198,6 +198,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			() -> assertTokenNode(defineData.descendants().get(7), n -> n.token().kind())
 				.isEqualTo(SyntaxKind.END_DEFINE)
 		);
+		assertThat(defineData.usings().get(0).withBlock().source()).isEqualTo("SOMEBLK");
 	}
 
 	@Test
@@ -485,7 +486,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"(T/2)", "(T/1:10)", "(T/1:*)", "(T/*,1:5)", "(T/*:10)", "(A10/1:10)", "(T/1:10,50:*,*:20)", "(A20/1:10,50:*,*:20)",
+		"(T/*)", "(T/2)", "(T/1:10)", "(T/1:*)", "(T/*,1:5)", "(T/*:10)", "(A10/1:10)", "(T/1:10,50:*,*:20)", "(A20/1:10,50:*,*:20)",
 	})
 	void parseArrayDefinitions(String variable)
 	{
@@ -1581,6 +1582,77 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		assertParameter(parameterInOrder.get(2), IVariableNode.class, "#SECONDPARAM");
 		assertParameter(parameterInOrder.get(3), IUsingNode.class, "PDA2");
 		assertParameter(parameterInOrder.get(4), IVariableNode.class, "#THIRDPARAM");
+	}
+
+	@Test
+	void parseGlobalDataAreaWithBlockDefinitions()
+	{
+		assertParsesWithoutDiagnostics("""
+			DEFINE DATA GLOBAL
+			/* >Natural Source Header 000000
+			/* :Mode S
+			/* :CP
+			/* <Natural Source Header
+			BLOCK NASH-BLOCK
+			1 NASH-USER-1 (A248)
+			1 REDEFINE NASH-USER-1
+			  2 NASH-ADVIS (A79)
+			  2 NASH-TRANS (A8)
+			  2 NASH-TITEL (A50)
+			  2 NASH-DATO-MV (A19)
+			  2 NASH-PIL (A3)
+			  2 NASH-BRU-KOM (A31)
+			  2 NASH-KVIT (A43)
+			  2 REDEFINE NASH-KVIT
+				3 KVIT-FEJL (A8)
+			  2 PF-KEY (A4)
+			  2 NASHBOSS (A8)
+			1 NASH-USER-2 (A248)
+			1 REDEFINE NASH-USER-2
+			  2 NASH-TASTER (A79)
+			  2 NASH-PFTRAN (A56)
+			  2 NASH-OK (A2)
+			  2 FEJL (A8)
+			  2 FEJL-PARM1 (A20)
+			  2 FEJL-PARM2 (A20)
+			  2 NASH-PROFIL (A50)
+			  2 REDEFINE NASH-PROFIL
+				3 CMD-MODE (A4)
+				3 DATO-MODE (A4)
+				3 SPEC-CMDS (A4)
+				3 PIL (A3)
+				3 TEST-MODE (A1)
+				3 NASH-TEGN (A8)
+				3 TR-TYPER (A10)
+				3 SEQ-MODE (A1)
+			  2 NASH-SYSTEM (A4)
+			  2 NASH-SEQ-NR (N2)
+			  2 NASH-GDA-STATUS (A1)
+			1 NASH-STATUS-A (A248)
+			1 REDEFINE NASH-STATUS-A
+			  2 TRANS-PROG-A (A8)
+			  2 NASH-ISN-A (P8)
+			  2 NASH-TRANS-A (A7)
+			  2 MENU-MODE-A (A2)
+			  2 NASH-PREFIX-A (A5)
+			  2 NASH-NOEGLER-A (A16)
+			  2 REDEFINE NASH-NOEGLER-A
+				3 NASH-NOEGLE-A (A4/1:4)
+			  2 NASH-VAERDIER-A (A80)
+			  2 REDEFINE NASH-VAERDIER-A
+				3 NASH-VAERDI-N (N20/1:4)
+			  2 REDEFINE NASH-VAERDIER-A
+				3 NASH-VAERDI-A (A20/1:4)
+			  2 NASH-FORMAT-A (A5)
+			  2 NASH-GENSTART-A (A120)
+			BLOCK TOSCA-BLOCK CHILD OF NASH-BLOCK
+			1 TB-POLICE-HOVED
+			  2 TB-NASH-TRANS (A8)
+			  2 TB-KUNDE-NR (N10)
+			  2 TB-PV-IDENT (B8)
+			  2 TB-ERSTATNING-NOEGLE (N24)
+			END-DEFINE
+			""");
 	}
 
 	private <T extends IParameterDefinitionNode> void assertParameter(IParameterDefinitionNode node, Class<T> parameterType, String identifier)

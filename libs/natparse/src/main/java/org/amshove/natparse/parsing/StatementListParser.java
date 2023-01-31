@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-class StatementListParser extends AbstractParser<IStatementListNode>
+public class StatementListParser extends AbstractParser<IStatementListNode>
 {
 	private List<IReferencableNode> referencableNodes;
 
@@ -26,7 +26,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 		return referencableNodes;
 	}
 
-	StatementListParser(IModuleProvider moduleProvider)
+	public StatementListParser(IModuleProvider moduleProvider)
 	{
 		super(moduleProvider);
 	}
@@ -1354,7 +1354,7 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 	}
 
 	private static final Set<SyntaxKind> CONDITIONAL_OPERATOR_START = Set
-		.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL, SyntaxKind.LESSER_GREATER, SyntaxKind.NE, SyntaxKind.NOT, SyntaxKind.CIRCUMFLEX_EQUAL, SyntaxKind.LESSER_SIGN, SyntaxKind.LT, SyntaxKind.LESS, SyntaxKind.LESSER_EQUALS_SIGN, SyntaxKind.LE, SyntaxKind.GREATER_SIGN, SyntaxKind.GT, SyntaxKind.GREATER, SyntaxKind.GREATER_EQUALS_SIGN, SyntaxKind.GE);
+		.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL, SyntaxKind.LESSER_GREATER, SyntaxKind.NE, SyntaxKind.NOT, SyntaxKind.CIRCUMFLEX_EQUAL, SyntaxKind.NOTEQUAL, SyntaxKind.LESSER_SIGN, SyntaxKind.LT, SyntaxKind.LESS, SyntaxKind.LESSER_EQUALS_SIGN, SyntaxKind.LE, SyntaxKind.GREATER_SIGN, SyntaxKind.GT, SyntaxKind.GREATER, SyntaxKind.GREATER_EQUALS_SIGN, SyntaxKind.GE);
 
 	private ILogicalConditionCriteriaNode conditionCriteria() throws ParseError
 	{
@@ -1652,12 +1652,17 @@ class StatementListParser extends AbstractParser<IStatementListNode>
 			case NOT ->
 			{
 				consume(node);
-				consumeAnyMandatory(node, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL));
-				if (previousToken().kind() == SyntaxKind.EQUAL)
+				consumeAnyMandatory(node, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL, SyntaxKind.LESSER_SIGN, SyntaxKind.LT, SyntaxKind.GREATER_SIGN, SyntaxKind.GT));
+				yield switch (previousToken().kind())
 				{
-					consumeOptionally(node, SyntaxKind.TO);
-				}
-				yield ComparisonOperator.NOT_EQUAL;
+					case LT, LESSER_SIGN -> ComparisonOperator.GREATER_OR_EQUAL;
+					case GT, GREATER_SIGN -> ComparisonOperator.LESS_OR_EQUAL;
+					default -> //EQUAL
+					{
+						consumeOptionally(node, SyntaxKind.TO);
+						yield ComparisonOperator.NOT_EQUAL;
+					}
+				};
 			}
 			case LESS ->
 			{

@@ -31,6 +31,11 @@ public interface IPosition
 		return offsetInLine() + length();
 	}
 
+	default int totalEndOffset()
+	{
+		return offset() + length();
+	}
+
 	default boolean isSamePositionAs(IPosition other)
 	{
 		return offset() == other.offset() && offsetInLine() == other.offsetInLine() && line() == other.line() && length() == other.length() && filePath().equals(other.filePath());

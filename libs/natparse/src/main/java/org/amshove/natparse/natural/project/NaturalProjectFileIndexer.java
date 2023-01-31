@@ -3,7 +3,6 @@ package org.amshove.natparse.natural.project;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.infrastructure.IFilesystem;
 import org.amshove.natparse.lexing.Lexer;
-import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.lexing.SyntaxKind;
 
 import java.nio.file.Path;
@@ -24,28 +23,48 @@ public class NaturalProjectFileIndexer
 
 	public void indexProject(NaturalProject project)
 	{
+		indexProject(project, false);
+	}
+
+	public void indexProject(NaturalProject project, boolean skipFiltering)
+	{
 		for (var library : project.getLibraries())
 		{
-			filesystem.streamFilesRecursively(library.getSourcePath())
+			var files = filesystem.streamFilesRecursively(library.getSourcePath())
 				.filter(NaturalFileType::isNaturalFile)
-				.map(this::toNaturalFile)
-				.filter(f -> (!f.isReporting() && !f.isFailedOnInit()))
-				.forEach(library::addFile);
+				.map(this::toNaturalFile);
+
+			if (!skipFiltering)
+			{
+				files = files.filter(f -> !f.isReporting() && !f.isFailedOnInit());
+			}
+
+			files.forEach(library::addFile);
 		}
 	}
 
 	public NaturalFile toNaturalFile(Path path, NaturalLibrary library)
 	{
-		var lexemes = new Lexer().lex(filesystem.readFile(path), path);
 		var filetype = NaturalFileType.fromExtension(path.getFileName().toString().split("\\.")[1]);
+		var mode = extractProgrammingMode(path);
+		var header = new NaturalHeader(mode, 1);
 		try
 		{
-			return new NaturalFile(getReferableName(path, filetype, lexemes), path, filetype, lexemes.sourceHeader());
+			return new NaturalFile(getReferableName(path, filetype), path, filetype, header);
 		}
 		catch (Exception e)
 		{
-			return new NaturalFile(path, filetype);
+			return new NaturalFile(path, filetype, e);
 		}
+	}
+
+	private NaturalProgrammingMode extractProgrammingMode(Path path)
+	{
+		return filesystem.peekFile(path)
+			.filter(l -> l.startsWith("* :Mode"))
+			.findAny()
+			.map(l -> NaturalProgrammingMode.fromString(l.replace("* :Mode", "").trim()))
+			.orElse(NaturalProgrammingMode.UNKNOWN);
 	}
 
 	private NaturalFile toNaturalFile(Path path)
@@ -53,19 +72,19 @@ public class NaturalProjectFileIndexer
 		return toNaturalFile(path, null);
 	}
 
-	private String getReferableName(Path path, NaturalFileType type, TokenList lexemes)
+	private String getReferableName(Path path, NaturalFileType type)
 	{
-		// Lexing everything now to get hold of the NaturalHeader for each file
 		var filename = path.getFileName().toString().split("\\.")[0];
 		return switch (type)
 		{
 			case SUBPROGRAM, DDM, LDA, PDA, GDA, PROGRAM, FUNCTION, COPYCODE, MAP, HELPROUTINE -> filename;
-			case SUBROUTINE -> extractSubroutineName(lexemes);
+			case SUBROUTINE -> extractSubroutineName(path);
 		};
 	}
 
-	private String extractSubroutineName(TokenList lexemes)
+	private String extractSubroutineName(Path path)
 	{
+		var lexemes = new Lexer().lex(filesystem.readFile(path), path);
 		// Advance directly past the subroutine name, if possible
 		if (!lexemes.advanceAfterNextIfFound(SyntaxKind.SUBROUTINE))
 		{
