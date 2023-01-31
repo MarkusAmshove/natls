@@ -54,7 +54,7 @@ public class ExploreController
 	private void diagnosticSelected(ObservableValue<?> observable, Object oldValue, Object newValue)
 	{
 		var diagnosticItem = (DiagnosticItem) newValue;
-		if(diagnosticItem == null)
+		if (diagnosticItem == null)
 		{
 			return;
 		}
@@ -70,36 +70,37 @@ public class ExploreController
 	{
 		var item = (TreeItem<NodeItem>) newValue;
 
-		if(item == null)
+		if (item == null)
 		{
 			return;
 		}
 
 		var node = (ISyntaxNode) item.getValue().node;
-		if(node == null)
+		if (node == null)
 		{
 			return;
 		}
 
 		codeArea.moveTo(node.diagnosticPosition().offset());
 		var endOffset = node.diagnosticPosition().totalEndOffset();
-		if(node instanceof IIncludeNode)
+		if (node instanceof IIncludeNode)
 		{
 			endOffset = node.descendants().get(node.descendants().size() - 2).diagnosticPosition().totalEndOffset();
 		}
-		else if(node instanceof ITokenNode)
-		{
-			endOffset = node.diagnosticPosition().totalEndOffset();
-		}
 		else
-		{
-			if(node.descendants().last() instanceof IStatementListNode)
+			if (node instanceof ITokenNode)
 			{
-				return;
+				endOffset = node.diagnosticPosition().totalEndOffset();
 			}
+			else
+			{
+				if (node.descendants().last() instanceof IStatementListNode)
+				{
+					return;
+				}
 
-			endOffset = node.descendants().last().diagnosticPosition().totalEndOffset();
-		}
+				endOffset = node.descendants().last().diagnosticPosition().totalEndOffset();
+			}
 
 		codeArea.moveTo(node.diagnosticPosition().offset());
 		codeArea.requestFollowCaret();
@@ -123,7 +124,7 @@ public class ExploreController
 		nodeView.setRoot(root);
 
 		tokens.rollback();
-		if(tokens.peek().kind() == SyntaxKind.DEFINE && tokens.peek(1).kind() == SyntaxKind.DATA)
+		if (tokens.peek().kind() == SyntaxKind.DEFINE && tokens.peek(1).kind() == SyntaxKind.DATA)
 		{
 			var defineDataParser = new DefineDataParser(null);
 			var ddm = defineDataParser.parse(tokens).result();
@@ -163,12 +164,12 @@ public class ExploreController
 	{
 		tokenArea.clear();
 		var currentLine = 0;
-		while(!tokens.isAtEnd())
+		while (!tokens.isAtEnd())
 		{
 			var token = tokens.peek();
-			if(token.diagnosticPosition().line() > currentLine)
+			if (token.diagnosticPosition().line() > currentLine)
 			{
-				while(currentLine != token.diagnosticPosition().line())
+				while (currentLine != token.diagnosticPosition().line())
 				{
 					currentLine++;
 					tokenArea.appendText("\n");
@@ -181,19 +182,19 @@ public class ExploreController
 
 	public void shortcutPressed(KeyEvent keyEvent)
 	{
-		if(keyEvent.isControlDown() && keyEvent.getCode() == KeyCode.ENTER)
+		if (keyEvent.isControlDown() && keyEvent.getCode() == KeyCode.ENTER)
 		{
 			onParseButton();
 		}
-		if(keyEvent.isControlDown() && keyEvent.getCode() == KeyCode.O)
+		if (keyEvent.isControlDown() && keyEvent.getCode() == KeyCode.O)
 		{
 			loadFile(codeArea.getScene().getWindow());
 		}
-		if(keyEvent.isAltDown() && keyEvent.getCode() == KeyCode.DOWN)
+		if (keyEvent.isAltDown() && keyEvent.getCode() == KeyCode.DOWN)
 		{
 			navigateNodeDown();
 		}
-		if(keyEvent.isAltDown() && keyEvent.getCode() == KeyCode.UP)
+		if (keyEvent.isAltDown() && keyEvent.getCode() == KeyCode.UP)
 		{
 			navigateNodeUp();
 		}
@@ -201,13 +202,13 @@ public class ExploreController
 
 	public void onLoadFileButton(ActionEvent event)
 	{
-		var stage = ((Node)event.getSource()).getScene().getWindow();
+		var stage = ((Node) event.getSource()).getScene().getWindow();
 		loadFile(stage);
 	}
 
 	private void loadFile(Window window)
 	{
-		if(!loadPathBox.getText().isEmpty())
+		if (!loadPathBox.getText().isEmpty())
 		{
 			loadFileFromPath(Path.of(loadPathBox.getText()));
 			loadPathBox.clear();
@@ -277,7 +278,7 @@ public class ExploreController
 
 	public void codeAreaMouseClicked(MouseEvent mouseEvent)
 	{
-		if(codeArea.getText().isEmpty())
+		if (codeArea.getText().isEmpty())
 		{
 			return;
 		}
@@ -313,7 +314,7 @@ public class ExploreController
 	private void expandNodeView(TreeItem<NodeItem> node)
 	{
 		node.setExpanded(true);
-		for(var child : node.getChildren())
+		for (var child : node.getChildren())
 		{
 			expandNodeView(child);
 		}
@@ -331,7 +332,7 @@ public class ExploreController
 
 	private void navigateNode(int offset)
 	{
-		if(nodeView.getRoot() == null)
+		if (nodeView.getRoot() == null)
 		{
 			return;
 		}
@@ -345,7 +346,7 @@ public class ExploreController
 
 	public void diagnosticListClicked(MouseEvent mouseEvent)
 	{
-		if(diagnosticList.getSelectionModel().getSelectedItems().isEmpty())
+		if (diagnosticList.getSelectionModel().getSelectedItems().isEmpty())
 		{
 			return;
 		}
@@ -358,11 +359,11 @@ public class ExploreController
 		public String toString()
 		{
 			var tokenSource = "";
-			if(node != null)
+			if (node != null)
 			{
 				tokenSource = node.directDescendantsOfType(ITokenNode.class).findFirst().map(tn -> tn.token().source()).orElse("?");
 			}
-			if(node instanceof ITokenNode tokenNode)
+			if (node instanceof ITokenNode tokenNode)
 			{
 				tokenSource = tokenNode.token().source();
 			}
