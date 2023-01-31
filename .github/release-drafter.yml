@@ -14,6 +14,9 @@ categories:
   - title: '🎲 SonarQube'
     labels:
       - 'natqube🎲'
+  - title: '🪲 Bugfixes'
+    labels:
+      - 'bug🪲'
   - title: '🧰 Maintenance'
     collapse-after: 3
     labels:
