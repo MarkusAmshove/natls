@@ -28,7 +28,7 @@ public class ModuleReferenceParser
 			{
 				if (calledModule != null)
 				{
-					var calledFile = file.getLibrary().provideNaturalFile(calledModule.referredModule, true);
+					var calledFile = file.getLibrary().provideNaturalModule(calledModule.referredModule, true);
 					if (calledFile != null)
 					{
 						ModuleReferenceCache.addEntry(calledFile, calledModule.referencingPosition);

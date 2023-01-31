@@ -22,7 +22,7 @@ class DefaultModuleProvider implements IModuleProvider
 	@Override
 	public IDataDefinitionModule findDdm(String referableName)
 	{
-		var calledFile = caller.getLibrary().findFileByReferableName(referableName, true);
+		var calledFile = caller.getLibrary().findDdmByReferableName(referableName, true);
 		if (calledFile == null)
 		{
 			return null;
@@ -51,7 +51,7 @@ class DefaultModuleProvider implements IModuleProvider
 		{
 			return null;
 		}
-		var foundFile = callerLib.findFileByReferableName(referableName, true);
+		var foundFile = callerLib.findModuleByReferableName(referableName, true);
 		if (foundFile == null)
 		{
 			return null;
