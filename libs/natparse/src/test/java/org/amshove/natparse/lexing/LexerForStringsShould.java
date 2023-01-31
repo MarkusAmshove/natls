@@ -1,6 +1,8 @@
 package org.amshove.natparse.lexing;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.*;
 
@@ -92,6 +94,28 @@ class LexerForStringsShould extends AbstractLexerTest
 			token(SyntaxKind.INPUT),
 			token(SyntaxKind.STRING_LITERAL, "'Hello World!'"),
 			token(SyntaxKind.WRITE)
+		);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"(YE)", "(TU)", "(BL)", "(PI)", "(NE)", "(RE)", "(GR)",
+	})
+	void lexColorAttribute(String attribute)
+	{
+		assertTokens(
+			"""
+				WRITE (REP) 'Hello World!' %s
+			""".formatted(attribute),
+			token(SyntaxKind.WRITE),
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.IDENTIFIER),
+			token(SyntaxKind.RPAREN),
+			token(SyntaxKind.STRING_LITERAL, "'Hello World!'"),
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.COLOR_ATTRIBUTE),
+			token(SyntaxKind.RPAREN)
 		);
 	}
 
