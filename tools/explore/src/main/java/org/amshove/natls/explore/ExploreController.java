@@ -1,13 +1,12 @@
 package org.amshove.natls.explore;
 
-import javafx.beans.Observable;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -16,30 +15,39 @@ import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.TokenList;
-import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.IIncludeNode;
+import org.amshove.natparse.natural.IStatementListNode;
+import org.amshove.natparse.natural.ISyntaxNode;
+import org.amshove.natparse.natural.ITokenNode;
 import org.amshove.natparse.parsing.DefineDataParser;
 import org.amshove.natparse.parsing.StatementListParser;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
-import org.fxmisc.richtext.model.StyleSpan;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.format.TextStyle;
 import java.util.ArrayList;
-import java.util.List;
 
 public class ExploreController
 {
+	@FXML
 	public Button loadFileButton;
+	@FXML
 	public Button parseButton;
+	@FXML
 	public CodeArea tokenArea;
+	@FXML
 	public CodeArea codeArea;
+	@FXML
 	public TreeView<NodeItem> nodeView;
+	@FXML
 	public SplitPane codePane;
+	@FXML
 	public TextField loadPathBox;
+	@FXML
 	public ListView<DiagnosticItem> diagnosticList;
 
 	public void initialize()
@@ -75,14 +83,14 @@ public class ExploreController
 			return;
 		}
 
-		var node = (ISyntaxNode) item.getValue().node;
+		var node = item.getValue().node;
 		if (node == null)
 		{
 			return;
 		}
 
 		codeArea.moveTo(node.diagnosticPosition().offset());
-		var endOffset = node.diagnosticPosition().totalEndOffset();
+		var endOffset = 0;
 		if (node instanceof IIncludeNode)
 		{
 			endOffset = node.descendants().get(node.descendants().size() - 2).diagnosticPosition().totalEndOffset();
@@ -243,7 +251,7 @@ public class ExploreController
 		}
 		catch (IOException e)
 		{
-			throw new RuntimeException(e);
+			throw new UncheckedIOException(e);
 		}
 	}
 
@@ -255,7 +263,7 @@ public class ExploreController
 		}
 		catch (IOException e)
 		{
-			throw new RuntimeException(e);
+			throw new UncheckedIOException(e);
 		}
 	}
 
@@ -276,7 +284,7 @@ public class ExploreController
 		return Path.of(System.getProperty("java.io.tmpdir"), ".natexplore");
 	}
 
-	public void codeAreaMouseClicked(MouseEvent mouseEvent)
+	public void codeAreaMouseClicked()
 	{
 		if (codeArea.getText().isEmpty())
 		{
@@ -344,7 +352,7 @@ public class ExploreController
 		nodeView.scrollTo(newIndex);
 	}
 
-	public void diagnosticListClicked(MouseEvent mouseEvent)
+	public void diagnosticListClicked()
 	{
 		if (diagnosticList.getSelectionModel().getSelectedItems().isEmpty())
 		{
