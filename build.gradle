@@ -117,6 +117,7 @@ sonarqube {
 		property "sonar.organization", "markusamshove"
 		property "sonar.host.url", "https://sonarcloud.io"
 		property 'sonar.coverage.jacoco.xmlReportPaths', "${rootProject.buildDir}/reports/jacoco/cover/cover.xml"
+		property 'sonar.coverage.exclusions', 'tools/**/*'
 	}
 }
 
