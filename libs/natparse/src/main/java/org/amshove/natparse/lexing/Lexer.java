@@ -24,9 +24,17 @@ public class Lexer
 	private boolean inSourceHeader;
 	private boolean sourceHeaderDone;
 
-	private NaturalProgrammingMode mode = NaturalProgrammingMode.UNKNOWN;
+	private NaturalProgrammingMode programmingMode = NaturalProgrammingMode.UNKNOWN;
 	private int lineIncrement = 10;
 	private List<LexerDiagnostic> diagnostics;
+
+	private enum LexerMode
+	{
+		DEFAULT,
+		IN_DEFINE_DATA,
+	}
+
+	private LexerMode lexerMode = LexerMode.DEFAULT;
 
 	public TokenList lex(String source, Path filePath)
 	{
@@ -1012,12 +1020,12 @@ public class Lexer
 		{
 			if (s.contains("* <Natural Source Header"))
 			{
-				sourceHeader = new NaturalHeader(mode, lineIncrement);
+				sourceHeader = new NaturalHeader(programmingMode, lineIncrement);
 				sourceHeaderDone = true;
 			}
 			if (s.contains("* :Mode"))
 			{
-				mode = NaturalProgrammingMode.fromString(s.substring(s.length() - 1));
+				programmingMode = NaturalProgrammingMode.fromString(s.substring(s.length() - 1));
 			}
 			if (s.contains("* :LineIncrement"))
 			{
@@ -1039,7 +1047,7 @@ public class Lexer
 	{
 		var isInlineComment = isInlineComment();
 
-		if (isInlineComment && tokens.size() > 2)
+		if (isInlineComment && tokens.size() > 2 && lexerMode == LexerMode.IN_DEFINE_DATA)
 		{
 			// special case like (A5/*) which we might solve naively this way.
 			// (A5/*) is a shortcut for (A5/1:*)
@@ -1344,6 +1352,17 @@ public class Lexer
 				addDiagnostic("Identifiers can not end with '.'", LexerError.INVALID_IDENTIFIER);
 			}
 		}
+
+		var previous = previous();
+		if (token.kind() == SyntaxKind.DATA && previous != null && previous.kind() == SyntaxKind.DEFINE)
+		{
+			lexerMode = LexerMode.IN_DEFINE_DATA;
+		}
+		else
+			if (token.kind() == SyntaxKind.END_DEFINE && lexerMode == LexerMode.IN_DEFINE_DATA)
+			{
+				lexerMode = LexerMode.DEFAULT;
+			}
 
 		token.setDiagnosticPosition(relocatedDiagnosticPosition);
 		tokens.add(token);
