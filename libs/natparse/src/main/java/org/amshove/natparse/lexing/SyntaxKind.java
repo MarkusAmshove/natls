@@ -33,6 +33,7 @@ public enum SyntaxKind
 	QUESTIONMARK(false, false, false),
 	OPERAND_SKIP(false, false, false),
 	TAB_SETTING(false, false, false),
+	COLOR_ATTRIBUTE(false, false, false),
 
 	// System variables and functions
 	APPLIC_ID(false, true, false),
