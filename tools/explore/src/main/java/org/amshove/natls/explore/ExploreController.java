@@ -115,7 +115,7 @@ public class ExploreController
 
 	private int findRecursiveEndOffset(ISyntaxNode node)
 	{
-		if(node.descendants().isEmpty())
+		if (node.descendants().isEmpty())
 		{
 			return node.diagnosticPosition().totalEndOffset();
 		}

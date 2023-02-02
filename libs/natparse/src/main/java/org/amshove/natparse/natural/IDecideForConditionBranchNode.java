@@ -1,8 +1,8 @@
 package org.amshove.natparse.natural;
 
-import org.amshove.natparse.natural.conditionals.ILogicalConditionCriteriaNode;
+import org.amshove.natparse.natural.conditionals.IConditionNode;
 
 public interface IDecideForConditionBranchNode extends IStatementWithBodyNode
 {
-	ILogicalConditionCriteriaNode criteria();
+	IConditionNode criteria();
 }
