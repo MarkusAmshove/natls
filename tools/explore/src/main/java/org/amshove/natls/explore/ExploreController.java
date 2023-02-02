@@ -15,10 +15,7 @@ import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.TokenList;
-import org.amshove.natparse.natural.IIncludeNode;
-import org.amshove.natparse.natural.IStatementListNode;
-import org.amshove.natparse.natural.ISyntaxNode;
-import org.amshove.natparse.natural.ITokenNode;
+import org.amshove.natparse.natural.*;
 import org.amshove.natparse.parsing.DefineDataParser;
 import org.amshove.natparse.parsing.StatementListParser;
 import org.fxmisc.richtext.CodeArea;
@@ -107,13 +104,23 @@ public class ExploreController
 					return;
 				}
 
-				endOffset = node.descendants().last().diagnosticPosition().totalEndOffset();
+				endOffset = findRecursiveEndOffset(node);
 			}
 
 		codeArea.moveTo(node.diagnosticPosition().offset());
 		codeArea.requestFollowCaret();
 		codeArea.selectRange(node.diagnosticPosition().offset(), endOffset);
 		tokenArea.scrollToPixel(codeArea.getEstimatedScrollX(), codeArea.getEstimatedScrollY());
+	}
+
+	private int findRecursiveEndOffset(ISyntaxNode node)
+	{
+		if(node.descendants().isEmpty())
+		{
+			return node.diagnosticPosition().totalEndOffset();
+		}
+
+		return findRecursiveEndOffset(node.descendants().last());
 	}
 
 	public void onParseButton()
