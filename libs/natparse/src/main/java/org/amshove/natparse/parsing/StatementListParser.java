@@ -1285,15 +1285,15 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private StatementNode ifStatement() throws ParseError
 	{
-		if (peek(1).kind() == SyntaxKind.NO)
+		if (peekKind(1, SyntaxKind.NO))
 		{
 			return ifNoRecord();
 		}
-		if (peek(1).kind() == SyntaxKind.BREAK)
+		if (peekKind(1, SyntaxKind.BREAK))
 		{
 			return ifBreak();
 		}
-		if (peek(1).kind() == SyntaxKind.SELECTION)
+		if (peekKind(1, SyntaxKind.SELECTION))
 		{
 			return ifSelection();
 		}
