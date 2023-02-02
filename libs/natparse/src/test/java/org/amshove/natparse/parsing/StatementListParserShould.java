@@ -3,13 +3,13 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.conditionals.IConditionNode;
 import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
 import org.amshove.testhelpers.IntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.internal.matchers.Null;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
@@ -1477,7 +1477,8 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertNodeType(decide.whenNone().statements().first(), IIgnoreNode.class);
 
 		assertThat(decide.branches()).hasSize(1);
-		var criteria = assertNodeType(decide.branches().first().criteria(), IRelationalCriteriaNode.class);
+		var condition = assertNodeType(decide.branches().first().criteria(), IConditionNode.class);
+		var criteria = assertNodeType(condition.criteria(), IRelationalCriteriaNode.class);
 		assertThat(assertNodeType(criteria.left(), ILiteralNode.class).token().intValue()).isEqualTo(5);
 		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).token().intValue()).isEqualTo(2);
 		assertThat(decide.branches().first().body().statements()).hasSize(1);

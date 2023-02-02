@@ -1769,7 +1769,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			}
 
 			var branch = new DecideForConditionBranchNode();
-			var criteria = conditionCriteria();
+			var criteria = conditionNode();
 			branch.setCriteria(criteria);
 			branch.setBody(statementList(SyntaxKind.WHEN));
 			decide.addBranch(branch);
