@@ -1376,6 +1376,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			return isConditionCriteria(lhs);
 		}
 
+		if (peekKind(SyntaxKind.MODIFIED) || peekKind(1, SyntaxKind.MODIFIED))
+		{
+			return modifiedCriteria(lhs);
+		}
+
 		if (CONDITIONAL_OPERATOR_START.contains(peek().kind()))
 		{
 			return relationalCriteria(lhs);
@@ -1433,6 +1438,16 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return true;
+	}
+
+	private ILogicalConditionCriteriaNode modifiedCriteria(IOperandNode lhs) throws ParseError
+	{
+		var modifiedCriteria = new ModifiedCriteriaNode();
+		modifiedCriteria.addNode((BaseSyntaxNode) lhs);
+		modifiedCriteria.setOperand(lhs);
+		modifiedCriteria.setIsNotModified(consumeOptionally(modifiedCriteria, SyntaxKind.NOT));
+		consumeMandatory(modifiedCriteria, SyntaxKind.MODIFIED);
+		return modifiedCriteria;
 	}
 
 	private ILogicalConditionCriteriaNode isConditionCriteria(IOperandNode lhs) throws ParseError

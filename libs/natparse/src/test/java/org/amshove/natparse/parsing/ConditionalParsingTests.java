@@ -592,18 +592,20 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	void parseModifiedCondition()
 	{
 		var criteria = assertParsesCriteria("#VAR MODIFIED", IModifiedCriteriaNode.class);
-		assertThat(criteria.variable().token().symbolName()).isEqualTo("#VAR");
+		var variable = assertNodeType(criteria.operand(), IVariableReferenceNode.class);
+		assertThat(variable.token().symbolName()).isEqualTo("#VAR");
 		assertThat(criteria.isNotModified()).isFalse();
+
 	}
 
 	@Test
 	void parseNotModifiedCondition()
 	{
 		var criteria = assertParsesCriteria("#VAR NOT MODIFIED", IModifiedCriteriaNode.class);
-		assertThat(criteria.variable().token().symbolName()).isEqualTo("#VAR");
+		var variable = assertNodeType(criteria.operand(), IVariableReferenceNode.class);
+		assertThat(variable.token().symbolName()).isEqualTo("#VAR");
 		assertThat(criteria.isNotModified()).isTrue();
 	}
-
 
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
 	{
