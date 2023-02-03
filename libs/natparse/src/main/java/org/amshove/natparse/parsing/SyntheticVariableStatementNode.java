@@ -6,7 +6,7 @@ import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 
 // TODO: Only exists until all statements are parse-able
-class SyntheticVariableStatementNode extends StatementNode implements ISymbolReferenceNode, IVariableReferenceNode
+class SyntheticVariableStatementNode extends StatementNode implements IVariableReferenceNode
 {
 	private final SymbolReferenceNode node;
 
