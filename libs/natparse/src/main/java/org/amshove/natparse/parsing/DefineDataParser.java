@@ -667,6 +667,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 						report(ParserErrors.invalidLengthForDataTypeRange(variable, 1, 29));
 					}
 				}
+				default ->
+				{}
 			}
 		}
 
