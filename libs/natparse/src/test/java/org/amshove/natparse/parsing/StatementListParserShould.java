@@ -1549,6 +1549,30 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(resize.findDescendantToken(SyntaxKind.RPAREN)).isNotNull();
 	}
 
+	@Test
+	void raiseADiagnosticForModifiedConditionIfTargetIsNotAVariable()
+	{
+		assertParsesSingleStatementWithDiagnostic(
+			"""
+						IF 'Hi' MODIFIED
+						IGNORE
+						END-IF
+			""",
+			IfStatementNode.class,
+			ParserError.INVALID_OPERAND
+		);
+	}
+
+	@Test
+	void raiseNoDiagnosticForModifiedConditionIfTargetAVariable()
+	{
+		assertParsesWithoutDiagnostics("""
+						IF #VAR MODIFIED
+						IGNORE
+						END-IF
+			""");
+	}
+
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
 	{
 		var result = super.assertParsesWithoutDiagnostics(source);

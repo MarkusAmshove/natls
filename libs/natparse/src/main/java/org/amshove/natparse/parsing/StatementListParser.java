@@ -12,10 +12,7 @@ import org.amshove.natparse.natural.conditionals.ILogicalConditionCriteriaNode;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public class StatementListParser extends AbstractParser<IStatementListNode>
 {
@@ -1445,6 +1442,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var modifiedCriteria = new ModifiedCriteriaNode();
 		modifiedCriteria.addNode((BaseSyntaxNode) lhs);
 		modifiedCriteria.setOperand(lhs);
+		checkOperand(lhs, "MODIFIED can only be checked on variable references", AllowedOperand.VARIABLE_REFERENCE);
 		modifiedCriteria.setIsNotModified(consumeOptionally(modifiedCriteria, SyntaxKind.NOT));
 		consumeMandatory(modifiedCriteria, SyntaxKind.MODIFIED);
 		return modifiedCriteria;
@@ -2010,5 +2008,20 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			case UPLOAD -> peekKind(1, SyntaxKind.PC) && peekKind(2, SyntaxKind.FILE);
 			default -> false;
 		};
+	}
+
+	private void checkOperand(IOperandNode operand, String message, AllowedOperand... allowedOperands)
+	{
+		var operands = Arrays.asList(allowedOperands);
+		if (!(operand instanceof IVariableReferenceNode) && operands.contains(AllowedOperand.VARIABLE_REFERENCE))
+		{
+			report(ParserErrors.invalidOperand(operand, message, allowedOperands));
+		}
+	}
+
+	enum AllowedOperand
+	{
+		LITERAL,
+		VARIABLE_REFERENCE
 	}
 }

@@ -1,0 +1,6 @@
+name: Invalid operator for MODIFIED
+priority: BLOCKER
+tags: compile-time
+type: BUG
+description:
+``MODIFIED`` and ``NOT MODIFIED`` can only be checked for variable references.
