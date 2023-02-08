@@ -12,10 +12,7 @@ import org.amshove.natparse.natural.conditionals.ILogicalConditionCriteriaNode;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public class StatementListParser extends AbstractParser<IStatementListNode>
 {
@@ -1285,15 +1282,15 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private StatementNode ifStatement() throws ParseError
 	{
-		if (peek(1).kind() == SyntaxKind.NO)
+		if (peekKind(1, SyntaxKind.NO))
 		{
 			return ifNoRecord();
 		}
-		if (peek(1).kind() == SyntaxKind.BREAK)
+		if (peekKind(1, SyntaxKind.BREAK))
 		{
 			return ifBreak();
 		}
-		if (peek(1).kind() == SyntaxKind.SELECTION)
+		if (peekKind(1, SyntaxKind.SELECTION))
 		{
 			return ifSelection();
 		}
@@ -1376,6 +1373,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			return isConditionCriteria(lhs);
 		}
 
+		if (peekKind(SyntaxKind.MODIFIED) || peekKind(1, SyntaxKind.MODIFIED))
+		{
+			return modifiedCriteria(lhs);
+		}
+
 		if (CONDITIONAL_OPERATOR_START.contains(peek().kind()))
 		{
 			return relationalCriteria(lhs);
@@ -1433,6 +1435,17 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return true;
+	}
+
+	private ILogicalConditionCriteriaNode modifiedCriteria(IOperandNode lhs) throws ParseError
+	{
+		var modifiedCriteria = new ModifiedCriteriaNode();
+		modifiedCriteria.addNode((BaseSyntaxNode) lhs);
+		modifiedCriteria.setOperand(lhs);
+		checkOperand(lhs, "MODIFIED can only be checked on variable references", AllowedOperand.VARIABLE_REFERENCE);
+		modifiedCriteria.setIsNotModified(consumeOptionally(modifiedCriteria, SyntaxKind.NOT));
+		consumeMandatory(modifiedCriteria, SyntaxKind.MODIFIED);
+		return modifiedCriteria;
 	}
 
 	private ILogicalConditionCriteriaNode isConditionCriteria(IOperandNode lhs) throws ParseError
@@ -1995,5 +2008,20 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			case UPLOAD -> peekKind(1, SyntaxKind.PC) && peekKind(2, SyntaxKind.FILE);
 			default -> false;
 		};
+	}
+
+	private void checkOperand(IOperandNode operand, String message, AllowedOperand... allowedOperands)
+	{
+		var operands = Arrays.asList(allowedOperands);
+		if (!(operand instanceof IVariableReferenceNode) && operands.contains(AllowedOperand.VARIABLE_REFERENCE))
+		{
+			report(ParserErrors.invalidOperand(operand, message, allowedOperands));
+		}
+	}
+
+	enum AllowedOperand
+	{
+		LITERAL,
+		VARIABLE_REFERENCE
 	}
 }

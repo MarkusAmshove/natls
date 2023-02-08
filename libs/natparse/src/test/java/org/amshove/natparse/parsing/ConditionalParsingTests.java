@@ -588,6 +588,25 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(assertNodeType(negated.criteria(), IUnaryLogicalCriteriaNode.class).node()).isInstanceOf(IFunctionCallNode.class);
 	}
 
+	@Test
+	void parseModifiedCondition()
+	{
+		var criteria = assertParsesCriteria("#VAR MODIFIED", IModifiedCriteriaNode.class);
+		var variable = assertNodeType(criteria.operand(), IVariableReferenceNode.class);
+		assertThat(variable.token().symbolName()).isEqualTo("#VAR");
+		assertThat(criteria.isNotModified()).isFalse();
+
+	}
+
+	@Test
+	void parseNotModifiedCondition()
+	{
+		var criteria = assertParsesCriteria("#VAR NOT MODIFIED", IModifiedCriteriaNode.class);
+		var variable = assertNodeType(criteria.operand(), IVariableReferenceNode.class);
+		assertThat(variable.token().symbolName()).isEqualTo("#VAR");
+		assertThat(criteria.isNotModified()).isTrue();
+	}
+
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
 	{
 		var list = assertParsesWithoutDiagnostics("IF %s\nIGNORE\nEND-IF".formatted(source));

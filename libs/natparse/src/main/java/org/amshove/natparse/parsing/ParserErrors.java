@@ -383,4 +383,13 @@ class ParserErrors
 			ParserError.UNEXPECTED_TOKEN
 		);
 	}
+
+	public static IDiagnostic invalidOperand(IOperandNode operand, String message, StatementListParser.AllowedOperand... allowedOperands)
+	{
+		return ParserDiagnostic.create(
+			"Invalid operand: %s (Allowed operands: %s)".formatted(message, Arrays.stream(allowedOperands).map(Enum::name).collect(Collectors.joining(", "))),
+			operand,
+			ParserError.INVALID_OPERAND
+		);
+	}
 }
