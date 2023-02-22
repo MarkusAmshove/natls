@@ -1,0 +1,17 @@
+* >Natural Source Header 000000
+* :Mode S
+* :CP
+* <Natural Source Header
+DEFINE FUNCTION FUNC2
+
+  RETURNS (L)
+
+  DEFINE DATA
+  LOCAL
+  END-DEFINE
+
+FUNC := TRUE /* This should raise diagnostic, because the function is called FUNC2
+
+END-FUNCTION
+
+END
