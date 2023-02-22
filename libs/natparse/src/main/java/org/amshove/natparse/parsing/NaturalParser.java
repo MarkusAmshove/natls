@@ -175,6 +175,11 @@ public class NaturalParser
 				continue;
 			}
 
+			if (module.file().getFiletype() == NaturalFileType.FUNCTION && unresolvedReference.referencingToken().symbolName().equals(module.name()))
+			{
+				continue;
+			}
+
 			if (unresolvedReference.token().kind() == SyntaxKind.IDENTIFIER)
 			{
 				// We don't handle IDENTIFIER_OR_KEYWORD because we can't be sure if it a variable.
