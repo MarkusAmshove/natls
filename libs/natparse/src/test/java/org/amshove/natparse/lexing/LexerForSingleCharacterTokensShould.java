@@ -117,4 +117,16 @@ public class LexerForSingleCharacterTokensShould extends AbstractLexerTest
 	{
 		assertTokens("?", token(SyntaxKind.QUESTIONMARK, "?"));
 	}
+
+	@Test
+	void lexUnderscore()
+	{
+		assertTokens("_", token(SyntaxKind.UNDERSCORE, "_"));
+	}
+
+	@Test
+	void lexSectionSymbol()
+	{
+		assertTokens("§", token(SyntaxKind.SECTION_SYMBOL, "§"));
+	}
 }

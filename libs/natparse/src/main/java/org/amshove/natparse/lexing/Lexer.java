@@ -149,6 +149,12 @@ public class Lexer
 				case '%':
 					createAndAddCurrentSingleToken(SyntaxKind.PERCENT);
 					continue;
+				case '_':
+					createAndAddCurrentSingleToken(SyntaxKind.UNDERSCORE);
+					continue;
+				case '§':
+					createAndAddCurrentSingleToken(SyntaxKind.SECTION_SYMBOL);
+					continue;
 				case '?':
 					createAndAddCurrentSingleToken(SyntaxKind.QUESTIONMARK);
 					continue;

@@ -17,6 +17,8 @@ public enum SyntaxKind
 	ASTERISK(false, false, false),
 	SLASH(false, false, false),
 	BACKSLASH(false, false, false),
+	UNDERSCORE(false, false, false),
+	SECTION_SYMBOL(false, false, false),
 	SEMICOLON(false, false, false),
 	GREATER_SIGN(false, false, false),
 	GREATER_EQUALS_SIGN(false, false, false),
