@@ -1378,6 +1378,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			return modifiedCriteria(lhs);
 		}
 
+		if (peekKind(SyntaxKind.SPECIFIED) || peekKind(1, SyntaxKind.SPECIFIED))
+		{
+			return specifiedCriteria(lhs);
+		}
+
 		if (CONDITIONAL_OPERATOR_START.contains(peek().kind()))
 		{
 			return relationalCriteria(lhs);
@@ -1446,6 +1451,17 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		modifiedCriteria.setIsNotModified(consumeOptionally(modifiedCriteria, SyntaxKind.NOT));
 		consumeMandatory(modifiedCriteria, SyntaxKind.MODIFIED);
 		return modifiedCriteria;
+	}
+
+	private ILogicalConditionCriteriaNode specifiedCriteria(IOperandNode lhs) throws ParseError
+	{
+		var specifiedCriteria = new SpecifiedCriteriaNode();
+		specifiedCriteria.addNode((BaseSyntaxNode) lhs);
+		specifiedCriteria.setOperand(lhs);
+		checkOperand(lhs, "SPECIFIED can only be checked on variable references", AllowedOperand.VARIABLE_REFERENCE);
+		specifiedCriteria.setIsNotSpecified(consumeOptionally(specifiedCriteria, SyntaxKind.NOT));
+		consumeMandatory(specifiedCriteria, SyntaxKind.SPECIFIED);
+		return specifiedCriteria;
 	}
 
 	private ILogicalConditionCriteriaNode isConditionCriteria(IOperandNode lhs) throws ParseError
