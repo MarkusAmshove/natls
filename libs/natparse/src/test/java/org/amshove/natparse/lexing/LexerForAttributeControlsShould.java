@@ -40,6 +40,28 @@ public class LexerForAttributeControlsShould extends AbstractLexerTest
 	}
 
 	@Test
+	void consumeAttributeDefinitionWithFillerCharacter()
+	{
+		assertTokens(
+			"(AD=ODL'_')",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.AD, "AD=ODL'_'"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
+	void consumeAttributeDefinitionWithWhitespaceAsFillerCharacter()
+	{
+		assertTokens(
+			"(AD=ODL' ')",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.AD, "AD=ODL' '"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
 	void consumeColorDefinition()
 	{
 		assertTokens(

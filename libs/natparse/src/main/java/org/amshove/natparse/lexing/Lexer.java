@@ -957,6 +957,14 @@ public class Lexer
 			scanner.advance();
 		}
 
+		// This handles an empty string for empty filler chars, e.g.
+		// (AD=ODL' ')
+		if (scanner.peek() == ' ' && scanner.peek(-1) == '\'' && scanner.peek(1) == '\'')
+		{
+			scanner.advance();
+			scanner.advance();
+		}
+
 		createAndAdd(SyntaxKind.AD);
 	}
 
