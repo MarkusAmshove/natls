@@ -112,10 +112,12 @@ public class DocumentSymbolProvider
 
 	private List<DocumentSymbol> createBodySymbols(IStatementListNode body)
 	{
-		return body.statements().stream().filter(ISubroutineNode.class::isInstance).map(r ->
+		return body.statements().stream().filter(ISubroutineNode.class::isInstance).flatMap(r ->
 		{
 			var subroutine = (ISubroutineNode) r;
-			return new DocumentSymbol(subroutine.declaration().symbolName(), SymbolKind.Method, LspUtil.toRange(subroutine), LspUtil.toRange(subroutine.declaration()));
+			var subroutineSymbols = new ArrayList<>(createBodySymbols(subroutine.body()));
+			subroutineSymbols.add(new DocumentSymbol(subroutine.declaration().symbolName(), SymbolKind.Method, LspUtil.toRange(subroutine), LspUtil.toRange(subroutine.declaration())));
+			return subroutineSymbols.stream();
 		})
 			.toList();
 	}

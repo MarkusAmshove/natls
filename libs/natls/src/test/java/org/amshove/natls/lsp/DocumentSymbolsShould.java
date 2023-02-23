@@ -54,6 +54,16 @@ class DocumentSymbolsShould extends LanguageServerTest
 		);
 	}
 
+	@TestFactory
+	Iterable<DynamicTest> includeNestedSubroutines()
+	{
+		var symbols = findSymbols("INTERNAL-SUB");
+		return List.of(
+			testThatSymbolIsIncluded("INTERNAL-SUB", SymbolKind.Method, symbols),
+			testThatSymbolIsIncluded("NESTED-SUB", SymbolKind.Method, symbols)
+		);
+	}
+
 	private List<DocumentSymbol> findSymbols(String moduleName)
 	{
 		var params = new DocumentSymbolParams(textDocumentIdentifier("LIBONE", moduleName));
