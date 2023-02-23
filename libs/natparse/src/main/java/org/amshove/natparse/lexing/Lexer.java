@@ -1,13 +1,13 @@
 package org.amshove.natparse.lexing;
 
+import org.amshove.natparse.IPosition;
+import org.amshove.natparse.lexing.text.SourceTextScanner;
+import org.amshove.natparse.natural.project.NaturalHeader;
+import org.amshove.natparse.natural.project.NaturalProgrammingMode;
+
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.amshove.natparse.natural.project.NaturalHeader;
-import org.amshove.natparse.natural.project.NaturalProgrammingMode;
-import org.amshove.natparse.IPosition;
-import org.amshove.natparse.lexing.text.SourceTextScanner;
 
 public class Lexer
 {
@@ -152,7 +152,7 @@ public class Lexer
 				case '_':
 					createAndAddCurrentSingleToken(SyntaxKind.UNDERSCORE);
 					continue;
-				case '§':
+				case '\u00A7': // §
 					createAndAddCurrentSingleToken(SyntaxKind.SECTION_SYMBOL);
 					continue;
 				case '?':
