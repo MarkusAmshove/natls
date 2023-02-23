@@ -1549,28 +1549,68 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 		assertThat(resize.findDescendantToken(SyntaxKind.RPAREN)).isNotNull();
 	}
 
-	@Test
-	void raiseADiagnosticForModifiedConditionIfTargetIsNotAVariable()
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"MODIFIED", "NOT MODIFIED"
+	})
+	void raiseADiagnosticForModifiedConditionIfTargetIsNotAVariable(String modified)
 	{
 		assertParsesSingleStatementWithDiagnostic(
 			"""
-						IF 'Hi' MODIFIED
+						IF 'Hi' %s
 						IGNORE
 						END-IF
-			""",
+			""".formatted(modified),
 			IfStatementNode.class,
 			ParserError.INVALID_OPERAND
 		);
 	}
 
-	@Test
-	void raiseNoDiagnosticForModifiedConditionIfTargetAVariable()
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"MODIFIED", "NOT MODIFIED"
+	})
+	void raiseNoDiagnosticForModifiedConditionIfTargetAVariable(String modified)
 	{
 		assertParsesWithoutDiagnostics("""
-						IF #VAR MODIFIED
+						IF #VAR %s
 						IGNORE
 						END-IF
-			""");
+			""".formatted(modified));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"SPECIFIED", "NOT SPECIFIED"
+	})
+	void raiseADiagnosticForSpecifiedConditionIfTargetIsNotAVariable(String specified)
+	{
+		assertParsesSingleStatementWithDiagnostic(
+			"""
+						IF 'Hi' %s
+						IGNORE
+						END-IF
+			""".formatted(specified),
+			IfStatementNode.class,
+			ParserError.INVALID_OPERAND
+		);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"SPECIFIED", "NOT SPECIFIED"
+	})
+	void raiseNoDiagnosticForSpecifiedConditionIfTargetAVariable(String specified)
+	{
+		assertParsesWithoutDiagnostics("""
+						IF #VAR %s
+						IGNORE
+						END-IF
+			""".formatted(specified));
 	}
 
 	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)

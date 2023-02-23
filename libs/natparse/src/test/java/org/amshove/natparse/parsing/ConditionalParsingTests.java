@@ -607,6 +607,24 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(criteria.isNotModified()).isTrue();
 	}
 
+	@Test
+	void parseSpecifiedCondition()
+	{
+		var criteria = assertParsesCriteria("#VAR SPECIFIED", ISpecifiedCriteriaNode.class);
+		var variable = assertNodeType(criteria.operand(), IVariableReferenceNode.class);
+		assertThat(variable.token().symbolName()).isEqualTo("#VAR");
+		assertThat(criteria.isNotSpecified()).isFalse();
+	}
+
+	@Test
+	void parseNotSpecifiedCondition()
+	{
+		var criteria = assertParsesCriteria("#VAR NOT SPECIFIED", ISpecifiedCriteriaNode.class);
+		var variable = assertNodeType(criteria.operand(), IVariableReferenceNode.class);
+		assertThat(variable.token().symbolName()).isEqualTo("#VAR");
+		assertThat(criteria.isNotSpecified()).isTrue();
+	}
+
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
 	{
 		var list = assertParsesWithoutDiagnostics("IF %s\nIGNORE\nEND-IF".formatted(source));
