@@ -127,6 +127,6 @@ public class LexerForSingleCharacterTokensShould extends AbstractLexerTest
 	@Test
 	void lexSectionSymbol()
 	{
-		assertTokens("§", token(SyntaxKind.SECTION_SYMBOL, "§"));
+		assertTokens("\u00A7", token(SyntaxKind.SECTION_SYMBOL, "\u00A7"));
 	}
 }
