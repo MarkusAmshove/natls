@@ -213,6 +213,10 @@ public class ExploreController
 		{
 			navigateNodeUp();
 		}
+		if (keyEvent.isAltDown() && keyEvent.getCode() == KeyCode.LEFT)
+		{
+			navigateToParent();
+		}
 	}
 
 	public void onLoadFileButton(ActionEvent event)
@@ -332,6 +336,28 @@ public class ExploreController
 		for (var child : node.getChildren())
 		{
 			expandNodeView(child);
+		}
+	}
+
+	public void navigateToParent()
+	{
+		if (nodeView.getRoot() == null)
+		{
+			return;
+		}
+
+		expandNodeView(nodeView.getRoot());
+		if (nodeView.getSelectionModel().getSelectedItem() == null)
+		{
+			nodeView.getSelectionModel().select(nodeView.getRoot());
+			return;
+		}
+
+		var parent = nodeView.getSelectionModel().getSelectedItem().getParent();
+		if (parent != null)
+		{
+			nodeView.getSelectionModel().select(parent);
+			nodeView.scrollTo(nodeView.getSelectionModel().getSelectedIndex());
 		}
 	}
 

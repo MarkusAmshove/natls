@@ -41,6 +41,12 @@
                             </tooltip>
                             <text>\/</text>
                         </Button>
+                        <Button onAction="#navigateToParent">
+                            <tooltip>
+                                <Tooltip text="Navigate to parent (ALT+Left)"></Tooltip>
+                            </tooltip>
+                            <text>P</text>
+                        </Button>
                     </HBox>
                 </VBox>
                 <ListView fx:id="diagnosticList" onMouseClicked="#diagnosticListClicked"></ListView>
