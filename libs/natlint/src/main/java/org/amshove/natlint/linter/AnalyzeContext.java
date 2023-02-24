@@ -6,6 +6,7 @@ import org.amshove.natlint.api.LinterDiagnostic;
 import org.amshove.natlint.editorconfig.EditorConfig;
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.natural.INaturalModule;
+import org.amshove.natparse.natural.project.NaturalFile;
 
 class AnalyzeContext implements IAnalyzeContext
 {
@@ -28,6 +29,13 @@ class AnalyzeContext implements IAnalyzeContext
 	public INaturalModule getModule()
 	{
 		return module;
+	}
+
+	public String getConfiguration(NaturalFile forFile, String property, String defaultValue)
+	{
+		return editorConfig != null
+			? editorConfig.getProperty(forFile.getPath(), property, defaultValue)
+			: defaultValue;
 	}
 
 	@Override
