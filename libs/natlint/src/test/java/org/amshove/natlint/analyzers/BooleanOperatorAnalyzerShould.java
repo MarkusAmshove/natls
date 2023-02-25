@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-public class BooleanOperatorAnalyzerShould extends AbstractAnalyzerTest
+class BooleanOperatorAnalyzerShould extends AbstractAnalyzerTest
 {
 	protected BooleanOperatorAnalyzerShould()
 	{
@@ -19,8 +19,58 @@ public class BooleanOperatorAnalyzerShould extends AbstractAnalyzerTest
 	{
 		">", "<", ">=", "<=", "<>", "="
 	})
-	void reportNoDiagnosticForPreferredOperators(String operator)
+	void reportNoDiagnosticForPreferredSignOperators(String operator)
 	{
+		testDiagnostics(
+			"""
+			DEFINE DATA LOCAL
+			END-DEFINE
+
+			IF 5 %s 2
+			  IGNORE
+			END-IF
+			END
+			""".formatted(operator),
+			expectNoDiagnosticOfType(BooleanOperatorAnalyzer.DISCOURAGED_BOOLEAN_OPERATOR)
+		);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		">", "<", ">=", "<=", "<>", "="
+	})
+	void reportDiagnosticsForOperatorSignsIfShortFormIsPreferred(String operator)
+	{
+		configureEditorConfig("""
+			[*]
+			natls.operators=short
+			""");
+		testDiagnostics(
+			"""
+			DEFINE DATA LOCAL
+			END-DEFINE
+
+			IF 5 %s 2
+			  IGNORE
+			END-IF
+			END
+			""".formatted(operator),
+			expectDiagnostic(3, BooleanOperatorAnalyzer.DISCOURAGED_BOOLEAN_OPERATOR)
+		);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"GT", "LT", "GE", "LE", "NE", "EQ"
+	})
+	void reportNoDiagnosticForShortFormOperatorsIfPreferred(String operator)
+	{
+		configureEditorConfig("""
+			[*]
+			natls.operators=short
+			""");
 		testDiagnostics(
 			"""
 			DEFINE DATA LOCAL
@@ -40,7 +90,7 @@ public class BooleanOperatorAnalyzerShould extends AbstractAnalyzerTest
 	{
 		"GT", "LT", "GE", "LE", "NE", "EQ"
 	})
-	void reportDiagnosticsForOperatorsThatAreNotPreferred(String operator)
+	void reportDiagnosticsForShortFormOperatorsThatAreNotPreferred(String operator)
 	{
 		testDiagnostics(
 			"""

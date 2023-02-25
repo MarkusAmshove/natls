@@ -29,13 +29,22 @@ public class BooleanOperatorAnalyzer extends AbstractAnalyzer
 		DiagnosticSeverity.ERROR
 	);
 
-	public static final Map<SyntaxKind, String> PREFERRED_OPERATORS = Map.of(
+	public static final Map<SyntaxKind, String> PREFERRED_OPERATOR_SIGNS = Map.of(
 		SyntaxKind.GT, ">",
 		SyntaxKind.LT, "<",
 		SyntaxKind.EQ, "=",
 		SyntaxKind.NE, "<>",
 		SyntaxKind.GE, ">=",
 		SyntaxKind.LE, "<="
+	);
+
+	public static final Map<SyntaxKind, String> PREFERRED_OPERATOR_SHORT = Map.of(
+		SyntaxKind.GREATER_SIGN, "GT",
+		SyntaxKind.LESSER_SIGN, "LT",
+		SyntaxKind.EQUALS_SIGN, "EQ",
+		SyntaxKind.LESSER_GREATER, "NE",
+		SyntaxKind.GREATER_EQUALS_SIGN, "GE",
+		SyntaxKind.LESSER_EQUALS_SIGN, "LE"
 	);
 
 	@Override
@@ -47,7 +56,8 @@ public class BooleanOperatorAnalyzer extends AbstractAnalyzer
 	@Override
 	public void initialize(ILinterContext context)
 	{
-		PREFERRED_OPERATORS.keySet().forEach(sk -> context.registerTokenAnalyzer(sk, this::analyzeToken));
+		PREFERRED_OPERATOR_SIGNS.keySet().forEach(sk -> context.registerTokenAnalyzer(sk, this::analyzeToken));
+		PREFERRED_OPERATOR_SHORT.keySet().forEach(sk -> context.registerTokenAnalyzer(sk, this::analyzeToken));
 		context.registerTokenAnalyzer(SyntaxKind.EQUALS_SIGN, this::analyzeEquals);
 	}
 
@@ -58,7 +68,15 @@ public class BooleanOperatorAnalyzer extends AbstractAnalyzer
 			return;
 		}
 
-		var preferredOperator = PREFERRED_OPERATORS.get(syntaxToken.kind());
+		var configuredPreference = context.getConfiguration(context.getModule().file(), "natls.operators", "sign");
+		var preferredOperatorMapping = configuredPreference.equalsIgnoreCase("short") ? PREFERRED_OPERATOR_SHORT : PREFERRED_OPERATOR_SIGNS;
+
+		if (!preferredOperatorMapping.containsKey(syntaxToken.kind()))
+		{
+			return;
+		}
+
+		var preferredOperator = preferredOperatorMapping.get(syntaxToken.kind());
 		context.report(
 			DISCOURAGED_BOOLEAN_OPERATOR.createFormattedDiagnostic(
 				syntaxToken,

@@ -10,8 +10,8 @@ public interface IAnalyzeContext
 	void report(LinterDiagnostic diagnostic);
 
 	/**
-	 * Returns the .editorconfig setting for the given property matching the files path
-	 * otherwise returns given defaultValue.
+	 * Returns the .editorconfig setting for the given property matching the files path otherwise returns given
+	 * defaultValue.
 	 */
 	String getConfiguration(NaturalFile forFile, String property, String defaultValue);
 }

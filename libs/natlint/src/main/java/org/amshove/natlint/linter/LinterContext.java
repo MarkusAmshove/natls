@@ -71,6 +71,7 @@ public enum LinterContext implements ILinterContext
 	public void updateEditorConfig(EditorConfig config)
 	{
 		editorConfig = config;
+		// TODO(perf): Call analyzer.configChanged() ?
 	}
 
 	void analyze(ISyntaxNode syntaxNode, IAnalyzeContext context)

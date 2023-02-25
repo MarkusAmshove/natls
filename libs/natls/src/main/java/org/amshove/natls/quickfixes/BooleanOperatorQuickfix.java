@@ -36,7 +36,7 @@ public class BooleanOperatorQuickfix extends AbstractQuickFix
 		var message = diagnostic.getMessage();
 		var discouragedOperator = message.split(" ")[1];
 
-		var preferredOperator = BooleanOperatorAnalyzer.PREFERRED_OPERATORS.get(SyntaxKind.valueOf(discouragedOperator));
+		var preferredOperator = BooleanOperatorAnalyzer.PREFERRED_OPERATOR_SIGNS.get(SyntaxKind.valueOf(discouragedOperator));
 
 		return new CodeActionBuilder(
 			"Change operator to %s".formatted(preferredOperator),
