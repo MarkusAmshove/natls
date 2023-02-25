@@ -47,6 +47,8 @@ public class BooleanOperatorAnalyzer extends AbstractAnalyzer
 		SyntaxKind.LESSER_EQUALS_SIGN, "LE"
 	);
 
+	private Map<SyntaxKind, String> preferredOperatorMapping;
+
 	@Override
 	public ReadOnlyList<DiagnosticDescription> getDiagnosticDescriptions()
 	{
@@ -61,15 +63,19 @@ public class BooleanOperatorAnalyzer extends AbstractAnalyzer
 		context.registerTokenAnalyzer(SyntaxKind.EQUALS_SIGN, this::analyzeEquals);
 	}
 
+	@Override
+	public void beforeAnalyzing(IAnalyzeContext context)
+	{
+		var configuredPreference = context.getConfiguration(context.getModule().file(), "natls.operators", "sign");
+		preferredOperatorMapping = configuredPreference.equalsIgnoreCase("short") ? PREFERRED_OPERATOR_SHORT : PREFERRED_OPERATOR_SIGNS;
+	}
+
 	private void analyzeToken(SyntaxToken syntaxToken, IAnalyzeContext context)
 	{
 		if (context.getModule().isTestCase())
 		{
 			return;
 		}
-
-		var configuredPreference = context.getConfiguration(context.getModule().file(), "natls.operators", "sign");
-		var preferredOperatorMapping = configuredPreference.equalsIgnoreCase("short") ? PREFERRED_OPERATOR_SHORT : PREFERRED_OPERATOR_SIGNS;
 
 		if (!preferredOperatorMapping.containsKey(syntaxToken.kind()))
 		{
