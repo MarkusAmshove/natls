@@ -548,6 +548,25 @@ public class NaturalLanguageService implements LanguageClientAware
 			);
 		}
 
+		if (node instanceof IStatementListNode && node.parent() == null && file.getType() == NaturalFileType.COPYCODE)
+		{
+			for (var callingFile : file.getIncomingReferences())
+			{
+				var callingModule = callingFile.module(ParseStrategy.WITHOUT_CALLERS);
+				if (callingModule instanceof IModuleWithBody withBody)
+				{
+					var moduleReferencingNodes = NodeUtil.findNodesOfType(withBody.body(), IModuleReferencingNode.class);
+					for (var referencingNode : moduleReferencingNodes)
+					{
+						if (referencingNode.reference().equals(file.module()))
+						{
+							references.add(LspUtil.toLocation(referencingNode.referencingToken()));
+						}
+					}
+				}
+			}
+		}
+
 		if (references.isEmpty())
 		{
 			var cachedPositions = ModuleReferenceCache.retrieveCachedPositions(file);
