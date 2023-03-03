@@ -10,7 +10,9 @@ import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.ISymbolReferenceNode;
+import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.ITokenNode;
+import org.amshove.natparse.natural.conditionals.IHasComparisonOperator;
 import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
 
 import java.util.Map;
@@ -58,8 +60,7 @@ public class BooleanOperatorAnalyzer extends AbstractAnalyzer
 	@Override
 	public void initialize(ILinterContext context)
 	{
-		PREFERRED_OPERATOR_SIGNS.keySet().forEach(sk -> context.registerTokenAnalyzer(sk, this::analyzeToken));
-		PREFERRED_OPERATOR_SHORT.keySet().forEach(sk -> context.registerTokenAnalyzer(sk, this::analyzeToken));
+		context.registerNodeAnalyzer(IHasComparisonOperator.class, this::analyzeComparison);
 		context.registerTokenAnalyzer(SyntaxKind.EQUALS_SIGN, this::analyzeEquals);
 	}
 
@@ -70,19 +71,28 @@ public class BooleanOperatorAnalyzer extends AbstractAnalyzer
 		preferredOperatorMapping = configuredPreference.equalsIgnoreCase("short") ? PREFERRED_OPERATOR_SHORT : PREFERRED_OPERATOR_SIGNS;
 	}
 
-	private void analyzeToken(SyntaxToken syntaxToken, IAnalyzeContext context)
+	private void analyzeComparison(ISyntaxNode node, IAnalyzeContext context)
 	{
-		if (context.getModule().isTestCase())
-		{
-			return;
-		}
-
-		if (!preferredOperatorMapping.containsKey(syntaxToken.kind()))
-		{
-			return;
-		}
+		var comparisonNode = (IHasComparisonOperator) node;
+		var syntaxToken = comparisonNode.comparisonToken();
 
 		var preferredOperator = preferredOperatorMapping.get(syntaxToken.kind());
+
+		if (preferredOperator == null)
+		{
+			return;
+		}
+
+		if (preferredOperator.equals(syntaxToken.source()))
+		{
+			return;
+		}
+
+		if (preferredOperator.equals("=") && context.getModule().isTestCase())
+		{
+			return;
+		}
+
 		context.report(
 			DISCOURAGED_BOOLEAN_OPERATOR.createFormattedDiagnostic(
 				syntaxToken,

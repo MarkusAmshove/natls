@@ -1,6 +1,7 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.ReadOnlyList;
+import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.conditionals.IExtendedRelationalCriteriaNode;
 
@@ -34,5 +35,11 @@ class ExtendedRelationalCriteriaNode extends BaseSyntaxNode implements IExtended
 	void addRight(IOperandNode right)
 	{
 		rights.add(right);
+	}
+
+	@Override
+	public SyntaxToken comparisonToken()
+	{
+		return null; // TODO: Refactor `rights` to ExtendedRelationalCriteriaRhsType or something which has RHS and IHasComparisonOperator
 	}
 }

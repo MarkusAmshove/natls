@@ -21,6 +21,10 @@ class BooleanOperatorAnalyzerShould extends AbstractAnalyzerTest
 	})
 	void reportNoDiagnosticForPreferredSignOperators(String operator)
 	{
+		configureEditorConfig("""
+			[*]
+			natls.operators=sign
+			""");
 		testDiagnostics(
 			"""
 			DEFINE DATA LOCAL
@@ -121,6 +125,15 @@ class BooleanOperatorAnalyzerShould extends AbstractAnalyzerTest
 		testDiagnostics(
 			project.findModule("TCTEST"),
 			expectDiagnostic(8, BooleanOperatorAnalyzer.INVALID_NATUNIT_COMPARISON_OPERATOR)
+		);
+	}
+
+	@Test
+	void reportNoDiagnosticForEmptyFunctionCalls(@ProjectName("natunit") NaturalProject project)
+	{
+		testDiagnostics(
+			project.findModule("CALLFUNC"),
+			expectNoDiagnosticOfType(BooleanOperatorAnalyzer.DISCOURAGED_BOOLEAN_OPERATOR)
 		);
 	}
 }

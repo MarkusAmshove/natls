@@ -1663,6 +1663,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private ComparisonOperator parseRelationalOperator(RelationalCriteriaNode node) throws ParseError
 	{
 		var kind = peek().kind();
+		node.setComparisonToken(peek());
 		var maybeOperator = ComparisonOperator.ofSyntaxKind(kind);
 		if (maybeOperator != null)
 		{

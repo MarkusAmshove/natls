@@ -141,6 +141,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		var right = assertNodeType(criteria.right(), IVariableReferenceNode.class);
 		assertThat(left.token().symbolName()).isEqualTo("#NUM1");
 		assertThat(right.token().symbolName()).isEqualTo("#NUM2");
+		assertThat(criteria.comparisonToken().kind()).isEqualTo(SyntaxKind.GREATER_SIGN);
 		assertThat(criteria.operator()).isEqualTo(ComparisonOperator.GREATER_THAN);
 	}
 

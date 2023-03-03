@@ -1,6 +1,11 @@
 package org.amshove.natparse.natural.conditionals;
 
-public interface IHasComparisonOperator
+import org.amshove.natparse.lexing.SyntaxToken;
+import org.amshove.natparse.natural.ISyntaxNode;
+
+public interface IHasComparisonOperator extends ISyntaxNode
 {
 	ComparisonOperator operator();
+
+	SyntaxToken comparisonToken();
 }

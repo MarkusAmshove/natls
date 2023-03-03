@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.conditionals.ComparisonOperator;
 import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
@@ -9,6 +10,7 @@ class RelationalCriteriaNode extends BaseSyntaxNode implements IRelationalCriter
 	private IOperandNode left;
 	private ComparisonOperator operator;
 	private IOperandNode right;
+	private SyntaxToken comparisonToken;
 
 	@Override
 	public IOperandNode left()
@@ -20,6 +22,12 @@ class RelationalCriteriaNode extends BaseSyntaxNode implements IRelationalCriter
 	public ComparisonOperator operator()
 	{
 		return operator;
+	}
+
+	@Override
+	public SyntaxToken comparisonToken()
+	{
+		return comparisonToken;
 	}
 
 	@Override
@@ -41,5 +49,10 @@ class RelationalCriteriaNode extends BaseSyntaxNode implements IRelationalCriter
 	void setRight(IOperandNode right)
 	{
 		this.right = right;
+	}
+
+	void setComparisonToken(SyntaxToken token)
+	{
+		this.comparisonToken = token;
 	}
 }
