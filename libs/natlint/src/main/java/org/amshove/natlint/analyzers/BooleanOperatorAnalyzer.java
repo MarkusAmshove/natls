@@ -29,7 +29,7 @@ public class BooleanOperatorAnalyzer extends AbstractAnalyzer
 		DiagnosticSeverity.ERROR
 	);
 
-	public static final Map<SyntaxKind, String> PREFERRED_OPERATOR_SIGNS = Map.of(
+	private static final Map<SyntaxKind, String> PREFERRED_OPERATOR_SIGNS = Map.of(
 		SyntaxKind.GT, ">",
 		SyntaxKind.LT, "<",
 		SyntaxKind.EQ, "=",
@@ -38,7 +38,7 @@ public class BooleanOperatorAnalyzer extends AbstractAnalyzer
 		SyntaxKind.LE, "<="
 	);
 
-	public static final Map<SyntaxKind, String> PREFERRED_OPERATOR_SHORT = Map.of(
+	private static final Map<SyntaxKind, String> PREFERRED_OPERATOR_SHORT = Map.of(
 		SyntaxKind.GREATER_SIGN, "GT",
 		SyntaxKind.LESSER_SIGN, "LT",
 		SyntaxKind.EQUALS_SIGN, "EQ",

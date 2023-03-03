@@ -45,6 +45,52 @@ public class BooleanOperatorQuickfixShould extends CodeActionTest
 		var discouragedOperator = operators.split(",")[0];
 		var preferredOperator = operators.split(",")[1];
 
+		configureEditorConfig("""
+			[*]
+			natls.operators=signs
+			""");
+
+		var result = receiveCodeActions("LIBONE", "MEINS.NSN", """
+			   DEFINE DATA LOCAL
+			   END-DEFINE
+			   IF 5 ${}$%s 2
+			   IGNORE
+			   END-IF
+			   END
+			""".formatted(discouragedOperator));
+
+		var actions = result.codeActions();
+
+		assertContainsCodeAction("Change operator to %s".formatted(preferredOperator), actions);
+
+		assertSingleCodeAction(actions)
+			.insertsText(2, 8, preferredOperator)
+			.fixes(BooleanOperatorAnalyzer.DISCOURAGED_BOOLEAN_OPERATOR.getId())
+			.resultsApplied(result.savedSource(), """
+			   DEFINE DATA LOCAL
+			   END-DEFINE
+			   IF 5 %s 2
+			   IGNORE
+			   END-IF
+			   END
+			""".formatted(preferredOperator));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		">,GT", "<,LT", "=,EQ", "<>,NE", ">=,GE", "<=,LE"
+	})
+	void recognizeTheQuickfixAndReplacementForEverySignOperator(String operators)
+	{
+		var discouragedOperator = operators.split(",")[0];
+		var preferredOperator = operators.split(",")[1];
+
+		configureEditorConfig("""
+			[*]
+			natls.operators=short
+			""");
+
 		var result = receiveCodeActions("LIBONE", "MEINS.NSN", """
 			   DEFINE DATA LOCAL
 			   END-DEFINE
