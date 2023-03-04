@@ -5,7 +5,6 @@ import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.conditionals.IConditionNode;
 import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
-import org.amshove.testhelpers.IntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -13,13 +12,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-@IntegrationTest
-class StatementListParserShould extends AbstractParserTest<IStatementListNode>
+class StatementListParserShould extends StatementParseTest
 {
-	protected StatementListParserShould()
-	{
-		super(StatementListParser::new);
-	}
 
 	@Test
 	void parseASimpleCallnat()
@@ -1611,17 +1605,5 @@ class StatementListParserShould extends AbstractParserTest<IStatementListNode>
 						IGNORE
 						END-IF
 			""".formatted(specified));
-	}
-
-	private <T extends IStatementNode> T assertParsesSingleStatement(String source, Class<T> nodeType)
-	{
-		var result = super.assertParsesWithoutDiagnostics(source);
-		return assertNodeType(result.statements().first(), nodeType);
-	}
-
-	private <T extends IStatementNode> T assertParsesSingleStatementWithDiagnostic(String source, Class<T> nodeType, ParserError expectedDiagnostic)
-	{
-		var result = super.assertDiagnostic(source, expectedDiagnostic);
-		return assertNodeType(result.statements().first(), nodeType);
 	}
 }
