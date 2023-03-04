@@ -64,6 +64,32 @@ class BooleanOperatorAnalyzerShould extends AbstractAnalyzerTest
 		);
 	}
 
+	@Test
+	void reportIndividualDiagnosticsForEachExtendedRelationalPart()
+	{
+		configureEditorConfig("""
+			[*]
+			natls.operators=sign
+			""");
+
+		testDiagnostics(
+			"""
+			DEFINE DATA LOCAL
+			END-DEFINE
+
+			IF 5 EQ 2
+			   OR EQ 7
+			   OR EQ 9
+			  IGNORE
+			END-IF
+			END
+			""",
+			expectDiagnostic(3, BooleanOperatorAnalyzer.DISCOURAGED_BOOLEAN_OPERATOR),
+			expectDiagnostic(4, BooleanOperatorAnalyzer.DISCOURAGED_BOOLEAN_OPERATOR),
+			expectDiagnostic(5, BooleanOperatorAnalyzer.DISCOURAGED_BOOLEAN_OPERATOR)
+		);
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
