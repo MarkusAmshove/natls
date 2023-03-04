@@ -558,7 +558,7 @@ public class NaturalLanguageService implements LanguageClientAware
 					var moduleReferencingNodes = NodeUtil.findNodesOfType(withBody.body(), IModuleReferencingNode.class);
 					for (var referencingNode : moduleReferencingNodes)
 					{
-						if (referencingNode.reference().equals(file.module()))
+						if (referencingNode.reference().name().equals(file.module().name()))
 						{
 							references.add(LspUtil.toLocation(referencingNode.referencingToken()));
 						}
