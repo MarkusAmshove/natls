@@ -312,7 +312,10 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			consumeOptionally(compress, SyntaxKind.ALL);
 			consumeAnyMandatory(compress, List.of(SyntaxKind.DELIMITER, SyntaxKind.DELIMITERS));
-			consumeOperandNode(compress);
+			if (isOperand())
+			{
+				consumeOperandNode(compress);
+			}
 			compress.setWithDelimiters(true);
 		}
 

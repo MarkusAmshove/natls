@@ -132,6 +132,30 @@ class CompressStatementParsingShould extends StatementParseTest
 		assertNodeType(compress.intoTarget(), IVariableReferenceNode.class);
 	}
 
+	@Test
+	void parseCompressWithDelimiterWithoutStatingDelimiter()
+	{
+		var compress = assertParsesSingleStatement("""
+			COMPRESS 'Text' TO #VAR WITH DELIMITER
+			""", ICompressStatementNode.class);
+
+		assertThat(compress.isWithDelimiters()).isTrue();
+	}
+
+	@Test
+	void parseCompressWithDelimiterWithoutStatingDelimiterWhenStatementFollows()
+	{
+		ignoreModuleProvider();
+		var statements = assertParsesWithoutDiagnostics("""
+			COMPRESS 'Text' TO #VAR WITH DELIMITER
+			CALLNAT 'MODULE'
+			""");
+
+		assertThat(statements.statements()).hasSize(2);
+		assertNodeType(statements.statements().first(), ICompressStatementNode.class);
+		assertNodeType(statements.statements().get(1), ICallnatNode.class);
+	}
+
 	private void assertNodeOperand(ICompressStatementNode compress, int index, Class<? extends ITokenNode> operandType, String source)
 	{
 		assertThat(
