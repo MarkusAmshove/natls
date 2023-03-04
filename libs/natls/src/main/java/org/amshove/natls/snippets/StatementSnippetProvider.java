@@ -77,6 +77,24 @@ public class StatementSnippetProvider implements ISnippetProvider
 			END-FOR
 			""");
 
+	private static final NaturalSnippet RESIZE = new NaturalSnippet("resize")
+		.applicableWhen(f -> f.getType().canHaveBody())
+		.insertsText("""
+			RESIZE ARRAY ${1:#ARRAY} TO (1:${2:1})
+			""");
+
+	private static final NaturalSnippet RESIZE_AND_RESET = new NaturalSnippet("resizeReset")
+		.applicableWhen(f -> f.getType().canHaveBody())
+		.insertsText("""
+			RESIZE AND RESET ARRAY ${1:#ARRAY} TO (1:${2:1})
+			""");
+
+	private static final NaturalSnippet COMPRESS = new NaturalSnippet("compress")
+		.applicableWhen(f -> f.getType().canHaveBody())
+		.insertsText("""
+			COMPRESS ${1:'Text'} INTO ${2:#VAR} ${3:LEAVING NO}
+			""");
+
 	private static final List<NaturalSnippet> snippets = List.of(
 		SUBROUTINE,
 		IF,
@@ -84,7 +102,10 @@ public class StatementSnippetProvider implements ISnippetProvider
 		DECIDE_ON_FIRST_VALUE,
 		DECIDE_ON_EVERY_VALUE,
 		FOR,
-		SOURCE_HEADER
+		SOURCE_HEADER,
+		RESIZE,
+		RESIZE_AND_RESET,
+		COMPRESS
 	);
 
 	@Override
