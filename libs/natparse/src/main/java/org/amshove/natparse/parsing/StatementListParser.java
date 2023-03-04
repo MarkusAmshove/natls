@@ -296,7 +296,16 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		while (!peekAny(COMPRESS_TO_INTO) && !tokens.isAtEnd())
 		{
-			compress.addOperand(consumeSubstringOrOperand(compress));
+			var operand = consumeSubstringOrOperand(compress);
+			compress.addOperand(operand);
+
+			if (consumeOptionally((BaseSyntaxNode) operand, SyntaxKind.LPAREN))
+			{
+				while (!consumeOptionally((BaseSyntaxNode) operand, SyntaxKind.RPAREN) || tokens.isAtEnd())
+				{
+					consume((BaseSyntaxNode) operand);
+				}
+			}
 		}
 
 		consumeAnyMandatory(compress, COMPRESS_TO_INTO); // TO not documented but okay

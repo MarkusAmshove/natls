@@ -156,6 +156,16 @@ class CompressStatementParsingShould extends StatementParseTest
 		assertNodeType(statements.statements().get(1), ICallnatNode.class);
 	}
 
+	@Test
+	void parseCompressWithOperandParameterDF()
+	{
+		var compress = assertParsesSingleStatement("""
+			COMPRESS *DATX(DF=L) TO #VAR
+			""", ICompressStatementNode.class);
+
+		System.out.println(compress);
+	}
+
 	private void assertNodeOperand(ICompressStatementNode compress, int index, Class<? extends ITokenNode> operandType, String source)
 	{
 		assertThat(
