@@ -3,6 +3,8 @@ package org.amshove.natparse;
 import org.amshove.natparse.natural.*;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class NodeUtil
@@ -158,5 +160,25 @@ public class NodeUtil
 		}
 
 		return Optional.empty();
+	}
+
+	/**
+	 * Scans the node <strong>and all descendants</strong> for the given type of node.<br/>
+	 * Returns all found nodes.
+	 */
+	public static <T extends ISyntaxNode> List<T> findNodesOfType(ISyntaxTree start, Class<T> type)
+	{
+		var result = new ArrayList<T>();
+		if (type.isInstance(start))
+		{
+			result.add(type.cast(start));
+		}
+
+		for (var descendant : start.descendants())
+		{
+			result.addAll(findNodesOfType(descendant, type));
+		}
+
+		return result;
 	}
 }
