@@ -49,7 +49,7 @@ class FindReferencesTests extends LanguageServerTest
 			var lineNumber = 0;
 			for (var line : lines)
 			{
-				if (line.contains("!ref")t a)
+				if (line.contains("!ref"))
 				{
 					referenceTests.add(parseReferenceTest(file, line, lineNumber));
 				}
@@ -85,9 +85,7 @@ class FindReferencesTests extends LanguageServerTest
 	{
 		// Format: !ref(<column in line>){<MODULENAME>,<LINE>,<COLUMN>;...}
 		var comment = line.substring(line.indexOf("/*") + 2).trim();
-		System.out.println(comment);
 		var column = comment.substring("!ref(".length(), comment.indexOf(")"));
-		System.out.println(column);
 		var definedExpectedReferences = comment.substring(comment.indexOf("{") + 1, comment.indexOf("}")).split(";");
 
 		return new ReferenceTest(file, lineNumber, Integer.parseInt(column), Arrays.stream(definedExpectedReferences).map(ExpectedReference::fromCsv).toList());
