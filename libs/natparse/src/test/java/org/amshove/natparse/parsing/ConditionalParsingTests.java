@@ -12,6 +12,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -149,15 +150,36 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	void parseRelationalExpressionsWithMultipleEquals()
 	{
 		var criteria = assertParsesCriteria("#NUM1 = #NUM2 OR = 5 OR EQUAL 10 OR EQUAL TO 20", IExtendedRelationalCriteriaNode.class);
-		assertThat(criteria.descendants().size()).isEqualTo(13);
+		assertThat(criteria.descendants().size()).isEqualTo(5);
 
 		var left = assertNodeType(criteria.left(), IVariableReferenceNode.class);
 		assertThat(left.token().symbolName()).isEqualTo("#NUM1");
+
+		assertThat(criteria.rights()).hasSize(4);
+
+		BiConsumer<IExtendedRelationalCriteriaPartNode, String> assertRight = (r, literal) ->
+		{
+			assertThat(assertNodeType(r.rhs(), ILiteralNode.class).token().source()).isEqualTo(literal);
+		};
+
+		BiConsumer<IExtendedRelationalCriteriaPartNode, String> assertOperator = (r, operator) ->
+		{
+			assertThat(r.comparisonToken().source()).isEqualTo(operator);
+		};
+
 		var rights = criteria.rights();
-		assertThat(assertNodeType(rights.first(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#NUM2");
-		assertThat(assertNodeType(rights.get(1), ILiteralNode.class).token().intValue()).isEqualTo(5);
-		assertThat(assertNodeType(rights.get(2), ILiteralNode.class).token().intValue()).isEqualTo(10);
-		assertThat(assertNodeType(rights.get(3), ILiteralNode.class).token().intValue()).isEqualTo(20);
+
+		assertThat(assertNodeType(rights.first().rhs(), IVariableReferenceNode.class).token().source()).isEqualTo("#NUM2");
+		assertThat(rights.first().comparisonToken().source()).isEqualTo("=");
+
+		assertOperator.accept(rights.get(1), "=");
+		assertRight.accept(rights.get(1), "5");
+
+		assertOperator.accept(rights.get(2), "EQUAL");
+		assertRight.accept(rights.get(2), "10");
+
+		assertOperator.accept(rights.get(3), "EQUAL");
+		assertRight.accept(rights.get(3), "20");
 	}
 
 	@ParameterizedTest
@@ -521,9 +543,9 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	{
 		var criteria = assertParsesCriteria("#VAR = 'ABC' OR = MASK ('DDMMYYYY') OR = SCAN #SCANVAR", IExtendedRelationalCriteriaNode.class);
 		var rights = criteria.rights();
-		assertThat(assertNodeType(rights.get(0), ILiteralNode.class).token().stringValue()).isEqualTo("ABC");
-		assertThat(assertNodeType(rights.get(1), IConstantMaskOperandNode.class).maskContents()).isNotEmpty();
-		assertThat(assertNodeType(rights.get(2), IScanOperandNode.class).operand()).isNotNull();
+		assertThat(assertNodeType(rights.get(0).rhs(), ILiteralNode.class).token().stringValue()).isEqualTo("ABC");
+		assertThat(assertNodeType(rights.get(1).rhs(), IConstantMaskOperandNode.class).maskContents()).isNotEmpty();
+		assertThat(assertNodeType(rights.get(2).rhs(), IScanOperandNode.class).operand()).isNotNull();
 	}
 
 	@Test

@@ -1,9 +1,9 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.ReadOnlyList;
-import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.conditionals.IExtendedRelationalCriteriaNode;
+import org.amshove.natparse.natural.conditionals.IExtendedRelationalCriteriaPartNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,13 +11,17 @@ import java.util.List;
 class ExtendedRelationalCriteriaNode extends BaseSyntaxNode implements IExtendedRelationalCriteriaNode
 {
 	private IOperandNode left;
-	private List<IOperandNode> rights = new ArrayList<>();
+	private List<IExtendedRelationalCriteriaPartNode> rights = new ArrayList<>();
 
 	ExtendedRelationalCriteriaNode(RelationalCriteriaNode relationalCriteriaNode)
 	{
-		copyFrom(relationalCriteriaNode);
+		addNode((BaseSyntaxNode) relationalCriteriaNode.left());
 		left = relationalCriteriaNode.left();
-		rights.add(relationalCriteriaNode.right());
+
+		var right = new ExtendedRelationalCriteriaPartNode();
+		right.setComparisonToken(relationalCriteriaNode.comparisonToken());
+		right.setRhs(relationalCriteriaNode.right());
+		addRight(right);
 	}
 
 	@Override
@@ -27,19 +31,14 @@ class ExtendedRelationalCriteriaNode extends BaseSyntaxNode implements IExtended
 	}
 
 	@Override
-	public ReadOnlyList<IOperandNode> rights()
+	public ReadOnlyList<IExtendedRelationalCriteriaPartNode> rights()
 	{
 		return ReadOnlyList.from(rights);
 	}
 
-	void addRight(IOperandNode right)
+	void addRight(IExtendedRelationalCriteriaPartNode right)
 	{
+		addNode((BaseSyntaxNode) right);
 		rights.add(right);
-	}
-
-	@Override
-	public SyntaxToken comparisonToken()
-	{
-		return null; // TODO: Refactor `rights` to ExtendedRelationalCriteriaRhsType or something which has RHS and IHasComparisonOperator
 	}
 }
