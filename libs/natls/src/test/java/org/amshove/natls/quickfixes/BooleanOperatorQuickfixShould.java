@@ -47,7 +47,7 @@ public class BooleanOperatorQuickfixShould extends CodeActionTest
 
 		configureEditorConfig("""
 			[*]
-			natls.operators=signs
+			natls.style.comparisons=signs
 			""");
 
 		var result = receiveCodeActions("LIBONE", "MEINS.NSN", """
@@ -88,7 +88,7 @@ public class BooleanOperatorQuickfixShould extends CodeActionTest
 
 		configureEditorConfig("""
 			[*]
-			natls.operators=short
+			natls.style.comparisons=short
 			""");
 
 		var result = receiveCodeActions("LIBONE", "MEINS.NSN", """

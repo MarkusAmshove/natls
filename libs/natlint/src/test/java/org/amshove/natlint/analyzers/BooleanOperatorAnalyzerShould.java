@@ -23,7 +23,7 @@ class BooleanOperatorAnalyzerShould extends AbstractAnalyzerTest
 	{
 		configureEditorConfig("""
 			[*]
-			natls.operators=sign
+			natls.style.comparisons=sign
 			""");
 		testDiagnostics(
 			"""
@@ -48,7 +48,7 @@ class BooleanOperatorAnalyzerShould extends AbstractAnalyzerTest
 	{
 		configureEditorConfig("""
 			[*]
-			natls.operators=short
+			natls.style.comparisons=short
 			""");
 		testDiagnostics(
 			"""
@@ -69,7 +69,7 @@ class BooleanOperatorAnalyzerShould extends AbstractAnalyzerTest
 	{
 		configureEditorConfig("""
 			[*]
-			natls.operators=sign
+			natls.style.comparisons=sign
 			""");
 
 		testDiagnostics(
@@ -99,7 +99,7 @@ class BooleanOperatorAnalyzerShould extends AbstractAnalyzerTest
 	{
 		configureEditorConfig("""
 			[*]
-			natls.operators=short
+			natls.style.comparisons=short
 			""");
 		testDiagnostics(
 			"""

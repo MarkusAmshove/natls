@@ -67,7 +67,7 @@ public class BooleanOperatorAnalyzer extends AbstractAnalyzer
 	@Override
 	public void beforeAnalyzing(IAnalyzeContext context)
 	{
-		var configuredPreference = context.getConfiguration(context.getModule().file(), "natls.operators", "sign");
+		var configuredPreference = context.getConfiguration(context.getModule().file(), "natls.style.comparisons", "sign");
 		preferredOperatorMapping = configuredPreference.equalsIgnoreCase("short") ? PREFERRED_OPERATOR_SHORT : PREFERRED_OPERATOR_SIGNS;
 	}
 
