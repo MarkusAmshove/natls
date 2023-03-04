@@ -10,7 +10,9 @@ import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.ISymbolReferenceNode;
+import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.ITokenNode;
+import org.amshove.natparse.natural.conditionals.IHasComparisonOperator;
 import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
 
 import java.util.Map;
@@ -29,7 +31,7 @@ public class BooleanOperatorAnalyzer extends AbstractAnalyzer
 		DiagnosticSeverity.ERROR
 	);
 
-	public static final Map<SyntaxKind, String> PREFERRED_OPERATORS = Map.of(
+	private static final Map<SyntaxKind, String> PREFERRED_OPERATOR_SIGNS = Map.of(
 		SyntaxKind.GT, ">",
 		SyntaxKind.LT, "<",
 		SyntaxKind.EQ, "=",
@@ -37,6 +39,17 @@ public class BooleanOperatorAnalyzer extends AbstractAnalyzer
 		SyntaxKind.GE, ">=",
 		SyntaxKind.LE, "<="
 	);
+
+	private static final Map<SyntaxKind, String> PREFERRED_OPERATOR_SHORT = Map.of(
+		SyntaxKind.GREATER_SIGN, "GT",
+		SyntaxKind.LESSER_SIGN, "LT",
+		SyntaxKind.EQUALS_SIGN, "EQ",
+		SyntaxKind.LESSER_GREATER, "NE",
+		SyntaxKind.GREATER_EQUALS_SIGN, "GE",
+		SyntaxKind.LESSER_EQUALS_SIGN, "LE"
+	);
+
+	private Map<SyntaxKind, String> preferredOperatorMapping;
 
 	@Override
 	public ReadOnlyList<DiagnosticDescription> getDiagnosticDescriptions()
@@ -47,18 +60,39 @@ public class BooleanOperatorAnalyzer extends AbstractAnalyzer
 	@Override
 	public void initialize(ILinterContext context)
 	{
-		PREFERRED_OPERATORS.keySet().forEach(sk -> context.registerTokenAnalyzer(sk, this::analyzeToken));
+		context.registerNodeAnalyzer(IHasComparisonOperator.class, this::analyzeComparison);
 		context.registerTokenAnalyzer(SyntaxKind.EQUALS_SIGN, this::analyzeEquals);
 	}
 
-	private void analyzeToken(SyntaxToken syntaxToken, IAnalyzeContext context)
+	@Override
+	public void beforeAnalyzing(IAnalyzeContext context)
 	{
-		if (context.getModule().isTestCase())
+		var configuredPreference = context.getConfiguration(context.getModule().file(), "natls.style.comparisons", "sign");
+		preferredOperatorMapping = configuredPreference.equalsIgnoreCase("short") ? PREFERRED_OPERATOR_SHORT : PREFERRED_OPERATOR_SIGNS;
+	}
+
+	private void analyzeComparison(ISyntaxNode node, IAnalyzeContext context)
+	{
+		var comparisonNode = (IHasComparisonOperator) node;
+		var syntaxToken = comparisonNode.comparisonToken();
+
+		var preferredOperator = preferredOperatorMapping.get(syntaxToken.kind());
+
+		if (preferredOperator == null)
 		{
 			return;
 		}
 
-		var preferredOperator = PREFERRED_OPERATORS.get(syntaxToken.kind());
+		if (preferredOperator.equals(syntaxToken.source()))
+		{
+			return;
+		}
+
+		if (preferredOperator.equals("=") && context.getModule().isTestCase())
+		{
+			return;
+		}
+
 		context.report(
 			DISCOURAGED_BOOLEAN_OPERATOR.createFormattedDiagnostic(
 				syntaxToken,

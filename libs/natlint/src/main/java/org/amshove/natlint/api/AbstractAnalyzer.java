@@ -11,6 +11,13 @@ public abstract class AbstractAnalyzer
 	 */
 	public abstract ReadOnlyList<DiagnosticDescription> getDiagnosticDescriptions();
 
+	/**
+	 * This method is used and called when the Analyzer is recognized and added to the context of the linter.<br/>
+	 * It is run during startup before any analysis happens.<br/>
+	 * Use this to register the tokens or nodes you want to analyze through the {@code context} parameter.<br/>
+	 * <br/>
+	 * The {@code .editorconfig} file is not yet accessible here.
+	 */
 	public abstract void initialize(ILinterContext context);
 
 	/**

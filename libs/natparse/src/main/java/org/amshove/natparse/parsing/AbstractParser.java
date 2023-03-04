@@ -667,13 +667,13 @@ abstract class AbstractParser<T>
 		return false;
 	}
 
-	protected void consumeAnyMandatory(BaseSyntaxNode node, List<SyntaxKind> acceptedKinds) throws ParseError
+	protected SyntaxToken consumeAnyMandatory(BaseSyntaxNode node, List<SyntaxKind> acceptedKinds) throws ParseError
 	{
 		for (SyntaxKind acceptedKind : acceptedKinds)
 		{
 			if (consumeOptionally(node, acceptedKind))
 			{
-				return;
+				return previousToken();
 			}
 		}
 

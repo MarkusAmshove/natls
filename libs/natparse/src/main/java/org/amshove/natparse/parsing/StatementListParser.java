@@ -1647,14 +1647,18 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var extendedCriteria = new ExtendedRelationalCriteriaNode(expression);
 		while (peekKind(SyntaxKind.OR) && peekAny(1, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL)))
 		{
-			consumeMandatory(extendedCriteria, SyntaxKind.OR);
-			consumeAnyMandatory(extendedCriteria, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL));
+			var part = new ExtendedRelationalCriteriaPartNode();
+			consumeMandatory(part, SyntaxKind.OR);
+			var operatorToken = consumeAnyMandatory(part, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL));
 			if (previousToken().kind() == SyntaxKind.EQUAL)
 			{
-				consumeOptionally(extendedCriteria, SyntaxKind.TO);
+				consumeOptionally(part, SyntaxKind.TO);
 			}
 
-			extendedCriteria.addRight(consumeRelationalCriteriaRightHandSide(extendedCriteria));
+			part.setComparisonToken(operatorToken);
+			var rhs = consumeRelationalCriteriaRightHandSide(part);
+			part.setRhs(rhs);
+			extendedCriteria.addRight(part);
 		}
 
 		return extendedCriteria;
@@ -1663,6 +1667,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private ComparisonOperator parseRelationalOperator(RelationalCriteriaNode node) throws ParseError
 	{
 		var kind = peek().kind();
+		node.setComparisonToken(peek());
 		var maybeOperator = ComparisonOperator.ofSyntaxKind(kind);
 		if (maybeOperator != null)
 		{

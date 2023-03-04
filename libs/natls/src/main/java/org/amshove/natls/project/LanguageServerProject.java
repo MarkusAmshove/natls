@@ -94,4 +94,9 @@ public class LanguageServerProject
 		library.addFile(lspFile);
 		return lspFile;
 	}
+
+	public Path rootPath()
+	{
+		return project.getRootPath();
+	}
 }

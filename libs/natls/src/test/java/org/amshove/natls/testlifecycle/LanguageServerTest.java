@@ -1,10 +1,10 @@
 package org.amshove.natls.testlifecycle;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
-
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.logging.LogManager;
 
 @LspTest
@@ -26,6 +26,25 @@ public abstract class LanguageServerTest
 	protected TextDocumentIdentifier createOrSaveFile(String libraryName, String name, SourceWithCursor source)
 	{
 		return createOrSaveFile(libraryName, name, source.source());
+	}
+
+	protected void configureEditorConfig(String editorConfig)
+	{
+		getContext().languageService().loadEditorConfig(createFileRelativeToProjectRoot(".editorconfig", editorConfig));
+	}
+
+	private Path createFileRelativeToProjectRoot(String relativePath, String content)
+	{
+		var path = getContext().project().rootPath().resolve(relativePath);
+		try
+		{
+			Files.writeString(path, content);
+			return path;
+		}
+		catch (IOException e)
+		{
+			throw new UncheckedIOException(e);
+		}
 	}
 
 	protected TextDocumentIdentifier createOrSaveFile(String libraryName, String name, String source)
