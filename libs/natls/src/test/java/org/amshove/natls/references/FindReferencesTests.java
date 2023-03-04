@@ -38,7 +38,6 @@ class FindReferencesTests extends LanguageServerTest
 		return testContext;
 	}
 
-
 	@TestFactory
 	Stream<DynamicContainer> testReferences() throws IOException
 	{
@@ -50,7 +49,7 @@ class FindReferencesTests extends LanguageServerTest
 			var lineNumber = 0;
 			for (var line : lines)
 			{
-				if (line.contains("!ref"))
+				if (line.contains("!ref")t a)
 				{
 					referenceTests.add(parseReferenceTest(file, line, lineNumber));
 				}
@@ -58,7 +57,8 @@ class FindReferencesTests extends LanguageServerTest
 			}
 		}
 		return referenceTests.stream()
-			.map(rT -> DynamicContainer.dynamicContainer(rT.file.getReferableName(), rT.expectedReferences.stream().map(ref -> {
+			.map(rT -> DynamicContainer.dynamicContainer(rT.file.getReferableName(), rT.expectedReferences.stream().map(ref ->
+			{
 				var theModule = rT.file.findNaturalModule(ref.modulename);
 
 				var params = new ReferenceParams();
@@ -72,11 +72,12 @@ class FindReferencesTests extends LanguageServerTest
 					"%d:%d -> %s:%d:%d".formatted(rT.line, rT.col, ref.modulename, ref.line, ref.col),
 					() -> assertThat(references)
 						.as("No given reference matches expected location")
-						.anyMatch(l ->
-							l.getUri().equals(theModule.file().getPath().toUri().toString())
-							&& l.getRange().getStart().getLine() == ref.line
-							&& l.getRange().getStart().getCharacter() == ref.col)
-					);
+						.anyMatch(
+							l -> l.getUri().equals(theModule.file().getPath().toUri().toString())
+								&& l.getRange().getStart().getLine() == ref.line
+								&& l.getRange().getStart().getCharacter() == ref.col
+						)
+				);
 			})));
 	}
 
