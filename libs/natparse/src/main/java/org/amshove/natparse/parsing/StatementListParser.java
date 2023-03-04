@@ -106,6 +106,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case CALLNAT:
 						statementList.addStatement(callnat());
 						break;
+					case COMPRESS:
+						statementList.addStatement(compress());
+						break;
 					case RESIZE:
 						statementList.addStatement(resize());
 						break;
@@ -279,6 +282,41 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private static final List<SyntaxKind> COMPRESS_TO_INTO = List.of(SyntaxKind.INTO, SyntaxKind.TO);
+
+	private CompressStatementNode compress() throws ParseError
+	{
+		var compress = new CompressStatementNode();
+		consumeMandatory(compress, SyntaxKind.COMPRESS);
+
+		compress.setNumeric(consumeOptionally(compress, SyntaxKind.NUMERIC));
+		compress.setFull(consumeOptionally(compress, SyntaxKind.FULL));
+
+		while (!peekAny(COMPRESS_TO_INTO) && !tokens.isAtEnd())
+		{
+			compress.addOperand(consumeSubstringOrOperand(compress));
+		}
+
+		consumeAnyMandatory(compress, COMPRESS_TO_INTO); // TO not documented but okay
+		compress.setIntoTarget(consumeSubstringOrOperand(compress));
+
+		if (consumeOptionally(compress, SyntaxKind.LEAVING))
+		{
+			compress.setLeavingSpace(!consumeOptionally(compress, SyntaxKind.NO));
+			consumeOptionally(compress, SyntaxKind.SPACE);
+		}
+
+		if (consumeOptionally(compress, SyntaxKind.WITH))
+		{
+			consumeOptionally(compress, SyntaxKind.ALL);
+			consumeAnyMandatory(compress, List.of(SyntaxKind.DELIMITER, SyntaxKind.DELIMITERS));
+			consumeOperandNode(compress);
+			compress.setWithDelimiters(true);
+		}
+
+		return compress;
 	}
 
 	private StatementNode resize() throws ParseError
