@@ -1,6 +1,7 @@
 package org.amshove.natparse.parsing.statements;
 
 import org.amshove.natparse.natural.*;
+import org.amshove.natparse.parsing.ParserError;
 import org.amshove.natparse.parsing.StatementParseTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -162,8 +163,19 @@ class CompressStatementParsingShould extends StatementParseTest
 		var compress = assertParsesSingleStatement("""
 			COMPRESS *DATX(DF=L) TO #VAR
 			""", ICompressStatementNode.class);
+	}
 
-		System.out.println(compress);
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"LEAVING SPACE WITH DELIMITER ';'", "LEAVING WITH DELIMITER ';'",
+		"LEAVING NO SPACE WITH ALL DELIMITERS ';'", "LEAVING WITH ALL DELIMITER ';'",
+	})
+	void raiseADiagnosticIfLeavingNoIsCombinedWithDelimiters(String permutation)
+	{
+		assertDiagnostic("""
+			COMPRESS #TEXT TO #VAR %s
+			""".formatted(permutation), ParserError.COMPRESS_HAS_LEAVING_NO_AND_DELIMITERS);
 	}
 
 	private void assertNodeOperand(ICompressStatementNode compress, int index, Class<? extends ITokenNode> operandType, String source)

@@ -392,4 +392,13 @@ class ParserErrors
 			ParserError.INVALID_OPERAND
 		);
 	}
+
+	public static IDiagnostic compressCantHaveLeavingNoAndWithDelimiters(SyntaxToken previousToken)
+	{
+		return ParserDiagnostic.create(
+			"COMPRESS can't have both LEAVING NO and WITH DELIMITERS. LEAVING NO is already implied when specyfing delimiters",
+			previousToken,
+			ParserError.COMPRESS_HAS_LEAVING_NO_AND_DELIMITERS
+		);
+	}
 }

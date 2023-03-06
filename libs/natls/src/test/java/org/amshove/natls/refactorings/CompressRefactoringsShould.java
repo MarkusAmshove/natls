@@ -378,45 +378,6 @@ class CompressRefactoringsShould extends CodeActionTest
 	}
 
 	@Test
-	void addLeavingNoIfAppliedAndWithDelimiterIsPresent()
-	{
-		assertCodeActionWithTitle(
-			"Add LEAVING NO SPACE to COMPRESS",
-			"LIBONE",
-			"SUBN.NSN",
-			"""
-				    DEFINE DATA
-				    LOCAL
-				    1 #VAR (A10)
-				    1 #TEXT (A) DYNAMIC
-				    END-DEFINE
-					COM${}$PRESS #VAR INTO #TEXT WITH DELIMITERS ';'
-				    END
-				"""
-		)
-			.resultsApplied(
-				"""
-						DEFINE DATA
-						LOCAL
-						1 #VAR (A10)
-						1 #TEXT (A) DYNAMIC
-						END-DEFINE
-						COMPRESS #VAR INTO #TEXT WITH DELIMITERS ';'
-						END
-					""",
-				"""
-						DEFINE DATA
-						LOCAL
-						1 #VAR (A10)
-						1 #TEXT (A) DYNAMIC
-						END-DEFINE
-						COMPRESS #VAR INTO #TEXT LEAVING NO SPACE WITH DELIMITERS ';'
-						END
-					"""
-			);
-	}
-
-	@Test
 	void offerToAddAllDelimitersIfNotPresent()
 	{
 		assertCodeActionWithTitle(
