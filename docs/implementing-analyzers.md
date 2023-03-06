@@ -53,7 +53,7 @@ In the editor window we can type our statement and press `CTRL+Return` to parse 
 On the right side of the editor you can see a tree view with the AST containing all nodes.
 On the bottom you can see all the tokens that the lexer spit out.
 
-Pressing on `COMPRESS` in the editor will mark the AST node in the right view and the align the tokens on the bottom to the selected line.
+Pressing on `COMPRESS` in the editor will mark the AST node in the right view and align the tokens on the bottom to the selected line.
 
 ![compress pressed](/assets/implementing_analyzers/compress_pressed.png)
 

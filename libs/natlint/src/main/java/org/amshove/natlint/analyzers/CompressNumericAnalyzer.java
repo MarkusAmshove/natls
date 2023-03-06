@@ -44,7 +44,7 @@ public class CompressNumericAnalyzer extends AbstractAnalyzer
 		{
 			if (operand instanceof IVariableReferenceNode reference)
 			{
-				if (reference.reference() instanceof ITypedVariableNode typedVariable)
+				if (reference.reference()instanceof ITypedVariableNode typedVariable)
 				{
 					if (typedVariable.type().length() % 1 != 0)
 					{

@@ -27,8 +27,9 @@ public class CompressNumericQuickFix extends AbstractQuickFix
 
 		return new CodeActionBuilder("Add NUMERIC to COMPRESS", CodeActionKind.QuickFix)
 			.fixesDiagnostic(quickFixContext.diagnostic())
-			.appliesWorkspaceEdit(new WorkspaceEditBuilder()
-				.changesText(compressKeyword.position(), "COMPRESS NUMERIC")
+			.appliesWorkspaceEdit(
+				new WorkspaceEditBuilder()
+					.changesText(compressKeyword.position(), "COMPRESS NUMERIC")
 			)
 			.build();
 	}

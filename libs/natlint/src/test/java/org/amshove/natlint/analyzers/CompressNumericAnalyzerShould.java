@@ -13,7 +13,8 @@ class CompressNumericAnalyzerShould extends AbstractAnalyzerTest
 	@Test
 	void raiseADiagnosticIfAnOperandHasAFloatingNumberAndNoNumericIsPresent()
 	{
-		testDiagnostics("""
+		testDiagnostics(
+			"""
 			DEFINE DATA
 			LOCAL
 			1 #VAR (N12,4)
@@ -31,7 +32,8 @@ class CompressNumericAnalyzerShould extends AbstractAnalyzerTest
 	@Test
 	void raiseNoDiagnosticIfAnOperandHasAFloatingNumberButNumericIsPresent()
 	{
-		testDiagnostics("""
+		testDiagnostics(
+			"""
 			DEFINE DATA
 			LOCAL
 			1 #VAR (N12,4)
