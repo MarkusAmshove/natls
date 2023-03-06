@@ -82,6 +82,14 @@ public class LspUtil
 		);
 	}
 
+	public static Range toRangeAfter(IPosition position)
+	{
+		return new Range(
+			new Position(position.line(), position.offsetInLine() + position.length()),
+			new Position(position.line(), position.offsetInLine() + position.length())
+		);
+	}
+
 	public static Range toRange(SyntaxToken token)
 	{
 		return toRange((IPosition) token);

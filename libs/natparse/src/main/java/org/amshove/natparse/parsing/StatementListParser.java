@@ -311,7 +311,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeAnyMandatory(compress, COMPRESS_TO_INTO); // TO not documented but okay
 		compress.setIntoTarget(consumeSubstringOrOperand(compress));
 
-		if (consumeOptionally(compress, SyntaxKind.LEAVING))
+		var consumedLeaving = consumeOptionally(compress, SyntaxKind.LEAVING);
+		if (consumedLeaving)
 		{
 			compress.setLeavingSpace(!consumeOptionally(compress, SyntaxKind.NO));
 			consumeOptionally(compress, SyntaxKind.SPACE);
@@ -319,12 +320,18 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		if (consumeOptionally(compress, SyntaxKind.WITH))
 		{
+			if (consumedLeaving)
+			{
+				report(ParserErrors.compressCantHaveLeavingNoAndWithDelimiters(previousToken()));
+			}
+
 			consumeOptionally(compress, SyntaxKind.ALL);
 			consumeAnyMandatory(compress, List.of(SyntaxKind.DELIMITER, SyntaxKind.DELIMITERS));
 			if (isOperand())
 			{
 				consumeOperandNode(compress);
 			}
+			compress.setLeavingSpace(false);
 			compress.setWithDelimiters(true);
 		}
 
