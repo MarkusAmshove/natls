@@ -6,10 +6,7 @@ import org.amshove.natlint.api.IAnalyzeContext;
 import org.amshove.natlint.api.ILinterContext;
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.ReadOnlyList;
-import org.amshove.natparse.natural.ICompressStatementNode;
-import org.amshove.natparse.natural.ISyntaxNode;
-import org.amshove.natparse.natural.ITypedVariableNode;
-import org.amshove.natparse.natural.IVariableReferenceNode;
+import org.amshove.natparse.natural.*;
 
 public class CompressNumericAnalyzer extends AbstractAnalyzer
 {
@@ -46,7 +43,7 @@ public class CompressNumericAnalyzer extends AbstractAnalyzer
 			{
 				if (reference.reference()instanceof ITypedVariableNode typedVariable)
 				{
-					if (typedVariable.type().length() % 1 != 0)
+					if (typedVariable.type().length() % 1 != 0 || typedVariable.type().format() == DataFormat.FLOAT)
 					{
 						context.report(COMPRESS_SHOULD_HAVE_NUMERIC.createDiagnostic(compress));
 						return;
