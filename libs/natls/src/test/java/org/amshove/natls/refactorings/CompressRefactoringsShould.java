@@ -66,8 +66,8 @@ class CompressRefactoringsShould extends CodeActionTest
 				    END
 				"""
 		)
-		.resultsApplied(
-			"""
+			.resultsApplied(
+				"""
 					DEFINE DATA
 					LOCAL
 					1 #VAR (A10)
@@ -76,7 +76,7 @@ class CompressRefactoringsShould extends CodeActionTest
 					COMPRESS #VAR INTO #TEXT
 					END
 				""",
-			"""
+				"""
 					DEFINE DATA
 					LOCAL
 					1 #VAR (A10)
@@ -85,7 +85,7 @@ class CompressRefactoringsShould extends CodeActionTest
 					COMPRESS FULL #VAR INTO #TEXT
 					END
 				"""
-		);
+			);
 	}
 
 	@Test
@@ -143,8 +143,8 @@ class CompressRefactoringsShould extends CodeActionTest
 				    END
 				"""
 		)
-		.resultsApplied(
-			"""
+			.resultsApplied(
+				"""
 					DEFINE DATA
 					LOCAL
 					1 #VAR (A10)
@@ -153,7 +153,7 @@ class CompressRefactoringsShould extends CodeActionTest
 					COMPRESS #VAR INTO #TEXT
 					END
 				""",
-			"""
+				"""
 					DEFINE DATA
 					LOCAL
 					1 #VAR (A10)
@@ -162,7 +162,7 @@ class CompressRefactoringsShould extends CodeActionTest
 					COMPRESS NUMERIC #VAR INTO #TEXT
 					END
 				"""
-		);
+			);
 	}
 
 	@Test

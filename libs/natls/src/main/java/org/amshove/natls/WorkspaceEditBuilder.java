@@ -56,10 +56,11 @@ public class WorkspaceEditBuilder
 		var lastNode = node.descendants().last();
 		var lastNodeSource = lastNode instanceof ITokenNode tokenNode
 			? tokenNode.token().source()
-			:Objects.requireNonNull(lastNode.findDescendantOfType(ITokenNode.class)).token().source() ;
+			: Objects.requireNonNull(lastNode.findDescendantOfType(ITokenNode.class)).token().source();
 		return changesText(
 			lastNode.position(),
-			 lastNodeSource + text);
+			lastNodeSource + text
+		);
 	}
 
 	public WorkspaceEditBuilder changesText(String fileUri, Range range, String newText)

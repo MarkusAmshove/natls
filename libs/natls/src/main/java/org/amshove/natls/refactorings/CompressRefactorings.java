@@ -19,7 +19,7 @@ public class CompressRefactorings implements ICodeActionProvider
 	@Override
 	public boolean isApplicable(RefactoringContext context)
 	{
-		return context.nodeAtPosition() instanceof ICompressStatementNode compressStatementNode
+		return context.nodeAtPosition()instanceof ICompressStatementNode compressStatementNode
 			&& (!compressStatementNode.isFull() || !compressStatementNode.isNumeric() || !compressStatementNode.isWithDelimiters());
 	}
 
@@ -33,10 +33,14 @@ public class CompressRefactorings implements ICodeActionProvider
 
 		if (!compress.isFull())
 		{
-			actions.add(new CodeActionBuilder("Add FULL to COMPRESS", CodeActionKind.RefactorRewrite)
-				.appliesWorkspaceEdit(new WorkspaceEditBuilder()
-					.changesText(compressKeyword.position(), "COMPRESS FULL"))
-				.build());
+			actions.add(
+				new CodeActionBuilder("Add FULL to COMPRESS", CodeActionKind.RefactorRewrite)
+					.appliesWorkspaceEdit(
+						new WorkspaceEditBuilder()
+							.changesText(compressKeyword.position(), "COMPRESS FULL")
+					)
+					.build()
+			);
 		}
 
 		if (!compress.isNumeric())
@@ -48,33 +52,49 @@ public class CompressRefactorings implements ICodeActionProvider
 				? "NUMERIC FULL"
 				: "COMPRESS NUMERIC";
 
-			actions.add(new CodeActionBuilder("Add NUMERIC to COMPRESS", CodeActionKind.RefactorRewrite)
-				.appliesWorkspaceEdit(new WorkspaceEditBuilder()
-					.changesText(position, replacement))
-				.build());
+			actions.add(
+				new CodeActionBuilder("Add NUMERIC to COMPRESS", CodeActionKind.RefactorRewrite)
+					.appliesWorkspaceEdit(
+						new WorkspaceEditBuilder()
+							.changesText(position, replacement)
+					)
+					.build()
+			);
 		}
 
 		if (!compress.isWithDelimiters())
 		{
-			actions.add(new CodeActionBuilder("Add WITH DELIMITERS to COMPRESS", CodeActionKind.RefactorRewrite)
-				.appliesWorkspaceEdit(new WorkspaceEditBuilder()
-					.appendsToNode(compress, " WITH DELIMITERS ';'"))
-				.build());
+			actions.add(
+				new CodeActionBuilder("Add WITH DELIMITERS to COMPRESS", CodeActionKind.RefactorRewrite)
+					.appliesWorkspaceEdit(
+						new WorkspaceEditBuilder()
+							.appendsToNode(compress, " WITH DELIMITERS ';'")
+					)
+					.build()
+			);
 
-			actions.add(new CodeActionBuilder("Add WITH ALL DELIMITERS to COMPRESS", CodeActionKind.RefactorRewrite)
-				.appliesWorkspaceEdit(new WorkspaceEditBuilder()
-					.appendsToNode(compress, " WITH ALL DELIMITERS ';'"))
-				.build());
+			actions.add(
+				new CodeActionBuilder("Add WITH ALL DELIMITERS to COMPRESS", CodeActionKind.RefactorRewrite)
+					.appliesWorkspaceEdit(
+						new WorkspaceEditBuilder()
+							.appendsToNode(compress, " WITH ALL DELIMITERS ';'")
+					)
+					.build()
+			);
 		}
 
 		if (compress.isWithDelimiters() && compress.findDescendantToken(SyntaxKind.ALL) == null)
 		{
 			var withToken = Objects.requireNonNull(compress.findDescendantToken(SyntaxKind.WITH));
 
-			actions.add(new CodeActionBuilder("Add ALL to DELIMITERS", CodeActionKind.RefactorRewrite)
-				.appliesWorkspaceEdit(new WorkspaceEditBuilder()
-					.changesText(withToken.position(), "WITH ALL"))
-				.build());
+			actions.add(
+				new CodeActionBuilder("Add ALL to DELIMITERS", CodeActionKind.RefactorRewrite)
+					.appliesWorkspaceEdit(
+						new WorkspaceEditBuilder()
+							.changesText(withToken.position(), "WITH ALL")
+					)
+					.build()
+			);
 		}
 
 		if (compress.isLeavingSpace())
@@ -82,10 +102,14 @@ public class CompressRefactorings implements ICodeActionProvider
 			var intoPosition = compress.intoTarget().position();
 			var intoSource = Objects.requireNonNull(compress.intoTarget().findDescendantOfType(ITokenNode.class)).token().source();
 
-			actions.add(new CodeActionBuilder("Add LEAVING NO SPACE to COMPRESS", CodeActionKind.RefactorRewrite)
-				.appliesWorkspaceEdit(new WorkspaceEditBuilder()
-					.changesText(intoPosition, intoSource + " LEAVING NO SPACE"))
-				.build());
+			actions.add(
+				new CodeActionBuilder("Add LEAVING NO SPACE to COMPRESS", CodeActionKind.RefactorRewrite)
+					.appliesWorkspaceEdit(
+						new WorkspaceEditBuilder()
+							.changesText(intoPosition, intoSource + " LEAVING NO SPACE")
+					)
+					.build()
+			);
 		}
 
 		return actions;
