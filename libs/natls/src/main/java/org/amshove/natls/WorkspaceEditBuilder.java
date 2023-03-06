@@ -7,15 +7,13 @@ import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.natural.IHasDefineData;
 import org.amshove.natparse.natural.ISyntaxNode;
+import org.amshove.natparse.natural.ITokenNode;
 import org.amshove.natparse.natural.VariableScope;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.WorkspaceEdit;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class WorkspaceEditBuilder
 {
@@ -51,6 +49,17 @@ public class WorkspaceEditBuilder
 
 		edits.add(edit);
 		return this;
+	}
+
+	public WorkspaceEditBuilder appendsToNode(ISyntaxNode node, String text)
+	{
+		var lastNode = node.descendants().last();
+		var lastNodeSource = lastNode instanceof ITokenNode tokenNode
+			? tokenNode.token().source()
+			:Objects.requireNonNull(lastNode.findDescendantOfType(ITokenNode.class)).token().source() ;
+		return changesText(
+			lastNode.position(),
+			 lastNodeSource + text);
 	}
 
 	public WorkspaceEditBuilder changesText(String fileUri, Range range, String newText)

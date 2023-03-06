@@ -43,10 +43,29 @@ public abstract class CodeActionTest extends LanguageServerTest
 		assertThat(receiveCodeActions(library, module, source).codeActions()).isEmpty();
 	}
 
+	protected void assertNoCodeAction(String library, String module, String source, String title)
+	{
+		assertThat(receiveCodeActions(library, module, source).codeActions()).noneMatch(ca -> ca.getTitle().equals(title));
+	}
+
 	protected CodeActionAssertion assertSingleCodeAction(String actionTitle, String library, String moduleName, String code)
 	{
 		return assertSingleCodeAction(receiveCodeActions(library, moduleName, code).codeActions())
 			.hasTitle(actionTitle);
+	}
+
+	protected CodeActionAssertion assertCodeActionWithTitle(String actionTitle, String library, String moduleName, String code)
+	{
+		var codeActions = receiveCodeActions(library, moduleName, code).codeActions();
+		assertContainsCodeAction(actionTitle, codeActions);
+		//noinspection OptionalGetWithoutIsPresent
+		return new CodeActionAssertion(codeActions.stream().filter(ca -> ca.getTitle().equals(actionTitle)).findAny().get());
+	}
+
+	protected void assertNoCodeActionWithTitle(String actionTitle, String library, String moduleName, String code)
+	{
+		var codeActions = receiveCodeActions(library, moduleName, code).codeActions();
+		assertThat(codeActions).noneMatch(ca -> ca.getTitle().equals(actionTitle));
 	}
 
 	protected void assertContainsCodeAction(String title, List<CodeAction> codeActions)
