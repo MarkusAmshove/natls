@@ -13,7 +13,8 @@ class CompressNumericAnalyzerShould extends AbstractAnalyzerTest
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"N12,4", "F8"
 	})
 	void raiseADiagnosticIfAnOperandHasAFloatingNumberAndNoNumericIsPresent(String type)
