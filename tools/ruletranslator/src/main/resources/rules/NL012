@@ -1,0 +1,6 @@
+name: COMPRESS statement might be missing NUMERIC
+priority: MINOR
+tags: pitfall
+type: BUG
+description:
+COMPRESS statements compressing floating point numbers need to have the ``NUMERIC`` option to include ``-`` and decimals.

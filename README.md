@@ -26,6 +26,13 @@ The language server supports, but isn't limited to:
 Contributions in the form of code, issues and feature requests are always welcome.
 Check out the [contribution guide](CONTRIBUTING.md) to find out more.
 
+You can write your own analyzers, quickfixes and refactorings.
+There is some guidance to follow along in the form of documentation:
+
+- [Implementing Analyzers](docs/implementing-analyzers.md)
+- [Implementing Quickfixes](docs/implementing-quickfixes.md)
+- [Implementing Refactorings](docs/implementing-refactorings.md)
+
 ## Projects
 
 ```mermaid
@@ -66,7 +73,7 @@ The parser is still [incomplete](docs/implemented-statements.md) and has some ro
 It also currently uses some hard coded assumptions about the language settings that should be configurable by the `.natural` file (like thousands seperators), which means that e.g. regional settings aren't considered.
 Reporting Mode hasn't been considered yet, so currently only the structured mode syntax of statements is parsed correctly.
 
-Some analyzers assume a coding style that might not fit your needs. This will be [configurable](https://github.com/MarkusAmshove/natls/issues/62) in the future.
+Some analyzers assume a coding style that might not fit your needs. Some of these are [configurable](docs/analyzer-config.md). If you're missing some options, feel free to open an issue.
 
 ## Running natlint
 
