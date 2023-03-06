@@ -10,6 +10,8 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
+
+@LspTest
 public abstract class CodeActionTest extends LanguageServerTest
 {
 	protected abstract ICodeActionProvider getCodeActionUnderTest();
