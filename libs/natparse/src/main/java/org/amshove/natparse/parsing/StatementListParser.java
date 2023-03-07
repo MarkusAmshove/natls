@@ -285,6 +285,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return statementList;
 	}
 
+	private static final List<String> ALLOWED_WORK_FILE_ATTRIBUTES = List.of("NOAPPEND", "APPEND", "DELETE", "KEEP", "BOM", "NOBOM", "KEEPCR", "REMOVECR");
+	private static final List<String> ALLOWED_WORK_FILE_TYPES = List.of("DEFAULT", "TRANSFER", "SAG", "ASCII", "ASCII-COMPRESSED", "ENTIRECONNECTION", "UNFORMATTED", "PORTABLE", "CSV");
 	private StatementNode defineWork() throws ParseError
 	{
 		var work = new DefineWorkFileNode();
@@ -311,7 +313,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			var type = consumeOperandNode(work);
 			checkOperand(type, "The type of a work file can only be a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
 			checkLiteralTypeIfLiteral(type, SyntaxKind.STRING_LITERAL);
-			checkStringLiteralValue(type, "DEFAULT", "TRANSFER", "SAG", "ASCII", "ASCII-COMPRESSED", "ENTIRECONNECTION", "UNFORMATTED", "PORTABLE", "CSV");
+			checkStringLiteralValue(type, ALLOWED_WORK_FILE_TYPES);
 
 			work.setType(type);
 		}
@@ -331,7 +333,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				var values = attributeValues.split(separator);
 				for (var value : values)
 				{
-					checkConstantStringValue(attributes, value.trim(), "NOAPPEND", "APPEND", "DELETE", "KEEP", "BOM", "NOBOM", "KEEPCR", "REMOVECR");
+					checkConstantStringValue(attributes, value.trim(), ALLOWED_WORK_FILE_ATTRIBUTES);
 				}
 			}
 
@@ -2198,22 +2200,22 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		report(ParserErrors.invalidOperand(operand, message, allowedOperands));
 	}
 
-	private void checkConstantStringValue(IOperandNode node, String actualValue, String... allowedValues)
+	private void checkConstantStringValue(IOperandNode node, String actualValue, List<String> allowedValues)
 	{
-		if (!Arrays.asList(allowedValues).contains(actualValue))
+		if (!allowedValues.contains(actualValue))
 		{
 			report(ParserErrors.invalidStringLiteral(node, actualValue, allowedValues));
 		}
 	}
 
-	private void checkStringLiteralValue(IOperandNode node, String... allowedValues)
+	private void checkStringLiteralValue(IOperandNode node, List<String> allowedValues)
 	{
 		if (!(node instanceof ILiteralNode literalNode) || literalNode.token().kind() != SyntaxKind.STRING_LITERAL)
 		{
 			return;
 		}
 
-		if (!Arrays.asList(allowedValues).contains(literalNode.token().stringValue()))
+		if (!allowedValues.contains(literalNode.token().stringValue()))
 		{
 			report(ParserErrors.invalidStringLiteral(literalNode, literalNode.token().stringValue(), allowedValues));
 		}

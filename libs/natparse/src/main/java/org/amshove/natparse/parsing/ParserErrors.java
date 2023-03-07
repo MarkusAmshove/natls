@@ -420,7 +420,7 @@ class ParserErrors
 		);
 	}
 
-	public static IDiagnostic invalidStringLiteral(IOperandNode node, String actual, String... allowed)
+	public static IDiagnostic invalidStringLiteral(IOperandNode node, String actual, List<String> allowed)
 	{
 		return ParserDiagnostic.create(
 			"Value %s is not allowed. Allowed values: %s".formatted(actual, String.join(", ", allowed)),
