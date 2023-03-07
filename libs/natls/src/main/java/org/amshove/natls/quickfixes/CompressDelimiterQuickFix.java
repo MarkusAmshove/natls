@@ -8,28 +8,28 @@ import org.amshove.natparse.lexing.SyntaxKind;
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionKind;
 
-public class CompressNumericQuickFix extends AbstractQuickFix
+public class CompressDelimiterQuickFix extends AbstractQuickFix
 {
 	@Override
 	protected void registerQuickfixes()
 	{
-		registerQuickFix(CompressAnalyzer.COMPRESS_SHOULD_HAVE_NUMERIC, this::addNumericToCompress);
+		registerQuickFix(CompressAnalyzer.COMPRESS_SHOULD_HAVE_ALL_DELIMITERS, this::addAllToCompress);
 	}
 
-	private CodeAction addNumericToCompress(QuickFixContext quickFixContext)
+	private CodeAction addAllToCompress(QuickFixContext quickFixContext)
 	{
-		var compressKeyword = quickFixContext.nodeAtPosition().findDescendantToken(SyntaxKind.COMPRESS);
+		var withKeyword = quickFixContext.nodeAtPosition().findDescendantToken(SyntaxKind.WITH);
 
-		if (compressKeyword == null)
+		if (withKeyword == null)
 		{
 			return null;
 		}
 
-		return new CodeActionBuilder("Add NUMERIC to COMPRESS", CodeActionKind.QuickFix)
+		return new CodeActionBuilder("Add ALL to COMPRESS", CodeActionKind.QuickFix)
 			.fixesDiagnostic(quickFixContext.diagnostic())
 			.appliesWorkspaceEdit(
 				new WorkspaceEditBuilder()
-					.changesText(compressKeyword.position(), "COMPRESS NUMERIC")
+					.changesText(withKeyword.position(), "WITH ALL")
 			)
 			.build();
 	}
