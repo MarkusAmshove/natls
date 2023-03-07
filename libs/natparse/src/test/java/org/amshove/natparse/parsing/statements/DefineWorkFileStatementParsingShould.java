@@ -24,15 +24,18 @@ class DefineWorkFileStatementParsingShould extends StatementParseTest
 	}
 
 	@ParameterizedTest
-	@ValueSource(ints = {
+	@ValueSource(ints =
+	{
 		-5, 33, 0, 55
 	})
 	void raiseADiagnosticIfTheWorkfileNumberIsInvalid(int value)
 	{
-		assertDiagnostic("""
+		assertDiagnostic(
+			"""
 			DEFINE WORK FILE %d
 			""".formatted(value),
-			ParserError.INVALID_LITERAL_VALUE);
+			ParserError.INVALID_LITERAL_VALUE
+		);
 	}
 
 	@Test
@@ -42,7 +45,7 @@ class DefineWorkFileStatementParsingShould extends StatementParseTest
 			DEFINE WORK FILE 1 '/path/to/file'
 			""", IDefineWorkFileNode.class);
 
- 		assertThat(assertNodeType(define.path(), ILiteralNode.class).token().stringValue()).isEqualTo("/path/to/file");
+		assertThat(assertNodeType(define.path(), ILiteralNode.class).token().stringValue()).isEqualTo("/path/to/file");
 	}
 
 	@Test
@@ -58,19 +61,23 @@ class DefineWorkFileStatementParsingShould extends StatementParseTest
 	@Test
 	void raiseADiagnosticIfThePathHasAnInvalidType()
 	{
-		assertDiagnostic("""
+		assertDiagnostic(
+			"""
 			DEFINE WORK FILE 1 5
 			""",
-			ParserError.TYPE_MISMATCH);
+			ParserError.TYPE_MISMATCH
+		);
 	}
 
 	@Test
 	void parseAWorkfileWithoutPathButWithType()
 	{
-		var work = assertParsesSingleStatement("""
+		var work = assertParsesSingleStatement(
+			"""
 			DEFINE WORK FILE 1 TYPE 'CSV'
 			""",
-			IDefineWorkFileNode.class);
+			IDefineWorkFileNode.class
+		);
 
 		assertThat(assertNodeType(work.type(), ILiteralNode.class).token().stringValue()).isEqualTo("CSV");
 	}
@@ -78,16 +85,19 @@ class DefineWorkFileStatementParsingShould extends StatementParseTest
 	@Test
 	void parseAWorkfileWithPathAndWithType()
 	{
-		var work = assertParsesSingleStatement("""
+		var work = assertParsesSingleStatement(
+			"""
 			DEFINE WORK FILE 1 'file.txt' TYPE 'CSV'
 			""",
-			IDefineWorkFileNode.class);
+			IDefineWorkFileNode.class
+		);
 
 		assertThat(assertNodeType(work.type(), ILiteralNode.class).token().stringValue()).isEqualTo("CSV");
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"DEFAULT", "TRANSFER", "SAG", "ASCII", "ASCII-COMPRESSED", "ENTIRECONNECTION", "UNFORMATTED", "PORTABLE", "CSV"
 	})
 	void notRaiseADiagnosticForAllowedWorkfileTypes(String type)
@@ -98,24 +108,29 @@ class DefineWorkFileStatementParsingShould extends StatementParseTest
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"JSON", "XML", "DONTKNOW"
 	})
 	void raiseADiagnosticForInvalidWorkfileTypes(String type)
 	{
-		assertDiagnostic("""
+		assertDiagnostic(
+			"""
 			DEFINE WORK FILE 1 'file.txt' TYPE '%s'
 			""".formatted(type),
-			ParserError.INVALID_LITERAL_VALUE);
+			ParserError.INVALID_LITERAL_VALUE
+		);
 	}
 
 	@Test
 	void parseAWorkfileWithAttribute()
 	{
-		var work = assertParsesSingleStatement("""
+		var work = assertParsesSingleStatement(
+			"""
 			DEFINE WORK FILE 1 'file.txt' ATTRIBUTES 'BOM'
 			""",
-			IDefineWorkFileNode.class);
+			IDefineWorkFileNode.class
+		);
 
 		assertThat(assertNodeType(work.attributes(), ILiteralNode.class).token().stringValue()).isEqualTo("BOM");
 	}
@@ -123,10 +138,12 @@ class DefineWorkFileStatementParsingShould extends StatementParseTest
 	@Test
 	void parseAWorkfileWithMultipleAttributeCommaSeparated()
 	{
-		var work = assertParsesSingleStatement("""
+		var work = assertParsesSingleStatement(
+			"""
 			DEFINE WORK FILE 1 'file.txt' ATTRIBUTES 'BOM,KEEP'
 			""",
-			IDefineWorkFileNode.class);
+			IDefineWorkFileNode.class
+		);
 
 		assertThat(assertNodeType(work.attributes(), ILiteralNode.class).token().stringValue()).isEqualTo("BOM,KEEP");
 	}
@@ -134,16 +151,19 @@ class DefineWorkFileStatementParsingShould extends StatementParseTest
 	@Test
 	void parseAWorkfileWithMultipleAttributeWhitespaceSeparated()
 	{
-		var work = assertParsesSingleStatement("""
+		var work = assertParsesSingleStatement(
+			"""
 			DEFINE WORK FILE 1 'file.txt' ATTRIBUTES 'BOM KEEP'
 			""",
-			IDefineWorkFileNode.class);
+			IDefineWorkFileNode.class
+		);
 
 		assertThat(assertNodeType(work.attributes(), ILiteralNode.class).token().stringValue()).isEqualTo("BOM KEEP");
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"NOAPPEND", "APPEND", "DELETE", "KEEP", "BOM", "NOBOM", "KEEPCR", "REMOVECR"
 	})
 	void notRaiseADiagnosticForAllowedWorkfileAttributes(String attributes)
@@ -154,14 +174,17 @@ class DefineWorkFileStatementParsingShould extends StatementParseTest
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"WHAT", "IS", "THIS"
 	})
 	void raiseADiagnosticForWorkfilesWithInvalidAttributes(String attributes)
 	{
-		assertDiagnostic("""
+		assertDiagnostic(
+			"""
 			DEFINE WORK FILE 1 'file.txt' ATTRIBUTES '%s'
 			""".formatted(attributes),
-			ParserError.INVALID_LITERAL_VALUE);
+			ParserError.INVALID_LITERAL_VALUE
+		);
 	}
 }

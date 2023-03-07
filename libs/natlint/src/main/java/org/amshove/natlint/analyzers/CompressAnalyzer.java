@@ -64,7 +64,7 @@ public class CompressAnalyzer extends AbstractAnalyzer
 		{
 			if (operand instanceof IVariableReferenceNode reference)
 			{
-				if (reference.reference() instanceof ITypedVariableNode typedVariable
+				if (reference.reference()instanceof ITypedVariableNode typedVariable
 					&& typedVariable.type() != null) // TODO: this is only null when the variable is from a DDM. This should not happen
 				{
 					if (typedVariable.type().length() % 1 != 0 || typedVariable.type().format() == DataFormat.FLOAT)

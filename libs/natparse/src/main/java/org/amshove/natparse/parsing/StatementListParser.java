@@ -2189,10 +2189,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private void checkOperand(IOperandNode operand, String message, AllowedOperand... allowedOperands)
 	{
 		var operands = Arrays.asList(allowedOperands);
-		if (
-			(operand instanceof IVariableReferenceNode) && operands.contains(AllowedOperand.VARIABLE_REFERENCE)
-			|| (operand instanceof ILiteralNode) && operands.contains(AllowedOperand.LITERAL)
-		)
+		if ((operand instanceof IVariableReferenceNode) && operands.contains(AllowedOperand.VARIABLE_REFERENCE)
+			|| (operand instanceof ILiteralNode) && operands.contains(AllowedOperand.LITERAL))
 		{
 			return;
 		}
