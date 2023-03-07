@@ -90,7 +90,7 @@ public class CompressRefactorings implements ICodeActionProvider
 			);
 		}
 
-		if (compress.isWithDelimiters() && compress.findDescendantToken(SyntaxKind.ALL) == null)
+		if (compress.isWithDelimiters() && !compress.isWithAllDelimiters())
 		{
 			var withToken = Objects.requireNonNull(compress.findDescendantToken(SyntaxKind.WITH));
 

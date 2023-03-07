@@ -15,4 +15,8 @@ public interface ICompressStatementNode extends IStatementNode
 	boolean isLeavingSpace();
 
 	boolean isWithDelimiters();
+
+	boolean isWithAllDelimiters();
+
+	IOperandNode delimiter();
 }

@@ -1,0 +1,8 @@
+name: COMPRESS WITH DELIMITER might be missing ALL
+priority: MINOR
+tags: pitfall
+type: BUG
+description:
+The ``COMPRESS`` looks like it is building a CSV line.
+
+You might want to add ``ALL`` to delimiters, because otherwise empty fields will not be included and resulting CSV lines might miss fields.
