@@ -287,6 +287,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private static final List<String> ALLOWED_WORK_FILE_ATTRIBUTES = List.of("NOAPPEND", "APPEND", "DELETE", "KEEP", "BOM", "NOBOM", "KEEPCR", "REMOVECR");
 	private static final List<String> ALLOWED_WORK_FILE_TYPES = List.of("DEFAULT", "TRANSFER", "SAG", "ASCII", "ASCII-COMPRESSED", "ENTIRECONNECTION", "UNFORMATTED", "PORTABLE", "CSV");
+
 	private StatementNode defineWork() throws ParseError
 	{
 		var work = new DefineWorkFileNode();
