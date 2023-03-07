@@ -205,6 +205,45 @@ class CompressRefactoringsShould extends CodeActionTest
 	}
 
 	@Test
+	void addFullToCompressBeforeNumericIfApplied()
+	{
+		assertCodeActionWithTitle(
+			"Add FULL to COMPRESS",
+			"LIBONE",
+			"SUBN.NSN",
+			"""
+				    DEFINE DATA
+				    LOCAL
+				    1 #VAR (A10)
+				    1 #TEXT (A) DYNAMIC
+				    END-DEFINE
+					COM${}$PRESS NUMERIC #VAR INTO #TEXT
+				    END
+				"""
+		)
+			.resultsApplied(
+				"""
+						DEFINE DATA
+						LOCAL
+						1 #VAR (A10)
+						1 #TEXT (A) DYNAMIC
+						END-DEFINE
+						COMPRESS NUMERIC #VAR INTO #TEXT
+						END
+					""",
+				"""
+						DEFINE DATA
+						LOCAL
+						1 #VAR (A10)
+						1 #TEXT (A) DYNAMIC
+						END-DEFINE
+						COMPRESS NUMERIC FULL #VAR INTO #TEXT
+						END
+					"""
+			);
+	}
+
+	@Test
 	void offerToAddDelimitersIfNotPresent()
 	{
 		assertCodeActionWithTitle(

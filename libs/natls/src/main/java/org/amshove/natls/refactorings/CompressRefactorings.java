@@ -33,11 +33,18 @@ public class CompressRefactorings implements ICodeActionProvider
 
 		if (!compress.isFull())
 		{
+			var position = compress.isNumeric()
+				? Objects.requireNonNull(compress.findDescendantToken(SyntaxKind.NUMERIC)).position()
+				: compressKeyword.position();
+			var replacement = compress.isNumeric()
+				? "NUMERIC FULL"
+				: "COMPRESS FULL";
+
 			actions.add(
 				new CodeActionBuilder("Add FULL to COMPRESS", CodeActionKind.RefactorRewrite)
 					.appliesWorkspaceEdit(
 						new WorkspaceEditBuilder()
-							.changesText(compressKeyword.position(), "COMPRESS FULL")
+							.changesText(position, replacement)
 					)
 					.build()
 			);
