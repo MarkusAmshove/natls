@@ -683,6 +683,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.MACHINE_CLASS);
 			return;
 		}
+		if (scanner.advanceIfIgnoreCase("TIME"))
+		{
+			createAndAdd(SyntaxKind.SV_TIME);
+			return;
+		}
 		scanner.rollbackCurrentLexeme();
 		createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
 	}
