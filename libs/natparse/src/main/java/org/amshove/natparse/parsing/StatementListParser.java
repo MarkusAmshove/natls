@@ -331,7 +331,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				var values = attributeValues.split(separator);
 				for (var value : values)
 				{
-					checkConstantStringValue(attributes, value, "NOAPPEND", "APPEND", "DELETE", "KEEP", "BOM", "NOBOM", "KEEPCR", "REMOVECR");
+					checkConstantStringValue(attributes, value.trim(), "NOAPPEND", "APPEND", "DELETE", "KEEP", "BOM", "NOBOM", "KEEPCR", "REMOVECR");
 				}
 			}
 
