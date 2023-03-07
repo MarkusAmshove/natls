@@ -1,9 +1,13 @@
 package org.amshove.natls.natunit;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -11,6 +15,21 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 class NatUnitResultParserShould
 {
+	private PrintStream stderr;
+
+	@BeforeEach
+	void disableStdErr()
+	{
+		stderr = System.err;
+		System.setErr(new PrintStream(new ByteArrayOutputStream()));
+	}
+
+	@AfterEach
+	void enableStdErr()
+	{
+		System.setErr(stderr);
+	}
+
 	@Test
 	void parseAResult(@TempDir Path tempDirectory) throws IOException
 	{
