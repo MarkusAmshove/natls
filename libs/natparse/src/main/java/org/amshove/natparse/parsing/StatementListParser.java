@@ -325,11 +325,19 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				report(ParserErrors.compressCantHaveLeavingNoAndWithDelimiters(previousToken()));
 			}
 
-			consumeOptionally(compress, SyntaxKind.ALL);
+			compress.setWithAllDelimiters(consumeOptionally(compress, SyntaxKind.ALL));
 			consumeAnyMandatory(compress, List.of(SyntaxKind.DELIMITER, SyntaxKind.DELIMITERS));
 			if (isOperand())
 			{
-				consumeOperandNode(compress);
+				var delimiter = consumeOperandNode(compress);
+				if (delimiter instanceof ILiteralNode literal)
+				{
+					if (checkLiteralType(literal, SyntaxKind.STRING_LITERAL))
+					{
+						checkStringLength(literal.token(), literal.token().stringValue(), 1);
+					}
+				}
+				compress.setDelimiter(delimiter);
 			}
 			compress.setLeavingSpace(false);
 			compress.setWithDelimiters(true);
@@ -1100,6 +1108,17 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return printer;
+	}
+
+	private boolean checkLiteralType(ILiteralNode literal, SyntaxKind allowedKind)
+	{
+		if (literal.token().kind() != allowedKind)
+		{
+			report(ParserErrors.invalidLiteralType(literal, allowedKind));
+			return false;
+		}
+
+		return true;
 	}
 
 	private void checkStringLength(SyntaxToken token, String stringValue, int maxLength)

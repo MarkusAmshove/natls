@@ -14,6 +14,8 @@ class CompressStatementNode extends StatementNode implements ICompressStatementN
 	private boolean isFull;
 	private boolean isLeavingSpace = true;
 	private boolean isWithDelimiters;
+	private boolean isWithAllDelimiters;
+	private IOperandNode delimiter;
 
 	@Override
 	public IOperandNode intoTarget()
@@ -51,6 +53,18 @@ class CompressStatementNode extends StatementNode implements ICompressStatementN
 		return isWithDelimiters;
 	}
 
+	@Override
+	public boolean isWithAllDelimiters()
+	{
+		return isWithAllDelimiters;
+	}
+
+	@Override
+	public IOperandNode delimiter()
+	{
+		return delimiter;
+	}
+
 	void setIntoTarget(IOperandNode intoTarget)
 	{
 		this.intoTarget = intoTarget;
@@ -76,8 +90,18 @@ class CompressStatementNode extends StatementNode implements ICompressStatementN
 		isWithDelimiters = withDelimiters;
 	}
 
+	void setWithAllDelimiters(boolean withAllDelimiters)
+	{
+		isWithAllDelimiters = withAllDelimiters;
+	}
+
 	void addOperand(IOperandNode consumeOperandNode)
 	{
 		operands.add(consumeOperandNode);
+	}
+
+	void setDelimiter(IOperandNode delimiter)
+	{
+		this.delimiter = delimiter;
 	}
 }

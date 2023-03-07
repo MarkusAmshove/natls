@@ -1,0 +1,6 @@
+name: Type mismatch
+priority: BLOCKER
+tags: compile-time
+type: BUG
+description:
+The expected and the given type don't match directly or implicitly.

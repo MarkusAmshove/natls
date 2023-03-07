@@ -74,6 +74,27 @@ class CompressStatementParsingShould extends StatementParseTest
 		assertThat(compress.isWithDelimiters()).isTrue();
 	}
 
+	@Test
+	void parseWithAllDelimiters()
+	{
+		var compress = assertParsesSingleStatement("COMPRESS #VARS(*) INTO #VAR WITH ALL DELIMITERS ';'", ICompressStatementNode.class);
+		assertThat(compress.isWithDelimiters()).isTrue();
+		assertThat(compress.isWithAllDelimiters()).isTrue();
+		assertThat(assertNodeType(compress.delimiter(), ILiteralNode.class).token().stringValue()).isEqualTo(";");
+	}
+
+	@Test
+	void raiseADiagnosticIfTheDelimiterIsOfIncorrectType()
+	{
+		assertDiagnostic("COMPRESS #VAR INTO #VAR2 WITH ALL DELIMITERS 5", ParserError.TYPE_MISMATCH);
+	}
+
+	@Test
+	void raiseADiagnosticIfTheDelimiterLengthIsGreaterThanOne()
+	{
+		assertDiagnostic("COMPRESS #VAR INTO #VAR2 WITH ALL DELIMITERS 'abc'", ParserError.INVALID_LENGTH_FOR_LITERAL);
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{

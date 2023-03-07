@@ -401,4 +401,13 @@ class ParserErrors
 			ParserError.COMPRESS_HAS_LEAVING_NO_AND_DELIMITERS
 		);
 	}
+
+	public static IDiagnostic invalidLiteralType(ILiteralNode literal, SyntaxKind allowedKind)
+	{
+		return ParserDiagnostic.create(
+			"Invalid type for literal. Expected %s but got %s".formatted(literal.token().kind(), allowedKind),
+			literal,
+			ParserError.TYPE_MISMATCH
+		);
+	}
 }
