@@ -1,0 +1,6 @@
+name: Multiple work file attributes of the same type specified
+priority: MAJOR
+tags: pitfall, confusing
+type: BUG
+description:
+When the work file declaration has multiple attributes which belong to the same type, only the last one specified will be used.

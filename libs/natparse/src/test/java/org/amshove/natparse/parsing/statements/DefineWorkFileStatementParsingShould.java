@@ -136,6 +136,19 @@ class DefineWorkFileStatementParsingShould extends StatementParseTest
 	}
 
 	@Test
+	void parseAWorkfileWithAttributeButNoPath()
+	{
+		var work = assertParsesSingleStatement(
+			"""
+			DEFINE WORK FILE 1 ATTRIBUTES 'BOM'
+			""",
+			IDefineWorkFileNode.class
+		);
+
+		assertThat(assertNodeType(work.attributes(), ILiteralNode.class).token().stringValue()).isEqualTo("BOM");
+	}
+
+	@Test
 	void parseAWorkfileWithMultipleAttributeCommaSeparated()
 	{
 		var work = assertParsesSingleStatement(

@@ -300,7 +300,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		checkNumericRange(number, 1, 32);
 		work.setNumber(number);
 
-		if (isOperand() && !peekKind(SyntaxKind.TYPE))
+		if (isOperand() && !peekKind(SyntaxKind.TYPE) && !peekKind(SyntaxKind.ATTRIBUTES))
 		{
 			var path = consumeOperandNode(work);
 			checkOperand(path, "The path of a work file can only be a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
