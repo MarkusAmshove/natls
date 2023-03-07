@@ -405,7 +405,7 @@ class ParserErrors
 	public static IDiagnostic invalidLiteralType(ILiteralNode literal, SyntaxKind allowedKind)
 	{
 		return ParserDiagnostic.create(
-			"Invalid type for literal. Expected %s but got %s".formatted(literal.token().kind(), allowedKind),
+			"Invalid type for literal. Expected %s but got %s".formatted(allowedKind, literal.token().kind()),
 			literal,
 			ParserError.TYPE_MISMATCH
 		);
