@@ -410,4 +410,22 @@ class ParserErrors
 			ParserError.TYPE_MISMATCH
 		);
 	}
+
+	public static IDiagnostic invalidNumericRange(ILiteralNode node, int actualValue, int lowestValue, int highestValue)
+	{
+		return ParserDiagnostic.create(
+			"Constant %d is not within the allowed range of %d to %d (both inclusive)".formatted(actualValue, lowestValue, highestValue),
+			node,
+			ParserError.INVALID_LITERAL_VALUE
+		);
+	}
+
+	public static IDiagnostic invalidStringLiteral(IOperandNode node, String actual, List<String> allowed)
+	{
+		return ParserDiagnostic.create(
+			"Value %s is not allowed. Allowed values: %s".formatted(actual, String.join(", ", allowed)),
+			node,
+			ParserError.INVALID_LITERAL_VALUE
+		);
+	}
 }

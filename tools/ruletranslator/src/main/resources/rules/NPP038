@@ -1,0 +1,6 @@
+name: Invalid literal value
+priority: BLOCKER
+tags: compile-time
+type: BUG
+description:
+The literal value specified is not allowed here.

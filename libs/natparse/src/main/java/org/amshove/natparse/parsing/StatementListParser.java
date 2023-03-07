@@ -175,7 +175,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 							case SUBROUTINE, IDENTIFIER -> statementList.addStatement(subroutine());
 							case PRINTER -> statementList.addStatement(definePrinter());
 							case WINDOW -> statementList.addStatement(defineWindow());
-							case WORK, PROTOTYPE, DATA ->
+							case WORK -> statementList.addStatement(defineWork());
+							case PROTOTYPE, DATA ->
 							{ // not implemented statements. DATA needs to be handled when parsing functions and external subroutines
 								tokens.advance();
 								tokens.advance();
@@ -282,6 +283,65 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private static final List<String> ALLOWED_WORK_FILE_ATTRIBUTES = List.of("NOAPPEND", "APPEND", "DELETE", "KEEP", "BOM", "NOBOM", "KEEPCR", "REMOVECR");
+	private static final List<String> ALLOWED_WORK_FILE_TYPES = List.of("DEFAULT", "TRANSFER", "SAG", "ASCII", "ASCII-COMPRESSED", "ENTIRECONNECTION", "UNFORMATTED", "PORTABLE", "CSV");
+
+	private StatementNode defineWork() throws ParseError
+	{
+		var work = new DefineWorkFileNode();
+
+		consumeMandatory(work, SyntaxKind.DEFINE);
+		consumeMandatory(work, SyntaxKind.WORK);
+		consumeMandatory(work, SyntaxKind.FILE);
+
+		var number = consumeLiteralNode(work, SyntaxKind.NUMBER_LITERAL);
+		checkNumericRange(number, 1, 32);
+		work.setNumber(number);
+
+		if (isOperand() && !peekKind(SyntaxKind.TYPE))
+		{
+			var path = consumeOperandNode(work);
+			checkOperand(path, "The path of a work file can only be a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+			checkLiteralTypeIfLiteral(path, SyntaxKind.STRING_LITERAL);
+
+			work.setPath(path);
+		}
+
+		if (consumeOptionally(work, SyntaxKind.TYPE))
+		{
+			var type = consumeOperandNode(work);
+			checkOperand(type, "The type of a work file can only be a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+			checkLiteralTypeIfLiteral(type, SyntaxKind.STRING_LITERAL);
+			checkStringLiteralValue(type, ALLOWED_WORK_FILE_TYPES);
+
+			work.setType(type);
+		}
+
+		if (consumeOptionally(work, SyntaxKind.ATTRIBUTES))
+		{
+			var attributes = consumeOperandNode(work);
+			checkOperand(attributes, "The attributes of a work file can only be a constant string or a variable reference", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+			checkLiteralTypeIfLiteral(attributes, SyntaxKind.STRING_LITERAL);
+			if (attributes instanceof ILiteralNode literal && literal.token().kind() == SyntaxKind.STRING_LITERAL)
+			{
+				var attributeValues = literal.token().stringValue();
+				var separator = attributeValues.contains(",")
+					? ","
+					: " ";
+
+				var values = attributeValues.split(separator);
+				for (var value : values)
+				{
+					checkConstantStringValue(attributes, value.trim(), ALLOWED_WORK_FILE_ATTRIBUTES);
+				}
+			}
+
+			work.setAttributes(attributes);
+		}
+
+		return work;
 	}
 
 	private static final List<SyntaxKind> COMPRESS_TO_INTO = List.of(SyntaxKind.INTO, SyntaxKind.TO);
@@ -1119,6 +1179,28 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return true;
+	}
+
+	private void checkLiteralTypeIfLiteral(IOperandNode operand, SyntaxKind allowedKind)
+	{
+		if (operand instanceof ILiteralNode literalNode)
+		{
+			checkLiteralType(literalNode, allowedKind);
+		}
+	}
+
+	private void checkNumericRange(ILiteralNode node, int lowestValue, int highestValue)
+	{
+		if (node.token().kind() != SyntaxKind.NUMBER_LITERAL)
+		{
+			return;
+		}
+
+		int actualValue = node.token().intValue();
+		if (actualValue < lowestValue || actualValue > highestValue)
+		{
+			report(ParserErrors.invalidNumericRange(node, actualValue, lowestValue, highestValue));
+		}
 	}
 
 	private void checkStringLength(SyntaxToken token, String stringValue, int maxLength)
@@ -2110,9 +2192,33 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private void checkOperand(IOperandNode operand, String message, AllowedOperand... allowedOperands)
 	{
 		var operands = Arrays.asList(allowedOperands);
-		if (!(operand instanceof IVariableReferenceNode) && operands.contains(AllowedOperand.VARIABLE_REFERENCE))
+		if ((operand instanceof IVariableReferenceNode) && operands.contains(AllowedOperand.VARIABLE_REFERENCE)
+			|| (operand instanceof ILiteralNode) && operands.contains(AllowedOperand.LITERAL))
 		{
-			report(ParserErrors.invalidOperand(operand, message, allowedOperands));
+			return;
+		}
+
+		report(ParserErrors.invalidOperand(operand, message, allowedOperands));
+	}
+
+	private void checkConstantStringValue(IOperandNode node, String actualValue, List<String> allowedValues)
+	{
+		if (!allowedValues.contains(actualValue))
+		{
+			report(ParserErrors.invalidStringLiteral(node, actualValue, allowedValues));
+		}
+	}
+
+	private void checkStringLiteralValue(IOperandNode node, List<String> allowedValues)
+	{
+		if (!(node instanceof ILiteralNode literalNode) || literalNode.token().kind() != SyntaxKind.STRING_LITERAL)
+		{
+			return;
+		}
+
+		if (!allowedValues.contains(literalNode.token().stringValue()))
+		{
+			report(ParserErrors.invalidStringLiteral(literalNode, literalNode.token().stringValue(), allowedValues));
 		}
 	}
 
