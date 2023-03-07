@@ -430,4 +430,10 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 		assertTokens("*DATV", token(SyntaxKind.DATV, "*DATV"));
 	}
 
+	@Test
+	void lexTime()
+	{
+		assertTokens("*TIME", token(SyntaxKind.SV_TIME, "*TIME"));
+	}
+
 }

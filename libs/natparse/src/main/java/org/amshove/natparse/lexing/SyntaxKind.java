@@ -40,6 +40,7 @@ public enum SyntaxKind
 	// System variables and functions
 	APPLIC_ID(false, true, false),
 	INIT_ID(false, true, false),
+	SV_TIME(false, true, false),
 	TIMX(false, true, false),
 	TIMD(false, false, true),
 	TIMN(false, true, false),
