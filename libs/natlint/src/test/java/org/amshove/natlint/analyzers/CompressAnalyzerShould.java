@@ -108,4 +108,108 @@ class CompressAnalyzerShould extends AbstractAnalyzerTest
 			expectNoDiagnosticOfType(CompressAnalyzer.COMPRESS_SHOULD_HAVE_ALL_DELIMITERS)
 		);
 	}
+	@Test
+	void raiseADiagnosticIfDefineWorkFileUsesACompressedPathWithoutLeavingNo()
+	{
+		testDiagnostics(
+			"""
+			DEFINE DATA
+			LOCAL
+			1 #PATH (A) DYNAMIC
+			END-DEFINE
+			COMPRESS 'Hello' 5 INTO #PATH
+			DEFINE WORK FILE 1 #PATH
+			END
+			""",
+			expectDiagnostic(4, CompressAnalyzer.COMPRESS_SHOULD_HAVE_LEAVING_NO)
+		);
+	}
+
+	@Test
+	void raiseADiagnosticIfDefineWorkFileUsesACompressedPathWithoutLeavingNoAndDefineWorkFileIsBeforeCompress()
+	{
+		testDiagnostics(
+			"""
+			DEFINE DATA
+			LOCAL
+			1 #PATH (A) DYNAMIC
+			END-DEFINE
+			DEFINE WORK FILE 1 #PATH
+			COMPRESS 'Hello' 5 INTO #PATH
+			END
+			""",
+			expectDiagnostic(5, CompressAnalyzer.COMPRESS_SHOULD_HAVE_LEAVING_NO)
+		);
+	}
+
+	@Test
+	void raiseADiagnosticIfDefineWorkFileUsesACompressedPathWithoutLeavingNoAndOneWithLeavingNo()
+	{
+		testDiagnostics(
+			"""
+			DEFINE DATA
+			LOCAL
+			1 #PATH (A) DYNAMIC
+			END-DEFINE
+			COMPRESS 'Hello' 5 INTO #PATH LEAVING NO
+			COMPRESS 'Hello' 5 INTO #PATH
+			DEFINE WORK FILE 1 #PATH
+			END
+			""",
+			expectDiagnostic(5, CompressAnalyzer.COMPRESS_SHOULD_HAVE_LEAVING_NO)
+		);
+	}
+
+	@Test
+	void raiseNoDiagnosticIfCompressedPathIsCompressedWithLeavingNo()
+	{
+		testDiagnostics(
+			"""
+			DEFINE DATA
+			LOCAL
+			1 #PATH (A) DYNAMIC
+			END-DEFINE
+			DEFINE WORK FILE 1 #PATH
+			COMPRESS 'Hello' 5 INTO #PATH LEAVING NO
+			END
+			""",
+			expectNoDiagnosticOfType(CompressAnalyzer.COMPRESS_SHOULD_HAVE_LEAVING_NO)
+		);
+	}
+
+	@Test
+	void raiseNoDiagnosticIfThereIsACompressWithoutLeavingNoButItsTargetIsNotUsedForDefineWorkfile()
+	{
+		testDiagnostics(
+			"""
+			DEFINE DATA
+			LOCAL
+			1 #PATH (A) DYNAMIC
+			1 #A (A) DYNAMIC
+			END-DEFINE
+			COMPRESS #PATH INTO #A
+			DEFINE WORK FILE 1 #PATH
+			END
+			""",
+			expectNoDiagnosticOfType(CompressAnalyzer.COMPRESS_SHOULD_HAVE_LEAVING_NO)
+		);
+	}
+
+	@Test
+	void raiseNoDiagnosticWhenTheCompressIsWithoutLeavingSpaceButOnlyHasOneOperand()
+	{
+		testDiagnostics(
+			"""
+			DEFINE DATA
+			LOCAL
+			1 #PATH (A) DYNAMIC
+			1 #A (A) DYNAMIC
+			END-DEFINE
+			COMPRESS #A INTO #PATH
+			DEFINE WORK FILE 1 #PATH
+			END
+			""",
+			expectNoDiagnosticOfType(CompressAnalyzer.COMPRESS_SHOULD_HAVE_LEAVING_NO)
+		);
+	}
 }

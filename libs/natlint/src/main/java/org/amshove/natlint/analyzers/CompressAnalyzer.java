@@ -23,10 +23,16 @@ public class CompressAnalyzer extends AbstractAnalyzer
 		DiagnosticSeverity.INFO
 	);
 
+	public static final DiagnosticDescription COMPRESS_SHOULD_HAVE_LEAVING_NO = DiagnosticDescription.create(
+		"NL015",
+		"%s is used as a path for a work file and this COMPRESS leaves space between the operands. Did you mean to add LEAVING NO SPACE?",
+		DiagnosticSeverity.INFO
+	);
+
 	@Override
 	public ReadOnlyList<DiagnosticDescription> getDiagnosticDescriptions()
 	{
-		return ReadOnlyList.of(COMPRESS_SHOULD_HAVE_NUMERIC, COMPRESS_SHOULD_HAVE_ALL_DELIMITERS);
+		return ReadOnlyList.of(COMPRESS_SHOULD_HAVE_NUMERIC, COMPRESS_SHOULD_HAVE_ALL_DELIMITERS, COMPRESS_SHOULD_HAVE_LEAVING_NO);
 	}
 
 	@Override
@@ -47,6 +53,31 @@ public class CompressAnalyzer extends AbstractAnalyzer
 		if (compress.isWithDelimiters() && !compress.isWithAllDelimiters())
 		{
 			checkIfCompressShouldHaveAllDelimiters(context, compress);
+		}
+
+		if (compress.isLeavingSpace()
+			&& compress.operands().size() > 1
+			&& compress.intoTarget() instanceof IVariableReferenceNode variableReference)
+		{
+			checkIfIntoTargetIsUsedAsWorkfilePath(context, variableReference);
+		}
+	}
+
+	private void checkIfIntoTargetIsUsedAsWorkfilePath(IAnalyzeContext context, IVariableReferenceNode variableReference)
+	{
+		if (variableReference.reference() == null)
+		{
+			return;
+		}
+
+		for (var referenceToVariable : variableReference.reference().references())
+		{
+			if (referenceToVariable.parent() instanceof IDefineWorkFileNode workfileNode
+				&& workfileNode.path() instanceof IVariableReferenceNode pathReference
+				&& pathReference.reference() == variableReference.reference())
+			{
+				context.report(COMPRESS_SHOULD_HAVE_LEAVING_NO.createFormattedDiagnostic(variableReference.referencingToken(), variableReference.referencingToken().source()));
+			}
 		}
 	}
 
