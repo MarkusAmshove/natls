@@ -57,7 +57,7 @@ public class CompressAnalyzer extends AbstractAnalyzer
 
 		if (compress.isLeavingSpace()
 			&& compress.operands().size() > 1
-			&& compress.intoTarget() instanceof IVariableReferenceNode variableReference)
+			&& compress.intoTarget()instanceof IVariableReferenceNode variableReference)
 		{
 			checkIfIntoTargetIsUsedAsWorkfilePath(context, variableReference);
 		}
@@ -72,8 +72,8 @@ public class CompressAnalyzer extends AbstractAnalyzer
 
 		for (var referenceToVariable : variableReference.reference().references())
 		{
-			if (referenceToVariable.parent() instanceof IDefineWorkFileNode workfileNode
-				&& workfileNode.path() instanceof IVariableReferenceNode pathReference
+			if (referenceToVariable.parent()instanceof IDefineWorkFileNode workfileNode
+				&& workfileNode.path()instanceof IVariableReferenceNode pathReference
 				&& pathReference.reference() == variableReference.reference())
 			{
 				context.report(COMPRESS_SHOULD_HAVE_LEAVING_NO.createFormattedDiagnostic(variableReference.referencingToken(), variableReference.referencingToken().source()));

@@ -108,6 +108,7 @@ class CompressAnalyzerShould extends AbstractAnalyzerTest
 			expectNoDiagnosticOfType(CompressAnalyzer.COMPRESS_SHOULD_HAVE_ALL_DELIMITERS)
 		);
 	}
+
 	@Test
 	void raiseADiagnosticIfDefineWorkFileUsesACompressedPathWithoutLeavingNo()
 	{
