@@ -67,7 +67,8 @@ public class ModuleReferenceParser
 				case INCLUDE -> calledModules.add(processCopycode(tokens));
 				case IDENTIFIER ->
 				{
-					if (tokens.peek(1).kind() == SyntaxKind.LPAREN && tokens.peek(2).kind() == SyntaxKind.LESSER_SIGN)
+					if (tokens.peekKinds(SyntaxKind.IDENTIFIER, SyntaxKind.LPAREN, SyntaxKind.LESSER_SIGN)
+						|| tokens.peekKinds(SyntaxKind.IDENTIFIER, SyntaxKind.LPAREN, SyntaxKind.LESSER_GREATER, SyntaxKind.RPAREN))
 					{
 						calledModules.add(processFunction(tokens));
 					}

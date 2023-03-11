@@ -5,6 +5,8 @@
 * <Natural Source Header
 
 
-ignore
+IF NOT RETTRUE(<>)
+IGNORE
+END-IF
 
 end

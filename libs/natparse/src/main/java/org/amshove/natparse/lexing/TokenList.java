@@ -90,6 +90,28 @@ public class TokenList
 	}
 
 	/**
+	 * Peeks the token kinds of the following tokens and returns true if they're in the given order.</br>
+	 * Returns false if either the order or the amount of following tokens doesn't match.
+	 */
+	public boolean peekKinds(SyntaxKind... kinds)
+	{
+		if (isAtEnd(kinds.length - 1))
+		{
+			return false;
+		}
+
+		for (var offset = 0; offset < kinds.length; offset++)
+		{
+			if (peek(offset).kind() != kinds[offset])
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	 * Advances over the current token.
 	 */
 	public SyntaxToken advance()
