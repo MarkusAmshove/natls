@@ -68,8 +68,7 @@ public class ModuleReferenceParser
 				case IDENTIFIER ->
 				{
 					if (tokens.peekKinds(SyntaxKind.IDENTIFIER, SyntaxKind.LPAREN, SyntaxKind.LESSER_SIGN)
-						|| tokens.peekKinds(SyntaxKind.IDENTIFIER, SyntaxKind.LPAREN, SyntaxKind.LESSER_GREATER, SyntaxKind.RPAREN)
-					)
+						|| tokens.peekKinds(SyntaxKind.IDENTIFIER, SyntaxKind.LPAREN, SyntaxKind.LESSER_GREATER, SyntaxKind.RPAREN))
 					{
 						calledModules.add(processFunction(tokens));
 					}

@@ -92,7 +92,6 @@ public class ModuleReferenceParserShould
 		assertThatFileReferences(module("PROG3"), module("RETTRUE"));
 	}
 
-
 	private void assertThatFileReferences(LanguageServerFile fileWithOutgoingReference, LanguageServerFile fileWithIncomingReference)
 	{
 		assertThat(fileWithOutgoingReference.getOutgoingReferences())
