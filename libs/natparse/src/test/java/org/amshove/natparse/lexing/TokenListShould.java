@@ -90,6 +90,32 @@ class TokenListShould
 		assertThat(tokenList.peek(-1)).isNull();
 	}
 
+	@Test
+	void returnTrueOnPeekKindsIfTheOrderMatches()
+	{
+		var tokenList = createTokenList(SyntaxKind.LOCAL, SyntaxKind.USING, SyntaxKind.IDENTIFIER);
+
+		assertThat(tokenList.peekKinds(SyntaxKind.LOCAL, SyntaxKind.USING, SyntaxKind.IDENTIFIER)).isTrue();
+	}
+
+	@Test
+	void returnFalseOnPeekKindsIfTheOrderDoesntMatch()
+	{
+		var tokenList = createTokenList(SyntaxKind.LOCAL, SyntaxKind.USING, SyntaxKind.IDENTIFIER);
+
+		assertThat(tokenList.peekKinds(SyntaxKind.GLOBAL, SyntaxKind.USING, SyntaxKind.IDENTIFIER)).isFalse();
+	}
+
+	@Test
+	void returnFalseOnPeekKindsIfTheLengthOfPeeksIsGreaterThanTheRemainingLength()
+	{
+		var tokenList = createTokenList(SyntaxKind.LOCAL, SyntaxKind.USING, SyntaxKind.IDENTIFIER);
+
+		tokenList.advance();
+
+		assertThat(tokenList.peekKinds(SyntaxKind.USING, SyntaxKind.IDENTIFIER, SyntaxKind.LOCAL)).isFalse();
+	}
+
 	private TokenList createTokenList(SyntaxToken... tokens)
 	{
 		return TokenList.fromTokens(Paths.get("TOKENLISTSHOULD.NSN"), Arrays.stream(tokens).toList());

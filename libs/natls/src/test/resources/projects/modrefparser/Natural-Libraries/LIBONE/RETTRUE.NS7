@@ -1,0 +1,16 @@
+* >Natural Source Header 000000
+* :Mode S
+* :CP
+* :LineIncrement 10
+* <Natural Source Header
+DEFINE FUNCTION RETTRUE
+  RETURNS (L)
+  DEFINE DATA
+      LOCAL
+  END-DEFINE
+
+RETTRUE := TRUE
+
+END-FUNCTION
+
+END
