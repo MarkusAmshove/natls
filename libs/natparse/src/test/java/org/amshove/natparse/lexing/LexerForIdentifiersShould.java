@@ -49,6 +49,12 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 	}
 
 	@Test
+	void recognizeAivInParens()
+	{
+		assertTokens("(+THEAIV)", token(SyntaxKind.LPAREN), token(SyntaxKind.IDENTIFIER), token(SyntaxKind.RPAREN));
+	}
+
+	@Test
 	void recognizeHyphensInNames()
 	{
 		assertTokens("MY-VAR", token(SyntaxKind.IDENTIFIER, "MY-VAR"));
