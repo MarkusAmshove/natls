@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
-public class LexerForMultiCharacterOperatorsShould extends AbstractLexerTest
+class LexerForMultiCharacterOperatorsShould extends AbstractLexerTest
 {
 	@Test
 	void lexColonEqualsAssign()
@@ -20,6 +20,12 @@ public class LexerForMultiCharacterOperatorsShould extends AbstractLexerTest
 	void lexGreaterEqualsWithSigns()
 	{
 		assertTokens(">=", token(SyntaxKind.GREATER_EQUALS_SIGN, ">="));
+	}
+
+	@Test
+	void lexExponent()
+	{
+		assertTokens("5**2", token(SyntaxKind.NUMBER_LITERAL), token(SyntaxKind.EXPONENT_OPERATOR, "**"), token(SyntaxKind.NUMBER_LITERAL));
 	}
 
 	@TestFactory

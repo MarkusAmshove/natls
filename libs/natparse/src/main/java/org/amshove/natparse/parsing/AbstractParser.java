@@ -361,7 +361,7 @@ abstract class AbstractParser<T>
 		return node;
 	}
 
-	protected static final List<SyntaxKind> ARITHMETIC_OPERATOR_KINDS = List.of(SyntaxKind.PLUS, SyntaxKind.MINUS, SyntaxKind.ASTERISK, SyntaxKind.SLASH);
+	protected static final List<SyntaxKind> ARITHMETIC_OPERATOR_KINDS = List.of(SyntaxKind.PLUS, SyntaxKind.MINUS, SyntaxKind.ASTERISK, SyntaxKind.SLASH, SyntaxKind.EXPONENT_OPERATOR);
 
 	protected IOperandNode consumeArithmeticExpression(BaseSyntaxNode node) throws ParseError
 	{

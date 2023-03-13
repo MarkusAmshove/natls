@@ -310,6 +310,15 @@ public class Lexer
 
 	private void consumeAsteriskOrSystemVariable()
 	{
+		if (scanner.peek(1) == '*')
+		{
+			scanner.start();
+			scanner.advance();
+			scanner.advance();
+			createAndAdd(SyntaxKind.EXPONENT_OPERATOR);
+			return;
+		}
+
 		var lookahead = scanner.peek(1);
 		switch (lookahead)
 		{

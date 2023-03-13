@@ -13,6 +13,7 @@ public enum SyntaxKind
 	CARET(false, false, false),
 	COMMA(false, false, false),
 	PLUS(false, false, false),
+	EXPONENT_OPERATOR(false, false, false),
 	MINUS(false, false, false),
 	ASTERISK(false, false, false),
 	SLASH(false, false, false),
