@@ -9,7 +9,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
+class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 {
 	protected OperandParsingTests()
 	{
@@ -146,6 +146,15 @@ public class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	{
 		var operand = parseOperands("VAL(#THEVAR(1))");
 		var valNode = assertNodeType(operand.get(0), IValOperandNode.class);
+		assertThat(valNode.variable().referencingToken().symbolName()).isEqualTo("#THEVAR");
+		assertThat(assertNodeType(valNode.variable().dimensions().first(), ILiteralNode.class).token().intValue()).isEqualTo(1);
+	}
+
+	@Test
+	void parseInt()
+	{
+		var operand = parseOperands("INT(#THEVAR(1))");
+		var valNode = assertNodeType(operand.get(0), IIntOperandNode.class);
 		assertThat(valNode.variable().referencingToken().symbolName()).isEqualTo("#THEVAR");
 		assertThat(assertNodeType(valNode.variable().dimensions().first(), ILiteralNode.class).token().intValue()).isEqualTo(1);
 	}

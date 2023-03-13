@@ -2089,6 +2089,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			|| (peek().kind().isSystemVariable() && lookahead != SyntaxKind.COLON_EQUALS_SIGN)
 			|| peek().kind().isLiteralOrConst()
 			|| peekKind(SyntaxKind.VAL)
+			|| peekKind(SyntaxKind.INT)
 			|| peekKind(SyntaxKind.ABS)
 			|| peekKind(SyntaxKind.POS)
 			|| peekKind(SyntaxKind.FRAC)
