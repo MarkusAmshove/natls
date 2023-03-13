@@ -112,6 +112,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case COMPRESS:
 						statementList.addStatement(compress());
 						break;
+					case COMPUTE:
+						statementList.addStatement(computeStatement());
+						break;
 					case RESIZE:
 						statementList.addStatement(resize());
 						break;
@@ -290,15 +293,26 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private StatementNode assignStatement() throws ParseError
 	{
+		var assign = new AssignStatementNode();
+		consumeMandatory(assign, SyntaxKind.ASSIGN);
+		assign.setRounded(consumeOptionally(assign, SyntaxKind.ROUNDED));
+		assign.setTarget(consumeOperandNode(assign)); // TODO: Make sure its a variable or system var reference. Also make sure the system var is modifiable
+		consumeAnyMandatory(assign, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.COLON_EQUALS_SIGN));
+		assign.setOperand(consumeSubstringOrOperand(assign));
+		return assign;
+	}
+
+	private StatementNode computeStatement() throws ParseError
+	{
 		try
 		{
-			var assign = new AssignStatementNode();
-			consumeMandatory(assign, SyntaxKind.ASSIGN);
-			assign.setRounded(consumeOptionally(assign, SyntaxKind.ROUNDED));
-			assign.setTarget(consumeOperandNode(assign)); // TODO: Make sure its a variable or system var reference. Also make sure the system var is modifiable
-			consumeAnyMandatory(assign, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.COLON_EQUALS_SIGN));
-			assign.setOperand(consumeSubstringOrOperand(assign));
-			return assign;
+			var compute = new ComputeStatementNode();
+			consumeMandatory(compute, SyntaxKind.COMPUTE);
+			compute.setRounded(consumeOptionally(compute, SyntaxKind.ROUNDED));
+			compute.setTarget(consumeOperandNode(compute)); // TODO: Make sure its a variable or system var reference. Also make sure the system var is modifiable
+			consumeAnyMandatory(compute, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.COLON_EQUALS_SIGN));
+			compute.setOperand(consumeSubstringOrOperand(compute));
+			return compute;
 		}
 		catch (ParseError e) // TODO: remove internal diagnostic
 		{

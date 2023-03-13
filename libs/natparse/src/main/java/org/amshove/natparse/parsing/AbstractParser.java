@@ -365,9 +365,11 @@ abstract class AbstractParser<T>
 
 	protected IOperandNode consumeArithmeticExpression(BaseSyntaxNode node) throws ParseError
 	{
+		// Does not take operator precedence into account. Maybe some day?
+
 		var needRParen = consumeOptionally(node, SyntaxKind.LPAREN);
 		var operand = consumeOperandNode(node);
-		if (peekAny(ARITHMETIC_OPERATOR_KINDS))
+		while (peekAny(ARITHMETIC_OPERATOR_KINDS))
 		{
 			var arithmetic = new ArithmeticExpressionNode();
 			arithmetic.addNode((BaseSyntaxNode) operand);
