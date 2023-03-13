@@ -206,8 +206,20 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 	}
 
 	@Test
-	void recogniceAVariableStartingWithPfAsIdentifier()
+	void recognizeAVariableStartingWithPfAsIdentifier()
 	{
 		assertTokens("PFAD", token(SyntaxKind.IDENTIFIER));
+	}
+
+	@Test
+	void notConfuseArithmeticWithAiv()
+	{
+		assertTokens("5+NUM", token(SyntaxKind.NUMBER_LITERAL), token(SyntaxKind.PLUS), token(SyntaxKind.IDENTIFIER));
+	}
+
+	@Test
+	void notConfuseArithmeticWithTwoIdentifiersWithAiv()
+	{
+		assertTokens("NUM+NUM2", token(SyntaxKind.IDENTIFIER), token(SyntaxKind.PLUS), token(SyntaxKind.IDENTIFIER));
 	}
 }

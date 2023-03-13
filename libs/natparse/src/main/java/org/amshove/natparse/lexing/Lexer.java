@@ -92,7 +92,8 @@ public class Lexer
 					createAndAddFollowupEquals(SyntaxKind.COLON, SyntaxKind.COLON_EQUALS_SIGN);
 					continue;
 				case '+':
-					if (isValidAivStartAfterPlus(scanner.peek(1)))
+					if (isValidAivStartAfterPlus(scanner.peek(1))
+						&& hasSpaceBetweenThisAndLast())
 					{
 						consumeIdentifier();
 					}
@@ -259,6 +260,12 @@ public class Lexer
 			}
 		}
 		return TokenList.fromTokensAndDiagnostics(filePath, tokens, diagnostics, comments, sourceHeader);
+	}
+
+	private boolean hasSpaceBetweenThisAndLast()
+	{
+		var previous = previous();
+		return previous == null || previous.totalEndOffset() != scanner.position();
 	}
 
 	public void relocateDiagnosticPosition(IPosition diagnosticPosition)

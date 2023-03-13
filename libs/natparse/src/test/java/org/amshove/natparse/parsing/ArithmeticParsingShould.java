@@ -19,6 +19,15 @@ class ArithmeticParsingShould extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseArithmeticThatMightLookLikeAIV()
+	{
+		var arithmetic = parseArithmetic("5+NUM");
+		assertThat(arithmetic.operator()).isEqualTo(SyntaxKind.PLUS);
+		assertNumericOperand(arithmetic.left(), 5);
+		assertThat(assertNodeType(arithmetic.right(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("NUM");
+	}
+
+	@Test
 	void parseSimpleArithmeticInParens()
 	{
 		var arithmetic = parseArithmetic("(5 + 10)");
