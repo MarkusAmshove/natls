@@ -88,7 +88,8 @@ class ArithmeticParsingShould extends AbstractParserTest<IStatementListNode>
 		var statement = assertParsesWithoutDiagnostics("COMPUTE #VAR := %s".formatted(source)).statements().first();
 		return assertNodeType(
 			assertNodeType(statement, IComputeStatementNode.class).operand(),
-			IArithmeticExpressionNode.class);
+			IArithmeticExpressionNode.class
+		);
 	}
 
 	private void assertNumericOperand(IOperandNode node, int value)

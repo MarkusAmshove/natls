@@ -13,7 +13,8 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 class AssignStatementParsingShould extends StatementParseTest
 {
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"=", ":="
 	})
 	void parseSimpleAssigns(String operator)
@@ -28,7 +29,8 @@ class AssignStatementParsingShould extends StatementParseTest
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"=", ":="
 	})
 	void parseAssignRounded(String operator)

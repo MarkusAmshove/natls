@@ -94,7 +94,7 @@ public class Lexer
 				case '+':
 					if (isValidAivStartAfterPlus(scanner.peek(1)) // if this gets out of hand, figure out a better way
 						&& (hasSpaceBetweenThisAndLast()
-						|| previousWas(SyntaxKind.LPAREN)))
+							|| previousWas(SyntaxKind.LPAREN)))
 					{
 						consumeIdentifier();
 					}
