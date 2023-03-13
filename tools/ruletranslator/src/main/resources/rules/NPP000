@@ -1,0 +1,8 @@
+name: Internal diagnostic
+priority: BLOCKER
+tags: natparse-internal
+type: BUG
+description:
+This is an internal diagnostic for debugging purposes.
+
+If you see this, open an issue :-)

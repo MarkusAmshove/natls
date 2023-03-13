@@ -428,4 +428,13 @@ class ParserErrors
 			ParserError.INVALID_LITERAL_VALUE
 		);
 	}
+
+	public static IDiagnostic internal(String message, SyntaxToken token)
+	{
+		return ParserDiagnostic.create(
+			"%s. This is for internal debbuing use, if you see this raise an issue.".formatted(message),
+			token,
+			ParserError.INTERNAL
+		);
+	}
 }

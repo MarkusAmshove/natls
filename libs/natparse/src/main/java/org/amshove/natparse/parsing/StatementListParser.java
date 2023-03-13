@@ -69,6 +69,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 				switch (tokens.peek().kind())
 				{
+					case ASSIGN:
+						statementList.addStatement(assignStatement());
+						break;
 					case AT:
 						if (peekKind(1, SyntaxKind.END) && (peekKind(3, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE)))
 						{
@@ -283,6 +286,25 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode assignStatement() throws ParseError
+	{
+		try
+		{
+			var assign = new AssignStatementNode();
+			consumeMandatory(assign, SyntaxKind.ASSIGN);
+			assign.setRounded(consumeOptionally(assign, SyntaxKind.ROUNDED));
+			assign.setTarget(consumeOperandNode(assign)); // TODO: Make sure its a variable or system var reference. Also make sure the system var is modifiable
+			consumeAnyMandatory(assign, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.COLON_EQUALS_SIGN));
+			assign.setOperand(consumeSubstringOrOperand(assign));
+			return assign;
+		}
+		catch (ParseError e) // TODO: remove internal diagnostic
+		{
+			report(ParserErrors.internal("Unable to completely parse ASSIGN (%s)".formatted(e.getMessage()), peek()));
+			throw e;
+		}
 	}
 
 	private static final List<String> ALLOWED_WORK_FILE_ATTRIBUTES = List.of("NOAPPEND", "APPEND", "DELETE", "KEEP", "BOM", "NOBOM", "KEEPCR", "REMOVECR");
