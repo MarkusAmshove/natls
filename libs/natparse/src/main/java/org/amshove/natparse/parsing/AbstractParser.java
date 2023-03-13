@@ -439,6 +439,10 @@ abstract class AbstractParser<T>
 		{
 			return intOperand(node);
 		}
+		if (peek().kind() == SyntaxKind.OLD)
+		{
+			return oldOperand(node);
+		}
 		if (peek().kind() == SyntaxKind.ABS)
 		{
 			return absOperand(node);
@@ -495,6 +499,17 @@ abstract class AbstractParser<T>
 		intOperand.setVariable(consumeVariableReferenceNode(intOperand));
 		consumeMandatory(intOperand, SyntaxKind.RPAREN);
 		return intOperand;
+	}
+
+	private IOperandNode oldOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var oldOperand = new OldOperandNode();
+		node.addNode(oldOperand);
+		consumeMandatory(oldOperand, SyntaxKind.OLD);
+		consumeMandatory(oldOperand, SyntaxKind.LPAREN);
+		oldOperand.setVariable(consumeVariableReferenceNode(oldOperand));
+		consumeMandatory(oldOperand, SyntaxKind.RPAREN);
+		return oldOperand;
 	}
 
 	private IOperandNode absOperand(BaseSyntaxNode node) throws ParseError

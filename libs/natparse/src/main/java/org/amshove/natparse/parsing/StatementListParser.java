@@ -2091,6 +2091,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			|| peekKind(SyntaxKind.VAL)
 			|| peekKind(SyntaxKind.INT)
 			|| peekKind(SyntaxKind.ABS)
+			|| peekKind(SyntaxKind.OLD)
 			|| peekKind(SyntaxKind.POS)
 			|| peekKind(SyntaxKind.FRAC)
 			|| (peekKind(SyntaxKind.MINUS) && lookahead == SyntaxKind.NUMBER_LITERAL)
