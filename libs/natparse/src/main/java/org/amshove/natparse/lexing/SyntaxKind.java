@@ -205,7 +205,7 @@ public enum SyntaxKind
 	INT(false, false, false),
 	INVESTIGATE(false, false, false),
 	LIMIT(false, false, false),
-	LOG(true, false, false), // TODO: Should be false, but is currently used by NatUnit
+	LOG(true, false, false),
 	LOOP(false, false, false),
 	MAP(true, false, false),
 	MAX(false, false, false),

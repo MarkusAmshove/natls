@@ -441,6 +441,10 @@ abstract class AbstractParser<T>
 		{
 			return intOperand(node);
 		}
+		if (peek().kind() == SyntaxKind.LOG)
+		{
+			return logOperand(node);
+		}
 		if (peek().kind() == SyntaxKind.OLD)
 		{
 			return oldOperand(node);
@@ -501,6 +505,17 @@ abstract class AbstractParser<T>
 		intOperand.setVariable(consumeVariableReferenceNode(intOperand));
 		consumeMandatory(intOperand, SyntaxKind.RPAREN);
 		return intOperand;
+	}
+
+	private IOperandNode logOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var logOperand = new LogOperandNode();
+		node.addNode(logOperand);
+		consumeMandatory(logOperand, SyntaxKind.LOG);
+		consumeMandatory(logOperand, SyntaxKind.LPAREN);
+		logOperand.setParameter(consumeOperandNode(logOperand));
+		consumeMandatory(logOperand, SyntaxKind.RPAREN);
+		return logOperand;
 	}
 
 	private IOperandNode oldOperand(BaseSyntaxNode node) throws ParseError
