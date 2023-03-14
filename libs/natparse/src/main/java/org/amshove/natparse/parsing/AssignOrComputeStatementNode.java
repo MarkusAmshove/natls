@@ -1,10 +1,10 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.natural.IAssignStatementNode;
+import org.amshove.natparse.natural.IComputeStatementNode;
 import org.amshove.natparse.natural.IOperandNode;
-import org.amshove.natparse.natural.IVariableReferenceNode;
 
-class AssignStatementNode extends StatementNode implements IAssignStatementNode
+class AssignOrComputeStatementNode extends StatementNode implements IAssignStatementNode, IComputeStatementNode
 {
 	private IOperandNode target;
 	private IOperandNode operand;

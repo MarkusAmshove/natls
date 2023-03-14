@@ -70,7 +70,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				switch (tokens.peek().kind())
 				{
 					case ASSIGN:
-						statementList.addStatement(assignStatement());
+						statementList.addStatement(assignOrCompute(SyntaxKind.ASSIGN));
 						break;
 					case AT:
 						if (peekKind(1, SyntaxKind.END) && (peekKind(3, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE)))
@@ -113,7 +113,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(compress());
 						break;
 					case COMPUTE:
-						statementList.addStatement(computeStatement());
+						statementList.addStatement(assignOrCompute(SyntaxKind.COMPUTE));
 						break;
 					case RESIZE:
 						statementList.addStatement(resize());
@@ -291,26 +291,15 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return statementList;
 	}
 
-	private StatementNode assignStatement() throws ParseError
+	private StatementNode assignOrCompute(SyntaxKind kind) throws ParseError
 	{
-		var assign = new AssignStatementNode();
-		consumeMandatory(assign, SyntaxKind.ASSIGN);
-		assign.setRounded(consumeOptionally(assign, SyntaxKind.ROUNDED));
-		assign.setTarget(consumeOperandNode(assign)); // TODO: Make sure its a variable or system var reference. Also make sure the system var is modifiable
-		consumeAnyMandatory(assign, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.COLON_EQUALS_SIGN));
-		assign.setOperand(consumeSubstringOrOperand(assign));
-		return assign;
-	}
-
-	private StatementNode computeStatement() throws ParseError
-	{
-		var compute = new ComputeStatementNode();
-		consumeMandatory(compute, SyntaxKind.COMPUTE);
-		compute.setRounded(consumeOptionally(compute, SyntaxKind.ROUNDED));
-		compute.setTarget(consumeOperandNode(compute)); // TODO: Make sure its a variable or system var reference. Also make sure the system var is modifiable
-		consumeAnyMandatory(compute, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.COLON_EQUALS_SIGN));
-		compute.setOperand(consumeSubstringOrOperand(compute));
-		return compute;
+		var statement = new AssignOrComputeStatementNode();
+		consumeMandatory(statement, kind);
+		statement.setRounded(consumeOptionally(statement, SyntaxKind.ROUNDED));
+		statement.setTarget(consumeOperandNode(statement)); // TODO: Make sure its a variable or system var reference. Also make sure the system var is modifiable
+		consumeAnyMandatory(statement, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.COLON_EQUALS_SIGN));
+		statement.setOperand(consumeSubstringOrOperand(statement));
+		return statement;
 	}
 
 	private static final List<String> ALLOWED_WORK_FILE_ATTRIBUTES = List.of("NOAPPEND", "APPEND", "DELETE", "KEEP", "BOM", "NOBOM", "KEEPCR", "REMOVECR");
