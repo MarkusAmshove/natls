@@ -3,7 +3,6 @@ package org.amshove.natparse.parsing.statements;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.parsing.StatementParseTest;
-import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -60,5 +59,15 @@ class AssignStatementParsingShould extends StatementParseTest
 			""", IAssignStatementNode.class);
 
 		assertNodeType(assign.operand(), ISubstringOperandNode.class);
+	}
+
+	@Test
+	void parseAssignControlDefinition()
+	{
+		var assign = assertParsesSingleStatement("""
+			ASSIGN #TAR := (AD=IO)
+			""", IAssignStatementNode.class);
+
+		assertNodeType(assign.operand(), IAttributeNode.class);
 	}
 }

@@ -298,8 +298,22 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		statement.setRounded(consumeOptionally(statement, SyntaxKind.ROUNDED));
 		statement.setTarget(consumeOperandNode(statement)); // TODO: Make sure its a variable or system var reference. Also make sure the system var is modifiable
 		consumeAnyMandatory(statement, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.COLON_EQUALS_SIGN));
-		statement.setOperand(consumeSubstringOrOperand(statement));
+		statement.setOperand(consumeControlLiteralOrSubstringOrOperand(statement));
 		return statement;
+	}
+
+	/**
+	 * Prioritizes e.g. (AD=IO), then substring then default operand. Useful for expressions that can be a single
+	 * attribute definition or a whole expression
+	 */
+	private IOperandNode consumeControlLiteralOrSubstringOrOperand(BaseSyntaxNode node) throws ParseError
+	{
+		if (peekKind(SyntaxKind.LPAREN) && peekKind(1, SyntaxKind.AD))
+		{
+			return consumeLiteralNode(node);
+		}
+
+		return consumeSubstringOrOperand(node);
 	}
 
 	private static final List<String> ALLOWED_WORK_FILE_ATTRIBUTES = List.of("NOAPPEND", "APPEND", "DELETE", "KEEP", "BOM", "NOBOM", "KEEPCR", "REMOVECR");
