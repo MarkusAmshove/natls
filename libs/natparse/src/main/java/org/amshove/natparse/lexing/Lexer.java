@@ -92,9 +92,10 @@ public class Lexer
 					createAndAddFollowupEquals(SyntaxKind.COLON, SyntaxKind.COLON_EQUALS_SIGN);
 					continue;
 				case '+':
-					if (isValidAivStartAfterPlus(scanner.peek(1)) // if this gets out of hand, figure out a better way
+					if (isValidAivStartAfterPlus(scanner.peek(1))
 						&& (hasSpaceBetweenThisAndLast()
-							|| previousWas(SyntaxKind.LPAREN)))
+							|| previousWasNoLiteralOrIdentifier()
+							))
 					{
 						consumeIdentifier();
 					}
@@ -263,10 +264,10 @@ public class Lexer
 		return TokenList.fromTokensAndDiagnostics(filePath, tokens, diagnostics, comments, sourceHeader);
 	}
 
-	private boolean previousWas(SyntaxKind kind)
+	private boolean previousWasNoLiteralOrIdentifier()
 	{
 		var previous = previous();
-		return previous != null && previous.kind() == kind;
+		return previous != null && !(previous.kind().isLiteralOrConst() || previous.kind().isIdentifier());
 	}
 
 	private boolean hasSpaceBetweenThisAndLast()
