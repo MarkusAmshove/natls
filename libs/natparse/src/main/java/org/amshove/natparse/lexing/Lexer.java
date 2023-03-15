@@ -94,8 +94,7 @@ public class Lexer
 				case '+':
 					if (isValidAivStartAfterPlus(scanner.peek(1))
 						&& (hasSpaceBetweenThisAndLast()
-							|| previousWasNoLiteralOrIdentifier()
-							))
+							|| previousWasNoLiteralOrIdentifier()))
 					{
 						consumeIdentifier();
 					}
