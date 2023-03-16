@@ -72,16 +72,18 @@ public class HoverProvider
 	{
 		var contentBuilder = MarkupContentBuilderFactory.newBuilder();
 		contentBuilder.appendParagraph("Specifies the type of the work file.");
-		contentBuilder.appendSection("Possible types", b -> b
-			.appendBullet("`DEFAULT` - Determines the file type from the file extension.")
-			.appendBullet("`TRANSFER`- Data connection for ENTIRE CONNECTION.")
-			.appendBullet("`SAG` - Binary format.")
-			.appendBullet("`ASCII` - Text files terminated by a carriage return (windows) and line feed.")
-			.appendBullet("`ASCII-COMPRESSED` - ASCII but all whitespace removed.")
-			.appendBullet("`ENTIRECONNECTION` - Data connection for ENTIRE CONNECTION.")
-			.appendBullet("`UNFORMATTED` - Unformatted file, no format information is implied.")
-			.appendBullet("`PORTABLE` - Portable file type between endian types.")
-			.appendBullet("`CSV` - CSV file where each record is written to its own line."));
+		contentBuilder.appendSection(
+			"Possible types", b -> b
+				.appendBullet("`DEFAULT` - Determines the file type from the file extension.")
+				.appendBullet("`TRANSFER`- Data connection for ENTIRE CONNECTION.")
+				.appendBullet("`SAG` - Binary format.")
+				.appendBullet("`ASCII` - Text files terminated by a carriage return (windows) and line feed.")
+				.appendBullet("`ASCII-COMPRESSED` - ASCII but all whitespace removed.")
+				.appendBullet("`ENTIRECONNECTION` - Data connection for ENTIRE CONNECTION.")
+				.appendBullet("`UNFORMATTED` - Unformatted file, no format information is implied.")
+				.appendBullet("`PORTABLE` - Portable file type between endian types.")
+				.appendBullet("`CSV` - CSV file where each record is written to its own line.")
+		);
 
 		return new Hover(contentBuilder.build());
 	}
@@ -94,18 +96,26 @@ public class HoverProvider
 		contentBuilder.append("There are 4 categories of attributes that can be applied. ");
 		contentBuilder.appendItalic("If there are two attributes of the same category specified, only the last one is applied.");
 		contentBuilder.appendNewline();
-		contentBuilder.appendSection("Appending", b -> b
-			.appendBullet("`NOAPPEND `- File is written from the start. Default value")
-			.appendBullet("`APPEND `- Content is appended to the given file."));
-		contentBuilder.appendSection("Keep/Delete", b -> b
-			.appendBullet("`KEEP `- Keep the file when on CLOSE. Default value")
-			.appendBullet("`DELETE `- Delete the work file on CLOSE."));
-		contentBuilder.appendSection("Byte Order Mark", b -> b
-			.appendBullet("`NOBOM `- Don't add a BOM. Default value")
-			.appendBullet("`BOM `- Add a BOM in front of the content."));
-		contentBuilder.appendSection("Carriage return", b -> b
-			.appendBullet("`REMOVECR` - Remove carriage return characters on ASCII files. Default value")
-			.appendBullet("`KEEPCR` - Keep carriage return characters."));
+		contentBuilder.appendSection(
+			"Appending", b -> b
+				.appendBullet("`NOAPPEND `- File is written from the start. Default value")
+				.appendBullet("`APPEND `- Content is appended to the given file.")
+		);
+		contentBuilder.appendSection(
+			"Keep/Delete", b -> b
+				.appendBullet("`KEEP `- Keep the file when on CLOSE. Default value")
+				.appendBullet("`DELETE `- Delete the work file on CLOSE.")
+		);
+		contentBuilder.appendSection(
+			"Byte Order Mark", b -> b
+				.appendBullet("`NOBOM `- Don't add a BOM. Default value")
+				.appendBullet("`BOM `- Add a BOM in front of the content.")
+		);
+		contentBuilder.appendSection(
+			"Carriage return", b -> b
+				.appendBullet("`REMOVECR` - Remove carriage return characters on ASCII files. Default value")
+				.appendBullet("`KEEPCR` - Keep carriage return characters.")
+		);
 
 		return new Hover(contentBuilder.build());
 	}
