@@ -67,6 +67,12 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					break;
 				}
 
+				if (tokens.peek().kind().isSystemVariable() && peekKind(1, SyntaxKind.COLON_EQUALS_SIGN))
+				{
+					statementList.addStatement(assignmentOrIdentifierReference());
+					continue;
+				}
+
 				switch (tokens.peek().kind())
 				{
 					case ASSIGN:
@@ -150,7 +156,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(fetch());
 						break;
 					case IDENTIFIER:
-						statementList.addStatement(identifierReference());
+						statementList.addStatement(assignmentOrIdentifierReference());
 						break;
 					case EXAMINE:
 						statementList.addStatement(examine());
@@ -2090,6 +2096,28 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return find;
+	}
+
+	private StatementNode assignmentOrIdentifierReference() throws ParseError
+	{
+		if (!peekKind(1, SyntaxKind.COLON_EQUALS_SIGN))
+		{
+			return identifierReference();
+		}
+
+		var assignment = new AssignmentStatementNode();
+		try
+		{
+			assignment.setTarget(consumeOperandNode(assignment)); // TODO: Make sure its a variable or system var reference. Also make sure the system var is modifiable
+			consumeMandatory(assignment, SyntaxKind.COLON_EQUALS_SIGN);
+			assignment.setOperand(consumeControlLiteralOrSubstringOrOperand(assignment));
+			return assignment;
+		}
+		catch (ParseError e)
+		{
+			report(ParserErrors.internal("Error parsing assignment: " + e.getMessage(), e.getErrorToken()));
+			return assignment;
+		}
 	}
 
 	private ResetStatementNode resetStatement() throws ParseError
