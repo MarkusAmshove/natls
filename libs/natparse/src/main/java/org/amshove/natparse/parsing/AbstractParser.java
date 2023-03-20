@@ -434,33 +434,40 @@ abstract class AbstractParser<T>
 		{
 			return consumeSystemFunctionNode(node);
 		}
-		if (peek().kind() == SyntaxKind.VAL)
+		if (peekKind(1, SyntaxKind.LPAREN))
 		{
-			return valOperand(node);
-		}
-		if (peek().kind() == SyntaxKind.INT)
-		{
-			return intOperand(node);
-		}
-		if (peek().kind() == SyntaxKind.LOG)
-		{
-			return logOperand(node);
-		}
-		if (peek().kind() == SyntaxKind.OLD)
-		{
-			return oldOperand(node);
-		}
-		if (peek().kind() == SyntaxKind.ABS)
-		{
-			return absOperand(node);
-		}
-		if (peek().kind() == SyntaxKind.POS)
-		{
-			return posOperand(node);
-		}
-		if (peek().kind() == SyntaxKind.FRAC)
-		{
-			return fracOperand(node);
+			if (peek().kind() == SyntaxKind.VAL)
+			{
+				return valOperand(node);
+			}
+			if (peek().kind() == SyntaxKind.INT)
+			{
+				return intOperand(node);
+			}
+			if (peek().kind() == SyntaxKind.SUM)
+			{
+				return sumOperand(node);
+			}
+			if (peek().kind() == SyntaxKind.LOG)
+			{
+				return logOperand(node);
+			}
+			if (peek().kind() == SyntaxKind.OLD)
+			{
+				return oldOperand(node);
+			}
+			if (peek().kind() == SyntaxKind.ABS)
+			{
+				return absOperand(node);
+			}
+			if (peek().kind() == SyntaxKind.POS)
+			{
+				return posOperand(node);
+			}
+			if (peek().kind() == SyntaxKind.FRAC)
+			{
+				return fracOperand(node);
+			}
 		}
 		if (peek().kind() == SyntaxKind.LABEL_IDENTIFIER)
 		{
@@ -506,6 +513,17 @@ abstract class AbstractParser<T>
 		intOperand.setVariable(consumeVariableReferenceNode(intOperand));
 		consumeMandatory(intOperand, SyntaxKind.RPAREN);
 		return intOperand;
+	}
+
+	private IOperandNode sumOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var sumOperand = new SumOperandNode();
+		node.addNode(sumOperand);
+		consumeMandatory(sumOperand, SyntaxKind.SUM);
+		consumeMandatory(sumOperand, SyntaxKind.LPAREN);
+		sumOperand.setVariable(consumeVariableReferenceNode(sumOperand));
+		consumeMandatory(sumOperand, SyntaxKind.RPAREN);
+		return sumOperand;
 	}
 
 	private IOperandNode logOperand(BaseSyntaxNode node) throws ParseError
