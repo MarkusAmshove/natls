@@ -394,4 +394,19 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(access.dimensions()).hasSize(2);
 		assertThat(access.descendants()).hasSize(6); // #VAR ( IOperand , IRangedArrayAccess )
 	}
+
+	@Test
+	void parseRetOperand()
+	{
+		ignoreModuleProvider();
+		var operand = parseOperand("RET('MODULE')");
+		var retOperand = assertNodeType(operand, IRetOperandNode.class);
+		assertThat(retOperand.reference().referencingToken().stringValue()).isEqualTo("MODULE");
+	}
+
+	@Test
+	void raiseADiagnosticForInvalidRetLiterals()
+	{
+		assertDiagnostic("#I := RET(5)", ParserError.INVALID_LITERAL_VALUE);
+	}
 }

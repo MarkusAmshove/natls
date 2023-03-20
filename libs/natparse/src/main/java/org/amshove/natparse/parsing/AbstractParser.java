@@ -61,7 +61,9 @@ abstract class AbstractParser<T>
 
 		var module = moduleProvider.findNaturalModule(referableName);
 
-		if (module == null && !(referableName.startsWith("USR") && referableName.endsWith("N")))
+		if (module == null
+			&& !(referableName.startsWith("USR") && referableName.endsWith("N"))
+			&& !referableName.equals("SHCMD"))
 		{
 			report(ParserErrors.unresolvedImport(moduleIdentifierToken));
 		}
@@ -468,6 +470,10 @@ abstract class AbstractParser<T>
 			{
 				return fracOperand(node);
 			}
+			if (peek().kind() == SyntaxKind.RET)
+			{
+				return retOperand(node);
+			}
 		}
 		if (peek().kind() == SyntaxKind.LABEL_IDENTIFIER)
 		{
@@ -568,6 +574,28 @@ abstract class AbstractParser<T>
 		fracOperand.setParameter(consumeOperandNode(fracOperand));
 		consumeMandatory(fracOperand, SyntaxKind.RPAREN);
 		return fracOperand;
+	}
+
+	private IOperandNode retOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var retOperand = new RetOperandNode();
+		node.addNode(retOperand);
+		consumeMandatory(retOperand, SyntaxKind.RET);
+		consumeMandatory(retOperand, SyntaxKind.LPAREN);
+		var referenceNode = new ModuleReferencingNode();
+		retOperand.addNode(referenceNode);
+		referenceNode.setReferencingToken(consumeLiteral(referenceNode));
+		if (referenceNode.referencingToken().kind() == SyntaxKind.STRING_LITERAL)
+		{
+			referenceNode.setReferencedModule((NaturalModule) sideloadModule(referenceNode.referencingToken().stringValue(), referenceNode.referencingToken()));
+		}
+		else
+		{
+			report(ParserErrors.invalidLiteralType(referenceNode.referencingToken(), SyntaxKind.STRING_LITERAL));
+		}
+		retOperand.setReference(referenceNode);
+		consumeMandatory(retOperand, SyntaxKind.RPAREN);
+		return retOperand;
 	}
 
 	private IOperandNode consumeLabelIdentifier(BaseSyntaxNode node) throws ParseError

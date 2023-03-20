@@ -437,4 +437,13 @@ class ParserErrors
 			ParserError.INTERNAL
 		);
 	}
+
+	public static IDiagnostic invalidLiteralType(SyntaxToken literalToken, SyntaxKind allowedKind)
+	{
+		return ParserDiagnostic.create(
+			"Invalid literal type. Only %s is allowed".formatted(allowedKind),
+			literalToken,
+			ParserError.INVALID_LITERAL_VALUE
+		);
+	}
 }
