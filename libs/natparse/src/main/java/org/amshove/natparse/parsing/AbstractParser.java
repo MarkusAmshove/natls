@@ -492,7 +492,7 @@ abstract class AbstractParser<T>
 		node.addNode(valOperand);
 		consumeMandatory(valOperand, SyntaxKind.VAL);
 		consumeMandatory(valOperand, SyntaxKind.LPAREN);
-		valOperand.setVariable(consumeVariableReferenceNode(valOperand));
+		valOperand.setVariable(consumeOperandNode(valOperand));
 		consumeMandatory(valOperand, SyntaxKind.RPAREN);
 		return valOperand;
 	}

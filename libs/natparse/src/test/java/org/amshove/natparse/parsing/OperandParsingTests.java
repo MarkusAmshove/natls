@@ -146,8 +146,18 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	{
 		var operand = parseOperands("VAL(#THEVAR(1))");
 		var valNode = assertNodeType(operand.get(0), IValOperandNode.class);
-		assertThat(valNode.variable().referencingToken().symbolName()).isEqualTo("#THEVAR");
-		assertThat(assertNodeType(valNode.variable().dimensions().first(), ILiteralNode.class).token().intValue()).isEqualTo(1);
+		var ref = assertNodeType(valNode.operand(), IVariableReferenceNode.class);
+		assertThat(ref.referencingToken().symbolName()).isEqualTo("#THEVAR");
+		assertThat(assertNodeType(ref.dimensions().first(), ILiteralNode.class).token().intValue()).isEqualTo(1);
+	}
+
+	@Test
+	void parseValWithNestedOperand()
+	{
+		var operand = parseOperands("VAL(OLD(#VAR))");
+		var valNode = assertNodeType(operand.get(0), IValOperandNode.class);
+		var old = assertNodeType(valNode.operand(), IOldOperandNode.class);
+		assertThat(old.variable().referencingToken().symbolName()).isEqualTo("#VAR");
 	}
 
 	@Test
@@ -173,8 +183,8 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	void parseOld()
 	{
 		var operand = parseOperands("OLD(#THEVAR)");
-		var valNode = assertNodeType(operand.get(0), IOldOperandNode.class);
-		assertThat(valNode.variable().referencingToken().symbolName()).isEqualTo("#THEVAR");
+		var oldNode = assertNodeType(operand.get(0), IOldOperandNode.class);
+		assertThat(oldNode.variable().referencingToken().symbolName()).isEqualTo("#THEVAR");
 	}
 
 	@Test
