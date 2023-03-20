@@ -45,12 +45,12 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
-	void parseANegativeNumberAsLiteral()
+	void parseANegativeNumberAsPostfixUnary()
 	{
-		// Here two tokens (MINUS, NUMBER_LITERAL) get melted into a new one
 		var operand = parseOperand("-1");
-		var variable = assertNodeType(operand, ILiteralNode.class);
-		assertThat(variable.token().intValue()).isEqualTo(-1);
+		var postfix = assertNodeType(operand, PostfixUnaryArithmeticExpressionNode.class);
+		assertThat(postfix.postfixOperator()).isEqualTo(SyntaxKind.MINUS);
+		assertThat(assertNodeType(postfix.operand(), ILiteralNode.class).token().intValue()).isEqualTo(1);
 	}
 
 	@Test
@@ -408,5 +408,33 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	void raiseADiagnosticForInvalidRetLiterals()
 	{
 		assertDiagnostic("#I := RET(5)", ParserError.INVALID_LITERAL_VALUE);
+	}
+
+	@Test
+	void parsePostfixMinusOperands()
+	{
+		var operand = parseOperand("-#VAR");
+		var postfix = assertNodeType(operand, IPostfixUnaryArithmeticExpressionNode.class);
+		assertThat(postfix.postfixOperator()).isEqualTo(SyntaxKind.MINUS);
+		assertThat(assertNodeType(postfix.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+	}
+
+	@Test
+	void parsePostfixPlusOperands()
+	{
+		var operand = parseOperand("+ #VAR");
+		var postfix = assertNodeType(operand, IPostfixUnaryArithmeticExpressionNode.class);
+		assertThat(postfix.postfixOperator()).isEqualTo(SyntaxKind.PLUS);
+		assertThat(assertNodeType(postfix.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+	}
+
+	@Test
+	void parsePostfixOperandsWithFollowupArithmetic()
+	{
+		var operand = parseOperand("-#VAR+5");
+		var arithmetic = assertNodeType(operand, IArithmeticExpressionNode.class);
+		assertNodeType(arithmetic.left(), IPostfixUnaryArithmeticExpressionNode.class);
+		assertThat(arithmetic.operator()).isEqualTo(SyntaxKind.PLUS);
+		assertNodeType(arithmetic.right(), ILiteralNode.class);
 	}
 }
