@@ -4,6 +4,8 @@ import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.parsing.StatementParseTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
@@ -60,5 +62,18 @@ class AssignmentStatementParsingShould extends StatementParseTest
 
 		var call = assertNodeType(assign.operand(), IFunctionCallNode.class);
 		assertThat(call.referencingToken().symbolName()).isEqualTo("INDEX");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"#ARR(#I)", "#ARR (#I)", "#ARR (#I)    "
+	})
+	void parseAssigningArrayIndices()
+	{
+		var assign = assertParsesSingleStatement("#ARR(#I) := 5", IAssignmentStatementNode.class);
+		var target = assertNodeType(assign.target(), IVariableReferenceNode.class);
+		assertThat(target.token().symbolName()).isEqualTo("#ARR");
+		assertThat(target.dimensions()).isNotEmpty();
 	}
 }
