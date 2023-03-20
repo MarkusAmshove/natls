@@ -409,7 +409,8 @@ abstract class AbstractParser<T>
 
 	protected IOperandNode consumeOperandNode(BaseSyntaxNode node) throws ParseError
 	{
-		if (peekKind(SyntaxKind.IDENTIFIER))
+		if ((peekKind(SyntaxKind.IDENTIFIER) || peek().kind().canBeIdentifier())
+			&& !peek().kind().isSystemVariable() && !peek().kind().isSystemFunction() && !peekKind(SyntaxKind.LOG))
 		{
 			if (peekKind(1, SyntaxKind.LPAREN) && (peekKind(2, SyntaxKind.LESSER_SIGN) || peekKind(2, SyntaxKind.LESSER_GREATER)))
 			{

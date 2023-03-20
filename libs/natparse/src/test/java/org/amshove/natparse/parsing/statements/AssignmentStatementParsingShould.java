@@ -49,4 +49,16 @@ class AssignmentStatementParsingShould extends StatementParseTest
 
 		assertNodeType(assign.operand(), IAttributeNode.class);
 	}
+
+	@Test
+	void parseAssignWithSingleFunctionCall()
+	{
+		ignoreModuleProvider();
+		var assign = assertParsesSingleStatement("""
+			#IVAR := INDEX(<#ARR(*), QUAL.IFIED>)
+			""", IAssignmentStatementNode.class);
+
+		var call = assertNodeType(assign.operand(), IFunctionCallNode.class);
+		assertThat(call.referencingToken().symbolName()).isEqualTo("INDEX");
+	}
 }
