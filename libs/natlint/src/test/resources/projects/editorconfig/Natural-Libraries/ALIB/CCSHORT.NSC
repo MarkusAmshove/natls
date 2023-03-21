@@ -1,0 +1,3 @@
+IF 5 LT 10
+IGNORE
+END-IF
