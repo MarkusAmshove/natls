@@ -67,7 +67,7 @@ class AssignmentStatementParsingShould extends StatementParseTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"#ARR(#I)", "#ARR (#I)", "#ARR (#I)    "
+		"#ARR(#I)", "#ARR (#I)", "#ARR (#I)    ", "#ARR(1,5)", "#ARR (1, 5, #I)"
 	})
 	void parseAssigningArrayIndices()
 	{

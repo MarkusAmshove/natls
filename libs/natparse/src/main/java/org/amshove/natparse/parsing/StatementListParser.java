@@ -2104,7 +2104,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private StatementNode assignmentOrIdentifierReference() throws ParseError
 	{
-		if (!peekKind(1, SyntaxKind.COLON_EQUALS_SIGN))
+		// TODO: this whole lookahead can be simplified when we understand more statements
+		if (!peekKind(1, SyntaxKind.COLON_EQUALS_SIGN)
+			&& !(peekKind(1, SyntaxKind.LPAREN) && isKindAfterKindInSameLine(SyntaxKind.COLON_EQUALS_SIGN, SyntaxKind.RPAREN)))
 		{
 			return identifierReference();
 		}

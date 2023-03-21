@@ -929,4 +929,26 @@ abstract class AbstractParser<T>
 		return false;
 	}
 
+	/**
+	 * Does a forward peek in the same line until a given kind and checks if the other comes directly after.
+	 * 
+	 * @param search The token to search for
+	 * @param after The expected token after {@code search}
+	 */
+	protected boolean isKindAfterKindInSameLine(SyntaxKind after, SyntaxKind search)
+	{
+		var line = peek().line();
+		var offset = 0;
+		while (!isAtEnd(offset) && peek(offset).line() == line && !isAtEnd(offset + 1))
+		{
+			if (peek(offset).kind() == search)
+			{
+				return peek(offset + 1).kind() == after;
+			}
+
+			offset++;
+		}
+
+		return false;
+	}
 }
