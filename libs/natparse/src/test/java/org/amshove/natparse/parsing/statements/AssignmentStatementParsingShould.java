@@ -76,4 +76,12 @@ class AssignmentStatementParsingShould extends StatementParseTest
 		assertThat(target.token().symbolName()).isEqualTo("#ARR");
 		assertThat(target.dimensions()).isNotEmpty();
 	}
+
+	@Test
+	void parseAssignmentsWithTargetsThatCanBeIdentifiers()
+	{
+		var assign = assertParsesSingleStatement("DELIMITERS(#I) := ';'", IAssignmentStatementNode.class);
+		var target = assertNodeType(assign.target(), IVariableReferenceNode.class);
+		assertThat(target.token().symbolName()).isEqualTo("DELIMITERS");
+	}
 }

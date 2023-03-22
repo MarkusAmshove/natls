@@ -67,12 +67,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					break;
 				}
 
-				if (tokens.peek().kind().isSystemVariable() && peekKind(1, SyntaxKind.COLON_EQUALS_SIGN))
-				{
-					statementList.addStatement(assignmentOrIdentifierReference());
-					continue;
-				}
-
 				switch (tokens.peek().kind())
 				{
 					case ASSIGN:
@@ -267,6 +261,13 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						}
 						// FALLTHROUGH TO DEFAULT INTENDED
 					default:
+
+
+						if (isAssignmentStart())
+						{
+							statementList.addStatement(assignmentOrIdentifierReference());
+							break;
+						}
 
 						if (peek().kind().isSystemFunction())
 						{
