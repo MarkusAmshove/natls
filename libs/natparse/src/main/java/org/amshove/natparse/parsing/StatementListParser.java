@@ -1807,9 +1807,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 		consumeMandatory(mask, SyntaxKind.RPAREN);
 
-		if (!isAtEnd() && peek().kind().isIdentifier() && !peekKind(SyntaxKind.OR) && !peekKind(SyntaxKind.AND))
+		if (isOperand() && !isStatementStart() && !peekKind(SyntaxKind.OR) && !peekKind(SyntaxKind.AND) && !peekKind(SyntaxKind.THEN))
 		{
-			mask.setCheckedOperand(consumeVariableReferenceNode(mask));
+			mask.setCheckedOperand(consumeOperandNode(mask));
 		}
 
 		return mask;
@@ -2229,7 +2229,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		var currentKind = tokens.peek().kind();
-		if (currentKind.canBeIdentifier() && peekKind(1, SyntaxKind.COLON_EQUALS_SIGN))
+		if (isAssignmentStart())
 		{
 			return true;
 		}
@@ -2285,5 +2285,13 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		LITERAL,
 		VARIABLE_REFERENCE
+	}
+
+	private boolean isAssignmentStart()
+	{
+		return !isAtEnd()
+			&& (peek().kind().canBeIdentifier() || peek().kind().isSystemVariable())
+			&& (peekKind(1, SyntaxKind.COLON_EQUALS_SIGN)
+				|| (peekKind(1, SyntaxKind.LPAREN) && isKindAfterKindInSameLine(SyntaxKind.COLON_EQUALS_SIGN, SyntaxKind.RPAREN)));
 	}
 }

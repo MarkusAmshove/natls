@@ -3,7 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.IConstantMaskOperandNode;
-import org.amshove.natparse.natural.IVariableReferenceNode;
+import org.amshove.natparse.natural.IOperandNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.Optional;
 class ConstantMaskOperandNode extends BaseSyntaxNode implements IConstantMaskOperandNode
 {
 	private final List<SyntaxToken> contents = new ArrayList<>();
-	private IVariableReferenceNode checkedOperand;
+	private IOperandNode checkedOperand;
 
 	@Override
 	public ReadOnlyList<SyntaxToken> maskContents()
@@ -21,7 +21,7 @@ class ConstantMaskOperandNode extends BaseSyntaxNode implements IConstantMaskOpe
 	}
 
 	@Override
-	public Optional<IVariableReferenceNode> checkedOperand()
+	public Optional<IOperandNode> checkedOperand()
 	{
 		return Optional.ofNullable(checkedOperand);
 	}
@@ -31,7 +31,7 @@ class ConstantMaskOperandNode extends BaseSyntaxNode implements IConstantMaskOpe
 		contents.add(token);
 	}
 
-	void setCheckedOperand(IVariableReferenceNode op)
+	void setCheckedOperand(IOperandNode op)
 	{
 		checkedOperand = op;
 	}
