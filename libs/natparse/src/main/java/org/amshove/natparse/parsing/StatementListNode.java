@@ -24,6 +24,14 @@ class StatementListNode extends StatementNode implements IStatementListNode
 		statement.setParent(this);
 	}
 
+	void addStatements(List<StatementNode> statements)
+	{
+		for (var statement : statements)
+		{
+			addStatement(statement);
+		}
+	}
+
 	@Override
 	protected void replaceChild(BaseSyntaxNode oldChild, BaseSyntaxNode newChild)
 	{

@@ -18,7 +18,7 @@ class AssignmentStatementParsingShould extends StatementParseTest
 			#VAR := 5
 			""", IAssignmentStatementNode.class);
 
-		assertThat(assertNodeType(assign.target(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+		assertIsVariableReference(assign.target(), "#VAR");
 		assertThat(assertNodeType(assign.operand(), ILiteralNode.class).token().intValue()).isEqualTo(5);
 	}
 
@@ -72,16 +72,31 @@ class AssignmentStatementParsingShould extends StatementParseTest
 	void parseAssigningArrayIndices()
 	{
 		var assign = assertParsesSingleStatement("#ARR(#I) := 5", IAssignmentStatementNode.class);
-		var target = assertNodeType(assign.target(), IVariableReferenceNode.class);
-		assertThat(target.token().symbolName()).isEqualTo("#ARR");
-		assertThat(target.dimensions()).isNotEmpty();
+		var variable = assertIsVariableReference(assign.target(), "#ARR");
+		assertThat(variable.dimensions()).isNotEmpty();
 	}
 
 	@Test
 	void parseAssignmentsWithTargetsThatCanBeIdentifiers()
 	{
 		var assign = assertParsesSingleStatement("DELIMITERS(#I) := ';'", IAssignmentStatementNode.class);
-		var target = assertNodeType(assign.target(), IVariableReferenceNode.class);
-		assertThat(target.token().symbolName()).isEqualTo("DELIMITERS");
+		var variable = assertIsVariableReference(assign.target(), "DELIMITERS");
+		assertThat(variable.dimensions()).isNotEmpty();
 	}
+
+	@Test
+	void parseMultiAssignments()
+	{
+		var statements = assertParsesWithoutDiagnostics("#VAR1 := #VAR2 := 5");
+		assertThat(statements).hasSize(2);
+
+		var firstAssign = assertNodeType(statements.statements().first(), IAssignmentStatementNode.class);
+		assertIsVariableReference(firstAssign.target(), "#VAR1");
+		assertIsVariableReference(firstAssign.operand(), "#VAR2");
+
+		var secondAssign = assertNodeType(statements.statements().get(1), IAssignmentStatementNode.class);
+		assertIsVariableReference(secondAssign.target(), "#VAR2");
+		assertThat(assertNodeType(secondAssign.operand(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+	}
+
 }

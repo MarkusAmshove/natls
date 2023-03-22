@@ -109,10 +109,10 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case CALLNAT:
 						statementList.addStatement(callnat());
 						break;
-					//					case COLON_EQUALS_SIGN:
-					//						report(ParserErrors.internal("Trailing :=  Multi assignment?", peek()));
-					//						discard();
-					//						break;
+					case COLON_EQUALS_SIGN:
+						report(ParserErrors.internal("Trailing :=  Multi assignment?", peek()));
+						discard();
+						break;
 					case COMPRESS:
 						statementList.addStatement(compress());
 						break;
@@ -154,7 +154,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(fetch());
 						break;
 					case IDENTIFIER:
-						statementList.addStatement(assignmentOrIdentifierReference());
+						statementList.addStatements(assignmentsOrIdentifierReference());
 						break;
 					case EXAMINE:
 						statementList.addStatement(examine());
@@ -264,7 +264,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 						if (isAssignmentStart())
 						{
-							statementList.addStatement(assignmentOrIdentifierReference());
+							statementList.addStatements(assignmentsOrIdentifierReference());
 							break;
 						}
 
@@ -2093,20 +2093,39 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return find;
 	}
 
-	private StatementNode assignmentOrIdentifierReference() throws ParseError
+	private List<StatementNode> assignmentsOrIdentifierReference() throws ParseError
 	{
 		// TODO: this whole lookahead can be simplified when we understand more statements
 		if (!peekKind(1, SyntaxKind.COLON_EQUALS_SIGN)
 			&& !(peekKind(1, SyntaxKind.LPAREN) && isKindAfterKindInSameLine(SyntaxKind.COLON_EQUALS_SIGN, SyntaxKind.RPAREN)))
 		{
-			return identifierReference();
+			return List.of(identifierReference());
 		}
 
 		var assignment = new AssignmentStatementNode();
 		assignment.setTarget(consumeOperandNode(assignment)); // TODO: Make sure its a variable or system var reference. Also make sure the system var is modifiable
 		consumeMandatory(assignment, SyntaxKind.COLON_EQUALS_SIGN);
 		assignment.setOperand(consumeControlLiteralOrSubstringOrOperand(assignment));
-		return assignment;
+
+		if (peekKind(SyntaxKind.COLON_EQUALS_SIGN))
+		{
+			var assignments = new ArrayList<StatementNode>();
+			assignments.add(assignment);
+			var lastAssignment = assignment;
+
+			while (peekKind(SyntaxKind.COLON_EQUALS_SIGN))
+			{
+				assignment = new AssignmentStatementNode();
+				assignment.setTarget(lastAssignment.operand()); // TODO: Make sure its a variable or system var reference. Also make sure the system var is modifiable
+				consumeMandatory(assignment, SyntaxKind.COLON_EQUALS_SIGN);
+				assignment.setOperand(consumeControlLiteralOrSubstringOrOperand(assignment));
+				assignments.add(assignment);
+				lastAssignment = assignment;
+			}
+
+			return assignments;
+		}
+		return List.of(assignment);
 	}
 
 	private ResetStatementNode resetStatement() throws ParseError
