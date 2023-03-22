@@ -1206,6 +1206,13 @@ public class Lexer
 			{
 				break;
 			}
+
+			var prev = previous();
+			if (scanner.peek() == ',' && prev != null && prev.kind() == SyntaxKind.COLON)
+			{
+				break;
+			}
+
 			scanner.advance();
 		}
 
