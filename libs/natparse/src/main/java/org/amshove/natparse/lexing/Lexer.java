@@ -1210,6 +1210,7 @@ public class Lexer
 			var prev = previous();
 			if (scanner.peek() == ',' && prev != null && prev.kind() == SyntaxKind.COLON)
 			{
+				// Case for (1:5,2:5) which are two dimensions and not a floating number
 				break;
 			}
 
