@@ -109,7 +109,7 @@ public class NaturalSnippet
 		var textEdits = new ArrayList<TextEdit>();
 		for (var using : usings)
 		{
-			documentationBuilder.append("%n%s USING%s".formatted(using.scope(), using.name()));
+			documentationBuilder.append("%n%s USING %s".formatted(using.scope(), using.name()));
 			var edit = TextEdits.addUsing(file, using);
 			if (edit != null)
 			{
