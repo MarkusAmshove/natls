@@ -262,7 +262,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						// FALLTHROUGH TO DEFAULT INTENDED
 					default:
 
-
 						if (isAssignmentStart())
 						{
 							statementList.addStatements(assignmentsOrIdentifierReference());
