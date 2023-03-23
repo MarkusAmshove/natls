@@ -262,6 +262,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						// FALLTHROUGH TO DEFAULT INTENDED
 					default:
 
+
 						if (isAssignmentStart())
 						{
 							statementList.addStatements(assignmentsOrIdentifierReference());
@@ -279,6 +280,17 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						// While the parser is incomplete, we just add a node for every token
 						var tokenStatementNode = new SyntheticTokenStatementNode();
 						consume(tokenStatementNode);
+
+						// Remove once we can parse expressions and all places where expressions can be used (REPEAT, IF, DECIDE, ...)
+						if (tokenStatementNode.token().kind() == SyntaxKind.MASK)
+						{
+							consumeMandatory(tokenStatementNode, SyntaxKind.LPAREN);
+							while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+							{
+								consume(tokenStatementNode);
+							}
+							consumeMandatory(tokenStatementNode, SyntaxKind.RPAREN);
+						}
 						statementList.addStatement(tokenStatementNode);
 				}
 			}
