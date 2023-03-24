@@ -35,7 +35,6 @@ public class ExtractConstantRefactoring implements ICodeActionProvider
 			context
 				.file()
 				.tokens()
-				.stream()
 				.filter(t -> t.kind() == SyntaxKind.STRING_LITERAL)
 				.filter(t -> !t.isSamePositionAs(literalToken))
 				.filter(t -> t.stringValue().equals(literalToken.stringValue()))

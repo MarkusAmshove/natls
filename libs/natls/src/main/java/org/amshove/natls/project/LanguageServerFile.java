@@ -6,6 +6,7 @@ import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.Lexer;
+import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
@@ -29,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class LanguageServerFile implements IModuleProvider
 {
@@ -474,15 +476,15 @@ public class LanguageServerFile implements IModuleProvider
 	}
 
 	/**
-	 * Returns a TokenList from the last Lexer run. <strong>The TokenList is cloned and copied on every call</strong>.
+	 * Streams all tokens from the current parsed module.
 	 */
-	public TokenList tokens()
+	public Stream<SyntaxToken> tokens()
 	{
 		if (tokens == null)
 		{
 			parse(ParseStrategy.WITHOUT_CALLERS);
 		}
 
-		return tokens.copy();
+		return tokens.stream();
 	}
 }

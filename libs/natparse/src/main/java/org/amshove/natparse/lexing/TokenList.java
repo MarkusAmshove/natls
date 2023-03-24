@@ -257,12 +257,4 @@ public class TokenList
 	{
 		currentOffset = 0;
 	}
-
-	/**
-	 * Creates a new TokenList with the same tokens, but start offset 0.
-	 */
-	public TokenList copy()
-	{
-		return new TokenList(filePath, List.copyOf(tokens));
-	}
 }
