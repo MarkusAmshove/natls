@@ -6,6 +6,7 @@ import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.Lexer;
+import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
 import org.amshove.natparse.natural.project.NaturalFile;
@@ -38,6 +39,7 @@ public class LanguageServerFile implements IModuleProvider
 	private LanguageServerLibrary library;
 	private final Set<LanguageServerFile> outgoingReferences = new HashSet<>();
 	private final Set<LanguageServerFile> incomingReferences = new HashSet<>();
+	private TokenList tokens;
 
 	private byte[] defineDataHash;
 	private boolean hasBeenAnalyzed;
@@ -276,10 +278,10 @@ public class LanguageServerFile implements IModuleProvider
 		clearDiagnosticsByTool(DiagnosticTool.NATPARSE);
 
 		var lexer = new Lexer();
-		var tokenList = lexer.lex(source, file.getPath());
+		tokens = lexer.lex(source, file.getPath());
 		var parser = new NaturalParser(this);
 
-		module = parser.parse(file, tokenList);
+		module = parser.parse(file, tokens);
 		for (var diagnostic : module.diagnostics())
 		{
 			addDiagnostic(DiagnosticTool.NATPARSE, diagnostic);
@@ -327,9 +329,9 @@ public class LanguageServerFile implements IModuleProvider
 		{
 			var source = Files.readString(file.getPath());
 			var lexer = new Lexer();
-			var tokenList = lexer.lex(source, file.getPath());
+			tokens = lexer.lex(source, file.getPath());
 			var defineDataParser = new DefineDataParser(this);
-			var definedata = defineDataParser.parse(tokenList);
+			var definedata = defineDataParser.parse(tokens);
 			var module = new NaturalModule(file);
 			module.setDefineData(definedata.result());
 			this.module = module;
@@ -469,5 +471,18 @@ public class LanguageServerFile implements IModuleProvider
 		{
 			return new byte[0];
 		}
+	}
+
+	/**
+	 * Returns a TokenList from the last Lexer run. <strong>The TokenList is cloned and copied on every call</strong>.
+	 */
+	public TokenList tokens()
+	{
+		if (tokens == null)
+		{
+			parse(ParseStrategy.WITHOUT_CALLERS);
+		}
+
+		return tokens.copy();
 	}
 }
