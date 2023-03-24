@@ -50,7 +50,7 @@ class ExtractConstantRefactoringShould extends CodeActionTest
 			"SUBN.NSN",
 			source
 		)
-			.insertsText(2, 0, "1 #C-NEW-CONSTANT (A5) CONST<'Hello'>\n")
+			.insertsText(2, 0, "1 #C-NEW-CONSTANT (A5) CONST<'Hello'>%n".formatted())
 			.insertsText(3, 6, "#C-NEW-CONSTANT");
 	}
 
