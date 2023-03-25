@@ -70,7 +70,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				switch (tokens.peek().kind())
 				{
 					case ASSIGN:
-						statementList.addStatement(assignOrCompute(SyntaxKind.ASSIGN));
+						statementList.addStatements(assignOrCompute(SyntaxKind.ASSIGN));
 						break;
 					case AT:
 						if (peekKind(1, SyntaxKind.END) && (peekKind(3, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE)))
@@ -117,7 +117,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(compress());
 						break;
 					case COMPUTE:
-						statementList.addStatement(assignOrCompute(SyntaxKind.COMPUTE));
+						statementList.addStatements(assignOrCompute(SyntaxKind.COMPUTE));
 						break;
 					case RESIZE:
 						statementList.addStatement(resize());
@@ -301,17 +301,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
-	}
-
-	private StatementNode assignOrCompute(SyntaxKind kind) throws ParseError
-	{
-		var statement = new AssignOrComputeStatementNode();
-		consumeMandatory(statement, kind);
-		statement.setRounded(consumeOptionally(statement, SyntaxKind.ROUNDED));
-		statement.setTarget(consumeOperandNode(statement)); // TODO: Make sure its a variable or system var reference. Also make sure the system var is modifiable
-		consumeAnyMandatory(statement, List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.COLON_EQUALS_SIGN));
-		statement.setOperand(consumeControlLiteralOrSubstringOrOperand(statement));
-		return statement;
 	}
 
 	/**
@@ -2137,6 +2126,37 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			return assignments;
 		}
 		return List.of(assignment);
+	}
+
+	private static final List<SyntaxKind> ASSIGN_COMPUTE_EQUALS_SIGNS = List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.COLON_EQUALS_SIGN);
+
+	private List<StatementNode> assignOrCompute(SyntaxKind kind) throws ParseError
+	{
+		var statements = new ArrayList<StatementNode>();
+		var statement = new AssignOrComputeStatementNode();
+		statements.add(statement);
+		consumeMandatory(statement, kind);
+		statement.setRounded(consumeOptionally(statement, SyntaxKind.ROUNDED));
+		statement.setTarget(consumeOperandNode(statement)); // TODO: Make sure its a variable or system var reference. Also make sure the system var is modifiable
+		consumeAnyMandatory(statement, ASSIGN_COMPUTE_EQUALS_SIGNS);
+		statement.setOperand(consumeControlLiteralOrSubstringOrOperand(statement));
+
+		if (peekAny(ASSIGN_COMPUTE_EQUALS_SIGNS))
+		{
+			var lastStatement = statement;
+			while (peekAny(ASSIGN_COMPUTE_EQUALS_SIGNS))
+			{
+				statement = new AssignOrComputeStatementNode();
+				statements.add(statement);
+				statement.setRounded(lastStatement.isRounded());
+				statement.setTarget(lastStatement.operand());
+				consumeAnyMandatory(statement, ASSIGN_COMPUTE_EQUALS_SIGNS);
+				statement.setOperand(consumeControlLiteralOrSubstringOrOperand(statement));
+				lastStatement = statement;
+			}
+		}
+
+		return statements;
 	}
 
 	private ResetStatementNode resetStatement() throws ParseError

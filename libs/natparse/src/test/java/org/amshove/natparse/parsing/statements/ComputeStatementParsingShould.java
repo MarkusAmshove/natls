@@ -60,4 +60,28 @@ class ComputeStatementParsingShould extends StatementParseTest
 
 		assertNodeType(assign.operand(), ISubstringOperandNode.class);
 	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"=", ":="
+	})
+	void parseMultiAssignments(String operator)
+	{
+		var statements = assertParsesWithoutDiagnostics("COMPUTE #VAR1 %s #VAR2 %s 5 + 2".formatted(operator, operator));
+		assertThat(statements).hasSize(2);
+
+		var firstCompute = assertNodeType(statements.statements().first(), IComputeStatementNode.class);
+		assertThat(firstCompute.isRounded()).isFalse();
+		assertIsVariableReference(firstCompute.target(), "#VAR1");
+		assertIsVariableReference(firstCompute.operand(), "#VAR2");
+
+		var secondCompute = assertNodeType(statements.statements().get(1), IComputeStatementNode.class);
+		assertThat(secondCompute.isRounded()).isFalse();
+		assertIsVariableReference(secondCompute.target(), "#VAR2");
+		var arithmetic = assertNodeType(secondCompute.operand(), IArithmeticExpressionNode.class);
+		assertThat(assertNodeType(arithmetic.left(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+		assertThat(arithmetic.operator()).isEqualTo(SyntaxKind.PLUS);
+		assertThat(assertNodeType(arithmetic.right(), ILiteralNode.class).token().intValue()).isEqualTo(2);
+	}
 }

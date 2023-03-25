@@ -70,4 +70,25 @@ class AssignStatementParsingShould extends StatementParseTest
 
 		assertNodeType(assign.operand(), IAttributeNode.class);
 	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"=", ":="
+	})
+	void parseMultiAssignments(String operator)
+	{
+		var statements = assertParsesWithoutDiagnostics("ASSIGN ROUNDED #VAR1 %s #VAR2 %s 5".formatted(operator, operator));
+		assertThat(statements).hasSize(2);
+
+		var firstAssign = assertNodeType(statements.statements().first(), IAssignStatementNode.class);
+		assertThat(firstAssign.isRounded()).isTrue();
+		assertIsVariableReference(firstAssign.target(), "#VAR1");
+		assertIsVariableReference(firstAssign.operand(), "#VAR2");
+
+		var secondAssign = assertNodeType(statements.statements().get(1), IAssignStatementNode.class);
+		assertThat(secondAssign.isRounded()).isTrue();
+		assertIsVariableReference(secondAssign.target(), "#VAR2");
+		assertThat(assertNodeType(secondAssign.operand(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+	}
 }
