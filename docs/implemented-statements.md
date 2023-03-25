@@ -13,8 +13,8 @@ partial - partially implemented to prevent false positives
 | Statement | Status |
 | --- | -- |
 | ACCEPT/REJECT | :x: |
-| ADD | :x: |
-| ASSIGN | :x: |
+| ADD | :white_check_mark: |
+| ASSIGN | :white_check_mark: |
 | AT BREAK | :white_check_mark: |
 | AT END OF DATA | :white_check_mark: |
 | AT END OF PAGE | :white_check_mark: |
@@ -33,7 +33,7 @@ partial - partially implemented to prevent false positives
 | CLOSE WORK FILE | :x: |
 | COMMIT (SQL) | :x: |
 | COMPRESS | :x: |
-| COMPUTE | :x: |
+| COMPUTE | :white_check_mark: |
 | CREATE OBJECT | :x: |
 | DECIDE FOR | :x: |
 | DECIDE ON | :x: |
@@ -48,7 +48,7 @@ partial - partially implemented to prevent false positives
 | DELETE | :x: |
 | DELETE (SQL) | :x: |
 | DISPLAY | :x: |
-| DIVIDE | :x: |
+| DIVIDE | :white_check_mark: |
 | DO/DOEND | :x: |
 | DOWNLOAD PC FILE | :x: |
 | EJECT | :white_check_mark: |
@@ -77,7 +77,7 @@ partial - partially implemented to prevent false positives
 | METHOD | :x: |
 | MOVE | :x: |
 | MOVE INDEXED | :x: |
-| MULTIPLY | :x: |
+| MULTIPLY | :white_check_mark: |
 | NEWPAGE | :white_check_mark: |
 | OBTAIN | :x: |
 | ON ERROR | :x: |
@@ -122,7 +122,7 @@ partial - partially implemented to prevent false positives
 | STACK | :white_check_mark: |
 | STOP | :x: |
 | STORE | :x: |
-| SUBTRACT | :x: |
+| SUBTRACT | :white_check_mark: |
 | SUSPEND IDENTICAL SUPPRESS | :x: |
 | TERMINATE | :x: |
 | UPDATE | :x: |
