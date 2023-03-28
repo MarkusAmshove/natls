@@ -2,9 +2,9 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.IOperandNode;
-import org.amshove.natparse.natural.IPostfixUnaryArithmeticExpressionNode;
+import org.amshove.natparse.natural.IPrefixUnaryArithmeticExpressionNode;
 
-class PostfixUnaryArithmeticExpressionNode extends BaseSyntaxNode implements IPostfixUnaryArithmeticExpressionNode
+class PrefixUnaryArithmeticExpressionNode extends BaseSyntaxNode implements IPrefixUnaryArithmeticExpressionNode
 {
 	private SyntaxKind postfixOperator;
 	private IOperandNode operand;

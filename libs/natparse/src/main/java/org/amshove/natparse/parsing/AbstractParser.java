@@ -413,7 +413,7 @@ abstract class AbstractParser<T>
 	{
 		if (peekKind(SyntaxKind.MINUS) || peekKind(SyntaxKind.PLUS))
 		{
-			return postfixUnary(node);
+			return prefixUnary(node);
 		}
 
 		if ((peekKind(SyntaxKind.IDENTIFIER) || peek().kind().canBeIdentifier())
@@ -493,9 +493,9 @@ abstract class AbstractParser<T>
 		return consumeLiteralNode(node);
 	}
 
-	private IOperandNode postfixUnary(BaseSyntaxNode node) throws ParseError
+	private IOperandNode prefixUnary(BaseSyntaxNode node) throws ParseError
 	{
-		var unary = new PostfixUnaryArithmeticExpressionNode();
+		var unary = new PrefixUnaryArithmeticExpressionNode();
 		node.addNode(unary);
 		unary.setPostfixOperator(consumeAnyMandatory(unary, List.of(SyntaxKind.PLUS, SyntaxKind.MINUS)).kind());
 		unary.setOperand(consumeOperandNode(unary));

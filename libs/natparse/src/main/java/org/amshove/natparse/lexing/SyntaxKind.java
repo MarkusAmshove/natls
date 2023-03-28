@@ -435,7 +435,7 @@ public enum SyntaxKind
 	GENERATED(true, false, false),
 	GFID(true, false, false),
 	GIVE(true, false, false),
-	GIVING(true, false, false),
+	GIVING(false, false, false),
 	GLOBAL(true, false, false),
 	GLOBALS(true, false, false),
 	GREATER(true, false, false),

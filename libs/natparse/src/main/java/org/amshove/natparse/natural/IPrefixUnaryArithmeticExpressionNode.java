@@ -2,7 +2,7 @@ package org.amshove.natparse.natural;
 
 import org.amshove.natparse.lexing.SyntaxKind;
 
-public interface IPostfixUnaryArithmeticExpressionNode extends IOperandNode
+public interface IPrefixUnaryArithmeticExpressionNode extends IOperandNode
 {
 	SyntaxKind postfixOperator();
 

@@ -48,7 +48,7 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	void parseANegativeNumberAsPostfixUnary()
 	{
 		var operand = parseOperand("-1");
-		var postfix = assertNodeType(operand, PostfixUnaryArithmeticExpressionNode.class);
+		var postfix = assertNodeType(operand, PrefixUnaryArithmeticExpressionNode.class);
 		assertThat(postfix.postfixOperator()).isEqualTo(SyntaxKind.MINUS);
 		assertThat(assertNodeType(postfix.operand(), ILiteralNode.class).token().intValue()).isEqualTo(1);
 	}
@@ -414,7 +414,7 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	void parsePostfixMinusOperands()
 	{
 		var operand = parseOperand("-#VAR");
-		var postfix = assertNodeType(operand, IPostfixUnaryArithmeticExpressionNode.class);
+		var postfix = assertNodeType(operand, IPrefixUnaryArithmeticExpressionNode.class);
 		assertThat(postfix.postfixOperator()).isEqualTo(SyntaxKind.MINUS);
 		assertThat(assertNodeType(postfix.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
 	}
@@ -423,7 +423,7 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	void parsePostfixPlusOperands()
 	{
 		var operand = parseOperand("+ #VAR");
-		var postfix = assertNodeType(operand, IPostfixUnaryArithmeticExpressionNode.class);
+		var postfix = assertNodeType(operand, IPrefixUnaryArithmeticExpressionNode.class);
 		assertThat(postfix.postfixOperator()).isEqualTo(SyntaxKind.PLUS);
 		assertThat(assertNodeType(postfix.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
 	}
@@ -433,7 +433,7 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	{
 		var operand = parseOperand("-#VAR+5");
 		var arithmetic = assertNodeType(operand, IArithmeticExpressionNode.class);
-		assertNodeType(arithmetic.left(), IPostfixUnaryArithmeticExpressionNode.class);
+		assertNodeType(arithmetic.left(), IPrefixUnaryArithmeticExpressionNode.class);
 		assertThat(arithmetic.operator()).isEqualTo(SyntaxKind.PLUS);
 		assertNodeType(arithmetic.right(), ILiteralNode.class);
 	}

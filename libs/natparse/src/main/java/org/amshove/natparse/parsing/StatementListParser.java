@@ -69,6 +69,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 				switch (tokens.peek().kind())
 				{
+					case ADD:
+						statementList.addStatement(addStatement());
+						break;
 					case ASSIGN:
 						statementList.addStatements(assignOrCompute(SyntaxKind.ASSIGN));
 						break;
@@ -153,6 +156,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case FETCH:
 						statementList.addStatement(fetch());
 						break;
+					case MULTIPLY:
+						statementList.addStatement(multiply());
+						break;
 					case IDENTIFIER:
 						statementList.addStatements(assignmentsOrIdentifierReference());
 						break;
@@ -231,6 +237,12 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case RESET:
 						statementList.addStatement(resetStatement());
 						break;
+					case SUBTRACT:
+						statementList.addStatement(subtractStatement());
+						break;
+					case DIVIDE:
+						statementList.addStatement(divideStatement());
+						break;
 					case DECIDE:
 						if (peekKind(1, SyntaxKind.FOR))
 						{
@@ -301,6 +313,97 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private static final List<SyntaxKind> MATH_STATEMENT_TO_GIVING = List.of(SyntaxKind.TO, SyntaxKind.GIVING);
+
+	private StatementNode divideStatement() throws ParseError
+	{
+		var divide = new DivideStatementNode();
+		consumeMandatory(divide, SyntaxKind.DIVIDE);
+		divide.setIsRounded(consumeOptionally(divide, SyntaxKind.ROUNDED));
+		while (!isAtEnd() && !peekKind(SyntaxKind.INTO))
+		{
+			divide.addOperand(consumeArithmeticExpression(divide));
+		}
+
+		consumeMandatory(divide, SyntaxKind.INTO);
+		divide.setTarget(consumeOperandNode(divide)); // TODO: mutability
+		if (consumeOptionally(divide, SyntaxKind.GIVING))
+		{
+			divide.setIsGiving(true);
+			divide.setGiving(consumeOperandNode(divide)); // TODO: mutability
+		}
+
+		if (consumeOptionally(divide, SyntaxKind.REMAINDER))
+		{
+			divide.setRemainder(consumeOperandNode(divide)); // TODO: mutability
+		}
+
+		return divide;
+	}
+
+	private StatementNode multiply() throws ParseError
+	{
+		var multiply = new MultiplyStatementNode();
+		consumeMandatory(multiply, SyntaxKind.MULTIPLY);
+		multiply.setIsRounded(consumeOptionally(multiply, SyntaxKind.ROUNDED));
+		multiply.setTarget(consumeOperandNode(multiply)); // TODO: mutability
+		consumeMandatory(multiply, SyntaxKind.BY);
+		while (!isAtEnd() && !isStatementStart() && isOperand())
+		{
+			multiply.addOperand(consumeArithmeticExpression(multiply));
+		}
+
+		if (peekKind(SyntaxKind.GIVING))
+		{
+			var giving = new MultiplyGivingStatementNode(multiply);
+			consumeMandatory(giving, SyntaxKind.GIVING);
+			giving.setGiving(consumeOperandNode(giving)); // TODO: mutability
+			return giving;
+		}
+
+		return multiply;
+	}
+
+	private StatementNode subtractStatement() throws ParseError
+	{
+		var subtract = new SubtractStatementNode();
+		consumeMandatory(subtract, SyntaxKind.SUBTRACT);
+		subtract.setIsRounded(consumeOptionally(subtract, SyntaxKind.ROUNDED));
+		while (!isAtEnd() && !peekKind(SyntaxKind.FROM))
+		{
+			subtract.addOperand(consumeArithmeticExpression(subtract));
+		}
+
+		consumeMandatory(subtract, SyntaxKind.FROM);
+		subtract.setTarget(consumeOperandNode(subtract)); // TODO: mutability
+
+		if (peekKind(SyntaxKind.GIVING))
+		{
+			var subtractGiving = new SubtractGivingStatementNode(subtract);
+			consumeMandatory(subtractGiving, SyntaxKind.GIVING);
+			subtractGiving.setGiving(consumeOperandNode(subtractGiving)); // TODO: mutability
+			return subtractGiving;
+		}
+
+		return subtract;
+	}
+
+	private StatementNode addStatement() throws ParseError
+	{
+		var add = new AddStatementNode();
+		consumeMandatory(add, SyntaxKind.ADD);
+		add.setIsRounded(consumeOptionally(add, SyntaxKind.ROUNDED));
+		while (!isAtEnd() && !peekAny(MATH_STATEMENT_TO_GIVING))
+		{
+			add.addOperand(consumeArithmeticExpression(add));
+		}
+
+		consumeAnyMandatory(add, MATH_STATEMENT_TO_GIVING);
+		add.setIsGiving(previousToken().kind() == SyntaxKind.GIVING);
+		add.setTarget(consumeOperandNode(add)); // TODO: needs to be mutable var or mutable sys var
+		return add;
 	}
 
 	/**
