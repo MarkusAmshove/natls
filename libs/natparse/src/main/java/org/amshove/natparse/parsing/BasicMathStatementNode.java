@@ -1,12 +1,13 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.ReadOnlyList;
+import org.amshove.natparse.natural.IMutateVariables;
 import org.amshove.natparse.natural.IOperandNode;
 
 import java.util.ArrayList;
 import java.util.List;
 
-class BasicMathStatementNode extends StatementNode
+class BasicMathStatementNode extends StatementNode implements IMutateVariables
 {
 	private IOperandNode target;
 	private boolean isRounded;
@@ -51,5 +52,11 @@ class BasicMathStatementNode extends StatementNode
 	void setIsRounded(boolean isRounded)
 	{
 		this.isRounded = isRounded;
+	}
+
+	@Override
+	public ReadOnlyList<IOperandNode> mutations()
+	{
+		return ReadOnlyList.of(target);
 	}
 }

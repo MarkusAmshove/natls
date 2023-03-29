@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.IDivideStatementNode;
 import org.amshove.natparse.natural.IOperandNode;
 
@@ -36,4 +37,9 @@ class DivideStatementNode extends BasicMathStatementNode implements IDivideState
 		this.remainder = remainder;
 	}
 
+	@Override
+	public ReadOnlyList<IOperandNode> mutations()
+	{
+		return ReadOnlyList.of(target(), giving, remainder);
+	}
 }

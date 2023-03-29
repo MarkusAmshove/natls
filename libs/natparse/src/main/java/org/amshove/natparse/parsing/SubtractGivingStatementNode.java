@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.ISubtractGivingStatementNode;
 
@@ -29,5 +30,11 @@ class SubtractGivingStatementNode extends BasicMathStatementNode implements ISub
 	void setGiving(IOperandNode giving)
 	{
 		this.giving = giving;
+	}
+
+	@Override
+	public ReadOnlyList<IOperandNode> mutations()
+	{
+		return ReadOnlyList.of(target(), giving);
 	}
 }

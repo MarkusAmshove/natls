@@ -1,4 +1,4 @@
 package org.amshove.natparse.natural;
 
-public non-sealed interface IMultiplyStatementNode extends IBasicMathStatementNode
+public non-sealed interface IMultiplyStatementNode extends IBasicMathStatementNode, IMutateVariables
 {}

@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.TokenList;
@@ -88,6 +89,13 @@ public class NaturalParser
 		addRelevantParserDiagnostics(naturalModule, result);
 		naturalModule.setBody(result.result());
 		resolveVariableReferences(statementParser, naturalModule);
+
+		var typer = new TypeChecker();
+		for (var diagnostic : typer.check(naturalModule.body()))
+		{
+			naturalModule.addDiagnostic(diagnostic);
+		}
+
 		return result.result();
 	}
 

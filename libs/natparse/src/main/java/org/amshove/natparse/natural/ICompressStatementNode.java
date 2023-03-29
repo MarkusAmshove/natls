@@ -2,7 +2,7 @@ package org.amshove.natparse.natural;
 
 import java.util.List;
 
-public interface ICompressStatementNode extends IStatementNode
+public interface ICompressStatementNode extends IStatementNode, IMutateVariables
 {
 	IOperandNode intoTarget();
 

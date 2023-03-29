@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.IAssignmentStatementNode;
 import org.amshove.natparse.natural.IOperandNode;
 
@@ -28,5 +29,11 @@ class AssignmentStatementNode extends StatementNode implements IAssignmentStatem
 	void setOperand(IOperandNode operand)
 	{
 		this.operand = operand;
+	}
+
+	@Override
+	public ReadOnlyList<IOperandNode> mutations()
+	{
+		return ReadOnlyList.of(target);
 	}
 }
