@@ -21,7 +21,7 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 	@Test
 	void lexDatE()
 	{
-		assertTokens("*DATE", token(SyntaxKind.DATE, "*DATE"));
+		assertTokens("*DATE", token(SyntaxKind.SV_DATE, "*DATE"));
 	}
 
 	@Test

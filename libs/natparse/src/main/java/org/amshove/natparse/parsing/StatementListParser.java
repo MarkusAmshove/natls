@@ -112,10 +112,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case CALLNAT:
 						statementList.addStatement(callnat());
 						break;
-					case COLON_EQUALS_SIGN:
-						report(ParserErrors.internal("Trailing :=  Multi assignment?", peek()));
-						discard();
-						break;
 					case COMPRESS:
 						statementList.addStatement(compress());
 						break;

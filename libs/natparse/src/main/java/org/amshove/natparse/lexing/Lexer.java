@@ -463,7 +463,7 @@ public class Lexer
 		}
 		if (scanner.advanceIfIgnoreCase("DATE"))
 		{
-			createAndAdd(SyntaxKind.DATE);
+			createAndAdd(SyntaxKind.SV_DATE);
 			return;
 		}
 		if (scanner.advanceIfIgnoreCase("DATX"))
