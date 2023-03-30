@@ -324,7 +324,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		consumeMandatory(divide, SyntaxKind.INTO);
-		divide.setTarget(consumeOperandNode(divide));
+		divide.setTarget(consumeArithmeticExpression(divide));
 		if (consumeOptionally(divide, SyntaxKind.GIVING))
 		{
 			divide.setIsGiving(true);

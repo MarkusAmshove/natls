@@ -5,6 +5,7 @@ LOCAL
 
 1 #N-MUTABLE (N12)
 1 #C-N-CONST (N12) CONST<5>
+1 #GIVING (N12)
 END-DEFINE
 
 #MUTABLE := 'Hello' /* Okay, #MUTABLE is not const
@@ -30,5 +31,8 @@ MULTIPLY #C-N-CONST BY 10 /* !{D:ERROR:NPP039}
 *DATN := 10 /* !{D:ERROR:NPP039}
 ASSIGN *PAGE-NUMBER(SV12) := 5
 
+DIVIDE 2 INTO (#QUOTIENT + #REST) GIVING #QUOTIENT REMAINDER #REST /* when GIVING is present, INTO is not mutated
+MULTIPLY 4 BY #N-MUTABLE GIVING #GIVING /* when GIVING is present, lhs of BY is not mutated
+SUBTRACT #N-MUTABLE FROM 11 GIVING #GIVING /* when GIVING is present, lhs of BY is not mutated
 END
 

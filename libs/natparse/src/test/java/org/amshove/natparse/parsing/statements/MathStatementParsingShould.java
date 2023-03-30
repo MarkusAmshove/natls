@@ -273,4 +273,14 @@ class MathStatementParsingShould extends StatementParseTest
 		assertThat(varOperand.dimensions()).hasSize(1);
 		assertIsVariableReference(divide.giving(), "#VAR3");
 	}
+
+	@Test
+	void allowMathExpressionsInInto()
+	{
+		var divide = assertParsesSingleStatement("""
+			DIVIDE 2 INTO (#QUOTIENT + #REST) GIVING #QUOTIENT REMAINDER #REST
+			""", IDivideStatementNode.class);
+
+		assertNodeType(divide.target(), IArithmeticExpressionNode.class);
+	}
 }
