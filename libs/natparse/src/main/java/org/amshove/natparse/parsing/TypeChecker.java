@@ -9,7 +9,7 @@ import org.amshove.natparse.natural.builtin.SystemVariableDefinition;
 import java.util.ArrayList;
 import java.util.List;
 
-class TypeChecker implements ISyntaxNodeVisitor
+final class TypeChecker implements ISyntaxNodeVisitor
 {
 	private final List<IDiagnostic> diagnostics = new ArrayList<>();
 
@@ -27,40 +27,36 @@ class TypeChecker implements ISyntaxNodeVisitor
 		{
 			ensureMutable(mutator);
 		}
-		if (node instanceof IAssignmentStatementNode assignStatement)
-		{
-			var target = assignStatement.target();
-			if (target == null)
-			{
-				return;
-			}
-			if (target instanceof IVariableReferenceNode variableReferenceNode)
-			{
-				ensureMutable(variableReferenceNode);
-			}
-		}
 	}
 
 	private void ensureMutable(IMutateVariables mutator)
 	{
 		for (var mutation : mutator.mutations())
 		{
-			if (mutation == null) // unresolved
-			{
-				continue;
-			}
-
-			if (mutation instanceof IVariableReferenceNode reference)
-			{
-				ensureMutable(reference);
-				continue;
-			}
-
-			if (mutation instanceof ISystemVariableNode sysVar)
-			{
-				ensureMutable(sysVar);
-			}
+			ensureMutable(mutation);
 		}
+	}
+
+	private void ensureMutable(IOperandNode operand)
+	{
+		if (operand == null) // unresolved
+		{
+			return;
+		}
+
+		if (operand instanceof IVariableReferenceNode reference)
+		{
+			ensureMutable(reference);
+			return;
+		}
+
+		if (operand instanceof ISystemVariableNode sysVar)
+		{
+			ensureMutable(sysVar);
+			return;
+		}
+
+		report(ParserErrors.referenceNotMutable("Operand is not modifiable by statement", operand));
 	}
 
 	private void ensureMutable(IVariableReferenceNode variableReference)
@@ -77,7 +73,7 @@ class TypeChecker implements ISyntaxNodeVisitor
 
 		if (typedVariable.type() != null && typedVariable.type().isConstant())
 		{
-			report(ParserErrors.internal("Not mutable variable", variableReference.referencingToken()));
+			report(ParserErrors.referenceNotMutable("Variable can't be modified because it is CONST", variableReference.referencingToken()));
 		}
 	}
 
@@ -91,7 +87,7 @@ class TypeChecker implements ISyntaxNodeVisitor
 
 		if (entry instanceof SystemVariableDefinition sysVarDefinition && !sysVarDefinition.isModifiable())
 		{
-			report(ParserErrors.internal("Not mutable sys var", sysVar.token()));
+			report(ParserErrors.referenceNotMutable("Unmodifiable system variables can't be modified", sysVar.token()));
 		}
 	}
 

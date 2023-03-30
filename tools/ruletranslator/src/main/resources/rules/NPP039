@@ -1,0 +1,8 @@
+name: Target must be mutable
+priority: BLOCKER
+tags: compile-time
+type: BUG
+description:
+The underlying statement wants to write a value into this operand but it is unmodifiable.
+
+This is the case for CONST variables, literals and unmodifiable system variables.

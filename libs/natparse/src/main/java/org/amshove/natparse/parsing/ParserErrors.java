@@ -1,6 +1,7 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.IDiagnostic;
+import org.amshove.natparse.IPosition;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
@@ -444,6 +445,24 @@ class ParserErrors
 			"Invalid literal type. Only %s is allowed".formatted(allowedKind),
 			literalToken,
 			ParserError.INVALID_LITERAL_VALUE
+		);
+	}
+
+	public static IDiagnostic referenceNotMutable(String message, SyntaxToken token)
+	{
+		return ParserDiagnostic.create(
+			message,
+			token,
+			ParserError.REFERENCE_NOT_MUTABLE
+		);
+	}
+
+	public static IDiagnostic referenceNotMutable(String message, ISyntaxNode node)
+	{
+		return ParserDiagnostic.create(
+			message,
+			node,
+			ParserError.REFERENCE_NOT_MUTABLE
 		);
 	}
 }

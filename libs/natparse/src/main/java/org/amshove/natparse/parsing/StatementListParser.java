@@ -324,16 +324,16 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		consumeMandatory(divide, SyntaxKind.INTO);
-		divide.setTarget(consumeOperandNode(divide)); // TODO: mutability
+		divide.setTarget(consumeOperandNode(divide));
 		if (consumeOptionally(divide, SyntaxKind.GIVING))
 		{
 			divide.setIsGiving(true);
-			divide.setGiving(consumeOperandNode(divide)); // TODO: mutability
+			divide.setGiving(consumeOperandNode(divide));
 		}
 
 		if (consumeOptionally(divide, SyntaxKind.REMAINDER))
 		{
-			divide.setRemainder(consumeOperandNode(divide)); // TODO: mutability
+			divide.setRemainder(consumeOperandNode(divide));
 		}
 
 		return divide;
@@ -344,7 +344,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var multiply = new MultiplyStatementNode();
 		consumeMandatory(multiply, SyntaxKind.MULTIPLY);
 		multiply.setIsRounded(consumeOptionally(multiply, SyntaxKind.ROUNDED));
-		multiply.setTarget(consumeOperandNode(multiply)); // TODO: mutability
+		multiply.setTarget(consumeOperandNode(multiply));
 		consumeMandatory(multiply, SyntaxKind.BY);
 		while (!isAtEnd() && !isStatementStart() && isOperand())
 		{
@@ -355,7 +355,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			var giving = new MultiplyGivingStatementNode(multiply);
 			consumeMandatory(giving, SyntaxKind.GIVING);
-			giving.setGiving(consumeOperandNode(giving)); // TODO: mutability
+			giving.setGiving(consumeOperandNode(giving));
 			return giving;
 		}
 
@@ -373,13 +373,13 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		consumeMandatory(subtract, SyntaxKind.FROM);
-		subtract.setTarget(consumeOperandNode(subtract)); // TODO: mutability
+		subtract.setTarget(consumeOperandNode(subtract));
 
 		if (peekKind(SyntaxKind.GIVING))
 		{
 			var subtractGiving = new SubtractGivingStatementNode(subtract);
 			consumeMandatory(subtractGiving, SyntaxKind.GIVING);
-			subtractGiving.setGiving(consumeOperandNode(subtractGiving)); // TODO: mutability
+			subtractGiving.setGiving(consumeOperandNode(subtractGiving));
 			return subtractGiving;
 		}
 
@@ -398,7 +398,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		consumeAnyMandatory(add, MATH_STATEMENT_TO_GIVING);
 		add.setIsGiving(previousToken().kind() == SyntaxKind.GIVING);
-		add.setTarget(consumeOperandNode(add)); // TODO: needs to be mutable var or mutable sys var
+		add.setTarget(consumeOperandNode(add));
 		return add;
 	}
 
@@ -2202,7 +2202,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		var assignment = new AssignmentStatementNode();
-		assignment.setTarget(consumeOperandNode(assignment)); // TODO: Make sure its a variable or system var reference. Also make sure the system var is modifiable
+		assignment.setTarget(consumeOperandNode(assignment));
 		consumeMandatory(assignment, SyntaxKind.COLON_EQUALS_SIGN);
 		assignment.setOperand(consumeControlLiteralOrSubstringOrOperand(assignment));
 
@@ -2215,7 +2215,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			while (peekKind(SyntaxKind.COLON_EQUALS_SIGN))
 			{
 				assignment = new AssignmentStatementNode();
-				assignment.setTarget(lastAssignment.operand()); // TODO: Make sure its a variable or system var reference. Also make sure the system var is modifiable
+				assignment.setTarget(lastAssignment.operand());
 				consumeMandatory(assignment, SyntaxKind.COLON_EQUALS_SIGN);
 				assignment.setOperand(consumeControlLiteralOrSubstringOrOperand(assignment));
 				assignments.add(assignment);
@@ -2236,7 +2236,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		statements.add(statement);
 		consumeMandatory(statement, kind);
 		statement.setRounded(consumeOptionally(statement, SyntaxKind.ROUNDED));
-		statement.setTarget(consumeOperandNode(statement)); // TODO: Make sure its a variable or system var reference. Also make sure the system var is modifiable
+		statement.setTarget(consumeOperandNode(statement));
 		consumeAnyMandatory(statement, ASSIGN_COMPUTE_EQUALS_SIGNS);
 		statement.setOperand(consumeControlLiteralOrSubstringOrOperand(statement));
 
