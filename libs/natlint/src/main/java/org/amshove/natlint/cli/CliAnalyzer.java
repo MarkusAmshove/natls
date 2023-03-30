@@ -62,22 +62,27 @@ public class CliAnalyzer
 		var editorconfigPath = projectFile.get().getParent().resolve(".editorconfig");
 		if (editorconfigPath.toFile().exists())
 		{
-			System.out.println(".editorconfig picked up");
 			LinterContext.INSTANCE.updateEditorConfig(new EditorConfigParser().parse(filesystem.readFile(editorconfigPath)));
 		}
 
-		System.out.printf("""
+		System.out.printf(
+			"""
 			     .@@@@@@@@@@@@@@@&
 			    /@@@@@@@@@@@@@@@@@.          %s
 			     @@@@@@@@*@@@@@@@@           Version: %s
 			  ....###############            Project file: %s
-			......###.@/##.@.####......
+			......###.@/##.@.####......      %s
 			     .###############
 			     .###############
 			     .###############
 			       ############.
 			           ....
-			%n""", CliAnalyzer.class.getPackage().getImplementationTitle(), CliAnalyzer.class.getPackage().getImplementationVersion(), projectFile.get().getFileName());
+			%n""",
+			CliAnalyzer.class.getPackage().getImplementationTitle(),
+			CliAnalyzer.class.getPackage().getImplementationVersion(),
+			projectFile.get().getFileName(),
+			editorconfigPath.toFile().exists() ? ".editorconfig picked up" : ""
+		);
 
 		return analyze(projectFile.get());
 	}

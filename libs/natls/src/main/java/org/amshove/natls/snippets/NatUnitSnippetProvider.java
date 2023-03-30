@@ -60,7 +60,7 @@ public class NatUnitSnippetProvider implements ISnippetProvider // TODO: unteste
 			new NaturalSnippet("TestCase")
 				.insertsText("""
 				/***********************************************************************
-				IF NUTESTP.TEST = '${1:Testcase name}'
+				IF NUTESTP.TEST EQ '${1:Testcase name}'
 				/***********************************************************************
 				${0:IGNORE}
 				END-IF
