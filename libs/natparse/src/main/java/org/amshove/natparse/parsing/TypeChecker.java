@@ -1,9 +1,12 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.IDiagnostic;
+import org.amshove.natparse.IPosition;
 import org.amshove.natparse.ReadOnlyList;
+import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.builtin.BuiltInFunctionTable;
+import org.amshove.natparse.natural.builtin.IBuiltinFunctionDefinition;
 import org.amshove.natparse.natural.builtin.SystemVariableDefinition;
 
 import java.util.ArrayList;
@@ -52,7 +55,13 @@ final class TypeChecker implements ISyntaxNodeVisitor
 
 		if (operand instanceof ISystemVariableNode sysVar)
 		{
-			ensureMutable(sysVar);
+			ensureMutable(sysVar, BuiltInFunctionTable.getDefinition(sysVar.systemVariable()));
+			return;
+		}
+
+		if (operand instanceof ISystemFunctionNode sysFunction)
+		{
+			ensureMutable(sysFunction, BuiltInFunctionTable.getDefinition(sysFunction.systemFunction()));
 			return;
 		}
 
@@ -77,9 +86,8 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		}
 	}
 
-	private void ensureMutable(ISystemVariableNode sysVar)
+	private void ensureMutable(ISyntaxNode node, IBuiltinFunctionDefinition entry)
 	{
-		var entry = BuiltInFunctionTable.getDefinition(sysVar.systemVariable());
 		if (entry == null)
 		{
 			return;
@@ -87,7 +95,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 
 		if (entry instanceof SystemVariableDefinition sysVarDefinition && !sysVarDefinition.isModifiable())
 		{
-			report(ParserErrors.referenceNotMutable("Unmodifiable system variables can't be modified", sysVar.token()));
+			report(ParserErrors.referenceNotMutable("Unmodifiable system variables can't be modified", node));
 		}
 	}
 
