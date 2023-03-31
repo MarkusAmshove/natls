@@ -1,6 +1,5 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.TokenList;
