@@ -109,12 +109,9 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			return;
 		}
 
-		var operandsThatCantBeArrayRange = List.of(divide.target(), divide.giving(), divide.remainder());
-
-		for (var operand : operandsThatCantBeArrayRange)
-		{
-			checkThatOperandIsNotSpecifyingArrayRange(operand);
-		}
+		checkThatOperandIsNotSpecifyingArrayRange(divide.target());
+		checkThatOperandIsNotSpecifyingArrayRange(divide.giving());
+		checkThatOperandIsNotSpecifyingArrayRange(divide.remainder());
 
 		for (var operand : divide.operands())
 		{
