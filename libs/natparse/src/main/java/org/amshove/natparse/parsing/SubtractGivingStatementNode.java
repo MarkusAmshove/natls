@@ -35,6 +35,6 @@ class SubtractGivingStatementNode extends BasicMathStatementNode implements ISub
 	@Override
 	public ReadOnlyList<IOperandNode> mutations()
 	{
-		return ReadOnlyList.of(target(), giving);
+		return ReadOnlyList.of(giving);
 	}
 }

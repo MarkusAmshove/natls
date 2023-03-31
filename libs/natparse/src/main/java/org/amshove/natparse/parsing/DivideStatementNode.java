@@ -40,6 +40,11 @@ class DivideStatementNode extends BasicMathStatementNode implements IDivideState
 	@Override
 	public ReadOnlyList<IOperandNode> mutations()
 	{
-		return ReadOnlyList.of(target(), giving, remainder);
+		if (!isGiving() && !hasRemainder())
+		{
+			return ReadOnlyList.of(target());
+		}
+
+		return ReadOnlyList.ofExcludingNull(giving, remainder);
 	}
 }
