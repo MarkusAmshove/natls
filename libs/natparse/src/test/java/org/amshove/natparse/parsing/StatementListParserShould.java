@@ -411,7 +411,7 @@ class StatementListParserShould extends StatementParseTest
 			#VAR5 := 1
 			""").statements();
 
-		assertThat(statements.size()).isEqualTo(4); // Assignment not parsed yet. Change this to two when this test breaks from implementing assignments
+		assertThat(statements.size()).isEqualTo(2);
 		var perform = assertNodeType(statements.first(), IExternalPerformNode.class);
 		assertThat(assertNodeType(perform.providedParameter().last(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VARNEWLINE");
 	}

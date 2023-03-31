@@ -2,7 +2,7 @@ package org.amshove.natparse.parsing;
 
 public enum ParserError
 {
-	// TODO: Remove name again
+	INTERNAL("NPP000"),
 	NO_DEFINE_DATA_FOUND("NPP001"),
 	MISSING_END_DEFINE("NPP002"),
 	UNEXPECTED_TOKEN("NPP003"),
@@ -40,7 +40,8 @@ public enum ParserError
 	INVALID_OPERAND("NPP035"),
 	COMPRESS_HAS_LEAVING_NO_AND_DELIMITERS("NPP036"),
 	TYPE_MISMATCH("NPP037"),
-	INVALID_LITERAL_VALUE("NPP038");
+	INVALID_LITERAL_VALUE("NPP038"),
+	REFERENCE_NOT_MUTABLE("NPP039");
 
 	private final String id;
 

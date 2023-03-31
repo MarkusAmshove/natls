@@ -2,8 +2,10 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.Lexer;
+import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.ITokenNode;
+import org.amshove.natparse.natural.IVariableReferenceNode;
 import org.assertj.core.api.ObjectAssert;
 
 import java.nio.file.Paths;
@@ -112,5 +114,12 @@ public abstract class AbstractParserTest<NodeType>
 		var module = new NaturalModule(null);
 		module.setDefineData(new DefineDataNode());
 		return module;
+	}
+
+	protected IVariableReferenceNode assertIsVariableReference(IOperandNode operand, String name)
+	{
+		var variable = assertNodeType(operand, IVariableReferenceNode.class);
+		assertThat(variable.referencingToken().symbolName()).isEqualTo(name);
+		return variable;
 	}
 }

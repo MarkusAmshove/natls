@@ -53,6 +53,25 @@ public class ReadOnlyList<T> implements Iterable<T>
 		return ReadOnlyList.from(includedItems);
 	}
 
+	@SafeVarargs
+	public static <T> ReadOnlyList<T> ofExcludingNull(T... items)
+	{
+		if (items.length == 0)
+		{
+			return empty();
+		}
+
+		var includedItems = new ArrayList<T>(items.length);
+		for (T item : items)
+		{
+			if (item != null)
+			{
+				includedItems.add(item);
+			}
+		}
+		return ReadOnlyList.from(includedItems);
+	}
+
 	@Override
 	public Iterator<T> iterator()
 	{

@@ -428,4 +428,49 @@ class ParserErrors
 			ParserError.INVALID_LITERAL_VALUE
 		);
 	}
+
+	public static IDiagnostic internal(String message, SyntaxToken token)
+	{
+		return ParserDiagnostic.create(
+			"%s. This is for internal debbuing use, if you see this raise an issue.".formatted(message),
+			token,
+			ParserError.INTERNAL
+		);
+	}
+
+	public static IDiagnostic invalidLiteralType(SyntaxToken literalToken, SyntaxKind allowedKind)
+	{
+		return ParserDiagnostic.create(
+			"Invalid literal type. Only %s is allowed".formatted(allowedKind),
+			literalToken,
+			ParserError.INVALID_LITERAL_VALUE
+		);
+	}
+
+	public static IDiagnostic referenceNotMutable(String message, SyntaxToken token)
+	{
+		return ParserDiagnostic.create(
+			message,
+			token,
+			ParserError.REFERENCE_NOT_MUTABLE
+		);
+	}
+
+	public static IDiagnostic referenceNotMutable(String message, ISyntaxNode node)
+	{
+		return ParserDiagnostic.create(
+			message,
+			node,
+			ParserError.REFERENCE_NOT_MUTABLE
+		);
+	}
+
+	public static IDiagnostic typeMismatch(String message, ISyntaxNode node)
+	{
+		return ParserDiagnostic.create(
+			message,
+			node,
+			ParserError.TYPE_MISMATCH
+		);
+	}
 }

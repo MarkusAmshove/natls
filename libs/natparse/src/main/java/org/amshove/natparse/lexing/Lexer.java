@@ -92,7 +92,9 @@ public class Lexer
 					createAndAddFollowupEquals(SyntaxKind.COLON, SyntaxKind.COLON_EQUALS_SIGN);
 					continue;
 				case '+':
-					if (isValidAivStartAfterPlus(scanner.peek(1)))
+					if (isValidAivStartAfterPlus(scanner.peek(1))
+						&& (hasSpaceBetweenThisAndLast()
+							|| previousWasNoLiteralOrIdentifier()))
 					{
 						consumeIdentifier();
 					}
@@ -261,6 +263,18 @@ public class Lexer
 		return TokenList.fromTokensAndDiagnostics(filePath, tokens, diagnostics, comments, sourceHeader);
 	}
 
+	private boolean previousWasNoLiteralOrIdentifier()
+	{
+		var previous = previous();
+		return previous != null && !(previous.kind().isLiteralOrConst() || previous.kind().isIdentifier());
+	}
+
+	private boolean hasSpaceBetweenThisAndLast()
+	{
+		var previous = previous();
+		return previous == null || previous.totalEndOffset() != scanner.position();
+	}
+
 	public void relocateDiagnosticPosition(IPosition diagnosticPosition)
 	{
 		this.relocatedDiagnosticPosition = diagnosticPosition;
@@ -303,6 +317,15 @@ public class Lexer
 
 	private void consumeAsteriskOrSystemVariable()
 	{
+		if (scanner.peek(1) == '*')
+		{
+			scanner.start();
+			scanner.advance();
+			scanner.advance();
+			createAndAdd(SyntaxKind.EXPONENT_OPERATOR);
+			return;
+		}
+
 		var lookahead = scanner.peek(1);
 		switch (lookahead)
 		{
@@ -440,7 +463,7 @@ public class Lexer
 		}
 		if (scanner.advanceIfIgnoreCase("DATE"))
 		{
-			createAndAdd(SyntaxKind.DATE);
+			createAndAdd(SyntaxKind.SV_DATE);
 			return;
 		}
 		if (scanner.advanceIfIgnoreCase("DATX"))
@@ -1183,6 +1206,14 @@ public class Lexer
 			{
 				break;
 			}
+
+			var prev = previous();
+			if (scanner.peek() == ',' && prev != null && prev.kind() == SyntaxKind.COLON)
+			{
+				// Case for (1:5,2:5) which are two dimensions and not a floating number
+				break;
+			}
+
 			scanner.advance();
 		}
 

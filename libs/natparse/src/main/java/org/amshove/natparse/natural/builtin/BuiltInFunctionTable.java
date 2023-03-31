@@ -42,7 +42,7 @@ public class BuiltInFunctionTable
 				labelParameter(true)
 			),
 			unmodifiableVariable(SyntaxKind.DATD, "Returns the current date in the format `DD.MM.YY`", ALPHANUMERIC, 8.0),
-			unmodifiableVariable(SyntaxKind.DATE, "Returns the current date in the format `DD/MM/YY`", ALPHANUMERIC, 8.0),
+			unmodifiableVariable(SyntaxKind.SV_DATE, "Returns the current date in the format `DD/MM/YY`", ALPHANUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.DAT4E, "Returns the current date in the format `DD/MM/YYYY`", ALPHANUMERIC, 10.0),
 			unmodifiableVariable(SyntaxKind.DATG, "Returns the current date in gregorian format `DDmonthnameYYYY`", ALPHANUMERIC, 15.0),
 			unmodifiableVariable(SyntaxKind.DAT4D, "Returns the current date in the format `DD.MM.YYYY`", ALPHANUMERIC, 10.0),

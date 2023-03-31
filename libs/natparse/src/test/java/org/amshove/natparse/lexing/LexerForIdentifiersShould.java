@@ -49,6 +49,24 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 	}
 
 	@Test
+	void recognizeAivInParens()
+	{
+		assertTokens("(+THEAIV)", token(SyntaxKind.LPAREN), token(SyntaxKind.IDENTIFIER), token(SyntaxKind.RPAREN));
+	}
+
+	@Test
+	void recognizeAivInArrayBounds()
+	{
+		assertTokens("(1:+THEAIV)", token(SyntaxKind.LPAREN), token(SyntaxKind.NUMBER_LITERAL), token(SyntaxKind.COLON), token(SyntaxKind.IDENTIFIER), token(SyntaxKind.RPAREN));
+	}
+
+	@Test
+	void recognizeAivAsFunctionParameter()
+	{
+		assertTokens("(<+THEAIV>)", token(SyntaxKind.LPAREN), token(SyntaxKind.LESSER_SIGN), token(SyntaxKind.IDENTIFIER), token(SyntaxKind.GREATER_SIGN));
+	}
+
+	@Test
 	void recognizeHyphensInNames()
 	{
 		assertTokens("MY-VAR", token(SyntaxKind.IDENTIFIER, "MY-VAR"));
@@ -206,8 +224,20 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 	}
 
 	@Test
-	void recogniceAVariableStartingWithPfAsIdentifier()
+	void recognizeAVariableStartingWithPfAsIdentifier()
 	{
 		assertTokens("PFAD", token(SyntaxKind.IDENTIFIER));
+	}
+
+	@Test
+	void notConfuseArithmeticWithAiv()
+	{
+		assertTokens("5+NUM", token(SyntaxKind.NUMBER_LITERAL), token(SyntaxKind.PLUS), token(SyntaxKind.IDENTIFIER));
+	}
+
+	@Test
+	void notConfuseArithmeticWithTwoIdentifiersWithAiv()
+	{
+		assertTokens("NUM+NUM2", token(SyntaxKind.IDENTIFIER), token(SyntaxKind.PLUS), token(SyntaxKind.IDENTIFIER));
 	}
 }

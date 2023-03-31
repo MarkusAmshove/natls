@@ -127,4 +127,21 @@ class LexerForNumbersShould extends AbstractLexerTest
 	{
 		assertTokens("5,#HI", token(SyntaxKind.NUMBER_LITERAL), token(SyntaxKind.COMMA), token(SyntaxKind.IDENTIFIER));
 	}
+
+	@Test
+	void notTreatArrayDimensionsWithRangesAsFloatingNumber()
+	{
+		assertTokens(
+			"(1:5,2:5)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.NUMBER_LITERAL),
+			token(SyntaxKind.COLON),
+			token(SyntaxKind.NUMBER_LITERAL),
+			token(SyntaxKind.COMMA),
+			token(SyntaxKind.NUMBER_LITERAL),
+			token(SyntaxKind.COLON),
+			token(SyntaxKind.NUMBER_LITERAL),
+			token(SyntaxKind.RPAREN)
+		);
+	}
 }

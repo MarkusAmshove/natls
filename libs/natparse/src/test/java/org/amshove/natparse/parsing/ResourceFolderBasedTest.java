@@ -79,7 +79,7 @@ public abstract class ResourceFolderBasedTest
 					{
 						if (diagnostics.stream().noneMatch(d -> ExpectedDiagnostic.doMatch(expectedDiagnostic, d)))
 						{
-							fail("Diagnostic [%s] expected but not found".formatted(expectedDiagnostic));
+							fail("Diagnostic [%s] expected but not found.%nSource line:%n%s".formatted(expectedDiagnostic, expectedDiagnostic.sourceLine));
 						}
 					}));
 				}
@@ -109,7 +109,7 @@ public abstract class ResourceFolderBasedTest
 				var severity = DiagnosticSeverity.valueOf(severityAndId[0]);
 				var id = severityAndId[1].split("}")[0];
 
-				expectedDiagnostics.add(new ExpectedDiagnostic(i, id, severity));
+				expectedDiagnostics.add(new ExpectedDiagnostic(i, id, severity, line));
 			}
 		}
 
@@ -119,7 +119,7 @@ public abstract class ResourceFolderBasedTest
 	public record ResouceFileBasedTest(Path filepath, List<ExpectedDiagnostic> expectedDiagnostics)
 	{}
 
-	public record ExpectedDiagnostic(int line, String id, DiagnosticSeverity severity)
+	public record ExpectedDiagnostic(int line, String id, DiagnosticSeverity severity, String sourceLine)
 	{
 		public boolean matches(IDiagnostic diagnostic)
 		{

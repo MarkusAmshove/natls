@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.ICompressStatementNode;
 import org.amshove.natparse.natural.IOperandNode;
 
@@ -9,7 +10,7 @@ import java.util.List;
 class CompressStatementNode extends StatementNode implements ICompressStatementNode
 {
 	private IOperandNode intoTarget;
-	private List<IOperandNode> operands = new ArrayList<>();
+	private final List<IOperandNode> operands = new ArrayList<>();
 	private boolean isNumeric;
 	private boolean isFull;
 	private boolean isLeavingSpace = true;
@@ -103,5 +104,11 @@ class CompressStatementNode extends StatementNode implements ICompressStatementN
 	void setDelimiter(IOperandNode delimiter)
 	{
 		this.delimiter = delimiter;
+	}
+
+	@Override
+	public ReadOnlyList<IOperandNode> mutations()
+	{
+		return ReadOnlyList.of(intoTarget);
 	}
 }

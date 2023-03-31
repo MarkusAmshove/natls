@@ -347,7 +347,34 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
-	void parseChainedCriteriaWithparenthesesAndInlineComments()
+	void recognizeAssignmentsAfterMaskCondition()
+	{
+		var statementList = assertParsesWithoutDiagnostics("""
+			IF #VAR EQ MASK('B')
+			#VAR := 'A'
+			END-IF
+			""");
+
+		var ifStatement = assertNodeType(statementList.statements().first(), IfStatementNode.class);
+		assertThat(ifStatement.statements()).isNotEmpty();
+		assertNodeType(ifStatement.statements().first(), IAssignmentStatementNode.class);
+	}
+
+	@Test
+	void consumeLiteralsAsConstantMaskOperand()
+	{
+		var criteria = assertParsesCriteria("""
+			#VAR = MASK (.X...XXX) '1.111,00'
+			""", IRelationalCriteriaNode.class);
+
+		var mask = assertNodeType(criteria.right(), IConstantMaskOperandNode.class);
+		assertThat(mask.checkedOperand()).isPresent();
+		//noinspection OptionalGetWithoutIsPresent
+		assertNodeType(mask.checkedOperand().get(), ILiteralNode.class);
+	}
+
+	@Test
+	void parseChainedCriteriaWithParenthesesAndInlineComments()
 	{
 		var source = """
 				#VAR1 = #VAR2 OR
@@ -462,7 +489,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	{
 		var criteria = assertParsesCriteria("#VAR EQ MASK (DDXYYYY) #VAR2", IRelationalCriteriaNode.class);
 		var mask = assertNodeType(criteria.right(), IConstantMaskOperandNode.class);
-		assertThat(mask.checkedOperand()).map(IVariableReferenceNode::referencingToken).map(SyntaxToken::symbolName).hasValue("#VAR2");
+		assertThat(mask.checkedOperand()).map(IVariableReferenceNode.class::cast).map(IVariableReferenceNode::referencingToken).map(SyntaxToken::symbolName).hasValue("#VAR2");
 	}
 
 	@Test

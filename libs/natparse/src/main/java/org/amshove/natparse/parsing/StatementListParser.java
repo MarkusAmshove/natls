@@ -69,6 +69,12 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 				switch (tokens.peek().kind())
 				{
+					case ADD:
+						statementList.addStatement(addStatement());
+						break;
+					case ASSIGN:
+						statementList.addStatements(assignOrCompute(SyntaxKind.ASSIGN));
+						break;
 					case AT:
 						if (peekKind(1, SyntaxKind.END) && (peekKind(3, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE)))
 						{
@@ -109,6 +115,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case COMPRESS:
 						statementList.addStatement(compress());
 						break;
+					case COMPUTE:
+						statementList.addStatements(assignOrCompute(SyntaxKind.COMPUTE));
+						break;
 					case RESIZE:
 						statementList.addStatement(resize());
 						break;
@@ -143,8 +152,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case FETCH:
 						statementList.addStatement(fetch());
 						break;
+					case MULTIPLY:
+						statementList.addStatement(multiply());
+						break;
 					case IDENTIFIER:
-						statementList.addStatement(identifierReference());
+						statementList.addStatements(assignmentsOrIdentifierReference());
 						break;
 					case EXAMINE:
 						statementList.addStatement(examine());
@@ -221,6 +233,12 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case RESET:
 						statementList.addStatement(resetStatement());
 						break;
+					case SUBTRACT:
+						statementList.addStatement(subtractStatement());
+						break;
+					case DIVIDE:
+						statementList.addStatement(divideStatement());
+						break;
 					case DECIDE:
 						if (peekKind(1, SyntaxKind.FOR))
 						{
@@ -252,6 +270,12 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						// FALLTHROUGH TO DEFAULT INTENDED
 					default:
 
+						if (isAssignmentStart())
+						{
+							statementList.addStatements(assignmentsOrIdentifierReference());
+							break;
+						}
+
 						if (peek().kind().isSystemFunction())
 						{
 							// this came up for *PAGE-NUMBER(PRINTERREP) in a WRITE statement, because we don't parse WRITE operands yet
@@ -263,7 +287,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						// While the parser is incomplete, we just add a node for every token
 						var tokenStatementNode = new SyntheticTokenStatementNode();
 						consume(tokenStatementNode);
-						if (tokenStatementNode.token().kind() == SyntaxKind.MASK) // TODO(expressions): Remove once we can parse expressions
+
+						// Remove once we can parse expressions and all places where expressions can be used (REPEAT, IF, DECIDE, ...)
+						if (tokenStatementNode.token().kind() == SyntaxKind.MASK)
 						{
 							consumeMandatory(tokenStatementNode, SyntaxKind.LPAREN);
 							while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
@@ -283,6 +309,111 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private static final List<SyntaxKind> MATH_STATEMENT_TO_GIVING = List.of(SyntaxKind.TO, SyntaxKind.GIVING);
+
+	private StatementNode divideStatement() throws ParseError
+	{
+		var divide = new DivideStatementNode();
+		consumeMandatory(divide, SyntaxKind.DIVIDE);
+		divide.setIsRounded(consumeOptionally(divide, SyntaxKind.ROUNDED));
+		while (!isAtEnd() && !peekKind(SyntaxKind.INTO))
+		{
+			divide.addOperand(consumeArithmeticExpression(divide));
+		}
+
+		consumeMandatory(divide, SyntaxKind.INTO);
+		divide.setTarget(consumeArithmeticExpression(divide));
+		if (consumeOptionally(divide, SyntaxKind.GIVING))
+		{
+			divide.setIsGiving(true);
+			divide.setGiving(consumeOperandNode(divide));
+		}
+
+		if (consumeOptionally(divide, SyntaxKind.REMAINDER))
+		{
+			divide.setRemainder(consumeOperandNode(divide));
+		}
+
+		return divide;
+	}
+
+	private StatementNode multiply() throws ParseError
+	{
+		var multiply = new MultiplyStatementNode();
+		consumeMandatory(multiply, SyntaxKind.MULTIPLY);
+		multiply.setIsRounded(consumeOptionally(multiply, SyntaxKind.ROUNDED));
+		multiply.setTarget(consumeOperandNode(multiply));
+		consumeMandatory(multiply, SyntaxKind.BY);
+		while (!isAtEnd() && !isStatementStart() && isOperand())
+		{
+			multiply.addOperand(consumeArithmeticExpression(multiply));
+		}
+
+		if (peekKind(SyntaxKind.GIVING))
+		{
+			var giving = new MultiplyGivingStatementNode(multiply);
+			consumeMandatory(giving, SyntaxKind.GIVING);
+			giving.setGiving(consumeOperandNode(giving));
+			return giving;
+		}
+
+		return multiply;
+	}
+
+	private StatementNode subtractStatement() throws ParseError
+	{
+		var subtract = new SubtractStatementNode();
+		consumeMandatory(subtract, SyntaxKind.SUBTRACT);
+		subtract.setIsRounded(consumeOptionally(subtract, SyntaxKind.ROUNDED));
+		while (!isAtEnd() && !peekKind(SyntaxKind.FROM))
+		{
+			subtract.addOperand(consumeArithmeticExpression(subtract));
+		}
+
+		consumeMandatory(subtract, SyntaxKind.FROM);
+		subtract.setTarget(consumeOperandNode(subtract));
+
+		if (peekKind(SyntaxKind.GIVING))
+		{
+			var subtractGiving = new SubtractGivingStatementNode(subtract);
+			consumeMandatory(subtractGiving, SyntaxKind.GIVING);
+			subtractGiving.setGiving(consumeOperandNode(subtractGiving));
+			return subtractGiving;
+		}
+
+		return subtract;
+	}
+
+	private StatementNode addStatement() throws ParseError
+	{
+		var add = new AddStatementNode();
+		consumeMandatory(add, SyntaxKind.ADD);
+		add.setIsRounded(consumeOptionally(add, SyntaxKind.ROUNDED));
+		while (!isAtEnd() && !peekAny(MATH_STATEMENT_TO_GIVING))
+		{
+			add.addOperand(consumeArithmeticExpression(add));
+		}
+
+		consumeAnyMandatory(add, MATH_STATEMENT_TO_GIVING);
+		add.setIsGiving(previousToken().kind() == SyntaxKind.GIVING);
+		add.setTarget(consumeOperandNode(add));
+		return add;
+	}
+
+	/**
+	 * Prioritizes e.g. (AD=IO), then substring then default operand. Useful for expressions that can be a single
+	 * attribute definition or a whole expression
+	 */
+	private IOperandNode consumeControlLiteralOrSubstringOrOperand(BaseSyntaxNode node) throws ParseError
+	{
+		if (peekKind(SyntaxKind.LPAREN) && peekKind(1, SyntaxKind.AD))
+		{
+			return consumeLiteralNode(node);
+		}
+
+		return consumeSubstringOrOperand(node);
 	}
 
 	private static final List<String> ALLOWED_WORK_FILE_ATTRIBUTES = List.of("NOAPPEND", "APPEND", "DELETE", "KEEP", "BOM", "NOBOM", "KEEPCR", "REMOVECR");
@@ -1766,9 +1897,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 		consumeMandatory(mask, SyntaxKind.RPAREN);
 
-		if (!isAtEnd() && peek().kind().isIdentifier() && !peekKind(SyntaxKind.OR) && !peekKind(SyntaxKind.AND))
+		if (isOperand() && !isStatementStart() && !peekKind(SyntaxKind.OR) && !peekKind(SyntaxKind.AND) && !peekKind(SyntaxKind.THEN))
 		{
-			mask.setCheckedOperand(consumeVariableReferenceNode(mask));
+			mask.setCheckedOperand(consumeOperandNode(mask));
 		}
 
 		return mask;
@@ -2061,6 +2192,72 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return find;
 	}
 
+	private List<StatementNode> assignmentsOrIdentifierReference() throws ParseError
+	{
+		// TODO: this whole lookahead can be simplified when we understand more statements
+		if (!peekKind(1, SyntaxKind.COLON_EQUALS_SIGN)
+			&& !(peekKind(1, SyntaxKind.LPAREN) && isKindAfterKindInSameLine(SyntaxKind.COLON_EQUALS_SIGN, SyntaxKind.RPAREN)))
+		{
+			return List.of(identifierReference());
+		}
+
+		var assignment = new AssignmentStatementNode();
+		assignment.setTarget(consumeOperandNode(assignment));
+		consumeMandatory(assignment, SyntaxKind.COLON_EQUALS_SIGN);
+		assignment.setOperand(consumeControlLiteralOrSubstringOrOperand(assignment));
+
+		if (peekKind(SyntaxKind.COLON_EQUALS_SIGN))
+		{
+			var assignments = new ArrayList<StatementNode>();
+			assignments.add(assignment);
+			var lastAssignment = assignment;
+
+			while (peekKind(SyntaxKind.COLON_EQUALS_SIGN))
+			{
+				assignment = new AssignmentStatementNode();
+				assignment.setTarget(lastAssignment.operand());
+				consumeMandatory(assignment, SyntaxKind.COLON_EQUALS_SIGN);
+				assignment.setOperand(consumeControlLiteralOrSubstringOrOperand(assignment));
+				assignments.add(assignment);
+				lastAssignment = assignment;
+			}
+
+			return assignments;
+		}
+		return List.of(assignment);
+	}
+
+	private static final List<SyntaxKind> ASSIGN_COMPUTE_EQUALS_SIGNS = List.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.COLON_EQUALS_SIGN);
+
+	private List<StatementNode> assignOrCompute(SyntaxKind kind) throws ParseError
+	{
+		var statements = new ArrayList<StatementNode>();
+		var statement = new AssignOrComputeStatementNode();
+		statements.add(statement);
+		consumeMandatory(statement, kind);
+		statement.setRounded(consumeOptionally(statement, SyntaxKind.ROUNDED));
+		statement.setTarget(consumeOperandNode(statement));
+		consumeAnyMandatory(statement, ASSIGN_COMPUTE_EQUALS_SIGNS);
+		statement.setOperand(consumeControlLiteralOrSubstringOrOperand(statement));
+
+		if (peekAny(ASSIGN_COMPUTE_EQUALS_SIGNS))
+		{
+			var lastStatement = statement;
+			while (peekAny(ASSIGN_COMPUTE_EQUALS_SIGNS))
+			{
+				statement = new AssignOrComputeStatementNode();
+				statements.add(statement);
+				statement.setRounded(lastStatement.isRounded());
+				statement.setTarget(lastStatement.operand());
+				consumeAnyMandatory(statement, ASSIGN_COMPUTE_EQUALS_SIGNS);
+				statement.setOperand(consumeControlLiteralOrSubstringOrOperand(statement));
+				lastStatement = statement;
+			}
+		}
+
+		return statements;
+	}
+
 	private ResetStatementNode resetStatement() throws ParseError
 	{
 		var resetNode = new ResetStatementNode();
@@ -2089,7 +2286,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			|| (peek().kind().isSystemVariable() && lookahead != SyntaxKind.COLON_EQUALS_SIGN)
 			|| peek().kind().isLiteralOrConst()
 			|| peekKind(SyntaxKind.VAL)
+			|| peekKind(SyntaxKind.INT)
 			|| peekKind(SyntaxKind.ABS)
+			|| peekKind(SyntaxKind.OLD)
 			|| peekKind(SyntaxKind.POS)
 			|| peekKind(SyntaxKind.FRAC)
 			|| (peekKind(SyntaxKind.MINUS) && lookahead == SyntaxKind.NUMBER_LITERAL)
@@ -2170,7 +2369,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		var currentKind = tokens.peek().kind();
-		if (currentKind.canBeIdentifier() && peekKind(1, SyntaxKind.COLON_EQUALS_SIGN))
+		if (isAssignmentStart())
 		{
 			return true;
 		}
@@ -2226,5 +2425,13 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		LITERAL,
 		VARIABLE_REFERENCE
+	}
+
+	private boolean isAssignmentStart()
+	{
+		return !isAtEnd()
+			&& (peek().kind().canBeIdentifier() || peek().kind().isSystemVariable())
+			&& (peekKind(1, SyntaxKind.COLON_EQUALS_SIGN)
+				|| (peekKind(1, SyntaxKind.LPAREN) && isKindAfterKindInSameLine(SyntaxKind.COLON_EQUALS_SIGN, SyntaxKind.RPAREN)));
 	}
 }
