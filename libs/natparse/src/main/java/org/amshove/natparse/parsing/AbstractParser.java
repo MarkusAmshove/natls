@@ -733,6 +733,16 @@ abstract class AbstractParser<T>
 
 	protected IOperandNode consumeArrayAccess(VariableReferenceNode reference) throws ParseError
 	{
+		if (peekKind(SyntaxKind.ASTERISK) && peekKind(1, SyntaxKind.RPAREN))
+		{
+			var rangedAccess = new RangedArrayAccessNode();
+			reference.addNode(rangedAccess);
+			var asterisk = consumeOperandNode(rangedAccess);
+			rangedAccess.setUpperBound(asterisk);
+			rangedAccess.setLowerBound(asterisk);
+			return rangedAccess;
+		}
+
 		var access = consumeArithmeticExpression(reference);
 		if (peekKind(SyntaxKind.COLON))
 		{

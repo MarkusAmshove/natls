@@ -124,16 +124,6 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
-	void parseArrayWithAsteriskAccess()
-	{
-		var operand = parseOperand("#THEVAR(*)");
-		var reference = assertNodeType(operand, IVariableReferenceNode.class);
-		assertThat(reference.dimensions()).hasSize(1);
-		var firstDimension = assertNodeType(reference.dimensions().first(), ILiteralNode.class);
-		assertThat(firstDimension.token().source()).isEqualTo("*");
-	}
-
-	@Test
 	void parseMultilineOperands()
 	{
 		var operand = parseOperands("""
@@ -339,6 +329,30 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		var rangedAccess = assertNodeType(access.dimensions().first(), IRangedArrayAccessNode.class);
 		assertThat(assertNodeType(rangedAccess.lowerBound(), ILiteralNode.class).token().intValue()).isEqualTo(1);
 		assertThat(assertNodeType(rangedAccess.upperBound(), ILiteralNode.class).token().intValue()).isEqualTo(10);
+	}
+
+	@Test
+	void parseArrayAccessRangesWithSingleAsterisk()
+	{
+		var operand = parseOperand("#VAR(*)");
+		var access = assertNodeType(operand, IVariableReferenceNode.class);
+		assertThat(access.dimensions()).hasSize(1);
+		var rangedAccess = assertNodeType(access.dimensions().first(), IRangedArrayAccessNode.class);
+		assertThat(assertNodeType(rangedAccess.lowerBound(), ITokenNode.class).token().kind()).isEqualTo(SyntaxKind.ASTERISK);
+		assertThat(assertNodeType(rangedAccess.upperBound(), ITokenNode.class).token().kind()).isEqualTo(SyntaxKind.ASTERISK);
+		assertThat(rangedAccess.lowerBound().position().isSamePositionAs(rangedAccess.upperBound().position())).isTrue();
+	}
+
+	@Test
+	void parseArrayAccessRangesWithDoubleAsterisk()
+	{
+		var operand = parseOperand("#VAR(*:*)");
+		var access = assertNodeType(operand, IVariableReferenceNode.class);
+		assertThat(access.dimensions()).hasSize(1);
+		var rangedAccess = assertNodeType(access.dimensions().first(), IRangedArrayAccessNode.class);
+		assertThat(assertNodeType(rangedAccess.lowerBound(), ITokenNode.class).token().kind()).isEqualTo(SyntaxKind.ASTERISK);
+		assertThat(assertNodeType(rangedAccess.upperBound(), ITokenNode.class).token().kind()).isEqualTo(SyntaxKind.ASTERISK);
+		assertThat(rangedAccess.lowerBound().position().isSamePositionAs(rangedAccess.upperBound().position())).isFalse();
 	}
 
 	@Test

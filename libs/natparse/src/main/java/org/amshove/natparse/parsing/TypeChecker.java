@@ -1,9 +1,7 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.IDiagnostic;
-import org.amshove.natparse.IPosition;
 import org.amshove.natparse.ReadOnlyList;
-import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.builtin.BuiltInFunctionTable;
 import org.amshove.natparse.natural.builtin.IBuiltinFunctionDefinition;
@@ -29,6 +27,11 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		if (node instanceof IMutateVariables mutator)
 		{
 			ensureMutable(mutator);
+		}
+
+		if (node instanceof IDivideStatementNode divide)
+		{
+			checkDivide(divide);
 		}
 	}
 
@@ -96,6 +99,42 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		if (entry instanceof SystemVariableDefinition sysVarDefinition && !sysVarDefinition.isModifiable())
 		{
 			report(ParserErrors.referenceNotMutable("Unmodifiable system variables can't be modified", node));
+		}
+	}
+
+	private void checkDivide(IDivideStatementNode divide)
+	{
+		if (!divide.hasRemainder())
+		{
+			return;
+		}
+
+		var operandsThatCantBeArrayRange = List.of(divide.target(), divide.giving(), divide.remainder());
+
+		for (var operand : operandsThatCantBeArrayRange)
+		{
+			checkThatOperandIsNotSpecifyingArrayRange(operand);
+		}
+
+		for (var operand : divide.operands())
+		{
+			checkThatOperandIsNotSpecifyingArrayRange(operand);
+		}
+	}
+
+	private void checkThatOperandIsNotSpecifyingArrayRange(IOperandNode operandNode)
+	{
+		if (!(operandNode instanceof IVariableReferenceNode reference))
+		{
+			return;
+		}
+
+		for (var dimension : reference.dimensions())
+		{
+			if (dimension instanceof IRangedArrayAccessNode)
+			{
+				report(ParserErrors.typeMismatch("Operand can't specify array range in this context", dimension));
+			}
 		}
 	}
 
