@@ -30,10 +30,11 @@ public class CliAnalyzer
 	private final List<Predicate<IDiagnostic>> diagnosticPredicates;
 	private final ActualFilesystem filesystem;
 	private final IDiagnosticSink diagnosticSink;
+	private final boolean disableLinting;
 	private Path workingDirectory;
 	private final FileStatusSink fileStatusSink;
 
-	public CliAnalyzer(Path workingDirectory, IDiagnosticSink sink, FileStatusSink fileStatusSink, List<Predicate<NaturalFile>> filePredicates, List<Predicate<IDiagnostic>> diagnosticPredicates)
+	public CliAnalyzer(Path workingDirectory, IDiagnosticSink sink, FileStatusSink fileStatusSink, List<Predicate<NaturalFile>> filePredicates, List<Predicate<IDiagnostic>> diagnosticPredicates, boolean disableLinting)
 	{
 		this.workingDirectory = workingDirectory;
 		this.filePredicates = filePredicates;
@@ -41,6 +42,7 @@ public class CliAnalyzer
 		filesystem = new ActualFilesystem();
 		diagnosticSink = sink;
 		this.fileStatusSink = fileStatusSink;
+		this.disableLinting = disableLinting;
 	}
 
 	public int run()
@@ -137,10 +139,13 @@ public class CliAnalyzer
 					return;
 				}
 
-				var linterDiagnostics = lint(file, module, allDiagnosticsInFile);
-				if (linterDiagnostics == null)
+				if (!disableLinting)
 				{
-					return;
+					var linterDiagnostics = lint(file, module, allDiagnosticsInFile);
+					if (linterDiagnostics == null)
+					{
+						return;
+					}
 				}
 
 				totalDiagnostics.addAndGet(allDiagnosticsInFile.size());
@@ -171,7 +176,7 @@ public class CliAnalyzer
 		System.out.println("Exceptions: " + exceptions.get());
 		System.out.println("Slowest lexed module: " + slowestLexedModule);
 		System.out.println("Slowest parsed module: " + slowestParsedModule);
-		System.out.println("Slowest linted module: " + slowestLintedModule);
+		System.out.println("Slowest linted module: " + (disableLinting ? "disabled" : slowestLintedModule));
 
 		System.out.println();
 

@@ -75,6 +75,12 @@ public class AnalyzeCommand implements Callable<Integer>
 	}, description = "Analyzer will create a csv with file statuses", defaultValue = "false")
 	boolean fileStatusMode;
 
+	@CommandLine.Option(names =
+	{
+		"--disable-linting", "-xlint"
+	}, description = "Skips analyzing with natlint", defaultValue = "false")
+	boolean disableLinting;
+
 	private static final List<Predicate<NaturalFile>> DEFAULT_MODULE_PREDICATES = List.of(f -> true);
 	private static final List<Predicate<IDiagnostic>> DEFAULT_DIAGNOSTIC_PREDICATES = List.of(d -> true);
 
@@ -131,7 +137,8 @@ public class AnalyzeCommand implements Callable<Integer>
 			sinkType.createSink(),
 			fileStatusMode ? FileStatusSink.create() : FileStatusSink.dummy(),
 			modulePredicates.isEmpty() ? DEFAULT_MODULE_PREDICATES : modulePredicates,
-			diagnosticPredicates.isEmpty() ? DEFAULT_DIAGNOSTIC_PREDICATES : diagnosticPredicates
+			diagnosticPredicates.isEmpty() ? DEFAULT_DIAGNOSTIC_PREDICATES : diagnosticPredicates,
+			disableLinting
 		);
 
 		var exitCode = analyzer.run();
