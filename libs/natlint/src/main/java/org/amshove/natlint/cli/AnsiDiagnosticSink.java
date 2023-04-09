@@ -23,6 +23,8 @@ public class AnsiDiagnosticSink implements IDiagnosticSink
 	private static final Comparator<IDiagnostic> byLineNumber = Comparator.comparingInt(IPosition::line);
 	private static final ActualFilesystem filesystem = new ActualFilesystem();
 
+	private static final Object PRINT_LOCK = new Object();
+
 	@Override
 	public void printDiagnostics(int currentFileCount, Path filePath, List<IDiagnostic> diagnostics)
 	{
@@ -34,22 +36,25 @@ public class AnsiDiagnosticSink implements IDiagnosticSink
 		var sortedDiagnostics = diagnostics.stream().sorted(byLineNumber).toList();
 
 		var printed = 0;
-		for (var diagnostic : sortedDiagnostics)
+		synchronized (PRINT_LOCK)
 		{
-			System.out.println(pathWithLineInformation(diagnostic));
+			for (var diagnostic : sortedDiagnostics)
+			{
+				System.out.println(pathWithLineInformation(diagnostic));
 
-			System.out.println();
-			System.out.println(readDiagnosticSourceLine(diagnostic));
-			System.out.println(squiggle(diagnostic));
-			System.out.println(message(diagnostic));
-			System.out.println();
+				System.out.println();
+				System.out.println(readDiagnosticSourceLine(diagnostic));
+				System.out.println(squiggle(diagnostic));
+				System.out.println(message(diagnostic));
+				System.out.println();
 
-			printed++;
-		}
+				printed++;
+			}
 
-		if (printed > 0)
-		{
-			System.out.println();
+			if (printed > 0)
+			{
+				System.out.println();
+			}
 		}
 	}
 
