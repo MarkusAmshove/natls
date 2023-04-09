@@ -121,6 +121,12 @@ Analyze the Natural project in the current working directory
   -V, --version           Print version information and exit.
 ```
 
+It is also possible to pipe the output from `git status` to natlint, to automatically apply filters so that all files that have changes according to Git are linted:
+
+`git status --porcelain | java -jar natlint.jar git-status`
+
+Note: The flag `--porcelain` is mandatory.
+
 ## Running natls
 
 The language server is tested primarily with two clients:
