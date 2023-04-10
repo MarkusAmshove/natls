@@ -92,9 +92,9 @@ public class CliAnalyzer
 	private SlowestModule slowestLexedModule = new SlowestModule(Long.MIN_VALUE, "NONE");
 	private SlowestModule slowestParsedModule = new SlowestModule(Long.MIN_VALUE, "NONE");
 	private SlowestModule slowestLintedModule = new SlowestModule(Long.MIN_VALUE, "NONE");
-	private AtomicInteger filesChecked = new AtomicInteger();
-	private AtomicInteger totalDiagnostics = new AtomicInteger();
-	private AtomicInteger exceptions = new AtomicInteger();
+	private final AtomicInteger filesChecked = new AtomicInteger();
+	private final AtomicInteger totalDiagnostics = new AtomicInteger();
+	private final AtomicInteger exceptions = new AtomicInteger();
 
 	private int analyze(Path projectFilePath)
 	{
