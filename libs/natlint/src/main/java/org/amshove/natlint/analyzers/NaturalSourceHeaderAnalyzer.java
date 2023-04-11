@@ -7,6 +7,7 @@ import org.amshove.natlint.api.ILinterContext;
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.INaturalModule;
+import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.natural.project.NaturalProgrammingMode;
 
 public class NaturalSourceHeaderAnalyzer extends AbstractAnalyzer
@@ -31,6 +32,11 @@ public class NaturalSourceHeaderAnalyzer extends AbstractAnalyzer
 
 	private void analyzeModule(INaturalModule module, IAnalyzeContext context)
 	{
+		if (module.file().getFiletype() == NaturalFileType.DDM)
+		{
+			return;
+		}
+
 		if (module.programmingMode() == NaturalProgrammingMode.UNKNOWN)
 		{
 			context.report(MISSING_SOURCE_HEADER.createModuleDiagnostic(module));
