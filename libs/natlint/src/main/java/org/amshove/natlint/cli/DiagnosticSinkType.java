@@ -1,6 +1,6 @@
 package org.amshove.natlint.cli;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 public enum DiagnosticSinkType
 {
@@ -9,14 +9,14 @@ public enum DiagnosticSinkType
 	CSV,
 	CI_CSV;
 
-	public IDiagnosticSink createSink()
+	public IDiagnosticSink createSink(Path workspace)
 	{
 		return switch (this)
 		{
 			case STDOUT -> new AnsiDiagnosticSink();
 			case NONE -> new NullDiagnosticSink();
-			case CSV -> new CsvDiagnosticSink(Paths.get("diagnostics.csv"));
-			case CI_CSV -> new CiCsvDiagnosticSink(Paths.get("diagnostics.csv"));
+			case CSV -> new CsvDiagnosticSink(workspace.resolve("diagnostics.csv"));
+			case CI_CSV -> new CiCsvDiagnosticSink(workspace.resolve("diagnostics.csv"));
 		};
 	}
 }

@@ -197,7 +197,7 @@ public class AnalyzeCommand implements Callable<Integer>
 
 		return new CliAnalyzer(
 			theWorkingDirectory,
-			sinkType.createSink(),
+			sinkType.createSink(theWorkingDirectory),
 			fileStatusMode ? FileStatusSink.create() : FileStatusSink.dummy(),
 			modulePredicates.isEmpty() ? DEFAULT_MODULE_PREDICATES : modulePredicates,
 			diagnosticPredicates.isEmpty() ? DEFAULT_DIAGNOSTIC_PREDICATES : diagnosticPredicates,

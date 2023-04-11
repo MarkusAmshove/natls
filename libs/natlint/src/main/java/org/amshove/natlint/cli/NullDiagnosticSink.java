@@ -10,6 +10,6 @@ public class NullDiagnosticSink implements IDiagnosticSink
 	@Override
 	public void printDiagnostics(int currentFileCount, Path filePath, List<IDiagnostic> diagnostics)
 	{
-
+		// this sink doesn't do anything
 	}
 }
