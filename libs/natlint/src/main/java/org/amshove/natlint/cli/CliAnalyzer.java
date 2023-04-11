@@ -129,19 +129,21 @@ public class CliAnalyzer
 					return;
 				}
 
-				if (tokens.sourceHeader().getProgrammingMode() == NaturalProgrammingMode.REPORTING)
-				{
-					fileStatusSink.printStatus(file.getPath(), MessageType.REPORTING_TYPE);
-					return;
-				}
-
 				var module = parse(file, tokens, allDiagnosticsInFile);
 				if (module == null)
 				{
+					diagnosticSink.printDiagnostics(filesChecked.get(), file.getPath(), allDiagnosticsInFile);
 					return;
 				}
 
-				if (!disableLinting)
+				if (tokens.sourceHeader().getProgrammingMode() == NaturalProgrammingMode.REPORTING)
+				{
+					fileStatusSink.printStatus(file.getPath(), MessageType.REPORTING_TYPE);
+					diagnosticSink.printDiagnostics(filesChecked.get(), file.getPath(), allDiagnosticsInFile);
+					return;
+				}
+
+				if (!disableLinting || module.programmingMode() != NaturalProgrammingMode.REPORTING)
 				{
 					var linterDiagnostics = lint(file, module, allDiagnosticsInFile);
 					if (linterDiagnostics == null)

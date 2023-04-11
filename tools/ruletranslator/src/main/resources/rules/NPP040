@@ -1,0 +1,8 @@
+name: Unsupported programming mode
+priority: BLOCKER
+tags: natparse-internal
+type: CODE_SMELL
+description:
+The programming mode configured in the source header is not supported by natparse.
+
+This file is therefore ignored.

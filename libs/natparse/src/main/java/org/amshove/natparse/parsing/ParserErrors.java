@@ -5,7 +5,9 @@ import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.project.NaturalProgrammingMode;
 
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -471,6 +473,14 @@ class ParserErrors
 			message,
 			node,
 			ParserError.TYPE_MISMATCH
+		);
+	}
+
+	public static IDiagnostic unsupportedProgrammingMode(NaturalProgrammingMode mode, Path filePath)
+	{
+		return ParserDiagnostic.create(
+			"Unsupported programming mode: %s. This file will not be parsed or analyzed.".formatted(mode),
+			0, 0, 0, 0, filePath, ParserError.UNSUPPORTED_PROGRAMMING_MODE
 		);
 	}
 }

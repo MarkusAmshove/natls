@@ -2,8 +2,8 @@ package org.amshove.natparse.natural.project;
 
 public class NaturalHeader
 {
-	private NaturalProgrammingMode programmingMode;
-	private int lineIncrement;
+	private final NaturalProgrammingMode programmingMode;
+	private final int lineIncrement;
 
 	public NaturalHeader(NaturalProgrammingMode mode, int lineIncrement)
 	{

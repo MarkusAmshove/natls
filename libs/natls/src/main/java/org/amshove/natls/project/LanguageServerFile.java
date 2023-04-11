@@ -12,6 +12,7 @@ import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
+import org.amshove.natparse.natural.project.NaturalProgrammingMode;
 import org.amshove.natparse.parsing.DefineDataParser;
 import org.amshove.natparse.parsing.IModuleProvider;
 import org.amshove.natparse.parsing.NaturalModule;
@@ -213,6 +214,12 @@ public class LanguageServerFile implements IModuleProvider
 	private void analyze()
 	{
 		clearDiagnosticsByTool(DiagnosticTool.NATLINT);
+		if (module.programmingMode() == NaturalProgrammingMode.REPORTING)
+		{
+			// Reporting mode not supported by natparse
+			return;
+		}
+
 		var linter = new NaturalLinter();
 		var linterDiagnostics = linter.lint(module);
 		for (var linterDiagnostic : linterDiagnostics)
