@@ -10,7 +10,7 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
 @IntegrationTest
-class CliTest
+abstract class CliTest
 {
 	private PrintStream previousStdOut;
 	private PrintStream previousStdErr;
