@@ -4,15 +4,12 @@ import org.amshove.natlint.api.*;
 import org.amshove.natlint.editorconfig.EditorConfig;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
+import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.ITokenNode;
 import org.reflections.Reflections;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public enum LinterContext implements ILinterContext
 {
@@ -21,7 +18,8 @@ public enum LinterContext implements ILinterContext
 	private boolean initialized = false;
 	private List<AbstractAnalyzer> registeredAnalyzers;
 	private final Map<Class<? extends ISyntaxNode>, List<INodeAnalyzingFunction>> nodeAnalyzerFunctions = new HashMap<>();
-	private final Map<SyntaxKind, List<ITokenAnalyzingFunction>> tokenAnalyzerFunctions = new HashMap<>();
+	private final Map<SyntaxKind, List<ITokenAnalyzingFunction>> tokenAnalyzerFunctions = new EnumMap<>(SyntaxKind.class);
+	private final List<IModuleAnalyzingFunction> moduleAnalyzerFunctions = new ArrayList<>();
 
 	private EditorConfig editorConfig;
 
@@ -68,6 +66,12 @@ public enum LinterContext implements ILinterContext
 			.add(analyzingFunction);
 	}
 
+	@Override
+	public void registerModuleAnalyzer(IModuleAnalyzingFunction analyzingFunction)
+	{
+		moduleAnalyzerFunctions.add(analyzingFunction);
+	}
+
 	public void updateEditorConfig(EditorConfig config)
 	{
 		editorConfig = config;
@@ -94,6 +98,11 @@ public enum LinterContext implements ILinterContext
 			.forEach(e -> e.getValue().forEach(a -> a.analyze(syntaxNode, context)));
 	}
 
+	void analyzeModule(INaturalModule module, IAnalyzeContext context)
+	{
+		moduleAnalyzerFunctions.forEach(a -> a.analyze(module, context));
+	}
+
 	void beforeAnalyzing(IAnalyzeContext context)
 	{
 		registeredAnalyzers.forEach(a -> a.beforeAnalyzing(context));
@@ -114,6 +123,7 @@ public enum LinterContext implements ILinterContext
 		registeredAnalyzers.clear();
 		nodeAnalyzerFunctions.clear();
 		tokenAnalyzerFunctions.clear();
+		moduleAnalyzerFunctions.clear();
 		editorConfig = null;
 		initialized = false;
 	}
