@@ -12,6 +12,7 @@ import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.project.NaturalFile;
+import org.amshove.natparse.natural.project.NaturalProgrammingMode;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
 import org.amshove.natparse.parsing.NaturalParser;
@@ -113,11 +114,6 @@ public class CliAnalyzer
 					fileStatusSink.printError(file.getPath(), MessageType.INDEX_EXCEPTION, file.getInitException());
 					return;
 				}
-				if (file.isReporting())
-				{
-					fileStatusSink.printStatus(file.getPath(), MessageType.REPORTING_TYPE);
-					return;
-				}
 				if (filePredicates.stream().noneMatch(p -> p.test(file)))
 				{
 					fileStatusSink.printStatus(file.getPath(), MessageType.FILE_EXCLUDED);
@@ -130,6 +126,12 @@ public class CliAnalyzer
 				var tokens = lex(file, allDiagnosticsInFile);
 				if (tokens == null)
 				{
+					return;
+				}
+
+				if (tokens.sourceHeader().getProgrammingMode() == NaturalProgrammingMode.REPORTING)
+				{
+					fileStatusSink.printStatus(file.getPath(), MessageType.REPORTING_TYPE);
 					return;
 				}
 

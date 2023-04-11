@@ -9,10 +9,9 @@ public class NaturalFile
 	private final Path path;
 	private final NaturalFileType filetype;
 	private NaturalLibrary library;
-	private NaturalHeader header;
 	private Exception initException;
 
-	public NaturalFile(String referableName, Path path, NaturalFileType filetype, NaturalHeader header)
+	public NaturalFile(String referableName, Path path, NaturalFileType filetype)
 	{
 		this.referableName = referableName;
 		if (filetype == NaturalFileType.SUBROUTINE && referableName.length() > 32)
@@ -22,12 +21,11 @@ public class NaturalFile
 		}
 		this.path = path;
 		this.filetype = filetype;
-		this.header = header;
 	}
 
-	public NaturalFile(String referableName, Path path, NaturalFileType filetype, NaturalLibrary library, NaturalHeader header)
+	public NaturalFile(String referableName, Path path, NaturalFileType filetype, NaturalLibrary library)
 	{
-		this(referableName, path, filetype, header);
+		this(referableName, path, filetype);
 		this.library = library;
 	}
 
@@ -89,24 +87,9 @@ public class NaturalFile
 		return filetype;
 	}
 
-	public NaturalHeader getNaturalHeader()
-	{
-		return header;
-	}
-
 	public Exception getInitException()
 	{
 		return initException;
-	}
-
-	public boolean isStructured()
-	{
-		return header.getProgrammingMode() == NaturalProgrammingMode.STRUCTURED;
-	}
-
-	public boolean isReporting()
-	{
-		return header.getProgrammingMode() == NaturalProgrammingMode.REPORTING;
 	}
 
 	/* package */ void setLibrary(NaturalLibrary library)

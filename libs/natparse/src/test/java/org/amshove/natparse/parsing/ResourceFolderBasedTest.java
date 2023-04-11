@@ -7,8 +7,6 @@ import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
-import org.amshove.natparse.natural.project.NaturalHeader;
-import org.amshove.natparse.natural.project.NaturalProgrammingMode;
 import org.amshove.testhelpers.ResourceHelper;
 import org.junit.jupiter.api.DynamicTest;
 
@@ -49,7 +47,7 @@ public abstract class ResourceFolderBasedTest
 				var tokens = lexer.lex(source, testFilePath);
 				var diagnostics = new ArrayList<>(tokens.diagnostics().toList());
 				var parser = new NaturalParser();
-				var parseResult = parser.parse(new NaturalFile(testFileName, testFilePath, NaturalFileType.SUBPROGRAM, new NaturalHeader(NaturalProgrammingMode.STRUCTURED, 10)), tokens);
+				var parseResult = parser.parse(new NaturalFile(testFileName, testFilePath, NaturalFileType.SUBPROGRAM), tokens);
 				parseResult.diagnostics().stream()
 					.filter(d -> !d.id().equals(ParserError.UNRESOLVED_IMPORT.id()))
 					.forEach(diagnostics::add);
@@ -67,10 +65,7 @@ public abstract class ResourceFolderBasedTest
 
 				if (expectedDiagnostics.isEmpty())
 				{
-					testsInFile.add(dynamicTest(testFileName + ": Expected no diagnostics", () ->
-					{
-						assertThat(diagnostics).isEmpty();
-					}));
+					testsInFile.add(dynamicTest(testFileName + ": Expected no diagnostics", () -> assertThat(diagnostics).isEmpty()));
 				}
 
 				for (var expectedDiagnostic : expectedDiagnostics)
