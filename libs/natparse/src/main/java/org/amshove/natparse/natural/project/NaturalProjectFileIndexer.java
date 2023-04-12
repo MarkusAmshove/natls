@@ -23,11 +23,6 @@ public class NaturalProjectFileIndexer
 
 	public void indexProject(NaturalProject project)
 	{
-		indexProject(project, false);
-	}
-
-	public void indexProject(NaturalProject project, boolean skipFiltering) // TODO: Remove
-	{
 		for (var library : project.getLibraries())
 		{
 			var files = filesystem.streamFilesRecursively(library.getSourcePath())

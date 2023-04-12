@@ -8,6 +8,7 @@ import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.ISubroutineNode;
 import org.amshove.natparse.natural.ISyntaxNode;
+import org.amshove.natparse.natural.project.NaturalFileType;
 
 public class UnusedLocalSubroutineAnalyzer extends AbstractAnalyzer
 {
@@ -41,6 +42,11 @@ public class UnusedLocalSubroutineAnalyzer extends AbstractAnalyzer
 		if (!routine.declaration().isSameFileAs(routine.diagnosticPosition()))
 		{
 			// Declared in Copycode
+			return;
+		}
+
+		if (context.getModule().file().getFiletype() == NaturalFileType.COPYCODE)
+		{
 			return;
 		}
 

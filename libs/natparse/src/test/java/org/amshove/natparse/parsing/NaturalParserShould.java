@@ -26,4 +26,11 @@ class NaturalParserShould extends ParserIntegrationTest
 		var module = parse(project.findModule("LIBONE", "FUNC2"));
 		assertThat(module.diagnostics()).anyMatch(d -> d.id().equals("NPP016") && d.message().equals("Unresolved reference: FUNC"));
 	}
+
+	@Test
+	void raiseADiagnosticForModulesHavingReportingMode(@ProjectName("reporting") NaturalProject project)
+	{
+		var module = parse(project.findModule("LIBONE", "REPORT"));
+		assertThat(module.diagnostics()).anyMatch(d -> d.id().equals(ParserError.UNSUPPORTED_PROGRAMMING_MODE.id()));
+	}
 }
