@@ -143,7 +143,7 @@ public class CliAnalyzer
 					return;
 				}
 
-				if (!disableLinting || module.programmingMode() != NaturalProgrammingMode.REPORTING)
+				if (!disableLinting && module.programmingMode() != NaturalProgrammingMode.REPORTING)
 				{
 					var linterDiagnostics = lint(file, module, allDiagnosticsInFile);
 					if (linterDiagnostics == null)
