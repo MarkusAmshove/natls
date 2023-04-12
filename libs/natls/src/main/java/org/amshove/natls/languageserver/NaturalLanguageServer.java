@@ -49,7 +49,12 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			capabilities.setTextDocumentSync(TextDocumentSyncKind.Full);
 			capabilities.setDefinitionProvider(true);
 			capabilities.setReferencesProvider(true);
-			capabilities.setCompletionProvider(new CompletionOptions(true, List.of(".")));
+
+			// Don't add a dot. This re-triggers completion and loses the context on qualified variables.
+			// To support a trigger char, the completion has to take into account if it was triggered by a char and
+			// then filter based on previous tokens, which the client does not send over.
+			capabilities.setCompletionProvider(new CompletionOptions(true, List.of()));
+
 			capabilities.setCodeLensProvider(new CodeLensOptions(false));
 			capabilities.setCallHierarchyProvider(true);
 			capabilities.setCodeActionProvider(CodeActionRegistry.INSTANCE.registeredCodeActionCount() > 0);
