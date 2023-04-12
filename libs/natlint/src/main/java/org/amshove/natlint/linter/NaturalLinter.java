@@ -19,6 +19,7 @@ public class NaturalLinter
 
 		linterContext.beforeAnalyzing(analyzeContext);
 
+		linterContext.analyzeModule(module, analyzeContext);
 		analyze(module.syntaxTree(), analyzeContext, linterContext);
 
 		linterContext.afterAnalyzing(analyzeContext);

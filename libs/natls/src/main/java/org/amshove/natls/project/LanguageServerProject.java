@@ -89,7 +89,7 @@ public class LanguageServerProject
 	public LanguageServerFile addFile(Path path)
 	{
 		var library = libraries.values().stream().filter(l -> l.residesInLibrary(path)).findFirst().orElseThrow();
-		var naturalFile = new NaturalProjectFileIndexer().toNaturalFile(path, library.getLibrary());
+		var naturalFile = new NaturalProjectFileIndexer().toNaturalFile(path);
 		var lspFile = new LanguageServerFile(naturalFile);
 		library.addFile(lspFile);
 		return lspFile;

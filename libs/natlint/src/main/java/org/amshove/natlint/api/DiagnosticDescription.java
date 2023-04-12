@@ -3,7 +3,9 @@ package org.amshove.natlint.api;
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.IPosition;
+import org.amshove.natparse.ModuleLevelPosition;
 import org.amshove.natparse.lexing.SyntaxToken;
+import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.ISyntaxNode;
 
 public class DiagnosticDescription
@@ -37,6 +39,11 @@ public class DiagnosticDescription
 	public LinterDiagnostic createDiagnostic(IPosition position)
 	{
 		return new LinterDiagnostic(id, position, severity, message);
+	}
+
+	public LinterDiagnostic createModuleDiagnostic(INaturalModule module)
+	{
+		return new LinterDiagnostic(id, new ModuleLevelPosition(module.file().getPath()), severity, message);
 	}
 
 	public LinterDiagnostic createDiagnostic(ISyntaxNode node)

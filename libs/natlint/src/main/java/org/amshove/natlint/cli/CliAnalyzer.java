@@ -12,6 +12,7 @@ import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.project.NaturalFile;
+import org.amshove.natparse.natural.project.NaturalProgrammingMode;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
 import org.amshove.natparse.parsing.NaturalParser;
@@ -100,7 +101,7 @@ public class CliAnalyzer
 	{
 		var indexStartTime = System.currentTimeMillis();
 		var project = new BuildFileProjectReader(filesystem).getNaturalProject(projectFilePath);
-		new NaturalProjectFileIndexer().indexProject(project, true);
+		new NaturalProjectFileIndexer().indexProject(project);
 		var indexEndTime = System.currentTimeMillis();
 
 		var startCheck = System.currentTimeMillis();
@@ -111,11 +112,6 @@ public class CliAnalyzer
 				if (file.isFailedOnInit())
 				{
 					fileStatusSink.printError(file.getPath(), MessageType.INDEX_EXCEPTION, file.getInitException());
-					return;
-				}
-				if (file.isReporting())
-				{
-					fileStatusSink.printStatus(file.getPath(), MessageType.REPORTING_TYPE);
 					return;
 				}
 				if (filePredicates.stream().noneMatch(p -> p.test(file)))
@@ -136,10 +132,18 @@ public class CliAnalyzer
 				var module = parse(file, tokens, allDiagnosticsInFile);
 				if (module == null)
 				{
+					diagnosticSink.printDiagnostics(filesChecked.get(), file.getPath(), allDiagnosticsInFile);
 					return;
 				}
 
-				if (!disableLinting)
+				if (tokens.sourceHeader().getProgrammingMode() == NaturalProgrammingMode.REPORTING)
+				{
+					fileStatusSink.printStatus(file.getPath(), MessageType.REPORTING_TYPE);
+					diagnosticSink.printDiagnostics(filesChecked.get(), file.getPath(), allDiagnosticsInFile);
+					return;
+				}
+
+				if (!disableLinting && module.programmingMode() != NaturalProgrammingMode.REPORTING)
 				{
 					var linterDiagnostics = lint(file, module, allDiagnosticsInFile);
 					if (linterDiagnostics == null)

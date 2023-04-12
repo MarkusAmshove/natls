@@ -23,53 +23,27 @@ public class NaturalProjectFileIndexer
 
 	public void indexProject(NaturalProject project)
 	{
-		indexProject(project, false);
-	}
-
-	public void indexProject(NaturalProject project, boolean skipFiltering)
-	{
 		for (var library : project.getLibraries())
 		{
 			var files = filesystem.streamFilesRecursively(library.getSourcePath())
 				.filter(NaturalFileType::isNaturalFile)
 				.map(this::toNaturalFile);
 
-			if (!skipFiltering)
-			{
-				files = files.filter(f -> !f.isReporting() && !f.isFailedOnInit());
-			}
-
 			files.forEach(library::addFile);
 		}
 	}
 
-	public NaturalFile toNaturalFile(Path path, NaturalLibrary library)
+	public NaturalFile toNaturalFile(Path path)
 	{
 		var filetype = NaturalFileType.fromExtension(path.getFileName().toString().split("\\.")[1]);
-		var mode = extractProgrammingMode(path);
-		var header = new NaturalHeader(mode, 1);
 		try
 		{
-			return new NaturalFile(getReferableName(path, filetype), path, filetype, header);
+			return new NaturalFile(getReferableName(path, filetype), path, filetype);
 		}
 		catch (Exception e)
 		{
 			return new NaturalFile(path, filetype, e);
 		}
-	}
-
-	private NaturalProgrammingMode extractProgrammingMode(Path path)
-	{
-		return filesystem.peekFile(path)
-			.filter(l -> l.startsWith("* :Mode"))
-			.findAny()
-			.map(l -> NaturalProgrammingMode.fromString(l.replace("* :Mode", "").trim()))
-			.orElse(NaturalProgrammingMode.UNKNOWN);
-	}
-
-	private NaturalFile toNaturalFile(Path path)
-	{
-		return toNaturalFile(path, null);
 	}
 
 	private String getReferableName(Path path, NaturalFileType type)

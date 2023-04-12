@@ -6,6 +6,8 @@ import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
+import org.amshove.natparse.natural.project.NaturalHeader;
+import org.amshove.natparse.natural.project.NaturalProgrammingMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,10 +25,16 @@ public class NaturalModule
 	private IStatementListNode body;
 	private ISyntaxTree tree;
 	private ReadOnlyList<SyntaxToken> comments;
+	private NaturalHeader sourceHeader;
 
 	public NaturalModule(NaturalFile file)
 	{
 		this.file = file;
+	}
+
+	void setHeader(NaturalHeader header)
+	{
+		sourceHeader = header;
 	}
 
 	@Override
@@ -176,4 +184,15 @@ public class NaturalModule
 			.orElse("");
 	}
 
+	@Override
+	public NaturalHeader header()
+	{
+		return sourceHeader;
+	}
+
+	@Override
+	public NaturalProgrammingMode programmingMode()
+	{
+		return sourceHeader != null ? sourceHeader.getProgrammingMode() : NaturalProgrammingMode.UNKNOWN;
+	}
 }

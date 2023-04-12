@@ -6,6 +6,7 @@ import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
+import org.amshove.natparse.natural.project.NaturalProgrammingMode;
 
 import java.util.ArrayList;
 
@@ -39,6 +40,18 @@ public class NaturalParser
 		naturalModule.addDiagnostics(tokens.diagnostics());
 		var topLevelNodes = new ArrayList<ISyntaxNode>();
 		naturalModule.setComments(tokens.comments());
+
+		if (tokens.sourceHeader() != null && tokens.sourceHeader().isReportingMode())
+		{
+			naturalModule.addDiagnostic(ParserErrors.unsupportedProgrammingMode(tokens.sourceHeader().getProgrammingMode(), file.getPath()));
+		}
+		naturalModule.setHeader(tokens.sourceHeader());
+
+		if (naturalModule.programmingMode() == NaturalProgrammingMode.REPORTING)
+		{
+			// REPORTING mode is not supported. If we can't deduce the mode, assume STRUCTURED.
+			return naturalModule;
+		}
 
 		if (file.getFiletype() == NaturalFileType.FUNCTION) // skip over DEFINE FUNCTION
 		{
