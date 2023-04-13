@@ -1035,4 +1035,17 @@ public class NaturalLanguageService implements LanguageClientAware
 		var module = findNaturalFile(LspUtil.uriToPath(params.getTextDocument().getUri())).module();
 		return inlayHintProvider.provideInlayHints(module, params.getRange());
 	}
+
+	public LanguageServerFile findReferableName(String libraryName, String referableName)
+	{
+		for (var library : languageServerProject.libraries())
+		{
+			if (library.name().equalsIgnoreCase(libraryName))
+			{
+				return library.findFile(referableName);
+			}
+		}
+
+		return null;
+	}
 }
