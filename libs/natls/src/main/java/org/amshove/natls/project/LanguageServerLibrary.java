@@ -148,4 +148,9 @@ public class LanguageServerLibrary
 	{
 		return library.getSourcePath();
 	}
+
+	public LanguageServerFile findFile(String referableName)
+	{
+		return fileByReferableName.get(referableName);
+	}
 }
