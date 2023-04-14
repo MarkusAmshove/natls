@@ -431,6 +431,15 @@ class ParserErrors
 		);
 	}
 
+	public static IDiagnostic internalError(String message, ISyntaxNode node)
+	{
+		return ParserDiagnostic.create(
+			"%s. Please raise an issue.".formatted(message),
+			node,
+			ParserError.INTERNAL
+		);
+	}
+
 	public static IDiagnostic internal(String message, SyntaxToken token)
 	{
 		return ParserDiagnostic.create(

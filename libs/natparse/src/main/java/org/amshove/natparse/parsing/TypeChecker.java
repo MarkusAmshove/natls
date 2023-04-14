@@ -17,20 +17,34 @@ final class TypeChecker implements ISyntaxNodeVisitor
 
 	public ReadOnlyList<IDiagnostic> check(ISyntaxTree tree)
 	{
-		try
-		{
-			tree.accept(this);
-		}
-		catch (Exception e)
-		{
-			// swallow Exceptions to not interrupt parsing
-		}
+		tree.accept(this);
 
 		return ReadOnlyList.from(diagnostics);
 	}
 
 	@Override
 	public void visit(ISyntaxNode node)
+	{
+		try
+		{
+			checkNode(node);
+		}
+		catch (Exception e)
+		{
+			report(
+				ParserErrors.internalError(
+					"Error while type checking for node: %s. %s"
+						.formatted(
+							"(%s,%d:%d)".formatted(node.getClass().getSimpleName(), node.position().line(), node.position().offsetInLine()),
+							e.getMessage()
+						),
+					node
+				)
+			);
+		}
+	}
+
+	private void checkNode(ISyntaxNode node)
 	{
 		if (node instanceof IMutateVariables mutator)
 		{
