@@ -77,9 +77,9 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		{
 			report(
 				ParserErrors.typeMismatch(
-					"Literal length %d is longer than data type length %d"
+					"Initializer literal length %d is longer than data type length %d"
 						.formatted(typedVariable.type().initialValue().stringValue().length(), (int) typedVariable.type().length()),
-					typedVariable
+					typedVariable.identifierNode()
 				)
 			);
 		}

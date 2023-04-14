@@ -28,8 +28,8 @@ class ViewParser extends AbstractParser<ViewNode>
 			var level = consumeMandatory(viewVariable, SyntaxKind.NUMBER_LITERAL).intValue();
 			viewVariable.setLevel(level);
 
-			var identifier = consumeMandatoryIdentifier(viewVariable);
-			viewVariable.setDeclaration(identifier);
+			var identifierNode = consumeMandatoryIdentifierTokenNode(viewVariable);
+			viewVariable.setDeclaration(identifierNode);
 
 			var view = new ViewNode(viewVariable);
 
@@ -80,8 +80,8 @@ class ViewParser extends AbstractParser<ViewNode>
 			variable = new RedefinitionNode(variable);
 		}
 
-		var name = consumeMandatoryIdentifier(variable);
-		variable.setDeclaration(name);
+		var identifierNode = consumeMandatoryIdentifierTokenNode(variable);
+		variable.setDeclaration(identifierNode);
 
 		if (consumeOptionally(variable, SyntaxKind.LPAREN))
 		{

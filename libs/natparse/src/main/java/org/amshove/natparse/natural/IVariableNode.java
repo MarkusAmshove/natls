@@ -13,6 +13,8 @@ public non-sealed interface IVariableNode extends IReferencableNode, IParameterD
 
 	String qualifiedName();
 
+	ITokenNode identifierNode();
+
 	ReadOnlyList<IArrayDimension> dimensions();
 
 	default boolean isArray()

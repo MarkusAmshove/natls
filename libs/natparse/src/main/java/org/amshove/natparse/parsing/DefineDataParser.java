@@ -248,8 +248,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				variable = new RedefinitionNode(variable);
 			}
 
-			var identifier = consumeMandatoryIdentifier(variable);
-			variable.setDeclaration(identifier);
+			var identifierNode = consumeMandatoryIdentifierTokenNode(variable);
+			variable.setDeclaration(identifierNode);
 
 			if (consumeOptionally(variable, SyntaxKind.LPAREN)
 				&& (peek().kind() != SyntaxKind.ASTERISK && peek().kind() != SyntaxKind.NUMBER_LITERAL)) // group array

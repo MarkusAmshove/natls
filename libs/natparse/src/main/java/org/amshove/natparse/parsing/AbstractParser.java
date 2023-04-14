@@ -271,12 +271,18 @@ abstract class AbstractParser<T>
 		return literal;
 	}
 
-	protected SyntaxToken consumeMandatoryIdentifier(BaseSyntaxNode node) throws ParseError
+	protected ITokenNode consumeMandatoryIdentifierTokenNode(BaseSyntaxNode node) throws ParseError
 	{
 		var identifierToken = consumeIdentifierTokenOnly();
 		previousNode = new TokenNode(identifierToken);
 		node.addNode(previousNode);
-		return identifierToken;
+		return previousNode;
+	}
+
+	protected SyntaxToken consumeMandatoryIdentifier(BaseSyntaxNode node) throws ParseError
+	{
+		var identifierNode = consumeMandatoryIdentifierTokenNode(node);
+		return identifierNode.token();
 	}
 
 	protected SyntaxToken consumeIdentifierTokenOnly() throws ParseError
