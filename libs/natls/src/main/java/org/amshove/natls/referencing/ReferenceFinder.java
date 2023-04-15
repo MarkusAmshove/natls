@@ -1,6 +1,7 @@
 package org.amshove.natls.referencing;
 
 import org.amshove.natls.languageserver.LspUtil;
+import org.amshove.natls.progress.IProgressMonitor;
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natls.project.ModuleReferenceCache;
 import org.amshove.natls.project.ParseStrategy;
@@ -15,12 +16,12 @@ import java.util.List;
 
 public class ReferenceFinder
 {
-	public List<Location> findReferences(ReferenceParams params, LanguageServerFile file)
+	public List<Location> findReferences(ReferenceParams params, LanguageServerFile file, IProgressMonitor monitor)
 	{
 		var position = params.getPosition();
 
 		// Reparse all callers to get parameter and data area references
-		file.reparseCallers();
+		file.reparseCallers(monitor);
 
 		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), file.module());
 		if (node instanceof ITokenNode && node.parent() instanceof ISubroutineNode)
@@ -53,6 +54,11 @@ public class ReferenceFinder
 		{
 			for (var callingFile : file.getIncomingReferences())
 			{
+				if (monitor.isCancellationRequested())
+				{
+					break;
+				}
+
 				var callingModule = callingFile.module(ParseStrategy.WITHOUT_CALLERS);
 				if (callingModule instanceof IModuleWithBody withBody)
 				{

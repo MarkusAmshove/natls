@@ -518,12 +518,15 @@ public class NaturalLanguageService implements LanguageClientAware
 		return List.of();
 	}
 
-	public List<Location> findReferences(ReferenceParams params)
+	public CompletableFuture<List<? extends Location>> findReferences(ReferenceParams params)
 	{
-		var fileUri = params.getTextDocument().getUri();
-		var filePath = LspUtil.uriToPath(fileUri);
-		var file = findNaturalFile(filePath);
-		return referenceFinder.findReferences(params, file);
+		return ProgressTasks.startNew("Finding references", client, monitor ->
+		{
+			var fileUri = params.getTextDocument().getUri();
+			var filePath = LspUtil.uriToPath(fileUri);
+			var file = findNaturalFile(filePath);
+			return referenceFinder.findReferences(params, file, monitor);
+		});
 	}
 
 	public SignatureHelp signatureHelp(TextDocumentIdentifier textDocument, Position position)
@@ -803,7 +806,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	public CompletableFuture<Void> parseFileReferences()
 	{
-		return ProgressTasks.startNew("Parsing file references", client, this::parseFileReferences);
+		return ProgressTasks.startNewVoid("Parsing file references", client, this::parseFileReferences);
 	}
 
 	private void preParseDataAreas(IProgressMonitor monitor)

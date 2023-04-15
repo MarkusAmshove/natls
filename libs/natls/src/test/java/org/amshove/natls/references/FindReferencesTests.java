@@ -66,18 +66,25 @@ class FindReferencesTests extends LanguageServerTest
 				params.setPosition(rT.position());
 				params.setContext(new ReferenceContext(true));
 
-				var references = testContext.languageService().findReferences(params);
+				try
+				{
+					var references = testContext.languageService().findReferences(params).get();
 
-				return dynamicTest(
-					"%d:%d -> %s:%d:%d".formatted(rT.line, rT.col, ref.modulename, ref.line, ref.col),
-					() -> assertThat(references)
-						.as("No given reference matches expected location")
-						.anyMatch(
-							l -> l.getUri().equals(theModule.file().getPath().toUri().toString())
-								&& l.getRange().getStart().getLine() == ref.line
-								&& l.getRange().getStart().getCharacter() == ref.col
-						)
-				);
+					return dynamicTest(
+						"%d:%d -> %s:%d:%d".formatted(rT.line, rT.col, ref.modulename, ref.line, ref.col),
+						() -> assertThat(references)
+							.as("No given reference matches expected location")
+							.anyMatch(
+								l -> l.getUri().equals(theModule.file().getPath().toUri().toString())
+									&& l.getRange().getStart().getLine() == ref.line
+									&& l.getRange().getStart().getCharacter() == ref.col
+							)
+					);
+				}
+				catch (Exception e)
+				{
+					throw new RuntimeException(e);
+				}
 			})));
 	}
 

@@ -37,7 +37,7 @@ public class NaturalDocumentService implements TextDocumentService
 	@Override
 	public CompletableFuture<List<? extends Location>> references(ReferenceParams params)
 	{
-		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.findReferences(params)));
+		return wrapSafe(() -> languageService.findReferences(params));
 	}
 
 	@Override
