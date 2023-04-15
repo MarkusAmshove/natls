@@ -28,7 +28,7 @@ class SyntheticVariableStatementNode extends StatementNode implements IVariableR
 	}
 
 	@Override
-	public ISyntaxTree parent()
+	public ISyntaxNode parent()
 	{
 		return node.parent();
 	}

@@ -121,7 +121,7 @@ public class NodeUtil
 			{
 				return type.cast(current);
 			}
-			current = (ISyntaxNode) current.parent();
+			current = current.parent();
 		}
 
 		return null;
