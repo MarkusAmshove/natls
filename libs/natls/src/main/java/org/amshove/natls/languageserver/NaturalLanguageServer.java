@@ -186,7 +186,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 	{
 		if (languageService.isInitialized())
 		{
-			return ProgressTasks.startNew("Parsing Natural Project", client, languageService::parseAll);
+			return ProgressTasks.startNewVoid("Parsing Natural Project", client, languageService::parseAll);
 		}
 
 		return CompletableFuture.completedFuture(null);

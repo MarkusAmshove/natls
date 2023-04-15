@@ -13,6 +13,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class ProgressTasks
 {
@@ -24,7 +25,19 @@ public class ProgressTasks
 		progressType = type;
 	}
 
-	public static CompletableFuture<Void> startNew(String title, LanguageClient client, Consumer<IProgressMonitor> task)
+	public static CompletableFuture<Void> startNewVoid(String title, LanguageClient client, Consumer<IProgressMonitor> task)
+	{
+		if (progressType == ClientProgressType.WORK_DONE)
+		{
+			return startNewWorkDone(title, client, wrapVoid(task));
+		}
+		else
+		{
+			return startNewMessageBased(title, client, wrapVoid(task));
+		}
+	}
+
+	public static <T> CompletableFuture<T> startNew(String title, LanguageClient client, Function<IProgressMonitor, T> task)
 	{
 		if (progressType == ClientProgressType.WORK_DONE)
 		{
@@ -36,7 +49,16 @@ public class ProgressTasks
 		}
 	}
 
-	private static CompletableFuture<Void> startNewMessageBased(String title, LanguageClient client, Consumer<IProgressMonitor> task)
+	private static Function<IProgressMonitor, Void> wrapVoid(Consumer<IProgressMonitor> task)
+	{
+		return m ->
+		{
+			task.accept(m);
+			return null;
+		};
+	}
+
+	private static <T> CompletableFuture<T> startNewMessageBased(String title, LanguageClient client, Function<IProgressMonitor, T> task)
 	{
 		return CompletableFuture.supplyAsync(() ->
 		{
@@ -46,29 +68,28 @@ public class ProgressTasks
 			try
 			{
 				client.showMessage(ClientMessage.log(title));
-				task.accept(progressMonitor);
+				return task.apply(progressMonitor);
 			}
 			catch (Exception e)
 			{
 				System.err.printf("Error in task %s: %s%n", taskId, e.getMessage());
+				return null;
 			}
 			finally
 			{
 				client.showMessage(ClientMessage.log("%s done".formatted(title)));
 			}
-
-			return null;
 		});
 	}
 
-	private static CompletableFuture<Void> startNewWorkDone(String title, LanguageClient client, Consumer<IProgressMonitor> task)
+	private static <T> CompletableFuture<T> startNewWorkDone(String title, LanguageClient client, Function<IProgressMonitor, T> task)
 	{
 		var taskId = UUID.randomUUID().toString();
 		var params = new WorkDoneProgressCreateParams();
 		params.setToken(taskId);
 		var progressMonitor = new WorkDoneProgressMonitor(taskId, client);
 		runningTasks.put(taskId, progressMonitor);
-		return client.createProgress(params).thenRunAsync(() ->
+		return client.createProgress(params).thenApply((ignored) ->
 		{
 			try
 			{
@@ -77,11 +98,12 @@ public class ProgressTasks
 				begin.setCancellable(true);
 				begin.setMessage(title);
 				client.notifyProgress(new ProgressParams(Either.forLeft(taskId), Either.forLeft(begin)));
-				task.accept(progressMonitor);
+				return task.apply(progressMonitor);
 			}
 			catch (Exception e)
 			{
 				System.err.printf("Error in task %s: %s%n", taskId, e.getMessage());
+				return null;
 			}
 			finally
 			{
