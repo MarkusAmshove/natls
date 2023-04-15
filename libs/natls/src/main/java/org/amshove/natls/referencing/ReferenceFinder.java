@@ -22,6 +22,8 @@ public class ReferenceFinder
 		// Reparse all callers to get parameter and data area references
 		file.reparseCallers();
 
+		var tokenNode = NodeUtil.findTokenNodeAtPosition(position.getLine(), position.getCharacter(), file.module().syntaxTree());
+
 		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), file.module());
 		if (node instanceof ITokenNode && node.parent() instanceof ISubroutineNode)
 		{
@@ -29,6 +31,11 @@ public class ReferenceFinder
 		}
 
 		var references = new ArrayList<Location>();
+
+		if (tokenNode instanceof ISymbolReferenceNode symbolReferenceNode)
+		{
+			references.addAll(resolveReferences(params, symbolReferenceNode.reference()));
+		}
 
 		if (node instanceof IReferencableNode referencableNode)
 		{
