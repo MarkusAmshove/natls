@@ -19,6 +19,9 @@ public class ReferenceFinder
 	{
 		var position = params.getPosition();
 
+		// Reparse all callers to get parameter and data area references
+		file.reparseCallers();
+
 		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), file.module());
 		if (node instanceof ITokenNode && node.parent() instanceof ISubroutineNode)
 		{

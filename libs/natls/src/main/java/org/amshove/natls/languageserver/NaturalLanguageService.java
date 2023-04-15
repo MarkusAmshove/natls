@@ -2,7 +2,6 @@ package org.amshove.natls.languageserver;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-
 import org.amshove.natlint.editorconfig.EditorConfigParser;
 import org.amshove.natlint.linter.LinterContext;
 import org.amshove.natls.DiagnosticTool;
@@ -16,7 +15,10 @@ import org.amshove.natls.hover.HoverProvider;
 import org.amshove.natls.inlayhints.InlayHintProvider;
 import org.amshove.natls.progress.IProgressMonitor;
 import org.amshove.natls.progress.ProgressTasks;
-import org.amshove.natls.project.*;
+import org.amshove.natls.project.LanguageServerFile;
+import org.amshove.natls.project.LanguageServerProject;
+import org.amshove.natls.project.ModuleReferenceParser;
+import org.amshove.natls.project.ParseStrategy;
 import org.amshove.natls.referencing.ReferenceFinder;
 import org.amshove.natls.signaturehelp.SignatureHelpProvider;
 import org.amshove.natls.snippets.SnippetEngine;
