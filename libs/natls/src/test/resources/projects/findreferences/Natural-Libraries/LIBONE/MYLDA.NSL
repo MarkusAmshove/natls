@@ -1,0 +1,8 @@
+DEFINE DATA LOCAL /* !ref(1){LDAUSE,1,0}
+/* >Natural Source Header 000000
+/* :Mode S
+/* :CP
+/* <Natural Source Header
+
+1 #LDAVAR (A10) /* !ref(2){LDAUSE,4,6}
+END-DEFINE
