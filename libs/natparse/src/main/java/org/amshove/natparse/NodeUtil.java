@@ -40,6 +40,42 @@ public class NodeUtil
 	}
 
 	/**
+	 * Tries to find the first node with a subtype of {@link ITokenNode} at the given position.<br/>
+	 * Can be used to prefer finding {@link ISymbolReferenceNode}, {@link IVariableReferenceNode} etc.
+	 */
+	public static @Nullable ITokenNode findTokenNodeAtPosition(int line, int character, ISyntaxTree syntaxTree)
+	{
+		if (syntaxTree == null)
+		{
+			return null;
+		}
+
+		for (var node : syntaxTree)
+		{
+			var isInLine = node.position().line() == line;
+			var isTokenNode = node instanceof ITokenNode;
+
+			if (isTokenNode && isInLine && node.position().offsetInLine() == character)
+			{
+				return (ITokenNode) node;
+			}
+
+			if (isTokenNode && isInLine && node.position().offsetInLine() <= character && node.position().endOffset() >= character)
+			{
+				return (ITokenNode) node;
+			}
+
+			var foundDescendant = findTokenNodeAtPosition(line, character, node);
+			if (foundDescendant != null)
+			{
+				return foundDescendant;
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * Tries to find the node at the given position. It does try to not return an {@link ITokenNode}, but the node that
 	 * contains the {@link ITokenNode}.
 	 */

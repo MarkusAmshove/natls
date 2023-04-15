@@ -492,8 +492,11 @@ public class NaturalLanguageService implements LanguageClientAware
 		var file = findNaturalFile(filePath);
 		var position = params.getPosition();
 
-		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), file.module());
-		// TOOD: qualified variables
+		var node = NodeUtil.findTokenNodeAtPosition(position.getLine(), position.getCharacter(), file.module().syntaxTree());
+		if (node == null)
+		{
+			return List.of();
+		}
 
 		if (node instanceof IVariableReferenceNode variableReferenceNode)
 		{
@@ -505,12 +508,12 @@ public class NaturalLanguageService implements LanguageClientAware
 			return List.of(LspUtil.toLocation(moduleReferencingNode.reference()));
 		}
 
-		if (node instanceof ITokenNode && node.parent()instanceof ISymbolReferenceNode symbolReferenceNode)
+		if (node.parent()instanceof ISymbolReferenceNode symbolReferenceNode)
 		{
 			return List.of(LspUtil.toLocation(symbolReferenceNode.reference()));
 		}
 
-		if (node instanceof ITokenNode && node.parent()instanceof IModuleReferencingNode moduleReferencingNode)
+		if (node.parent()instanceof IModuleReferencingNode moduleReferencingNode)
 		{
 			return List.of(LspUtil.toLocation(moduleReferencingNode.reference()));
 		}
