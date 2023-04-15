@@ -34,6 +34,69 @@ class ExtractConstantRefactoringShould extends CodeActionTest
 		);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"CONST", "INIT"
+	})
+	void notBeApplicableWhenHoveringAAlphanumericInitializer(String initializer)
+	{
+		assertNoCodeActionWithTitle(
+			"Extract constant",
+			"LIBONE",
+			"SUBN.NSN",
+			"""
+				    DEFINE DATA
+				    LOCAL
+				    1 #VAR (A5) %s<'A${}$SD'>
+				    END-DEFINE
+				    WRITE #VAR
+				    END
+				""".formatted(initializer)
+		);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"CONST", "INIT"
+	})
+	void notBeApplicableWhenHoveringANumericInitializer(String initializer)
+	{
+		assertNoCodeActionWithTitle(
+			"Extract constant",
+			"LIBONE",
+			"SUBN.NSN",
+			"""
+				    DEFINE DATA
+				    LOCAL
+				    1 #VAR (N5) %s<1${}$0>
+				    END-DEFINE
+				    WRITE #VAR
+				    END
+				""".formatted(initializer)
+		);
+	}
+
+	@Test
+	void notBeApplicableWhenHoveringAVariableLevel()
+	{
+		assertNoCodeActionWithTitle(
+			"Extract constant",
+			"LIBONE",
+			"SUBN.NSN",
+			"""
+				    DEFINE DATA
+				    LOCAL
+				    01 #VAR1 (N5)
+				    0${}$1 #VAR2 (N5)
+				    END-DEFINE
+				    WRITE #VAR1 #VAR2
+				    END
+				"""
+		);
+	}
+
 	@Test
 	void extractAConstant()
 	{
