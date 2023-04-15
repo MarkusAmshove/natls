@@ -6,7 +6,7 @@ import java.nio.file.Path;
 
 public interface ISyntaxNode extends ISyntaxTree
 {
-	ISyntaxTree parent();
+	ISyntaxNode parent();
 
 	IPosition position();
 
