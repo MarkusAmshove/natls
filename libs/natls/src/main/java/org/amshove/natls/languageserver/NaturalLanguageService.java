@@ -998,6 +998,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var referenceLimit = 300; // Some arbitrary tested value
 		if (file.getIncomingReferences().size() > referenceLimit)
 		{
+			client.showMessage(ClientMessage.error("Won't rename inside %s because it has more than %d referrers (%d)".formatted(file.getReferableName(), referenceLimit, file.getIncomingReferences().size())));
 			throw new ResponseErrorException(new ResponseError(1, "Won't rename inside %s because it has more than %d referrers (%d)".formatted(file.getReferableName(), referenceLimit, file.getIncomingReferences().size()), null));
 		}
 	}
