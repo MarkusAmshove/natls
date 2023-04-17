@@ -1,5 +1,7 @@
 package org.amshove.natparse;
 
+import org.amshove.natparse.natural.project.NaturalFileType;
+
 import java.nio.file.Path;
 
 public interface IPosition
@@ -13,6 +15,11 @@ public interface IPosition
 	int length();
 
 	Path filePath();
+
+	default NaturalFileType fileType()
+	{
+		return NaturalFileType.fromExtension(filePath().getFileName().toString().split("\\.")[1]);
+	}
 
 	default String fileNameWithoutExtension()
 	{

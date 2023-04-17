@@ -44,7 +44,7 @@ public abstract class AbstractParserTest<NodeType>
 	protected NodeType assertParsesWithoutDiagnostics(String source)
 	{
 		var lexer = new Lexer();
-		var lexResult = lexer.lex(source, Paths.get("TEST.NSA"));
+		var lexResult = lexer.lex(source, Paths.get("TEST.NSN"));
 		assertThat(lexResult.diagnostics().size())
 			.as(
 				"Expected the source to lex without diagnostics%n%s"

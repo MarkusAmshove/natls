@@ -5,6 +5,7 @@ import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.project.NaturalFileType;
 
 import java.util.HashMap;
 import java.util.List;
@@ -455,6 +456,11 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			if (previousToken().kind() == SyntaxKind.CONST || previousToken().kind() == SyntaxKind.CONSTANT)
 			{
 				type.setConstant();
+			}
+
+			if (previousToken().fileType() == NaturalFileType.PDA)
+			{
+				report(ParserErrors.unexpectedToken(previousToken(), "CONST and INIT are not allowed in PDAs"));
 			}
 
 			if (consumeOptionally(typedVariable, SyntaxKind.FULL))
