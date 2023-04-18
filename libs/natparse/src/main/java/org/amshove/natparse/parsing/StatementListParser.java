@@ -1642,9 +1642,41 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private static final Set<SyntaxKind> CONDITIONAL_OPERATOR_START = Set
 		.of(SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.EQUAL, SyntaxKind.LESSER_GREATER, SyntaxKind.NE, SyntaxKind.NOT, SyntaxKind.CIRCUMFLEX_EQUAL, SyntaxKind.NOTEQUAL, SyntaxKind.LESSER_SIGN, SyntaxKind.LT, SyntaxKind.LESS, SyntaxKind.LESSER_EQUALS_SIGN, SyntaxKind.LE, SyntaxKind.GREATER_SIGN, SyntaxKind.GT, SyntaxKind.GREATER, SyntaxKind.GREATER_EQUALS_SIGN, SyntaxKind.GE);
 
+	private boolean parensEncapsulatesCondition()
+	{
+		var parensCount = 1;
+		int offset = 1; // skip first LPAREN
+		while (parensCount > 0 && !isAtEnd(offset))
+		{
+			if (peekKind(offset, SyntaxKind.LPAREN))
+			{
+				parensCount++;
+			}
+
+			if (peekKind(offset, SyntaxKind.RPAREN))
+			{
+				parensCount--;
+			}
+
+			if (parensCount == 1 && CONDITIONAL_OPERATOR_START.contains(peek(offset).kind()))
+			{
+				return true;
+			}
+
+			offset++;
+		}
+
+		return peekKind(offset, SyntaxKind.RPAREN);
+	}
+
 	private ILogicalConditionCriteriaNode conditionCriteria() throws ParseError
 	{
-		if (peekKind(SyntaxKind.LPAREN) && containsNoArithmeticUntilClosingParensOrComparingOperator(SyntaxKind.RPAREN)) // we're not bamboozled by grouping arithmetics or nested comparisons
+		if (peekKind(SyntaxKind.LPAREN) && parensEncapsulatesCondition())// && containsNoArithmeticUntilClosingParensOrComparingOperator(SyntaxKind.RPAREN)) // we're not bamboozled by grouping arithmetics or nested comparisons
+		{
+			return groupedConditionCriteria();
+		}
+
+		if (peekKind(SyntaxKind.LPAREN) && containsNoArithmeticUntilClosingParensOrComparingOperator(SyntaxKind.RPAREN))
 		{
 			return groupedConditionCriteria();
 		}
@@ -1706,9 +1738,13 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			{
 				nestedParens++;
 			}
+
+			offset++;
+
 			// skip nested parens
 			while (nestedParens > 0 && !isAtEnd(offset))
 			{
+				currentKind = peek(offset).kind();
 				if (currentKind == SyntaxKind.LPAREN)
 				{
 					nestedParens++;
@@ -1725,7 +1761,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			{
 				return false;
 			}
-			offset++;
 		}
 
 		return true;

@@ -819,14 +819,15 @@ public class Lexer
 		{
 			var prevLastToken = tokens.get(tokens.size() - 2).kind();
 
-			if (prevLastToken == SyntaxKind.STRING_LITERAL &&
-				(scanner.peekText("TU") ||
+			if (prevLastToken == SyntaxKind.STRING_LITERAL
+				&& (scanner.peekText("TU") ||
 					scanner.peekText("NE") ||
 					scanner.peekText("RE") ||
 					scanner.peekText("YE") ||
 					scanner.peekText("BL") ||
 					scanner.peekText("GR") ||
-					scanner.peekText("PI")))
+					scanner.peekText("PI"))
+				&& (scanner.peek(3) == ')' || isWhitespace(3)))
 			{
 				colorAttribute();
 				return;

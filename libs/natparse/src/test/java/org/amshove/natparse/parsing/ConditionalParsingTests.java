@@ -675,6 +675,36 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(criteria.isNotSpecified()).isTrue();
 	}
 
+	@Test
+	void parseArithmeticsInConditionals()
+	{
+		var criteria = assertParsesCriteria("(#VAR1 - #VAR2) - #VAR3 < 0", IRelationalCriteriaNode.class);
+		assertThat(assertLiteral(criteria.right(), SyntaxKind.NUMBER_LITERAL).token().intValue()).isEqualTo(0);
+		var firstArithmetic = assertNodeType(criteria.left(), IArithmeticExpressionNode.class);
+		assertIsVariableReference(firstArithmetic.right(), "#VAR3");
+		var parensArithmetic = assertNodeType(firstArithmetic.left(), IArithmeticExpressionNode.class);
+		assertIsVariableReference(parensArithmetic.left(), "#VAR1");
+		assertIsVariableReference(parensArithmetic.right(), "#VAR2");
+	}
+
+	@Test
+	void parseMultipleParensArithmeticWithArraysInChainedConditionals()
+	{
+		assertParsesCriteria("((#VAR1 (#INDEX) + 1) EQ #VAR2) AND (#VAR3 EQ MASK(*'0101'))", IChainedCriteriaNode.class);
+	}
+
+	@Test
+	void parseGroupedCriteriaWithArithmeticsOnTheLhs()
+	{
+		assertParsesCriteria("(#VAR2 + #VAR1 >= #VAR3)", IGroupedConditionCriteria.class);
+	}
+
+	@Test
+	void parseGroupedCriteriaWithArithmeticsOnTheRhs()
+	{
+		assertParsesCriteria("#VAR1 EQ 0 OR (#VAR2 + #VAR1 >= #VAR3)", IChainedCriteriaNode.class);
+	}
+
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
 	{
 		var list = assertParsesWithoutDiagnostics("IF %s\nIGNORE\nEND-IF".formatted(source));

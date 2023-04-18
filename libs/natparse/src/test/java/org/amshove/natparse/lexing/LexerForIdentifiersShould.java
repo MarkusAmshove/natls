@@ -240,4 +240,21 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 	{
 		assertTokens("NUM+NUM2", token(SyntaxKind.IDENTIFIER), token(SyntaxKind.PLUS), token(SyntaxKind.IDENTIFIER));
 	}
+
+	@Test
+	void notMistakeAQualifiedIdentifierWithAColorAttribute()
+	{
+		assertTokensInOrder(
+			lexSource("(#VAR EQ ' ' AND RED.V EQ 0)"), // because we're in parens, it contained ' and RE it thought it was a color attribute
+			SyntaxKind.LPAREN,
+			SyntaxKind.IDENTIFIER,
+			SyntaxKind.EQ,
+			SyntaxKind.STRING_LITERAL,
+			SyntaxKind.AND,
+			SyntaxKind.IDENTIFIER,
+			SyntaxKind.EQ,
+			SyntaxKind.NUMBER_LITERAL,
+			SyntaxKind.RPAREN
+		);
+	}
 }

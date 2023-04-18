@@ -201,6 +201,15 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseSgn()
+	{
+		var operand = parseOperand("SGN(#THEVAR)");
+		var sgnNode = assertNodeType(operand, ISignOperandNode.class);
+		var parameter = assertNodeType(sgnNode.parameter(), IVariableReferenceNode.class);
+		assertThat(parameter.referencingToken().symbolName()).isEqualTo("#THEVAR");
+	}
+
+	@Test
 	void parseFunctionsAsAbsParameter()
 	{
 		moduleProvider.addModule("FUNC", new NaturalModule(null));
