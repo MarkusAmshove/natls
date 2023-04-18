@@ -1706,9 +1706,13 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			{
 				nestedParens++;
 			}
+
+			offset++;
+
 			// skip nested parens
 			while (nestedParens > 0 && !isAtEnd(offset))
 			{
+				currentKind = peek(offset).kind();
 				if (currentKind == SyntaxKind.LPAREN)
 				{
 					nestedParens++;
@@ -1725,7 +1729,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			{
 				return false;
 			}
-			offset++;
 		}
 
 		return true;
