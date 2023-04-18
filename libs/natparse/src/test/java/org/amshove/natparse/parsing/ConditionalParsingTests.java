@@ -693,6 +693,18 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		assertParsesCriteria("((#VAR1 (#INDEX) + 1) EQ #VAR2) AND (#VAR3 EQ MASK(*'0101'))", IChainedCriteriaNode.class);
 	}
 
+	@Test
+	void parseGroupedCriteriaWithArithmeticsOnTheLhs()
+	{
+		assertParsesCriteria("(#VAR2 + #VAR1 >= #VAR3)", IGroupedConditionCriteria.class);
+	}
+
+	@Test
+	void parseGroupedCriteriaWithArithmeticsOnTheRhs()
+	{
+		assertParsesCriteria("#VAR1 EQ 0 OR (#VAR2 + #VAR1 >= #VAR3)", IChainedCriteriaNode.class);
+	}
+
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
 	{
 		var list = assertParsesWithoutDiagnostics("IF %s\nIGNORE\nEND-IF".formatted(source));
