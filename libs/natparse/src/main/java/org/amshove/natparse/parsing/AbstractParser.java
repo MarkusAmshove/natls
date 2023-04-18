@@ -382,6 +382,12 @@ abstract class AbstractParser<T>
 			arithmetic.setRight(rhs);
 			node.replaceChild((BaseSyntaxNode) operand, arithmetic);
 			operand = arithmetic;
+
+			if (needRParen && peekKind(SyntaxKind.RPAREN))
+			{
+				needRParen = false;
+				consumeMandatory(node, SyntaxKind.RPAREN);
+			}
 		}
 
 		if (needRParen)
