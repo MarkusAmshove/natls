@@ -696,6 +696,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.WINDOW_PS);
 			return;
 		}
+		if (scanner.advanceIfIgnoreCase("WINDOW-LS"))
+		{
+			createAndAdd(SyntaxKind.WINDOW_LS);
+			return;
+		}
 		if (scanner.advanceIfIgnoreCase("TRANSLATE"))
 		{
 			createAndAdd(SyntaxKind.TRANSLATE);
