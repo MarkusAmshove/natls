@@ -473,6 +473,10 @@ abstract class AbstractParser<T>
 			{
 				return absOperand(node);
 			}
+			if (peek().kind() == SyntaxKind.SGN)
+			{
+				return sgnOperand(node);
+			}
 			if (peek().kind() == SyntaxKind.POS)
 			{
 				return posOperand(node);
@@ -583,6 +587,17 @@ abstract class AbstractParser<T>
 		absOperand.setParameter(consumeOperandNode(absOperand));
 		consumeMandatory(absOperand, SyntaxKind.RPAREN);
 		return absOperand;
+	}
+
+	private IOperandNode sgnOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var sgnOperand = new SignOperandNode();
+		node.addNode(sgnOperand);
+		consumeMandatory(sgnOperand, SyntaxKind.SGN);
+		consumeMandatory(sgnOperand, SyntaxKind.LPAREN);
+		sgnOperand.setParameter(consumeOperandNode(sgnOperand));
+		consumeMandatory(sgnOperand, SyntaxKind.RPAREN);
+		return sgnOperand;
 	}
 
 	private IOperandNode fracOperand(BaseSyntaxNode node) throws ParseError
