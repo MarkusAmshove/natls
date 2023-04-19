@@ -123,6 +123,11 @@ public class ReadOnlyList<T> implements Iterable<T>
 		return new ArrayList<>(collection);
 	}
 
+	public int indexOf(T element)
+	{
+		return collection.indexOf(element);
+	}
+
 	@Override
 	public String toString()
 	{

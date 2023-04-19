@@ -1,6 +1,8 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.IRedefinitionNode;
+import org.amshove.natparse.natural.IReferencableNode;
 import org.amshove.natparse.natural.IVariableNode;
 
 class RedefinitionNode extends GroupNode implements IRedefinitionNode
@@ -28,10 +30,29 @@ class RedefinitionNode extends GroupNode implements IRedefinitionNode
 	void setTarget(IVariableNode targetNode)
 	{
 		this.targetNode = targetNode;
+		targetNode.addReference(this);
 	}
 
 	void addFillerBytes(int bytes)
 	{
 		fillerBytes += bytes;
+	}
+
+	@Override
+	public IReferencableNode reference()
+	{
+		return targetNode;
+	}
+
+	@Override
+	public SyntaxToken referencingToken()
+	{
+		return declaration();
+	}
+
+	@Override
+	public SyntaxToken token()
+	{
+		return declaration();
 	}
 }
