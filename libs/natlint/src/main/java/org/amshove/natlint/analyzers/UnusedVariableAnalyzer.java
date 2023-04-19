@@ -8,6 +8,7 @@ import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.IGroupNode;
+import org.amshove.natparse.natural.IRedefinitionNode;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.IVariableNode;
 
@@ -35,14 +36,8 @@ public class UnusedVariableAnalyzer extends AbstractAnalyzer
 	{
 		switch (context.getModule().file().getFiletype())
 		{
-			case LDA:
-			case DDM:
-			case PDA:
-			case GDA:
-			case MAP:
-			case COPYCODE:
+			case MAP, COPYCODE, GDA, PDA, DDM, LDA:
 				return;
-			default:
 		}
 
 		if (!NodeUtil.moduleContainsNode(context.getModule(), syntaxNode))
@@ -51,10 +46,28 @@ public class UnusedVariableAnalyzer extends AbstractAnalyzer
 		}
 
 		var variable = (IVariableNode) syntaxNode;
-		if (computeReferenceCount(variable) == 0 && computeParentReferenceCount(variable) == 0)
+		if (computeReferenceCount(variable) == 0
+			&& computeParentReferenceCount(variable) == 0
+			&& (!(variable.parent()instanceof IRedefinitionNode redefine) || noMembersAfterAreReferenced(redefine, variable)))
 		{
 			context.report(UNUSED_VARIABLE.createFormattedDiagnostic(variable.position(), variable.name()));
+
 		}
+	}
+
+	private boolean noMembersAfterAreReferenced(IRedefinitionNode redefine, IVariableNode variable)
+	{
+		var redefineMembers = redefine.variables();
+		var memberIndex = redefineMembers.indexOf(variable);
+		for (var i = memberIndex + 1; i < redefineMembers.size(); i++)
+		{
+			if (redefineMembers.get(i).references().size() > 0)
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	private static int computeParentReferenceCount(IVariableNode variable)
