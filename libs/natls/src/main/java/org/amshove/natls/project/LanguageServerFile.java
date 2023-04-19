@@ -3,6 +3,8 @@ package org.amshove.natls.project;
 import org.amshove.natlint.linter.NaturalLinter;
 import org.amshove.natls.DiagnosticTool;
 import org.amshove.natls.languageserver.LspUtil;
+import org.amshove.natls.progress.IProgressMonitor;
+import org.amshove.natls.progress.NullProgressMonitor;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.Lexer;
@@ -230,16 +232,30 @@ public class LanguageServerFile implements IModuleProvider
 
 	public void reparseCallers()
 	{
+		reparseCallers(new NullProgressMonitor());
+	}
+
+	public void reparseCallers(IProgressMonitor monitor)
+	{
+		monitor.progress("Parsing callers", 0);
 		var callers = new ArrayList<>(incomingReferences);
 		incomingReferences.clear();
 		// TODO: Add LSP Progress
-		callers.forEach(languageServerFile ->
+		for (var languageServerFile : callers)
 		{
+			if (monitor.isCancellationRequested())
+			{
+				break;
+			}
+
 			if (languageServerFile == this)
 			{
 				// recursive calls, we don't need to parse ourselves again
-				return;
+				continue;
 			}
+
+			monitor.progress("Parsing caller %s".formatted(languageServerFile.getReferableName()), 5);
+
 			try
 			{
 				languageServerFile.reparseWithoutAnalyzing();
@@ -258,7 +274,7 @@ public class LanguageServerFile implements IModuleProvider
 					)
 				);
 			}
-		});
+		}
 	}
 
 	private void reparseWithoutAnalyzing() throws IOException

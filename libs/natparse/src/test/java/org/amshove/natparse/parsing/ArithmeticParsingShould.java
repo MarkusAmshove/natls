@@ -63,19 +63,18 @@ class ArithmeticParsingShould extends AbstractParserTest<IStatementListNode>
 
 		assertNumericOperand(arithmetic.left(), 2);
 		assertThat(arithmetic.operator()).isEqualTo(SyntaxKind.SLASH);
-		var firstParens = assertNestedArithmetic(arithmetic.right());
+		var firstParens = assertNestedArithmetic(arithmetic.right()); // ( 4 + (12 - 3) - 5)
+		assertNumericOperand(firstParens.left(), 4);
+		assertThat(firstParens.operator()).isEqualTo(SyntaxKind.PLUS);
 
-		var lhsOfFirstParens = assertNestedArithmetic(firstParens.left());
-		assertThat(firstParens.operator()).isEqualTo(SyntaxKind.MINUS);
-		assertNumericOperand(firstParens.right(), 5);
+		var rhsInFirstParens = assertNestedArithmetic(firstParens.right()); // (12 - 3) - 5
+		assertThat(rhsInFirstParens.operator()).isEqualTo(SyntaxKind.MINUS);
+		assertNumericOperand(rhsInFirstParens.right(), 5);
 
-		assertNumericOperand(lhsOfFirstParens.left(), 4);
-		assertThat(lhsOfFirstParens.operator()).isEqualTo(SyntaxKind.PLUS);
-		var rhsOfFourPlus = assertNestedArithmetic(lhsOfFirstParens.right());
-
-		assertNumericOperand(rhsOfFourPlus.left(), 12);
-		assertThat(rhsOfFourPlus.operator()).isEqualTo(SyntaxKind.MINUS);
-		assertNumericOperand(rhsOfFourPlus.right(), 3);
+		var lhsOfLastExpressionInFirstParens = assertNestedArithmetic(rhsInFirstParens.left()); // (12 - 3)
+		assertNumericOperand(lhsOfLastExpressionInFirstParens.left(), 12);
+		assertThat(lhsOfLastExpressionInFirstParens.operator()).isEqualTo(SyntaxKind.MINUS);
+		assertNumericOperand(lhsOfLastExpressionInFirstParens.right(), 3);
 	}
 
 	protected ArithmeticParsingShould()

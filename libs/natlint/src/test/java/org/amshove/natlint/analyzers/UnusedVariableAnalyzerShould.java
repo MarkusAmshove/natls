@@ -3,7 +3,7 @@ package org.amshove.natlint.analyzers;
 import org.amshove.natlint.linter.AbstractAnalyzerTest;
 import org.junit.jupiter.api.Test;
 
-public class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
+class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
 {
 	protected UnusedVariableAnalyzerShould()
 	{
@@ -92,6 +92,65 @@ public class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
                end
             """,
 			expectNoDiagnostic(3, UnusedVariableAnalyzer.UNUSED_VARIABLE)
+		);
+	}
+
+	@Test
+	void notReportADiagnosticForTheRedefineItselfIfAMemberIsUsed()
+	{
+		testDiagnostics(
+			"""
+               define data
+               local
+               1 #var (a20)
+               1 redefine #var
+               2 #var2 (a20)
+               end-define
+               
+               write #var2
+               
+               end
+            """,
+			expectNoDiagnosticOfType(UnusedVariableAnalyzer.UNUSED_VARIABLE)
+		);
+	}
+
+	@Test
+	void notReportADiagnosticForARedefineMemberIfAMemberAfterwardsIsUsed()
+	{
+		testDiagnostics(
+			"""
+               define data
+               local
+               1 #var (a20)
+               1 redefine #var
+               2 #var1 (a10)
+               2 #var2 (a10)
+               end-define
+               write #var2
+               end
+            """,
+			expectNoDiagnosticOfType(UnusedVariableAnalyzer.UNUSED_VARIABLE)
+		);
+	}
+
+	@Test
+	void reportADiagnosticForATrailingRedefineMemberThatIsUnused()
+	{
+		testDiagnostics(
+			"""
+               define data
+               local
+               1 #var (a20)
+               1 redefine #var
+               2 #var1 (a10)
+               2 #var2 (a5)
+               2 #var3 (a5)
+               end-define
+               write #var2
+               end
+            """,
+			expectDiagnostic(6, UnusedVariableAnalyzer.UNUSED_VARIABLE)
 		);
 	}
 }

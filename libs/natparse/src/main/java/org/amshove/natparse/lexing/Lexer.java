@@ -696,6 +696,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.WINDOW_PS);
 			return;
 		}
+		if (scanner.advanceIfIgnoreCase("WINDOW-LS"))
+		{
+			createAndAdd(SyntaxKind.WINDOW_LS);
+			return;
+		}
 		if (scanner.advanceIfIgnoreCase("TRANSLATE"))
 		{
 			createAndAdd(SyntaxKind.TRANSLATE);
@@ -819,14 +824,15 @@ public class Lexer
 		{
 			var prevLastToken = tokens.get(tokens.size() - 2).kind();
 
-			if (prevLastToken == SyntaxKind.STRING_LITERAL &&
-				(scanner.peekText("TU") ||
+			if (prevLastToken == SyntaxKind.STRING_LITERAL
+				&& (scanner.peekText("TU") ||
 					scanner.peekText("NE") ||
 					scanner.peekText("RE") ||
 					scanner.peekText("YE") ||
 					scanner.peekText("BL") ||
 					scanner.peekText("GR") ||
-					scanner.peekText("PI")))
+					scanner.peekText("PI"))
+				&& (scanner.peek(3) == ')' || isWhitespace(3)))
 			{
 				colorAttribute();
 				return;

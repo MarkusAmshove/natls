@@ -185,6 +185,59 @@ class DefinitionEndpointTests extends LanguageServerTest
 			""");
 	}
 
+	@Test
+	void definitionsShouldReturnTheDefinitionOfVariablesInAssignments()
+	{
+		assertSingleDefinitionInSameModule(
+			"""
+				DEFINE DATA
+				LOCAL
+				1 #VAR (A10)
+				END-DEFINE
+				
+				#V${}$AR := 'Hi'
+				END
+				""",
+			2, 2
+		);
+	}
+
+	@Test
+	void definitionsShouldReturnTheDefinitionOfQualifiedVariablesInAssignments()
+	{
+		assertSingleDefinitionInSameModule(
+			"""
+				DEFINE DATA
+				LOCAL
+				1 #GROUP
+				2 #VAR (A10)
+				END-DEFINE
+				
+				#GROUP.#V${}$AR := 'Hi'
+				END
+				""",
+			3, 2
+		);
+	}
+
+	@Test
+	void definitionsShouldReturnTheDefinitionOfQualifiedVariablesInAssignmentsWhenUsingTheGroupName()
+	{
+		assertSingleDefinitionInSameModule(
+			"""
+				DEFINE DATA
+				LOCAL
+				1 #GROUP
+				2 #VAR (A10)
+				END-DEFINE
+				
+				#G${}$ROUP.#VAR := 'Hi'
+				END
+				""",
+			3, 2
+		);
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{

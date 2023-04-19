@@ -2,10 +2,8 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.Lexer;
-import org.amshove.natparse.natural.IOperandNode;
-import org.amshove.natparse.natural.ISyntaxNode;
-import org.amshove.natparse.natural.ITokenNode;
-import org.amshove.natparse.natural.IVariableReferenceNode;
+import org.amshove.natparse.lexing.SyntaxKind;
+import org.amshove.natparse.natural.*;
 import org.assertj.core.api.ObjectAssert;
 
 import java.nio.file.Paths;
@@ -44,7 +42,7 @@ public abstract class AbstractParserTest<NodeType>
 	protected NodeType assertParsesWithoutDiagnostics(String source)
 	{
 		var lexer = new Lexer();
-		var lexResult = lexer.lex(source, Paths.get("TEST.NSA"));
+		var lexResult = lexer.lex(source, Paths.get("TEST.NSN"));
 		assertThat(lexResult.diagnostics().size())
 			.as(
 				"Expected the source to lex without diagnostics%n%s"
@@ -121,5 +119,12 @@ public abstract class AbstractParserTest<NodeType>
 		var variable = assertNodeType(operand, IVariableReferenceNode.class);
 		assertThat(variable.referencingToken().symbolName()).isEqualTo(name);
 		return variable;
+	}
+
+	protected ILiteralNode assertLiteral(IOperandNode operand, SyntaxKind literalType)
+	{
+		var literal = assertNodeType(operand, ILiteralNode.class);
+		assertThat(literal.token().kind()).isEqualTo(literalType);
+		return literal;
 	}
 }

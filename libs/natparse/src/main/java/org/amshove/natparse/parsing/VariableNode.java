@@ -40,7 +40,11 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 	public void addReference(ISymbolReferenceNode node)
 	{
 		references.add(node);
-		((SymbolReferenceNode) node).setReference(this);
+		if (node instanceof SymbolReferenceNode symbolRef)
+		{
+			// REDEFINE does set it itself
+			symbolRef.setReference(this);
+		}
 	}
 
 	@Override

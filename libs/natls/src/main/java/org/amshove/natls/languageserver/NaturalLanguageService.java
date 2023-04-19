@@ -2,7 +2,6 @@ package org.amshove.natls.languageserver;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-
 import org.amshove.natlint.editorconfig.EditorConfigParser;
 import org.amshove.natlint.linter.LinterContext;
 import org.amshove.natls.DiagnosticTool;
@@ -16,7 +15,10 @@ import org.amshove.natls.hover.HoverProvider;
 import org.amshove.natls.inlayhints.InlayHintProvider;
 import org.amshove.natls.progress.IProgressMonitor;
 import org.amshove.natls.progress.ProgressTasks;
-import org.amshove.natls.project.*;
+import org.amshove.natls.project.LanguageServerFile;
+import org.amshove.natls.project.LanguageServerProject;
+import org.amshove.natls.project.ModuleReferenceParser;
+import org.amshove.natls.project.ParseStrategy;
 import org.amshove.natls.referencing.ReferenceFinder;
 import org.amshove.natls.signaturehelp.SignatureHelpProvider;
 import org.amshove.natls.snippets.SnippetEngine;
@@ -490,25 +492,23 @@ public class NaturalLanguageService implements LanguageClientAware
 		var file = findNaturalFile(filePath);
 		var position = params.getPosition();
 
-		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), file.module());
-		// TOOD: qualified variables
+		var node = NodeUtil.findTokenNodeAtPosition(position.getLine(), position.getCharacter(), file.module().syntaxTree());
+		if (node == null)
+		{
+			return List.of();
+		}
 
 		if (node instanceof IVariableReferenceNode variableReferenceNode)
 		{
 			return List.of(LspUtil.toLocation(variableReferenceNode.reference()));
 		}
 
-		if (node instanceof IModuleReferencingNode moduleReferencingNode)
-		{
-			return List.of(LspUtil.toLocation(moduleReferencingNode.reference()));
-		}
-
-		if (node instanceof ITokenNode && node.parent()instanceof ISymbolReferenceNode symbolReferenceNode)
+		if (node.parent()instanceof ISymbolReferenceNode symbolReferenceNode)
 		{
 			return List.of(LspUtil.toLocation(symbolReferenceNode.reference()));
 		}
 
-		if (node instanceof ITokenNode && node.parent()instanceof IModuleReferencingNode moduleReferencingNode)
+		if (node.parent()instanceof IModuleReferencingNode moduleReferencingNode)
 		{
 			return List.of(LspUtil.toLocation(moduleReferencingNode.reference()));
 		}
@@ -516,12 +516,15 @@ public class NaturalLanguageService implements LanguageClientAware
 		return List.of();
 	}
 
-	public List<Location> findReferences(ReferenceParams params)
+	public CompletableFuture<List<? extends Location>> findReferences(ReferenceParams params)
 	{
-		var fileUri = params.getTextDocument().getUri();
-		var filePath = LspUtil.uriToPath(fileUri);
-		var file = findNaturalFile(filePath);
-		return referenceFinder.findReferences(params, file);
+		return ProgressTasks.startNew("Finding references", client, monitor ->
+		{
+			var fileUri = params.getTextDocument().getUri();
+			var filePath = LspUtil.uriToPath(fileUri);
+			var file = findNaturalFile(filePath);
+			return referenceFinder.findReferences(params, file, monitor);
+		});
 	}
 
 	public SignatureHelp signatureHelp(TextDocumentIdentifier textDocument, Position position)
@@ -801,7 +804,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	public CompletableFuture<Void> parseFileReferences()
 	{
-		return ProgressTasks.startNew("Parsing file references", client, this::parseFileReferences);
+		return ProgressTasks.startNewVoid("Parsing file references", client, this::parseFileReferences);
 	}
 
 	private void preParseDataAreas(IProgressMonitor monitor)
@@ -995,6 +998,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var referenceLimit = 300; // Some arbitrary tested value
 		if (file.getIncomingReferences().size() > referenceLimit)
 		{
+			client.showMessage(ClientMessage.error("Won't rename inside %s because it has more than %d referrers (%d)".formatted(file.getReferableName(), referenceLimit, file.getIncomingReferences().size())));
 			throw new ResponseErrorException(new ResponseError(1, "Won't rename inside %s because it has more than %d referrers (%d)".formatted(file.getReferableName(), referenceLimit, file.getIncomingReferences().size()), null));
 		}
 	}

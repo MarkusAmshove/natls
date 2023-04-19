@@ -388,6 +388,12 @@ abstract class AbstractParser<T>
 			arithmetic.setRight(rhs);
 			node.replaceChild((BaseSyntaxNode) operand, arithmetic);
 			operand = arithmetic;
+
+			if (needRParen && peekKind(SyntaxKind.RPAREN))
+			{
+				needRParen = false;
+				consumeMandatory(node, SyntaxKind.RPAREN);
+			}
 		}
 
 		if (needRParen)
@@ -472,6 +478,10 @@ abstract class AbstractParser<T>
 			if (peek().kind() == SyntaxKind.ABS)
 			{
 				return absOperand(node);
+			}
+			if (peek().kind() == SyntaxKind.SGN)
+			{
+				return sgnOperand(node);
 			}
 			if (peek().kind() == SyntaxKind.POS)
 			{
@@ -583,6 +593,17 @@ abstract class AbstractParser<T>
 		absOperand.setParameter(consumeOperandNode(absOperand));
 		consumeMandatory(absOperand, SyntaxKind.RPAREN);
 		return absOperand;
+	}
+
+	private IOperandNode sgnOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var sgnOperand = new SignOperandNode();
+		node.addNode(sgnOperand);
+		consumeMandatory(sgnOperand, SyntaxKind.SGN);
+		consumeMandatory(sgnOperand, SyntaxKind.LPAREN);
+		sgnOperand.setParameter(consumeOperandNode(sgnOperand));
+		consumeMandatory(sgnOperand, SyntaxKind.RPAREN);
+		return sgnOperand;
 	}
 
 	private IOperandNode fracOperand(BaseSyntaxNode node) throws ParseError

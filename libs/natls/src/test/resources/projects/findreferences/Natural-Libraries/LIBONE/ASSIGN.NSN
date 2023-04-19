@@ -1,0 +1,8 @@
+DEFINE DATA
+LOCAL
+1 #VAR (A10)
+END-DEFINE
+
+#VAR := 5 /* !ref(2){ASSIGN,2,2}
+
+END

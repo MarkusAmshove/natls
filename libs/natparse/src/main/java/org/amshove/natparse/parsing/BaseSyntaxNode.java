@@ -4,7 +4,6 @@ import org.amshove.natparse.IPosition;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.ISyntaxNodeVisitor;
-import org.amshove.natparse.natural.ISyntaxTree;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -15,14 +14,14 @@ import java.util.List;
 class BaseSyntaxNode implements ISyntaxNode
 {
 	private List<BaseSyntaxNode> nodes = Collections.emptyList();
-	private ISyntaxTree parent;
+	private ISyntaxNode parent;
 
-	public void setParent(ISyntaxTree parent)
+	public void setParent(ISyntaxNode parent)
 	{
 		this.parent = parent;
 	}
 
-	public ISyntaxTree parent()
+	public ISyntaxNode parent()
 	{
 		return parent;
 	}

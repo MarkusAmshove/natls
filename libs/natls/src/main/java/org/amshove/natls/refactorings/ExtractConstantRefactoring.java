@@ -5,9 +5,10 @@ import org.amshove.natls.codeactions.ICodeActionProvider;
 import org.amshove.natls.codeactions.RefactoringContext;
 import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natls.quickfixes.CodeActionBuilder;
+import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
-import org.amshove.natparse.natural.VariableScope;
+import org.amshove.natparse.natural.*;
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.Range;
@@ -20,7 +21,13 @@ public class ExtractConstantRefactoring implements ICodeActionProvider
 	@Override
 	public boolean isApplicable(RefactoringContext context)
 	{
-		return context.tokenUnderCursor().kind().isLiteralOrConst();
+		return context.tokenUnderCursor().kind().isLiteralOrConst()
+			&& isNotInsideDefineData(context.nodeAtPosition());
+	}
+
+	private boolean isNotInsideDefineData(ISyntaxNode node)
+	{
+		return NodeUtil.findFirstParentOfType(node, IDefineData.class) == null;
 	}
 
 	@Override

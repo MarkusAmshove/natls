@@ -2,9 +2,7 @@ package org.amshove.natlint.linter;
 
 import org.amshove.natlint.api.LinterDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
-import org.amshove.natparse.natural.INaturalModule;
-import org.amshove.natparse.natural.ISyntaxTree;
-import org.amshove.natparse.natural.ITokenNode;
+import org.amshove.natparse.natural.*;
 
 import java.util.ArrayList;
 
@@ -35,6 +33,11 @@ public class NaturalLinter
 			if (!(descendant instanceof ITokenNode)) // perf: TokenNodes don't have descendants
 			{
 				analyze(descendant, analyzeContext, linterContext);
+			}
+
+			if (descendant instanceof IGroupNode)
+			{
+				analyze(descendant, analyzeContext, linterContext); // But groups do have descendants :-)
 			}
 		}
 	}

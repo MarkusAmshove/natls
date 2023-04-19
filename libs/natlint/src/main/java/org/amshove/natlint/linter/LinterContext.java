@@ -85,7 +85,7 @@ public enum LinterContext implements ILinterContext
 			analyzers.forEach(analyzer -> analyzer.analyze(syntaxNode, context));
 		}
 
-		if (syntaxNode instanceof ITokenNode tokenNode)
+		if (syntaxNode instanceof ITokenNode tokenNode && tokenNode.token() != null)
 		{
 			var tokenAnalyzer = tokenAnalyzerFunctions.get(tokenNode.token().kind());
 			if (tokenAnalyzer != null)
