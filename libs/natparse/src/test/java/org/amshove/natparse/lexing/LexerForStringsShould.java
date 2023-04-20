@@ -141,4 +141,18 @@ class LexerForStringsShould extends AbstractLexerTest
 		var token = lexSingle("H'5B'");
 		assertThat(token.stringValue()).isEqualTo("[");
 	}
+
+	@Test
+	void containTheHexLiteralAsStringForMultipleCharacters()
+	{
+		var token = lexSingle("H'313233'");
+		assertThat(token.stringValue()).isEqualTo("123");
+	}
+
+	@Test
+	void containTheHexLiteralAsStringForMultipleCharactersIfOneCharacterIsMissing()
+	{
+		var token = lexSingle("H'31323'");
+		assertThat(token.stringValue()).isEqualTo("120"); // the 3, which is supposed to be 33, is treated as 03
+	}
 }

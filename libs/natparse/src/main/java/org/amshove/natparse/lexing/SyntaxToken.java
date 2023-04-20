@@ -91,7 +91,16 @@ public class SyntaxToken implements IPosition
 		if (source.startsWith("H'"))
 		{
 			var hexLiteral = source.split("'")[1];
-			return Character.toString((char) (Integer.parseInt(hexLiteral, 16)));
+			var stringLiteral = new StringBuilder(hexLiteral.length() / 2);
+			for (var i = 0; i < hexLiteral.length(); i += 2)
+			{
+				var hexPart = i + 2 > hexLiteral.length()
+					? hexLiteral.charAt(i) + "0" // just to prevent an Exception. The lexer raises a diagnostic for this
+					: hexLiteral.substring(i, i + 2);
+				stringLiteral.append((char) Integer.parseInt(hexPart, 16));
+			}
+
+			return stringLiteral.toString();
 		}
 		return source.substring(1, source.length() - 1).replace("''", "'");
 	}

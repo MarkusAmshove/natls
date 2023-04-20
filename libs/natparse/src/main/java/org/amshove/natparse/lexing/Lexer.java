@@ -1290,6 +1290,11 @@ public class Lexer
 
 		scanner.advance();
 		createAndAdd(SyntaxKind.STRING_LITERAL);
+		var hexLiteralChars = previousUnsafe().source().length() - 3; // - H''
+		if (hexLiteralChars % 2 != 0)
+		{
+			addDiagnostic("Invalid HEX literal. Number of characters must be even but was %d.".formatted(hexLiteralChars), LexerError.UNKNOWN_CHARACTER);
+		}
 	}
 
 	private void consumeString(char c)
