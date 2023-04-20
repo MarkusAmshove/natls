@@ -144,4 +144,19 @@ class LexerForNumbersShould extends AbstractLexerTest
 			token(SyntaxKind.RPAREN)
 		);
 	}
+
+	@Test
+	void splitNumbersByCommaIfUsedInParens()
+	{
+		assertTokens(
+			"(1,1,1)",
+			SyntaxKind.LPAREN,
+			SyntaxKind.NUMBER_LITERAL,
+			SyntaxKind.COMMA,
+			SyntaxKind.NUMBER_LITERAL,
+			SyntaxKind.COMMA,
+			SyntaxKind.NUMBER_LITERAL,
+			SyntaxKind.RPAREN
+		);
+	}
 }

@@ -1206,7 +1206,10 @@ public class Lexer
 	private void consumeNumber()
 	{
 		scanner.start();
-		while (Character.isDigit(scanner.peek()) || scanner.peek() == ',' || scanner.peek() == '.')
+		while (Character.isDigit(scanner.peek())
+			|| scanner.peek() == '.'
+			|| (scanner.peek() == ',' && !inParens) // added to disambiguate between array access #ARR(1,1,1) and floating point numbers
+		)
 		{
 			if (scanner.peek() == ',' && !Character.isDigit(scanner.peek(1)))
 			{
