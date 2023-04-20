@@ -23,6 +23,7 @@ public class Lexer
 	private boolean inParens;
 	private boolean inSourceHeader;
 	private boolean sourceHeaderDone;
+	private SyntaxToken lastBeforeOpenParens;
 
 	private NaturalProgrammingMode programmingMode = NaturalProgrammingMode.UNKNOWN;
 	private int lineIncrement = 10;
@@ -73,10 +74,12 @@ public class Lexer
 					continue;
 				case '(':
 					inParens = true;
+					lastBeforeOpenParens = previous();
 					createAndAddCurrentSingleToken(SyntaxKind.LPAREN);
 					continue;
 				case ')':
 					inParens = false;
+					lastBeforeOpenParens = null;
 					createAndAddCurrentSingleToken(SyntaxKind.RPAREN);
 					continue;
 				case '[':
@@ -1208,7 +1211,7 @@ public class Lexer
 		scanner.start();
 		while (Character.isDigit(scanner.peek())
 			|| scanner.peek() == '.'
-			|| (scanner.peek() == ',' && !inParens) // added to disambiguate between array access #ARR(1,1,1) and floating point numbers
+			|| (scanner.peek() == ',' && !(inParens && tokenBeforeLParenWas(SyntaxKind.IDENTIFIER))) // added to disambiguate between array access #ARR(1,1,1) and floating point numbers
 		)
 		{
 			if (scanner.peek() == ',' && !Character.isDigit(scanner.peek(1)))
@@ -1251,6 +1254,11 @@ public class Lexer
 		}
 
 		createAndAdd(SyntaxKind.NUMBER_LITERAL);
+	}
+
+	private boolean tokenBeforeLParenWas(SyntaxKind kind)
+	{
+		return inParens && lastBeforeOpenParens != null && lastBeforeOpenParens.kind() == kind;
 	}
 
 	private void consumeHexString()

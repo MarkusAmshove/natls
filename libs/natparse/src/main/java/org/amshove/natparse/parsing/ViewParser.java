@@ -254,55 +254,33 @@ class ViewParser extends AbstractParser<ViewNode>
 			throw new ParseError(peek());
 		}
 
-		var dimension = new ArrayDimension();
-		var lowerBound = extractArrayBound(new TokenNode(peek()), dimension);
-		var upperBound = ArrayDimension.UNBOUND_VALUE;
-		consume(dimension);
-
-		var workaroundNextDimension = false;
-		if (consumeOptionally(dimension, SyntaxKind.COLON))
+		while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
 		{
-			if (peekKind(SyntaxKind.NUMBER_LITERAL) && peek().source().contains(","))
-			{
-				// Workaround for (T/1:10,50:*) where 10,50 gets recognized as a number
-				var numbers = peek().source().split(",");
-				var relevantNumber = numbers[0];
-
-				var firstNumberToken = SyntheticTokenNode.fromToken(peek(), SyntaxKind.NUMBER_LITERAL, relevantNumber);
-				upperBound = extractArrayBound(firstNumberToken, dimension);
-				variable.addNode(firstNumberToken);
-				// we now also have to handle the next dimension, because our current
-				// token also contains the lower bound of the next dimension.
-				// 50 in the example above.
-				workaroundNextDimension = true;
-			}
-			else
+			var dimension = new ArrayDimension();
+			var lowerBound = extractArrayBound(new TokenNode(peek()), dimension);
+			var upperBound = ArrayDimension.UNBOUND_VALUE;
+			consume(dimension);
+			if (consumeOptionally(dimension, SyntaxKind.COLON))
 			{
 				upperBound = extractArrayBound(new TokenNode(peek()), dimension);
 				consume(dimension);
 			}
-		}
-		else
-		{
-			// only the upper bound was provided, like (A2/*)
-			upperBound = lowerBound;
-			lowerBound = 1;
-		}
+			else
+			{
+				// only the upper bound was provided, like (A2/*)
+				upperBound = lowerBound;
+				lowerBound = 1;
+			}
 
-		if (!peekKind(SyntaxKind.RPAREN) && !peekKind(SyntaxKind.NUMBER_LITERAL) && !peekKind(SyntaxKind.COMMA)) // special case for (*)
-		{
-			consume(dimension);
+			if (!peekKind(SyntaxKind.RPAREN) && !peekKind(SyntaxKind.NUMBER_LITERAL) && !peekKind(SyntaxKind.COMMA)) // special case for (*)
+			{
+				consume(dimension);
+			}
+
+			dimension.setLowerBound(lowerBound);
+			dimension.setUpperBound(upperBound);
+			variable.addDimension(dimension);
 		}
-
-		dimension.setLowerBound(lowerBound);
-		dimension.setUpperBound(upperBound);
-
-		if (workaroundNextDimension)
-		{
-			addArrayDimensionWorkaroundComma(variable);
-		}
-
-		variable.addDimension(dimension);
 	}
 
 	private int extractArrayBound(ITokenNode token, ArrayDimension dimension)

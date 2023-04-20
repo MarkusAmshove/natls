@@ -6,8 +6,6 @@ import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.parsing.ddm.DdmParser;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.Files;
 
 class DefaultModuleProvider implements IModuleProvider
@@ -22,19 +20,18 @@ class DefaultModuleProvider implements IModuleProvider
 	@Override
 	public IDataDefinitionModule findDdm(String referableName)
 	{
-		var calledFile = caller.getLibrary().findDdmByReferableName(referableName, true);
-		if (calledFile == null)
-		{
-			return null;
-		}
-
 		try
 		{
+			var calledFile = caller.getLibrary().findDdmByReferableName(referableName, true);
+			if (calledFile == null)
+			{
+				return null;
+			}
 			return new DdmParser().parseDdm(Files.readString(calledFile.getPath()));
 		}
-		catch (IOException e)
+		catch (Exception e)
 		{
-			throw new UncheckedIOException(e);
+			return null;
 		}
 	}
 

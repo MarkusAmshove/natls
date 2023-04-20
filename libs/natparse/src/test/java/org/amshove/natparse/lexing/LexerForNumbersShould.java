@@ -149,7 +149,8 @@ class LexerForNumbersShould extends AbstractLexerTest
 	void splitNumbersByCommaIfUsedInParens()
 	{
 		assertTokens(
-			"(1,1,1)",
+			"#ARR(1,1,1)",
+			SyntaxKind.IDENTIFIER,
 			SyntaxKind.LPAREN,
 			SyntaxKind.NUMBER_LITERAL,
 			SyntaxKind.COMMA,
@@ -157,6 +158,33 @@ class LexerForNumbersShould extends AbstractLexerTest
 			SyntaxKind.COMMA,
 			SyntaxKind.NUMBER_LITERAL,
 			SyntaxKind.RPAREN
+		);
+	}
+
+	@Test
+	void notSplitByCommasInParensIfNotArrayIndex()
+	{
+		assertTokens(
+			"(#VAR < 1,1)",
+			SyntaxKind.LPAREN,
+			SyntaxKind.IDENTIFIER,
+			SyntaxKind.LESSER_SIGN,
+			SyntaxKind.NUMBER_LITERAL,
+			SyntaxKind.RPAREN
+		);
+	}
+
+	@Test
+	void notSplitByCommasInParensIfOnFunctionCalls()
+	{
+		assertTokens(
+			"FUNC<(1,1)>",
+			SyntaxKind.IDENTIFIER,
+			SyntaxKind.LESSER_SIGN,
+			SyntaxKind.LPAREN,
+			SyntaxKind.NUMBER_LITERAL,
+			SyntaxKind.RPAREN,
+			SyntaxKind.GREATER_SIGN
 		);
 	}
 }
