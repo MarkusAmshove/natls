@@ -13,9 +13,9 @@ public interface IDataType
 
 	boolean hasDynamicLength();
 
-	default boolean fitsInto(IVariableType other)
+	default boolean fitsInto(IDataType other)
 	{
-		return this.byteSize() <= other.byteSize();
+		return this.format().equals(other.format()) && this.byteSize() <= other.byteSize();
 	}
 
 	default String toShortString()
