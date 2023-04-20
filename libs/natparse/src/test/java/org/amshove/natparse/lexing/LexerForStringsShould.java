@@ -134,4 +134,11 @@ class LexerForStringsShould extends AbstractLexerTest
 		assertThat(tokens.size()).isEqualTo(1);
 		assertThat(tokens.peek().stringValue()).isEqualTo("'Hello'");
 	}
+
+	@Test
+	void containTheHexLiteralAsString()
+	{
+		var token = lexSingle("H'5B'");
+		assertThat(token.stringValue()).isEqualTo("[");
+	}
 }

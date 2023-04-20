@@ -88,6 +88,11 @@ public class SyntaxToken implements IPosition
 
 	public String stringValue()
 	{
+		if (source.startsWith("H'"))
+		{
+			var hexLiteral = source.split("'")[1];
+			return Character.toString((char) (Integer.parseInt(hexLiteral, 16)));
+		}
 		return source.substring(1, source.length() - 1).replace("''", "'");
 	}
 
