@@ -2,7 +2,6 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.DataFormat;
-import org.amshove.natparse.natural.DataType;
 import org.amshove.natparse.natural.IAttributeNode;
 import org.amshove.natparse.natural.IDataType;
 

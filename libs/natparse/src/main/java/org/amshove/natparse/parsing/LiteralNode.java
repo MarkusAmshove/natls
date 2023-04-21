@@ -33,18 +33,6 @@ class LiteralNode extends TokenNode implements ILiteralNode
 	record LiteralType(DataFormat format, double length) implements IDataType
 	{
 		@Override
-		public DataFormat format()
-		{
-			return format;
-		}
-
-		@Override
-		public double length()
-		{
-			return length;
-		}
-
-		@Override
 		public boolean hasDynamicLength()
 		{
 			return false;
