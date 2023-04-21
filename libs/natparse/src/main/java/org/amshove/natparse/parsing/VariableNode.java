@@ -16,6 +16,7 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 	private String name;
 	private SyntaxToken declaration;
 	private VariableScope scope;
+	private ITokenNode identifierNode;
 	private final List<ISymbolReferenceNode> references = new ArrayList<>();
 
 	protected final List<IArrayDimension> dimensions = new ArrayList<>();
@@ -88,6 +89,12 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 	}
 
 	@Override
+	public ITokenNode identifierNode()
+	{
+		return identifierNode;
+	}
+
+	@Override
 	public ReadOnlyList<IArrayDimension> dimensions()
 	{
 		return ReadOnlyList.from(dimensions); // TODO: perf
@@ -116,10 +123,12 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 		this.level = level;
 	}
 
-	void setDeclaration(SyntaxToken token)
+	void setDeclaration(ITokenNode identifierNode)
 	{
+		var token = identifierNode.token();
 		name = token.symbolName();
 		declaration = token;
+		this.identifierNode = identifierNode;
 	}
 
 	void setScope(VariableScope scope)

@@ -102,10 +102,22 @@ public class NaturalParser
 		naturalModule.setBody(result.result());
 		resolveVariableReferences(statementParser, naturalModule);
 
-		var typer = new TypeChecker();
-		for (var diagnostic : typer.check(naturalModule.body()))
+		if (naturalModule.defineData() != null)
 		{
-			naturalModule.addDiagnostic(diagnostic);
+			var typer = new TypeChecker();
+			for (var diagnostic : typer.check(naturalModule.defineData()))
+			{
+				naturalModule.addDiagnostic(diagnostic);
+			}
+		}
+
+		if (naturalModule.body() != null)
+		{
+			var typer = new TypeChecker();
+			for (var diagnostic : typer.check(naturalModule.body()))
+			{
+				naturalModule.addDiagnostic(diagnostic);
+			}
 		}
 
 		return result.result();

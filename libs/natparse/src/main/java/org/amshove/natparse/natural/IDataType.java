@@ -13,9 +13,18 @@ public interface IDataType
 
 	boolean hasDynamicLength();
 
-	default boolean fitsInto(IVariableType other)
+	default boolean fitsInto(IDataType target)
 	{
-		return this.byteSize() <= other.byteSize();
+		var bytesFit = this.byteSize() <= target.byteSize();
+		var targetFormat = target.format();
+		var ourFormat = format();
+		var formatIsCompatible = ourFormat == targetFormat || switch (ourFormat)
+		{
+			case PACKED, FLOAT, INTEGER, NUMERIC -> targetFormat == DataFormat.ALPHANUMERIC || targetFormat == DataFormat.UNICODE;
+			default -> false; // we don't know whats implicitly compatible yet
+		};
+
+		return bytesFit && formatIsCompatible;
 	}
 
 	default String toShortString()
