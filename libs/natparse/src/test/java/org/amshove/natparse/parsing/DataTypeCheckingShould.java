@@ -10,7 +10,8 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 class DataTypeCheckingShould
 {
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"A", "B", "F", "I", "N", "P"
 	})
 	void seeSameDataTypeAndLengthAsCompatible(String type)
@@ -22,7 +23,8 @@ class DataTypeCheckingShould
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"A", "B", "F", "I", "N", "P"
 	})
 	void seeSameDataTypeWithSmallerLengthAsCompatible(String type)
@@ -34,7 +36,8 @@ class DataTypeCheckingShould
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"A", "B", "F", "I", "N", "P"
 	})
 	void seeSameDataTypeWithBiggerLengthAsIncompatible(String type)
@@ -46,7 +49,8 @@ class DataTypeCheckingShould
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {
+	@ValueSource(strings =
+	{
 		"C", "D", "L", "T", "U"
 	})
 	void seeSameDataTypeWithoutExplicitLengthAsCompatible(String type)
@@ -54,6 +58,58 @@ class DataTypeCheckingShould
 		assertCompatible(
 			type(DataFormat.fromSource(type), 0),
 			type(DataFormat.fromSource(type), 0)
+		);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"N", "P", "I"
+	})
+	void seeImplicitlyCompatibleDataTypesAsCompatibleWithSameLength(String numericType)
+	{
+		assertCompatible(
+			type(DataFormat.fromSource(numericType), 8),
+			type(DataFormat.ALPHANUMERIC, 8)
+		);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"N", "P", "I"
+	})
+	void seeImplicitlyCompatibleDataTypesAsCompatibleWithSmallerLength(String numericType)
+	{
+		assertCompatible(
+			type(DataFormat.fromSource(numericType), 4),
+			type(DataFormat.ALPHANUMERIC, 8)
+		);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"N", "P", "I"
+	})
+	void seeImplicitlyCompatibleDataTypesAsCompatibleIfTargetIsDynamic(String numericType)
+	{
+		assertCompatible(
+			type(DataFormat.fromSource(numericType), 4),
+			dynamicType(DataFormat.ALPHANUMERIC)
+		);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"N", "P", "I"
+	})
+	void seeImplicitlyCompatibleDataTypesAsIncompatibleWithBiggerLength(String numericType)
+	{
+		assertNotCompatible(
+			type(DataFormat.fromSource(numericType), 8),
+			type(DataFormat.ALPHANUMERIC, 4)
 		);
 	}
 

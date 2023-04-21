@@ -73,7 +73,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 
 		if (typedVariable.type().format() == DataFormat.ALPHANUMERIC
 			&& typedVariable.type().initialValue().kind() == SyntaxKind.STRING_LITERAL
-			&& typedVariable.type().initialValue().stringValue().length() > typedVariable.type().length())
+			&& typedVariable.type().initialValue().stringValue().length() > typedVariable.type().length()) // TODO: The initializer has to be a IOperandNode
 		{
 			report(
 				ParserErrors.typeMismatch(
