@@ -460,4 +460,12 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(arithmetic.operator()).isEqualTo(SyntaxKind.PLUS);
 		assertNodeType(arithmetic.right(), ILiteralNode.class);
 	}
+
+	@Test
+	void parseArrayIndicesWhichMightBeMistakenAsDecimalNumbers()
+	{
+		var operand = parseOperand("#ARR(1,1,1)");
+		var reference = assertIsVariableReference(operand, "#ARR");
+		assertThat(reference.dimensions()).hasSize(3);
+	}
 }

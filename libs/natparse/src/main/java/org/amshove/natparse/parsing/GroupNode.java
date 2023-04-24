@@ -19,7 +19,7 @@ class GroupNode extends VariableNode implements IGroupNode
 		setLevel(variable.level());
 		if (variable.declaration() != null)
 		{
-			setDeclaration(variable.declaration());
+			setDeclaration(variable.identifierNode());
 		}
 		for (var node : variable.descendants())
 		{

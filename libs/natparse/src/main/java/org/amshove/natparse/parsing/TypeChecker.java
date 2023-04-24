@@ -2,6 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
+import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.builtin.BuiltInFunctionTable;
 import org.amshove.natparse.natural.builtin.IBuiltinFunctionDefinition;
@@ -24,6 +25,27 @@ final class TypeChecker implements ISyntaxNodeVisitor
 	@Override
 	public void visit(ISyntaxNode node)
 	{
+		try
+		{
+			checkNode(node);
+		}
+		catch (Exception e)
+		{
+			report(
+				ParserErrors.internalError(
+					"Error while type checking for node: %s. %s"
+						.formatted(
+							"(%s,%d:%d)".formatted(node.getClass().getSimpleName(), node.position().line(), node.position().offsetInLine()),
+							e.getMessage()
+						),
+					node
+				)
+			);
+		}
+	}
+
+	private void checkNode(ISyntaxNode node)
+	{
 		if (node instanceof IMutateVariables mutator)
 		{
 			ensureMutable(mutator);
@@ -32,6 +54,34 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		if (node instanceof IDivideStatementNode divide)
 		{
 			checkDivide(divide);
+		}
+
+		if (node instanceof ITypedVariableNode typedVariableNode
+			&& typedVariableNode.type() != null
+			&& typedVariableNode.type().initialValue() != null)
+		{
+			checkAlphanumericInitLength(typedVariableNode);
+		}
+	}
+
+	private void checkAlphanumericInitLength(ITypedVariableNode typedVariable)
+	{
+		if (typedVariable.type().hasDynamicLength())
+		{
+			return;
+		}
+
+		if (typedVariable.type().format() == DataFormat.ALPHANUMERIC
+			&& typedVariable.type().initialValue().kind() == SyntaxKind.STRING_LITERAL
+			&& typedVariable.type().initialValue().stringValue().length() > typedVariable.type().length()) // TODO: The initializer has to be a IOperandNode
+		{
+			report(
+				ParserErrors.typeMismatch(
+					"Initializer literal length %d is longer than data type length %d"
+						.formatted(typedVariable.type().initialValue().stringValue().length(), (int) typedVariable.type().length()),
+					typedVariable.identifierNode()
+				)
+			);
 		}
 	}
 

@@ -68,7 +68,7 @@ class ParserErrors
 	{
 		return ParserDiagnostic.create(
 			"Data type <%s> needs to have a length".formatted(variableNode.type().format()),
-			variableNode,
+			variableNode.identifierNode(),
 			ParserError.VARIABLE_LENGTH_MISSING
 		);
 	}
@@ -77,7 +77,7 @@ class ParserErrors
 	{
 		return ParserDiagnostic.create(
 			"Dynamic length not allowed for data type <%s>".formatted(variableNode.type().format()),
-			variableNode,
+			variableNode.identifierNode(),
 			ParserError.INVALID_DATA_TYPE_FOR_DYNAMIC_LENGTH
 		);
 	}
@@ -86,7 +86,7 @@ class ParserErrors
 	{
 		return ParserDiagnostic.create(
 			"Type mismatch on initial value. Got <%s> but expected <%s>".formatted(variable.type().initialValue().kind(), expectedKind),
-			variable,
+			variable.identifierNode(),
 			ParserError.INITIAL_VALUE_TYPE_MISMATCH
 		);
 	}
@@ -100,7 +100,7 @@ class ParserErrors
 
 		return ParserDiagnostic.create(
 			"Type mismatch on initial value. Got <%s> but expected one of <%s>".formatted(variable.type().initialValue().kind(), Arrays.stream(expectedKinds).map(Enum::toString).collect(Collectors.joining(","))),
-			variable,
+			variable.identifierNode(),
 			ParserError.INITIAL_VALUE_TYPE_MISMATCH
 		);
 	}
@@ -109,7 +109,7 @@ class ParserErrors
 	{
 		return ParserDiagnostic.create(
 			"Initial value is empty",
-			variable,
+			variable.identifierNode(),
 			ParserError.EMPTY_INITIAL_VALUE
 		);
 	}
@@ -142,11 +142,16 @@ class ParserErrors
 		);
 	}
 
+	public static ParserDiagnostic incompleteArrayDefinition(VariableNode node)
+	{
+		return incompleteArrayDefinition((BaseSyntaxNode) node.identifierNode());
+	}
+
 	public static ParserDiagnostic invalidAivNaming(VariableNode node)
 	{
 		return ParserDiagnostic.create(
 			"Independent variable name must start with a +",
-			node,
+			node.identifierNode(),
 			ParserError.INDEPENDENT_VARIABLES_NAMING
 		);
 	}
@@ -155,7 +160,7 @@ class ParserErrors
 	{
 		return ParserDiagnostic.create(
 			"Independent variables can't be groups",
-			variable,
+			variable.identifierNode(),
 			ParserError.INDEPENDENT_CANNOT_BE_GROUP
 		);
 	}
@@ -164,7 +169,7 @@ class ParserErrors
 	{
 		return ParserDiagnostic.create(
 			"Group can not be empty",
-			groupNode,
+			groupNode.identifierNode(),
 			ParserError.GROUP_CANNOT_BE_EMPTY
 		);
 	}
@@ -173,7 +178,7 @@ class ParserErrors
 	{
 		return ParserDiagnostic.create(
 			"No target for REDEFINE found. The redefined variable must be declared beforehand",
-			redefinitionNode,
+			redefinitionNode.identifierNode(),
 			ParserError.NO_TARGET_VARIABLE_FOR_REDEFINE_FOUND
 		);
 	}
@@ -182,7 +187,7 @@ class ParserErrors
 	{
 		return ParserDiagnostic.create(
 			"Length of redefinition (%s bytes) exceeds target length (%s bytes) of %s".formatted(DataFormat.formatLength(redefinitionLength), DataFormat.formatLength(maxLength), node.declaration().source()),
-			node,
+			node.identifierNode(),
 			ParserError.REDEFINE_LENGTH_EXCEEDS_TARGET_LENGTH
 		);
 	}
@@ -254,7 +259,7 @@ class ParserErrors
 	{
 		return ParserDiagnostic.create(
 			"REDEFINE can not target variable with dynamic length",
-			redefinitionNode,
+			redefinitionNode.identifierNode(),
 			ParserError.REDEFINE_TARGET_CANT_BE_DYNAMIC
 		);
 	}
@@ -263,7 +268,7 @@ class ParserErrors
 	{
 		return ParserDiagnostic.create(
 			"REDEFINE can not contain a variable with dynamic length",
-			variable,
+			variable.identifierNode(),
 			ParserError.REDEFINE_TARGET_CANT_CONTAIN_DYNAMIC
 		);
 	}
@@ -276,7 +281,7 @@ class ParserErrors
 				lowestValue,
 				highestValue
 			),
-			typeNode,
+			typeNode.identifierNode(),
 			ParserError.INVALID_LENGTH_FOR_DATA_TYPE
 		);
 	}
@@ -288,7 +293,7 @@ class ParserErrors
 				DataFormat.formatLength(typeNode.type().length()),
 				Arrays.stream(possibleValues).mapToObj(Integer::toString).collect(Collectors.joining(","))
 			),
-			typeNode,
+			typeNode.identifierNode(),
 			ParserError.INVALID_LENGTH_FOR_DATA_TYPE
 		);
 	}
@@ -297,7 +302,7 @@ class ParserErrors
 	{
 		return ParserDiagnostic.create(
 			"Invalid length: Length for %s can not be specified".formatted(DataFormat.formatLength(typeNode.type().length())),
-			typeNode,
+			typeNode.identifierNode(),
 			ParserError.INVALID_LENGTH_FOR_DATA_TYPE
 		);
 	}
@@ -428,6 +433,15 @@ class ParserErrors
 			"Value %s is not allowed. Allowed values: %s".formatted(actual, String.join(", ", allowed)),
 			node,
 			ParserError.INVALID_LITERAL_VALUE
+		);
+	}
+
+	public static IDiagnostic internalError(String message, ISyntaxNode node)
+	{
+		return ParserDiagnostic.create(
+			"%s. Please raise an issue.".formatted(message),
+			node,
+			ParserError.INTERNAL
 		);
 	}
 
