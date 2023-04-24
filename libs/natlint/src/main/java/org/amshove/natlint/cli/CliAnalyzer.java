@@ -11,10 +11,7 @@ import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.INaturalModule;
-import org.amshove.natparse.natural.project.NaturalFile;
-import org.amshove.natparse.natural.project.NaturalProgrammingMode;
-import org.amshove.natparse.natural.project.NaturalProject;
-import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
+import org.amshove.natparse.natural.project.*;
 import org.amshove.natparse.parsing.NaturalParser;
 import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 
@@ -109,6 +106,12 @@ public class CliAnalyzer
 		{
 			library.files().parallelStream().forEach(file ->
 			{
+				if (file.getFiletype() == NaturalFileType.DDM)
+				{
+					// DdmParser isn't called in the CLI. DDMs will be parsed on demand.
+					return;
+				}
+
 				if (file.isFailedOnInit())
 				{
 					fileStatusSink.printError(file.getPath(), MessageType.INDEX_EXCEPTION, file.getInitException());
