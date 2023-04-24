@@ -85,6 +85,18 @@ class LexerForAttributeControlsShould extends AbstractLexerTest
 	}
 
 	@Test
+	void consumeDynamicAttributesInCombinationWithOtherAttributes()
+	{
+		assertTokens(
+			"(DY=<U> CD=RE)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.DY, "DY=<U>"),
+			token(SyntaxKind.CD, "CD=RE"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
 	void consumeComplexDynamicAttributes()
 	{
 		assertTokens(
