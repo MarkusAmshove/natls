@@ -843,14 +843,22 @@ public class Lexer
 		SyntaxKind kindHint = null;
 		scanner.start();
 
-		if (scanner.advanceIf("PF") && Character.isDigit(scanner.peek()))
+		if (scanner.advanceIf("PF"))
 		{
 			while (!scanner.isAtEnd() && Character.isDigit(scanner.peek()))
 			{
 				scanner.advance();
 			}
-			createAndAdd(SyntaxKind.PF);
-			return;
+			if (scanner.isAtEnd() || isWhitespace(0) || scanner.peek() == '=')
+			{
+				createAndAdd(SyntaxKind.PF);
+				return;
+			}
+			else
+			{
+				scanner.rollbackCurrentLexeme();
+				scanner.start();
+			}
 		}
 
 		var dashCount = 0;
