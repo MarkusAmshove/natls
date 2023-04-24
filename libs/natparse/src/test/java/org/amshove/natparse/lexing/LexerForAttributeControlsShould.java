@@ -2,7 +2,7 @@ package org.amshove.natparse.lexing;
 
 import org.junit.jupiter.api.Test;
 
-public class LexerForAttributeControlsShould extends AbstractLexerTest
+class LexerForAttributeControlsShould extends AbstractLexerTest
 {
 	@Test
 	void consumeEverythingBelongingToAnEditorMask()
@@ -69,6 +69,40 @@ public class LexerForAttributeControlsShould extends AbstractLexerTest
 			token(SyntaxKind.MOVE),
 			token(SyntaxKind.LPAREN),
 			token(SyntaxKind.CD),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
+	void consumeDynamicAttributes()
+	{
+		assertTokens(
+			"(DY=<U>)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.DY, "DY=<U>"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
+	void consumeDynamicAttributesInCombinationWithOtherAttributes()
+	{
+		assertTokens(
+			"(DY=<U> CD=RE)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.DY, "DY=<U>"),
+			token(SyntaxKind.CD, "CD=RE"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
+	void consumeComplexDynamicAttributes()
+	{
+		assertTokens(
+			"(DY='27YEPD'28GRPD'29TUPD'30)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.DY, "DY='27YEPD'28GRPD'29TUPD'30"),
 			token(SyntaxKind.RPAREN)
 		);
 	}

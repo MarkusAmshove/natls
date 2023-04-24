@@ -823,6 +823,12 @@ public class Lexer
 			return;
 		}
 
+		if (inParens && scanner.peekText("DY="))
+		{
+			dynamicAttribte();
+			return;
+		}
+
 		if (inParens && tokens.size() > 2)
 		{
 			var prevLastToken = tokens.get(tokens.size() - 2).kind();
@@ -1009,6 +1015,19 @@ public class Lexer
 		}
 
 		createAndAdd(SyntaxKind.AD);
+	}
+
+	private void dynamicAttribte()
+	{
+		scanner.start();
+		scanner.advance(3); // DY=
+
+		while (!scanner.isAtEnd() && isNoWhitespace() && scanner.peek() != ')')
+		{
+			scanner.advance();
+		}
+
+		createAndAdd(SyntaxKind.DY);
 	}
 
 	private void colorDefinition()
