@@ -1222,16 +1222,14 @@ public class Lexer
 			|| (scanner.peek() == ',' && !(inParens && tokenBeforeLParenWas(SyntaxKind.IDENTIFIER))) // added to disambiguate between array access #ARR(1,1,1) and floating point numbers
 		)
 		{
-			if (scanner.peek() == ',' && !Character.isDigit(scanner.peek(1)))
+			if (scanner.peek() == ',')
 			{
-				break;
-			}
-
-			var prev = previous();
-			if (scanner.peek() == ',' && prev != null && prev.kind() == SyntaxKind.COLON)
-			{
-				// Case for (1:5,2:5) which are two dimensions and not a floating number
-				break;
+				var prev = previous();
+				if (!Character.isDigit(scanner.peek(1)) || (prev != null && prev.kind() == SyntaxKind.COLON))
+				{
+					// Case for (1:5,2:5) which are two dimensions and not a floating number
+					break;
+				}
 			}
 
 			scanner.advance();
