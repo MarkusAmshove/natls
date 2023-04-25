@@ -13,9 +13,12 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class StatementListParser extends AbstractParser<IStatementListNode>
 {
+	private static final Pattern SETKEY_PATTERN = Pattern.compile("(CLR|PA[1-3]|PF([1-9]|[0-1][0-9]|[2][0-4]))\\b");
+
 	private List<IReferencableNode> referencableNodes;
 
 	public List<IReferencableNode> getReferencableNodes()
@@ -2143,14 +2146,40 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(statement, SyntaxKind.SET);
 		consumeMandatory(statement, SyntaxKind.KEY);
 
+		if (consumeAnyOptionally(statement, List.of(SyntaxKind.ALL, SyntaxKind.ON, SyntaxKind.OFF)))
+		{
+			return statement;
+		}
 		if (consumeOptionally(statement, SyntaxKind.NAMED))
 		{
 			consumeMandatory(statement, SyntaxKind.OFF);
+			return statement;
+		}
+		if (consumeOptionally(statement, SyntaxKind.COMMAND))
+		{
+			consumeAnyMandatory(statement, List.of(SyntaxKind.ON, SyntaxKind.OFF));
+			return statement;
 		}
 
-		while (peekKind(SyntaxKind.PF))
+		while (peekKind(SyntaxKind.IDENTIFIER) || peekKind(SyntaxKind.DYNAMIC))
 		{
-			consumeMandatory(statement, SyntaxKind.PF);
+			if (peekKind(SyntaxKind.DYNAMIC))
+			{
+				consumeMandatory(statement, SyntaxKind.DYNAMIC);
+				consumeOperandNode(statement);
+			}
+			else
+			{
+				var pfKeyToken = consumeMandatoryIdentifierTokenNode(statement);
+				var name = pfKeyToken.token().symbolName();
+				var matcher = SETKEY_PATTERN.matcher(name);
+				if (!matcher.find())
+				{
+					report(ParserErrors.unexpectedToken(pfKeyToken.token(), "Unexpected token %s, expected one of PFnn, PAn, CLR".formatted(name)));
+					throw new ParseError(pfKeyToken.token());
+				}
+			}
+
 			if (consumeOptionally(statement, SyntaxKind.EQUALS_SIGN))
 			{
 				if (consumeOptionally(statement, SyntaxKind.DATA))

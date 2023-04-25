@@ -850,22 +850,11 @@ public class Lexer
 
 		var isQualified = false;
 		SyntaxKind kindHint = null;
+		var dashCount = 0;
 		scanner.start();
 
-		if (scanner.advanceIf("PF") && Character.isDigit(scanner.peek()))
-		{
-			while (!scanner.isAtEnd() && Character.isDigit(scanner.peek()))
-			{
-				scanner.advance();
-			}
-			createAndAdd(SyntaxKind.PF);
-			return;
-		}
-
-		var dashCount = 0;
 		while (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd() && isValidIdentifierCharacter(scanner.peek()))
 		{
-
 			// Characters from which we can be sure that we're dealing with an identifier
 			switch (scanner.peek())
 			{

@@ -75,7 +75,6 @@ public class KeywordTable
 			case "cipher" -> SyntaxKind.CIPHER;
 			case "class" -> SyntaxKind.CLASS;
 			case "close" -> SyntaxKind.CLOSE;
-			case "clr" -> SyntaxKind.CLR;
 			case "coalesce" -> SyntaxKind.COALESCE;
 			case "codepage" -> SyntaxKind.CODEPAGE;
 			case "command" -> SyntaxKind.COMMAND;
@@ -416,14 +415,10 @@ public class KeywordTable
 			case "password" -> SyntaxKind.PASSWORD;
 			case "path" -> SyntaxKind.PATH;
 			case "pattern" -> SyntaxKind.PATTERN;
-			case "pa1" -> SyntaxKind.PA1;
-			case "pa2" -> SyntaxKind.PA2;
-			case "pa3" -> SyntaxKind.PA3;
 			case "pc" -> SyntaxKind.PC;
 			case "pd" -> SyntaxKind.PD;
 			case "pen" -> SyntaxKind.PEN;
 			case "perform" -> SyntaxKind.PERFORM;
-			case "pf" -> SyntaxKind.PF;
 			case "pgdn" -> SyntaxKind.PGDN;
 			case "pgup" -> SyntaxKind.PGUP;
 			case "pgm" -> SyntaxKind.PGM;
