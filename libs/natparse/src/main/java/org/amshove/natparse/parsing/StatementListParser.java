@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 
 public class StatementListParser extends AbstractParser<IStatementListNode>
 {
-	private static final Pattern SETKEY_PATTERN = Pattern.compile("(CLR|PA[1-3]|PF([1-9]|[0-1][\\d]|[2][0-4]))\\b");
+	private static final Pattern SETKEY_PATTERN = Pattern.compile("(CLR|PA[1-3]|PF([1-9]|[0-1][\\d]|2[0-4]))\\b");
 
 	private List<IReferencableNode> referencableNodes;
 
