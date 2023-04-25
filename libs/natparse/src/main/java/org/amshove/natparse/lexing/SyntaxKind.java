@@ -583,7 +583,6 @@ public enum SyntaxKind
 	PC(true, false, false),
 	PD(true, false, false),
 	PEN(true, false, false),
-	PF(true, false, false),
 	PGDN(true, false, false),
 	PGUP(true, false, false),
 	PGM(true, false, false),
