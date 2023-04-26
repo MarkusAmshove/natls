@@ -188,7 +188,6 @@ public class LexerForKeywordsShould extends AbstractLexerTest
 			keywordTest("ENDING", SyntaxKind.ENDING),
 			keywordTest("ENTER", SyntaxKind.ENTER),
 			keywordTest("ENTIRE", SyntaxKind.ENTIRE),
-			keywordTest("ENTR", SyntaxKind.ENTR),
 			keywordTest("EQ", SyntaxKind.EQ),
 			keywordTest("EQUAL", SyntaxKind.EQUAL),
 			keywordTest("ERASE", SyntaxKind.ERASE),

@@ -183,7 +183,6 @@ public class KeywordTable
 			case "ending" -> SyntaxKind.ENDING;
 			case "enter" -> SyntaxKind.ENTER;
 			case "entire" -> SyntaxKind.ENTIRE;
-			case "entr" -> SyntaxKind.ENTR;
 			case "eq" -> SyntaxKind.EQ;
 			case "equal" -> SyntaxKind.EQUAL;
 			case "erase" -> SyntaxKind.ERASE;

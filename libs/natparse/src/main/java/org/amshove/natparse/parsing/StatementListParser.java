@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 
 public class StatementListParser extends AbstractParser<IStatementListNode>
 {
-	private static final Pattern SETKEY_PATTERN = Pattern.compile("(CLR|PA[1-3]|PF([1-9]|[0-1][\\d]|2[0-4]))\\b");
+	private static final Pattern SETKEY_PATTERN = Pattern.compile("(ENTR|CLR|PA[1-3]|PF([1-9]|[0-1][\\d]|2[0-4]))\\b");
 
 	private List<IReferencableNode> referencableNodes;
 
@@ -2161,8 +2161,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			return statement;
 		}
 
-		while (peekKind(SyntaxKind.IDENTIFIER) || peekKind(SyntaxKind.DYNAMIC))
+		while ((peekKind(SyntaxKind.IDENTIFIER) && !isStatementStart()) || peekKind(SyntaxKind.DYNAMIC))
 		{
+			var entrSpecified = false;
 			if (peekKind(SyntaxKind.DYNAMIC))
 			{
 				consumeMandatory(statement, SyntaxKind.DYNAMIC);
@@ -2172,15 +2173,15 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			{
 				var pfKeyToken = consumeMandatoryIdentifierTokenNode(statement);
 				var name = pfKeyToken.token().symbolName();
+				entrSpecified = (name.equals("ENTR")) ? true : false;
 				var matcher = SETKEY_PATTERN.matcher(name);
 				if (!matcher.find())
 				{
-					report(ParserErrors.unexpectedToken(pfKeyToken.token(), "Unexpected token %s, expected one of PFnn, PAn, CLR".formatted(name)));
-					throw new ParseError(pfKeyToken.token());
+					report(ParserErrors.unexpectedToken(pfKeyToken.token(), "Unexpected token %s, expected one of PFnn, PAn, CLR, ENTR".formatted(name)));
 				}
 			}
 
-			if (consumeOptionally(statement, SyntaxKind.EQUALS_SIGN))
+			if (!entrSpecified && consumeOptionally(statement, SyntaxKind.EQUALS_SIGN))
 			{
 				if (consumeOptionally(statement, SyntaxKind.DATA))
 				{
@@ -2193,7 +2194,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					}
 					else
 					{
-						consumeAnyMandatory(statement, List.of(SyntaxKind.HELP, SyntaxKind.PROGRAM, SyntaxKind.PGM, SyntaxKind.ON, SyntaxKind.OFF, SyntaxKind.STRING_LITERAL, SyntaxKind.COMMAND, SyntaxKind.DISABLED));
+						var consumed = consumeAnyMandatory(statement, List.of(SyntaxKind.HELP, SyntaxKind.PROGRAM, SyntaxKind.PGM, SyntaxKind.ON, SyntaxKind.OFF, SyntaxKind.STRING_LITERAL, SyntaxKind.COMMAND, SyntaxKind.DISABLED));
+						if (consumed.kind() == SyntaxKind.COMMAND)
+						{
+							consumeAnyMandatory(statement, List.of(SyntaxKind.ON, SyntaxKind.OFF));
+						}
 					}
 			}
 

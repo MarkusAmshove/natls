@@ -741,7 +741,32 @@ class StatementListParserShould extends StatementParseTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"PF100", "PA4", "CLRS", "PF011", "PA01", "PF25"
+		"SET KEY ENTR NAMED OFF CLR=DATA 'CLR' NAMED OFF",
+		"SET KEY PF1=HELP NAMED 'Help' PF3 NAMED 'Exit' PF5=PGM NAMED 'Update' PF12 NAMED 'Return'",
+		"SET KEY ENTR NAMED 'Exec' PF1=HELP NAMED 'Help' PF3 NAMED 'Exit' PF5=PGM NAMED 'Update' PF12 NAMED 'Return'",
+	})
+	void parseSetKeyWithMultipleKeys(String statement)
+	{
+		assertParsesSingleStatement(statement, ISetKeyNode.class);
+	}
+
+	@Test
+	void notMistakeAnAssignmentAsSetKeyOperand()
+	{
+		var statementList = assertParsesWithoutDiagnostics("""
+			SET KEY PF5 NAMED 'PHON'
+			#VAR := 'Hi'
+			""");
+
+		assertThat(statementList).hasSize(2);
+		assertNodeType(statementList.statements().get(0), ISetKeyNode.class);
+		assertNodeType(statementList.statements().get(1), IAssignmentStatementNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"PF100", "PA4", "CLRS", "PF011", "PA01", "PF25", "DYNAMIC #XYZ = COMMAND ENTR NAMED OFF",
 	})
 	void showADiagnosticForInvalidTokensInSetKey(String length)
 	{

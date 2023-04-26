@@ -393,7 +393,6 @@ public enum SyntaxKind
 	END_PROTOTYPE(true, false, false),
 	ENDING(true, false, false),
 	ENTER(true, false, false),
-	ENTR(true, false, false),
 	EQ(true, false, false),
 	EQUAL(true, false, false),
 	ERASE(true, false, false),
