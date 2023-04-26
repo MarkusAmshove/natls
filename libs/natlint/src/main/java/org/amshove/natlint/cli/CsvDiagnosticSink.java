@@ -16,9 +16,14 @@ public class CsvDiagnosticSink implements IDiagnosticSink
 
 	public CsvDiagnosticSink(Path filePath)
 	{
-		this.sink = Files.asCharSink(filePath.toFile(), StandardCharsets.UTF_8, FileWriteMode.APPEND);
 		try
 		{
+			if (filePath.toFile().exists())
+			{
+				java.nio.file.Files.delete(filePath);
+			}
+
+			this.sink = Files.asCharSink(filePath.toFile(), StandardCharsets.UTF_8, FileWriteMode.APPEND);
 			sink.write("FilePath;Id;Severity;Message;Line;OffsetInLine;Length%n".formatted());
 		}
 		catch (IOException e)
