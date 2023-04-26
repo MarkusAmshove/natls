@@ -162,16 +162,6 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 		assertTokens("*CURS-COL", token(SyntaxKind.CURS_COL, "*CURS-COL"));
 	}
 
-	@ParameterizedTest
-	@ValueSource(strings =
-	{
-		"PF1", "PF2", "PF3", "PF9", "PF12", "PF15"
-	})
-	void lexPfKey(String pfKey)
-	{
-		assertTokens(pfKey, token(SyntaxKind.PF, pfKey));
-	}
-
 	@Test
 	void lexPfKey()
 	{
