@@ -238,7 +238,7 @@ abstract class AbstractParser<T>
 		var literal = consumeLiteralNode(node);
 		if (literal.token().kind() != literalKind)
 		{
-			report(ParserErrors.unexpectedToken(literalKind, literal.token()));
+			report(ParserErrors.unexpectedTokenUnsafe(literalKind, literal.token()));
 		}
 
 		return literal;
@@ -303,7 +303,7 @@ abstract class AbstractParser<T>
 	{
 		if (tokens.isAtEnd() || !acceptedKinds.contains(tokens.peek().kind()))
 		{
-			diagnostics.add(ParserErrors.unexpectedToken(acceptedKinds, tokens.peek()));
+			diagnostics.add(ParserErrors.unexpectedToken(acceptedKinds, tokens));
 			throw new ParseError(peek());
 		}
 
@@ -822,7 +822,7 @@ abstract class AbstractParser<T>
 			}
 		}
 
-		diagnostics.add(ParserErrors.unexpectedToken(acceptedKinds, tokens.peek()));
+		diagnostics.add(ParserErrors.unexpectedToken(acceptedKinds, tokens));
 		throw new ParseError(peek());
 	}
 
@@ -944,7 +944,7 @@ abstract class AbstractParser<T>
 			return true;
 		}
 
-		report(ParserErrors.unexpectedToken(acceptedKinds, peek()));
+		report(ParserErrors.unexpectedToken(acceptedKinds, tokens));
 		tokens.advance();
 		return false;
 	}

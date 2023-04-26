@@ -1273,7 +1273,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				}
 				else
 				{
-					report(ParserErrors.unexpectedToken(List.of(SyntaxKind.IDENTIFIER, SyntaxKind.STRING_LITERAL), peek()));
+					report(ParserErrors.unexpectedToken(List.of(SyntaxKind.IDENTIFIER, SyntaxKind.STRING_LITERAL), tokens));
 					tokens.advance();
 				}
 			}
@@ -1434,7 +1434,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		if (isNotCallnatOrFetchModule())
 		{
-			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.IDENTIFIER), peek()));
+			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.IDENTIFIER), tokens));
 		}
 
 		if (consumeOptionally(callnat, SyntaxKind.IDENTIFIER))
@@ -1551,7 +1551,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		if (isNotCallnatOrFetchModule())
 		{
-			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.IDENTIFIER), peek()));
+			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.IDENTIFIER), tokens));
 		}
 
 		if (consumeOptionally(fetch, SyntaxKind.IDENTIFIER))
@@ -1723,7 +1723,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			return unary;
 		}
 
-		report(ParserErrors.unexpectedToken(List.of(SyntaxKind.TRUE, SyntaxKind.FALSE, SyntaxKind.IDENTIFIER), peek()));
+		report(ParserErrors.unexpectedToken(List.of(SyntaxKind.TRUE, SyntaxKind.FALSE, SyntaxKind.IDENTIFIER), tokens));
 		throw new ParseError(peek());
 	}
 
