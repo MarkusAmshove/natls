@@ -93,7 +93,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	{
 		if (!isScopeToken(peek()) && !peekKind(SyntaxKind.BLOCK))
 		{
-			report(ParserErrors.unexpectedToken(SCOPE_SYNTAX_KINDS, peek()));
+			report(ParserErrors.unexpectedToken(SCOPE_SYNTAX_KINDS, tokens));
 			discard();
 			throw new ParseError(peek());
 		}

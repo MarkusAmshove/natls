@@ -33,6 +33,15 @@ class ParserErrors
 		);
 	}
 
+	public static ParserDiagnostic unexpectedTokenUnsafe(SyntaxKind expectedTokenKind, SyntaxToken currentToken)
+	{
+		return ParserDiagnostic.create(
+			"Unexpected currentToken <%s>, expected <%s>".formatted(currentToken.kind(), expectedTokenKind),
+			currentToken,
+			ParserError.UNEXPECTED_TOKEN
+		);
+	}
+
 	public static ParserDiagnostic unexpectedToken(SyntaxKind expectedToken, TokenList tokens)
 	{
 		var currentToken = tokens.peek();
@@ -45,20 +54,14 @@ class ParserErrors
 		);
 	}
 
-	public static ParserDiagnostic unexpectedToken(SyntaxKind expectedKind, SyntaxToken invalidToken)
+	public static ParserDiagnostic unexpectedToken(List<SyntaxKind> expectedTokenKinds, TokenList tokens)
 	{
-		var message = "Unexpected token <%s>, expected <%s>".formatted(formatTokenKind(invalidToken), expectedKind);
+		var currentToken = tokens.peek();
+		var invalidToken = currentToken != null ? currentToken : tokens.peek(-1);
+		var expectedTokens = expectedTokenKinds.stream().map(Enum::toString).collect(Collectors.joining(", "));
+		var message = currentToken != null ? "Unexpected token <%s>, expected one of <%s>".formatted(formatTokenKind(invalidToken), expectedTokens) : "Unexpected token after this, expected one of <%s>".formatted(expectedTokens);
 		return ParserDiagnostic.create(
 			message,
-			invalidToken,
-			ParserError.UNEXPECTED_TOKEN
-		);
-	}
-
-	public static ParserDiagnostic unexpectedToken(List<SyntaxKind> expectedTokenKinds, SyntaxToken invalidToken)
-	{
-		return ParserDiagnostic.create(
-			"Unexpected token <%s>, expected one of <%s>".formatted(formatTokenKind(invalidToken), expectedTokenKinds.stream().map(Enum::toString).collect(Collectors.joining(", "))),
 			invalidToken,
 			ParserError.UNEXPECTED_TOKEN
 		);
