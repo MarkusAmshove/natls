@@ -1,6 +1,6 @@
-name: Unresolved import
+name: Unresolved external module
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time,runtime-error
 type: BUG
 description:
-DATA AREA does not seem to exist.
+data area or module does not seem to exist.

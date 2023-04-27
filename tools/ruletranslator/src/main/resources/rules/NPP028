@@ -1,6 +1,6 @@
 name: Duplicated import
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time
 type: BUG
 description:
 This data area has already been imported via ``USING``.

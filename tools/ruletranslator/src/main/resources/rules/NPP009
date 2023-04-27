@@ -1,6 +1,6 @@
 name: Invalid array bounds
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time
 type: BUG
 description:
 The boundary specified is syntactically incorrect

@@ -1,6 +1,6 @@
 name: Initial value type mismatch
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time
 type: BUG
 description:
 The initial value of this variable does not match the data type.

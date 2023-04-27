@@ -1,6 +1,6 @@
 name: Length of data format is missing
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time
 type: BUG
 description:
 The specified data format needs a length.

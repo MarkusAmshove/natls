@@ -1,6 +1,6 @@
 name: OPTIONAL not allowed in this scope
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time
 type: BUG
 description:
 ``OPTIONAL`` is only allowed in ``PARAMETER`` scope.

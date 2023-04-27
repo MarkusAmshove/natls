@@ -1,6 +1,6 @@
 name: Invalid module type
 priority: BLOCKER
-tags: compile-time
+tags: compile-time,runtime-error
 type: BUG
 description:
 The module that has been referenced here has an invalid type.

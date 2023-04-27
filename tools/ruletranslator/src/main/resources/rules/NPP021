@@ -1,6 +1,6 @@
 name: Filler missing X
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time
 type: BUG
 description:
 To make a ``FILLER`` an actual filler and not a variable name, it has to have a length followed by an ``X``.

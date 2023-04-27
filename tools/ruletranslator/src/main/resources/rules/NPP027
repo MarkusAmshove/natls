@@ -1,6 +1,6 @@
 name: Duplicated symbol
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time
 type: BUG
 description:
 This symbol is defined more than once.

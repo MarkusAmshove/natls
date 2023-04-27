@@ -1,6 +1,6 @@
 name: Initial variable value can't be empty
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time
 type: BUG
 description:
 The initial value of a variable can't be empty
