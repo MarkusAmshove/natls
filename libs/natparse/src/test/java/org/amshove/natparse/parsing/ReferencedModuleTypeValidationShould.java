@@ -79,6 +79,26 @@ class ReferencedModuleTypeValidationShould extends ParserIntegrationTest
 		);
 	}
 
+	@Test
+	void raiseADiagnosticWhenASubProgramIsCalledWithFetch(@ProjectName("invalidModuleTypeTests") NaturalProject project)
+	{
+		assertRaised(
+			"FETCHSUB",
+			"INVALID_FILE_TYPE should have been raised, because a Subprogram is called by FETCH",
+			project
+		);
+	}
+
+	@Test
+	void raiseNoDiagnosticWhenAProgramIsCalledWithFetch(@ProjectName("invalidModuleTypeTests") NaturalProject project)
+	{
+		assertNotRaised(
+			"FETCHPRG",
+			"INVALID_FILE_TYPE should not have been raised, because a Program is called by FETCH",
+			project
+		);
+	}
+
 	private void assertNotRaised(String moduleName, String reason, NaturalProject project)
 	{
 		var module = assertFileParsesAs(project.findModule("ALIB", moduleName), ISubprogram.class);

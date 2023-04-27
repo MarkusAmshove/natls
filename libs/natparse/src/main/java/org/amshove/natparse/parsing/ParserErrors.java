@@ -310,7 +310,7 @@ class ParserErrors
 		);
 	}
 
-	public static IDiagnostic unresolvedImport(SyntaxToken token)
+	public static IDiagnostic unresolvedExternalModule(SyntaxToken token)
 	{
 		return ParserDiagnostic.create(
 			"Could not resolve external module %s".formatted(token.symbolName()),

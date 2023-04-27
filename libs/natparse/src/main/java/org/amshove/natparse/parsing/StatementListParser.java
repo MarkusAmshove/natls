@@ -1445,24 +1445,24 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			callnat.setReferencingToken(previousToken());
 		}
-
-		if (consumeOptionally(callnat, SyntaxKind.STRING_LITERAL))
-		{
-			callnat.setReferencingToken(previousToken());
-			var referencedModule = sideloadModule(callnat.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token());
-			callnat.setReferencedModule((NaturalModule) referencedModule);
-			if (referencedModule != null
-				&& referencedModule.file() != null && referencedModule.file().getFiletype() != null
-				&& referencedModule.file().getFiletype() != NaturalFileType.SUBPROGRAM)
+		else
+			if (consumeOptionally(callnat, SyntaxKind.STRING_LITERAL))
 			{
-				report(
-					ParserErrors.invalidModuleType(
-						"Only SUBPROGRAMs can be called with CALLNAT",
-						callnat.referencingToken()
-					)
-				);
+				callnat.setReferencingToken(previousToken());
+				var referencedModule = sideloadModule(callnat.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token());
+				callnat.setReferencedModule((NaturalModule) referencedModule);
+				if (referencedModule != null
+					&& referencedModule.file() != null && referencedModule.file().getFiletype() != null
+					&& referencedModule.file().getFiletype() != NaturalFileType.SUBPROGRAM)
+				{
+					report(
+						ParserErrors.invalidModuleType(
+							"Only SUBPROGRAMs can be called with CALLNAT",
+							callnat.referencingToken()
+						)
+					);
+				}
 			}
-		}
 
 		consumeOptionally(callnat, SyntaxKind.USING);
 
@@ -1578,13 +1578,25 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			fetch.setReferencingToken(previousToken());
 		}
+		else
+			if (consumeOptionally(fetch, SyntaxKind.STRING_LITERAL))
+			{
+				fetch.setReferencingToken(previousToken());
+				var referencedModule = sideloadModule(fetch.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token());
+				if (referencedModule != null
+					&& referencedModule.file() != null
+					&& referencedModule.file().getFiletype() != NaturalFileType.PROGRAM)
+				{
+					report(
+						ParserErrors.invalidModuleType(
+							"Only PROGRAMs can be called with FETCH",
+							previousToken()
+						)
+					);
+				}
 
-		if (consumeOptionally(fetch, SyntaxKind.STRING_LITERAL))
-		{
-			fetch.setReferencingToken(previousToken());
-			var referencedModule = sideloadModule(fetch.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token());
-			fetch.setReferencedModule((NaturalModule) referencedModule);
-		}
+				fetch.setReferencedModule((NaturalModule) referencedModule);
+			}
 
 		return fetch;
 	}
