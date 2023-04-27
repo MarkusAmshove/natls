@@ -1451,6 +1451,17 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			callnat.setReferencingToken(previousToken());
 			var referencedModule = sideloadModule(callnat.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token());
 			callnat.setReferencedModule((NaturalModule) referencedModule);
+			if (referencedModule != null
+				&& referencedModule.file() != null && referencedModule.file().getFiletype() != null
+				&& referencedModule.file().getFiletype() != NaturalFileType.SUBPROGRAM)
+			{
+				report(
+					ParserErrors.invalidModuleType(
+						"Only SUBPROGRAMs can be called with CALLNAT",
+						callnat.referencingToken()
+					)
+				);
+			}
 		}
 
 		consumeOptionally(callnat, SyntaxKind.USING);

@@ -59,6 +59,26 @@ class ReferencedModuleTypeValidationShould extends ParserIntegrationTest
 		);
 	}
 
+	@Test
+	void raiseADiagnosticWhenAProgramIsCalledWithCallnat(@ProjectName("invalidModuleTypeTests") NaturalProject project)
+	{
+		assertRaised(
+			"CALLPROG",
+			"INVALID_FILE_TYPE should have been raised, because a Program is called by CALLNAT",
+			project
+		);
+	}
+
+	@Test
+	void raiseNoDiagnosticWhenASubProgramIsCalledWithCallnat(@ProjectName("invalidModuleTypeTests") NaturalProject project)
+	{
+		assertNotRaised(
+			"CALLSUB",
+			"INVALID_FILE_TYPE should not have been raised, because a Subprogram is called by CALLNAT",
+			project
+		);
+	}
+
 	private void assertNotRaised(String moduleName, String reason, NaturalProject project)
 	{
 		var module = assertFileParsesAs(project.findModule("ALIB", moduleName), ISubprogram.class);
