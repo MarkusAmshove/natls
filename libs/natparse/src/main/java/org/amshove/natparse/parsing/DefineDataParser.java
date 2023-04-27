@@ -202,7 +202,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			{
 				report(
 					ParserErrors.invalidModuleType(
-						"Invalid file type, only PDAs are allowed for PARAMETER USING",
+						"Only PDAs can be used for PARAMETER USING",
 						identifierTokenNode.token()
 					)
 				);

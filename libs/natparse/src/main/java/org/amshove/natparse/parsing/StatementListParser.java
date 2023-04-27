@@ -8,6 +8,7 @@ import org.amshove.natparse.natural.conditionals.ChainedCriteriaOperator;
 import org.amshove.natparse.natural.conditionals.ComparisonOperator;
 import org.amshove.natparse.natural.conditionals.IHasComparisonOperator;
 import org.amshove.natparse.natural.conditionals.ILogicalConditionCriteriaNode;
+import org.amshove.natparse.natural.project.NaturalFileType;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -1489,6 +1490,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			try
 			{
+				if (referencedModule.file().getFiletype() != NaturalFileType.COPYCODE)
+				{
+					report(ParserErrors.invalidModuleType("Only copycodes can be INCLUDEd", include.referencingToken()));
+				}
+
 				var includedSource = Files.readString(referencedModule.file().getPath());
 				var lexer = new Lexer();
 				lexer.relocateDiagnosticPosition(shouldRelocateDiagnostics() ? relocatedDiagnosticPosition : referencingToken);

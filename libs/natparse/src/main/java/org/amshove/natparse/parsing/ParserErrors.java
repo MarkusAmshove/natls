@@ -504,7 +504,7 @@ class ParserErrors
 	public static IDiagnostic invalidModuleType(String message, SyntaxToken errorToken)
 	{
 		return ParserDiagnostic.create(
-			message,
+			"Invalid module type: %s".formatted(message),
 			errorToken,
 			ParserError.INVALID_MODULE_TYPE
 		);

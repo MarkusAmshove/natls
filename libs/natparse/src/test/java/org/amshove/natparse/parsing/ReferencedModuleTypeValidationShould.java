@@ -12,27 +12,66 @@ class ReferencedModuleTypeValidationShould extends ParserIntegrationTest
 	@Test
 	void raiseADiagnosticWhenALdaIsUsedAsParameterUsing(@ProjectName("invalidModuleTypeTests") NaturalProject project)
 	{
-		var module = assertFileParsesAs(project.findModule("ALIB", "SUBLDA"), ISubprogram.class);
-		assertThat(module.diagnostics())
-			.as("INVALID_FILE_TYPE should have been raised, because a LDA is used for PARAMETER USING")
-			.anyMatch(d -> d.id().equals(ParserError.INVALID_MODULE_TYPE.id()));
+		assertRaised(
+			"SUBLDA",
+			"INVALID_FILE_TYPE should have been raised, because a LDA is used for PARAMETER USING",
+			project
+		);
 	}
 
 	@Test
 	void raiseADiagnosticWhenAGdaIsUsedAsParameterUsing(@ProjectName("invalidModuleTypeTests") NaturalProject project)
 	{
-		var module = assertFileParsesAs(project.findModule("ALIB", "SUBGDA"), ISubprogram.class);
-		assertThat(module.diagnostics())
-			.as("INVALID_FILE_TYPE should have been raised, because a GDA is used for PARAMETER USING")
-			.anyMatch(d -> d.id().equals(ParserError.INVALID_MODULE_TYPE.id()));
+		assertRaised(
+			"SUBGDA",
+			"INVALID_FILE_TYPE should have been raised, because a GDA is used for PARAMETER USING",
+			project
+		);
 	}
 
 	@Test
 	void raiseNoDiagnosticWhenAPdaIsUsedAsParameterUsing(@ProjectName("invalidModuleTypeTests") NaturalProject project)
 	{
-		var module = assertFileParsesAs(project.findModule("ALIB", "SUBPDA"), ISubprogram.class);
+		assertNotRaised(
+			"SUBPDA",
+			"INVALID_FILE_TYPE should not have been raised, because a PDA is used for PARAMETER USING",
+			project
+		);
+	}
+
+	@Test
+	void raiseADiagnosticWhenSomethingDifferentThanACopycodeIsUsedForInclude(@ProjectName("invalidModuleTypeTests") NaturalProject project)
+	{
+		assertRaised(
+			"INCLSUB",
+			"INVALID_FILE_TYPE should have been raised, because a Subprogram is used for INCLUDE",
+			project
+		);
+	}
+
+	@Test
+	void raiseNoDiagnosticWhenACopycodeIsUsedAsInclude(@ProjectName("invalidModuleTypeTests") NaturalProject project)
+	{
+		assertNotRaised(
+			"INCLCC",
+			"INVALID_FILE_TYPE should not have been raised, because a Copycode is used for INCLUDE",
+			project
+		);
+	}
+
+	private void assertNotRaised(String moduleName, String reason, NaturalProject project)
+	{
+		var module = assertFileParsesAs(project.findModule("ALIB", moduleName), ISubprogram.class);
 		assertThat(module.diagnostics())
-			.as("INVALID_FILE_TYPE should not have been raised, because a PDA is used for PARAMETER USING")
+			.as(reason)
 			.noneMatch(d -> d.id().equals(ParserError.INVALID_MODULE_TYPE.id()));
+	}
+
+	private void assertRaised(String moduleName, String reason, NaturalProject project)
+	{
+		var module = assertFileParsesAs(project.findModule("ALIB", moduleName), ISubprogram.class);
+		assertThat(module.diagnostics())
+			.as(reason)
+			.anyMatch(d -> d.id().equals(ParserError.INVALID_MODULE_TYPE.id()));
 	}
 }
