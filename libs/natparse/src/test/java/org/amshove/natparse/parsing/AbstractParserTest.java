@@ -4,8 +4,11 @@ import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.project.NaturalFile;
+import org.amshove.natparse.natural.project.NaturalFileType;
 import org.assertj.core.api.ObjectAssert;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -109,7 +112,8 @@ public abstract class AbstractParserTest<NodeType>
 
 	protected NaturalModule newEmptyLda()
 	{
-		var module = new NaturalModule(null);
+		var file = new NaturalFile("MYLDA", Path.of(""), NaturalFileType.LDA);
+		var module = new NaturalModule(file);
 		module.setDefineData(new DefineDataNode());
 		return module;
 	}

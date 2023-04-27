@@ -1,6 +1,6 @@
 name: Variable with fixed data type length can't also be dynamic
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time
 type: BUG
 description:
 If a variable already has a fixed length, it can not also be dynamic.

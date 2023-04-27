@@ -1,6 +1,6 @@
 name: Target of REDEFINE can't be an X-Array
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time
 type: BUG
 description:
 X-Arrays can't be redefined.

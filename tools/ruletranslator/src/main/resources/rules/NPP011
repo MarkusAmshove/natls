@@ -1,6 +1,6 @@
 name: Invalid naming for independent variable
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time
 type: BUG
 description:
 Naming for independent variables follow hard rules.

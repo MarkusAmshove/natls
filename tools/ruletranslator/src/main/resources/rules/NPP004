@@ -1,6 +1,6 @@
 name: Invalid data type for dynamic length
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time
 type: BUG
 description:
 The specified data type can't have a dynamic length.

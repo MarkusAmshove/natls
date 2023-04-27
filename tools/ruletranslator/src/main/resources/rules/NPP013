@@ -1,6 +1,6 @@
 name: Groups can't be empty
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time
 type: BUG
 description:
 Natural does not allow groups to be empty.

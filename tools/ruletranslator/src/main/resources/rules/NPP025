@@ -1,6 +1,6 @@
 name: Invalid length for data type
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time
 type: BUG
 description:
 The specified length is not valid for this data type.

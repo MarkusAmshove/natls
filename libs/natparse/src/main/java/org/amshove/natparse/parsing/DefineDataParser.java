@@ -119,7 +119,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			{
 				if (peekKind(SyntaxKind.BLOCK))
 				{
-					/*var block = */ block(); // TODO: Maybe do something with block
+					/*var block = */
+					block(); // TODO: Maybe do something with block
 				}
 
 				var variable = variable();
@@ -195,6 +196,28 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				{
 					addDeclaredVariable((VariableNode) variable);
 				}
+			}
+
+			if (using.isParameterUsing()
+				&& ((NaturalModule) defineDataModule).file().getFiletype() != NaturalFileType.PDA)
+			{
+				report(
+					ParserErrors.invalidModuleType(
+						"Only PDAs can be used for PARAMETER USING",
+						identifierTokenNode.token()
+					)
+				);
+			}
+
+			if (using.isLocalUsing()
+				&& ((NaturalModule) defineDataModule).file().getFiletype() == NaturalFileType.GDA)
+			{
+				report(
+					ParserErrors.invalidModuleType(
+						"Only LDAs and PDAs can be used for LOCAL USING",
+						identifierTokenNode.token()
+					)
+				);
 			}
 		}
 

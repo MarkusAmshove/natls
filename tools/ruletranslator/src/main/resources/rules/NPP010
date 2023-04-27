@@ -1,6 +1,6 @@
 name: Incomplete array definition
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time
 type: BUG
 description:
 The array definition specified is syntactically incomplete

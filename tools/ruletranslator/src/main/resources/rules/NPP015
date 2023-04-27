@@ -1,6 +1,6 @@
 name: Redefined length exceeds target type length
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time
 type: BUG
 description:
 The number of bytes of the accumulated fields in the ``REDEFINE`` exceeds the number of bytes of the

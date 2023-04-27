@@ -1,6 +1,6 @@
 name: Unresolved reference
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time
 type: BUG
 description:
 Declaration of local subroutine or variable not found.

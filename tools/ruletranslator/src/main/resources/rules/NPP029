@@ -1,6 +1,6 @@
 name: Ambiguous variable reference
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time
 type: BUG
 description:
 This variable is defined twice with different qualifications.

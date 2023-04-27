@@ -1,6 +1,6 @@
 name: Independent variables can't be groups
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time
 type: BUG
 description:
 Natural does not allow independent variables to be groups.

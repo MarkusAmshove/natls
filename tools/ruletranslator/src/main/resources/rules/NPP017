@@ -1,6 +1,6 @@
 name: Array dimension must be constant or initialized
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time
 type: BUG
 description:
 If array dimensions are specified via variable references, the referenced variable must either be ``CONST`` or ``INIT``ialized.

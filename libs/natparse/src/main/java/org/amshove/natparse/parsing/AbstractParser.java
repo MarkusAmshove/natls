@@ -65,7 +65,7 @@ abstract class AbstractParser<T>
 			&& !(referableName.startsWith("USR") && referableName.endsWith("N"))
 			&& !referableName.equals("SHCMD"))
 		{
-			report(ParserErrors.unresolvedImport(moduleIdentifierToken));
+			report(ParserErrors.unresolvedExternalModule(moduleIdentifierToken));
 		}
 
 		return module;
