@@ -146,6 +146,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case HISTOGRAM:
 						statementList.addStatement(histogram());
 						break;
+					case SELECT:
+						statementList.addStatement(select());
+						break;
 					case START:
 						statementList.addStatement(parseAtPositionOf(SyntaxKind.START, SyntaxKind.DATA, SyntaxKind.END_START, true, new StartOfDataNode()));
 						break;
@@ -694,6 +697,30 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatoryClosing(histogram, SyntaxKind.END_HISTOGRAM, start);
 
 		return histogram;
+	}
+
+	private StatementNode select() throws ParseError
+	{
+		// Right now, just consume the SELECT entirely
+		var select = new SelectNode();
+		var opening = consumeMandatory(select, SyntaxKind.SELECT);
+
+		while (!peekKind(SyntaxKind.END_SELECT) && !isStatementStart())
+		{
+			consume(select);
+		}
+
+		if (peekKind(SyntaxKind.END_SELECT))
+		{
+			consumeMandatoryClosing(select, SyntaxKind.END_SELECT, opening);
+			return select;
+		}
+		else
+		{
+			select.setBody(statementList(SyntaxKind.END_SELECT));
+			consumeMandatoryClosing(select, SyntaxKind.END_SELECT, opening);
+		}
+		return select;
 	}
 
 	private StatementNode beforeBreak() throws ParseError

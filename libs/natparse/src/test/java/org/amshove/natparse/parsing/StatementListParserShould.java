@@ -1461,6 +1461,25 @@ class StatementListParserShould extends StatementParseTest
 			END-HISTOGRAM""".formatted(sorting), IHistogramNode.class);
 	}
 
+	@Test
+	void parseSelectWithNoBody()
+	{
+		assertParsesSingleStatement("""
+			SELECT * FROM DB2_TABLE WHERE COLUMN = 'search'
+			END-SELECT""", ISelectNode.class);
+	}
+
+	@Test
+	void parseSelectWithBody()
+	{
+		var select = assertParsesSingleStatement("""
+			SELECT * FROM DB2_TABLE WHERE COLUMN = 'search'
+			ADD 1 TO #INDEX
+			END-SELECT""", ISelectNode.class);
+		assertThat(select.body().statements()).hasSize(1);
+		assertThat(select.body().statements().first()).isInstanceOf(IAddStatementNode.class);
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
