@@ -500,4 +500,13 @@ class ParserErrors
 			0, 0, 0, 0, filePath, ParserError.UNSUPPORTED_PROGRAMMING_MODE
 		);
 	}
+
+	public static IDiagnostic invalidModuleType(String message, SyntaxToken errorToken)
+	{
+		return ParserDiagnostic.create(
+			message,
+			errorToken,
+			ParserError.INVALID_MODULE_TYPE
+		);
+	}
 }

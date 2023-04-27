@@ -196,6 +196,17 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 					addDeclaredVariable((VariableNode) variable);
 				}
 			}
+
+			if (using.isParameterUsing()
+				&& ((NaturalModule) defineDataModule).file().getFiletype() != NaturalFileType.PDA)
+			{
+				report(
+					ParserErrors.invalidModuleType(
+						"Invalid file type, only PDAs are allowed for PARAMETER USING",
+						identifierTokenNode.token()
+					)
+				);
+			}
 		}
 
 		return using;

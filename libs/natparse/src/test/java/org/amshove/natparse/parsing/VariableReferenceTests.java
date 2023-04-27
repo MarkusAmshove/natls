@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-public class VariableReferenceTests extends ParserIntegrationTest
+class VariableReferenceTests extends ParserIntegrationTest
 {
 	@Test
 	void referencableVariablesShouldBeExported(@ProjectName("variablereferencetests") NaturalProject project)
