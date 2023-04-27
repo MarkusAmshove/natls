@@ -40,6 +40,36 @@ class ReferencedModuleTypeValidationShould extends ParserIntegrationTest
 	}
 
 	@Test
+	void raiseADiagnosticIfAGdaIsUsedAsLocalUsing(@ProjectName("invalidModuleTypeTests") NaturalProject project)
+	{
+		assertRaised(
+			"LUSEGDA",
+			"INVALID_FILE_TYPE should have been raised, because a GDA is used for LOCAL USING",
+			project
+		);
+	}
+
+	@Test
+	void raiseNoDiagnosticIfALdaIsUsedAsLocalUsing(@ProjectName("invalidModuleTypeTests") NaturalProject project)
+	{
+		assertNotRaised(
+			"LUSELDA",
+			"INVALID_FILE_TYPE should not have been raised, because a LDA is used for LOCAL USING",
+			project
+		);
+	}
+
+	@Test
+	void raiseNoDiagnosticIfAPdaIsUsedAsLocalUsing(@ProjectName("invalidModuleTypeTests") NaturalProject project)
+	{
+		assertNotRaised(
+			"LUSEPDA",
+			"INVALID_FILE_TYPE should not have been raised, because a PDA is used for LOCAL USING",
+			project
+		);
+	}
+
+	@Test
 	void raiseADiagnosticWhenSomethingDifferentThanACopycodeIsUsedForInclude(@ProjectName("invalidModuleTypeTests") NaturalProject project)
 	{
 		assertRaised(
