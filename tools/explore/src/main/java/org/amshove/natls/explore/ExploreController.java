@@ -13,11 +13,12 @@ import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.Lexer;
-import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
-import org.amshove.natparse.parsing.DefineDataParser;
-import org.amshove.natparse.parsing.StatementListParser;
+import org.amshove.natparse.natural.project.NaturalFile;
+import org.amshove.natparse.natural.project.NaturalFileType;
+import org.amshove.natparse.parsing.NaturalParser;
+import org.amshove.natparse.parsing.ParserError;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 
@@ -26,7 +27,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 
 public class ExploreController
 {
@@ -139,23 +139,22 @@ public class ExploreController
 		nodeView.setRoot(root);
 
 		tokens.rollback();
-		if (tokens.peek().kind() == SyntaxKind.DEFINE && tokens.peek(1).kind() == SyntaxKind.DATA)
+		var parser = new NaturalParser();
+		var module = parser.parse(new NaturalFile("UNKNOWN", Path.of("unknown.NSN"), NaturalFileType.SUBPROGRAM), tokens);
+		if (module instanceof IHasDefineData hasDefineData && hasDefineData.defineData() != null)
 		{
-			var defineDataParser = new DefineDataParser(null);
-			var ddm = defineDataParser.parse(tokens).result();
-			addNodesRecursive(ddm, root);
+			addNodesRecursive(hasDefineData.defineData(), root);
 		}
 
-		var statementParser = new StatementListParser(null);
-		var statements = statementParser.parse(tokens);
-		for (var statement : statements.result().statements())
+		if (module instanceof IModuleWithBody moduleWithBody && moduleWithBody.body() != null)
 		{
-			addNodesRecursive(statement, root);
+			for (var statement : moduleWithBody.body().statements())
+			{
+				addNodesRecursive(statement, root);
+			}
 		}
 
-		var allDiagnostics = new ArrayList<IDiagnostic>();
-		allDiagnostics.addAll(tokens.diagnostics().toList());
-		allDiagnostics.addAll(statements.diagnostics().toList());
+		var allDiagnostics = module.diagnostics().stream().filter(d -> !d.id().equals(ParserError.UNRESOLVED_IMPORT.id())).toList();
 		var sortedDiagnostics = allDiagnostics.stream().sorted((d1, d2) -> d2.line() - d1.line()).toList();
 		for (var diagnostic : sortedDiagnostics)
 		{
