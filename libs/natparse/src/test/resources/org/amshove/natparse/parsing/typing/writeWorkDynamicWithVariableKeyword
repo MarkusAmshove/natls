@@ -1,0 +1,11 @@
+DEFINE DATA
+LOCAL
+1 #DYN-VAR (A) DYNAMIC
+END-DEFINE
+
+DEFINE WORK FILE 1 'tmp.txt'
+
+/* This should raise no diagnostic, because the VARIABLE keyword is present
+WRITE WORK FILE 1 VARIABLE #DYN-VAR
+
+END

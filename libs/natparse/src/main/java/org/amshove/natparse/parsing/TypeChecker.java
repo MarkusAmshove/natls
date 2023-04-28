@@ -56,11 +56,48 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			checkDivide(divide);
 		}
 
+		if (node instanceof IWriteWorkNode writeWork)
+		{
+			checkWriteWork(writeWork);
+		}
+
 		if (node instanceof ITypedVariableNode typedVariableNode
 			&& typedVariableNode.type() != null
 			&& typedVariableNode.type().initialValue() != null)
 		{
 			checkAlphanumericInitLength(typedVariableNode);
+		}
+	}
+
+	private void checkWriteWork(IWriteWorkNode writeWork)
+	{
+		if (writeWork.isVariable())
+		{
+			return;
+		}
+
+		for (var operand : writeWork.operands())
+		{
+			if (operand instanceof IVariableReferenceNode variableReference
+				&& variableReference.reference()instanceof ITypedVariableNode typedVariable
+				&& typedVariable.type() != null)
+			{
+				if (typedVariable.type().hasDynamicLength())
+				{
+					report(ParserErrors.typeMismatch("Can't use operand with dynamic length if WRITE WORK misses the VARIABLE keyword", variableReference));
+				}
+				else
+					if (typedVariable.isArray())
+					{
+						for (var dimension : variableReference.dimensions())
+						{
+							if (dimension instanceof IRangedArrayAccessNode ranged && containsDynamicDimension(ranged))
+							{
+								report(ParserErrors.typeMismatch("Can't use operand with dynamic array access if WRITE WORK misses the VARIABLE keyword", variableReference));
+							}
+						}
+					}
+			}
 		}
 	}
 
@@ -188,5 +225,17 @@ final class TypeChecker implements ISyntaxNodeVisitor
 	private void report(IDiagnostic diagnostic)
 	{
 		diagnostics.add(diagnostic);
+	}
+
+	private boolean containsDynamicDimension(IRangedArrayAccessNode ranged)
+	{
+		if (!(ranged.lowerBound()instanceof ILiteralNode lowerLiteral) || !(ranged.upperBound()instanceof ILiteralNode upperLiteral))
+		{
+			return true;
+		}
+
+		return lowerLiteral != upperLiteral // on e.g. #ARR(*) the ASTERISK token is used for both upper and lower
+			&& (lowerLiteral.token().kind() == SyntaxKind.ASTERISK
+				|| upperLiteral.token().kind() == SyntaxKind.ASTERISK);
 	}
 }

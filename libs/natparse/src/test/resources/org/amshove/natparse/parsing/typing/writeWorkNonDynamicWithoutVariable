@@ -1,0 +1,11 @@
+DEFINE DATA
+LOCAL
+1 #NONDYN-VAR (A10)
+END-DEFINE
+
+DEFINE WORK FILE 1 'tmp.txt'
+
+/* This should raise no diagnostic, because #NONDYN-VAR has a fixed length
+WRITE WORK FILE 1 #NONDYN-VAR
+
+END
