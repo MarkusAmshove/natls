@@ -4,9 +4,9 @@ This document tracks the implementation status of Natural statements.
 
 Legend:
 
-:x: - not implemented (71)
+:x: - not implemented (68)
 
-:white_check_mark: - implemented (45)
+:white_check_mark: - implemented or reporting (48)
 
 partial - partially implemented to prevent false positives (6)
 
@@ -49,7 +49,6 @@ partial - partially implemented to prevent false positives (6)
 | DELETE (SQL) | :x:                |
 | DISPLAY | :x:                |
 | DIVIDE | :white_check_mark: |
-| DO/DOEND | :x:                |
 | DOWNLOAD PC FILE | :x:                |
 | EJECT | :white_check_mark: |
 | END | :white_check_mark: |
@@ -73,13 +72,11 @@ partial - partially implemented to prevent false positives (6)
 | INSERT (SQL) | :x:                |
 | INTERFACE | :x:                |
 | LIMIT | :x:                |
-| LOOP | :x:                |
 | METHOD | :x:                |
 | MOVE | :x:                |
 | MOVE INDEXED | :x:                |
 | MULTIPLY | :white_check_mark: |
 | NEWPAGE | :white_check_mark: |
-| OBTAIN | :x:                |
 | ON ERROR | :x:                |
 | OPEN CONVERSATION | :x:                |
 | OPTIONS | :x:                |
@@ -97,7 +94,6 @@ partial - partially implemented to prevent false positives (6)
 | READ RESULT SET (SQL) | :x:                |
 | READ WORK FILE | :x:                |
 | READLOB | :x:                |
-| REDEFINE | :white_check_mark: |
 | REDUCE | :x:                |
 | REINPUT | :x:                |
 | REJECT | :x:                |
@@ -133,3 +129,12 @@ partial - partially implemented to prevent false positives (6)
 | WRITE TITLE | :x:                |
 | WRITE TRAILER | :x:                |
 | WRITE WORK FILE | :white_check_mark: |
+
+## Reporting mode only statements
+
+These are not planned to be implemented, because they're reporting mode only.
+
+- `LOOP`
+- `DO/DOEND`
+- `OBTAIN`
+- `REDEFINE`
