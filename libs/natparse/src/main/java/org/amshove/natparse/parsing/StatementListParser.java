@@ -107,6 +107,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						}
 						tokens.advance(); // TODO: default case
 						break;
+					case BACKOUT:
+						statementList.addStatement(backout());
+						break;
 					case BEFORE:
 						statementList.addStatement(beforeBreak());
 						break;
@@ -316,6 +319,14 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode backout() throws ParseError
+	{
+		var stmt = new BackoutNode();
+		consumeMandatory(stmt, SyntaxKind.BACKOUT);
+		consumeOptionally(stmt, SyntaxKind.TRANSACTION);
+		return stmt;
 	}
 
 	private static final List<SyntaxKind> MATH_STATEMENT_TO_GIVING = List.of(SyntaxKind.TO, SyntaxKind.GIVING);
@@ -2501,7 +2512,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		return switch (currentKind)
 		{
-			case ACCEPT, ADD, ASSIGN, BEFORE, CALL, CALLNAT, CLOSE, COMMIT, COMPRESS, COMPUTE, DECIDE, DEFINE, DELETE, DISPLAY, DIVIDE, DO, DOEND, DOWNLOAD, EJECT, END, ESCAPE, EXAMINE, EXPAND, FETCH, FIND, FOR, FORMAT, GET, HISTOGRAM, IF, IGNORE, INCLUDE, INPUT, INSERT, INTERFACE, LIMIT, LOOP, METHOD, MOVE, MULTIPLY, NEWPAGE, OBTAIN, OPTIONS, PASSW, PERFORM, PRINT, PROCESS, PROPERTY, READ, REDEFINE, REDUCE, REINPUT, REJECT, RELEASE, REPEAT, RESET, RESIZE, RETRY, ROLLBACK, RUN, SELECT, SEPARATE, SET, SKIP, SORT, STACK, STOP, STORE, SUBTRACT, TERMINATE, UPDATE, WRITE -> true;
+			case ACCEPT, ADD, ASSIGN, BEFORE, BACKOUT, CALL, CALLNAT, CLOSE, COMMIT, COMPRESS, COMPUTE, DECIDE, DEFINE, DELETE, DISPLAY, DIVIDE, DO, DOEND, DOWNLOAD, EJECT, END, ESCAPE, EXAMINE, EXPAND, FETCH, FIND, FOR, FORMAT, GET, HISTOGRAM, IF, IGNORE, INCLUDE, INPUT, INSERT, INTERFACE, LIMIT, LOOP, METHOD, MOVE, MULTIPLY, NEWPAGE, OBTAIN, OPTIONS, PASSW, PERFORM, PRINT, PROCESS, PROPERTY, READ, REDEFINE, REDUCE, REINPUT, REJECT, RELEASE, REPEAT, RESET, RESIZE, RETRY, ROLLBACK, RUN, SELECT, SEPARATE, SET, SKIP, SORT, STACK, STOP, STORE, SUBTRACT, TERMINATE, UPDATE, WRITE -> true;
 			case ON -> peekKind(1, SyntaxKind.ERROR);
 			case OPEN -> peekKind(1, SyntaxKind.CONVERSATION);
 			case PARSE -> peekKind(1, SyntaxKind.XML);

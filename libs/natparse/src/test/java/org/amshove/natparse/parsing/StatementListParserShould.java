@@ -1676,4 +1676,14 @@ class StatementListParserShould extends StatementParseTest
 						END-IF
 			""".formatted(specified));
 	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"BACKOUT", "BACKOUT TRANSACTION"
+	})
+	void parseBackoutTransaction(String statement)
+	{
+		assertParsesSingleStatement(statement, IBackoutNode.class);
+	}
 }
