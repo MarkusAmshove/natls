@@ -1758,4 +1758,39 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(setWindow.window().kind()).isEqualTo(SyntaxKind.STRING_LITERAL);
 		assertThat(setWindow.window().stringValue()).isEqualTo("Fancy");
 	}
+
+	@Test
+	void parseTerminateWithoutExitCode()
+	{
+		var terminate = assertParsesSingleStatement("TERMINATE", ITerminateNode.class);
+		assertThat(terminate.operands()).isEmpty();
+	}
+
+	@Test
+	void parseTerminateWithSingleExitCode()
+	{
+		var terminate = assertParsesSingleStatement("TERMINATE 1", ITerminateNode.class);
+		assertLiteral(terminate.operands().first(), SyntaxKind.NUMBER_LITERAL);
+	}
+
+	@Test
+	void parseTerminateWithSingleExitCodeAsReference()
+	{
+		var terminate = assertParsesSingleStatement("TERMINATE #EXIT-CODE", ITerminateNode.class);
+		assertIsVariableReference(terminate.operands().first(), "#EXIT-CODE");
+	}
+
+	@Test
+	void parseTerminateWithAdditionalReturnOperand()
+	{
+		var terminate = assertParsesSingleStatement("TERMINATE #EXIT-CODE #VAR", ITerminateNode.class);
+		assertIsVariableReference(terminate.operands().first(), "#EXIT-CODE");
+		assertIsVariableReference(terminate.operands().get(1), "#VAR");
+	}
+
+	@Test
+	void raiseADiagnosticIfTerminateIsCalledWithNonNumericLiteral()
+	{
+		assertDiagnostic("TERMINATE 'Hi'", ParserError.TYPE_MISMATCH);
+	}
 }

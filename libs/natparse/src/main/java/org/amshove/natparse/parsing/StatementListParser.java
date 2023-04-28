@@ -256,6 +256,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case DIVIDE:
 						statementList.addStatement(divideStatement());
 						break;
+					case TERMINATE:
+						statementList.addStatement(terminate());
+						break;
 					case DECIDE:
 						if (peekKind(1, SyntaxKind.FOR))
 						{
@@ -331,6 +334,25 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode terminate() throws ParseError
+	{
+		var terminate = new TerminateNode();
+		consumeMandatory(terminate, SyntaxKind.TERMINATE);
+		if (isOperand())
+		{
+			var exitCode = consumeOperandNode(terminate);
+			terminate.addOperand(exitCode);
+			checkLiteralTypeIfLiteral(exitCode, SyntaxKind.NUMBER_LITERAL);
+		}
+
+		if (isOperand())
+		{
+			terminate.addOperand(consumeOperandNode(terminate));
+		}
+
+		return terminate;
 	}
 
 	private StatementNode setWindow() throws ParseError
