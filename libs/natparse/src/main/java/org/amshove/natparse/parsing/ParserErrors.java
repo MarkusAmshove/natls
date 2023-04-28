@@ -310,7 +310,7 @@ class ParserErrors
 		);
 	}
 
-	public static IDiagnostic unresolvedImport(SyntaxToken token)
+	public static IDiagnostic unresolvedExternalModule(SyntaxToken token)
 	{
 		return ParserDiagnostic.create(
 			"Could not resolve external module %s".formatted(token.symbolName()),
@@ -498,6 +498,15 @@ class ParserErrors
 		return ParserDiagnostic.create(
 			"Unsupported programming mode: %s. This file will not be parsed or analyzed.".formatted(mode),
 			0, 0, 0, 0, filePath, ParserError.UNSUPPORTED_PROGRAMMING_MODE
+		);
+	}
+
+	public static IDiagnostic invalidModuleType(String message, SyntaxToken errorToken)
+	{
+		return ParserDiagnostic.create(
+			"Invalid module type: %s".formatted(message),
+			errorToken,
+			ParserError.INVALID_MODULE_TYPE
 		);
 	}
 }

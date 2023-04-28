@@ -1,6 +1,6 @@
 name: Target of REDEFINE can't contain DYNAMIC
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time
 type: BUG
 description:
 A redefinition can't contain a variable with ``DYNAMIC`` length.

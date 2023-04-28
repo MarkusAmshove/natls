@@ -1,6 +1,6 @@
 name: Missing END-DEFINE
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time
 type: BUG
 description:
 The DEFINE DATA block of this file is unclosed

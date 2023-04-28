@@ -1,6 +1,6 @@
 name: Unclosed statement
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time
 type: BUG
 description:
 This statement expects to be ended, e.g. by ``END-IF``, ``END-SUBROUTINE``, etc.

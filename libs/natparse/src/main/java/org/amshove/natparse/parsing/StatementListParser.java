@@ -8,6 +8,7 @@ import org.amshove.natparse.natural.conditionals.ChainedCriteriaOperator;
 import org.amshove.natparse.natural.conditionals.ComparisonOperator;
 import org.amshove.natparse.natural.conditionals.IHasComparisonOperator;
 import org.amshove.natparse.natural.conditionals.ILogicalConditionCriteriaNode;
+import org.amshove.natparse.natural.project.NaturalFileType;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -1586,13 +1587,24 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			callnat.setReferencingToken(previousToken());
 		}
-
-		if (consumeOptionally(callnat, SyntaxKind.STRING_LITERAL))
-		{
-			callnat.setReferencingToken(previousToken());
-			var referencedModule = sideloadModule(callnat.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token());
-			callnat.setReferencedModule((NaturalModule) referencedModule);
-		}
+		else
+			if (consumeOptionally(callnat, SyntaxKind.STRING_LITERAL))
+			{
+				callnat.setReferencingToken(previousToken());
+				var referencedModule = sideloadModule(callnat.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token());
+				callnat.setReferencedModule((NaturalModule) referencedModule);
+				if (referencedModule != null
+					&& referencedModule.file() != null && referencedModule.file().getFiletype() != null
+					&& referencedModule.file().getFiletype() != NaturalFileType.SUBPROGRAM)
+				{
+					report(
+						ParserErrors.invalidModuleType(
+							"Only SUBPROGRAMs can be called with CALLNAT",
+							callnat.referencingToken()
+						)
+					);
+				}
+			}
 
 		consumeOptionally(callnat, SyntaxKind.USING);
 
@@ -1631,6 +1643,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			try
 			{
+				if (referencedModule.file().getFiletype() != NaturalFileType.COPYCODE)
+				{
+					report(ParserErrors.invalidModuleType("Only copycodes can be INCLUDEd", include.referencingToken()));
+				}
+
 				var includedSource = Files.readString(referencedModule.file().getPath());
 				var lexer = new Lexer();
 				lexer.relocateDiagnosticPosition(shouldRelocateDiagnostics() ? relocatedDiagnosticPosition : referencingToken);
@@ -1703,13 +1720,25 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			fetch.setReferencingToken(previousToken());
 		}
+		else
+			if (consumeOptionally(fetch, SyntaxKind.STRING_LITERAL))
+			{
+				fetch.setReferencingToken(previousToken());
+				var referencedModule = sideloadModule(fetch.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token());
+				if (referencedModule != null
+					&& referencedModule.file() != null
+					&& referencedModule.file().getFiletype() != NaturalFileType.PROGRAM)
+				{
+					report(
+						ParserErrors.invalidModuleType(
+							"Only PROGRAMs can be called with FETCH",
+							previousToken()
+						)
+					);
+				}
 
-		if (consumeOptionally(fetch, SyntaxKind.STRING_LITERAL))
-		{
-			fetch.setReferencingToken(previousToken());
-			var referencedModule = sideloadModule(fetch.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token());
-			fetch.setReferencedModule((NaturalModule) referencedModule);
-		}
+				fetch.setReferencedModule((NaturalModule) referencedModule);
+			}
 
 		return fetch;
 	}

@@ -1,6 +1,6 @@
 name: No DEFINE DATA has been found
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time
 type: BUG
 description:
 This file type should have a DEFINE DATA, but none was found

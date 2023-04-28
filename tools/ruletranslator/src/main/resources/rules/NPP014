@@ -1,6 +1,6 @@
 name: Variable to REDEFINE not found
 priority: BLOCKER
-tags: natparse-internal
+tags: natparse-internal,compile-time
 type: BUG
 description:
 Redefinition of an undeclared variable.

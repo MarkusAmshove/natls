@@ -19,7 +19,7 @@ class DiagnosticMappingAcceptanceTests
 	private static final List<String> VALID_PRIORITIES = List.of("BLOCKER", "CRITICAL", "MAJOR", "MINOR");
 
 	// https://docs.sonarqube.org/latest/user-guide/built-in-rule-tags/
-	private static final List<String> VALID_TAGS = List.of("natparse-internal", "performance", "brain-overload", "bad-practice", "cert", "clumsy", "confusing", "convention", "cwe", "design", "lock-in", "owasp", "pitfall", "sans-top25", "suspicious", "unpredictable", "unused", "user-experience", "compile-time");
+	private static final List<String> VALID_TAGS = List.of("natparse-internal", "performance", "brain-overload", "bad-practice", "cert", "clumsy", "confusing", "convention", "cwe", "design", "lock-in", "owasp", "pitfall", "sans-top25", "suspicious", "unpredictable", "unused", "user-experience", "compile-time", "runtime-error");
 	private static final List<String> VALID_TYPES = List.of("CODE_SMELL", "BUG", "VULNERABILITY", "SECURITY_HOTSPOT");
 
 	@TestFactory
