@@ -132,6 +132,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						switch (peek(1).kind())
 						{
 							case PRINTER -> statementList.addStatement(closePrinter());
+							case WORK -> statementList.addStatement(closeWork());
 							default -> statementList.addStatement(consumeFallback());
 						}
 						break;
@@ -319,6 +320,19 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode closeWork() throws ParseError
+	{
+		var closeWork = new CloseWorkNode();
+		consumeMandatory(closeWork, SyntaxKind.CLOSE);
+		consumeMandatory(closeWork, SyntaxKind.WORK);
+		consumeOptionally(closeWork, SyntaxKind.FILE);
+
+		var number = consumeLiteralNode(closeWork, SyntaxKind.NUMBER_LITERAL);
+		closeWork.setNumber(number);
+
+		return closeWork;
 	}
 
 	private StatementNode backout() throws ParseError

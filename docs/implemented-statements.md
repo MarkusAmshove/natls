@@ -30,7 +30,7 @@ partial - partially implemented to prevent false positives
 | CLOSE CONVERSATION | :x:                |
 | CLOSE PC FILE | :x:                |
 | CLOSE PRINTER | :white_check_mark: |
-| CLOSE WORK FILE | :x:                |
+| CLOSE WORK FILE | :white_check_mark: |
 | COMMIT (SQL) | :x:                |
 | COMPRESS | :x:                |
 | COMPUTE | :white_check_mark: |
