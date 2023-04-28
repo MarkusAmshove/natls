@@ -1708,4 +1708,39 @@ class StatementListParserShould extends StatementParseTest
 		var close = assertParsesSingleStatement("CLOSE PC %s 5".formatted(file), IClosePcNode.class);
 		assertThat(close.number().token().intValue()).isEqualTo(5);
 	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"", "FILE"
+	})
+	void parseSimpleWriteWork(String file)
+	{
+		var write = assertParsesSingleStatement("WRITE WORK %s 10 'Hi'".formatted(file), IWriteWorkNode.class);
+		assertThat(write.isVariable()).isFalse();
+		assertThat(write.number().token().intValue()).isEqualTo(10);
+		assertThat(write.operands()).hasSize(1);
+		assertNodeType(write.operands().first(), ILiteralNode.class);
+	}
+
+	@Test
+	void parseWriteWorkWithMultipleOperands()
+	{
+		var write = assertParsesSingleStatement("WRITE WORK FILE 2 VARIABLE #VAR #ASD 'Hi'", IWriteWorkNode.class);
+		assertThat(write.isVariable()).isTrue();
+		assertThat(write.number().token().intValue()).isEqualTo(2);
+		var operands = write.operands();
+		assertThat(operands).hasSize(3);
+		assertIsVariableReference(operands.first(), "#VAR");
+		assertIsVariableReference(operands.get(1), "#ASD");
+		assertLiteral(operands.get(2), SyntaxKind.STRING_LITERAL);
+	}
+
+	@Test
+	void parseWriteWorkWhenStatementFollows()
+	{
+		var statementList = assertParsesWithoutDiagnostics("WRITE WORK FILE 2 #VAR\n#VAR2 := 5");
+		assertThat(statementList.statements()).hasSize(2);
+		assertThat(assertNodeType(statementList.statements().first(), IWriteWorkNode.class).operands()).hasSize(1);
+	}
 }

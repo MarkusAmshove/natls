@@ -174,6 +174,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(examine());
 						break;
 					case WRITE:
+						if (peekKind(1, SyntaxKind.WORK))
+						{
+							statementList.addStatement(writeWork());
+							break;
+						}
 						statementList.addStatement(write());
 						break;
 					case DISPLAY:
@@ -321,6 +326,22 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode writeWork() throws ParseError
+	{
+		var writeWork = new WriteWorkNode();
+		consumeMandatory(writeWork, SyntaxKind.WRITE);
+		consumeMandatory(writeWork, SyntaxKind.WORK);
+		consumeOptionally(writeWork, SyntaxKind.FILE);
+		writeWork.setNumber(consumeLiteralNode(writeWork, SyntaxKind.NUMBER_LITERAL));
+		writeWork.setVariable(consumeOptionally(writeWork, SyntaxKind.VARIABLE));
+		while (!isAtEnd() && isOperand())
+		{
+			writeWork.addOperand(consumeOperandNode(writeWork));
+		}
+
+		return writeWork;
 	}
 
 	private StatementNode closePc() throws ParseError
