@@ -1,0 +1,11 @@
+DEFINE DATA
+LOCAL
+1 #DYN-VAR (A) DYNAMIC
+END-DEFINE
+
+DEFINE WORK FILE 1 'tmp.txt'
+
+/* This should raise a diagnostic, because when an operand has a dynamic length, then the VARIABLE keyword is needed
+WRITE WORK FILE 1 #DYN-VAR /* !{D:ERROR:NPP037}
+
+END

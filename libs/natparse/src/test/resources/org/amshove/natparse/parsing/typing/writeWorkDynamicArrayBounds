@@ -1,0 +1,55 @@
+DEFINE DATA
+LOCAL
+1 #ARR (A10/*)
+1 #I (I4)
+1 #J (I4)
+END-DEFINE
+
+DEFINE WORK FILE 1 'tmp.txt'
+
+/* This should raise no diagnostic, because both bounds are static
+WRITE WORK FILE 1 #ARR(1:5)
+
+/* This should raise no diagnostic, because direct index access with variable is fine
+WRITE WORK FILE 1 #ARR(#I)
+
+/* This should raise no diagnostic, because direct index access with variable is fine
+WRITE WORK FILE 1 #ARR(2,#I,#J)
+
+/* This should raise no diagnostic, because direct index access with variable is fine
+WRITE WORK FILE 1 #ARR(2,#I,#J)
+
+/* This should raise no diagnostic, because direct index access with variable is fine
+WRITE WORK FILE 1 #ARR(2,#I,*)
+
+/* This should raise no diagnostic, because it is no range access
+WRITE WORK FILE 1 #ARR(*)
+
+/* This should raise no diagnostic, because VARIABLE is defined
+WRITE WORK FILE 1 VARIABLE #ARR(#I:#J)
+
+/* This should raise no diagnostic, because VARIABLE is defined
+WRITE WORK FILE 1 VARIABLE #ARR(1:#J)
+
+/* This should raise no diagnostic, because VARIABLE is defined
+WRITE WORK FILE 1 VARIABLE #ARR(#I:5)
+
+/* This should raise no diagnostic, because VARIABLE is defined
+WRITE WORK FILE 1 VARIABLE #ARR(*)
+
+/* This should raise a diagnostic, because lower bound is dynamic without VARIABLE
+WRITE WORK FILE 1 #ARR(#I:5) /* !{D:ERROR:NPP037}
+
+/* This should raise a diagnostic, because upper bound is dynamic without VARIABLE
+WRITE WORK FILE 1 #ARR(#I:5) /* !{D:ERROR:NPP037}
+
+/* This should raise a diagnostic, because both bounds are dynamic without VARIABLE
+WRITE WORK FILE 1 #ARR(#I:5) /* !{D:ERROR:NPP037}
+
+/* This should raise a diagnostic, because upper bounds are dynamic without VARIABLE
+WRITE WORK FILE 1 #ARR(1:*) /* !{D:ERROR:NPP037}
+
+/* This should raise a diagnostic, because lower bounds are dynamic without VARIABLE
+WRITE WORK FILE 1 #ARR(*:5) /* !{D:ERROR:NPP037}
+
+END

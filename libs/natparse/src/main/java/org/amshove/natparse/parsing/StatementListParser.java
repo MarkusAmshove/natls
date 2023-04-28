@@ -107,6 +107,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						}
 						tokens.advance(); // TODO: default case
 						break;
+					case BACKOUT:
+						statementList.addStatement(backout());
+						break;
 					case BEFORE:
 						statementList.addStatement(beforeBreak());
 						break;
@@ -129,6 +132,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						switch (peek(1).kind())
 						{
 							case PRINTER -> statementList.addStatement(closePrinter());
+							case WORK -> statementList.addStatement(closeWork());
+							case PC -> statementList.addStatement(closePc());
 							default -> statementList.addStatement(consumeFallback());
 						}
 						break;
@@ -169,6 +174,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(examine());
 						break;
 					case WRITE:
+						if (peekKind(1, SyntaxKind.WORK))
+						{
+							statementList.addStatement(writeWork());
+							break;
+						}
 						statementList.addStatement(write());
 						break;
 					case DISPLAY:
@@ -246,6 +256,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case DIVIDE:
 						statementList.addStatement(divideStatement());
 						break;
+					case TERMINATE:
+						statementList.addStatement(terminate());
+						break;
 					case DECIDE:
 						if (peekKind(1, SyntaxKind.FOR))
 						{
@@ -253,9 +266,14 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 							break;
 						}
 					case SET:
-						if (peek(1).kind() == SyntaxKind.KEY)
+						if (peekKind(1, SyntaxKind.KEY))
 						{
 							statementList.addStatement(setKey());
+							break;
+						}
+						if (peekKind(1, SyntaxKind.WINDOW))
+						{
+							statementList.addStatement(setWindow());
 							break;
 						}
 						// FALLTHROUGH TO DEFAULT INTENDED - SET CONTROL etc. not implemented
@@ -316,6 +334,93 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode terminate() throws ParseError
+	{
+		var terminate = new TerminateNode();
+		consumeMandatory(terminate, SyntaxKind.TERMINATE);
+		if (isOperand())
+		{
+			var exitCode = consumeOperandNode(terminate);
+			terminate.addOperand(exitCode);
+			checkLiteralTypeIfLiteral(exitCode, SyntaxKind.NUMBER_LITERAL);
+		}
+
+		if (isOperand())
+		{
+			terminate.addOperand(consumeOperandNode(terminate));
+		}
+
+		return terminate;
+	}
+
+	private StatementNode setWindow() throws ParseError
+	{
+		var setWindow = new SetWindowNode();
+		consumeMandatory(setWindow, SyntaxKind.SET);
+		consumeMandatory(setWindow, SyntaxKind.WINDOW);
+		if (peekKind(SyntaxKind.OFF))
+		{
+			setWindow.setWindow(consumeMandatory(setWindow, SyntaxKind.OFF));
+		}
+		else
+		{
+			var windowName = consumeLiteralNode(setWindow, SyntaxKind.STRING_LITERAL);
+			setWindow.setWindow(windowName.token());
+		}
+
+		return setWindow;
+	}
+
+	private StatementNode writeWork() throws ParseError
+	{
+		var writeWork = new WriteWorkNode();
+		consumeMandatory(writeWork, SyntaxKind.WRITE);
+		consumeMandatory(writeWork, SyntaxKind.WORK);
+		consumeOptionally(writeWork, SyntaxKind.FILE);
+		writeWork.setNumber(consumeLiteralNode(writeWork, SyntaxKind.NUMBER_LITERAL));
+		writeWork.setVariable(consumeOptionally(writeWork, SyntaxKind.VARIABLE));
+		while (!isAtEnd() && isOperand())
+		{
+			writeWork.addOperand(consumeOperandNode(writeWork));
+		}
+
+		return writeWork;
+	}
+
+	private StatementNode closePc() throws ParseError
+	{
+		var closePc = new ClosePcNode();
+		consumeMandatory(closePc, SyntaxKind.CLOSE);
+		consumeMandatory(closePc, SyntaxKind.PC);
+		consumeOptionally(closePc, SyntaxKind.FILE);
+
+		var number = consumeLiteralNode(closePc, SyntaxKind.NUMBER_LITERAL);
+		closePc.setNumber(number);
+
+		return closePc;
+	}
+
+	private StatementNode closeWork() throws ParseError
+	{
+		var closeWork = new CloseWorkNode();
+		consumeMandatory(closeWork, SyntaxKind.CLOSE);
+		consumeMandatory(closeWork, SyntaxKind.WORK);
+		consumeOptionally(closeWork, SyntaxKind.FILE);
+
+		var number = consumeLiteralNode(closeWork, SyntaxKind.NUMBER_LITERAL);
+		closeWork.setNumber(number);
+
+		return closeWork;
+	}
+
+	private StatementNode backout() throws ParseError
+	{
+		var stmt = new BackoutNode();
+		consumeMandatory(stmt, SyntaxKind.BACKOUT);
+		consumeOptionally(stmt, SyntaxKind.TRANSACTION);
+		return stmt;
 	}
 
 	private static final List<SyntaxKind> MATH_STATEMENT_TO_GIVING = List.of(SyntaxKind.TO, SyntaxKind.GIVING);
@@ -2501,7 +2606,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		return switch (currentKind)
 		{
-			case ACCEPT, ADD, ASSIGN, BEFORE, CALL, CALLNAT, CLOSE, COMMIT, COMPRESS, COMPUTE, DECIDE, DEFINE, DELETE, DISPLAY, DIVIDE, DO, DOEND, DOWNLOAD, EJECT, END, ESCAPE, EXAMINE, EXPAND, FETCH, FIND, FOR, FORMAT, GET, HISTOGRAM, IF, IGNORE, INCLUDE, INPUT, INSERT, INTERFACE, LIMIT, LOOP, METHOD, MOVE, MULTIPLY, NEWPAGE, OBTAIN, OPTIONS, PASSW, PERFORM, PRINT, PROCESS, PROPERTY, READ, REDEFINE, REDUCE, REINPUT, REJECT, RELEASE, REPEAT, RESET, RESIZE, RETRY, ROLLBACK, RUN, SELECT, SEPARATE, SET, SKIP, SORT, STACK, STOP, STORE, SUBTRACT, TERMINATE, UPDATE, WRITE -> true;
+			case ACCEPT, ADD, ASSIGN, BEFORE, BACKOUT, CALL, CALLNAT, CLOSE, COMMIT, COMPRESS, COMPUTE, DECIDE, DEFINE, DELETE, DISPLAY, DIVIDE, DO, DOEND, DOWNLOAD, EJECT, END, ESCAPE, EXAMINE, EXPAND, FETCH, FIND, FOR, FORMAT, GET, HISTOGRAM, IF, IGNORE, INCLUDE, INPUT, INSERT, INTERFACE, LIMIT, LOOP, METHOD, MOVE, MULTIPLY, NEWPAGE, OBTAIN, OPTIONS, PASSW, PERFORM, PRINT, PROCESS, PROPERTY, READ, REDEFINE, REDUCE, REINPUT, REJECT, RELEASE, REPEAT, RESET, RESIZE, RETRY, ROLLBACK, RUN, SELECT, SEPARATE, SET, SKIP, SORT, STACK, STOP, STORE, SUBTRACT, TERMINATE, UPDATE, WRITE -> true;
 			case ON -> peekKind(1, SyntaxKind.ERROR);
 			case OPEN -> peekKind(1, SyntaxKind.CONVERSATION);
 			case PARSE -> peekKind(1, SyntaxKind.XML);

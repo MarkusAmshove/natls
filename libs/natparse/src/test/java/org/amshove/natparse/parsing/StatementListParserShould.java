@@ -1676,4 +1676,121 @@ class StatementListParserShould extends StatementParseTest
 						END-IF
 			""".formatted(specified));
 	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"BACKOUT", "BACKOUT TRANSACTION"
+	})
+	void parseBackoutTransaction(String statement)
+	{
+		assertParsesSingleStatement(statement, IBackoutNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"", "FILE"
+	})
+	void parseCloseWork(String file)
+	{
+		var close = assertParsesSingleStatement("CLOSE WORK %s 1".formatted(file), ICloseWorkNode.class);
+		assertThat(close.number().token().intValue()).isEqualTo(1);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"", "FILE"
+	})
+	void parseClosePc(String file)
+	{
+		var close = assertParsesSingleStatement("CLOSE PC %s 5".formatted(file), IClosePcNode.class);
+		assertThat(close.number().token().intValue()).isEqualTo(5);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"", "FILE"
+	})
+	void parseSimpleWriteWork(String file)
+	{
+		var write = assertParsesSingleStatement("WRITE WORK %s 10 'Hi'".formatted(file), IWriteWorkNode.class);
+		assertThat(write.isVariable()).isFalse();
+		assertThat(write.number().token().intValue()).isEqualTo(10);
+		assertThat(write.operands()).hasSize(1);
+		assertNodeType(write.operands().first(), ILiteralNode.class);
+	}
+
+	@Test
+	void parseWriteWorkWithMultipleOperands()
+	{
+		var write = assertParsesSingleStatement("WRITE WORK FILE 2 VARIABLE #VAR #ASD 'Hi'", IWriteWorkNode.class);
+		assertThat(write.isVariable()).isTrue();
+		assertThat(write.number().token().intValue()).isEqualTo(2);
+		var operands = write.operands();
+		assertThat(operands).hasSize(3);
+		assertIsVariableReference(operands.first(), "#VAR");
+		assertIsVariableReference(operands.get(1), "#ASD");
+		assertLiteral(operands.get(2), SyntaxKind.STRING_LITERAL);
+	}
+
+	@Test
+	void parseWriteWorkWhenStatementFollows()
+	{
+		var statementList = assertParsesWithoutDiagnostics("WRITE WORK FILE 2 #VAR\n#VAR2 := 5");
+		assertThat(statementList.statements()).hasSize(2);
+		assertThat(assertNodeType(statementList.statements().first(), IWriteWorkNode.class).operands()).hasSize(1);
+	}
+
+	@Test
+	void parseSetWindowWithOff()
+	{
+		var setWindow = assertParsesSingleStatement("SET WINDOW OFF", ISetWindowNode.class);
+		assertThat(setWindow.window().kind()).isEqualTo(SyntaxKind.OFF);
+	}
+
+	@Test
+	void parseSetWindowWithStringLiteral()
+	{
+		var setWindow = assertParsesSingleStatement("SET WINDOW 'Fancy'", ISetWindowNode.class);
+		assertThat(setWindow.window().kind()).isEqualTo(SyntaxKind.STRING_LITERAL);
+		assertThat(setWindow.window().stringValue()).isEqualTo("Fancy");
+	}
+
+	@Test
+	void parseTerminateWithoutExitCode()
+	{
+		var terminate = assertParsesSingleStatement("TERMINATE", ITerminateNode.class);
+		assertThat(terminate.operands()).isEmpty();
+	}
+
+	@Test
+	void parseTerminateWithSingleExitCode()
+	{
+		var terminate = assertParsesSingleStatement("TERMINATE 1", ITerminateNode.class);
+		assertLiteral(terminate.operands().first(), SyntaxKind.NUMBER_LITERAL);
+	}
+
+	@Test
+	void parseTerminateWithSingleExitCodeAsReference()
+	{
+		var terminate = assertParsesSingleStatement("TERMINATE #EXIT-CODE", ITerminateNode.class);
+		assertIsVariableReference(terminate.operands().first(), "#EXIT-CODE");
+	}
+
+	@Test
+	void parseTerminateWithAdditionalReturnOperand()
+	{
+		var terminate = assertParsesSingleStatement("TERMINATE #EXIT-CODE #VAR", ITerminateNode.class);
+		assertIsVariableReference(terminate.operands().first(), "#EXIT-CODE");
+		assertIsVariableReference(terminate.operands().get(1), "#VAR");
+	}
+
+	@Test
+	void raiseADiagnosticIfTerminateIsCalledWithNonNumericLiteral()
+	{
+		assertDiagnostic("TERMINATE 'Hi'", ParserError.TYPE_MISMATCH);
+	}
 }
