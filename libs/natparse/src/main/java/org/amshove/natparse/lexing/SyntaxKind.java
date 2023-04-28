@@ -104,7 +104,7 @@ public enum SyntaxKind
 	DEVICE(false, true, false),
 	OPSYS(false, true, false),
 	TPSYS(false, true, false),
-	PROGRAM(false, true, false),
+	PROGRAM(true, true, false),
 	ETID(false, true, false),
 	CPU_TIME(false, true, false),
 	LBOUND(false, true, false),
