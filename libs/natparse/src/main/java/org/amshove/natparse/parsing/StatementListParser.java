@@ -263,9 +263,14 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 							break;
 						}
 					case SET:
-						if (peek(1).kind() == SyntaxKind.KEY)
+						if (peekKind(1, SyntaxKind.KEY))
 						{
 							statementList.addStatement(setKey());
+							break;
+						}
+						if (peekKind(1, SyntaxKind.WINDOW))
+						{
+							statementList.addStatement(setWindow());
 							break;
 						}
 						// FALLTHROUGH TO DEFAULT INTENDED - SET CONTROL etc. not implemented
@@ -326,6 +331,24 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode setWindow() throws ParseError
+	{
+		var setWindow = new SetWindowNode();
+		consumeMandatory(setWindow, SyntaxKind.SET);
+		consumeMandatory(setWindow, SyntaxKind.WINDOW);
+		if (peekKind(SyntaxKind.OFF))
+		{
+			setWindow.setWindow(consumeMandatory(setWindow, SyntaxKind.OFF));
+		}
+		else
+		{
+			var windowName = consumeLiteralNode(setWindow, SyntaxKind.STRING_LITERAL);
+			setWindow.setWindow(windowName.token());
+		}
+
+		return setWindow;
 	}
 
 	private StatementNode writeWork() throws ParseError

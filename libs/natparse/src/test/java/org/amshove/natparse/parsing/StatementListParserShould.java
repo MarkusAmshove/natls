@@ -1743,4 +1743,19 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(statementList.statements()).hasSize(2);
 		assertThat(assertNodeType(statementList.statements().first(), IWriteWorkNode.class).operands()).hasSize(1);
 	}
+
+	@Test
+	void parseSetWindowWithOff()
+	{
+		var setWindow = assertParsesSingleStatement("SET WINDOW OFF", ISetWindowNode.class);
+		assertThat(setWindow.window().kind()).isEqualTo(SyntaxKind.OFF);
+	}
+
+	@Test
+	void parseSetWindowWithStringLiteral()
+	{
+		var setWindow = assertParsesSingleStatement("SET WINDOW 'Fancy'", ISetWindowNode.class);
+		assertThat(setWindow.window().kind()).isEqualTo(SyntaxKind.STRING_LITERAL);
+		assertThat(setWindow.window().stringValue()).isEqualTo("Fancy");
+	}
 }
