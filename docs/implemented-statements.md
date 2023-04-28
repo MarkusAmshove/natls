@@ -28,23 +28,23 @@ partial - partially implemented to prevent false positives
 | CALLDBPROC (SQL) | :x:                |
 | CALLNAT | :white_check_mark: |
 | CLOSE CONVERSATION | :x:                |
-| CLOSE PC FILE | :x:                |
+| CLOSE PC FILE | :white_check_mark: |
 | CLOSE PRINTER | :white_check_mark: |
 | CLOSE WORK FILE | :white_check_mark: |
 | COMMIT (SQL) | :x:                |
-| COMPRESS | :x:                |
+| COMPRESS | :white_check_mark: |
 | COMPUTE | :white_check_mark: |
 | CREATE OBJECT | :x:                |
-| DECIDE FOR | :x:                |
+| DECIDE FOR | :white_check_mark: |
 | DECIDE ON | :x:                |
 | DEFINE CLASS | :x:                |
 | DEFINE DATA | :x:                |
-| DEFINE FUNCTION | :x:                |
+| DEFINE FUNCTION | partial            |
 | DEFINE PRINTER | :white_check_mark: |
 | DEFINE PROTOTYPE | :x:                |
 | DEFINE SUBROUTINE | :white_check_mark: |
 | DEFINE WINDOW | partial            |
-| DEFINE WORK FILE | :x:                |
+| DEFINE WORK FILE | :white_check_mark: |
 | DELETE | :x:                |
 | DELETE (SQL) | :x:                |
 | DISPLAY | :x:                |
@@ -66,7 +66,7 @@ partial - partially implemented to prevent false positives
 | GET TRANSACTION DATA | :x:                |
 | HISTOGRAM | :partial:          |
 | IF | :white_check_mark: |
-| IF SELECTION | :x:                |
+| IF SELECTION | :white_check_mark: |
 | IGNORE | :white_check_mark: |
 | INCLUDE | :white_check_mark: |
 | INPUT | :x:                |

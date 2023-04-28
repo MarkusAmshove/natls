@@ -1697,4 +1697,15 @@ class StatementListParserShould extends StatementParseTest
 		var close = assertParsesSingleStatement("CLOSE WORK %s 1".formatted(file), ICloseWorkNode.class);
 		assertThat(close.number().token().intValue()).isEqualTo(1);
 	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"", "FILE"
+	})
+	void parseClosePc(String file)
+	{
+		var close = assertParsesSingleStatement("CLOSE PC %s 5".formatted(file), IClosePcNode.class);
+		assertThat(close.number().token().intValue()).isEqualTo(5);
+	}
 }

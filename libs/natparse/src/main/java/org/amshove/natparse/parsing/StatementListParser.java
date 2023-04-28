@@ -133,6 +133,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						{
 							case PRINTER -> statementList.addStatement(closePrinter());
 							case WORK -> statementList.addStatement(closeWork());
+							case PC -> statementList.addStatement(closePc());
 							default -> statementList.addStatement(consumeFallback());
 						}
 						break;
@@ -320,6 +321,19 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode closePc() throws ParseError
+	{
+		var closePc = new ClosePcNode();
+		consumeMandatory(closePc, SyntaxKind.CLOSE);
+		consumeMandatory(closePc, SyntaxKind.PC);
+		consumeOptionally(closePc, SyntaxKind.FILE);
+
+		var number = consumeLiteralNode(closePc, SyntaxKind.NUMBER_LITERAL);
+		closePc.setNumber(number);
+
+		return closePc;
 	}
 
 	private StatementNode closeWork() throws ParseError
