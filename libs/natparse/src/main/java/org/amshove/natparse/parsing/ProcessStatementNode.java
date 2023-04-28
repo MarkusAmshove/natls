@@ -1,6 +1,6 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.natural.IProcessStatementNode;
+import org.amshove.natparse.natural.IProcessSqlNode;
 
-class ProcessStatementNode extends StatementNode implements IProcessStatementNode
+class ProcessSqlNode extends StatementNode implements IProcessSqlNode
 {}

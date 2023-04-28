@@ -1587,13 +1587,12 @@ class StatementListParserShould extends StatementParseTest
 	{
 		"PROCESS SQL DB2-TABLE <<SET :CURR-SERV  = CURRENT SERVER>>",
 		"PROCESS SQL DB2-TABLE <<CONNECT TO :LOCATION>",
-		"PROCESS COMMAND ACTION EXEC USING PROCESSOR-NAME = 'DEMO' COMMAND-LINE (1) = COMMAND-LINE (1)"
 	})
 	void parseProcessSql(String statement)
 	{
 		assertParsesSingleStatement("""
 			%s
-			""".formatted(statement), IProcessStatementNode.class);
+			""".formatted(statement), IProcessSqlNode.class);
 	}
 
 	@ParameterizedTest

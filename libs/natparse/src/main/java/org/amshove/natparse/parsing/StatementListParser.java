@@ -160,7 +160,12 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(delete());
 						break;
 					case PROCESS:
-						statementList.addStatement(process());
+						if (peekKind(1, SyntaxKind.SQL))
+						{
+							statementList.addStatement(processSql());
+							break;
+						}
+						statementList.addStatement(consumeFallback());
 						break;
 					case START:
 						statementList.addStatement(parseAtPositionOf(SyntaxKind.START, SyntaxKind.DATA, SyntaxKind.END_START, true, new StartOfDataNode()));
@@ -733,6 +738,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			select.setBody(statementList(SyntaxKind.END_SELECT));
 			consumeMandatoryClosing(select, SyntaxKind.END_SELECT, opening);
 		}
+
 		return select;
 	}
 
@@ -788,6 +794,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			}
 			consume(update);
 		}
+
 		return update;
 	}
 
@@ -823,20 +830,18 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return delete;
 	}
 
-	private StatementNode process() throws ParseError
+	private StatementNode processSql() throws ParseError
 	{
 		// Right now, just consume the PROCESS SQL entirely (only)
-		var process = new ProcessStatementNode();
-		consumeMandatory(process, SyntaxKind.PROCESS);
-
-		if (consumeOptionally(process, SyntaxKind.SQL))
+		var processSql = new ProcessSqlNode();
+		consumeMandatory(processSql, SyntaxKind.PROCESS);
+		consumeMandatory(processSql, SyntaxKind.SQL);
+		while (!isAtEnd() && !isStatementStart())
 		{
-			while (!isAtEnd() && !isStatementStart())
-			{
-				consume(process);
-			}
+			consume(processSql);
 		}
-		return process;
+
+		return processSql;
 	}
 
 	private StatementNode beforeBreak() throws ParseError
