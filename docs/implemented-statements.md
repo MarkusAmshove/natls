@@ -4,11 +4,11 @@ This document tracks the implementation status of Natural statements.
 
 Legend:
 
-:x: - not implemented
+:x: - not implemented (73)
 
-:white_check_mark: - implemented
+:white_check_mark: - implemented (43)
 
-partial - partially implemented to prevent false positives
+partial - partially implemented to prevent false positives (6)
 
 | Statement | Status             |
 | --- |--------------------|
@@ -38,7 +38,7 @@ partial - partially implemented to prevent false positives
 | DECIDE FOR | :white_check_mark: |
 | DECIDE ON | :x:                |
 | DEFINE CLASS | :x:                |
-| DEFINE DATA | :x:                |
+| DEFINE DATA | :white_check_mark: |
 | DEFINE FUNCTION | partial            |
 | DEFINE PRINTER | :white_check_mark: |
 | DEFINE PROTOTYPE | :x:                |
@@ -58,7 +58,7 @@ partial - partially implemented to prevent false positives
 | EXAMINE | :white_check_mark: |
 | EXPAND | :x:                |
 | FETCH | :white_check_mark: |
-| FIND | :x:                |
+| FIND | :white_check_mark: |
 | FOR | :white_check_mark: |
 | FORMAT | partial            |
 | GET | :x:                |
@@ -97,24 +97,24 @@ partial - partially implemented to prevent false positives
 | READ RESULT SET (SQL) | :x:                |
 | READ WORK FILE | :x:                |
 | READLOB | :x:                |
-| REDEFINE | :x:                |
+| REDEFINE | :white_check_mark: |
 | REDUCE | :x:                |
 | REINPUT | :x:                |
 | REJECT | :x:                |
 | RELEASE | :x:                |
 | REPEAT | :x:                |
 | REQUEST DOCUMENT | :x:                |
-| RESET | :x:                |
-| RESIZE | :x:                |
+| RESET | :white_check_mark: |
+| RESIZE | :white_check_mark: |
 | RETRY | :x:                |
 | ROLLBACK (SQL) | :x:                |
 | RUN | :x:                |
-| SELECT (SQL) | :x:                |
+| SELECT (SQL) | :white_check_mark: |
 | SEND METHOD | :x:                |
 | SEPARATE | :x:                |
 | SET CONTROL | :x:                |
 | SET GLOBALS | :x:                |
-| SET KEY | partial            |
+| SET KEY | :white_check_mark: |
 | SET TIME | :x:                |
 | SET WINDOW | :x:                |
 | SKIP | :white_check_mark: |
