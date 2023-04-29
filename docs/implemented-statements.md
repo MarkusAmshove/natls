@@ -4,9 +4,9 @@ This document tracks the implementation status of Natural statements.
 
 Legend:
 
-:x: - not implemented (67)
+:x: - not implemented (66)
 
-:white_check_mark: - implemented or reporting (49)
+:white_check_mark: - implemented or reporting (50)
 
 partial - partially implemented to prevent false positives (6)
 
@@ -94,7 +94,7 @@ partial - partially implemented to prevent false positives (6)
 | READ RESULT SET (SQL) | :x:                |
 | READ WORK FILE | :x:                |
 | READLOB | :x:                |
-| REDUCE | :x:                |
+| REDUCE | :white_check_mark: |
 | REINPUT | :x:                |
 | REJECT | :x:                |
 | RELEASE | :x:                |

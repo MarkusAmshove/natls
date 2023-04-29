@@ -125,6 +125,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case COMPUTE:
 						statementList.addStatements(assignOrCompute(SyntaxKind.COMPUTE));
 						break;
+					case REDUCE:
+						statementList.addStatement(reduce());
+						break;
 					case RESIZE:
 						statementList.addStatement(resize());
 						break;
@@ -647,6 +650,64 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return compress;
+	}
+
+	private StatementNode reduce() throws ParseError
+	{
+		if (peekAny(1, List.of(SyntaxKind.SIZE, SyntaxKind.DYNAMIC)))
+		{
+			return reduceDynamic();
+		}
+
+		var reduce = new ReduceArrayNode();
+		consumeMandatory(reduce, SyntaxKind.REDUCE);
+		if (consumeOptionally(reduce, SyntaxKind.OCCURRENCES))
+		{
+			consumeMandatory(reduce, SyntaxKind.OF);
+		}
+
+		consumeMandatory(reduce, SyntaxKind.ARRAY);
+		var array = consumeVariableReferenceNode(reduce);
+		reduce.setArrayToReduce(array);
+		consumeMandatory(reduce, SyntaxKind.TO);
+
+		if (consumeOptionally(reduce, SyntaxKind.LPAREN))
+		{
+			while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+			{
+				consume(reduce);
+			}
+
+			consumeMandatory(reduce, SyntaxKind.RPAREN);
+		}
+		else
+		{
+			var literal = consumeLiteralNode(reduce, SyntaxKind.NUMBER_LITERAL);
+			checkIntLiteralValue(literal, 0);
+		}
+
+		return reduce;
+	}
+
+	private StatementNode reduceDynamic() throws ParseError
+	{
+		var reduce = new ReduceDynamicNode();
+		consumeMandatory(reduce, SyntaxKind.REDUCE);
+		if (consumeOptionally(reduce, SyntaxKind.SIZE))
+		{
+			consumeMandatory(reduce, SyntaxKind.OF);
+		}
+
+		consumeMandatory(reduce, SyntaxKind.DYNAMIC);
+		consumeOptionally(reduce, SyntaxKind.VARIABLE);
+
+		var toReduce = consumeVariableReferenceNode(reduce);
+		reduce.setVariableToResize(toReduce);
+		consumeMandatory(reduce, SyntaxKind.TO);
+		var newSize = consumeLiteralNode(reduce, SyntaxKind.NUMBER_LITERAL);
+		reduce.setSizeToResizeTo(newSize.token().intValue());
+
+		return reduce;
 	}
 
 	private StatementNode resize() throws ParseError
@@ -2648,6 +2709,19 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		if (!allowedValues.contains(literalNode.token().stringValue()))
 		{
 			report(ParserErrors.invalidStringLiteral(literalNode, literalNode.token().stringValue(), allowedValues));
+		}
+	}
+
+	private void checkIntLiteralValue(IOperandNode node, int allowedValue)
+	{
+		if (!(node instanceof ILiteralNode literalNode) || literalNode.token().kind() != SyntaxKind.NUMBER_LITERAL)
+		{
+			return;
+		}
+
+		if (literalNode.token().intValue() != allowedValue)
+		{
+			report(ParserErrors.invalidNumericValue(literalNode, literalNode.token().intValue(), allowedValue));
 		}
 	}
 

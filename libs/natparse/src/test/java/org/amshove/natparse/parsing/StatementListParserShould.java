@@ -1793,4 +1793,39 @@ class StatementListParserShould extends StatementParseTest
 	{
 		assertDiagnostic("TERMINATE 'Hi'", ParserError.TYPE_MISMATCH);
 	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"", "OCCURRENCES OF"
+	})
+	void parseReduceArrayToZero(String source)
+	{
+		var reduce = assertParsesSingleStatement("REDUCE %s ARRAY #ARR TO 0".formatted(source), IReduceArrayNode.class);
+		assertThat(reduce.arrayToReduce().referencingToken().symbolName()).isEqualTo("#ARR");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"", "OCCURRENCES OF"
+	})
+	void parseReduceArrayToDimension(String source)
+	{
+		var reduce = assertParsesSingleStatement("REDUCE %s ARRAY #ARR TO (1:10,*:*,5:*)".formatted(source), IReduceArrayNode.class);
+		assertThat(reduce.arrayToReduce().referencingToken().symbolName()).isEqualTo("#ARR");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"SIZE OF DYNAMIC VARIABLE", "DYNAMIC", "DYNAMIC VARIABLE", "SIZE OF DYNAMIC",
+	})
+	void parseReduceDynamic(String combination)
+	{
+		// TODO(type-check): Has to be dynamic typed
+		var reduce = assertParsesSingleStatement("REDUCE %s #VAR TO 20".formatted(combination), IReduceDynamicNode.class);
+		assertThat(reduce.variableToReduce().referencingToken().symbolName()).isEqualTo("#VAR");
+		assertThat(reduce.sizeToReduceTo()).isEqualTo(20);
+	}
 }
