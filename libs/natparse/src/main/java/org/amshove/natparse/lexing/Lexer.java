@@ -68,9 +68,7 @@ public class Lexer
 					scanner.advance();
 					continue;
 				case '\n':
-					line++;
-					scanner.advance();
-					currentLineStartOffset = scanner.position();
+					consumeNewLine();
 					continue;
 				case '(':
 					inParens = true;
@@ -278,9 +276,31 @@ public class Lexer
 		return previous == null || previous.totalEndOffset() != scanner.position();
 	}
 
+	private void consumeNewLine()
+	{
+		line++;
+		scanner.advance();
+		currentLineStartOffset = scanner.position();
+	}
+
 	public void relocateDiagnosticPosition(IPosition diagnosticPosition)
 	{
 		this.relocatedDiagnosticPosition = diagnosticPosition;
+	}
+
+	private void advanceBy(int offset)
+	{
+		for (var i = 0; i < offset; i++)
+		{
+			if (scanner.peek() == '\n')
+			{
+				consumeNewLine();
+			}
+			else
+			{
+				scanner.advance();
+			}
+		}
 	}
 
 	private void consumeMinusOrStringConcat()
@@ -294,9 +314,13 @@ public class Lexer
 		{
 			var previousString = previousUnsafe();
 			var previousStringIndex = tokens.size() - 1;
-			scanner.advance(lookaheadIndex);
+			advanceBy(lookaheadIndex);
 			consumeString(lookahead);
 			var currentString = previousUnsafe();
+			if (scanner.peek() == '\n')
+			{
+				consumeNewLine();
+			}
 			var currentStringIndex = tokens.size() - 1;
 			if (currentStringIndex >= previousStringIndex)
 			{
