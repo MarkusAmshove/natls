@@ -1,20 +1,22 @@
 package org.amshove.natqube.sensor;
 
+import org.amshove.natlint.linter.NaturalLinter;
+import org.amshove.natparse.IDiagnostic;
+import org.amshove.natparse.infrastructure.ActualFilesystem;
+import org.amshove.natparse.lexing.Lexer;
+import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
+import org.amshove.natparse.parsing.NaturalParser;
+import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 import org.amshove.natqube.Natural;
-import org.amshove.natqube.NaturalProperties;
 import org.amshove.natqube.rules.NaturalRuleRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.sensor.Sensor;
 import org.sonar.api.batch.sensor.SensorContext;
 import org.sonar.api.batch.sensor.SensorDescriptor;
 import org.sonar.api.config.Configuration;
 import org.sonar.api.rule.RuleKey;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class NatlintSensor implements Sensor
 {
@@ -37,71 +39,69 @@ public class NatlintSensor implements Sensor
 	@Override
 	public void execute(SensorContext context)
 	{
-		var maybeDiagnosticFileName = config.get(NaturalProperties.NATLINT_ISSUE_FILE_KEY);
-		if (maybeDiagnosticFileName.isEmpty())
-		{
-			LOGGER.error("No diagnostic file pattern found");
-			return;
-		}
+		var filesystem = new ActualFilesystem();
+		LOGGER.error("Finding project file");
+		var buildfilePath = filesystem.findNaturalProjectFile(context.fileSystem().baseDir().toPath()).get();
+		var project = new BuildFileProjectReader(filesystem).getNaturalProject(buildfilePath);
+		LOGGER.error("Project initialized: %s".formatted(buildfilePath));
+		LOGGER.error("Start indexing");
+		var indexStartTime = System.currentTimeMillis();
+		new NaturalProjectFileIndexer().indexProject(project);
+		var indexEndTime = System.currentTimeMillis();
+		LOGGER.error("Indexing done: %dms".formatted(indexEndTime - indexStartTime));
 
-		var diagnosticFile = context.fileSystem().inputFile((f) -> f.filename().equals(maybeDiagnosticFileName.get()));
-		if (diagnosticFile == null)
+		var analysisStart = System.currentTimeMillis();
+		for (var library : project.getLibraries())
 		{
-			LOGGER.error("Diagnostic file not found");
-			return;
-		}
-
-		try
-		{
-			var diagnostics = diagnosticFile.contents().lines().skip(1).map(l ->
+			LOGGER.error("Starting lib %s".formatted(library.getName()));
+			library.files().parallelStream().forEach(naturalFile ->
 			{
-				var split = l.split(";");
-				if (split.length != 7)
+				try
 				{
-					return null;
-				}
-				var absolutePath = Path.of(split[0]).toUri();
-				var id = split[1];
-				var line = split[4];
-				var offset = split[5];
-				var length = split[6];
-				var message = split[3];
-				return new CsvDiagnostic(id, absolutePath, Integer.parseInt(line), Integer.parseInt(offset), Integer.parseInt(length), message);
-			})
-				.filter(Objects::nonNull)
-				.collect(Collectors.groupingBy(CsvDiagnostic::getFileUri));
+					var lexResult = new Lexer().lex(filesystem.readFile(naturalFile.getPath()), naturalFile.getPath());
+					var parseResult = new NaturalParser().parse(naturalFile, lexResult);
+					var lintResult = new NaturalLinter().lint(parseResult);
 
-			context.fileSystem().inputFiles(f -> !f.filename().endsWith(".NSM")).forEach(f ->
-			{
-				if (!diagnostics.containsKey(f.uri()))
-				{
-					return;
-				}
-
-				var fileDiagnostics = diagnostics.get(f.uri());
-				for (var diagnostic : fileDiagnostics)
-				{
-					try
+					var inputFile = context.fileSystem().inputFile(f -> f.uri().equals(naturalFile.getPath().toUri()));
+					if (inputFile == null)
 					{
-						var issue = context.newIssue();
-						issue.at(
-							issue.newLocation()
-								.on(f)
-								.at(f.newRange(diagnostic.getLine(), diagnostic.getOffsetInLine(), diagnostic.getLine(), diagnostic.getOffsetInLine() + diagnostic.getLength()))
-								.message(diagnostic.getMessage())
-						);
-						issue
-							.forRule(RuleKey.of(NaturalRuleRepository.REPOSITORY, diagnostic.getId()))
-							.save();
+						throw new RuntimeException("Couldn't find input file for natural file");
 					}
-					catch (Exception e)
-					{}
+
+					for (var diagnostic : lexResult.diagnostics())
+					{
+						saveDiagnosticAsIssue(context, inputFile, diagnostic);
+					}
+					for (var diagnostic : parseResult.diagnostics())
+					{
+						saveDiagnosticAsIssue(context, inputFile, diagnostic);
+					}
+					for (var diagnostic : lintResult)
+					{
+						saveDiagnosticAsIssue(context, inputFile, diagnostic);
+					}
+				}
+				catch (Exception e)
+				{
+					LOGGER.error("Error on %s".formatted(naturalFile.getPath()), e);
 				}
 			});
 		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
+		var analysisEnd = System.currentTimeMillis();
+		LOGGER.error("Analysis ended after %dms".formatted(analysisEnd - analysisStart));
+	}
+
+	private void saveDiagnosticAsIssue(SensorContext context, InputFile inputFile, IDiagnostic diagnostic)
+	{
+		var issue = context.newIssue();
+		issue.at(
+			issue.newLocation()
+				.on(inputFile)
+				.at(inputFile.newRange(diagnostic.line() + 1, diagnostic.offsetInLine(), diagnostic.line() + 1, diagnostic.endOffset()))
+				.message(diagnostic.message())
+		);
+		issue
+			.forRule(RuleKey.of(NaturalRuleRepository.REPOSITORY, diagnostic.id()))
+			.save();
 	}
 }

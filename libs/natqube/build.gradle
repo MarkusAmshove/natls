@@ -5,6 +5,8 @@ plugins {
 dependencies {
     compileOnly libraries.sonarqube_api
     compileOnly libraries.slf4j_api
+    implementation project(':natparse')
+    implementation project(':natlint')
 }
 
 tasks.withType(JavaCompile).configureEach {
