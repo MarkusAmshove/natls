@@ -125,6 +125,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case COMPUTE:
 						statementList.addStatements(assignOrCompute(SyntaxKind.COMPUTE));
 						break;
+					case REDUCE:
+						statementList.addStatement(reduce());
+						break;
 					case RESIZE:
 						statementList.addStatement(resize());
 						break;
@@ -197,6 +200,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						}
 
 						statementList.addStatement(end());
+						break;
+					case EXPAND:
+						statementList.addStatement(expand());
 						break;
 					case DEFINE:
 						switch (peek(1).kind())
@@ -649,6 +655,134 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return compress;
 	}
 
+	private StatementNode reduce() throws ParseError
+	{
+		if (peekAny(1, List.of(SyntaxKind.SIZE, SyntaxKind.DYNAMIC)))
+		{
+			return reduceDynamic();
+		}
+
+		var reduce = new ReduceArrayNode();
+		consumeMandatory(reduce, SyntaxKind.REDUCE);
+		if (consumeOptionally(reduce, SyntaxKind.OCCURRENCES))
+		{
+			consumeMandatory(reduce, SyntaxKind.OF);
+		}
+
+		consumeMandatory(reduce, SyntaxKind.ARRAY);
+		var array = consumeVariableReferenceNode(reduce);
+		reduce.setArrayToReduce(array);
+		consumeMandatory(reduce, SyntaxKind.TO);
+
+		if (consumeOptionally(reduce, SyntaxKind.LPAREN))
+		{
+			while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+			{
+				consume(reduce);
+			}
+
+			consumeMandatory(reduce, SyntaxKind.RPAREN);
+		}
+		else
+		{
+			var literal = consumeLiteralNode(reduce, SyntaxKind.NUMBER_LITERAL);
+			checkIntLiteralValue(literal, 0);
+		}
+
+		if (consumeOptionally(reduce, SyntaxKind.GIVING))
+		{
+			reduce.setErrorVariable(consumeVariableReferenceNode(reduce));
+		}
+
+		return reduce;
+	}
+
+	private StatementNode reduceDynamic() throws ParseError
+	{
+		var reduce = new ReduceDynamicNode();
+		consumeMandatory(reduce, SyntaxKind.REDUCE);
+		if (consumeOptionally(reduce, SyntaxKind.SIZE))
+		{
+			consumeMandatory(reduce, SyntaxKind.OF);
+		}
+
+		consumeMandatory(reduce, SyntaxKind.DYNAMIC);
+		consumeOptionally(reduce, SyntaxKind.VARIABLE);
+
+		var toReduce = consumeVariableReferenceNode(reduce);
+		reduce.setVariableToResize(toReduce);
+		consumeMandatory(reduce, SyntaxKind.TO);
+		var newSize = consumeLiteralNode(reduce, SyntaxKind.NUMBER_LITERAL);
+		reduce.setSizeToResizeTo(newSize.token().intValue());
+
+		if (consumeOptionally(reduce, SyntaxKind.GIVING))
+		{
+			reduce.setErrorVariable(consumeVariableReferenceNode(reduce));
+		}
+
+		return reduce;
+	}
+
+	private StatementNode expand() throws ParseError
+	{
+		if (peekAny(1, List.of(SyntaxKind.SIZE, SyntaxKind.DYNAMIC)))
+		{
+			return expandDynamic();
+		}
+
+		var expand = new ExpandArrayNode();
+		consumeMandatory(expand, SyntaxKind.EXPAND);
+		if (consumeOptionally(expand, SyntaxKind.OCCURRENCES))
+		{
+			consumeMandatory(expand, SyntaxKind.OF);
+		}
+
+		consumeMandatory(expand, SyntaxKind.ARRAY);
+		var array = consumeVariableReferenceNode(expand);
+		expand.setArrayToExpand(array);
+		consumeMandatory(expand, SyntaxKind.TO);
+
+		consumeMandatory(expand, SyntaxKind.LPAREN);
+		while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+		{
+			consume(expand);
+		}
+		consumeMandatory(expand, SyntaxKind.RPAREN);
+
+		if (consumeOptionally(expand, SyntaxKind.GIVING))
+		{
+			expand.setErrorVariable(consumeVariableReferenceNode(expand));
+		}
+
+		return expand;
+	}
+
+	private StatementNode expandDynamic() throws ParseError
+	{
+		var expand = new ExpandDynamicNode();
+		consumeMandatory(expand, SyntaxKind.EXPAND);
+		if (consumeOptionally(expand, SyntaxKind.SIZE))
+		{
+			consumeMandatory(expand, SyntaxKind.OF);
+		}
+
+		consumeMandatory(expand, SyntaxKind.DYNAMIC);
+		consumeOptionally(expand, SyntaxKind.VARIABLE);
+
+		var toReduce = consumeVariableReferenceNode(expand);
+		expand.setVariableToResize(toReduce);
+		consumeMandatory(expand, SyntaxKind.TO);
+		var newSize = consumeLiteralNode(expand, SyntaxKind.NUMBER_LITERAL);
+		expand.setSizeToResizeTo(newSize.token().intValue());
+
+		if (consumeOptionally(expand, SyntaxKind.GIVING))
+		{
+			expand.setErrorVariable(consumeVariableReferenceNode(expand));
+		}
+
+		return expand;
+	}
+
 	private StatementNode resize() throws ParseError
 	{
 		if (peekAny(1, List.of(SyntaxKind.SIZE, SyntaxKind.DYNAMIC)))
@@ -680,6 +814,12 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		consumeMandatory(resize, SyntaxKind.RPAREN);
+
+		if (consumeOptionally(resize, SyntaxKind.GIVING))
+		{
+			resize.setErrorVariable(consumeVariableReferenceNode(resize));
+		}
+
 		return resize;
 	}
 
@@ -699,6 +839,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(resize, SyntaxKind.TO);
 		var newSize = consumeLiteralNode(resize, SyntaxKind.NUMBER_LITERAL);
 		resize.setSizeToResizeTo(newSize.token().intValue());
+
+		if (consumeOptionally(resize, SyntaxKind.GIVING))
+		{
+			resize.setErrorVariable(consumeVariableReferenceNode(resize));
+		}
 
 		return resize;
 	}
@@ -2648,6 +2793,19 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		if (!allowedValues.contains(literalNode.token().stringValue()))
 		{
 			report(ParserErrors.invalidStringLiteral(literalNode, literalNode.token().stringValue(), allowedValues));
+		}
+	}
+
+	private void checkIntLiteralValue(IOperandNode node, int allowedValue)
+	{
+		if (!(node instanceof ILiteralNode literalNode) || literalNode.token().kind() != SyntaxKind.NUMBER_LITERAL)
+		{
+			return;
+		}
+
+		if (literalNode.token().intValue() != allowedValue)
+		{
+			report(ParserErrors.invalidNumericValue(literalNode, literalNode.token().intValue(), allowedValue));
 		}
 	}
 

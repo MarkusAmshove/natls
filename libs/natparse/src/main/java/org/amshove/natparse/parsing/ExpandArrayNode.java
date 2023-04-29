@@ -1,17 +1,17 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.natural.IResizeArrayNode;
+import org.amshove.natparse.natural.IExpandArrayNode;
 import org.amshove.natparse.natural.IVariableReferenceNode;
 
-class ResizeArrayNode extends StatementNode implements IResizeArrayNode
+class ExpandArrayNode extends StatementNode implements IExpandArrayNode
 {
-	private IVariableReferenceNode arrayToResize;
+	private IVariableReferenceNode arrayToExpand;
 	private IVariableReferenceNode errorVariable;
 
 	@Override
-	public IVariableReferenceNode arrayToResize()
+	public IVariableReferenceNode arrayToExpand()
 	{
-		return arrayToResize;
+		return arrayToExpand;
 	}
 
 	@Override
@@ -20,9 +20,9 @@ class ResizeArrayNode extends StatementNode implements IResizeArrayNode
 		return errorVariable;
 	}
 
-	void setArrayToResize(IVariableReferenceNode array)
+	void setArrayToExpand(IVariableReferenceNode array)
 	{
-		arrayToResize = array;
+		arrayToExpand = array;
 	}
 
 	void setErrorVariable(IVariableReferenceNode errorVariable)

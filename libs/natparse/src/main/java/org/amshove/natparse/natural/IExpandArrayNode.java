@@ -2,11 +2,9 @@ package org.amshove.natparse.natural;
 
 import javax.annotation.Nullable;
 
-public interface IResizeDynamicNode extends IStatementNode
+public interface IExpandArrayNode extends IStatementNode
 {
-	IVariableReferenceNode variableToResize();
-
-	int sizeToResizeTo();
+	IVariableReferenceNode arrayToExpand();
 
 	@Nullable
 	IVariableReferenceNode errorVariable();
