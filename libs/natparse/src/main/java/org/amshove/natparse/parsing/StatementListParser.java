@@ -201,6 +201,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 						statementList.addStatement(end());
 						break;
+					case EXPAND:
+						statementList.addStatement(expand());
+						break;
 					case DEFINE:
 						switch (peek(1).kind())
 						{
@@ -708,6 +711,64 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		reduce.setSizeToResizeTo(newSize.token().intValue());
 
 		return reduce;
+	}
+
+	private StatementNode expand() throws ParseError
+	{
+		if (peekAny(1, List.of(SyntaxKind.SIZE, SyntaxKind.DYNAMIC)))
+		{
+			return expandDynamic();
+		}
+
+		var expand = new ExpandArrayNode();
+		consumeMandatory(expand, SyntaxKind.EXPAND);
+		if (consumeOptionally(expand, SyntaxKind.OCCURRENCES))
+		{
+			consumeMandatory(expand, SyntaxKind.OF);
+		}
+
+		consumeMandatory(expand, SyntaxKind.ARRAY);
+		var array = consumeVariableReferenceNode(expand);
+		expand.setArrayToExpand(array);
+		consumeMandatory(expand, SyntaxKind.TO);
+
+		if (consumeOptionally(expand, SyntaxKind.LPAREN))
+		{
+			while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+			{
+				consume(expand);
+			}
+
+			consumeMandatory(expand, SyntaxKind.RPAREN);
+		}
+		else
+		{
+			var literal = consumeLiteralNode(expand, SyntaxKind.NUMBER_LITERAL);
+			checkIntLiteralValue(literal, 0);
+		}
+
+		return expand;
+	}
+
+	private StatementNode expandDynamic() throws ParseError
+	{
+		var expand = new ExpandDynamicNode();
+		consumeMandatory(expand, SyntaxKind.EXPAND);
+		if (consumeOptionally(expand, SyntaxKind.SIZE))
+		{
+			consumeMandatory(expand, SyntaxKind.OF);
+		}
+
+		consumeMandatory(expand, SyntaxKind.DYNAMIC);
+		consumeOptionally(expand, SyntaxKind.VARIABLE);
+
+		var toReduce = consumeVariableReferenceNode(expand);
+		expand.setVariableToResize(toReduce);
+		consumeMandatory(expand, SyntaxKind.TO);
+		var newSize = consumeLiteralNode(expand, SyntaxKind.NUMBER_LITERAL);
+		expand.setSizeToResizeTo(newSize.token().intValue());
+
+		return expand;
 	}
 
 	private StatementNode resize() throws ParseError

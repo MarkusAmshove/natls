@@ -1828,4 +1828,28 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(reduce.variableToReduce().referencingToken().symbolName()).isEqualTo("#VAR");
 		assertThat(reduce.sizeToReduceTo()).isEqualTo(20);
 	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"", "OCCURRENCES OF"
+	})
+	void parseExpandArrayToDimension(String source)
+	{
+		var reduce = assertParsesSingleStatement("EXPAND %s ARRAY #ARR TO (1:10,*:*,5:*)".formatted(source), IExpandArrayNode.class);
+		assertThat(reduce.arrayToExpand().referencingToken().symbolName()).isEqualTo("#ARR");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"SIZE OF DYNAMIC VARIABLE", "DYNAMIC", "DYNAMIC VARIABLE", "SIZE OF DYNAMIC",
+	})
+	void parseExpandDynamic(String combination)
+	{
+		// TODO(type-check): Has to be dynamic typed
+		var reduce = assertParsesSingleStatement("EXPAND %s #VAR TO 20".formatted(combination), IExpandDynamicNode.class);
+		assertThat(reduce.variableToExpand().referencingToken().symbolName()).isEqualTo("#VAR");
+		assertThat(reduce.sizeToExpandTo()).isEqualTo(20);
+	}
 }
