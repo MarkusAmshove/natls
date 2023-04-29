@@ -689,6 +689,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			checkIntLiteralValue(literal, 0);
 		}
 
+		if (consumeOptionally(reduce, SyntaxKind.GIVING))
+		{
+			reduce.setErrorVariable(consumeVariableReferenceNode(reduce));
+		}
+
 		return reduce;
 	}
 
@@ -709,6 +714,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(reduce, SyntaxKind.TO);
 		var newSize = consumeLiteralNode(reduce, SyntaxKind.NUMBER_LITERAL);
 		reduce.setSizeToResizeTo(newSize.token().intValue());
+
+		if (consumeOptionally(reduce, SyntaxKind.GIVING))
+		{
+			reduce.setErrorVariable(consumeVariableReferenceNode(reduce));
+		}
 
 		return reduce;
 	}
@@ -732,19 +742,16 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		expand.setArrayToExpand(array);
 		consumeMandatory(expand, SyntaxKind.TO);
 
-		if (consumeOptionally(expand, SyntaxKind.LPAREN))
+		consumeMandatory(expand, SyntaxKind.LPAREN);
+		while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
 		{
-			while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
-			{
-				consume(expand);
-			}
-
-			consumeMandatory(expand, SyntaxKind.RPAREN);
+			consume(expand);
 		}
-		else
+		consumeMandatory(expand, SyntaxKind.RPAREN);
+
+		if (consumeOptionally(expand, SyntaxKind.GIVING))
 		{
-			var literal = consumeLiteralNode(expand, SyntaxKind.NUMBER_LITERAL);
-			checkIntLiteralValue(literal, 0);
+			expand.setErrorVariable(consumeVariableReferenceNode(expand));
 		}
 
 		return expand;
@@ -767,6 +774,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(expand, SyntaxKind.TO);
 		var newSize = consumeLiteralNode(expand, SyntaxKind.NUMBER_LITERAL);
 		expand.setSizeToResizeTo(newSize.token().intValue());
+
+		if (consumeOptionally(expand, SyntaxKind.GIVING))
+		{
+			expand.setErrorVariable(consumeVariableReferenceNode(expand));
+		}
 
 		return expand;
 	}
@@ -802,6 +814,12 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		consumeMandatory(resize, SyntaxKind.RPAREN);
+
+		if (consumeOptionally(resize, SyntaxKind.GIVING))
+		{
+			resize.setErrorVariable(consumeVariableReferenceNode(resize));
+		}
+
 		return resize;
 	}
 
@@ -821,6 +839,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(resize, SyntaxKind.TO);
 		var newSize = consumeLiteralNode(resize, SyntaxKind.NUMBER_LITERAL);
 		resize.setSizeToResizeTo(newSize.token().intValue());
+
+		if (consumeOptionally(resize, SyntaxKind.GIVING))
+		{
+			resize.setErrorVariable(consumeVariableReferenceNode(resize));
+		}
 
 		return resize;
 	}

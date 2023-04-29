@@ -1852,4 +1852,46 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(reduce.variableToExpand().referencingToken().symbolName()).isEqualTo("#VAR");
 		assertThat(reduce.sizeToExpandTo()).isEqualTo(20);
 	}
+
+	@Test
+	void parseResizeArrayWithErrorNr()
+	{
+		var stmt = assertParsesSingleStatement("RESIZE ARRAY #ARR TO (*) GIVING #ERR", IResizeArrayNode.class);
+		assertIsVariableReference(stmt.errorVariable(), "#ERR");
+	}
+
+	@Test
+	void parseResizeDynamicWithErrorNr()
+	{
+		var stmt = assertParsesSingleStatement("RESIZE DYNAMIC #VAR TO 20 GIVING #ERR", IResizeDynamicNode.class);
+		assertIsVariableReference(stmt.errorVariable(), "#ERR");
+	}
+
+	@Test
+	void parseExpandArrayWithErrorNr()
+	{
+		var stmt = assertParsesSingleStatement("EXPAND ARRAY #ARR TO (*) GIVING #ERR", IExpandArrayNode.class);
+		assertIsVariableReference(stmt.errorVariable(), "#ERR");
+	}
+
+	@Test
+	void parseExpandDynamicWithErrorNr()
+	{
+		var stmt = assertParsesSingleStatement("EXPAND DYNAMIC #VAR TO 20 GIVING #ERR", IExpandDynamicNode.class);
+		assertIsVariableReference(stmt.errorVariable(), "#ERR");
+	}
+
+	@Test
+	void parseReduceArrayWithErrorNr()
+	{
+		var stmt = assertParsesSingleStatement("REDUCE ARRAY #ARR TO 0 GIVING #ERR", IReduceArrayNode.class);
+		assertIsVariableReference(stmt.errorVariable(), "#ERR");
+	}
+
+	@Test
+	void parseReduceDynamicWithErrorNr()
+	{
+		var stmt = assertParsesSingleStatement("REDUCE DYNAMIC #VAR TO 20 GIVING #ERR", IReduceDynamicNode.class);
+		assertIsVariableReference(stmt.errorVariable(), "#ERR");
+	}
 }
