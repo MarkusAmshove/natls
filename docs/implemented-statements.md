@@ -4,9 +4,9 @@ This document tracks the implementation status of Natural statements.
 
 Legend:
 
-:x: - not implemented (66)
+:x: - not implemented (65)
 
-:white_check_mark: - implemented or reporting (50)
+:white_check_mark: - implemented or reporting (51)
 
 partial - partially implemented to prevent false positives (6)
 
@@ -55,7 +55,7 @@ partial - partially implemented to prevent false positives (6)
 | END TRANSACTION | :x:                |
 | ESCAPE | :white_check_mark: |
 | EXAMINE | :white_check_mark: |
-| EXPAND | :x:                |
+| EXPAND | :white_check_mark:                |
 | FETCH | :white_check_mark: |
 | FIND | :white_check_mark: |
 | FOR | :white_check_mark: |
