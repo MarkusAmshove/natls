@@ -2,6 +2,7 @@ package org.amshove.natparse.lexing;
 
 public enum SyntaxKind
 {
+	EOF(false, false, false), // end of file
 	LBRACKET(false, false, false),
 	RBRACKET(false, false, false),
 	LPAREN(false, false, false),
@@ -757,5 +758,10 @@ public enum SyntaxKind
 	public boolean canBeIdentifier()
 	{
 		return canBeIdentifier;
+	}
+
+	public boolean isAttribute()
+	{
+		return this == AD || this == DY || this == CD || this == EM;
 	}
 }

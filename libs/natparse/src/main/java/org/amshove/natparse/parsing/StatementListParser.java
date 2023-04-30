@@ -265,6 +265,15 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case TERMINATE:
 						statementList.addStatement(terminate());
 						break;
+					case LPAREN:
+						if (getKind(1).isAttribute())
+						{
+							// Workaround for attributes. Should be added to the operand they belong to.
+							var tokenNode = new SyntheticTokenStatementNode();
+							consumeAttributeDefinition(tokenNode);
+							statementList.addStatement(tokenNode);
+							break;
+						}
 					case DECIDE:
 						if (peekKind(1, SyntaxKind.FOR))
 						{
@@ -1444,8 +1453,23 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		consumeOptionally(write, SyntaxKind.NOTITLE);
 		consumeOptionally(write, SyntaxKind.NOHDR);
+		while (!isAtEnd() && !isStatementStart())
+		{
+			if (peekKind(SyntaxKind.LPAREN) && getKind(1).isAttribute())
+			{
+				consumeAttributeDefinition(write);
+			}
+			else
+			{
+				if (!isOperand())
+				{
+					break;
+				}
+				consumeOperandNode(write);
+			}
+		}
 
-		// TODO: Actual operands to WRITE not parsed
+		// TODO: Actual operands to WRITE not added as operands
 		return write;
 	}
 

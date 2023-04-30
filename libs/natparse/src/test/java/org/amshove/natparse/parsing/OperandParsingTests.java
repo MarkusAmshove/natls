@@ -468,4 +468,24 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		var reference = assertIsVariableReference(operand, "#ARR");
 		assertThat(reference.dimensions()).hasSize(3);
 	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"DY='021I'01", "CD=RE", "AD=IO"
+	})
+	void doNotParseAttributesAsArrayIndex(String parens)
+	{
+		var operand = parseOperand("#ARR(%s)".formatted(parens));
+		var reference = assertIsVariableReference(operand, "#ARR");
+		assertThat(reference.dimensions()).isEmpty();
+	}
+
+	@Test
+	void doNotParseLabelReferencesAsArrayIndex()
+	{
+		var operand = parseOperand("#ARR(R1.)");
+		var reference = assertIsVariableReference(operand, "#ARR");
+		assertThat(reference.dimensions()).isEmpty();
+	}
 }

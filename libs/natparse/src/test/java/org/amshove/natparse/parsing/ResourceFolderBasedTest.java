@@ -45,7 +45,7 @@ public abstract class ResourceFolderBasedTest
 				var testFilePath = Path.of(testFile);
 				var testFileName = testFilePath.getFileName().toString();
 
-				if (!testFileName.equals(testToRun))
+				if (testToRun != null && !testFileName.equals(testToRun))
 				{
 					return Stream.of();
 				}

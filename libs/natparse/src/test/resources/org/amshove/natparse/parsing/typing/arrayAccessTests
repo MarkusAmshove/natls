@@ -1,0 +1,34 @@
+DEFINE DATA
+LOCAL
+1 #NOT-ARRAY (A10)
+1 #ARR (A10/*)
+1 #I (I4)
+END-DEFINE
+
+WRITE #NOT-ARRAY(DY='021I'01) /* No diagnostic, DY is an attribute
+WRITE #NOT-ARRAY(HIS.) /* No diagnostic, label reference
+
+/* No diagnostics, array accessed
+WRITE #ARR(*)
+WRITE #ARR(5)
+
+/* No dimension specified
+WRITE #ARR /* !{D:ERROR:NPP042}
+
+/* Shouldn't have a dimension
+WRITE #NOT-ARRAY(5) /* !{D:ERROR:NPP042}
+
+/* Wrong dimensions specified
+WRITE #ARR(*, *) /* !{D:ERROR:NPP042}
+WRITE #ARR(5, 1) /* !{D:ERROR:NPP042}
+
+/* No diagnostic, *OCC needs actual array
+#I := *OCC(#ARR)
+#I := *OCCURRENCE(#ARR)
+
+/* No diagnostic, resizing statements need actual array
+RESIZE ARRAY #ARR TO (1:10)
+REDUCE ARRAY #ARR TO (1:5)
+EXPAND ARRAY #ARR TO (1:8)
+
+END

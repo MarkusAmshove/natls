@@ -96,6 +96,19 @@ abstract class AbstractParser<T>
 		return !isAtEnd(offset) && peek(offset).kind() == kind;
 	}
 
+	/**
+	 * Returns the kind of the token at the given offset. If the offset is out of bounds, returns EOF.
+	 */
+	protected SyntaxKind getKind(int offset)
+	{
+		if (isAtEnd(offset))
+		{
+			return SyntaxKind.EOF;
+		}
+
+		return peek(offset).kind();
+	}
+
 	protected boolean peekKind(SyntaxKind kind)
 	{
 		return peekKind(0, kind);
@@ -756,7 +769,7 @@ abstract class AbstractParser<T>
 		previousNode = reference;
 		node.addNode(reference);
 
-		if (peekKind(SyntaxKind.LPAREN) && !peekKind(1, SyntaxKind.AD))
+		if (peekKind(SyntaxKind.LPAREN) && !getKind(1).isAttribute() && !peekKind(1, SyntaxKind.LABEL_IDENTIFIER))
 		{
 			consumeMandatory(reference, SyntaxKind.LPAREN);
 			reference.addDimension(consumeArrayAccess(reference));
@@ -846,7 +859,10 @@ abstract class AbstractParser<T>
 		// this was built for CALLNAT, where a variable reference as parameter can have attribute definitions (only AD)
 		// might be reusable for WRITE, DISPLAY, etc. for all kind of operands, but has to be fleshed out then
 		consumeMandatory(node, SyntaxKind.LPAREN);
-		consumeMandatory(node, SyntaxKind.AD);
+		while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+		{
+			consume(node);
+		}
 		consumeMandatory(node, SyntaxKind.RPAREN);
 	}
 
