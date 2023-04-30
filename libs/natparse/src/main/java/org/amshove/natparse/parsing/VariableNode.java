@@ -8,6 +8,7 @@ import org.amshove.natparse.natural.*;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 class VariableNode extends BaseSyntaxNode implements IVariableNode
@@ -140,5 +141,19 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 	{
 		dimensions.add(dimension);
 		addNode(dimension);
+	}
+
+	/**
+	 * Inherits all the given dimensions if they're not specified for this variable yet.
+	 */
+	void inheritDimensions(ReadOnlyList<IArrayDimension> dimensions)
+	{
+		for (var dimension : dimensions)
+		{
+			if (!this.dimensions.contains(dimension))
+			{
+				this.dimensions.add(0, dimension); // add inhereted dimensions first, as they're defined first
+			}
+		}
 	}
 }

@@ -845,6 +845,24 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void inheritArrayDimensionsInViews()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW MY-DDM
+			2 A-GROUP(1:12)
+			3 A-VAR (N12,2)
+			END-DEFINE
+			""");
+
+		var view = assertNodeType(defineData.variables().first(), IViewNode.class);
+		var group = assertNodeType(view.variables().first(), IGroupNode.class);
+		assertThat(group.dimensions()).hasSize(1);
+		var variable = assertNodeType(group.variables().first(), ITypedVariableNode.class);
+		assertThat(variable.dimensions()).hasSize(1);
+	}
+
+	@Test
 	void redefineGroups()
 	{
 		var source = """

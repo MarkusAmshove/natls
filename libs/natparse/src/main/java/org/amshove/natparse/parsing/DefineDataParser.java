@@ -7,6 +7,7 @@ import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFileType;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -153,7 +154,33 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 		}
 
+		passDownArrayDimensions(scopeNode);
+
 		return scopeNode;
+	}
+
+	private void passDownArrayDimensions(ScopeNode scope)
+	{
+		for (var variable : scope.variables())
+		{
+			inheritDimensions(variable);
+		}
+	}
+
+	private void inheritDimensions(IVariableNode variable)
+	{
+		if (variable.parent()instanceof IVariableNode parentVariable && parentVariable.isArray())
+		{
+			((VariableNode) variable).inheritDimensions(parentVariable.dimensions());
+		}
+
+		if (variable instanceof GroupNode group)
+		{
+			for (var subVariable : group.variables())
+			{
+				inheritDimensions(subVariable);
+			}
+		}
 	}
 
 	private UsingNode using() throws ParseError
