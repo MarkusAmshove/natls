@@ -327,7 +327,10 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		{
 			for (var dimension : variable.dimensions())
 			{
-				groupNode.addDimension((ArrayDimension) dimension);
+				if (!groupNode.dimensions.contains(dimension))
+				{
+					groupNode.addDimension((ArrayDimension) dimension);
+				}
 			}
 		}
 

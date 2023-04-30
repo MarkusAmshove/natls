@@ -813,6 +813,38 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void inheritArrayDimensionsInNestedRedefines()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+				DEFINE DATA LOCAL
+				01 UPPERVAR(A99)
+				01 REDEFINE UPPERVAR
+					02 #INNERGROUPARR(1:33)
+						03 #INNERVAR(A2)
+						03 REDEFINE #INNERVAR
+							04 #CHAR1(A1)
+							04 #CHAR2(A1)
+						03 #ID(A1)
+				END-DEFINE
+			""");
+
+		var firstRedefine = assertNodeType(defineData.variables().get(1), IRedefinitionNode.class);
+		var innerGroupArray = assertNodeType(firstRedefine.variables().first(), IGroupNode.class);
+		var firstVarInGroup = assertNodeType(innerGroupArray.variables().first(), ITypedVariableNode.class);
+		assertThat(firstVarInGroup.dimensions()).hasSize(1);
+
+		var redefineOfFirstVarInGroup = assertNodeType(innerGroupArray.variables().get(1), IRedefinitionNode.class);
+
+		assertThat(redefineOfFirstVarInGroup.variables().first().name()).isEqualTo("#CHAR1");
+		assertThat(redefineOfFirstVarInGroup.variables().first().dimensions()).hasSize(1); // #CHAR1
+		assertThat(redefineOfFirstVarInGroup.variables().last().name()).isEqualTo("#CHAR2");
+		assertThat(redefineOfFirstVarInGroup.variables().last().dimensions()).hasSize(1); // #CHAR2
+
+		assertThat(innerGroupArray.variables().last().name()).isEqualTo("#ID");
+		assertThat(innerGroupArray.variables().last().dimensions()).hasSize(1);
+	}
+
+	@Test
 	void redefineGroups()
 	{
 		var source = """
