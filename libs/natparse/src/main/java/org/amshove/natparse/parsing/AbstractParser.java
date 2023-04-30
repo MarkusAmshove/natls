@@ -327,7 +327,21 @@ abstract class AbstractParser<T>
 		}
 
 		var node = symbolReferenceNode(token);
-		return new SyntheticVariableStatementNode(node);
+		var variableNode = new SyntheticVariableStatementNode(node);
+		if (peekKind(SyntaxKind.LPAREN)
+			&& !peekKind(1, SyntaxKind.AD)
+			&& !peekKind(1, SyntaxKind.EM))
+		{
+			consumeMandatory(node, SyntaxKind.LPAREN);
+			variableNode.addDimension(consumeArrayAccess(variableNode));
+			while (peekKind(SyntaxKind.COMMA))
+			{
+				consume(variableNode);
+				variableNode.addDimension(consumeArrayAccess(variableNode));
+			}
+			consumeMandatory(variableNode, SyntaxKind.RPAREN);
+		}
+		return variableNode;
 	}
 
 	protected FunctionCallNode functionCall(SyntaxToken token) throws ParseError
@@ -758,7 +772,7 @@ abstract class AbstractParser<T>
 		return reference;
 	}
 
-	protected IOperandNode consumeArrayAccess(VariableReferenceNode reference) throws ParseError
+	protected IOperandNode consumeArrayAccess(BaseSyntaxNode reference) throws ParseError
 	{
 		if (peekKind(SyntaxKind.ASTERISK) && peekKind(1, SyntaxKind.RPAREN))
 		{

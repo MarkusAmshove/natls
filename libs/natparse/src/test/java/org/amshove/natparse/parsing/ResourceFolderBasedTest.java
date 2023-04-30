@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.assertj.core.api.Fail.fail;
@@ -22,6 +23,14 @@ import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 public abstract class ResourceFolderBasedTest
 {
 	protected Iterable<DynamicTest> testFolder(String relativeFolderPath)
+	{
+		return testFolder(relativeFolderPath, null);
+	}
+
+	/**
+	 * Only runs the specified test. Pass null or omit to run all tests.
+	 */
+	protected Iterable<DynamicTest> testFolder(String relativeFolderPath, String testToRun)
 	{
 		var testFiles = ResourceHelper.findRelativeResourceFiles(relativeFolderPath, getClass());
 
@@ -35,6 +44,11 @@ public abstract class ResourceFolderBasedTest
 			{
 				var testFilePath = Path.of(testFile);
 				var testFileName = testFilePath.getFileName().toString();
+
+				if (!testFileName.equals(testToRun))
+				{
+					return Stream.of();
+				}
 
 				var fileType = testFileName.contains(".")
 					? NaturalFileType.fromExtension(testFileName.split("\\.")[1])

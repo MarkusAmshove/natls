@@ -801,7 +801,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			throw new ParseError(peek());
 		}
 
-		while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+		while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN) && !peekKind(SyntaxKind.COMMA))
 		{
 			var dimension = new ArrayDimension();
 			var lowerBound = extractArrayBound(new TokenNode(peek()), dimension);

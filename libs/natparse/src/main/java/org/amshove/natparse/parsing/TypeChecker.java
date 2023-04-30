@@ -67,6 +67,69 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		{
 			checkAlphanumericInitLength(typedVariableNode);
 		}
+
+		if (node instanceof IVariableReferenceNode variableReference)
+		{
+			checkVariableReference(variableReference);
+		}
+	}
+
+	private void checkVariableReference(IVariableReferenceNode variableReference)
+	{
+		if (!(variableReference.reference()instanceof IVariableNode target))
+		{
+			return;
+		}
+
+		if (variableReference.dimensions().hasItems() && !target.isArray())
+		{
+			diagnostics.add(
+				ParserErrors.invalidArrayAccess(
+					variableReference.referencingToken(),
+					"Using index access for a reference to non-array %s".formatted(target.name())
+				)
+			);
+		}
+
+		if (variableReference.dimensions().isEmpty() && target.isArray())
+		{
+			if (!doesNotNeedDimensionInParentStatement(variableReference))
+			{
+				diagnostics.add(
+					ParserErrors.invalidArrayAccess(
+						variableReference.referencingToken(),
+						"Missing index access, because %s is an array".formatted(target.name())
+					)
+				);
+			}
+		}
+
+		if (variableReference.dimensions().hasItems() && target.dimensions().hasItems()
+			&& variableReference.dimensions().size() != target.dimensions().size())
+		{
+			diagnostics.add(
+				ParserErrors.invalidArrayAccess(
+					variableReference.referencingToken(),
+					"Missing dimensions in array access. Got %d dimensions but %s has %d".formatted(
+						variableReference.dimensions().size(),
+						target.name(),
+						target.dimensions().size()
+					)
+				)
+			);
+		}
+	}
+
+	private boolean doesNotNeedDimensionInParentStatement(IVariableReferenceNode reference)
+	{
+		var parent = reference.parent();
+		if (parent instanceof ISystemFunctionNode systemFunction)
+		{
+			var theFunction = systemFunction.systemFunction();
+			return theFunction == SyntaxKind.OCC || theFunction == SyntaxKind.OCCURRENCE;
+		}
+
+		return parent instanceof IExpandArrayNode || parent instanceof IReduceArrayNode || parent instanceof IResizeArrayNode;
 	}
 
 	private void checkWriteWork(IWriteWorkNode writeWork)

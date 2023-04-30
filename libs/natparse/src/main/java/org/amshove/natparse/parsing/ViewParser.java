@@ -97,7 +97,7 @@ class ViewParser extends AbstractParser<ViewNode>
 
 			if (peek().kind() == SyntaxKind.NUMBER_LITERAL || (peek().kind().isIdentifier() && isVariableDeclared(peek().symbolName())))
 			{
-				addArrayDimension(variable);
+				addArrayDimensions(variable);
 				var typedDdmArrayVariable = typedVariableFromDdm(variable);
 				consumeMandatory(typedDdmArrayVariable, SyntaxKind.RPAREN);
 				return typedDdmArrayVariable;
@@ -254,7 +254,7 @@ class ViewParser extends AbstractParser<ViewNode>
 			throw new ParseError(peek());
 		}
 
-		while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+		while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN) && !peekKind(SyntaxKind.COMMA))
 		{
 			var dimension = new ArrayDimension();
 			var lowerBound = extractArrayBound(new TokenNode(peek()), dimension);

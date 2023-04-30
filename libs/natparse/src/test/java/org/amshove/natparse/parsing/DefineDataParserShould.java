@@ -704,6 +704,21 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void parseTheNumberOfDimensionsCorrectly()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			define data local
+			1 #GROUP (1:2,1:120)
+			2 #VAR (A10)
+			end-define
+			""");
+
+		var group = assertNodeType(defineData.variables().first(), IGroupNode.class);
+		assertThat(group.dimensions()).hasSize(2);
+		assertThat(group.variables().first().dimensions()).hasSize(2);
+	}
+
+	@Test
 	void addAReferenceToTheConstantForConstArrayDimension()
 	{
 		var defineData = assertParsesWithoutDiagnostics("""
