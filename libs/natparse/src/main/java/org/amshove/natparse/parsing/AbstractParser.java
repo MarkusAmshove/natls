@@ -342,8 +342,8 @@ abstract class AbstractParser<T>
 		var node = symbolReferenceNode(token);
 		var variableNode = new SyntheticVariableStatementNode(node);
 		if (peekKind(SyntaxKind.LPAREN)
-			&& !peekKind(1, SyntaxKind.AD)
-			&& !peekKind(1, SyntaxKind.EM))
+			&& !getKind(1).isAttribute()
+			&& !peekKind(1, SyntaxKind.LABEL_IDENTIFIER))
 		{
 			consumeMandatory(node, SyntaxKind.LPAREN);
 			variableNode.addDimension(consumeArrayAccess(variableNode));
