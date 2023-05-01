@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 
 public class CliAnalyzer
@@ -93,6 +94,7 @@ public class CliAnalyzer
 	private final AtomicInteger filesChecked = new AtomicInteger();
 	private final AtomicInteger totalDiagnostics = new AtomicInteger();
 	private final AtomicInteger exceptions = new AtomicInteger();
+	private final AtomicLong linesOfCode = new AtomicLong();
 
 	private int analyze(Path projectFilePath)
 	{
@@ -174,13 +176,17 @@ public class CliAnalyzer
 
 		System.out.println();
 		System.out.println("Done.");
-		System.out.println("Index time: " + indexTime + " ms");
-		System.out.println("Check time: " + checkTime + " ms");
-		System.out.println("Miss time : " + missTime + " ms");
-		System.out.println("Total: " + totalTime + " ms (" + (totalTime / 1000) + "s)");
-		System.out.println("Files checked: " + filesChecked.get());
-		System.out.println("Total diagnostics: " + totalDiagnostics.get());
+		System.out.printf("Index time: %d ms%n", indexTime);
+		System.out.printf("Check time: %d ms%n", checkTime);
+		System.out.printf("Miss time : %d ms%n", missTime);
+		System.out.printf("Total: %d ms (%ds)%n", totalTime, totalTime / 1000);
+		System.out.println();
+		System.out.printf("Files checked: %,d%n", filesChecked.get());
+		System.out.printf("Lines of code: %,d%n", linesOfCode.get());
+		System.out.println();
+		System.out.printf("Total diagnostics: %,d%n", totalDiagnostics.get());
 		System.out.println("Exceptions: " + exceptions.get());
+		System.out.println();
 		System.out.println("Slowest lexed module: " + slowestLexedModule);
 		System.out.println("Slowest parsed module: " + slowestParsedModule);
 		System.out.println("Slowest linted module: " + (disableLinting ? "disabled" : slowestLintedModule));
@@ -203,6 +209,7 @@ public class CliAnalyzer
 			var lexStart = System.currentTimeMillis();
 			var tokens = lexer.lex(filesystem.readFile(file.getPath()), file.getPath());
 			var lexEnd = System.currentTimeMillis();
+			countLinesOfCode(tokens);
 			if (slowestLexedModule.milliseconds < lexEnd - lexStart)
 			{
 				slowestLexedModule = new SlowestModule(lexEnd - lexStart, file.getProjectRelativePath().toString());
@@ -219,6 +226,22 @@ public class CliAnalyzer
 			exceptions.incrementAndGet();
 			return null;
 		}
+	}
+
+	private void countLinesOfCode(TokenList tokens)
+	{
+		var previousLine = -1;
+		var totalLines = 0;
+		for (var token : tokens)
+		{
+			if (token.line() != previousLine)
+			{
+				totalLines++;
+				previousLine = token.line();
+			}
+		}
+
+		linesOfCode.addAndGet(totalLines);
 	}
 
 	private INaturalModule parse(NaturalFile file, TokenList tokens, ArrayList<IDiagnostic> allDiagnosticsInFile)

@@ -5,10 +5,11 @@ import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.project.NaturalHeader;
 
 import java.nio.file.Path;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class TokenList
+public class TokenList implements Iterable<SyntaxToken>
 {
 	public static TokenList fromTokens(Path filePath, List<SyntaxToken> tokenList)
 	{
@@ -256,5 +257,11 @@ public class TokenList
 	public void rollback()
 	{
 		currentOffset = 0;
+	}
+
+	@Override
+	public Iterator<SyntaxToken> iterator()
+	{
+		return tokens.iterator();
 	}
 }
