@@ -211,8 +211,10 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 							case PRINTER -> statementList.addStatement(definePrinter());
 							case WINDOW -> statementList.addStatement(defineWindow());
 							case WORK -> statementList.addStatement(defineWork());
-							case PROTOTYPE, DATA ->
-							{ // not implemented statements. DATA needs to be handled when parsing functions and external subroutines
+							case PROTOTYPE -> statementList.addStatement(definePrototype());
+							case DATA ->
+							{
+								// can this even happen?
 								tokens.advance();
 								tokens.advance();
 							}
@@ -349,6 +351,46 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode definePrototype() throws ParseError
+	{
+		if (peekKind(2, SyntaxKind.FOR) || peekKind(2, SyntaxKind.VARIABLE))
+		{
+			return definePrototypeVariable();
+		}
+
+		var prototype = new DefinePrototypeNode();
+		var opening = consumeMandatory(prototype, SyntaxKind.DEFINE);
+		consumeMandatory(prototype, SyntaxKind.PROTOTYPE);
+
+		var name = consumeMandatoryIdentifier(prototype); // TODO: Sideload
+		prototype.setPrototype(name);
+		while (!isAtEnd() && !peekKind(SyntaxKind.END_PROTOTYPE))
+		{
+			consume(prototype); // incomplete
+		}
+
+		consumeMandatoryClosing(prototype, SyntaxKind.END_PROTOTYPE, opening);
+		return prototype;
+	}
+
+	private StatementNode definePrototypeVariable() throws ParseError
+	{
+		var prototype = new DefinePrototypeNode();
+		var opening = consumeMandatory(prototype, SyntaxKind.DEFINE);
+		consumeMandatory(prototype, SyntaxKind.PROTOTYPE);
+		consumeOptionally(prototype, SyntaxKind.FOR);
+		consumeMandatory(prototype, SyntaxKind.VARIABLE);
+
+		prototype.setVariableReference(consumeVariableReferenceNode(prototype));
+		while (!isAtEnd() && !peekKind(SyntaxKind.END_PROTOTYPE))
+		{
+			consume(prototype); // incomplete
+		}
+
+		consumeMandatoryClosing(prototype, SyntaxKind.END_PROTOTYPE, opening);
+		return prototype;
 	}
 
 	private StatementNode terminate() throws ParseError

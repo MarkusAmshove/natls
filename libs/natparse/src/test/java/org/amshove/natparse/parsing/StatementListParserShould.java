@@ -1894,4 +1894,30 @@ class StatementListParserShould extends StatementParseTest
 		var stmt = assertParsesSingleStatement("REDUCE DYNAMIC #VAR TO 20 GIVING #ERR", IReduceDynamicNode.class);
 		assertIsVariableReference(stmt.errorVariable(), "#ERR");
 	}
+
+	@Test
+	void parseDefinePrototype()
+	{
+		var prototype = assertParsesSingleStatement("""
+			DEFINE PROTOTYPE HI RETURNS (L)
+			END-PROTOTYPE
+			""", IDefinePrototypeNode.class);
+
+		assertThat(prototype.nameToken().symbolName()).isEqualTo("HI");
+		assertThat(prototype.isVariable()).isFalse();
+		assertThat(prototype.variableReference()).isNull();
+	}
+
+	@Test
+	void parseDefinePrototypeVariable()
+	{
+		var prototype = assertParsesSingleStatement("""
+			DEFINE PROTOTYPE VARIABLE HI RETURNS (L)
+			END-PROTOTYPE
+			""", IDefinePrototypeNode.class);
+
+		assertThat(prototype.nameToken().symbolName()).isEqualTo("HI");
+		assertThat(prototype.isVariable()).isTrue();
+		assertThat(prototype.variableReference()).isNotNull();
+	}
 }
