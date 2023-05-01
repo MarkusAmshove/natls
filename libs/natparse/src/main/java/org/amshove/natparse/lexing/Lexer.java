@@ -854,6 +854,7 @@ public class Lexer
 				case "IP=" -> inputPromptAttribute();
 				case "IS=" -> identicalSuppressAttribute();
 				case "NL=" -> numericLengthAttribute();
+				case "SG=" -> signPosition();
 				case "ZP=" -> zeroPrintingAttribute();
 			}
 
@@ -1124,6 +1125,18 @@ public class Lexer
 		}
 
 		createAndAdd(SyntaxKind.NL);
+	}
+
+	private void signPosition()
+	{
+		scanner.start();
+		scanner.advance(3); // SG=
+		while (!scanner.isAtEnd() && isNoWhitespace() && scanner.peek() != ')')
+		{
+			scanner.advance();
+		}
+
+		createAndAdd(SyntaxKind.SG);
 	}
 
 	private void dynamicAttribute()

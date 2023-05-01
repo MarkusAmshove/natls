@@ -174,6 +174,17 @@ class LexerForAttributeControlsShould extends AbstractLexerTest
 	}
 
 	@Test
+	void consumeSP()
+	{
+		assertTokens(
+			"(SG=OFF)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.SG, "SG=OFF"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
 	void consumeCV()
 	{
 		assertTokens(
