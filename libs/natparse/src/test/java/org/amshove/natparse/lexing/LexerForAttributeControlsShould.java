@@ -161,4 +161,16 @@ class LexerForAttributeControlsShould extends AbstractLexerTest
 			token(SyntaxKind.RPAREN)
 		);
 	}
+
+	@Test
+	void consumeCV()
+	{
+		assertTokens(
+			"(CV=#VAR)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.CV, "CV="),
+			token(SyntaxKind.IDENTIFIER, "#VAR"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
 }

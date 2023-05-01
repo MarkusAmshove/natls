@@ -874,6 +874,12 @@ public class Lexer
 			return;
 		}
 
+		if (inParens && scanner.peekText("CV="))
+		{
+			controlVariableAttribute();
+			return;
+		}
+
 		if (inParens && scanner.peekText("DF="))
 		{
 			dateFormatAttribute();
@@ -1030,6 +1036,14 @@ public class Lexer
 		{
 			createAndAdd(SyntaxKind.IDENTIFIER);
 		}
+	}
+
+	private void controlVariableAttribute()
+	{
+		scanner.start();
+		scanner.advance(3); // CV=
+		// we intentionally don't consume more, because the variable should be IDENTIFIER
+		createAndAdd(SyntaxKind.CV);
 	}
 
 	private void editorMask()
