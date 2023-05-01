@@ -10,7 +10,7 @@ import org.amshove.natparse.natural.ISystemFunctionNode;
 
 class SystemFunctionNode extends BaseSyntaxNode implements ISystemFunctionNode
 {
-	private List<IOperandNode> parameter = new ArrayList<>();
+	private final List<IOperandNode> parameter = new ArrayList<>();
 	private SyntaxKind systemFunction;
 
 	@Override

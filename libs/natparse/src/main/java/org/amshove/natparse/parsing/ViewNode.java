@@ -31,6 +31,12 @@ class ViewNode extends GroupNode implements IViewNode
 		return ddm;
 	}
 
+	@Override
+	public boolean isInView()
+	{
+		return false;
+	}
+
 	void setDdm(IDataDefinitionModule ddm)
 	{
 		this.ddm = ddm;

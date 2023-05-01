@@ -518,4 +518,13 @@ class ParserErrors
 			ParserError.INVALID_MODULE_TYPE
 		);
 	}
+
+	public static IDiagnostic invalidArrayAccess(SyntaxToken token, String message)
+	{
+		return ParserDiagnostic.create(
+			message,
+			token,
+			ParserError.INVALID_ARRAY_ACCESS
+		);
+	}
 }

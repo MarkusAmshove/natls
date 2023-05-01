@@ -1011,7 +1011,14 @@ class StatementListParserShould extends StatementParseTest
 	void parseWriteWithAttributeDefinition()
 	{
 		var write = assertParsesSingleStatement("WRITE (AD=UL AL=17 NL=8)", IWriteNode.class);
-		assertThat(write.descendants()).hasSize(10);
+		assertThat(write.descendants()).hasSize(6);
+	}
+
+	@Test
+	void notParseAttributeAsIsnParameter()
+	{
+		var write = assertParsesSingleStatement("WRITE *ISN(NL=8)", IWriteNode.class);
+		assertThat(write.descendants()).anyMatch(n -> n instanceof ITokenNode tNode && tNode.token().kind() == SyntaxKind.NL);
 	}
 
 	@Test
@@ -1893,5 +1900,94 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var stmt = assertParsesSingleStatement("REDUCE DYNAMIC #VAR TO 20 GIVING #ERR", IReduceDynamicNode.class);
 		assertIsVariableReference(stmt.errorVariable(), "#ERR");
+	}
+
+	@Test
+	void parseDefinePrototype()
+	{
+		var prototype = assertParsesSingleStatement("""
+			DEFINE PROTOTYPE HI RETURNS (L)
+			END-PROTOTYPE
+			""", IDefinePrototypeNode.class);
+
+		assertThat(prototype.nameToken().symbolName()).isEqualTo("HI");
+		assertThat(prototype.isVariable()).isFalse();
+		assertThat(prototype.variableReference()).isNull();
+	}
+
+	@Test
+	void parseDefinePrototypeVariable()
+	{
+		var prototype = assertParsesSingleStatement("""
+			DEFINE PROTOTYPE VARIABLE HI RETURNS (L)
+			END-PROTOTYPE
+			""", IDefinePrototypeNode.class);
+
+		assertThat(prototype.nameToken().symbolName()).isEqualTo("HI");
+		assertThat(prototype.isVariable()).isTrue();
+		assertThat(prototype.variableReference()).isNotNull();
+	}
+
+	@Test
+	void parseWritePcWithVariable()
+	{
+		var write = assertParsesSingleStatement("WRITE PC FILE 1 VARIABLE 'Hi'", IWritePcNode.class);
+		assertThat(write.isVariable()).isTrue();
+		assertLiteral(write.number(), SyntaxKind.NUMBER_LITERAL);
+	}
+
+	@Test
+	void parseWritePcWithoutVariable()
+	{
+		var write = assertParsesSingleStatement("WRITE PC FILE 1 'Hi'", IWritePcNode.class);
+		assertThat(write.isVariable()).isFalse();
+		assertLiteral(write.operand(), SyntaxKind.STRING_LITERAL);
+	}
+
+	@Test
+	void parseWritePcCommandSync()
+	{
+		assertParsesSingleStatement("WRITE PC 5 COMMAND 'Hi' SYNC", IWritePcNode.class);
+	}
+
+	@Test
+	void parseWritePcCommandAsync()
+	{
+		assertParsesSingleStatement("WRITE PC 5 COMMAND 'Hi' ASYNC", IWritePcNode.class);
+	}
+
+	@Test
+	void parseDownloadPcWithVariable()
+	{
+		var download = assertParsesSingleStatement("DOWNLOAD PC FILE 1 VARIABLE 'Hi'", IWritePcNode.class);
+		assertThat(download.isVariable()).isTrue();
+		assertLiteral(download.number(), SyntaxKind.NUMBER_LITERAL);
+	}
+
+	@Test
+	void parseDownloadPcWithoutVariable()
+	{
+		var download = assertParsesSingleStatement("DOWNLOAD PC FILE 1 'Hi'", IWritePcNode.class);
+		assertThat(download.isVariable()).isFalse();
+		assertLiteral(download.operand(), SyntaxKind.STRING_LITERAL);
+	}
+
+	@Test
+	void parseDownloadPcCommandSync()
+	{
+		assertParsesSingleStatement("DOWNLOAD PC 5 COMMAND 'Hi' SYNC", IWritePcNode.class);
+	}
+
+	@Test
+	void parseDownloadPcCommandAsync()
+	{
+		assertParsesSingleStatement("DOWNLOAD PC 5 COMMAND 'Hi' ASYNC", IWritePcNode.class);
+	}
+
+	@Test
+	void allowLabelIdentifierAsVariableOperand()
+	{
+		var assignment = assertParsesSingleStatement("#VAR(R1.) := 5", IAssignmentStatementNode.class);
+		assertIsVariableReference(assignment.target(), "#VAR");
 	}
 }

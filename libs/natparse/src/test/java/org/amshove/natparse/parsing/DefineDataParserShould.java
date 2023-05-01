@@ -704,6 +704,21 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void parseTheNumberOfDimensionsCorrectly()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			define data local
+			1 #GROUP (1:2,1:120)
+			2 #VAR (A10)
+			end-define
+			""");
+
+		var group = assertNodeType(defineData.variables().first(), IGroupNode.class);
+		assertThat(group.dimensions()).hasSize(2);
+		assertThat(group.variables().first().dimensions()).hasSize(2);
+	}
+
+	@Test
 	void addAReferenceToTheConstantForConstArrayDimension()
 	{
 		var defineData = assertParsesWithoutDiagnostics("""
@@ -795,6 +810,84 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			   2 ALSO-INSIDE (A4)
 			end-define
 			""");
+	}
+
+	@Test
+	void inheritArrayDimensionsInNestedRedefines()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+				DEFINE DATA LOCAL
+				01 UPPERVAR(A99)
+				01 REDEFINE UPPERVAR
+					02 #INNERGROUPARR(1:33)
+						03 #INNERVAR(A2)
+						03 REDEFINE #INNERVAR
+							04 #CHAR1(A1)
+							04 #CHAR2(A1)
+						03 #ID(A1)
+				END-DEFINE
+			""");
+
+		var firstRedefine = assertNodeType(defineData.variables().get(1), IRedefinitionNode.class);
+		var innerGroupArray = assertNodeType(firstRedefine.variables().first(), IGroupNode.class);
+		var firstVarInGroup = assertNodeType(innerGroupArray.variables().first(), ITypedVariableNode.class);
+		assertThat(firstVarInGroup.dimensions()).hasSize(1);
+
+		var redefineOfFirstVarInGroup = assertNodeType(innerGroupArray.variables().get(1), IRedefinitionNode.class);
+
+		assertThat(redefineOfFirstVarInGroup.variables().first().name()).isEqualTo("#CHAR1");
+		assertThat(redefineOfFirstVarInGroup.variables().first().dimensions()).hasSize(1); // #CHAR1
+		assertThat(redefineOfFirstVarInGroup.variables().last().name()).isEqualTo("#CHAR2");
+		assertThat(redefineOfFirstVarInGroup.variables().last().dimensions()).hasSize(1); // #CHAR2
+
+		assertThat(innerGroupArray.variables().last().name()).isEqualTo("#ID");
+		assertThat(innerGroupArray.variables().last().dimensions()).hasSize(1);
+	}
+
+	@Test
+	void inheritArrayDimensionsInViews()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW MY-DDM
+			2 A-GROUP(1:12)
+			3 A-VAR (N12,2)
+			END-DEFINE
+			""");
+
+		var view = assertNodeType(defineData.variables().first(), IViewNode.class);
+		var group = assertNodeType(view.variables().first(), IGroupNode.class);
+		assertThat(group.dimensions()).hasSize(1);
+		var variable = assertNodeType(group.variables().first(), ITypedVariableNode.class);
+		assertThat(variable.dimensions()).hasSize(1);
+	}
+
+	@Test
+	void parseTheCorrectNumberOfDimensionsForTypesWithMath()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 #VAR (N12) CONST<5>
+			1 #ARR (A10/1:#VAR+1)
+			END-DEFINE
+			""");
+
+		var array = findVariable(defineData, "#ARR", ITypedVariableNode.class);
+		assertThat(array.dimensions()).hasSize(1);
+	}
+
+	@Test
+	void parseTheCorrectNumberOfDimensionsForTypesWithMathAndComma()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 #VAR (N12) CONST<5>
+			1 #ARR (A10/1:#VAR+ 1,1 :20)
+			END-DEFINE
+			""");
+
+		var array = findVariable(defineData, "#ARR", ITypedVariableNode.class);
+		assertThat(array.dimensions()).hasSize(2);
 	}
 
 	@Test
@@ -1041,6 +1134,21 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var variable = findVariable(defineData, "#p-unbound-array", ITypedVariableNode.class);
 		assertThat(variable.dimensions().first().isUpperUnbound()).isTrue();
+	}
+
+	@Test
+	void parseArrayBoundsWithNastyWhitespace()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+						define data
+						parameter
+						1 #p-array (A3/ 1: 50)
+						end-define
+			""");
+
+		var variable = findVariable(defineData, "#p-array", ITypedVariableNode.class);
+		assertThat(variable.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(variable.dimensions().first().upperBound()).isEqualTo(50);
 	}
 
 	@Test

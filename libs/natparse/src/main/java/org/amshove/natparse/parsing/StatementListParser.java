@@ -125,6 +125,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case COMPUTE:
 						statementList.addStatements(assignOrCompute(SyntaxKind.COMPUTE));
 						break;
+					case DOWNLOAD:
+						statementList.addStatement(writeDownloadPc());
+						break;
 					case REDUCE:
 						statementList.addStatement(reduce());
 						break;
@@ -182,6 +185,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 							statementList.addStatement(writeWork());
 							break;
 						}
+						if (peekKind(1, SyntaxKind.PC))
+						{
+							statementList.addStatement(writeDownloadPc());
+							break;
+						}
 						statementList.addStatement(write());
 						break;
 					case DISPLAY:
@@ -211,8 +219,10 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 							case PRINTER -> statementList.addStatement(definePrinter());
 							case WINDOW -> statementList.addStatement(defineWindow());
 							case WORK -> statementList.addStatement(defineWork());
-							case PROTOTYPE, DATA ->
-							{ // not implemented statements. DATA needs to be handled when parsing functions and external subroutines
+							case PROTOTYPE -> statementList.addStatement(definePrototype());
+							case DATA ->
+							{
+								// can this even happen?
 								tokens.advance();
 								tokens.advance();
 							}
@@ -265,6 +275,15 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case TERMINATE:
 						statementList.addStatement(terminate());
 						break;
+					case LPAREN:
+						if (getKind(1).isAttribute())
+						{
+							// Workaround for attributes. Should be added to the operand they belong to.
+							var tokenNode = new SyntheticTokenStatementNode();
+							consumeAttributeDefinition(tokenNode);
+							statementList.addStatement(tokenNode);
+							break;
+						}
 					case DECIDE:
 						if (peekKind(1, SyntaxKind.FOR))
 						{
@@ -342,6 +361,46 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return statementList;
 	}
 
+	private StatementNode definePrototype() throws ParseError
+	{
+		if (peekKind(2, SyntaxKind.FOR) || peekKind(2, SyntaxKind.VARIABLE))
+		{
+			return definePrototypeVariable();
+		}
+
+		var prototype = new DefinePrototypeNode();
+		var opening = consumeMandatory(prototype, SyntaxKind.DEFINE);
+		consumeMandatory(prototype, SyntaxKind.PROTOTYPE);
+
+		var name = consumeMandatoryIdentifier(prototype); // TODO: Sideload
+		prototype.setPrototype(name);
+		while (!isAtEnd() && !peekKind(SyntaxKind.END_PROTOTYPE))
+		{
+			consume(prototype); // incomplete
+		}
+
+		consumeMandatoryClosing(prototype, SyntaxKind.END_PROTOTYPE, opening);
+		return prototype;
+	}
+
+	private StatementNode definePrototypeVariable() throws ParseError
+	{
+		var prototype = new DefinePrototypeNode();
+		var opening = consumeMandatory(prototype, SyntaxKind.DEFINE);
+		consumeMandatory(prototype, SyntaxKind.PROTOTYPE);
+		consumeOptionally(prototype, SyntaxKind.FOR);
+		consumeMandatory(prototype, SyntaxKind.VARIABLE);
+
+		prototype.setVariableReference(consumeVariableReferenceNode(prototype));
+		while (!isAtEnd() && !peekKind(SyntaxKind.END_PROTOTYPE))
+		{
+			consume(prototype); // incomplete
+		}
+
+		consumeMandatoryClosing(prototype, SyntaxKind.END_PROTOTYPE, opening);
+		return prototype;
+	}
+
 	private StatementNode terminate() throws ParseError
 	{
 		var terminate = new TerminateNode();
@@ -393,6 +452,27 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return writeWork;
+	}
+
+	private StatementNode writeDownloadPc() throws ParseError
+	{
+		var writePc = new WritePcNode();
+		consumeAnyMandatory(writePc, List.of(SyntaxKind.WRITE, SyntaxKind.DOWNLOAD));
+		consumeMandatory(writePc, SyntaxKind.PC);
+		consumeOptionally(writePc, SyntaxKind.FILE);
+		writePc.setNumber(consumeLiteralNode(writePc, SyntaxKind.NUMBER_LITERAL));
+		if (consumeOptionally(writePc, SyntaxKind.COMMAND))
+		{
+			writePc.setOperand(consumeOperandNode(writePc));
+			consumeAnyOptionally(writePc, List.of(SyntaxKind.SYNC, SyntaxKind.ASYNC));
+		}
+		else
+		{
+			writePc.setVariable(consumeOptionally(writePc, SyntaxKind.VARIABLE));
+			writePc.setOperand(consumeOperandNode(writePc));
+		}
+
+		return writePc;
 	}
 
 	private StatementNode closePc() throws ParseError
@@ -1420,6 +1500,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return display;
 	}
 
+	private static final Set<SyntaxKind> OPTIONAL_WRITE_FLAGS = Set.of(SyntaxKind.NOTITLE, SyntaxKind.NOHDR, SyntaxKind.USING, SyntaxKind.MAP, SyntaxKind.FORM, SyntaxKind.TITLE, SyntaxKind.LEFT, SyntaxKind.JUSTIFIED, SyntaxKind.UNDERLINED);
+
 	private StatementNode write() throws ParseError
 	{
 		var write = new WriteNode();
@@ -1442,10 +1524,28 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			consumeMandatory(write, SyntaxKind.RPAREN);
 		}
 
-		consumeOptionally(write, SyntaxKind.NOTITLE);
-		consumeOptionally(write, SyntaxKind.NOHDR);
+		while (consumeAnyOptionally(write, OPTIONAL_WRITE_FLAGS))
+		{
+			// advances automatically
+		}
+		while (!isAtEnd() && !isStatementStart())
+		{
+			if (peekKind(SyntaxKind.LPAREN) && getKind(1).isAttribute())
+			{
+				consumeAttributeDefinition(write);
+			}
+			else
+			{
+				if ((consumeOptionally(write, SyntaxKind.NO) && consumeOptionally(write, SyntaxKind.PARAMETER))
+					|| !isOperand())
+				{
+					break;
+				}
+				consumeOperandNode(write);
+			}
+		}
 
-		// TODO: Actual operands to WRITE not parsed
+		// TODO: Actual operands to WRITE not added as operands
 		return write;
 	}
 

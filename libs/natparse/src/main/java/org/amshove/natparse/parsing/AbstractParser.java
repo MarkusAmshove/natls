@@ -96,6 +96,19 @@ abstract class AbstractParser<T>
 		return !isAtEnd(offset) && peek(offset).kind() == kind;
 	}
 
+	/**
+	 * Returns the kind of the token at the given offset. If the offset is out of bounds, returns EOF.
+	 */
+	protected SyntaxKind getKind(int offset)
+	{
+		if (isAtEnd(offset))
+		{
+			return SyntaxKind.EOF;
+		}
+
+		return peek(offset).kind();
+	}
+
 	protected boolean peekKind(SyntaxKind kind)
 	{
 		return peekKind(0, kind);
@@ -327,7 +340,21 @@ abstract class AbstractParser<T>
 		}
 
 		var node = symbolReferenceNode(token);
-		return new SyntheticVariableStatementNode(node);
+		var variableNode = new SyntheticVariableStatementNode(node);
+		if (peekKind(SyntaxKind.LPAREN)
+			&& !getKind(1).isAttribute()
+			&& !peekKind(1, SyntaxKind.LABEL_IDENTIFIER))
+		{
+			consumeMandatory(node, SyntaxKind.LPAREN);
+			variableNode.addDimension(consumeArrayAccess(variableNode));
+			while (peekKind(SyntaxKind.COMMA))
+			{
+				consume(variableNode);
+				variableNode.addDimension(consumeArrayAccess(variableNode));
+			}
+			consumeMandatory(variableNode, SyntaxKind.RPAREN);
+		}
+		return variableNode;
 	}
 
 	protected FunctionCallNode functionCall(SyntaxToken token) throws ParseError
@@ -443,7 +470,7 @@ abstract class AbstractParser<T>
 		}
 		if (peek().kind().isSystemVariable() && peek().kind().isSystemFunction()) // can be both, like *COUNTER
 		{
-			return peekKind(1, SyntaxKind.LPAREN) ? consumeSystemFunctionNode(node) : consumeSystemVariableNode(node);
+			return peekKind(1, SyntaxKind.LPAREN) && !getKind(2).isAttribute() ? consumeSystemFunctionNode(node) : consumeSystemVariableNode(node);
 		}
 		if (peek().kind().isSystemVariable())
 		{
@@ -742,7 +769,7 @@ abstract class AbstractParser<T>
 		previousNode = reference;
 		node.addNode(reference);
 
-		if (peekKind(SyntaxKind.LPAREN) && !peekKind(1, SyntaxKind.AD))
+		if (peekKind(SyntaxKind.LPAREN) && !getKind(1).isAttribute() && !peekKind(1, SyntaxKind.LABEL_IDENTIFIER))
 		{
 			consumeMandatory(reference, SyntaxKind.LPAREN);
 			reference.addDimension(consumeArrayAccess(reference));
@@ -754,11 +781,20 @@ abstract class AbstractParser<T>
 			consumeMandatory(reference, SyntaxKind.RPAREN);
 		}
 
+		if (peekKind(SyntaxKind.LPAREN) && peekKind(1, SyntaxKind.LABEL_IDENTIFIER))
+		{
+			while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+			{
+				consume(reference);
+			}
+			consumeMandatory(reference, SyntaxKind.RPAREN);
+		}
+
 		unresolvedReferences.add(reference);
 		return reference;
 	}
 
-	protected IOperandNode consumeArrayAccess(VariableReferenceNode reference) throws ParseError
+	protected IOperandNode consumeArrayAccess(BaseSyntaxNode reference) throws ParseError
 	{
 		if (peekKind(SyntaxKind.ASTERISK) && peekKind(1, SyntaxKind.RPAREN))
 		{
@@ -832,7 +868,17 @@ abstract class AbstractParser<T>
 		// this was built for CALLNAT, where a variable reference as parameter can have attribute definitions (only AD)
 		// might be reusable for WRITE, DISPLAY, etc. for all kind of operands, but has to be fleshed out then
 		consumeMandatory(node, SyntaxKind.LPAREN);
-		consumeMandatory(node, SyntaxKind.AD);
+		while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+		{
+			if (consumeOptionally(node, SyntaxKind.CV))
+			{
+				consumeVariableReferenceNode(node);
+			}
+			else
+			{
+				consume(node);
+			}
+		}
 		consumeMandatory(node, SyntaxKind.RPAREN);
 	}
 
