@@ -4,7 +4,6 @@ PARAMETER
 LOCAL
 1 #NOT-ARRAY (A10)
 1 #ARR (A10/*)
-1 #ARR2 (A10/*)
 1 #I (I4)
 1 #GRP
 2 #GRPARR1 (A10/*)
@@ -53,7 +52,7 @@ IF #P-ARR SPECIFIED /* IF SPECIFIED doesn't need to access index
 END-IF
 
 /* Bounds need actual array, like OCC
-#I := *UBOUND(#ARR2, 1)
-#I := *LBOUND(#ARR2, 1)
+#I := *UBOUND(#ARR, 1)
+#I := *LBOUND(#ARR, 1)
 
 END

@@ -34,7 +34,7 @@ class ViewNode extends GroupNode implements IViewNode
 	@Override
 	public boolean isInView()
 	{
-		return true;
+		return false;
 	}
 
 	void setDdm(IDataDefinitionModule ddm)
