@@ -863,6 +863,34 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void parseTheCorrectNumberOfDimensionsForTypesWithMath()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 #VAR (N12) CONST<5>
+			1 #ARR (A10/1:#VAR+1)
+			END-DEFINE
+			""");
+
+		var array = findVariable(defineData, "#ARR", ITypedVariableNode.class);
+		assertThat(array.dimensions()).hasSize(1);
+	}
+
+	@Test
+	void parseTheCorrectNumberOfDimensionsForTypesWithMathAndComma()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 #VAR (N12) CONST<5>
+			1 #ARR (A10/1:#VAR+ 1,1 :20)
+			END-DEFINE
+			""");
+
+		var array = findVariable(defineData, "#ARR", ITypedVariableNode.class);
+		assertThat(array.dimensions()).hasSize(2);
+	}
+
+	@Test
 	void redefineGroups()
 	{
 		var source = """

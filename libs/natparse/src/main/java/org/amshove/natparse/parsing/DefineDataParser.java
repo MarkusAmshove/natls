@@ -7,7 +7,6 @@ import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFileType;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -857,6 +856,10 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			dimension.setLowerBound(lowerBound);
 			dimension.setUpperBound(upperBound);
 			variable.addDimension(dimension);
+			while (!isAtEnd() && !peekKind(SyntaxKind.COMMA) && !peekKind(SyntaxKind.RPAREN))
+			{
+				consume(dimension);
+			}
 		}
 	}
 
