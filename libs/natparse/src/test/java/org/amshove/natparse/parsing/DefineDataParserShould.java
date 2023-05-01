@@ -1109,6 +1109,21 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void parseArrayBoundsWithNastyWhitespace()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+						define data
+						parameter
+						1 #p-array (A3/ 1: 50)
+						end-define
+			""");
+
+		var variable = findVariable(defineData, "#p-array", ITypedVariableNode.class);
+		assertThat(variable.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(variable.dimensions().first().upperBound()).isEqualTo(50);
+	}
+
+	@Test
 	void parseArrayInitialValues()
 	{
 		assertParsesWithoutDiagnostics("""

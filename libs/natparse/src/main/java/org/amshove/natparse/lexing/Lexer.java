@@ -33,6 +33,7 @@ public class Lexer
 	{
 		DEFAULT,
 		IN_DEFINE_DATA,
+		IN_DATA_TYPE
 	}
 
 	private LexerMode lexerMode = LexerMode.DEFAULT;
@@ -55,7 +56,7 @@ public class Lexer
 				continue;
 			}
 
-			if (consumeComment())
+			if (lexerMode != LexerMode.IN_DATA_TYPE && consumeComment())
 			{
 				continue;
 			}
@@ -73,10 +74,18 @@ public class Lexer
 				case '(':
 					inParens = true;
 					lastBeforeOpenParens = previous();
+					if (lexerMode == LexerMode.IN_DEFINE_DATA && previous().kind() != SyntaxKind.LESSER_SIGN)
+					{
+						lexerMode = LexerMode.IN_DATA_TYPE;
+					}
 					createAndAddCurrentSingleToken(SyntaxKind.LPAREN);
 					continue;
 				case ')':
 					inParens = false;
+					if (lexerMode == LexerMode.IN_DATA_TYPE)
+					{
+						lexerMode = LexerMode.IN_DEFINE_DATA;
+					}
 					lastBeforeOpenParens = null;
 					createAndAddCurrentSingleToken(SyntaxKind.RPAREN);
 					continue;
@@ -767,7 +776,7 @@ public class Lexer
 			if (scanner.peek() == '/' && scanner.peek(1) == '*')
 			{
 				// Slash is a valid character for identifiers, but an asterisk is not.
-				// If a variable is named #MYVAR/* we can safely assume its a variable followed
+				// If a variable is named #MYVAR/* we can safely assume it's a variable followed
 				// by a comment.
 				break;
 			}
@@ -898,6 +907,12 @@ public class Lexer
 						kindHint = SyntaxKind.IDENTIFIER;
 					}
 					break;
+			}
+
+			if (scanner.peek() == '/' && lexerMode == LexerMode.IN_DATA_TYPE)
+			{
+				// Slash is a valid character for identifiers, if we're lexing a datatype we can be pretty confident about the slash being for array dimensions
+				break;
 			}
 
 			if (scanner.peek() == '/')
