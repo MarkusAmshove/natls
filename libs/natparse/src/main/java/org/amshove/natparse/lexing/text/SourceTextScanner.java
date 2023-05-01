@@ -178,11 +178,6 @@ public class SourceTextScanner
 			return null;
 		}
 
-		var builder = new StringBuilder(length);
-		for (var i = currentOffset; i < currentOffset + length; i++)
-		{
-			builder.append(source[i]);
-		}
-		return builder.toString();
+		return new String(source, currentOffset, length);
 	}
 }
