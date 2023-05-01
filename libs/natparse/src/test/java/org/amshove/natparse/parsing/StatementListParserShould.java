@@ -1927,4 +1927,32 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(prototype.isVariable()).isTrue();
 		assertThat(prototype.variableReference()).isNotNull();
 	}
+
+	@Test
+	void parseWritePcWithVariable()
+	{
+		var write = assertParsesSingleStatement("WRITE PC FILE 1 VARIABLE 'Hi'", IWritePcNode.class);
+		assertThat(write.isVariable()).isTrue();
+		assertLiteral(write.number(), SyntaxKind.NUMBER_LITERAL);
+	}
+
+	@Test
+	void parseWritePcWithoutVariable()
+	{
+		var write = assertParsesSingleStatement("WRITE PC FILE 1 'Hi'", IWritePcNode.class);
+		assertThat(write.isVariable()).isFalse();
+		assertLiteral(write.operand(), SyntaxKind.STRING_LITERAL);
+	}
+
+	@Test
+	void parseWritePcCommandSync()
+	{
+		assertParsesSingleStatement("WRITE PC 5 COMMAND 'Hi' SYNC", IWritePcNode.class);
+	}
+
+	@Test
+	void parseWritePcCommandAsync()
+	{
+		assertParsesSingleStatement("WRITE PC 5 COMMAND 'Hi' ASYNC", IWritePcNode.class);
+	}
 }

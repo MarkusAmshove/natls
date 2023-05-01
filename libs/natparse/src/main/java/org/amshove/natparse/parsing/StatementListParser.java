@@ -182,6 +182,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 							statementList.addStatement(writeWork());
 							break;
 						}
+						if (peekKind(1, SyntaxKind.PC))
+						{
+							statementList.addStatement(writeDownloadPc());
+							break;
+						}
 						statementList.addStatement(write());
 						break;
 					case DISPLAY:
@@ -444,6 +449,27 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return writeWork;
+	}
+
+	private StatementNode writeDownloadPc() throws ParseError
+	{
+		var writePc = new WritePcNode();
+		consumeAnyMandatory(writePc, List.of(SyntaxKind.WRITE, SyntaxKind.DOWNLOAD));
+		consumeMandatory(writePc, SyntaxKind.PC);
+		consumeOptionally(writePc, SyntaxKind.FILE);
+		writePc.setNumber(consumeLiteralNode(writePc, SyntaxKind.NUMBER_LITERAL));
+		if (consumeOptionally(writePc, SyntaxKind.COMMAND))
+		{
+			writePc.setOperand(consumeOperandNode(writePc));
+			consumeAnyOptionally(writePc, List.of(SyntaxKind.SYNC, SyntaxKind.ASYNC));
+		}
+		else
+		{
+			writePc.setVariable(consumeOptionally(writePc, SyntaxKind.VARIABLE));
+			writePc.setOperand(consumeOperandNode(writePc));
+		}
+
+		return writePc;
 	}
 
 	private StatementNode closePc() throws ParseError
