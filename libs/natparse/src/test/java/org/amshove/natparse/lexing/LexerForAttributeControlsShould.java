@@ -163,6 +163,17 @@ class LexerForAttributeControlsShould extends AbstractLexerTest
 	}
 
 	@Test
+	void consumeZP()
+	{
+		assertTokens(
+			"(ZP=OFF)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.ZP, "ZP=OFF"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
 	void consumeCV()
 	{
 		assertTokens(

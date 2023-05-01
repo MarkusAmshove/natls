@@ -170,4 +170,19 @@ public class SourceTextScanner
 
 		return true;
 	}
+
+	public String peekText(int length)
+	{
+		if (willPassEnd(length))
+		{
+			return null;
+		}
+
+		var builder = new StringBuilder(length);
+		for (var i = currentOffset; i < currentOffset + length; i++)
+		{
+			builder.append(source[i]);
+		}
+		return builder.toString();
+	}
 }

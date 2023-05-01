@@ -838,64 +838,32 @@ public class Lexer
 
 	private void consumeIdentifierOrKeyword()
 	{
-		if (inParens && scanner.peekText("EM="))
+		if (inParens)
 		{
-			editorMask();
-			return;
-		}
+			var attributeLookahead = scanner.peekText(3);
+			if (attributeLookahead.charAt(attributeLookahead.length() - 1) == '=')
+			{
+				var previous = previous();
+				switch (attributeLookahead)
+				{
+					case "AD=" -> attributeDefinition();
+					case "AL=" -> alphanumericLengthAttribute();
+					case "CD=" -> colorDefinition();
+					case "CV=" -> controlVariableAttribute();
+					case "DF=" -> dateFormatAttribute();
+					case "DY=" -> dynamicAttribute();
+					case "EM=" -> editorMask();
+					case "IP=" -> inputPromptAttribute();
+					case "IS=" -> identicalSuppressAttribute();
+					case "NL=" -> numericLengthAttribute();
+					case "ZP=" -> zeroPrintingAttribute();
+				}
 
-		if (inParens && scanner.peekText("AD="))
-		{
-			attributeDefinition();
-			return;
-		}
-
-		if (inParens && scanner.peekText("CD="))
-		{
-			colorDefinition();
-			return;
-		}
-
-		if (inParens && scanner.peekText("DY="))
-		{
-			dynamicAttribute();
-			return;
-		}
-
-		if (inParens && scanner.peekText("NL="))
-		{
-			numericLengthAttribute();
-			return;
-		}
-
-		if (inParens && scanner.peekText("AL="))
-		{
-			alphanumericLengthAttribute();
-			return;
-		}
-
-		if (inParens && scanner.peekText("CV="))
-		{
-			controlVariableAttribute();
-			return;
-		}
-
-		if (inParens && scanner.peekText("DF="))
-		{
-			dateFormatAttribute();
-			return;
-		}
-
-		if (inParens && scanner.peekText("IP="))
-		{
-			inputPromptAttribute();
-			return;
-		}
-
-		if (inParens && scanner.peekText("IS="))
-		{
-			identicalSuppressAttribute();
-			return;
+				if (previous() != previous) // check that we consumed something
+				{
+					return;
+				}
+			}
 		}
 
 		if (inParens && tokens.size() > 2)
@@ -1099,6 +1067,18 @@ public class Lexer
 		}
 
 		createAndAdd(SyntaxKind.AL);
+	}
+
+	private void zeroPrintingAttribute()
+	{
+		scanner.start();
+		scanner.advance(3); // ZP=
+		while (!scanner.isAtEnd() && isNoWhitespace() && scanner.peek() != ')')
+		{
+			scanner.advance();
+		}
+
+		createAndAdd(SyntaxKind.ZP);
 	}
 
 	private void dateFormatAttribute()
