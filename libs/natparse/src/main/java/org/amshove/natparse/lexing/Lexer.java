@@ -838,31 +838,28 @@ public class Lexer
 
 	private void consumeIdentifierOrKeyword()
 	{
-		if (inParens)
+		if (inParens && scanner.peek(2) == '=')
 		{
 			var attributeLookahead = scanner.peekText(3);
-			if (attributeLookahead.charAt(attributeLookahead.length() - 1) == '=')
+			var previous = previous();
+			switch (attributeLookahead)
 			{
-				var previous = previous();
-				switch (attributeLookahead)
-				{
-					case "AD=" -> attributeDefinition();
-					case "AL=" -> alphanumericLengthAttribute();
-					case "CD=" -> colorDefinition();
-					case "CV=" -> controlVariableAttribute();
-					case "DF=" -> dateFormatAttribute();
-					case "DY=" -> dynamicAttribute();
-					case "EM=" -> editorMask();
-					case "IP=" -> inputPromptAttribute();
-					case "IS=" -> identicalSuppressAttribute();
-					case "NL=" -> numericLengthAttribute();
-					case "ZP=" -> zeroPrintingAttribute();
-				}
+				case "AD=" -> attributeDefinition();
+				case "AL=" -> alphanumericLengthAttribute();
+				case "CD=" -> colorDefinition();
+				case "CV=" -> controlVariableAttribute();
+				case "DF=" -> dateFormatAttribute();
+				case "DY=" -> dynamicAttribute();
+				case "EM=" -> editorMask();
+				case "IP=" -> inputPromptAttribute();
+				case "IS=" -> identicalSuppressAttribute();
+				case "NL=" -> numericLengthAttribute();
+				case "ZP=" -> zeroPrintingAttribute();
+			}
 
-				if (previous() != previous) // check that we consumed something
-				{
-					return;
-				}
+			if (previous() != previous) // check that we consumed something
+			{
+				return;
 			}
 		}
 
