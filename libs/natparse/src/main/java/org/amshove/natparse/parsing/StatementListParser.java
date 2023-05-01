@@ -125,6 +125,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case COMPUTE:
 						statementList.addStatements(assignOrCompute(SyntaxKind.COMPUTE));
 						break;
+					case DOWNLOAD:
+						statementList.addStatement(writeDownloadPc());
+						break;
 					case REDUCE:
 						statementList.addStatement(reduce());
 						break;

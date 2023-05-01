@@ -49,7 +49,7 @@ partial - partially implemented to prevent false positives (7)
 | DELETE (SQL) | :x:                |
 | DISPLAY | :x:                |
 | DIVIDE | :white_check_mark: |
-| DOWNLOAD PC FILE | :x:                |
+| DOWNLOAD PC FILE | :white_check_mark: |
 | EJECT | :white_check_mark: |
 | END | :white_check_mark: |
 | END TRANSACTION | :x:                |

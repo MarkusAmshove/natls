@@ -1955,4 +1955,32 @@ class StatementListParserShould extends StatementParseTest
 	{
 		assertParsesSingleStatement("WRITE PC 5 COMMAND 'Hi' ASYNC", IWritePcNode.class);
 	}
+
+	@Test
+	void parseDownloadPcWithVariable()
+	{
+		var download = assertParsesSingleStatement("DOWNLOAD PC FILE 1 VARIABLE 'Hi'", IWritePcNode.class);
+		assertThat(download.isVariable()).isTrue();
+		assertLiteral(download.number(), SyntaxKind.NUMBER_LITERAL);
+	}
+
+	@Test
+	void parseDownloadPcWithoutVariable()
+	{
+		var download = assertParsesSingleStatement("DOWNLOAD PC FILE 1 'Hi'", IWritePcNode.class);
+		assertThat(download.isVariable()).isFalse();
+		assertLiteral(download.operand(), SyntaxKind.STRING_LITERAL);
+	}
+
+	@Test
+	void parseDownloadPcCommandSync()
+	{
+		assertParsesSingleStatement("DOWNLOAD PC 5 COMMAND 'Hi' SYNC", IWritePcNode.class);
+	}
+
+	@Test
+	void parseDownloadPcCommandAsync()
+	{
+		assertParsesSingleStatement("DOWNLOAD PC 5 COMMAND 'Hi' ASYNC", IWritePcNode.class);
+	}
 }
