@@ -1471,6 +1471,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return display;
 	}
 
+	private static final Set<SyntaxKind> OPTIONAL_WRITE_FLAGS = Set.of(SyntaxKind.NOTITLE, SyntaxKind.NOHDR, SyntaxKind.USING, SyntaxKind.MAP, SyntaxKind.FORM, SyntaxKind.TITLE, SyntaxKind.LEFT, SyntaxKind.JUSTIFIED, SyntaxKind.UNDERLINED);
+
 	private StatementNode write() throws ParseError
 	{
 		var write = new WriteNode();
@@ -1493,8 +1495,10 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			consumeMandatory(write, SyntaxKind.RPAREN);
 		}
 
-		consumeOptionally(write, SyntaxKind.NOTITLE);
-		consumeOptionally(write, SyntaxKind.NOHDR);
+		while (consumeAnyOptionally(write, OPTIONAL_WRITE_FLAGS))
+		{
+			// advances automatically
+		}
 		while (!isAtEnd() && !isStatementStart())
 		{
 			if (peekKind(SyntaxKind.LPAREN) && getKind(1).isAttribute())
@@ -1503,7 +1507,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			}
 			else
 			{
-				if (!isOperand())
+				if ((consumeOptionally(write, SyntaxKind.NO) && consumeOptionally(write, SyntaxKind.PARAMETER))
+					|| !isOperand())
 				{
 					break;
 				}

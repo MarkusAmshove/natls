@@ -1011,7 +1011,7 @@ class StatementListParserShould extends StatementParseTest
 	void parseWriteWithAttributeDefinition()
 	{
 		var write = assertParsesSingleStatement("WRITE (AD=UL AL=17 NL=8)", IWriteNode.class);
-		assertThat(write.descendants()).hasSize(10);
+		assertThat(write.descendants()).hasSize(6);
 	}
 
 	@Test
