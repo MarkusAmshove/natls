@@ -858,7 +858,37 @@ public class Lexer
 
 		if (inParens && scanner.peekText("DY="))
 		{
-			dynamicAttribte();
+			dynamicAttribute();
+			return;
+		}
+
+		if (inParens && scanner.peekText("NL="))
+		{
+			numericLengthAttribute();
+			return;
+		}
+
+		if (inParens && scanner.peekText("AL="))
+		{
+			alphanumericLengthAttribute();
+			return;
+		}
+
+		if (inParens && scanner.peekText("DF="))
+		{
+			dateFormatAttribute();
+			return;
+		}
+
+		if (inParens && scanner.peekText("IP="))
+		{
+			inputPromptAttribute();
+			return;
+		}
+
+		if (inParens && scanner.peekText("IS="))
+		{
+			identicalSuppressAttribute();
 			return;
 		}
 
@@ -1045,7 +1075,67 @@ public class Lexer
 		createAndAdd(SyntaxKind.AD);
 	}
 
-	private void dynamicAttribte()
+	private void alphanumericLengthAttribute()
+	{
+		scanner.start();
+		scanner.advance(3); // AL=
+		while (!scanner.isAtEnd() && isNoWhitespace() && scanner.peek() != ')')
+		{
+			scanner.advance();
+		}
+
+		createAndAdd(SyntaxKind.AL);
+	}
+
+	private void dateFormatAttribute()
+	{
+		scanner.start();
+		scanner.advance(3); // DF=
+		while (!scanner.isAtEnd() && isNoWhitespace() && scanner.peek() != ')')
+		{
+			scanner.advance();
+		}
+
+		createAndAdd(SyntaxKind.DF);
+	}
+
+	private void inputPromptAttribute()
+	{
+		scanner.start();
+		scanner.advance(3); // IP=
+		while (!scanner.isAtEnd() && isNoWhitespace() && scanner.peek() != ')')
+		{
+			scanner.advance();
+		}
+
+		createAndAdd(SyntaxKind.IP);
+	}
+
+	private void identicalSuppressAttribute()
+	{
+		scanner.start();
+		scanner.advance(3); // IS=
+		while (!scanner.isAtEnd() && isNoWhitespace() && scanner.peek() != ')')
+		{
+			scanner.advance();
+		}
+
+		createAndAdd(SyntaxKind.IS);
+	}
+
+	private void numericLengthAttribute()
+	{
+		scanner.start();
+		scanner.advance(3); // NL=
+		while (!scanner.isAtEnd() && isNoWhitespace() && scanner.peek() != ')')
+		{
+			scanner.advance();
+		}
+
+		createAndAdd(SyntaxKind.NL);
+	}
+
+	private void dynamicAttribute()
 	{
 		scanner.start();
 		scanner.advance(3); // DY=

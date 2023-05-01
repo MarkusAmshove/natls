@@ -106,4 +106,59 @@ class LexerForAttributeControlsShould extends AbstractLexerTest
 			token(SyntaxKind.RPAREN)
 		);
 	}
+
+	@Test
+	void consumeNL()
+	{
+		assertTokens(
+			"(NL=12,7)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.NL, "NL=12,7"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
+	void consumeAL()
+	{
+		assertTokens(
+			"(AL=20)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.AL, "AL=20"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
+	void consumeDF()
+	{
+		assertTokens(
+			"(DF=S)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.DF, "DF=S"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
+	void consumeIP()
+	{
+		assertTokens(
+			"(IP=OFF)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.IP, "IP=OFF"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
+	void consumeIS()
+	{
+		assertTokens(
+			"(IS=OFF)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.IS, "IS=OFF"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
 }
