@@ -17,6 +17,8 @@ public non-sealed interface IVariableNode extends IReferencableNode, IParameterD
 
 	ReadOnlyList<IArrayDimension> dimensions();
 
+	boolean isInView();
+
 	default boolean isArray()
 	{
 		return dimensions() != null && dimensions().size() > 0;

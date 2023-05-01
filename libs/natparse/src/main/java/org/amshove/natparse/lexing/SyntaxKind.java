@@ -108,8 +108,8 @@ public enum SyntaxKind
 	PROGRAM(true, true, false),
 	ETID(false, true, false),
 	CPU_TIME(false, true, false),
-	LBOUND(false, true, false),
-	UBOUND(false, true, false),
+	LBOUND(false, false, true),
+	UBOUND(false, false, true),
 	SERVER_TYPE(false, true, false),
 
 	// Kcheck reserved keywords

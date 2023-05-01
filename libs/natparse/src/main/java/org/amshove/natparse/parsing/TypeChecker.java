@@ -7,6 +7,7 @@ import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.builtin.BuiltInFunctionTable;
 import org.amshove.natparse.natural.builtin.IBuiltinFunctionDefinition;
 import org.amshove.natparse.natural.builtin.SystemVariableDefinition;
+import org.amshove.natparse.natural.conditionals.ISpecifiedCriteriaNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,22 +84,26 @@ final class TypeChecker implements ISyntaxNodeVisitor
 
 		if (variableReference.dimensions().hasItems() && !target.isArray())
 		{
-			diagnostics.add(
-				ParserErrors.invalidArrayAccess(
-					variableReference.referencingToken(),
-					"Using index access for a reference to non-array %s".formatted(target.name())
-				)
-			);
-		}
-
-		if (variableReference.dimensions().isEmpty() && target.isArray())
-		{
-			if (!doesNotNeedDimensionInParentStatement(variableReference))
+			if (!isPeriodicGroup(target))// periodic groups need to have their index specified. not allowed for "normal" groups
 			{
 				diagnostics.add(
 					ParserErrors.invalidArrayAccess(
 						variableReference.referencingToken(),
-						"Missing index access, because %s is an array".formatted(target.name())
+						"Using index access for a reference to non-array %s".formatted(target.name())
+					)
+				);
+			}
+		}
+
+		if (variableReference.dimensions().isEmpty() && (target.isArray() || isPeriodicGroup(target)))
+		{
+			if (!doesNotNeedDimensionInParentStatement(variableReference))
+			{
+				var message = isPeriodicGroup(target) ? "a periodic group" : "an array";
+				diagnostics.add(
+					ParserErrors.invalidArrayAccess(
+						variableReference.referencingToken(),
+						"Missing index access, because %s is %s".formatted(target.name(), message)
 					)
 				);
 			}
@@ -120,16 +125,43 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		}
 	}
 
+	private boolean isPeriodicGroup(IVariableNode variable)
+	{
+		if (!(variable instanceof IGroupNode group))
+		{
+			return false;
+		}
+
+		if (!group.isInView())
+		{
+			return false;
+		}
+
+		var nextLevel = variable.level() + 1;
+		for (var periodicMember : group.variables())
+		{
+			if (periodicMember.level() == nextLevel && !periodicMember.isArray())
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	private boolean doesNotNeedDimensionInParentStatement(IVariableReferenceNode reference)
 	{
 		var parent = reference.parent();
 		if (parent instanceof ISystemFunctionNode systemFunction)
 		{
 			var theFunction = systemFunction.systemFunction();
-			return theFunction == SyntaxKind.OCC || theFunction == SyntaxKind.OCCURRENCE;
+			return theFunction == SyntaxKind.OCC || theFunction == SyntaxKind.OCCURRENCE || theFunction == SyntaxKind.UBOUND || theFunction == SyntaxKind.LBOUND;
 		}
 
-		return parent instanceof IExpandArrayNode || parent instanceof IReduceArrayNode || parent instanceof IResizeArrayNode;
+		return parent instanceof IExpandArrayNode
+			|| parent instanceof IReduceArrayNode
+			|| parent instanceof IResizeArrayNode
+			|| parent instanceof ISpecifiedCriteriaNode;
 	}
 
 	private void checkWriteWork(IWriteWorkNode writeWork)

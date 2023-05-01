@@ -172,10 +172,10 @@ public class BuiltInFunctionTable
 			unmodifiableVariable(SyntaxKind.INIT_PROGRAM, """
 				Return the name of program (transaction) currently executing as Natural.
 				""", ALPHANUMERIC, 8),
-			unmodifiableVariable(SyntaxKind.LBOUND, """
+			function(SyntaxKind.LBOUND, """
 				Returns the current lower boundary (index value) of an array for the specified dimension(s) (1, 2 or 3) or for all dimensions (asterisk (*) notation).
 				""", INTEGER, 4),
-			unmodifiableVariable(SyntaxKind.UBOUND, """
+			function(SyntaxKind.UBOUND, """
 				Returns the current upper boundary (index value) of an array for the specified dimension(s) (1, 2 or 3) or for all dimensions (asterisk (*) notation).
 				""", INTEGER, 4),
 			unmodifiableVariable(SyntaxKind.SERVER_TYPE, """

@@ -2,11 +2,13 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.NaturalParseException;
+import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 
 import javax.annotation.Nonnull;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -117,6 +119,12 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 	public IPosition position()
 	{
 		return declaration;
+	}
+
+	@Override
+	public boolean isInView()
+	{
+		return NodeUtil.findFirstParentOfType(this, IViewNode.class) != null;
 	}
 
 	void setLevel(int level)
