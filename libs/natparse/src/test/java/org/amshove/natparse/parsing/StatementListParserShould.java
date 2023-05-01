@@ -1983,4 +1983,11 @@ class StatementListParserShould extends StatementParseTest
 	{
 		assertParsesSingleStatement("DOWNLOAD PC 5 COMMAND 'Hi' ASYNC", IWritePcNode.class);
 	}
+
+	@Test
+	void allowLabelIdentifierAsVariableOperand()
+	{
+		var assignment = assertParsesSingleStatement("#VAR(R1.) := 5", IAssignmentStatementNode.class);
+		assertIsVariableReference(assignment.target(), "#VAR");
+	}
 }

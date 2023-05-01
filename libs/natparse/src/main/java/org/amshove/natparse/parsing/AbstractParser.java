@@ -781,6 +781,15 @@ abstract class AbstractParser<T>
 			consumeMandatory(reference, SyntaxKind.RPAREN);
 		}
 
+		if (peekKind(SyntaxKind.LPAREN) && peekKind(1, SyntaxKind.LABEL_IDENTIFIER))
+		{
+			while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+			{
+				consume(reference);
+			}
+			consumeMandatory(reference, SyntaxKind.RPAREN);
+		}
+
 		unresolvedReferences.add(reference);
 		return reference;
 	}
