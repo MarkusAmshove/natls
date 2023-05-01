@@ -1015,6 +1015,13 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void notParseAttributeAsIsnParameter()
+	{
+		var write = assertParsesSingleStatement("WRITE *ISN(NL=8)", IWriteNode.class);
+		assertThat(write.descendants()).anyMatch(n -> n instanceof ITokenNode tNode && tNode.token().kind() == SyntaxKind.NL);
+	}
+
+	@Test
 	void parseWriteWithNoTitleAndNoHdr()
 	{
 		var write = assertParsesSingleStatement("WRITE NOTITLE NOHDR", IWriteNode.class);

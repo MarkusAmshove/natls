@@ -470,7 +470,7 @@ abstract class AbstractParser<T>
 		}
 		if (peek().kind().isSystemVariable() && peek().kind().isSystemFunction()) // can be both, like *COUNTER
 		{
-			return peekKind(1, SyntaxKind.LPAREN) ? consumeSystemFunctionNode(node) : consumeSystemVariableNode(node);
+			return peekKind(1, SyntaxKind.LPAREN) && !getKind(2).isAttribute() ? consumeSystemFunctionNode(node) : consumeSystemVariableNode(node);
 		}
 		if (peek().kind().isSystemVariable())
 		{

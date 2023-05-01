@@ -174,15 +174,17 @@ public class CliAnalyzer
 		var missTime = missingEndTime - missingStartTime;
 		var totalTime = indexTime + checkTime + missTime;
 
+		var totalTimeSeconds = totalTime / 1000;
 		System.out.println();
 		System.out.println("Done.");
 		System.out.printf("Index time: %d ms%n", indexTime);
 		System.out.printf("Check time: %d ms%n", checkTime);
 		System.out.printf("Miss time : %d ms%n", missTime);
-		System.out.printf("Total: %d ms (%ds)%n", totalTime, totalTime / 1000);
+		System.out.printf("Total: %d ms (%ds)%n", totalTime, totalTimeSeconds);
 		System.out.println();
 		System.out.printf("Files checked: %,d%n", filesChecked.get());
 		System.out.printf("Lines of code: %,d%n", linesOfCode.get());
+		System.out.printf("LoC/s: %,d%n", totalTimeSeconds > 0 ? (linesOfCode.get() / totalTimeSeconds) : linesOfCode.get());
 		System.out.println();
 		System.out.printf("Total diagnostics: %,d%n", totalDiagnostics.get());
 		System.out.println("Exceptions: " + exceptions.get());
