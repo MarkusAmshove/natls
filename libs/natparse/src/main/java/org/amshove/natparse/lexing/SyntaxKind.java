@@ -2,6 +2,7 @@ package org.amshove.natparse.lexing;
 
 public enum SyntaxKind
 {
+	EOF(false, false, false), // end of file
 	LBRACKET(false, false, false),
 	RBRACKET(false, false, false),
 	LPAREN(false, false, false),
@@ -107,8 +108,8 @@ public enum SyntaxKind
 	PROGRAM(true, true, false),
 	ETID(false, true, false),
 	CPU_TIME(false, true, false),
-	LBOUND(false, true, false),
-	UBOUND(false, true, false),
+	LBOUND(false, false, true),
+	UBOUND(false, false, true),
 	SERVER_TYPE(false, true, false),
 
 	// Kcheck reserved keywords
@@ -757,5 +758,10 @@ public enum SyntaxKind
 	public boolean canBeIdentifier()
 	{
 		return canBeIdentifier;
+	}
+
+	public boolean isAttribute()
+	{
+		return this == AD || this == DY || this == CD || this == EM || this == NL || this == AL || this == DF || this == IP || this == IS || this == CV || this == ZP || this == SG;
 	}
 }

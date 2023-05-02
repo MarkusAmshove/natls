@@ -33,6 +33,7 @@ public class Lexer
 	{
 		DEFAULT,
 		IN_DEFINE_DATA,
+		IN_DATA_TYPE
 	}
 
 	private LexerMode lexerMode = LexerMode.DEFAULT;
@@ -55,7 +56,7 @@ public class Lexer
 				continue;
 			}
 
-			if (consumeComment())
+			if (lexerMode != LexerMode.IN_DATA_TYPE && consumeComment())
 			{
 				continue;
 			}
@@ -68,17 +69,23 @@ public class Lexer
 					scanner.advance();
 					continue;
 				case '\n':
-					line++;
-					scanner.advance();
-					currentLineStartOffset = scanner.position();
+					consumeNewLine();
 					continue;
 				case '(':
 					inParens = true;
 					lastBeforeOpenParens = previous();
+					if (lexerMode == LexerMode.IN_DEFINE_DATA && previous().kind() != SyntaxKind.LESSER_SIGN)
+					{
+						lexerMode = LexerMode.IN_DATA_TYPE;
+					}
 					createAndAddCurrentSingleToken(SyntaxKind.LPAREN);
 					continue;
 				case ')':
 					inParens = false;
+					if (lexerMode == LexerMode.IN_DATA_TYPE)
+					{
+						lexerMode = LexerMode.IN_DEFINE_DATA;
+					}
 					lastBeforeOpenParens = null;
 					createAndAddCurrentSingleToken(SyntaxKind.RPAREN);
 					continue;
@@ -278,9 +285,31 @@ public class Lexer
 		return previous == null || previous.totalEndOffset() != scanner.position();
 	}
 
+	private void consumeNewLine()
+	{
+		line++;
+		scanner.advance();
+		currentLineStartOffset = scanner.position();
+	}
+
 	public void relocateDiagnosticPosition(IPosition diagnosticPosition)
 	{
 		this.relocatedDiagnosticPosition = diagnosticPosition;
+	}
+
+	private void advanceBy(int offset)
+	{
+		for (var i = 0; i < offset; i++)
+		{
+			if (scanner.peek() == '\n')
+			{
+				consumeNewLine();
+			}
+			else
+			{
+				scanner.advance();
+			}
+		}
 	}
 
 	private void consumeMinusOrStringConcat()
@@ -294,9 +323,13 @@ public class Lexer
 		{
 			var previousString = previousUnsafe();
 			var previousStringIndex = tokens.size() - 1;
-			scanner.advance(lookaheadIndex);
+			advanceBy(lookaheadIndex);
 			consumeString(lookahead);
 			var currentString = previousUnsafe();
+			if (scanner.peek() == '\n')
+			{
+				consumeNewLine();
+			}
 			var currentStringIndex = tokens.size() - 1;
 			if (currentStringIndex >= previousStringIndex)
 			{
@@ -743,7 +776,7 @@ public class Lexer
 			if (scanner.peek() == '/' && scanner.peek(1) == '*')
 			{
 				// Slash is a valid character for identifiers, but an asterisk is not.
-				// If a variable is named #MYVAR/* we can safely assume its a variable followed
+				// If a variable is named #MYVAR/* we can safely assume it's a variable followed
 				// by a comment.
 				break;
 			}
@@ -805,28 +838,30 @@ public class Lexer
 
 	private void consumeIdentifierOrKeyword()
 	{
-		if (inParens && scanner.peekText("EM="))
+		if (inParens && scanner.peek(2) == '=')
 		{
-			editorMask();
-			return;
-		}
+			var attributeLookahead = scanner.peekText(3);
+			var previous = previous();
+			switch (attributeLookahead)
+			{
+				case "AD=" -> attributeDefinition();
+				case "AL=" -> alphanumericLengthAttribute();
+				case "CD=" -> colorDefinition();
+				case "CV=" -> controlVariableAttribute();
+				case "DF=" -> dateFormatAttribute();
+				case "DY=" -> dynamicAttribute();
+				case "EM=" -> editorMask();
+				case "IP=" -> inputPromptAttribute();
+				case "IS=" -> identicalSuppressAttribute();
+				case "NL=" -> numericLengthAttribute();
+				case "SG=" -> signPosition();
+				case "ZP=" -> zeroPrintingAttribute();
+			}
 
-		if (inParens && scanner.peekText("AD="))
-		{
-			attributeDefinition();
-			return;
-		}
-
-		if (inParens && scanner.peekText("CD="))
-		{
-			colorDefinition();
-			return;
-		}
-
-		if (inParens && scanner.peekText("DY="))
-		{
-			dynamicAttribte();
-			return;
+			if (previous() != previous) // check that we consumed something
+			{
+				return;
+			}
 		}
 
 		if (inParens && tokens.size() > 2)
@@ -874,6 +909,12 @@ public class Lexer
 						kindHint = SyntaxKind.IDENTIFIER;
 					}
 					break;
+			}
+
+			if (scanner.peek() == '/' && lexerMode == LexerMode.IN_DATA_TYPE)
+			{
+				// Slash is a valid character for identifiers, if we're lexing a datatype we can be pretty confident about the slash being for array dimensions
+				break;
 			}
 
 			if (scanner.peek() == '/')
@@ -963,6 +1004,14 @@ public class Lexer
 		}
 	}
 
+	private void controlVariableAttribute()
+	{
+		scanner.start();
+		scanner.advance(3); // CV=
+		// we intentionally don't consume more, because the variable should be IDENTIFIER
+		createAndAdd(SyntaxKind.CV);
+	}
+
 	private void editorMask()
 	{
 		scanner.start();
@@ -1006,7 +1055,91 @@ public class Lexer
 		createAndAdd(SyntaxKind.AD);
 	}
 
-	private void dynamicAttribte()
+	private void alphanumericLengthAttribute()
+	{
+		scanner.start();
+		scanner.advance(3); // AL=
+		while (!scanner.isAtEnd() && isNoWhitespace() && scanner.peek() != ')')
+		{
+			scanner.advance();
+		}
+
+		createAndAdd(SyntaxKind.AL);
+	}
+
+	private void zeroPrintingAttribute()
+	{
+		scanner.start();
+		scanner.advance(3); // ZP=
+		while (!scanner.isAtEnd() && isNoWhitespace() && scanner.peek() != ')')
+		{
+			scanner.advance();
+		}
+
+		createAndAdd(SyntaxKind.ZP);
+	}
+
+	private void dateFormatAttribute()
+	{
+		scanner.start();
+		scanner.advance(3); // DF=
+		while (!scanner.isAtEnd() && isNoWhitespace() && scanner.peek() != ')')
+		{
+			scanner.advance();
+		}
+
+		createAndAdd(SyntaxKind.DF);
+	}
+
+	private void inputPromptAttribute()
+	{
+		scanner.start();
+		scanner.advance(3); // IP=
+		while (!scanner.isAtEnd() && isNoWhitespace() && scanner.peek() != ')')
+		{
+			scanner.advance();
+		}
+
+		createAndAdd(SyntaxKind.IP);
+	}
+
+	private void identicalSuppressAttribute()
+	{
+		scanner.start();
+		scanner.advance(3); // IS=
+		while (!scanner.isAtEnd() && isNoWhitespace() && scanner.peek() != ')')
+		{
+			scanner.advance();
+		}
+
+		createAndAdd(SyntaxKind.IS);
+	}
+
+	private void numericLengthAttribute()
+	{
+		scanner.start();
+		scanner.advance(3); // NL=
+		while (!scanner.isAtEnd() && isNoWhitespace() && scanner.peek() != ')')
+		{
+			scanner.advance();
+		}
+
+		createAndAdd(SyntaxKind.NL);
+	}
+
+	private void signPosition()
+	{
+		scanner.start();
+		scanner.advance(3); // SG=
+		while (!scanner.isAtEnd() && isNoWhitespace() && scanner.peek() != ')')
+		{
+			scanner.advance();
+		}
+
+		createAndAdd(SyntaxKind.SG);
+	}
+
+	private void dynamicAttribute()
 	{
 		scanner.start();
 		scanner.advance(3); // DY=

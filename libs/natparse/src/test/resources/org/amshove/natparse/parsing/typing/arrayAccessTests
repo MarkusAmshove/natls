@@ -1,0 +1,58 @@
+DEFINE DATA
+PARAMETER
+1 #P-ARR (A40/1:*) OPTIONAL
+LOCAL
+1 #NOT-ARRAY (A10)
+1 #ARR (A10/*)
+1 #I (I4)
+1 #GRP
+2 #GRPARR1 (A10/*)
+2 #GRPARR2 (A10/*)
+1 THEVIEW VIEW OF THE-DDM
+2 PERIODIC-GRP
+3 INPER1 (A10/*)
+3 INPER2 (A10/*)
+END-DEFINE
+
+WRITE #NOT-ARRAY(DY='021I'01) /* No diagnostic, DY is an attribute
+WRITE #NOT-ARRAY(HIS.) /* No diagnostic, label reference
+
+/* No diagnostics, array accessed
+WRITE #ARR(*)
+WRITE #ARR(5)
+
+/* No dimension specified
+WRITE #ARR /* !{D:ERROR:NPP042}
+
+/* Shouldn't have a dimension
+WRITE #NOT-ARRAY(5) /* !{D:ERROR:NPP042}
+
+/* Wrong dimensions specified
+WRITE #ARR(*, *) /* !{D:ERROR:NPP042}
+WRITE #ARR(5, 1) /* !{D:ERROR:NPP042}
+
+/* No diagnostic, *OCC needs actual array
+#I := *OCC(#ARR)
+#I := *OCCURRENCE(#ARR)
+
+/* No diagnostic, resizing statements need actual array
+RESIZE ARRAY #ARR TO (1:10)
+REDUCE ARRAY #ARR TO (1:5)
+EXPAND ARRAY #ARR TO (1:8)
+
+/* No array access allowed
+WRITE #GRP(*) /* !{D:ERROR:NPP042}
+/* Array access allowed because its a periodic group
+WRITE PERIODIC-GRP(*)
+/* Array access needed because its a periodic group
+WRITE PERIODIC-GRP /* !{D:ERROR:NPP042}
+
+IF #P-ARR SPECIFIED /* IF SPECIFIED doesn't need to access index
+  IGNORE
+END-IF
+
+/* Bounds need actual array, like OCC
+#I := *UBOUND(#ARR, 1)
+#I := *LBOUND(#ARR, 1)
+
+END

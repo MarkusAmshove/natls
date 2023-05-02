@@ -5,10 +5,14 @@ import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 // TODO: Only exists until all statements are parse-able
 class SyntheticVariableStatementNode extends StatementNode implements IVariableReferenceNode
 {
 	private final SymbolReferenceNode node;
+	private final List<IOperandNode> dimensions = new ArrayList<>();
 
 	public SyntheticVariableStatementNode(SymbolReferenceNode node)
 	{
@@ -66,6 +70,11 @@ class SyntheticVariableStatementNode extends StatementNode implements IVariableR
 	@Override
 	public ReadOnlyList<IOperandNode> dimensions()
 	{
-		return ReadOnlyList.of(); // TODO: Do something
+		return ReadOnlyList.from(dimensions);
+	}
+
+	void addDimension(IOperandNode dimension)
+	{
+		dimensions.add(dimension);
 	}
 }

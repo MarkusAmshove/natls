@@ -153,7 +153,33 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 		}
 
+		passDownArrayDimensions(scopeNode);
+
 		return scopeNode;
+	}
+
+	private void passDownArrayDimensions(ScopeNode scope)
+	{
+		for (var variable : scope.variables())
+		{
+			inheritDimensions(variable);
+		}
+	}
+
+	private void inheritDimensions(IVariableNode variable)
+	{
+		if (variable.parent()instanceof IVariableNode parentVariable && parentVariable.isArray())
+		{
+			((VariableNode) variable).inheritDimensions(parentVariable.dimensions());
+		}
+
+		if (variable instanceof GroupNode group)
+		{
+			for (var subVariable : group.variables())
+			{
+				inheritDimensions(subVariable);
+			}
+		}
 	}
 
 	private UsingNode using() throws ParseError
@@ -327,7 +353,10 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		{
 			for (var dimension : variable.dimensions())
 			{
-				groupNode.addDimension((ArrayDimension) dimension);
+				if (!groupNode.dimensions.contains(dimension))
+				{
+					groupNode.addDimension((ArrayDimension) dimension);
+				}
 			}
 		}
 
@@ -801,7 +830,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			throw new ParseError(peek());
 		}
 
-		while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+		while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN) && !peekKind(SyntaxKind.COMMA))
 		{
 			var dimension = new ArrayDimension();
 			var lowerBound = extractArrayBound(new TokenNode(peek()), dimension);
@@ -827,6 +856,10 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			dimension.setLowerBound(lowerBound);
 			dimension.setUpperBound(upperBound);
 			variable.addDimension(dimension);
+			while (!isAtEnd() && !peekKind(SyntaxKind.COMMA) && !peekKind(SyntaxKind.RPAREN))
+			{
+				consume(dimension);
+			}
 		}
 	}
 

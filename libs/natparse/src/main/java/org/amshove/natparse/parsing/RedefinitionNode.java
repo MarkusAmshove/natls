@@ -13,6 +13,10 @@ class RedefinitionNode extends GroupNode implements IRedefinitionNode
 	public RedefinitionNode(VariableNode variable)
 	{
 		super(variable);
+		for (var inheritedDimension : variable.dimensions)
+		{
+			addDimension((ArrayDimension) inheritedDimension);
+		}
 	}
 
 	@Override

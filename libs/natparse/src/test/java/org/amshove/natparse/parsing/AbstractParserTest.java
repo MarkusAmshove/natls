@@ -1,6 +1,7 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.IDiagnostic;
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
@@ -68,13 +69,20 @@ public abstract class AbstractParserTest<NodeType>
 		var lexer = new Lexer();
 		var tokens = lexer.lex(source, Paths.get("TESTMODULE.NSN"));
 		var result = sut.parse(tokens);
-		assertThat(result.diagnostics().size())
-			.as("Expected to get at least one diagnostic, but found none")
-			.isGreaterThan(0);
-		assertThat(result.diagnostics())
-			.anyMatch(d -> d.id().equals(expectedError.id()));
+
+		assertDiagnosticsContain(result.diagnostics(), expectedError);
 
 		return result.result();
+	}
+
+	protected void assertDiagnosticsContain(ReadOnlyList<IDiagnostic> diagnostics, ParserError expectedError)
+	{
+		assertThat(diagnostics.size())
+			.as("Expected to get at least one diagnostic, but found none")
+			.isGreaterThan(0);
+		assertThat(diagnostics)
+			.as("Diagnostic %s(%s) not found".formatted(expectedError.name(), expectedError.id()))
+			.anyMatch(d -> d.id().equals(expectedError.id()));
 	}
 
 	@SuppressWarnings("unchecked")
