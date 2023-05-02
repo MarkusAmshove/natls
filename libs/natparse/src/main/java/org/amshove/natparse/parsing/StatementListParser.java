@@ -1078,7 +1078,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var insert = new InsertStatementNode();
 		consumeMandatory(insert, SyntaxKind.INSERT);
 
-		while (!isAtEnd() && !isStatementStart())
+		while (!isAtEnd() && !isStatementStart() && !isStatementEndOrBranch())
 		{
 			consume(insert);
 		}
@@ -1104,7 +1104,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			consumeMandatory(update, SyntaxKind.RPAREN);
 		}
 
-		if (adabasUpdate || isAtEnd() || isStatementStart())
+		if (adabasUpdate || isAtEnd() || isStatementStart() || isStatementEndOrBranch())
 		{
 			return update;
 		}
@@ -1118,7 +1118,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			if (consumeOptionally(update, SyntaxKind.SET))
 				numSet++;
 
-			if (numSet > 1 || (numSet == 1 && isStatementStart()))
+			if (numSet > 1 || (numSet == 1 && (isStatementStart() || !isStatementEndOrBranch())))
 			{
 				break;
 			}
@@ -1146,7 +1146,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			consumeMandatory(delete, SyntaxKind.RPAREN);
 		}
 
-		if (adabasDelete || isAtEnd() || isStatementStart())
+		if (adabasDelete || isAtEnd() || isStatementStart() || isStatementEndOrBranch())
 		{
 			return delete;
 		}
@@ -1166,7 +1166,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var processSql = new ProcessSqlNode();
 		consumeMandatory(processSql, SyntaxKind.PROCESS);
 		consumeMandatory(processSql, SyntaxKind.SQL);
-		while (!isAtEnd() && !isStatementStart())
+		while (!isAtEnd() && !isStatementStart() && !isStatementEndOrBranch())
 		{
 			consume(processSql);
 		}
@@ -2979,6 +2979,26 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			case SEND -> peekKind(1, SyntaxKind.METHOD);
 			case SUSPEND -> peekKind(1, SyntaxKind.IDENTICAL) && peekKind(2, SyntaxKind.SUPPRESS);
 			case UPLOAD -> peekKind(1, SyntaxKind.PC) && peekKind(2, SyntaxKind.FILE);
+			default -> false;
+		};
+	}
+
+	@SuppressWarnings(
+		{
+			"unused"
+		}
+	)
+	private boolean isStatementEndOrBranch()
+	{
+		if (tokens.isAtEnd())
+		{
+			return false;
+		}
+
+		var currentKind = tokens.peek().kind();
+		return switch (currentKind)
+		{
+			case ELSE, END_IF, END_ALL, END_BEFORE, END_BREAK, END_BROWSE, END_CLASS, END_DECIDE, END_ENDDATA, END_ENDFILE, END_ENDPAGE, END_ERROR, END_FILE, END_FIND, END_FOR, END_FUNCTION, END_HISTOGRAM, END_INTERFACE, END_LOOP, END_METHOD, END_NOREC, END_PARAMETERS, END_PARSE, END_PROCESS, END_PROPERTY, END_PROTOTYPE, END_READ, END_REPEAT, END_RESULT, END_SELECT, END_START, END_SUBROUTINE, END_TOPPAGE, END_WORK -> true;
 			default -> false;
 		};
 	}
