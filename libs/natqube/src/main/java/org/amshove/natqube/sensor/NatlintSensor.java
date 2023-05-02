@@ -8,6 +8,7 @@ import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
 import org.amshove.natparse.parsing.NaturalParser;
 import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 import org.amshove.natqube.Natural;
+import org.amshove.natqube.measures.FileTypeMeasure;
 import org.amshove.natqube.rules.NaturalRuleRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +51,8 @@ public class NatlintSensor implements Sensor
 		var indexEndTime = System.currentTimeMillis();
 		LOGGER.error("Indexing done: %dms".formatted(indexEndTime - indexStartTime));
 
+		var fileTypeMeasurer = new FileTypeMeasure();
+
 		var analysisStart = System.currentTimeMillis();
 		for (var library : project.getLibraries())
 		{
@@ -67,6 +70,8 @@ public class NatlintSensor implements Sensor
 					{
 						throw new RuntimeException("Couldn't find input file for natural file");
 					}
+
+					fileTypeMeasurer.measure(context, naturalFile, inputFile);
 
 					for (var diagnostic : lexResult.diagnostics())
 					{
