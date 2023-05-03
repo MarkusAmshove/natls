@@ -1078,8 +1078,20 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var insert = new InsertStatementNode();
 		consumeMandatory(insert, SyntaxKind.INSERT);
 
-		while (!isAtEnd() && !isStatementStart() && !isStatementEndOrBranch())
+		// The first VALUES is part of the INSERT, if 2nd is reached it's another statement.
+		// This can occur: INSERT INTO DB2-TABEL (COL1) VALUES 'XYZ' VALUES 'xx' (as part of DECIDE statement)
+		var numValues = 0;
+		while (!isAtEnd())
 		{
+			if (consumeOptionally(insert, SyntaxKind.VALUES))
+			{
+				numValues++;
+			}
+
+			if (numValues > 1 || (numValues == 1 && (isStatementStart() || isStatementEndOrBranch())))
+			{
+				break;
+			}
 			consume(insert);
 		}
 
@@ -1116,9 +1128,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			// The first SET is part of the UPDATE, if 2nd is reached it's another statement.
 			// This can occur: UPDATE DB2-TABEL SET COL1 = 'XYZ' SET CONTROL etc
 			if (consumeOptionally(update, SyntaxKind.SET))
+			{
 				numSet++;
+			}
 
-			if (numSet > 1 || (numSet == 1 && (isStatementStart() || !isStatementEndOrBranch())))
+			if (numSet > 1 || (numSet == 1 && (isStatementStart() || isStatementEndOrBranch())))
 			{
 				break;
 			}
@@ -2998,7 +3012,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var currentKind = tokens.peek().kind();
 		return switch (currentKind)
 		{
-			case ELSE, END_IF, END_ALL, END_BEFORE, END_BREAK, END_BROWSE, END_CLASS, END_DECIDE, END_ENDDATA, END_ENDFILE, END_ENDPAGE, END_ERROR, END_FILE, END_FIND, END_FOR, END_FUNCTION, END_HISTOGRAM, END_INTERFACE, END_LOOP, END_METHOD, END_NOREC, END_PARAMETERS, END_PARSE, END_PROCESS, END_PROPERTY, END_PROTOTYPE, END_READ, END_REPEAT, END_RESULT, END_SELECT, END_SORT, END_START, END_SUBROUTINE, END_TOPPAGE, END_WORK -> true;
+			case ELSE, VALUE, VALUES, WHEN, NONE -> true; // branching
+			case END_IF, END_ALL, END_BEFORE, END_BREAK, END_BROWSE, END_CLASS, END_DECIDE, END_ENDDATA, END_ENDFILE, END_ENDPAGE, END_ERROR, END_FILE, END_FIND, END_FOR, END_FUNCTION, END_HISTOGRAM, END_INTERFACE, END_LOOP, END_METHOD, END_NOREC, END_PARAMETERS, END_PARSE, END_PROCESS, END_PROPERTY, END_PROTOTYPE, END_READ, END_REPEAT, END_RESULT, END_SELECT, END_SORT, END_START, END_SUBROUTINE, END_TOPPAGE, END_WORK -> true;
 			default -> false;
 		};
 	}
