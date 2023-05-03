@@ -1,0 +1,6 @@
+name: Invalid array access
+priority: BLOCKER
+tags: compile-time
+type: BUG
+description:
+This reference to a variable either needs a dimension specified (because the target variable is an array) or needs toe have the dimension removed (because the target is not an array).

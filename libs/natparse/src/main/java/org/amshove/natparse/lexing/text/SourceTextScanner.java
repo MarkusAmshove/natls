@@ -170,4 +170,14 @@ public class SourceTextScanner
 
 		return true;
 	}
+
+	public String peekText(int length)
+	{
+		if (willPassEnd(length))
+		{
+			return null;
+		}
+
+		return new String(source, currentOffset, length);
+	}
 }

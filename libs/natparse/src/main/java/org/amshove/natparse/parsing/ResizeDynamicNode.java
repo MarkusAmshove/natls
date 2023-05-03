@@ -6,6 +6,8 @@ import org.amshove.natparse.natural.IVariableReferenceNode;
 class ResizeDynamicNode extends StatementNode implements IResizeDynamicNode
 {
 	private IVariableReferenceNode variableToResize;
+	private IVariableReferenceNode errorVariable;
+
 	private int sizeToResizeTo;
 
 	@Override
@@ -20,6 +22,12 @@ class ResizeDynamicNode extends StatementNode implements IResizeDynamicNode
 		return sizeToResizeTo;
 	}
 
+	@Override
+	public IVariableReferenceNode errorVariable()
+	{
+		return errorVariable;
+	}
+
 	void setVariableToResize(IVariableReferenceNode variableToResize)
 	{
 		this.variableToResize = variableToResize;
@@ -28,5 +36,10 @@ class ResizeDynamicNode extends StatementNode implements IResizeDynamicNode
 	void setSizeToResizeTo(int sizeToResizeTo)
 	{
 		this.sizeToResizeTo = sizeToResizeTo;
+	}
+
+	void setErrorVariable(IVariableReferenceNode errorVariable)
+	{
+		this.errorVariable = errorVariable;
 	}
 }

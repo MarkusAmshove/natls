@@ -203,6 +203,23 @@ class DefinitionEndpointTests extends LanguageServerTest
 	}
 
 	@Test
+	void definitionsShouldReturnTheDefinitionOfVariablesInCVAttribute()
+	{
+		assertSingleDefinitionInSameModule(
+			"""
+				DEFINE DATA
+				LOCAL
+				1 #CVAR (C)
+				END-DEFINE
+				
+				WRITE #HI(CV=#C${}$VAR)
+				END
+				""",
+			2, 2
+		);
+	}
+
+	@Test
 	void definitionsShouldReturnTheDefinitionOfQualifiedVariablesInAssignments()
 	{
 		assertSingleDefinitionInSameModule(

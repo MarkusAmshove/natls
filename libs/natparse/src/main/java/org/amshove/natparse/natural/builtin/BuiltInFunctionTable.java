@@ -86,6 +86,7 @@ public class BuiltInFunctionTable
 				```
 				#UPPER := *TRANSLATE(#VAR2, UPPER)
 				#LOWER := *TRANSLATE(#VAR2, LOWER)
+				```
 				""", ALPHANUMERIC, 0),
 			modifiableVariable(SyntaxKind.SV_NUMBER, "Get or set the number of record a FIND or HISTOGRAM statement. Uses the innermost statement if no label identifier is passed.", PACKED, 10),
 			modifiableVariable(SyntaxKind.SV_LENGTH, "This system variable returns the currently used length of a field defined as dynamic variable in terms of code units; for A and B format the size of one code unit is 1 byte and for U format the size of one code unit is 2 bytes (UTF-16). *LENGTH(field) applies to dynamic variables only.", INTEGER, 4),
@@ -172,10 +173,10 @@ public class BuiltInFunctionTable
 			unmodifiableVariable(SyntaxKind.INIT_PROGRAM, """
 				Return the name of program (transaction) currently executing as Natural.
 				""", ALPHANUMERIC, 8),
-			unmodifiableVariable(SyntaxKind.LBOUND, """
+			function(SyntaxKind.LBOUND, """
 				Returns the current lower boundary (index value) of an array for the specified dimension(s) (1, 2 or 3) or for all dimensions (asterisk (*) notation).
 				""", INTEGER, 4),
-			unmodifiableVariable(SyntaxKind.UBOUND, """
+			function(SyntaxKind.UBOUND, """
 				Returns the current upper boundary (index value) of an array for the specified dimension(s) (1, 2 or 3) or for all dimensions (asterisk (*) notation).
 				""", INTEGER, 4),
 			unmodifiableVariable(SyntaxKind.SERVER_TYPE, """

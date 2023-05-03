@@ -421,6 +421,15 @@ class ParserErrors
 		);
 	}
 
+	public static IDiagnostic invalidNumericValue(ILiteralNode node, int actualValue, int allowedValue)
+	{
+		return ParserDiagnostic.create(
+			"Value %d is not allowed here, only %d can be used".formatted(actualValue, allowedValue),
+			node,
+			ParserError.INVALID_LITERAL_VALUE
+		);
+	}
+
 	public static IDiagnostic invalidNumericRange(ILiteralNode node, int actualValue, int lowestValue, int highestValue)
 	{
 		return ParserDiagnostic.create(
@@ -507,6 +516,15 @@ class ParserErrors
 			"Invalid module type: %s".formatted(message),
 			errorToken,
 			ParserError.INVALID_MODULE_TYPE
+		);
+	}
+
+	public static IDiagnostic invalidArrayAccess(SyntaxToken token, String message)
+	{
+		return ParserDiagnostic.create(
+			message,
+			token,
+			ParserError.INVALID_ARRAY_ACCESS
 		);
 	}
 }

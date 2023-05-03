@@ -4,11 +4,11 @@ This document tracks the implementation status of Natural statements.
 
 Legend:
 
-:x: - not implemented (67)
+:x: - not implemented (64)
 
-:white_check_mark: - implemented or reporting (49)
+:white_check_mark: - implemented or reporting (51)
 
-partial - partially implemented to prevent false positives (6)
+partial - partially implemented to prevent false positives (7)
 
 | Statement | Status             |
 | --- |--------------------|
@@ -41,7 +41,7 @@ partial - partially implemented to prevent false positives (6)
 | DEFINE DATA | :white_check_mark: |
 | DEFINE FUNCTION | partial            |
 | DEFINE PRINTER | :white_check_mark: |
-| DEFINE PROTOTYPE | :x:                |
+| DEFINE PROTOTYPE | partial            |
 | DEFINE SUBROUTINE | :white_check_mark: |
 | DEFINE WINDOW | partial            |
 | DEFINE WORK FILE | :white_check_mark: |
@@ -49,13 +49,13 @@ partial - partially implemented to prevent false positives (6)
 | DELETE (SQL) | :x:                |
 | DISPLAY | :x:                |
 | DIVIDE | :white_check_mark: |
-| DOWNLOAD PC FILE | :x:                |
+| DOWNLOAD PC FILE | :white_check_mark: |
 | EJECT | :white_check_mark: |
 | END | :white_check_mark: |
 | END TRANSACTION | :x:                |
 | ESCAPE | :white_check_mark: |
 | EXAMINE | :white_check_mark: |
-| EXPAND | :x:                |
+| EXPAND | :white_check_mark: |
 | FETCH | :white_check_mark: |
 | FIND | :white_check_mark: |
 | FOR | :white_check_mark: |
@@ -94,7 +94,7 @@ partial - partially implemented to prevent false positives (6)
 | READ RESULT SET (SQL) | :x:                |
 | READ WORK FILE | :x:                |
 | READLOB | :x:                |
-| REDUCE | :x:                |
+| REDUCE | :white_check_mark: |
 | REINPUT | :x:                |
 | REJECT | :x:                |
 | RELEASE | :x:                |

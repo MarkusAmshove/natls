@@ -1,6 +1,7 @@
 DEFINE DATA
 LOCAL
 1 #ARR (A10/*)
+1 #ARR3D (A10/*,*,*)
 1 #I (I4)
 1 #J (I4)
 END-DEFINE
@@ -14,13 +15,13 @@ WRITE WORK FILE 1 #ARR(1:5)
 WRITE WORK FILE 1 #ARR(#I)
 
 /* This should raise no diagnostic, because direct index access with variable is fine
-WRITE WORK FILE 1 #ARR(2,#I,#J)
+WRITE WORK FILE 1 #ARR3D(2,#I,#J)
 
 /* This should raise no diagnostic, because direct index access with variable is fine
-WRITE WORK FILE 1 #ARR(2,#I,#J)
+WRITE WORK FILE 1 #ARR3D(2,#I,#J)
 
 /* This should raise no diagnostic, because direct index access with variable is fine
-WRITE WORK FILE 1 #ARR(2,#I,*)
+WRITE WORK FILE 1 #ARR3D(2,#I,*)
 
 /* This should raise no diagnostic, because it is no range access
 WRITE WORK FILE 1 #ARR(*)

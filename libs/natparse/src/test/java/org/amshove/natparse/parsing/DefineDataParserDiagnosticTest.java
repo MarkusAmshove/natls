@@ -8,6 +8,6 @@ class DefineDataParserDiagnosticTest extends ResourceFolderBasedTest
 	@TestFactory
 	Iterable<DynamicTest> diagnosticTests()
 	{
-		return testFolder("definedatadiagnostics");
+		return testFolder("definedatadiagnostics", "multiDimensionalViewArray");
 	}
 }

@@ -2,12 +2,15 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.NaturalParseException;
+import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 
 import javax.annotation.Nonnull;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 class VariableNode extends BaseSyntaxNode implements IVariableNode
@@ -118,6 +121,12 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 		return declaration;
 	}
 
+	@Override
+	public boolean isInView()
+	{
+		return NodeUtil.findFirstParentOfType(this, IViewNode.class) != null;
+	}
+
 	void setLevel(int level)
 	{
 		this.level = level;
@@ -140,5 +149,19 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 	{
 		dimensions.add(dimension);
 		addNode(dimension);
+	}
+
+	/**
+	 * Inherits all the given dimensions if they're not specified for this variable yet.
+	 */
+	void inheritDimensions(ReadOnlyList<IArrayDimension> dimensions)
+	{
+		for (var dimension : dimensions)
+		{
+			if (!this.dimensions.contains(dimension))
+			{
+				this.dimensions.add(0, dimension); // add inhereted dimensions first, as they're defined first
+			}
+		}
 	}
 }
