@@ -274,6 +274,25 @@ class DefinitionEndpointTests extends LanguageServerTest
 		);
 	}
 
+	@Test
+	void definitionShouldNotBreakAfterOrEquals()
+	{
+		assertSingleDefinitionInSameModule(
+			"""
+				DEFINE DATA LOCAL
+				1 #VAR (A10)
+				END-DEFINE
+
+				IF 5 = 5 OR = 6 OR = 8
+				WRITE #V${}$AR
+				END-IF
+
+				END
+				""",
+			1, 2
+		);
+	}
+
 	@Override
 	protected LspTestContext getContext()
 	{
