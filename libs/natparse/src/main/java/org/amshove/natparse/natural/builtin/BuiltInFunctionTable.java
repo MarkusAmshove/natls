@@ -86,6 +86,7 @@ public class BuiltInFunctionTable
 				```
 				#UPPER := *TRANSLATE(#VAR2, UPPER)
 				#LOWER := *TRANSLATE(#VAR2, LOWER)
+				```
 				""", ALPHANUMERIC, 0),
 			modifiableVariable(SyntaxKind.SV_NUMBER, "Get or set the number of record a FIND or HISTOGRAM statement. Uses the innermost statement if no label identifier is passed.", PACKED, 10),
 			modifiableVariable(SyntaxKind.SV_LENGTH, "This system variable returns the currently used length of a field defined as dynamic variable in terms of code units; for A and B format the size of one code unit is 1 byte and for U format the size of one code unit is 2 bytes (UTF-16). *LENGTH(field) applies to dynamic variables only.", INTEGER, 4),
