@@ -29,5 +29,6 @@ public class SourceExtractor
 		}
 	}
 
-	private SourceExtractor() {}
+	private SourceExtractor()
+	{}
 }
