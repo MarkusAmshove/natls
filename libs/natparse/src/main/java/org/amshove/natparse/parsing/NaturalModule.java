@@ -137,7 +137,7 @@ public class NaturalModule
 		referencableNodes.addAll(nodes);
 	}
 
-	void setComments(ReadOnlyList<SyntaxToken> comments)
+	public void setComments(ReadOnlyList<SyntaxToken> comments)
 	{
 		this.comments = comments;
 	}
@@ -159,7 +159,9 @@ public class NaturalModule
 			return "";
 		}
 
-		var firstLineOfCode = syntaxTree().descendants().first().diagnosticPosition().line();
+		var firstLineOfCode = syntaxTree() != null
+			? syntaxTree().descendants().first().diagnosticPosition().line()
+			: defineData.descendants().first().diagnosticPosition().line();
 
 		return comments.stream()
 			.takeWhile(t -> t.line() < firstLineOfCode)
