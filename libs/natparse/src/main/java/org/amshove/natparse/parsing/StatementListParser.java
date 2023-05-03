@@ -1088,7 +1088,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				numValues++;
 			}
 
-			if (numValues > 1 || (numValues == 1 && (isStatementStart() || isStatementEndOrBranch())))
+			if (numValues > 1 || isStatementStart() || isStatementEndOrBranch())
 			{
 				break;
 			}
@@ -1109,6 +1109,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		adabasUpdate = consumeOptionally(update, SyntaxKind.STATEMENT) || adabasUpdate;
 		if (consumeOptionally(update, SyntaxKind.LPAREN))
 		{
+			adabasUpdate = true;
 			if (!consumeOptionally(update, SyntaxKind.LABEL_IDENTIFIER))
 			{
 				consumeOperandNode(update); // numbered label
@@ -1125,14 +1126,14 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var numSet = 0;
 		while (!isAtEnd())
 		{
-			// The first SET is part of the UPDATE, if 2nd is reached it's another statement.
+			// The first SET encountered is part of the UPDATE, if 2nd is reached it's another statement.
 			// This can occur: UPDATE DB2-TABEL SET COL1 = 'XYZ' SET CONTROL etc
 			if (consumeOptionally(update, SyntaxKind.SET))
 			{
 				numSet++;
 			}
 
-			if (numSet > 1 || (numSet == 1 && (isStatementStart() || isStatementEndOrBranch())))
+			if (numSet > 1 || (isStatementStart() || isStatementEndOrBranch()))
 			{
 				break;
 			}
@@ -1153,6 +1154,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		adabasDelete = consumeOptionally(delete, SyntaxKind.STATEMENT) || adabasDelete;
 		if (consumeOptionally(delete, SyntaxKind.LPAREN))
 		{
+			adabasDelete = true;
 			if (!consumeOptionally(delete, SyntaxKind.LABEL_IDENTIFIER))
 			{
 				consumeOperandNode(delete); // numbered label
@@ -1167,7 +1169,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		// SQL Delete begins here
 		consumeMandatory(delete, SyntaxKind.FROM);
-		while (!isAtEnd() && !isStatementStart())
+		while (!isAtEnd() && !(isStatementStart() || isStatementEndOrBranch()))
 		{
 			consume(delete);
 		}
@@ -2965,11 +2967,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		unresolvedReferences.removeAll(resolvedReferences);
 	}
 
-	@SuppressWarnings(
-		{
-			"unused"
-		}
-	) // TODO: use this for error recovery
+	// TODO: use this for error recovery
 	private boolean isStatementStart()
 	{
 		if (tokens.isAtEnd())
@@ -2997,11 +2995,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		};
 	}
 
-	@SuppressWarnings(
-		{
-			"unused"
-		}
-	)
 	private boolean isStatementEndOrBranch()
 	{
 		if (tokens.isAtEnd())
