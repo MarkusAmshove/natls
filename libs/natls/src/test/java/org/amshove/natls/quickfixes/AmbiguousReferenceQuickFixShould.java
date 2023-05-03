@@ -10,7 +10,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 @LspTest
-public class AmbiguousReferenceQuickFixShould extends CodeActionTest
+class AmbiguousReferenceQuickFixShould extends CodeActionTest
 {
 	private static LspTestContext testContext;
 
@@ -73,10 +73,8 @@ public class AmbiguousReferenceQuickFixShould extends CodeActionTest
 		assertContainsCodeAction("Use #AGROUP.#THEVAR", result.codeActions());
 		assertContainsCodeAction("Use #TWOGROUP.#THEVAR", result.codeActions());
 
-		assertCodeAction(result.codeActions().get(0))
-			.fixes(ParserError.AMBIGUOUS_VARIABLE_REFERENCE.id())
-			.insertsText(8, 9, "#AGROUP.#THEVAR")
-			.resultsApplied(result.savedSource(), """
+		assertCodeAction(result, 0)
+			.resultsApplied("""
 			   DEFINE DATA
 			   LOCAL
 			   1 #AGROUP
@@ -87,12 +85,12 @@ public class AmbiguousReferenceQuickFixShould extends CodeActionTest
 
 			   WRITE #AGROUP.#THEVAR
 			   END
-			""");
-
-		assertCodeAction(result.codeActions().get(1))
+			""")
 			.fixes(ParserError.AMBIGUOUS_VARIABLE_REFERENCE.id())
-			.insertsText(8, 9, "#TWOGROUP.#THEVAR")
-			.resultsApplied(result.savedSource(), """
+			.insertsText(8, 9, "#AGROUP.#THEVAR");
+
+		assertCodeAction(result, 1)
+			.resultsApplied("""
 			   DEFINE DATA
 			   LOCAL
 			   1 #AGROUP
@@ -103,6 +101,8 @@ public class AmbiguousReferenceQuickFixShould extends CodeActionTest
 
 			   WRITE #TWOGROUP.#THEVAR
 			   END
-			""");
+			""")
+			.fixes(ParserError.AMBIGUOUS_VARIABLE_REFERENCE.id())
+			.insertsText(8, 9, "#TWOGROUP.#THEVAR");
 	}
 }
