@@ -3,6 +3,7 @@ package org.amshove.natls;
 import org.amshove.natparse.natural.ISyntaxNode;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 
 public class SourceExtractor
@@ -24,7 +25,9 @@ public class SourceExtractor
 		}
 		catch (IOException e)
 		{
-			throw new RuntimeException(e);
+			throw new UncheckedIOException(e);
 		}
 	}
+
+	private SourceExtractor() {}
 }
