@@ -2491,10 +2491,15 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		var opening = consumeMandatory(statement, SyntaxKind.IF);
 		consumeMandatory(statement, SyntaxKind.SELECTION);
-		consumeOptionally(statement, SyntaxKind.NOT);
-		consumeOptionally(statement, SyntaxKind.UNIQUE);
-		consumeOptionally(statement, SyntaxKind.IN);
-		consumeOptionally(statement, SyntaxKind.FIELDS);
+
+		if (consumeOptionally(statement, SyntaxKind.NOT))
+		{
+			consumeOptionally(statement, SyntaxKind.UNIQUE);
+			if (consumeOptionally(statement, SyntaxKind.IN))
+			{
+				consumeOptionally(statement, SyntaxKind.FIELDS);
+			}
+		}
 
 		statement.setCondition(conditionNode());
 		consumeOptionally(statement, SyntaxKind.THEN);
