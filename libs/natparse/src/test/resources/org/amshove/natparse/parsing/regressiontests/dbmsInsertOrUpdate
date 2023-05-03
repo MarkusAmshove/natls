@@ -1,0 +1,45 @@
+DEFINE SUBROUTINE ADD-RECORD
+IF #NEW THEN
+INSERT INTO SOME_DB2_TABLE
+(
+    COL1,
+    COL2,
+    COL3,
+    COL4,
+    COL5,
+    COL6,
+    COL7,
+    COL8,
+    COL9,
+    COL10
+)
+VALUES
+(
+    'VAL1',
+    'VAL2',
+    'VAL3',
+    'VAL4',
+    'VAL5',
+     VAL6,
+     VAL7,
+    'VAL8',
+    'VAL9',
+     VAL10
+)
+ELSE
+  UPDATE SOME_DB2_TABLE
+  SET
+    COL1 = 'VAL1',
+    COL2 = 'VAL2',
+    COL3 = 'VAL3',
+    COL4 = 'VAL4',
+    COL5 = 'VAL5',
+    COL6 = VAL6,
+    COL7 = VAL7,
+    COL8 = 'VAL8',
+    COL9='VAL9',
+    COL10 = VAL10
+  WHERE KEYFIELD = 'KEY'
+END-IF
+END-SUBROUTINE
+END
