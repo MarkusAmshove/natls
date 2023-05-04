@@ -3008,7 +3008,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		unresolvedReferences.removeAll(resolvedReferences);
 	}
 
-	// TODO: use this for error recovery
+	@SuppressWarnings(
+		{
+			"unused"
+		}
+	) // TODO: use this for error recovery
 	private boolean isStatementStart()
 	{
 		if (tokens.isAtEnd())
