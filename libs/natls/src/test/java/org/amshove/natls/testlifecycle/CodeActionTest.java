@@ -33,9 +33,9 @@ public abstract class CodeActionTest extends LanguageServerTest
 		return new CodeActionAssertion(codeActions.get(0));
 	}
 
-	protected CodeActionAssertion assertCodeAction(CodeAction codeAction)
+	protected ApplicableCodeActionAssertion assertCodeAction(CodeActionResult result, int codeActionIndex)
 	{
-		return new CodeActionAssertion(codeAction);
+		return new ApplicableCodeActionAssertion(result.savedSource(), result.codeActions().get(codeActionIndex));
 	}
 
 	protected void assertNoCodeAction(String library, String module, String source)
@@ -48,18 +48,13 @@ public abstract class CodeActionTest extends LanguageServerTest
 		assertThat(receiveCodeActions(library, module, source).codeActions()).noneMatch(ca -> ca.getTitle().equals(title));
 	}
 
-	protected CodeActionAssertion assertSingleCodeAction(String actionTitle, String library, String moduleName, String code)
+	protected ApplicableCodeActionAssertion assertCodeActionWithTitle(String actionTitle, String library, String moduleName, String code)
 	{
-		return assertSingleCodeAction(receiveCodeActions(library, moduleName, code).codeActions())
-			.hasTitle(actionTitle);
-	}
-
-	protected CodeActionAssertion assertCodeActionWithTitle(String actionTitle, String library, String moduleName, String code)
-	{
-		var codeActions = receiveCodeActions(library, moduleName, code).codeActions();
+		var result = receiveCodeActions(library, moduleName, code);
+		var codeActions = result.codeActions();
 		assertContainsCodeAction(actionTitle, codeActions);
 		//noinspection OptionalGetWithoutIsPresent
-		return new CodeActionAssertion(codeActions.stream().filter(ca -> ca.getTitle().equals(actionTitle)).findAny().get());
+		return new ApplicableCodeActionAssertion(result.savedSource(), codeActions.stream().filter(ca -> ca.getTitle().equals(actionTitle)).findAny().get());
 	}
 
 	protected void assertNoCodeActionWithTitle(String actionTitle, String library, String moduleName, String code)

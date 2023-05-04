@@ -50,23 +50,17 @@ public class BooleanOperatorQuickfixShould extends CodeActionTest
 			natls.style.comparisons=signs
 			""");
 
-		var result = receiveCodeActions("LIBONE", "MEINS.NSN", """
+		assertCodeActionWithTitle("Change operator to %s".formatted(preferredOperator), "LIBONE", "MEINS.NSN", """
 			   DEFINE DATA LOCAL
 			   END-DEFINE
 			   IF 5 ${}$%s 2
 			   IGNORE
 			   END-IF
 			   END
-			""".formatted(discouragedOperator));
-
-		var actions = result.codeActions();
-
-		assertContainsCodeAction("Change operator to %s".formatted(preferredOperator), actions);
-
-		assertSingleCodeAction(actions)
+			""".formatted(discouragedOperator))
 			.insertsText(2, 8, preferredOperator)
 			.fixes(BooleanOperatorAnalyzer.DISCOURAGED_BOOLEAN_OPERATOR.getId())
-			.resultsApplied(result.savedSource(), """
+			.resultsApplied("""
 			   DEFINE DATA LOCAL
 			   END-DEFINE
 			   IF 5 %s 2
@@ -91,23 +85,17 @@ public class BooleanOperatorQuickfixShould extends CodeActionTest
 			natls.style.comparisons=short
 			""");
 
-		var result = receiveCodeActions("LIBONE", "MEINS.NSN", """
+		assertCodeActionWithTitle("Change operator to %s".formatted(preferredOperator), "LIBONE", "MEINS.NSN", """
 			   DEFINE DATA LOCAL
 			   END-DEFINE
 			   IF 5 ${}$%s 2
 			   IGNORE
 			   END-IF
 			   END
-			""".formatted(discouragedOperator));
-
-		var actions = result.codeActions();
-
-		assertContainsCodeAction("Change operator to %s".formatted(preferredOperator), actions);
-
-		assertSingleCodeAction(actions)
+			""".formatted(discouragedOperator))
 			.insertsText(2, 8, preferredOperator)
 			.fixes(BooleanOperatorAnalyzer.DISCOURAGED_BOOLEAN_OPERATOR.getId())
-			.resultsApplied(result.savedSource(), """
+			.resultsApplied("""
 			   DEFINE DATA LOCAL
 			   END-DEFINE
 			   IF 5 %s 2
@@ -120,7 +108,7 @@ public class BooleanOperatorQuickfixShould extends CodeActionTest
 	@Test
 	void recognizeTheQuickFixForInvalidNatUnitTestComparison()
 	{
-		var result = receiveCodeActions("LIBONE", "TCTEST.NSN", """
+		assertCodeActionWithTitle("Change operator to EQ", "LIBONE", "TCTEST.NSN", """
 			DEFINE DATA
 			LOCAL USING NUTESTP
 			END-DEFINE
@@ -130,15 +118,9 @@ public class BooleanOperatorQuickfixShould extends CodeActionTest
 			END-IF
 			END-SUBROUTINE
 			END
-			""");
-
-		var actions = result.codeActions();
-
-		assertContainsCodeAction("Change operator to EQ", actions);
-
-		assertSingleCodeAction(actions)
+			""")
 			.insertsText(4, 16, "EQ")
-			.resultsApplied(result.savedSource(), """
+			.resultsApplied("""
 			DEFINE DATA
 			LOCAL USING NUTESTP
 			END-DEFINE

@@ -33,22 +33,16 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 	@Test
 	void addAVariableToDefineDataWhenNoVariablesArePresent()
 	{
-		var result = receiveCodeActions("LIBONE", "MEINS.NSN", """
+		assertCodeActionWithTitle("Declare variable #NAME", "LIBONE", "MEINS.NSN", """
 			DEFINE DATA
 			END-DEFINE
 
 			WRITE #N${}$AME
 
 			END
-			""");
-
-		var actions = result.codeActions();
-
-		assertContainsCodeAction("Declare variable #NAME", actions);
-
-		assertSingleCodeAction(actions)
+			""")
 			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
-			.resultsApplied(result.savedSource(), """
+			.resultsApplied("""
 				DEFINE DATA
 				LOCAL
 				1 #NAME (A) DYNAMIC
@@ -63,7 +57,7 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 	@Test
 	void addAVariableToDefineDataWhenNoVariablesButAScopeArePresent()
 	{
-		var result = receiveCodeActions("LIBONE", "MEINS.NSN", """
+		assertCodeActionWithTitle("Declare variable #NAME", "LIBONE", "MEINS.NSN", """
 			DEFINE DATA
 			LOCAL
 			END-DEFINE
@@ -71,15 +65,9 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 			WRITE #N${}$AME
 
 			END
-			""");
-
-		var actions = result.codeActions();
-
-		assertContainsCodeAction("Declare variable #NAME", actions);
-
-		assertSingleCodeAction(actions)
+			""")
 			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
-			.resultsApplied(result.savedSource(), """
+			.resultsApplied("""
 				DEFINE DATA
 				LOCAL
 				1 #NAME (A) DYNAMIC
@@ -94,7 +82,7 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 	@Test
 	void addAVariableToDefineDataWhenAnotherVariableIsAlreadyPresent()
 	{
-		var result = receiveCodeActions("LIBONE", "MEINS.NSN", """
+		assertCodeActionWithTitle("Declare variable #NAME", "LIBONE", "MEINS.NSN", """
 			DEFINE DATA
 			LOCAL
 			1 #ANOTHERVAR (A10)
@@ -103,15 +91,9 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 			WRITE #N${}$AME
 
 			END
-			""");
-
-		var actions = result.codeActions();
-
-		assertContainsCodeAction("Declare variable #NAME", actions);
-
-		assertSingleCodeAction(actions)
+			""")
 			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
-			.resultsApplied(result.savedSource(), """
+			.resultsApplied("""
 				DEFINE DATA
 				LOCAL
 				1 #NAME (A) DYNAMIC
@@ -134,7 +116,7 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 			END-DEFINE
 			""");
 
-		var result = receiveCodeActions("LIBONE", "MEINS.NSN", """
+		assertCodeActionWithTitle("Add USING to DATAAREA (from LIBONE)", "LIBONE", "MEINS.NSN", """
 			DEFINE DATA
 			LOCAL
 			END-DEFINE
@@ -142,15 +124,9 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 			WRITE #IN-L${}$DA
 
 			END
-			""");
-
-		var actions = result.codeActions();
-
-		assertContainsCodeAction("Add USING to DATAAREA (from LIBONE)", actions);
-
-		assertCodeAction(actions.get(0))
+			""")
 			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
-			.resultsApplied(result.savedSource(), """
+			.resultsApplied("""
 				DEFINE DATA
 				LOCAL USING DATAAREA
 				LOCAL
@@ -172,22 +148,16 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 			END-DEFINE
 			""");
 
-		var result = receiveCodeActions("LIBONE", "MEINS.NSN", """
+		assertCodeActionWithTitle("Add USING to DATAAREA (from LIBONE)", "LIBONE", "MEINS.NSN", """
 			DEFINE DATA
 			END-DEFINE
 
 			WRITE #IN-L${}$DA
 
 			END
-			""");
-
-		var actions = result.codeActions();
-
-		assertContainsCodeAction("Add USING to DATAAREA (from LIBONE)", actions);
-
-		assertCodeAction(actions.get(0))
+			""")
 			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
-			.resultsApplied(result.savedSource(), """
+			.resultsApplied("""
 				DEFINE DATA
 				LOCAL USING DATAAREA
 				END-DEFINE
@@ -205,19 +175,17 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 			WRITE #THE-VAR-I-NEED
 			""");
 
-		var result = receiveCodeActions("LIBONE", "SUB.NSN", """
+		assertCodeActionWithTitle("Declare variable #THE-VAR-I-NEED", "LIBONE", "SUB.NSN", """
 			DEFINE DATA
 			LOCAL
 			END-DEFINE
 			   
 			INCLUDE TH${}$ECC
 			END
-			""");
-
-		assertCodeAction(result.codeActions().get(0))
+			""")
 			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
 			.hasTitle("Declare variable #THE-VAR-I-NEED")
-			.resultsApplied(result.savedSource(), """
+			.resultsApplied("""
 				DEFINE DATA
 				LOCAL
 				1 #THE-VAR-I-NEED (A) DYNAMIC

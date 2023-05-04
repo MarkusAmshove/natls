@@ -10,7 +10,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 @LspTest
-public class RemoveUnusedVariableQuickfixShould extends CodeActionTest
+class RemoveUnusedVariableQuickfixShould extends CodeActionTest
 {
 	private static LspTestContext testContext;
 
@@ -35,22 +35,16 @@ public class RemoveUnusedVariableQuickfixShould extends CodeActionTest
 	@Test
 	void recognizeTheQuickfix()
 	{
-		var result = receiveCodeActions("LIBONE", "MEINS.NSN", """
+		assertCodeActionWithTitle("Remove unused variable", "LIBONE", "MEINS.NSN", """
 			   DEFINE DATA
 			   LOCAL
 			   01 #U${}$NUSED (A10)
 			   END-DEFINE
 			   END
-			""");
-
-		var actions = result.codeActions();
-
-		assertContainsCodeAction("Remove unused variable", actions);
-
-		assertSingleCodeAction(actions)
+			""")
 			.deletesLine(2)
 			.fixes(UnusedVariableAnalyzer.UNUSED_VARIABLE.getId())
-			.resultsApplied(result.savedSource(), """
+			.resultsApplied("""
 			   DEFINE DATA
 			   LOCAL
 			   END-DEFINE
