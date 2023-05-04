@@ -6,7 +6,7 @@ public interface IResizeDynamicNode extends IStatementNode
 {
 	IVariableReferenceNode variableToResize();
 
-	int sizeToResizeTo();
+	IOperandNode sizeToResizeTo();
 
 	@Nullable
 	IVariableReferenceNode errorVariable();

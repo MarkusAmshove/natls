@@ -6,7 +6,7 @@ public interface IReduceDynamicNode extends IStatementNode
 {
 	IVariableReferenceNode variableToReduce();
 
-	int sizeToReduceTo();
+	IOperandNode sizeToReduceTo();
 
 	@Nullable
 	IVariableReferenceNode errorVariable();
