@@ -1,13 +1,14 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.natural.IExpandDynamicNode;
+import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.IVariableReferenceNode;
 
 class ExpandDynamicNode extends StatementNode implements IExpandDynamicNode
 {
 	private IVariableReferenceNode variableToExpand;
 	private IVariableReferenceNode errorVariable;
-	private int sizeToExpandTo;
+	private IOperandNode sizeToExpandTo;
 
 	@Override
 	public IVariableReferenceNode variableToExpand()
@@ -16,7 +17,7 @@ class ExpandDynamicNode extends StatementNode implements IExpandDynamicNode
 	}
 
 	@Override
-	public int sizeToExpandTo()
+	public IOperandNode sizeToExpandTo()
 	{
 		return sizeToExpandTo;
 	}
@@ -32,7 +33,7 @@ class ExpandDynamicNode extends StatementNode implements IExpandDynamicNode
 		this.variableToExpand = variableToExpand;
 	}
 
-	void setSizeToResizeTo(int sizeToExpandTo)
+	void setSizeToResizeTo(IOperandNode sizeToExpandTo)
 	{
 		this.sizeToExpandTo = sizeToExpandTo;
 	}

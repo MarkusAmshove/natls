@@ -816,8 +816,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var toReduce = consumeVariableReferenceNode(reduce);
 		reduce.setVariableToResize(toReduce);
 		consumeMandatory(reduce, SyntaxKind.TO);
-		var newSize = consumeLiteralNode(reduce, SyntaxKind.NUMBER_LITERAL);
-		reduce.setSizeToResizeTo(newSize.token().intValue());
+		var newSize = consumeOperandNode(reduce);
+		reduce.setSizeToResizeTo(newSize);
 
 		if (consumeOptionally(reduce, SyntaxKind.GIVING))
 		{
@@ -876,8 +876,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var toReduce = consumeVariableReferenceNode(expand);
 		expand.setVariableToResize(toReduce);
 		consumeMandatory(expand, SyntaxKind.TO);
-		var newSize = consumeLiteralNode(expand, SyntaxKind.NUMBER_LITERAL);
-		expand.setSizeToResizeTo(newSize.token().intValue());
+		var newSize = consumeOperandNode(expand);
+		expand.setSizeToResizeTo(newSize);
 
 		if (consumeOptionally(expand, SyntaxKind.GIVING))
 		{
@@ -941,8 +941,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var toResize = consumeVariableReferenceNode(resize);
 		resize.setVariableToResize(toResize);
 		consumeMandatory(resize, SyntaxKind.TO);
-		var newSize = consumeLiteralNode(resize, SyntaxKind.NUMBER_LITERAL);
-		resize.setSizeToResizeTo(newSize.token().intValue());
+		var newSize = consumeOperandNode(resize);
+		resize.setSizeToResizeTo(newSize);
 
 		if (consumeOptionally(resize, SyntaxKind.GIVING))
 		{

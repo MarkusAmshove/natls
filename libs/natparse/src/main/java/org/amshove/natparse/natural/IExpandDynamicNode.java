@@ -6,7 +6,7 @@ public interface IExpandDynamicNode extends IStatementNode
 {
 	IVariableReferenceNode variableToExpand();
 
-	int sizeToExpandTo();
+	IOperandNode sizeToExpandTo();
 
 	@Nullable
 	IVariableReferenceNode errorVariable();

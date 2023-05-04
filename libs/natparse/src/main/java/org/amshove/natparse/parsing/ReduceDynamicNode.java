@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.IReduceDynamicNode;
 import org.amshove.natparse.natural.IVariableReferenceNode;
 
@@ -7,7 +8,7 @@ class ReduceDynamicNode extends StatementNode implements IReduceDynamicNode
 {
 	private IVariableReferenceNode variableToReduce;
 	private IVariableReferenceNode errorVariable;
-	private int sizeToReduceTo;
+	private IOperandNode sizeToReduceTo;
 
 	@Override
 	public IVariableReferenceNode variableToReduce()
@@ -22,7 +23,7 @@ class ReduceDynamicNode extends StatementNode implements IReduceDynamicNode
 	}
 
 	@Override
-	public int sizeToReduceTo()
+	public IOperandNode sizeToReduceTo()
 	{
 		return sizeToReduceTo;
 	}
@@ -32,7 +33,7 @@ class ReduceDynamicNode extends StatementNode implements IReduceDynamicNode
 		this.variableToReduce = variableToReduce;
 	}
 
-	void setSizeToResizeTo(int sizeToReduceTo)
+	void setSizeToResizeTo(IOperandNode sizeToReduceTo)
 	{
 		this.sizeToReduceTo = sizeToReduceTo;
 	}
