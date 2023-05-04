@@ -850,7 +850,7 @@ public class Lexer
 				case "CV=" -> controlVariableAttribute();
 				case "DF=" -> dateFormatAttribute();
 				case "DY=" -> dynamicAttribute();
-				case "EM=" -> editorMask();
+				case "EM=" -> editMask();
 				case "IP=" -> inputPromptAttribute();
 				case "IS=" -> identicalSuppressAttribute();
 				case "NL=" -> numericLengthAttribute();
@@ -1021,7 +1021,7 @@ public class Lexer
 		createAndAdd(SyntaxKind.CV);
 	}
 
-	private void editorMask()
+	private void editMask()
 	{
 		scanner.start();
 		scanner.advance(3); // EM=

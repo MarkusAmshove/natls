@@ -161,6 +161,23 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case SELECT:
 						statementList.addStatement(select());
 						break;
+					case INSERT:
+						statementList.addStatement(insert());
+						break;
+					case UPDATE:
+						statementList.addStatement(update());
+						break;
+					case DELETE:
+						statementList.addStatement(delete());
+						break;
+					case PROCESS:
+						if (peekKind(1, SyntaxKind.SQL))
+						{
+							statementList.addStatement(processSql());
+							break;
+						}
+						statementList.addStatement(consumeFallback());
+						break;
 					case START:
 						statementList.addStatement(parseAtPositionOf(SyntaxKind.START, SyntaxKind.DATA, SyntaxKind.END_START, true, new StartOfDataNode()));
 						break;
@@ -1043,7 +1060,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var select = new SelectNode();
 		var opening = consumeMandatory(select, SyntaxKind.SELECT);
 
-		while (!peekKind(SyntaxKind.END_SELECT) && !isStatementStart())
+		while (!isAtEnd() && !peekKind(SyntaxKind.END_SELECT) && !isStatementStart())
 		{
 			consume(select);
 		}
@@ -1058,7 +1075,126 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			select.setBody(statementList(SyntaxKind.END_SELECT));
 			consumeMandatoryClosing(select, SyntaxKind.END_SELECT, opening);
 		}
+
 		return select;
+	}
+
+	private StatementNode insert() throws ParseError
+	{
+		// Right now, just consume the INSERT entirely
+		var insert = new InsertStatementNode();
+		consumeMandatory(insert, SyntaxKind.INSERT);
+
+		// The first VALUES is part of the INSERT, if 2nd is reached it's another statement.
+		// This can occur: INSERT INTO DB2-TABEL (COL1) VALUES 'XYZ' VALUES 'xx' (as part of DECIDE statement)
+		var numValues = 0;
+		while (!isAtEnd())
+		{
+			if (consumeOptionally(insert, SyntaxKind.VALUES))
+			{
+				numValues++;
+			}
+
+			if (numValues > 1 || isStatementStart() || isStatementEndOrBranch())
+			{
+				break;
+			}
+			consume(insert);
+		}
+
+		return insert;
+	}
+
+	private StatementNode update() throws ParseError
+	{
+		// Right now, just consume the UPDATE entirely
+		var update = new UpdateStatementNode();
+		consumeMandatory(update, SyntaxKind.UPDATE);
+
+		var adabasUpdate = consumeOptionally(update, SyntaxKind.RECORD);
+		adabasUpdate = consumeOptionally(update, SyntaxKind.IN) || adabasUpdate;
+		adabasUpdate = consumeOptionally(update, SyntaxKind.STATEMENT) || adabasUpdate;
+		if (consumeOptionally(update, SyntaxKind.LPAREN))
+		{
+			adabasUpdate = true;
+			if (!consumeOptionally(update, SyntaxKind.LABEL_IDENTIFIER))
+			{
+				consumeOperandNode(update); // numbered label
+			}
+			consumeMandatory(update, SyntaxKind.RPAREN);
+		}
+
+		if (adabasUpdate || isAtEnd() || isStatementStart() || isStatementEndOrBranch())
+		{
+			return update;
+		}
+
+		// SQL Update begins here
+		var numSet = 0;
+		while (!isAtEnd())
+		{
+			// The first SET encountered is part of the UPDATE, if 2nd is reached it's another statement.
+			// This can occur: UPDATE DB2-TABEL SET COL1 = 'XYZ' SET CONTROL etc
+			if (consumeOptionally(update, SyntaxKind.SET))
+			{
+				numSet++;
+			}
+
+			if (numSet > 1 || (isStatementStart() || isStatementEndOrBranch()))
+			{
+				break;
+			}
+			consume(update);
+		}
+
+		return update;
+	}
+
+	private StatementNode delete() throws ParseError
+	{
+		// Right now, just consume the DELETE entirely
+		var delete = new DeleteStatementNode();
+		consumeMandatory(delete, SyntaxKind.DELETE);
+
+		var adabasDelete = consumeOptionally(delete, SyntaxKind.RECORD);
+		adabasDelete = consumeOptionally(delete, SyntaxKind.IN) || adabasDelete;
+		adabasDelete = consumeOptionally(delete, SyntaxKind.STATEMENT) || adabasDelete;
+		if (consumeOptionally(delete, SyntaxKind.LPAREN))
+		{
+			adabasDelete = true;
+			if (!consumeOptionally(delete, SyntaxKind.LABEL_IDENTIFIER))
+			{
+				consumeOperandNode(delete); // numbered label
+			}
+			consumeMandatory(delete, SyntaxKind.RPAREN);
+		}
+
+		if (adabasDelete || isAtEnd() || isStatementStart() || isStatementEndOrBranch())
+		{
+			return delete;
+		}
+
+		// SQL Delete begins here
+		consumeMandatory(delete, SyntaxKind.FROM);
+		while (!isAtEnd() && !(isStatementStart() || isStatementEndOrBranch()))
+		{
+			consume(delete);
+		}
+		return delete;
+	}
+
+	private StatementNode processSql() throws ParseError
+	{
+		// Right now, just consume the PROCESS SQL entirely (only)
+		var processSql = new ProcessSqlNode();
+		consumeMandatory(processSql, SyntaxKind.PROCESS);
+		consumeMandatory(processSql, SyntaxKind.SQL);
+		while (!isAtEnd() && !isStatementStart() && !isStatementEndOrBranch())
+		{
+			consume(processSql);
+		}
+
+		return processSql;
 	}
 
 	private StatementNode beforeBreak() throws ParseError
@@ -2901,6 +3037,22 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			case LIMIT -> peekKind(1, SyntaxKind.NUMBER_LITERAL);
 			case SUSPEND -> peekKind(1, SyntaxKind.IDENTICAL) && peekKind(2, SyntaxKind.SUPPRESS);
 			case UPLOAD -> peekKind(1, SyntaxKind.PC) && peekKind(2, SyntaxKind.FILE);
+			default -> false;
+		};
+	}
+
+	private boolean isStatementEndOrBranch()
+	{
+		if (tokens.isAtEnd())
+		{
+			return false;
+		}
+
+		var currentKind = tokens.peek().kind();
+		return switch (currentKind)
+		{
+			case ELSE, VALUE, VALUES, WHEN, NONE -> true; // branching
+			case END_IF, END_ALL, END_BEFORE, END_BREAK, END_BROWSE, END_CLASS, END_DECIDE, END_ENDDATA, END_ENDFILE, END_ENDPAGE, END_ERROR, END_FILE, END_FIND, END_FOR, END_FUNCTION, END_HISTOGRAM, END_INTERFACE, END_LOOP, END_METHOD, END_NOREC, END_PARAMETERS, END_PARSE, END_PROCESS, END_PROPERTY, END_PROTOTYPE, END_READ, END_REPEAT, END_RESULT, END_SELECT, END_SORT, END_START, END_SUBROUTINE, END_TOPPAGE, END_WORK -> true;
 			default -> false;
 		};
 	}

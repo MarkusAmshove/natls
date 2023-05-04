@@ -1487,6 +1487,121 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(select.body().statements().first()).isInstanceOf(IAddStatementNode.class);
 	}
 
+	@Test
+	void parseDb2Insert()
+	{
+		assertParsesSingleStatement("""
+			INSERT INTO DB2-TABLE
+			  (COL1, COL2, COL3)
+			  VALUES
+			  ('A', 'B', 'C')
+			""", IInsertStatementNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"UPDATE RECORD IN STATEMENT (GET.)",
+		"UPDATE RECORD IN (GET.)",
+		"UPDATE IN STATEMENT (GET.)",
+		"UPDATE RECORD STATEMENT (GET.)",
+		"UPDATE RECORD (GET.)",
+		"UPDATE IN (GET.)",
+		"UPDATE STATEMENT (GET.)",
+		"UPDATE (GET.)",
+		"UPDATE RECORD IN STATEMENT (0120)",
+		"UPDATE RECORD IN (0120)",
+		"UPDATE IN STATEMENT (0120)",
+		"UPDATE RECORD STATEMENT (0120)",
+		"UPDATE RECORD (0120)",
+		"UPDATE IN (0120)",
+		"UPDATE STATEMENT (0120)",
+		"UPDATE (0120)",
+		"UPDATE RECORD IN STATEMENT",
+		"UPDATE RECORD IN",
+		"UPDATE IN STATEMENT",
+		"UPDATE RECORD STATEMENT",
+		"UPDATE RECORD",
+		"UPDATE IN",
+		"UPDATE STATEMENT",
+		"UPDATE",
+	})
+	void parseAdabasUpdate(String statement)
+	{
+		assertParsesSingleStatement("""
+			%s
+			""".formatted(statement), IUpdateStatementNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"DELETE RECORD IN STATEMENT (GET.)",
+		"DELETE RECORD IN (GET.)",
+		"DELETE IN STATEMENT (GET.)",
+		"DELETE RECORD STATEMENT (GET.)",
+		"DELETE RECORD (GET.)",
+		"DELETE IN (GET.)",
+		"DELETE STATEMENT (GET.)",
+		"DELETE (GET.)",
+		"DELETE RECORD IN STATEMENT (0120)",
+		"DELETE RECORD IN (0120)",
+		"DELETE IN STATEMENT (0120)",
+		"DELETE RECORD STATEMENT (0120)",
+		"DELETE RECORD (0120)",
+		"DELETE IN (0120)",
+		"DELETE STATEMENT (0120)",
+		"DELETE (0120)",
+		"DELETE RECORD IN STATEMENT",
+		"DELETE RECORD IN",
+		"DELETE IN STATEMENT",
+		"DELETE RECORD STATEMENT",
+		"DELETE RECORD",
+		"DELETE IN",
+		"DELETE STATEMENT",
+		"DELETE",
+	})
+	void parseAdabasDelete(String statement)
+	{
+		assertParsesSingleStatement("""
+			%s
+			""".formatted(statement), IDeleteStatementNode.class);
+	}
+
+	@Test
+	void parseDb2Update()
+	{
+		assertParsesSingleStatement("""
+			UPDATE DB2-TABLE
+			  SET COL1 = 'xyz',
+			  COL2 = 'abc',
+			  COL3 = 123
+			  WHERE F1 = F2
+			""", IUpdateStatementNode.class);
+	}
+
+	@Test
+	void parseDb2Delete()
+	{
+		assertParsesSingleStatement("""
+			DELETE FROM DB2-TABLE
+			  WHERE F1 = F2
+			""", IDeleteStatementNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"PROCESS SQL DB2-TABLE <<SET :CURR-SERV  = CURRENT SERVER>>",
+		"PROCESS SQL DB2-TABLE <<CONNECT TO :LOCATION>",
+	})
+	void parseProcessSql(String statement)
+	{
+		assertParsesSingleStatement("""
+			%s
+			""".formatted(statement), IProcessSqlNode.class);
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
