@@ -4,11 +4,11 @@ This document tracks the implementation status of Natural statements.
 
 Legend:
 
-:x: - not implemented (62)
+:x: - not implemented (58)
 
 :white_check_mark: - implemented or reporting (53)
 
-partial - partially implemented to prevent false positives (7)
+partial - partially implemented to prevent false positives (11)
 
 | Statement | Status             |
 | --- |--------------------|
@@ -46,7 +46,7 @@ partial - partially implemented to prevent false positives (7)
 | DEFINE WINDOW | partial            |
 | DEFINE WORK FILE | :white_check_mark: |
 | DELETE | :x:                |
-| DELETE (SQL) | :x:                |
+| DELETE (SQL) | partial                |
 | DISPLAY | :x:                |
 | DIVIDE | :white_check_mark: |
 | DOWNLOAD PC FILE | :white_check_mark: |
@@ -69,7 +69,7 @@ partial - partially implemented to prevent false positives (7)
 | IGNORE | :white_check_mark: |
 | INCLUDE | :white_check_mark: |
 | INPUT | :x:                |
-| INSERT (SQL) | :x:                |
+| INSERT (SQL) | partial                |
 | INTERFACE | :x:                |
 | LIMIT | :white_check_mark: |
 | METHOD | :x:                |
@@ -88,7 +88,7 @@ partial - partially implemented to prevent false positives (7)
 | PROCESS | :x:                |
 | PROCESS COMMAND | :x:                |
 | PROCESS PAGE | :x:                |
-| PROCESS SQL (SQL) | :x:                |
+| PROCESS SQL (SQL) | partial                |
 | PROPERTY | :x:                |
 | READ | :x:                |
 | READ RESULT SET (SQL) | :x:                |
@@ -122,7 +122,7 @@ partial - partially implemented to prevent false positives (7)
 | SUSPEND IDENTICAL SUPPRESS | :x:                |
 | TERMINATE | :white_check_mark: |
 | UPDATE | :x:                |
-| UPDATE (SQL) | :x:                |
+| UPDATE (SQL) | partial                |
 | UPDATELOB | :x:                |
 | UPLOAD PC FILE | :x:                |
 | WRITE | partial            |
