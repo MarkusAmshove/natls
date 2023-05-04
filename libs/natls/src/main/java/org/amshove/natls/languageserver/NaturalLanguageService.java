@@ -635,18 +635,22 @@ public class NaturalLanguageService implements LanguageClientAware
 			variableName = variableNode.qualifiedName();
 		}
 
+		var insertText = variableNode.dimensions().hasItems()
+			? "%s($1)$0".formatted(variableName)
+			: variableName;
+		item.setInsertText(insertText);
+		item.setInsertTextFormat(InsertTextFormat.Snippet);
+
 		item.setKind(CompletionItemKind.Variable);
 		item.setLabel(variableName);
 		var label = "";
 		if (variableNode instanceof ITypedVariableNode typedNode)
 		{
 			label = variableName + " :" + typedNode.formatTypeForDisplay();
-			item.setInsertText(variableName);
 		}
 		if (variableNode instanceof IGroupNode)
 		{
 			label = variableName + " : Group";
-			item.setInsertText(variableName);
 		}
 
 		var isImported = variableNode.position().filePath().equals(openFile.getPath());
