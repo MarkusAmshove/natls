@@ -8,6 +8,6 @@ class DbmsTests extends ResourceFolderBasedTest
 	@TestFactory
 	Iterable<DynamicTest> testForDbms()
 	{
-		return testFolder("regressiontests");
+		return testFolder("dbms");
 	}
 }
