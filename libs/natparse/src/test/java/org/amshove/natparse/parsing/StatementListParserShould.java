@@ -2022,4 +2022,19 @@ class StatementListParserShould extends StatementParseTest
 		assertIsVariableReference(perform.breakOf().operand(), "#INDEX");
 		assertThat(perform.breakOf().body().statements()).hasSize(1);
 	}
+
+	@Test
+	void parseLimit()
+	{
+		var limit = assertParsesSingleStatement("LIMIT 5", ILimitNode.class);
+		assertLiteral(limit.limit(), SyntaxKind.NUMBER_LITERAL);
+		assertThat(limit.limit().token().intValue()).isEqualTo(5);
+	}
+
+	@Test
+	void parseLimitAsOperand()
+	{
+		var assign = assertParsesSingleStatement("LIMIT := 5", IAssignmentStatementNode.class);
+		assertIsVariableReference(assign.target(), "LIMIT");
+	}
 }

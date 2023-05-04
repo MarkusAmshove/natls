@@ -173,6 +173,13 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case MULTIPLY:
 						statementList.addStatement(multiply());
 						break;
+					case LIMIT:
+						if (peekKind(1, SyntaxKind.NUMBER_LITERAL))
+						{
+							statementList.addStatement(limit());
+							break;
+						}
+						// fall through to IDENTIFIER
 					case IDENTIFIER:
 						statementList.addStatements(assignmentsOrIdentifierReference());
 						break;
@@ -1594,6 +1601,14 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return format;
 	}
 
+	private StatementNode limit() throws ParseError
+	{
+		var limit = new LimitNode();
+		consumeMandatory(limit, SyntaxKind.LIMIT);
+		limit.setLimit(consumeLiteralNode(limit, SyntaxKind.NUMBER_LITERAL));
+		return limit;
+	}
+
 	private StatementNode defineWindow() throws ParseError
 	{
 		var window = new DefineWindowNode();
@@ -2877,12 +2892,13 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		return switch (currentKind)
 		{
-			case ACCEPT, ADD, ASSIGN, BEFORE, BACKOUT, CALL, CALLNAT, CLOSE, COMMIT, COMPRESS, COMPUTE, DECIDE, DEFINE, DELETE, DISPLAY, DIVIDE, DO, DOEND, DOWNLOAD, EJECT, END, ESCAPE, EXAMINE, EXPAND, FETCH, FIND, FOR, FORMAT, GET, HISTOGRAM, IF, IGNORE, INCLUDE, INPUT, INSERT, INTERFACE, LIMIT, LOOP, METHOD, MOVE, MULTIPLY, NEWPAGE, OBTAIN, OPTIONS, PASSW, PERFORM, PRINT, PROCESS, PROPERTY, READ, REDEFINE, REDUCE, REINPUT, REJECT, RELEASE, REPEAT, RESET, RESIZE, RETRY, ROLLBACK, RUN, SELECT, SEPARATE, SET, SKIP, SORT, STACK, STOP, STORE, SUBTRACT, TERMINATE, UPDATE, WRITE -> true;
+			case ACCEPT, ADD, ASSIGN, BEFORE, BACKOUT, CALL, CALLNAT, CLOSE, COMMIT, COMPRESS, COMPUTE, DECIDE, DEFINE, DELETE, DISPLAY, DIVIDE, DO, DOEND, DOWNLOAD, EJECT, END, ESCAPE, EXAMINE, EXPAND, FETCH, FIND, FOR, FORMAT, GET, HISTOGRAM, IF, IGNORE, INCLUDE, INPUT, INSERT, INTERFACE, LOOP, METHOD, MOVE, MULTIPLY, NEWPAGE, OBTAIN, OPTIONS, PASSW, PERFORM, PRINT, PROCESS, PROPERTY, READ, REDEFINE, REDUCE, REINPUT, REJECT, RELEASE, REPEAT, RESET, RESIZE, RETRY, ROLLBACK, RUN, SELECT, SEPARATE, SET, SKIP, SORT, STACK, STOP, STORE, SUBTRACT, TERMINATE, UPDATE, WRITE -> true;
 			case ON -> peekKind(1, SyntaxKind.ERROR);
 			case OPEN -> peekKind(1, SyntaxKind.CONVERSATION);
 			case PARSE -> peekKind(1, SyntaxKind.XML);
 			case REQUEST -> peekKind(1, SyntaxKind.DOCUMENT);
 			case SEND -> peekKind(1, SyntaxKind.METHOD);
+			case LIMIT -> peekKind(1, SyntaxKind.NUMBER_LITERAL);
 			case SUSPEND -> peekKind(1, SyntaxKind.IDENTICAL) && peekKind(2, SyntaxKind.SUPPRESS);
 			case UPLOAD -> peekKind(1, SyntaxKind.PC) && peekKind(2, SyntaxKind.FILE);
 			default -> false;
