@@ -1,12 +1,20 @@
 package org.amshove.natls.testlifecycle;
 
 import org.eclipse.lsp4j.CodeAction;
-import java.util.Collection;
+
+import java.util.Objects;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-public record CodeActionAssertion(CodeAction action)
+public class CodeActionAssertion
 {
+	protected final CodeAction action;
+
+	public CodeActionAssertion(CodeAction action)
+	{
+		this.action = action;
+	}
+
 	public CodeActionAssertion hasTitle(String title)
 	{
 		assertThat(action.getTitle())
@@ -46,13 +54,32 @@ public record CodeActionAssertion(CodeAction action)
 		return this;
 	}
 
-	public CodeActionAssertion resultsApplied(String previousSource, String expectedSource)
+	public CodeAction action()
 	{
-		var applier = new TextEditApplier();
-		var edit = action.getEdit().getChanges().values().stream().flatMap(Collection::stream).toList().get(0); // TODO: Handle all edits
-		assertThat(applier.apply(edit, previousSource))
-			.isEqualToNormalizingNewlines(expectedSource);
-
-		return this;
+		return action;
 	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (obj == this)
+			return true;
+		if (obj == null || obj.getClass() != this.getClass())
+			return false;
+		var that = (CodeActionAssertion) obj;
+		return Objects.equals(this.action, that.action);
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(action);
+	}
+
+	@Override
+	public String toString()
+	{
+		return "CodeActionAssertion[action=" + action + ']';
+	}
+
 }

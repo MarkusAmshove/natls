@@ -2105,4 +2105,51 @@ class StatementListParserShould extends StatementParseTest
 		var assignment = assertParsesSingleStatement("#VAR(R1.) := 5", IAssignmentStatementNode.class);
 		assertIsVariableReference(assignment.target(), "#VAR");
 	}
+
+	@Test
+	void parsePerformBreak()
+	{
+		var perform = assertParsesSingleStatement("""
+			PERFORM BREAK PROCESSING
+			AT BREAK OF #INDEX
+			IGNORE
+			END-BREAK
+			""", IPerformBreakNode.class);
+
+		assertThat(perform.statementIdentifier()).isNull();
+		assertIsVariableReference(perform.breakOf().operand(), "#INDEX");
+		assertThat(perform.breakOf().body().statements()).hasSize(1);
+		assertThat(perform.breakOf().parent()).isEqualTo(perform);
+	}
+
+	@Test
+	void parsePerformBreakWithLabelIdentifier()
+	{
+		var perform = assertParsesSingleStatement("""
+			PERFORM BREAK (S1.)
+			AT BREAK OF #INDEX
+			IGNORE
+			END-BREAK
+			""", IPerformBreakNode.class);
+
+		assertThat(perform.statementIdentifier()).isNotNull();
+		assertThat(perform.statementIdentifier().symbolName()).isEqualTo("S1.");
+		assertIsVariableReference(perform.breakOf().operand(), "#INDEX");
+		assertThat(perform.breakOf().body().statements()).hasSize(1);
+	}
+
+	@Test
+	void parseLimit()
+	{
+		var limit = assertParsesSingleStatement("LIMIT 5", ILimitNode.class);
+		assertLiteral(limit.limit(), SyntaxKind.NUMBER_LITERAL);
+		assertThat(limit.limit().token().intValue()).isEqualTo(5);
+	}
+
+	@Test
+	void parseLimitAsOperand()
+	{
+		var assign = assertParsesSingleStatement("LIMIT := 5", IAssignmentStatementNode.class);
+		assertIsVariableReference(assign.target(), "LIMIT");
+	}
 }

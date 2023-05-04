@@ -207,7 +207,7 @@ public enum SyntaxKind
 	INSERT(false, false, false),
 	INT(false, false, false),
 	INVESTIGATE(false, false, false),
-	LIMIT(false, false, false),
+	LIMIT(true, false, false), // can safely be an identifier, because the parser recognizes the LIMIT statement
 	LOG(true, false, false),
 	LOOP(false, false, false),
 	MAP(true, false, false),

@@ -918,10 +918,19 @@ public class Lexer
 			}
 
 			if (scanner.peek() == '/')
-			{ // TODO: this does not work for "KEYWORD/*", eg. END-SUBROUTINE/* bla bla
+			{
+				var possibleKeyword = KeywordTable.getKeyword(scanner.lexemeText());
+				var asteriskFollows = scanner.peek(1) == '*';
+				if (possibleKeyword != null && asteriskFollows)
+				{
+					// We just assume that something like END-SUBROUTINE/* is meant as END-SUBROUTINE plus comment
+					createAndAdd(possibleKeyword);
+					return;
+				}
+
 				kindHint = SyntaxKind.IDENTIFIER;
 
-				if (scanner.peek(1) == '*' && tokens.get(tokens.size() - 1).kind() == SyntaxKind.INCLUDE)
+				if (asteriskFollows && tokens.get(tokens.size() - 1).kind() == SyntaxKind.INCLUDE)
 				{
 					// The slash belongs to a comment, and we aren't parsing an array definition.
 					// TODO(lexermode): This should no longer be needed when the array definition is

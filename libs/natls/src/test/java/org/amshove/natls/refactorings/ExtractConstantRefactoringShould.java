@@ -20,7 +20,7 @@ class ExtractConstantRefactoringShould extends CodeActionTest
 	})
 	void beApplicableWhenHoveringALiteral(String literal)
 	{
-		assertSingleCodeAction(
+		assertCodeActionWithTitle(
 			"Extract constant",
 			"LIBONE",
 			"SUBN.NSN",
@@ -107,7 +107,7 @@ class ExtractConstantRefactoringShould extends CodeActionTest
 			WRITE 'He${}$llo'
 			END
 			""";
-		assertSingleCodeAction(
+		assertCodeActionWithTitle(
 			"Extract constant",
 			"LIBONE",
 			"SUBN.NSN",
@@ -130,7 +130,7 @@ class ExtractConstantRefactoringShould extends CodeActionTest
 			#NAME := 'Hello'
 			END
 			""";
-		assertSingleCodeAction(
+		assertCodeActionWithTitle(
 			"Extract constant",
 			"LIBONE",
 			"SUBN.NSN",

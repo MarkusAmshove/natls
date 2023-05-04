@@ -190,6 +190,13 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case MULTIPLY:
 						statementList.addStatement(multiply());
 						break;
+					case LIMIT:
+						if (peekKind(1, SyntaxKind.NUMBER_LITERAL))
+						{
+							statementList.addStatement(limit());
+							break;
+						}
+						// fall through to IDENTIFIER
 					case IDENTIFIER:
 						statementList.addStatements(assignmentsOrIdentifierReference());
 						break;
@@ -269,7 +276,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case PERFORM:
 						if (peek(1).kind() == SyntaxKind.BREAK)
 						{
-							tokens.advance();
+							statementList.addStatement(performBreak());
 							break;
 						}
 						statementList.addStatement(perform());
@@ -1302,7 +1309,25 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 	}
 
-	private StatementNode breakOf() throws ParseError
+	private StatementNode performBreak() throws ParseError
+	{
+		var performBreak = new PerformBreakNode();
+		consumeMandatory(performBreak, SyntaxKind.PERFORM);
+		consumeMandatory(performBreak, SyntaxKind.BREAK);
+		consumeOptionally(performBreak, SyntaxKind.PROCESSING);
+		if (consumeOptionally(performBreak, SyntaxKind.LPAREN))
+		{
+			var identifier = consumeMandatory(performBreak, SyntaxKind.LABEL_IDENTIFIER);
+			performBreak.setStatementIdentifier(identifier);
+			consumeMandatory(performBreak, SyntaxKind.RPAREN);
+		}
+
+		performBreak.setBreakOf(breakOf());
+
+		return performBreak;
+	}
+
+	private BreakOfNode breakOf() throws ParseError
 	{
 		var breakOf = new BreakOfNode();
 		consumeOptionally(breakOf, SyntaxKind.AT);
@@ -1315,7 +1340,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		consumeOptionally(breakOf, SyntaxKind.OF);
-		consumeVariableReferenceNode(breakOf);
+		breakOf.setOperand(consumeVariableReferenceNode(breakOf));
 
 		if (consumeOptionally(breakOf, SyntaxKind.SLASH))
 		{
@@ -1710,6 +1735,14 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return format;
+	}
+
+	private StatementNode limit() throws ParseError
+	{
+		var limit = new LimitNode();
+		consumeMandatory(limit, SyntaxKind.LIMIT);
+		limit.setLimit(consumeLiteralNode(limit, SyntaxKind.NUMBER_LITERAL));
+		return limit;
 	}
 
 	private StatementNode defineWindow() throws ParseError
@@ -2627,7 +2660,15 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		var opening = consumeMandatory(statement, SyntaxKind.IF);
 		consumeMandatory(statement, SyntaxKind.SELECTION);
-		consumeAnyOptionally(statement, List.of(SyntaxKind.NOT, SyntaxKind.UNIQUE, SyntaxKind.IN, SyntaxKind.FIELDS));
+
+		if (consumeOptionally(statement, SyntaxKind.NOT))
+		{
+			consumeOptionally(statement, SyntaxKind.UNIQUE);
+			if (consumeOptionally(statement, SyntaxKind.IN))
+			{
+				consumeOptionally(statement, SyntaxKind.FIELDS);
+			}
+		}
 
 		statement.setCondition(conditionNode());
 		consumeOptionally(statement, SyntaxKind.THEN);
@@ -2983,12 +3024,13 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		return switch (currentKind)
 		{
-			case ACCEPT, ADD, ASSIGN, BEFORE, BACKOUT, CALL, CALLNAT, CLOSE, COMMIT, COMPRESS, COMPUTE, DECIDE, DEFINE, DELETE, DISPLAY, DIVIDE, DO, DOEND, DOWNLOAD, EJECT, END, ESCAPE, EXAMINE, EXPAND, FETCH, FIND, FOR, FORMAT, GET, HISTOGRAM, IF, IGNORE, INCLUDE, INPUT, INSERT, INTERFACE, LIMIT, LOOP, METHOD, MOVE, MULTIPLY, NEWPAGE, OBTAIN, OPTIONS, PASSW, PERFORM, PRINT, PROCESS, PROPERTY, READ, REDEFINE, REDUCE, REINPUT, REJECT, RELEASE, REPEAT, RESET, RESIZE, RETRY, ROLLBACK, RUN, SELECT, SEPARATE, SET, SKIP, SORT, STACK, STOP, STORE, SUBTRACT, TERMINATE, UPDATE, WRITE -> true;
+			case ACCEPT, ADD, ASSIGN, BEFORE, BACKOUT, CALL, CALLNAT, CLOSE, COMMIT, COMPRESS, COMPUTE, DECIDE, DEFINE, DELETE, DISPLAY, DIVIDE, DO, DOEND, DOWNLOAD, EJECT, END, ESCAPE, EXAMINE, EXPAND, FETCH, FIND, FOR, FORMAT, GET, HISTOGRAM, IF, IGNORE, INCLUDE, INPUT, INSERT, INTERFACE, LOOP, METHOD, MOVE, MULTIPLY, NEWPAGE, OBTAIN, OPTIONS, PASSW, PERFORM, PRINT, PROCESS, PROPERTY, READ, REDEFINE, REDUCE, REINPUT, REJECT, RELEASE, REPEAT, RESET, RESIZE, RETRY, ROLLBACK, RUN, SELECT, SEPARATE, SET, SKIP, SORT, STACK, STOP, STORE, SUBTRACT, TERMINATE, UPDATE, WRITE -> true;
 			case ON -> peekKind(1, SyntaxKind.ERROR);
 			case OPEN -> peekKind(1, SyntaxKind.CONVERSATION);
 			case PARSE -> peekKind(1, SyntaxKind.XML);
 			case REQUEST -> peekKind(1, SyntaxKind.DOCUMENT);
 			case SEND -> peekKind(1, SyntaxKind.METHOD);
+			case LIMIT -> peekKind(1, SyntaxKind.NUMBER_LITERAL);
 			case SUSPEND -> peekKind(1, SyntaxKind.IDENTICAL) && peekKind(2, SyntaxKind.SUPPRESS);
 			case UPLOAD -> peekKind(1, SyntaxKind.PC) && peekKind(2, SyntaxKind.FILE);
 			default -> false;
