@@ -2,7 +2,7 @@ package org.amshove.natls.testlifecycle;
 
 import org.junit.jupiter.api.BeforeEach;
 
-public class EmptyProjectTest extends LanguageServerTest
+public abstract class EmptyProjectTest extends LanguageServerTest
 {
 	private LspTestContext context;
 
