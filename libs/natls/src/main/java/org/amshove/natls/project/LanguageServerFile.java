@@ -359,6 +359,7 @@ public class LanguageServerFile implements IModuleProvider
 			var definedata = defineDataParser.parse(tokens);
 			var module = new NaturalModule(file);
 			module.setDefineData(definedata.result());
+			module.setComments(tokens.comments());
 			this.module = module;
 		}
 		catch (Exception e)
