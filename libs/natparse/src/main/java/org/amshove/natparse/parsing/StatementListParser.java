@@ -252,7 +252,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case PERFORM:
 						if (peek(1).kind() == SyntaxKind.BREAK)
 						{
-							tokens.advance();
+							statementList.addStatement(performBreak());
 							break;
 						}
 						statementList.addStatement(perform());
@@ -1166,7 +1166,25 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 	}
 
-	private StatementNode breakOf() throws ParseError
+	private StatementNode performBreak() throws ParseError
+	{
+		var performBreak = new PerformBreakNode();
+		consumeMandatory(performBreak, SyntaxKind.PERFORM);
+		consumeMandatory(performBreak, SyntaxKind.BREAK);
+		consumeOptionally(performBreak, SyntaxKind.PROCESSING);
+		if (consumeOptionally(performBreak, SyntaxKind.LPAREN))
+		{
+			var identifier = consumeMandatory(performBreak, SyntaxKind.LABEL_IDENTIFIER);
+			performBreak.setStatementIdentifier(identifier);
+			consumeMandatory(performBreak, SyntaxKind.RPAREN);
+		}
+
+		performBreak.setBreakOf(breakOf());
+
+		return performBreak;
+	}
+
+	private BreakOfNode breakOf() throws ParseError
 	{
 		var breakOf = new BreakOfNode();
 		consumeOptionally(breakOf, SyntaxKind.AT);
@@ -1179,7 +1197,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		consumeOptionally(breakOf, SyntaxKind.OF);
-		consumeVariableReferenceNode(breakOf);
+		breakOf.setOperand(consumeVariableReferenceNode(breakOf));
 
 		if (consumeOptionally(breakOf, SyntaxKind.SLASH))
 		{
