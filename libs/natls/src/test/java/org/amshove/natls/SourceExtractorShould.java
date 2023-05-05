@@ -26,7 +26,7 @@ class SourceExtractorShould extends EmptyProjectTest
    			END-DEFINE
    			#VAR := 'Hi'
    			END
-			""");
+   			""");
 		var file = getContext().languageService().findNaturalFile("LIBONE", "SUB");
 		var module = file.module();
 		var varReference = ((IAssignmentStatementNode) ((NaturalModule) module).body().statements().first()).target();
@@ -45,9 +45,32 @@ class SourceExtractorShould extends EmptyProjectTest
 	}
 
 	@Test
+	void extractAWholeLine()
+	{
+		createOrSaveFile("LIBONE", "SUB.NSN", """
+            DEFINE DATA LOCAL
+            1 #VAR (L)
+            END-DEFINE
+                 WRITE #VAR
+            END
+            """);
+		var file = getContext().languageService().findNaturalFile("LIBONE", "SUB");
+		assertThat(SourceExtractor.extractLine(((IModuleWithBody) file.module()).body().statements().first().position()))
+			.isEqualTo("     WRITE #VAR");
+	}
+
+	@Test
 	void throwAnExceptionWhenTheFileCantBeRead()
 	{
 		assertThatThrownBy(() -> SourceExtractor.extractSource(new StubNode(new StubPosition(Path.of("does", "not", "exist.txt")))))
+			.isInstanceOf(UncheckedIOException.class);
+
+	}
+
+	@Test
+	void throwAnExceptionWhenTheFileCantBeReadOnReadLines()
+	{
+		assertThatThrownBy(() -> SourceExtractor.extractLine(new StubPosition(Path.of("does", "not", "exist.txt"))))
 			.isInstanceOf(UncheckedIOException.class);
 
 	}

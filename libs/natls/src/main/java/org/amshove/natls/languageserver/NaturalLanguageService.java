@@ -676,7 +676,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	{
 		var item = new CompletionItem();
 		item.setKind(CompletionItemKind.Method);
-		item.setInsertText(subroutineNode.declaration().trimmedSymbolName(32));
+		item.setInsertText("PERFORM " + subroutineNode.declaration().trimmedSymbolName(32));
 		item.setLabel(subroutineNode.declaration().symbolName());
 		item.setSortText("1");
 
