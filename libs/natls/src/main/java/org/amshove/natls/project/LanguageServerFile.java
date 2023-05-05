@@ -106,6 +106,8 @@ public class LanguageServerFile implements IModuleProvider
 
 	public void open()
 	{
+		// Always reparse on open. In the past, some files weren't analyzed correctly because
+		// they've been parsed on another path. This resulted in diagnostics not showing up.
 		parse(ParseStrategy.WITHOUT_CALLERS);
 
 		if (!hasBeenAnalyzed || allDiagnostics().isEmpty())
