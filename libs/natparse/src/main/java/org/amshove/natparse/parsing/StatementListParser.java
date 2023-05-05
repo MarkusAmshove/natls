@@ -54,19 +54,37 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private StatementListNode statementList()
 	{
-		return statementList(null);
+		return statementList(Set.of());
+	}
+
+	private boolean containsKindThatIsEndedByEndAll(Set<SyntaxKind> kinds)
+	{
+		for (var endAllKind : END_KINDS_THAT_END_ALL_ENDS)
+		{
+			if (kinds.contains(endAllKind))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private StatementListNode statementList(SyntaxKind endTokenKind)
+	{
+		return statementList(Set.of(endTokenKind));
+	}
+
+	private StatementListNode statementList(Set<SyntaxKind> endTokenKinds)
 	{
 		var statementList = new StatementListNode();
 		while (!tokens.isAtEnd())
 		{
 			try
 			{
-				if (endTokenKind != null
-					&& (peekKind(endTokenKind)
-						|| (peekKind(SyntaxKind.END_ALL) && END_KINDS_THAT_END_ALL_ENDS.contains(endTokenKind))))
+				if (!endTokenKinds.isEmpty()
+					&& (endTokenKinds.contains(peekKind())
+						|| (peekKind(SyntaxKind.END_ALL) && containsKindThatIsEndedByEndAll(endTokenKinds))))
 				{
 					break;
 				}
@@ -1909,6 +1927,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		loopNode.setBody(statementList(SyntaxKind.END_FOR));
+		checkForEmptyBody(loopNode);
 		consumeMandatoryClosing(loopNode, SyntaxKind.END_FOR, opening);
 
 		return loopNode;
@@ -1963,10 +1982,27 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		subroutine.setBody(statementList(SyntaxKind.END_SUBROUTINE));
 
 		consumeMandatoryClosing(subroutine, SyntaxKind.END_SUBROUTINE, opening);
+		checkForEmptyBody(subroutine);
 
 		referencableNodes.add(subroutine);
 
 		return subroutine;
+	}
+
+	private void checkForEmptyBody(IStatementWithBodyNode statement)
+	{
+		if (statement.body().statements().isEmpty())
+		{
+			report(ParserErrors.emptyBodyDisallowed(statement));
+		}
+	}
+
+	private void checkForEmptyBody(StatementListNode statementList, SyntaxToken reportingToken)
+	{
+		if (statementList.statements().isEmpty())
+		{
+			report(ParserErrors.emptyBodyDisallowed(reportingToken));
+		}
 	}
 
 	private StatementNode end() throws ParseError
@@ -2171,6 +2207,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeOptionally(ifStatement, SyntaxKind.THEN);
 
 		ifStatement.setBody(statementList(SyntaxKind.END_IF));
+		checkForEmptyBody(ifStatement);
 
 		consumeMandatoryClosing(ifStatement, SyntaxKind.END_IF, opening);
 
@@ -2679,6 +2716,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return statement;
 	}
 
+	private static final Set<SyntaxKind> DECIDE_FOR_STOP_KINDS = Set.of(SyntaxKind.END_DECIDE, SyntaxKind.WHEN);
+
 	private DecideForConditionNode decideFor() throws ParseError
 	{
 		var decide = new DecideForConditionNode();
@@ -2689,33 +2728,41 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		while (!isAtEnd() && peekKind(SyntaxKind.WHEN))
 		{
-			consumeMandatory(decide, SyntaxKind.WHEN);
+			var whenBranch = consumeMandatory(decide, SyntaxKind.WHEN);
 
 			if (peekKind(SyntaxKind.ANY))
 			{
 				consumeMandatory(decide, SyntaxKind.ANY);
-				decide.setWhenAny(statementList(SyntaxKind.WHEN));
+				var whenAny = statementList(DECIDE_FOR_STOP_KINDS);
+				decide.setWhenAny(whenAny);
+				checkForEmptyBody(whenAny, whenBranch);
 				continue;
 			}
 
 			if (peekKind(SyntaxKind.ALL))
 			{
 				consumeMandatory(decide, SyntaxKind.ALL);
-				decide.setWhenAll(statementList(SyntaxKind.WHEN));
+				var whenAll = statementList(DECIDE_FOR_STOP_KINDS);
+				decide.setWhenAll(whenAll);
+				checkForEmptyBody(whenAll, whenBranch);
 				continue;
 			}
 
 			if (peekKind(SyntaxKind.NONE))
 			{
 				consumeMandatory(decide, SyntaxKind.NONE);
-				decide.setWhenNone(statementList(SyntaxKind.END_DECIDE));
+				var whenNone = statementList(SyntaxKind.END_DECIDE);
+				decide.setWhenNone(whenNone);
+				checkForEmptyBody(whenNone, whenBranch);
 				continue;
 			}
 
 			var branch = new DecideForConditionBranchNode();
 			var criteria = conditionNode();
 			branch.setCriteria(criteria);
-			branch.setBody(statementList(SyntaxKind.WHEN));
+			var branchStatements = statementList(DECIDE_FOR_STOP_KINDS);
+			branch.setBody(branchStatements);
+			checkForEmptyBody(branchStatements, whenBranch);
 			decide.addBranch(branch);
 		}
 

@@ -263,6 +263,15 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void reportADiagnosticIfASubroutineHasAnEmptyBody()
+	{
+		assertDiagnostic("""
+			   DEFINE SUBROUTINE MY-SUBROUTINE
+			   END-SUBROUTINE
+			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
+	}
+
+	@Test
 	void parseASubroutineWithoutSubroutineKeyword()
 	{
 		var subroutine = assertParsesSingleStatement("""
@@ -491,6 +500,15 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void reportADiagnosticIfAnIfStatementHasNoBody()
+	{
+		assertDiagnostic("""
+			IF #TEST = 5 THEN
+			END-IF
+			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
+	}
+
+	@Test
 	void allowThenAfterMaskInIf()
 	{
 		assertParsesSingleStatement("""
@@ -562,6 +580,15 @@ class StatementListParserShould extends StatementParseTest
 			""", IForLoopNode.class);
 
 		assertThat(forLoopNode.body().statements()).hasSize(1);
+	}
+
+	@Test
+	void raiseADiagnosticIfAForLoopHasNoBody()
+	{
+		assertDiagnostic("""
+			FOR #I 1 10
+			END-FOR
+			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
 	}
 
 	@Test
@@ -1679,13 +1706,53 @@ class StatementListParserShould extends StatementParseTest
 	void parseDecideForConditionWithEveryAndFirst(String permutation)
 	{
 		assertParsesSingleStatement("""
-				DECIDE FOR %s CONDITION
+				DECIDE FOR FIRST CONDITION
 				WHEN 5 < 2
 					IGNORE
 				WHEN NONE
 					IGNORE
 				END-DECIDE
 			""".formatted(permutation), IDecideForConditionNode.class);
+	}
+
+	@Test
+	void raiseADiagnosticIfADecideForBranchHasNoBody()
+	{
+		assertDiagnostic("""
+				DECIDE FOR FIRST CONDITION
+				WHEN 5 < 2
+				END-DECIDE
+			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
+	}
+
+	@Test
+	void raiseADiagnosticIfADecideForWhenAllBranchHasNoBody()
+	{
+		assertDiagnostic("""
+				DECIDE FOR FIRST CONDITION
+				WHEN ALL
+				END-DECIDE
+			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
+	}
+
+	@Test
+	void raiseADiagnosticIfADecideForWhenAnyBranchHasNoBody()
+	{
+		assertDiagnostic("""
+				DECIDE FOR FIRST CONDITION
+				WHEN ANY
+				END-DECIDE
+			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
+	}
+
+	@Test
+	void raiseADiagnosticIfADecideForWhenNoneBranchHasNoBody()
+	{
+		assertDiagnostic("""
+				DECIDE FOR FIRST CONDITION
+				WHEN NONE
+				END-DECIDE
+			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
 	}
 
 	@Test

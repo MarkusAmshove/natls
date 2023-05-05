@@ -91,6 +91,20 @@ abstract class AbstractParser<T>
 		return tokens.peek();
 	}
 
+	/**
+	 * Safely peeks the current kind.
+	 */
+	protected SyntaxKind peekKind()
+	{
+		var token = peek();
+		if (token == null)
+		{
+			return SyntaxKind.EOF;
+		}
+
+		return token.kind();
+	}
+
 	protected boolean peekKind(int offset, SyntaxKind kind)
 	{
 		return !isAtEnd(offset) && peek(offset).kind() == kind;
