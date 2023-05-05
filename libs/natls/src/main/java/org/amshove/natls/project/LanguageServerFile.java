@@ -106,12 +106,9 @@ public class LanguageServerFile implements IModuleProvider
 
 	public void open()
 	{
-		if (module == null)
-		{
-			parse();
-		}
+		parse(ParseStrategy.WITHOUT_CALLERS);
 
-		if (!hasBeenAnalyzed)
+		if (!hasBeenAnalyzed || allDiagnostics().isEmpty())
 		{
 			analyze();
 		}
