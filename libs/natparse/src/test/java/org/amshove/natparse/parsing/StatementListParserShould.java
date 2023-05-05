@@ -486,6 +486,23 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void parseAnIfWithElse()
+	{
+		var ifStatement = assertParsesSingleStatement("""
+            IF TRUE
+            WRITE 'Hi'
+            ELSE
+            IGNORE
+            END-IF
+            """, IIfStatementNode.class);
+
+		assertThat(ifStatement.body().statements()).hasSize(1);
+		assertNodeType(ifStatement.body().statements().first(), IWriteNode.class);
+		assertThat(ifStatement.elseBranch().statements()).hasSize(1);
+		assertNodeType(ifStatement.elseBranch().statements().first(), IIgnoreNode.class);
+	}
+
+	@Test
 	void allowIfStatementsToContainTheThenKeyword()
 	{
 		var ifStatement = assertParsesSingleStatement("""
@@ -504,6 +521,17 @@ class StatementListParserShould extends StatementParseTest
 	{
 		assertDiagnostic("""
 			IF #TEST = 5 THEN
+			END-IF
+			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
+	}
+
+	@Test
+	void reportADiagnosticIfAnElseBranchHasNoBody()
+	{
+		assertDiagnostic("""
+			IF #TEST = 5
+			IGNORE
+			ELSE
 			END-IF
 			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
 	}
@@ -1706,7 +1734,7 @@ class StatementListParserShould extends StatementParseTest
 	void parseDecideForConditionWithEveryAndFirst(String permutation)
 	{
 		assertParsesSingleStatement("""
-				DECIDE FOR FIRST CONDITION
+				DECIDE FOR %s CONDITION
 				WHEN 5 < 2
 					IGNORE
 				WHEN NONE

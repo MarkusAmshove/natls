@@ -1997,7 +1997,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 	}
 
-	private void checkForEmptyBody(StatementListNode statementList, SyntaxToken reportingToken)
+	private void checkForEmptyBody(IStatementListNode statementList, SyntaxToken reportingToken)
 	{
 		if (statementList.statements().isEmpty())
 		{
@@ -2183,6 +2183,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return fetch;
 	}
 
+	private static final Set<SyntaxKind> IF_STATEMENT_STOP_KINDS = Set.of(SyntaxKind.END_IF, SyntaxKind.ELSE);
+
 	private StatementNode ifStatement() throws ParseError
 	{
 		if (peekKind(1, SyntaxKind.NO))
@@ -2206,8 +2208,14 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		consumeOptionally(ifStatement, SyntaxKind.THEN);
 
-		ifStatement.setBody(statementList(SyntaxKind.END_IF));
+		ifStatement.setBody(statementList(IF_STATEMENT_STOP_KINDS));
 		checkForEmptyBody(ifStatement);
+		if (peekKind(SyntaxKind.ELSE))
+		{
+			var elseKeyword = consumeMandatory(ifStatement, SyntaxKind.ELSE);
+			ifStatement.setElseBranch(statementList(SyntaxKind.END_IF));
+			checkForEmptyBody(ifStatement.elseBranch(), elseKeyword);
+		}
 
 		consumeMandatoryClosing(ifStatement, SyntaxKind.END_IF, opening);
 
