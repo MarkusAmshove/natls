@@ -5,7 +5,7 @@ import org.eclipse.lsp4j.RenameParams;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class RenameSymbolActionShould extends LanguageServerTest
+class RenameSymbolActionShould extends LanguageServerTest
 {
 	private static LspTestContext testContext;
 
@@ -149,6 +149,44 @@ public class RenameSymbolActionShould extends LanguageServerTest
 		WorkspaceEditAssertion.assertThatEdit(edit)
 			.changesText(1, "1 #MYVAR (A5)", "1 #NEW-VAR (A5)", file)
 			.changesText(4, "    WRITE #MYVAR", "    WRITE #NEW-VAR", file);
+	}
+
+	@Test
+	void renameAVariableFromItsAssignmentTargetPosition()
+	{
+		var source = SourceWithCursor.fromSourceWithCursor("""
+			DEFINE DATA LOCAL
+			1 #VAR (A10)
+			END-DEFINE
+			#V${}$AR := 'Hi'
+			END
+			""");
+
+		var file = createOrSaveFile("LIBONE", "RENAMEAS.NSN", source);
+		var edit = testContext.languageService().rename(new RenameParams(file, source.toSinglePosition(), "NEW-VARIABLE"));
+
+		WorkspaceEditAssertion.assertThatEdit(edit)
+			.changesText(1, "1 #VAR (A10)", "1 NEW-VARIABLE (A10)", file)
+			.changesText(3, "#VAR := 'Hi'", "NEW-VARIABLE := 'Hi'", file);
+	}
+
+	@Test
+	void renameAVariableFromItsAssignTargetPosition()
+	{
+		var source = SourceWithCursor.fromSourceWithCursor("""
+			DEFINE DATA LOCAL
+			1 #VAR (A10)
+			END-DEFINE
+			ASSIGN #V${}$AR = 'Hi'
+			END
+			""");
+
+		var file = createOrSaveFile("LIBONE", "RENAMEAS.NSN", source);
+		var edit = testContext.languageService().rename(new RenameParams(file, source.toSinglePosition(), "NEW-VARIABLE"));
+
+		WorkspaceEditAssertion.assertThatEdit(edit)
+			.changesText(1, "1 #VAR (A10)", "1 NEW-VARIABLE (A10)", file)
+			.changesText(3, "ASSIGN #VAR = 'Hi'", "ASSIGN NEW-VARIABLE = 'Hi'", file);
 	}
 
 	@Test

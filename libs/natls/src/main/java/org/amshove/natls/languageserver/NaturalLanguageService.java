@@ -978,7 +978,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var path = LspUtil.uriToPath(params.getTextDocument().getUri());
 		var file = findNaturalFile(path);
 
-		var node = NodeUtil.findNodeAtPosition(params.getPosition().getLine(), params.getPosition().getCharacter(), file.module());
+		var node = NodeUtil.findTokenNodeAtPosition(params.getPosition().getLine(), params.getPosition().getCharacter(), file.module().syntaxTree());
 		if (node instanceof ISymbolReferenceNode symbolReferenceNode)
 		{
 			return renameComputer.rename(symbolReferenceNode, params.getNewName());
@@ -989,7 +989,7 @@ public class NaturalLanguageService implements LanguageClientAware
 			return renameComputer.rename(referencableNode, params.getNewName());
 		}
 
-		if (node instanceof ITokenNode && node.parent()instanceof IReferencableNode referencableNode)
+		if (node != null && node.parent()instanceof IReferencableNode referencableNode)
 		{
 			return renameComputer.rename(referencableNode, params.getNewName());
 		}
