@@ -944,15 +944,21 @@ public class NaturalLanguageService implements LanguageClientAware
 		var path = LspUtil.uriToPath(params.getTextDocument().getUri());
 		var file = findNaturalFile(path);
 
-		var node = NodeUtil.findNodeAtPosition(params.getPosition().getLine(), params.getPosition().getCharacter(), file.module());
+		var node = NodeUtil.findTokenNodeAtPosition(params.getPosition().getLine(), params.getPosition().getCharacter(), file.module().syntaxTree());
 
 		String placeholder = null;
+
+		if (node instanceof IVariableReferenceNode variableReferenceNode)
+		{
+			placeholder = variableReferenceNode.token().source();
+		}
+
 		if (node instanceof ISymbolReferenceNode symbolReferenceNode)
 		{
 			placeholder = symbolReferenceNode.reference().declaration().symbolName();
 		}
 
-		if (node instanceof IReferencableNode rNode)
+		if (node.parent()instanceof IReferencableNode rNode)
 		{
 			placeholder = rNode.declaration().symbolName();
 		}
@@ -978,7 +984,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var path = LspUtil.uriToPath(params.getTextDocument().getUri());
 		var file = findNaturalFile(path);
 
-		var node = NodeUtil.findNodeAtPosition(params.getPosition().getLine(), params.getPosition().getCharacter(), file.module());
+		var node = NodeUtil.findTokenNodeAtPosition(params.getPosition().getLine(), params.getPosition().getCharacter(), file.module().syntaxTree());
 		if (node instanceof ISymbolReferenceNode symbolReferenceNode)
 		{
 			return renameComputer.rename(symbolReferenceNode, params.getNewName());
@@ -989,7 +995,7 @@ public class NaturalLanguageService implements LanguageClientAware
 			return renameComputer.rename(referencableNode, params.getNewName());
 		}
 
-		if (node instanceof ITokenNode && node.parent()instanceof IReferencableNode referencableNode)
+		if (node != null && node.parent()instanceof IReferencableNode referencableNode)
 		{
 			return renameComputer.rename(referencableNode, params.getNewName());
 		}
