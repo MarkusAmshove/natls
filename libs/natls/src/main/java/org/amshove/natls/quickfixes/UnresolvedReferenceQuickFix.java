@@ -26,6 +26,12 @@ public class UnresolvedReferenceQuickFix extends AbstractQuickFix
 		registerMultipleQuickFixes(ParserError.UNRESOLVED_REFERENCE.id(), this::fixUnresolvedReference);
 	}
 
+	@Override
+	protected boolean canFixInForeignFiles()
+	{
+		return true;
+	}
+
 	private List<CodeAction> fixUnresolvedReference(QuickFixContext context)
 	{
 		var unresolvedReference = context.diagnostic().getMessage().replace("Unresolved reference:", "").trim().toUpperCase();

@@ -4,6 +4,7 @@ import org.eclipse.lsp4j.TextEdit;
 
 public class TextEditApplier
 {
+	private int deletedLines = 0;
 
 	public String apply(TextEdit edit, String source)
 	{
@@ -11,9 +12,9 @@ public class TextEditApplier
 		var lines = source.split("\n");
 		var resultingSource = new StringBuilder();
 
-		var startLine = edit.getRange().getStart().getLine();
+		var startLine = edit.getRange().getStart().getLine() - deletedLines;
 		var startLineOffset = edit.getRange().getStart().getCharacter();
-		var endLine = edit.getRange().getEnd().getLine();
+		var endLine = edit.getRange().getEnd().getLine() - deletedLines;
 		var endLineOffset = edit.getRange().getEnd().getCharacter();
 
 		for (var lineNumber = 0; lineNumber < lines.length; lineNumber++)
@@ -35,6 +36,10 @@ public class TextEditApplier
 
 				if (lineNumber == startLine && charIndex == startLineOffset)
 				{
+					if (edit.getNewText().isEmpty())
+					{
+						deletedLines++;
+					}
 					resultingSource.append(edit.getNewText());
 				}
 

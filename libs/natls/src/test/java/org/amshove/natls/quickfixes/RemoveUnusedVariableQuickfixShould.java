@@ -55,18 +55,35 @@ class RemoveUnusedVariableQuickfixShould extends CodeActionTest
 	@Test
 	void deleteTheLineWithTheUnusedVariable()
 	{
-		var result = receiveCodeActions("LIBONE", "DELETE.NSN", """
+		assertCodeActionWithTitle("Remove unused variable", "LIBONE", "DELETE.NSN", """
 			   DEFINE DATA
 			   LOCAL
 			   01 #U${NUS}$ED (A10)
 			   END-DEFINE
 			   END
-			""");
-
-		var actions = result.codeActions();
-
-		assertSingleCodeAction(actions)
+			""")
 			.deletesLine(2)
 			.fixes(UnusedVariableAnalyzer.UNUSED_VARIABLE.getId());
+	}
+
+	@Test
+	void removeAllUnusedImportsAndVariables()
+	{
+		assertCodeActionWithTitle("Remove all unused symbols in DEFINE DATA", "LIBONE", "SUB.NSN", """
+			DEFINE DATA
+			LOCAL
+			1 #VAR (A1)
+			1 #V${}$AR1 (A1)
+			1 #VAR2 (A1)
+			1 #VAR3 (A1)
+			END-DEFINE
+			END
+			""")
+			.resultsApplied("""
+				DEFINE DATA
+				LOCAL
+				END-DEFINE
+				END
+				""");
 	}
 }
