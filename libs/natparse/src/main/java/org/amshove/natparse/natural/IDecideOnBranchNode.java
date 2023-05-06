@@ -1,8 +1,10 @@
 package org.amshove.natparse.natural;
 
+import org.amshove.natparse.ReadOnlyList;
+
 public interface IDecideOnBranchNode
 {
-	IOperandNode operand();
+	ReadOnlyList<IOperandNode> values();
 
 	IStatementListNode body();
 }

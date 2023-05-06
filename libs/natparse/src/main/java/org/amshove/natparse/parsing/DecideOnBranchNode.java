@@ -1,18 +1,22 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.IDecideOnBranchNode;
 import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.IStatementListNode;
 
+import java.util.ArrayList;
+import java.util.List;
+
 class DecideOnBranchNode extends BaseSyntaxNode implements IDecideOnBranchNode
 {
-	private IOperandNode operand;
+	private final List<IOperandNode> values = new ArrayList<>();
 	private IStatementListNode body;
 
 	@Override
-	public IOperandNode operand()
+	public ReadOnlyList<IOperandNode> values()
 	{
-		return operand;
+		return ReadOnlyList.from(values);
 	}
 
 	@Override
@@ -21,9 +25,9 @@ class DecideOnBranchNode extends BaseSyntaxNode implements IDecideOnBranchNode
 		return body;
 	}
 
-	void setOperand(IOperandNode operand)
+	void addOperand(IOperandNode operand)
 	{
-		this.operand = operand;
+		values.add(operand);
 	}
 
 	void setBody(IStatementListNode body)

@@ -2784,17 +2784,28 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				continue;
 			}
 
-			var branch = new DecideOnBranchNode();
-			var branchStart = consumeMandatory(branch, SyntaxKind.VALUE);
-			branch.setOperand(consumeSubstringOrOperand(branch));
-			branch.setBody(statementList(DECIDE_ON_STOP_KINDS));
-			checkForEmptyBody(branch.body(), branchStart);
-			decideOn.addBranch(branch);
+			decideOn.addBranch(decideOnBranch());
 		}
 
 		consumeMandatoryClosing(decideOn, SyntaxKind.END_DECIDE, opening);
 
 		return decideOn;
+	}
+
+	private IDecideOnBranchNode decideOnBranch() throws ParseError
+	{
+		var branch = new DecideOnBranchNode();
+		var branchStart = consumeMandatory(branch, SyntaxKind.VALUE);
+		branch.addOperand(consumeSubstringOrOperand(branch));
+		while (!isAtEnd() && peekKind(SyntaxKind.COMMA))
+		{
+			consumeMandatory(branch, SyntaxKind.COMMA);
+			branch.addOperand(consumeSubstringOrOperand(branch));
+		}
+
+		branch.setBody(statementList(DECIDE_ON_STOP_KINDS));
+		checkForEmptyBody(branch.body(), branchStart);
+		return branch;
 	}
 
 	private static final Set<SyntaxKind> DECIDE_FOR_STOP_KINDS = Set.of(SyntaxKind.END_DECIDE, SyntaxKind.WHEN);

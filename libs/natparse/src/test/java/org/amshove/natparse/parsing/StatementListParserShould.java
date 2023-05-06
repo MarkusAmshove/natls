@@ -2391,9 +2391,28 @@ class StatementListParserShould extends StatementParseTest
 			""", IDecideOnNode.class);
 
 		assertThat(decideOn.branches()).hasSize(3);
-		assertNodeType(decideOn.branches().get(0).operand(), ISubstringOperandNode.class);
-		assertLiteral(decideOn.branches().get(1).operand(), SyntaxKind.STRING_LITERAL);
-		assertIsVariableReference(decideOn.branches().get(2).operand(), "#VAR2");
+		assertNodeType(decideOn.branches().get(0).values().first(), ISubstringOperandNode.class);
+		assertLiteral(decideOn.branches().get(1).values().first(), SyntaxKind.STRING_LITERAL);
+		assertIsVariableReference(decideOn.branches().get(2).values().first(), "#VAR2");
+	}
+
+	@Test
+	void parseADecideOnBranchWithMultipleValues()
+	{
+		var decide = assertParsesSingleStatement("""
+			DECIDE ON FIRST VALUE OF #VAR
+			VALUE #VAR2,#VAR3,#VAR4
+			IGNORE
+			NONE
+			IGNORE
+			END-DECIDE
+			""", IDecideOnNode.class);
+
+		assertThat(decide.branches()).hasSize(1);
+		var values = decide.branches().first().values();
+		assertIsVariableReference(values.get(0), "#VAR2");
+		assertIsVariableReference(values.get(1), "#VAR3");
+		assertIsVariableReference(values.get(2), "#VAR4");
 	}
 
 	@Test
