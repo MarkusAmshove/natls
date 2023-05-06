@@ -1,5 +1,6 @@
 package org.amshove.natls.languageserver;
 
+import org.amshove.natls.DiagnosticOriginalUri;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.lexing.SyntaxToken;
@@ -44,7 +45,8 @@ public class LspUtil
 
 	public static Diagnostic toLspDiagnostic(String sourceTool, IDiagnostic diagnostic)
 	{
-		return new Diagnostic(
+		var positions = new DiagnosticOriginalUri(pathToUri(diagnostic.originalPosition().filePath()));
+		var lspDiagnostic = new Diagnostic(
 			new Range(
 				new Position(diagnostic.line(), diagnostic.offsetInLine()),
 				new Position(diagnostic.line(), diagnostic.offsetInLine() + diagnostic.length())
@@ -54,6 +56,8 @@ public class LspUtil
 			sourceTool,
 			diagnostic.id()
 		);
+		lspDiagnostic.setData(positions);
+		return lspDiagnostic;
 	}
 
 	private static DiagnosticSeverity mapSeverity(IDiagnostic diagnostic)

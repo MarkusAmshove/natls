@@ -934,7 +934,8 @@ public class NaturalLanguageService implements LanguageClientAware
 			return List.of();
 		}
 
-		var context = new RefactoringContext(params.getTextDocument().getUri(), file.module(), file, token, node, file.diagnosticsInRange(params.getRange()));
+		var diagnosticsAtPosition = file.diagnosticsInRange(params.getRange());
+		var context = new RefactoringContext(params.getTextDocument().getUri(), file.module(), file, token, node, diagnosticsAtPosition);
 
 		return codeActionRegistry.createCodeActions(context);
 	}

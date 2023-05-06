@@ -1,6 +1,7 @@
 package org.amshove.natls.project;
 
 import org.amshove.natlint.linter.NaturalLinter;
+import org.amshove.natls.DiagnosticOriginalUri;
 import org.amshove.natls.DiagnosticTool;
 import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natls.progress.IProgressMonitor;
@@ -509,5 +510,21 @@ public class LanguageServerFile implements IModuleProvider
 		}
 
 		return tokens.stream();
+	}
+
+	public ReadOnlyList<Diagnostic> diagnosticsInFileOfType(String id)
+	{
+		return ReadOnlyList.from(allDiagnostics().stream().filter(d -> d.getCode().getLeft().equals(id)).filter(this::containsDiagnostic).toList());
+	}
+
+	private boolean containsDiagnostic(Diagnostic diagnostic)
+	{
+		if (diagnostic.getData()instanceof DiagnosticOriginalUri originalUri)
+		{
+			return originalUri.getUri().equals(getUri());
+		}
+
+		// Diagnostics raised by the language server, not parser or linter
+		return false;
 	}
 }

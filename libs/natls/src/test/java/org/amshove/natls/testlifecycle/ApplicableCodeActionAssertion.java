@@ -20,8 +20,17 @@ public final class ApplicableCodeActionAssertion extends CodeActionAssertion
 	public CodeActionAssertion resultsApplied(String expectedSource)
 	{
 		var applier = new TextEditApplier();
-		var edit = action.getEdit().getChanges().values().stream().flatMap(Collection::stream).toList().get(0); // TODO: Handle all edits
-		assertThat(applier.apply(edit, previousSource))
+		var allEdits = action.getEdit().getChanges().values().stream().flatMap(Collection::stream).toList();
+
+		var changedText = previousSource;
+
+		for (var edit : allEdits)
+		{
+			changedText = applier.apply(edit, changedText);
+		}
+
+		//		var edit = allEdits.get(0); // TODO: Handle all edits
+		assertThat(changedText)
 			.isEqualToNormalizingNewlines(expectedSource);
 
 		return this;

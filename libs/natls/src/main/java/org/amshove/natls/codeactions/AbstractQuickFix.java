@@ -1,15 +1,20 @@
 package org.amshove.natls.codeactions;
 
 import org.amshove.natlint.api.DiagnosticDescription;
+import org.amshove.natls.project.LanguageServerFile;
+import org.amshove.natparse.ReadOnlyList;
 import org.eclipse.lsp4j.CodeAction;
+import org.eclipse.lsp4j.Diagnostic;
 
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public abstract class AbstractQuickFix implements ICodeActionProvider
 {
 	private final Map<String, List<Function<QuickFixContext, CodeAction>>> quickfixes = new HashMap<>();
 	private final Map<String, List<Function<QuickFixContext, List<CodeAction>>>> multiQuickfixes = new HashMap<>();
+	private final Map<String, List<BiFunction<LanguageServerFile, ReadOnlyList<Diagnostic>, CodeAction>>> fixAllFixes = new HashMap<>();
 
 	protected abstract void registerQuickfixes();
 
@@ -35,6 +40,12 @@ public abstract class AbstractQuickFix implements ICodeActionProvider
 		multiQuickfixes.get(diagnosticId).add(quickFixer);
 	}
 
+	protected void registerFixAll(String diagnosticId, BiFunction<LanguageServerFile, ReadOnlyList<Diagnostic>, CodeAction> allFixer)
+	{
+		fixAllFixes.putIfAbsent(diagnosticId, new ArrayList<>());
+		fixAllFixes.get(diagnosticId).add(allFixer);
+	}
+
 	@Override
 	public boolean isApplicable(RefactoringContext context)
 	{
@@ -55,9 +66,29 @@ public abstract class AbstractQuickFix implements ICodeActionProvider
 			.flatMap(Collection::stream)
 			.toList();
 
-		var codeactions = new ArrayList<CodeAction>();
-		codeactions.addAll(singleSourceCodeActions);
-		codeactions.addAll(multiSourceCodeActions);
-		return codeactions;
+		var codeActions = new ArrayList<CodeAction>();
+		codeActions.addAll(singleSourceCodeActions);
+		codeActions.addAll(multiSourceCodeActions);
+
+		var handledFixAllIds = new HashSet<String>();
+		for (var diagnostic : context.diagnosticsAtPosition())
+		{
+			var diagnosticId = diagnostic.getCode().getLeft();
+			if (handledFixAllIds.contains(diagnosticId))
+			{
+				continue;
+			}
+
+			if (fixAllFixes.containsKey(diagnosticId))
+			{
+				for (var fixAllFixer : fixAllFixes.get(diagnosticId))
+				{
+					codeActions.add(fixAllFixer.apply(context.file(), context.file().diagnosticsInFileOfType(diagnosticId)));
+				}
+				handledFixAllIds.add(diagnosticId);
+			}
+		}
+
+		return codeActions;
 	}
 }
