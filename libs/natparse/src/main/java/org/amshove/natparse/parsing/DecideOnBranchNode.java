@@ -12,11 +12,18 @@ class DecideOnBranchNode extends BaseSyntaxNode implements IDecideOnBranchNode
 {
 	private final List<IOperandNode> values = new ArrayList<>();
 	private IStatementListNode body;
+	private boolean hasValueRange;
 
 	@Override
 	public ReadOnlyList<IOperandNode> values()
 	{
 		return ReadOnlyList.from(values);
+	}
+
+	@Override
+	public boolean hasValueRange()
+	{
+		return hasValueRange;
 	}
 
 	@Override
@@ -33,5 +40,10 @@ class DecideOnBranchNode extends BaseSyntaxNode implements IDecideOnBranchNode
 	void setBody(IStatementListNode body)
 	{
 		this.body = body;
+	}
+
+	void setHasValueRange()
+	{
+		this.hasValueRange = true;
 	}
 }

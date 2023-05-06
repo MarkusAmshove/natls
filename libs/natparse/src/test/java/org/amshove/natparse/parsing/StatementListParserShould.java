@@ -2417,6 +2417,33 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void parseDecideOnWithValueRange()
+	{
+		var decideOn = assertParsesSingleStatement("""
+			DECIDE ON FIRST #VAR
+			VALUES 1:10
+			IGNORE
+			VALUES #VAR:#VAR2
+			IGNORE
+			NONE
+			IGNORE
+			END-DECIDE
+			""", IDecideOnNode.class);
+
+		assertThat(decideOn.branches()).hasSize(2);
+		assertThat(decideOn.branches()).allMatch(IDecideOnBranchNode::hasValueRange);
+		var firstBranch = decideOn.branches().first();
+		assertThat(firstBranch.values()).hasSize(2);
+		assertLiteral(firstBranch.values().first(), SyntaxKind.NUMBER_LITERAL);
+		assertLiteral(firstBranch.values().last(), SyntaxKind.NUMBER_LITERAL);
+
+		var secondBranch = decideOn.branches().last();
+		assertThat(secondBranch.values()).hasSize(2);
+		assertIsVariableReference(secondBranch.values().first(), "#VAR");
+		assertIsVariableReference(secondBranch.values().last(), "#VAR2");
+	}
+
+	@Test
 	void parseADecideOnBranchWithMultipleValues()
 	{
 		var decide = assertParsesSingleStatement("""

@@ -36,7 +36,7 @@ partial - partially implemented to prevent false positives (11)
 | COMPUTE | :white_check_mark: |
 | CREATE OBJECT | :x:                |
 | DECIDE FOR | :white_check_mark: |
-| DECIDE ON | :x:                |
+| DECIDE ON | :white_check_mark: |
 | DEFINE CLASS | :x:                |
 | DEFINE DATA | :white_check_mark: |
 | DEFINE FUNCTION | partial            |

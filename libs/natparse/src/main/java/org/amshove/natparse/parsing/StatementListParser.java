@@ -2798,10 +2798,19 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var branch = new DecideOnBranchNode();
 		var branchStart = consumeAnyMandatory(branch, List.of(SyntaxKind.VALUE, SyntaxKind.VALUES));
 		branch.addOperand(consumeSubstringOrOperand(branch));
-		while (!isAtEnd() && peekKind(SyntaxKind.COMMA))
+
+		if (consumeOptionally(branch, SyntaxKind.COLON))
 		{
-			consumeMandatory(branch, SyntaxKind.COMMA);
+			branch.setHasValueRange();
 			branch.addOperand(consumeSubstringOrOperand(branch));
+		}
+		else
+		{
+			while (!isAtEnd() && peekKind(SyntaxKind.COMMA))
+			{
+				consumeMandatory(branch, SyntaxKind.COMMA);
+				branch.addOperand(consumeSubstringOrOperand(branch));
+			}
 		}
 
 		branch.setBody(statementList(DECIDE_ON_STOP_KINDS));
