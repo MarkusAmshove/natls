@@ -850,6 +850,7 @@ public class Lexer
 				case "CV=" -> controlVariableAttribute();
 				case "DF=" -> dateFormatAttribute();
 				case "DY=" -> dynamicAttribute();
+				case "ES=" -> emptyLineSuppression();
 				case "EM=" -> editMask();
 				case "IP=" -> inputPromptAttribute();
 				case "IS=" -> identicalSuppressAttribute();
@@ -1159,6 +1160,19 @@ public class Lexer
 		}
 
 		createAndAdd(SyntaxKind.DY);
+	}
+
+	private void emptyLineSuppression()
+	{
+		scanner.start();
+		scanner.advance(3); // ES=
+
+		while (!scanner.isAtEnd() && isNoWhitespace() && scanner.peek() != ')')
+		{
+			scanner.advance();
+		}
+
+		createAndAdd(SyntaxKind.ES);
 	}
 
 	private void colorDefinition()

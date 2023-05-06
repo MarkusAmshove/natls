@@ -291,9 +291,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case FIND:
 						statementList.addStatement(find());
 						break;
-					case ON:
-						statementList.addStatement(onError());
-						break;
 					case PERFORM:
 						if (peek(1).kind() == SyntaxKind.BREAK)
 						{
@@ -328,6 +325,13 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						}
 						statementList.addStatement(decideOn());
 						break;
+					case ON:
+						if (peekKind(1, SyntaxKind.ERROR))
+						{
+							statementList.addStatement(onError());
+							break;
+						}
+						// some statements use the ON keyword in them, so fallthrough until the statements are parsed
 					case LPAREN:
 						if (getKind(1).isAttribute())
 						{

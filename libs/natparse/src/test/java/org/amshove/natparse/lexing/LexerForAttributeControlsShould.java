@@ -195,4 +195,15 @@ class LexerForAttributeControlsShould extends AbstractLexerTest
 			token(SyntaxKind.RPAREN)
 		);
 	}
+
+	@Test
+	void consumeES()
+	{
+		assertTokens(
+			"(ES=ON)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.ES, "ES=ON"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
 }

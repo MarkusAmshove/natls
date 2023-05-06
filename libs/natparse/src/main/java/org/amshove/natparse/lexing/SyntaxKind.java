@@ -223,7 +223,7 @@ public enum SyntaxKind
 	NULL_HANDLE(false, false, false),
 	OBTAIN(false, false, false),
 	OLD(false, false, false),
-	ON(false, false, false),
+	ON(true, false, false),
 	OPEN(false, false, false),
 	OPTIONS(false, false, false),
 	PARSE(false, false, false),
@@ -762,6 +762,6 @@ public enum SyntaxKind
 
 	public boolean isAttribute()
 	{
-		return this == AD || this == DY || this == CD || this == EM || this == NL || this == AL || this == DF || this == IP || this == IS || this == CV || this == ZP || this == SG;
+		return this == AD || this == DY || this == CD || this == EM || this == NL || this == AL || this == DF || this == IP || this == IS || this == CV || this == ZP || this == SG || this == ES;
 	}
 }
