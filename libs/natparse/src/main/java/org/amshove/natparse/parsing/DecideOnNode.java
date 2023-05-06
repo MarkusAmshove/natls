@@ -50,19 +50,22 @@ class DecideOnNode extends StatementNode implements IDecideOnNode
 		return noneValue;
 	}
 
-	void setAllValues(IStatementListNode allValues)
+	void setAllValues(StatementListNode allValues)
 	{
 		this.allValues = allValues;
+		addNode(allValues);
 	}
 
-	void setAnyValue(IStatementListNode anyValue)
+	void setAnyValue(StatementListNode anyValue)
 	{
 		this.anyValue = anyValue;
+		addNode(anyValue);
 	}
 
-	void setNoneValue(IStatementListNode noneValue)
+	void setNoneValue(StatementListNode noneValue)
 	{
 		this.noneValue = noneValue;
+		addNode(noneValue);
 	}
 
 	void setOperand(IOperandNode operand)
@@ -70,8 +73,9 @@ class DecideOnNode extends StatementNode implements IDecideOnNode
 		this.operand = operand;
 	}
 
-	void addBranch(IDecideOnBranchNode branch)
+	void addBranch(DecideOnBranchNode branch)
 	{
 		branches.add(branch);
+		addNode(branch);
 	}
 }

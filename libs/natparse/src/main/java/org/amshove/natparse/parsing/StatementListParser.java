@@ -2881,7 +2881,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return decideOn;
 	}
 
-	private IDecideOnBranchNode decideOnBranch() throws ParseError
+	private DecideOnBranchNode decideOnBranch() throws ParseError
 	{
 		var branch = new DecideOnBranchNode();
 		var branchStart = consumeAnyMandatory(branch, List.of(SyntaxKind.VALUE, SyntaxKind.VALUES));
