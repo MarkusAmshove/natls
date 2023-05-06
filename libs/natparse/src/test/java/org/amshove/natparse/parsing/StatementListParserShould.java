@@ -2326,6 +2326,22 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(decideOn.noneValue().statements()).hasSize(1);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"", "VALUE", "VALUES"
+	})
+	void parseDecideOnNoneBranch(String permutation)
+	{
+		var decideOn = assertParsesSingleStatement("""
+			DECIDE ON FIRST #VAR
+			NONE %s
+			IGNORE
+			END-DECIDE
+			""".formatted(permutation), IDecideOnNode.class);
+		assertThat(decideOn.noneValue().statements()).hasSize(1);
+	}
+
 	@Test
 	void parseDecideOnSubstring()
 	{
@@ -2341,7 +2357,7 @@ class StatementListParserShould extends StatementParseTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"", "VALUE"
+		"", "VALUE", "VALUES"
 	})
 	void parseAnyValueBranch(String permutation)
 	{
@@ -2359,7 +2375,7 @@ class StatementListParserShould extends StatementParseTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"", "VALUE"
+		"", "VALUE", "VALUES"
 	})
 	void parseAllValueBranch(String permutation)
 	{
@@ -2374,21 +2390,25 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(decideOn.allValues().statements()).hasSize(1);
 	}
 
-	@Test
-	void parseDecideOnWithBranches()
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"VALUE", "VALUES"
+	})
+	void parseDecideOnWithBranches(String valueKeyword)
 	{
 		var decideOn = assertParsesSingleStatement("""
 			DECIDE ON FIRST #VAR
-			VALUE SUBSTRING(#VAR2, 1)
+			%s SUBSTRING(#VAR2, 1)
 			IGNORE
-			VALUE 'Hi'
+			%s 'Hi'
 			IGNORE
-			VALUE #VAR2
+			%s #VAR2
 			IGNORE
 			NONE
 			IGNORE
 			END-DECIDE
-			""", IDecideOnNode.class);
+			""".formatted(valueKeyword, valueKeyword, valueKeyword), IDecideOnNode.class);
 
 		assertThat(decideOn.branches()).hasSize(3);
 		assertNodeType(decideOn.branches().get(0).values().first(), ISubstringOperandNode.class);

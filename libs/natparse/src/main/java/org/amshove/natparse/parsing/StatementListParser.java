@@ -2739,7 +2739,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return statement;
 	}
 
-	private static final Set<SyntaxKind> DECIDE_ON_STOP_KINDS = Set.of(SyntaxKind.END_DECIDE, SyntaxKind.NONE, SyntaxKind.ANY, SyntaxKind.ALL, SyntaxKind.VALUE);
+	private static final Set<SyntaxKind> DECIDE_ON_STOP_KINDS = Set.of(SyntaxKind.END_DECIDE, SyntaxKind.NONE, SyntaxKind.ANY, SyntaxKind.ALL, SyntaxKind.VALUE, SyntaxKind.VALUES);
+	private static final List<SyntaxKind> DECIDE_ON_VALUE_KEYWODS = List.of(SyntaxKind.VALUE, SyntaxKind.VALUES);
 
 	private DecideOnNode decideOn() throws ParseError
 	{
@@ -2757,7 +2758,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			if (peekKind(SyntaxKind.NONE))
 			{
 				var none = consumeMandatory(decideOn, SyntaxKind.NONE);
-				consumeOptionally(decideOn, SyntaxKind.VALUE);
+				consumeAnyOptionally(decideOn, DECIDE_ON_VALUE_KEYWODS);
 				var noneValue = statementList(DECIDE_ON_STOP_KINDS);
 				decideOn.setNoneValue(noneValue);
 				checkForEmptyBody(noneValue, none);
@@ -2767,7 +2768,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			if (peekKind(SyntaxKind.ANY))
 			{
 				var any = consumeMandatory(decideOn, SyntaxKind.ANY);
-				consumeOptionally(decideOn, SyntaxKind.VALUE);
+				consumeAnyOptionally(decideOn, DECIDE_ON_VALUE_KEYWODS);
 				var anyValue = statementList(DECIDE_ON_STOP_KINDS);
 				decideOn.setAnyValue(anyValue);
 				checkForEmptyBody(anyValue, any);
@@ -2777,7 +2778,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			if (peekKind(SyntaxKind.ALL))
 			{
 				var all = consumeMandatory(decideOn, SyntaxKind.ALL);
-				consumeOptionally(decideOn, SyntaxKind.VALUE);
+				consumeAnyOptionally(decideOn, DECIDE_ON_VALUE_KEYWODS);
 				var allValues = statementList(DECIDE_ON_STOP_KINDS);
 				decideOn.setAllValues(allValues);
 				checkForEmptyBody(allValues, all);
@@ -2795,7 +2796,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private IDecideOnBranchNode decideOnBranch() throws ParseError
 	{
 		var branch = new DecideOnBranchNode();
-		var branchStart = consumeMandatory(branch, SyntaxKind.VALUE);
+		var branchStart = consumeAnyMandatory(branch, List.of(SyntaxKind.VALUE, SyntaxKind.VALUES));
 		branch.addOperand(consumeSubstringOrOperand(branch));
 		while (!isAtEnd() && peekKind(SyntaxKind.COMMA))
 		{
