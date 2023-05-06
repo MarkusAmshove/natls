@@ -46,6 +46,11 @@ public abstract class AbstractQuickFix implements ICodeActionProvider
 		fixAllFixes.get(diagnosticId).add(allFixer);
 	}
 
+	protected boolean canFixInForeignFiles()
+	{
+		return false;
+	}
+
 	@Override
 	public boolean isApplicable(RefactoringContext context)
 	{
@@ -55,12 +60,16 @@ public abstract class AbstractQuickFix implements ICodeActionProvider
 	@Override
 	public List<CodeAction> createCodeAction(RefactoringContext context)
 	{
-		var singleSourceCodeActions = context.diagnosticsAtPosition().stream()
+		var diagnosticsAtPositionInFile = canFixInForeignFiles()
+			? context.diagnosticsAtPosition()
+			: context.diagnosticsAtPosition().stream().filter(d -> context.file().containsDiagnostic(d)).toList();
+
+		var singleSourceCodeActions = diagnosticsAtPositionInFile.stream()
 			.filter(d -> d.getCode() != null && d.getCode().isLeft() && quickfixes.containsKey(d.getCode().getLeft()))
 			.flatMap(d -> quickfixes.get(d.getCode().getLeft()).stream().map(qf -> qf.apply(QuickFixContext.fromCodeActionContext(context, d))))
 			.toList();
 
-		var multiSourceCodeActions = context.diagnosticsAtPosition().stream()
+		var multiSourceCodeActions = diagnosticsAtPositionInFile.stream()
 			.filter(d -> d.getCode() != null && d.getCode().isLeft() && multiQuickfixes.containsKey(d.getCode().getLeft()))
 			.flatMap(d -> multiQuickfixes.get(d.getCode().getLeft()).stream().map(qf -> qf.apply(QuickFixContext.fromCodeActionContext(context, d))))
 			.flatMap(Collection::stream)
@@ -71,10 +80,10 @@ public abstract class AbstractQuickFix implements ICodeActionProvider
 		codeActions.addAll(multiSourceCodeActions);
 
 		var handledFixAllIds = new HashSet<String>();
-		for (var diagnostic : context.diagnosticsAtPosition())
+		for (var diagnostic : diagnosticsAtPositionInFile)
 		{
 			var diagnosticId = diagnostic.getCode().getLeft();
-			if (handledFixAllIds.contains(diagnosticId))
+			if (handledFixAllIds.contains(diagnosticId) || !context.file().containsDiagnostic(diagnostic))
 			{
 				continue;
 			}

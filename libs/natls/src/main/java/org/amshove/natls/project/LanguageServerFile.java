@@ -517,7 +517,7 @@ public class LanguageServerFile implements IModuleProvider
 		return ReadOnlyList.from(allDiagnostics().stream().filter(d -> d.getCode().getLeft().equals(id)).filter(this::containsDiagnostic).toList());
 	}
 
-	private boolean containsDiagnostic(Diagnostic diagnostic)
+	public boolean containsDiagnostic(Diagnostic diagnostic)
 	{
 		if (diagnostic.getData()instanceof DiagnosticOriginalUri originalUri)
 		{
