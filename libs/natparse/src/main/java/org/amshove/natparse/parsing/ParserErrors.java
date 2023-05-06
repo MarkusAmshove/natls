@@ -24,6 +24,15 @@ class ParserErrors
 		return token.kind().toString();
 	}
 
+	public static ParserDiagnostic missingNoneBranch(ISyntaxNode decideNode)
+	{
+		return ParserDiagnostic.create(
+			"DECIDE misses NONE branch",
+			decideNode,
+			ParserError.DECIDE_MISSES_NONE_BRANCH
+		);
+	}
+
 	public static ParserDiagnostic missingClosingToken(SyntaxKind expectedClosingToken, SyntaxToken openingToken)
 	{
 		return ParserDiagnostic.create(

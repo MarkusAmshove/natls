@@ -1684,6 +1684,17 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void reportADiagnosticIfDecideForMissesNone()
+	{
+		assertDiagnostic("""
+            DECIDE FOR CONDITION
+            WHEN 5 < 2
+            IGNORE
+            END-DECIDE
+            """, ParserError.DECIDE_MISSES_NONE_BRANCH);
+	}
+
+	@Test
 	void parseDecideForCondition()
 	{
 		var decide = assertParsesSingleStatement("""
@@ -2319,6 +2330,17 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(decideOn.noneValue().statements()).hasSize(1);
 	}
 
+	@Test
+	void reportADiagnosticIfDecideOnMissesNone()
+	{
+		assertDiagnostic("""
+            DECIDE ON FIRST #VAR
+            VALUE 'Hi'
+            IGNORE
+            END-DECIDE
+            """, ParserError.DECIDE_MISSES_NONE_BRANCH);
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
@@ -2358,6 +2380,8 @@ class StatementListParserShould extends StatementParseTest
 			DECIDE ON FIRST #VAR
 			ANY %s
 			IGNORE
+			NONE
+			IGNORE
 			END-DECIDE
 			""".formatted(permutation), IDecideOnNode.class);
 
@@ -2375,6 +2399,8 @@ class StatementListParserShould extends StatementParseTest
 		var decideOn = assertParsesSingleStatement("""
 			DECIDE ON FIRST #VAR
 			ALL %s
+			IGNORE
+			NONE
 			IGNORE
 			END-DECIDE
 			""".formatted(permutation), IDecideOnNode.class);
