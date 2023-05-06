@@ -320,6 +320,14 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case TERMINATE:
 						statementList.addStatement(terminate());
 						break;
+					case DECIDE:
+						if (peekKind(1, SyntaxKind.FOR))
+						{
+							statementList.addStatement(decideFor());
+							break;
+						}
+						statementList.addStatement(decideOn());
+						break;
 					case LPAREN:
 						if (getKind(1).isAttribute())
 						{
@@ -329,14 +337,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 							statementList.addStatement(tokenNode);
 							break;
 						}
-					case DECIDE:
-						if (peekKind(1, SyntaxKind.FOR))
-						{
-							statementList.addStatement(decideFor());
-							break;
-						}
-						statementList.addStatement(decideOn());
-						break;
 					case SET:
 						if (peekKind(1, SyntaxKind.KEY))
 						{
@@ -2740,7 +2740,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	}
 
 	private static final Set<SyntaxKind> DECIDE_ON_STOP_KINDS = Set.of(SyntaxKind.END_DECIDE, SyntaxKind.NONE, SyntaxKind.ANY, SyntaxKind.ALL, SyntaxKind.VALUE, SyntaxKind.VALUES);
-	private static final List<SyntaxKind> DECIDE_ON_VALUE_KEYWODS = List.of(SyntaxKind.VALUE, SyntaxKind.VALUES);
+	private static final List<SyntaxKind> DECIDE_ON_VALUE_KEYWORDS = List.of(SyntaxKind.VALUE, SyntaxKind.VALUES);
 
 	private DecideOnNode decideOn() throws ParseError
 	{
@@ -2748,7 +2748,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var opening = consumeMandatory(decideOn, SyntaxKind.DECIDE);
 		consumeMandatory(decideOn, SyntaxKind.ON);
 		consumeAnyMandatory(decideOn, List.of(SyntaxKind.FIRST, SyntaxKind.EVERY));
-		consumeOptionally(decideOn, SyntaxKind.VALUE);
+		consumeAnyOptionally(decideOn, DECIDE_ON_VALUE_KEYWORDS);
 		consumeOptionally(decideOn, SyntaxKind.OF);
 
 		decideOn.setOperand(consumeSubstringOrOperand(decideOn));
@@ -2758,7 +2758,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			if (peekKind(SyntaxKind.NONE))
 			{
 				var none = consumeMandatory(decideOn, SyntaxKind.NONE);
-				consumeAnyOptionally(decideOn, DECIDE_ON_VALUE_KEYWODS);
+				consumeAnyOptionally(decideOn, DECIDE_ON_VALUE_KEYWORDS);
 				var noneValue = statementList(DECIDE_ON_STOP_KINDS);
 				decideOn.setNoneValue(noneValue);
 				checkForEmptyBody(noneValue, none);
@@ -2768,7 +2768,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			if (peekKind(SyntaxKind.ANY))
 			{
 				var any = consumeMandatory(decideOn, SyntaxKind.ANY);
-				consumeAnyOptionally(decideOn, DECIDE_ON_VALUE_KEYWODS);
+				consumeAnyOptionally(decideOn, DECIDE_ON_VALUE_KEYWORDS);
 				var anyValue = statementList(DECIDE_ON_STOP_KINDS);
 				decideOn.setAnyValue(anyValue);
 				checkForEmptyBody(anyValue, any);
@@ -2778,7 +2778,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			if (peekKind(SyntaxKind.ALL))
 			{
 				var all = consumeMandatory(decideOn, SyntaxKind.ALL);
-				consumeAnyOptionally(decideOn, DECIDE_ON_VALUE_KEYWODS);
+				consumeAnyOptionally(decideOn, DECIDE_ON_VALUE_KEYWORDS);
 				var allValues = statementList(DECIDE_ON_STOP_KINDS);
 				decideOn.setAllValues(allValues);
 				checkForEmptyBody(allValues, all);
