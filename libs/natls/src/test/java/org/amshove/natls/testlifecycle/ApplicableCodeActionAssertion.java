@@ -29,7 +29,6 @@ public final class ApplicableCodeActionAssertion extends CodeActionAssertion
 			changedText = applier.apply(edit, changedText);
 		}
 
-		//		var edit = allEdits.get(0); // TODO: Handle all edits
 		assertThat(changedText)
 			.isEqualToNormalizingNewlines(expectedSource);
 
