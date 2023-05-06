@@ -1843,30 +1843,33 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		if (consumeOptionally(window, SyntaxKind.FRAMED))
 		{
-			var token = consumeAnyMandatory(window, List.of(SyntaxKind.ON, SyntaxKind.OFF));
-			if (token != null && token.kind() == SyntaxKind.ON)
+			if (peekAny(List.of(SyntaxKind.ON, SyntaxKind.OFF)))
 			{
-				if (peekKind(SyntaxKind.LPAREN))
+				var token = consumeAnyMandatory(window, List.of(SyntaxKind.ON, SyntaxKind.OFF));
+				if (token != null && token.kind() == SyntaxKind.ON)
 				{
-					consumeSingleAttribute(window, SyntaxKind.CD);
-				}
-
-				if (consumeOptionally(window, SyntaxKind.POSITION))
-				{
-					var pos = consumeAnyMandatory(window, List.of(SyntaxKind.SYMBOL, SyntaxKind.TEXT, SyntaxKind.OFF));
-					if (pos.kind() == SyntaxKind.SYMBOL)
+					if (peekKind(SyntaxKind.LPAREN))
 					{
-						consumeAnyOptionally(window, List.of(SyntaxKind.TOP, SyntaxKind.BOTTOM));
-						consumeOptionally(window, SyntaxKind.AUTO);
-						consumeOptionally(window, SyntaxKind.SHORT);
-						consumeAnyOptionally(window, List.of(SyntaxKind.LEFT, SyntaxKind.RIGHT));
+						consumeSingleAttribute(window, SyntaxKind.CD);
 					}
-					else
-						if (pos.kind() == SyntaxKind.TEXT && !consumeOptionally(window, SyntaxKind.OFF))
+
+					if (consumeOptionally(window, SyntaxKind.POSITION))
+					{
+						var pos = consumeAnyMandatory(window, List.of(SyntaxKind.SYMBOL, SyntaxKind.TEXT, SyntaxKind.OFF));
+						if (pos.kind() == SyntaxKind.SYMBOL)
 						{
-							consumeOptionally(window, SyntaxKind.MORE);
+							consumeAnyOptionally(window, List.of(SyntaxKind.TOP, SyntaxKind.BOTTOM));
+							consumeOptionally(window, SyntaxKind.AUTO);
+							consumeOptionally(window, SyntaxKind.SHORT);
 							consumeAnyOptionally(window, List.of(SyntaxKind.LEFT, SyntaxKind.RIGHT));
 						}
+						else
+							if (pos.kind() == SyntaxKind.TEXT && !consumeOptionally(window, SyntaxKind.OFF))
+							{
+								consumeOptionally(window, SyntaxKind.MORE);
+								consumeAnyOptionally(window, List.of(SyntaxKind.LEFT, SyntaxKind.RIGHT));
+							}
+					}
 				}
 			}
 		}

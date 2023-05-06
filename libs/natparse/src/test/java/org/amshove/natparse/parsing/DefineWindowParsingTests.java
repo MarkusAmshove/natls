@@ -98,6 +98,7 @@ class DefineWindowParsingTests extends StatementParseTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
+		"FRAMED",
 		"FRAMED ON",
 		"FRAMED OFF",
 		"FRAMED ON (CD=RE)",

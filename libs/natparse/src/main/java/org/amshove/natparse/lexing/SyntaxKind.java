@@ -223,7 +223,7 @@ public enum SyntaxKind
 	NULL_HANDLE(false, false, false),
 	OBTAIN(false, false, false),
 	OLD(false, false, false),
-	ON(true, false, false),
+	ON(false, false, false),
 	OPEN(false, false, false),
 	OPTIONS(false, false, false),
 	PARSE(false, false, false),
