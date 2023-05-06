@@ -10,7 +10,6 @@ import static org.amshove.natparse.lexing.SyntaxKind.IDENTIFIER;
 
 public class SyntaxToken implements IPosition
 {
-
 	private final SyntaxKind kind;
 	private SyntaxKind originalKind;
 	private final int offset;
