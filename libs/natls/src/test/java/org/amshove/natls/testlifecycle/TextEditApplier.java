@@ -40,6 +40,11 @@ public class TextEditApplier
 					{
 						deletedLines++;
 					}
+					if (edit.getNewText().contains("\n"))
+					{
+						deletedLines--;
+					}
+
 					resultingSource.append(edit.getNewText());
 				}
 

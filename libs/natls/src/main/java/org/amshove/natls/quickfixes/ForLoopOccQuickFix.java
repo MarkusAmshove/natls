@@ -30,8 +30,8 @@ public class ForLoopOccQuickFix extends AbstractQuickFix
 			return null;
 		}
 
-		var targetVariableName = variableReferenceNode.reference().declaration().symbolName();
-		var sizeVariableName = "#S-%s".formatted(targetVariableName);
+		var targetVariableName = variableReferenceNode.referencingToken().symbolName();
+		var sizeVariableName = "#S-%s".formatted(targetVariableName.replace(".", "-"));
 		return new CodeActionBuilder("Use a variable for the upper bound", CodeActionKind.QuickFix)
 			.fixesDiagnostic(quickFixContext.diagnostic())
 			.appliesWorkspaceEdit(
