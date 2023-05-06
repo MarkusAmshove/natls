@@ -1783,9 +1783,90 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var window = new DefineWindowNode();
 		consumeMandatory(window, SyntaxKind.DEFINE);
 		consumeMandatory(window, SyntaxKind.WINDOW);
-		var name = consumeIdentifierTokenOnly();
-		window.setName(name);
-		window.addNode(new TokenNode(name));
+		var name = consumeMandatoryIdentifierTokenNode(window);
+		window.setName(name.token());
+
+		if (consumeOptionally(window, SyntaxKind.SIZE))
+		{
+			if (peekAny(List.of(SyntaxKind.AUTO, SyntaxKind.QUARTER)))
+			{
+				consumeAnyMandatory(window, List.of(SyntaxKind.AUTO, SyntaxKind.QUARTER));
+			}
+			else
+			{
+				consumeOperandNode(window);
+				consumeMandatory(window, SyntaxKind.ASTERISK);
+				consumeOperandNode(window);
+			}
+		}
+
+		if (consumeOptionally(window, SyntaxKind.BASE))
+		{
+			if (consumeAnyOptionally(window, List.of(SyntaxKind.TOP, SyntaxKind.BOTTOM)))
+			{
+				consumeAnyMandatory(window, List.of(SyntaxKind.LEFT, SyntaxKind.RIGHT));
+			}
+			else
+				if (peekKind(SyntaxKind.CURSOR))
+				{
+					consumeMandatory(window, SyntaxKind.CURSOR);
+				}
+				else
+				{
+					consumeOperandNode(window);
+					consumeMandatory(window, SyntaxKind.SLASH);
+					consumeOperandNode(window);
+				}
+		}
+
+		if (consumeOptionally(window, SyntaxKind.REVERSED))
+		{
+			if (peekKind(SyntaxKind.LPAREN))
+			{
+				consumeSingleAttribute(window, SyntaxKind.CD);
+			}
+		}
+
+		if (consumeOptionally(window, SyntaxKind.TITLE))
+		{
+			consumeOperandNode(window);
+		}
+
+		if (consumeOptionally(window, SyntaxKind.CONTROL))
+		{
+			consumeAnyMandatory(window, List.of(SyntaxKind.WINDOW, SyntaxKind.SCREEN));
+		}
+
+		if (consumeOptionally(window, SyntaxKind.FRAMED))
+		{
+			var token = consumeAnyMandatory(window, List.of(SyntaxKind.ON, SyntaxKind.OFF));
+			if (token != null && token.kind() == SyntaxKind.ON)
+			{
+				if (peekKind(SyntaxKind.LPAREN))
+				{
+					consumeSingleAttribute(window, SyntaxKind.CD);
+				}
+
+				if (consumeOptionally(window, SyntaxKind.POSITION))
+				{
+					var pos = consumeAnyMandatory(window, List.of(SyntaxKind.SYMBOL, SyntaxKind.TEXT, SyntaxKind.OFF));
+					if (pos.kind() == SyntaxKind.SYMBOL)
+					{
+						consumeAnyOptionally(window, List.of(SyntaxKind.TOP, SyntaxKind.BOTTOM));
+						consumeOptionally(window, SyntaxKind.AUTO);
+						consumeOptionally(window, SyntaxKind.SHORT);
+						consumeAnyOptionally(window, List.of(SyntaxKind.LEFT, SyntaxKind.RIGHT));
+					}
+					else
+						if (pos.kind() == SyntaxKind.TEXT && !consumeOptionally(window, SyntaxKind.OFF))
+						{
+							consumeOptionally(window, SyntaxKind.MORE);
+							consumeAnyOptionally(window, List.of(SyntaxKind.LEFT, SyntaxKind.RIGHT));
+						}
+				}
+			}
+		}
+
 		return window;
 	}
 

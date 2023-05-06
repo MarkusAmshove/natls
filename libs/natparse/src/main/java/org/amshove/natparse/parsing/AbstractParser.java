@@ -876,6 +876,22 @@ abstract class AbstractParser<T>
 		throw new ParseError(peek());
 	}
 
+	protected IAttributeNode consumeSingleAttribute(BaseSyntaxNode node, SyntaxKind attributeKind) throws ParseError
+	{
+		if (!peekKind(SyntaxKind.LPAREN) && !peekKind(1, attributeKind))
+		{
+			report(ParserErrors.unexpectedToken(attributeKind, tokens));
+			throw new ParseError(peek());
+		}
+
+		var attribute = new AttributeNode(peek());
+		node.addNode(attribute);
+		consumeMandatory(attribute, SyntaxKind.LPAREN);
+		consume(attribute);
+		consumeMandatory(attribute, SyntaxKind.RPAREN);
+		return attribute;
+	}
+
 	protected void consumeAttributeDefinition(BaseSyntaxNode node) throws ParseError
 	{
 		// we don't do anything special yet, need some experience on where attribute definitions are allowed

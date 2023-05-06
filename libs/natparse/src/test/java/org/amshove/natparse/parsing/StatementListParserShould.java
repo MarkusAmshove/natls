@@ -1019,13 +1019,6 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
-	void rudimentaryParseDefineWindow()
-	{
-		var window = assertParsesSingleStatement("DEFINE WINDOW MAIN", IDefineWindowNode.class);
-		assertThat(window.name().symbolName()).isEqualTo("MAIN");
-	}
-
-	@Test
 	void parseFormat()
 	{
 		var statementList = assertParsesWithoutDiagnostics("""

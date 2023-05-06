@@ -6,9 +6,9 @@ Legend:
 
 :x: - not implemented (57)
 
-:white_check_mark: - implemented or reporting (54)
+:white_check_mark: - implemented or reporting (55)
 
-partial - partially implemented to prevent false positives (11)
+partial - partially implemented to prevent false positives (10)
 
 | Statement | Status             |
 | --- |--------------------|
@@ -43,7 +43,7 @@ partial - partially implemented to prevent false positives (11)
 | DEFINE PRINTER | :white_check_mark: |
 | DEFINE PROTOTYPE | partial            |
 | DEFINE SUBROUTINE | :white_check_mark: |
-| DEFINE WINDOW | partial            |
+| DEFINE WINDOW | :white_check_mark: |
 | DEFINE WORK FILE | :white_check_mark: |
 | DELETE | :x:                |
 | DELETE (SQL) | partial            |
