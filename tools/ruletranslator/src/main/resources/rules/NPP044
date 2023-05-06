@@ -1,0 +1,6 @@
+name: DECIDE misses NONE branch
+priority: BLOCKER
+tags: compile-time
+type: BUG
+description:
+The NONE branch is mandatory for DECIDE ON and DECIDE FOR.

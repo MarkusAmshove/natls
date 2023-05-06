@@ -2878,6 +2878,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		consumeMandatoryClosing(decideOn, SyntaxKind.END_DECIDE, opening);
 
+		if (decideOn.noneValue() == null)
+		{
+			report(ParserErrors.missingNoneBranch(decideOn));
+		}
+
 		return decideOn;
 	}
 
@@ -2957,6 +2962,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		consumeMandatoryClosing(decide, SyntaxKind.END_DECIDE, opening);
+
+		if (decide.whenNone() == null)
+		{
+			report(ParserErrors.missingNoneBranch(decide));
+		}
 
 		return decide;
 	}
