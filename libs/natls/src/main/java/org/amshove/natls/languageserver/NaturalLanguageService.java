@@ -185,7 +185,7 @@ public class NaturalLanguageService implements LanguageClientAware
 			node = moduleReference;
 		}
 
-		var symbolToSearchFor = findTokenAtPosition(filepath, position); // TODO: Actually look for a node, could be ISymbolReferenceNode
+		var symbolToSearchFor = findTokenAtPosition(file, position); // TODO: Actually look for a node, could be ISymbolReferenceNode
 		var providedHover = hoverProvider.createHover(new HoverContext(node, symbolToSearchFor, file));
 		if (providedHover != null)
 		{
@@ -317,28 +317,9 @@ public class NaturalLanguageService implements LanguageClientAware
 			.collect(Collectors.joining(System.lineSeparator()));
 	}
 
-	private SyntaxToken findTokenAtPosition(Path filePath, Position position)
+	private SyntaxToken findTokenAtPosition(LanguageServerFile file, Position position)
 	{
-		var tokens = lexPath(filePath);
-
-		while (!tokens.isAtEnd())
-		{
-			var token = tokens.peek();
-			if (token.line() != position.getLine())
-			{
-				tokens.advance();
-				continue;
-			}
-
-			if (token.offsetInLine() <= position.getCharacter() && token.offsetInLine() + token.length() >= position.getCharacter())
-			{
-				break;
-			}
-
-			tokens.advance();
-		}
-
-		return tokens.peek();
+		return NodeUtil.findTokenNodeAtPosition(position.getLine(), position.getCharacter(), file.module().syntaxTree()).token();
 	}
 
 	private String getLineComment(int line, Path filePath)
@@ -927,7 +908,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	public List<CodeAction> codeAction(CodeActionParams params)
 	{
 		var file = findNaturalFile(LspUtil.uriToPath(params.getTextDocument().getUri()));
-		var token = findTokenAtPosition(file.getPath(), params.getRange().getStart());
+		var token = findTokenAtPosition(file, params.getRange().getStart());
 		var node = NodeUtil.findNodeAtPosition(params.getRange().getStart().getLine(), params.getRange().getStart().getCharacter(), file.module());
 		if (node == null)
 		{
