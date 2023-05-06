@@ -2307,4 +2307,118 @@ class StatementListParserShould extends StatementParseTest
 			END-ERROR
 			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
 	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"FIRST", "FIRST VALUE OF", "FIRST VALUE", "FIRST OF",
+		"EVERY", "EVERY VALUE OF", "EVERY VALUE", "EVERY OF"
+	})
+	void parseDecideOn(String permutation)
+	{
+		var decideOn = assertParsesSingleStatement("""
+			DECIDE ON %s #VAR
+			NONE
+			IGNORE
+			END-DECIDE
+			""".formatted(permutation), IDecideOnNode.class);
+		assertIsVariableReference(decideOn.operand(), "#VAR");
+		assertThat(decideOn.noneValue().statements()).hasSize(1);
+	}
+
+	@Test
+	void parseDecideOnSubstring()
+	{
+		var decideOn = assertParsesSingleStatement("""
+			DECIDE ON FIRST SUBSTRING(#VAR, 1, 2)
+			NONE
+			IGNORE
+			END-DECIDE
+			""", IDecideOnNode.class);
+		assertNodeType(decideOn.operand(), ISubstringOperandNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"", "VALUE"
+	})
+	void parseAnyValueBranch(String permutation)
+	{
+		var decideOn = assertParsesSingleStatement("""
+			DECIDE ON FIRST #VAR
+			ANY %s
+			IGNORE
+			END-DECIDE
+			""".formatted(permutation), IDecideOnNode.class);
+
+		assertThat(decideOn.anyValue()).isNotNull();
+		assertThat(decideOn.anyValue().statements()).hasSize(1);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"", "VALUE"
+	})
+	void parseAllValueBranch(String permutation)
+	{
+		var decideOn = assertParsesSingleStatement("""
+			DECIDE ON FIRST #VAR
+			ALL %s
+			IGNORE
+			END-DECIDE
+			""".formatted(permutation), IDecideOnNode.class);
+
+		assertThat(decideOn.allValues()).isNotNull();
+		assertThat(decideOn.allValues().statements()).hasSize(1);
+	}
+
+	@Test
+	void parseDecideOnWithBranches()
+	{
+		var decideOn = assertParsesSingleStatement("""
+			DECIDE ON FIRST #VAR
+			VALUE SUBSTRING(#VAR2, 1)
+			IGNORE
+			VALUE 'Hi'
+			IGNORE
+			VALUE #VAR2
+			IGNORE
+			NONE
+			IGNORE
+			END-DECIDE
+			""", IDecideOnNode.class);
+
+		assertThat(decideOn.branches()).hasSize(3);
+		assertNodeType(decideOn.branches().get(0).operand(), ISubstringOperandNode.class);
+		assertLiteral(decideOn.branches().get(1).operand(), SyntaxKind.STRING_LITERAL);
+		assertIsVariableReference(decideOn.branches().get(2).operand(), "#VAR2");
+	}
+
+	@Test
+	void reportADiagnosticWhenDecideOnNoneBodyIsEmpty()
+	{
+		assertDiagnostic("""
+			DECIDE ON FIRST #VAR
+			NONE
+			END-DECIDE
+			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"ANY", "ALL", "VALUE 5", "VALUE #VAR", "VALUE #VAR(*)"
+	})
+	void reportADiagnosticWhenDecideOnBranchBodyIsEmpty(String branch)
+	{
+		assertDiagnostic("""
+			DECIDE ON FIRST #VAR
+			%s
+			NONE
+			IGNORE
+			END-DECIDE
+			""".formatted(branch), ParserError.STATEMENT_HAS_EMPTY_BODY);
+	}
 }

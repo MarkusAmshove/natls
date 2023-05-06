@@ -335,6 +335,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 							statementList.addStatement(decideFor());
 							break;
 						}
+						statementList.addStatement(decideOn());
+						break;
 					case SET:
 						if (peekKind(1, SyntaxKind.KEY))
 						{
@@ -2737,12 +2739,70 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return statement;
 	}
 
+	private static final Set<SyntaxKind> DECIDE_ON_STOP_KINDS = Set.of(SyntaxKind.END_DECIDE, SyntaxKind.NONE, SyntaxKind.ANY, SyntaxKind.ALL, SyntaxKind.VALUE);
+
+	private DecideOnNode decideOn() throws ParseError
+	{
+		var decideOn = new DecideOnNode();
+		var opening = consumeMandatory(decideOn, SyntaxKind.DECIDE);
+		consumeMandatory(decideOn, SyntaxKind.ON);
+		consumeAnyMandatory(decideOn, List.of(SyntaxKind.FIRST, SyntaxKind.EVERY));
+		consumeOptionally(decideOn, SyntaxKind.VALUE);
+		consumeOptionally(decideOn, SyntaxKind.OF);
+
+		decideOn.setOperand(consumeSubstringOrOperand(decideOn));
+
+		while (!isAtEnd() && !peekKind(SyntaxKind.END_DECIDE))
+		{
+			if (peekKind(SyntaxKind.NONE))
+			{
+				var none = consumeMandatory(decideOn, SyntaxKind.NONE);
+				consumeOptionally(decideOn, SyntaxKind.VALUE);
+				var noneValue = statementList(DECIDE_ON_STOP_KINDS);
+				decideOn.setNoneValue(noneValue);
+				checkForEmptyBody(noneValue, none);
+				continue;
+			}
+
+			if (peekKind(SyntaxKind.ANY))
+			{
+				var any = consumeMandatory(decideOn, SyntaxKind.ANY);
+				consumeOptionally(decideOn, SyntaxKind.VALUE);
+				var anyValue = statementList(DECIDE_ON_STOP_KINDS);
+				decideOn.setAnyValue(anyValue);
+				checkForEmptyBody(anyValue, any);
+				continue;
+			}
+
+			if (peekKind(SyntaxKind.ALL))
+			{
+				var all = consumeMandatory(decideOn, SyntaxKind.ALL);
+				consumeOptionally(decideOn, SyntaxKind.VALUE);
+				var allValues = statementList(DECIDE_ON_STOP_KINDS);
+				decideOn.setAllValues(allValues);
+				checkForEmptyBody(allValues, all);
+				continue;
+			}
+
+			var branch = new DecideOnBranchNode();
+			var branchStart = consumeMandatory(branch, SyntaxKind.VALUE);
+			branch.setOperand(consumeSubstringOrOperand(branch));
+			branch.setBody(statementList(DECIDE_ON_STOP_KINDS));
+			checkForEmptyBody(branch.body(), branchStart);
+			decideOn.addBranch(branch);
+		}
+
+		consumeMandatoryClosing(decideOn, SyntaxKind.END_DECIDE, opening);
+
+		return decideOn;
+	}
+
 	private static final Set<SyntaxKind> DECIDE_FOR_STOP_KINDS = Set.of(SyntaxKind.END_DECIDE, SyntaxKind.WHEN);
 
 	private DecideForConditionNode decideFor() throws ParseError
 	{
 		var decide = new DecideForConditionNode();
-		consumeMandatory(decide, SyntaxKind.DECIDE);
+		var opening = consumeMandatory(decide, SyntaxKind.DECIDE);
 		consumeMandatory(decide, SyntaxKind.FOR);
 		consumeEitherOptionally(decide, SyntaxKind.FIRST, SyntaxKind.EVERY);
 		consumeMandatory(decide, SyntaxKind.CONDITION);
@@ -2786,6 +2846,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			checkForEmptyBody(branchStatements, whenBranch);
 			decide.addBranch(branch);
 		}
+
+		consumeMandatoryClosing(decide, SyntaxKind.END_DECIDE, opening);
 
 		return decide;
 	}
