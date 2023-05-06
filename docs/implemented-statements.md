@@ -4,9 +4,9 @@ This document tracks the implementation status of Natural statements.
 
 Legend:
 
-:x: - not implemented (58)
+:x: - not implemented (57)
 
-:white_check_mark: - implemented or reporting (53)
+:white_check_mark: - implemented or reporting (54)
 
 partial - partially implemented to prevent false positives (11)
 
@@ -46,7 +46,7 @@ partial - partially implemented to prevent false positives (11)
 | DEFINE WINDOW | partial            |
 | DEFINE WORK FILE | :white_check_mark: |
 | DELETE | :x:                |
-| DELETE (SQL) | partial                |
+| DELETE (SQL) | partial            |
 | DISPLAY | :x:                |
 | DIVIDE | :white_check_mark: |
 | DOWNLOAD PC FILE | :white_check_mark: |
@@ -69,7 +69,7 @@ partial - partially implemented to prevent false positives (11)
 | IGNORE | :white_check_mark: |
 | INCLUDE | :white_check_mark: |
 | INPUT | :x:                |
-| INSERT (SQL) | partial                |
+| INSERT (SQL) | partial            |
 | INTERFACE | :x:                |
 | LIMIT | :white_check_mark: |
 | METHOD | :x:                |
@@ -77,7 +77,7 @@ partial - partially implemented to prevent false positives (11)
 | MOVE INDEXED | :x:                |
 | MULTIPLY | :white_check_mark: |
 | NEWPAGE | :white_check_mark: |
-| ON ERROR | :x:                |
+| ON ERROR | :white_check_mark: |
 | OPEN CONVERSATION | :x:                |
 | OPTIONS | :x:                |
 | PARSE XML | :x:                |
@@ -88,7 +88,7 @@ partial - partially implemented to prevent false positives (11)
 | PROCESS | :x:                |
 | PROCESS COMMAND | :x:                |
 | PROCESS PAGE | :x:                |
-| PROCESS SQL (SQL) | partial                |
+| PROCESS SQL (SQL) | partial            |
 | PROPERTY | :x:                |
 | READ | :x:                |
 | READ RESULT SET (SQL) | :x:                |
@@ -122,7 +122,7 @@ partial - partially implemented to prevent false positives (11)
 | SUSPEND IDENTICAL SUPPRESS | :x:                |
 | TERMINATE | :white_check_mark: |
 | UPDATE | :x:                |
-| UPDATE (SQL) | partial                |
+| UPDATE (SQL) | partial            |
 | UPDATELOB | :x:                |
 | UPLOAD PC FILE | :x:                |
 | WRITE | partial            |

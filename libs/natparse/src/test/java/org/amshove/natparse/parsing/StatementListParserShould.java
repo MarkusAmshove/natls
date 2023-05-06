@@ -2286,4 +2286,25 @@ class StatementListParserShould extends StatementParseTest
 		var assign = assertParsesSingleStatement("LIMIT := 5", IAssignmentStatementNode.class);
 		assertIsVariableReference(assign.target(), "LIMIT");
 	}
+
+	@Test
+	void parseAnOnError()
+	{
+		var error = assertParsesSingleStatement("""
+			ON ERROR
+			IGNORE
+			END-ERROR
+			""", IOnErrorNode.class);
+
+		assertThat(error.body().statements()).hasSize(1);
+	}
+
+	@Test
+	void reportADiagnosticIfOnErrorHasEmptyBody()
+	{
+		assertDiagnostic("""
+			ON ERROR
+			END-ERROR
+			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
+	}
 }

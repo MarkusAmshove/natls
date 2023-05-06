@@ -291,6 +291,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case FIND:
 						statementList.addStatement(find());
 						break;
+					case ON:
+						statementList.addStatement(onError());
+						break;
 					case PERFORM:
 						if (peek(1).kind() == SyntaxKind.BREAK)
 						{
@@ -401,6 +404,16 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode onError() throws ParseError
+	{
+		var onError = new OnErrorNode();
+		consumeMandatory(onError, SyntaxKind.ON);
+		consumeMandatory(onError, SyntaxKind.ERROR);
+		onError.setBody(statementList(SyntaxKind.END_ERROR));
+		checkForEmptyBody(onError);
+		return onError;
 	}
 
 	private StatementNode definePrototype() throws ParseError
