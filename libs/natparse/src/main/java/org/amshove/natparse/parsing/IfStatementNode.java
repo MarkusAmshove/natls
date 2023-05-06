@@ -33,5 +33,6 @@ class IfStatementNode extends StatementWithBodyNode implements IIfStatementNode
 	void setElseBranch(StatementListNode elseBranch)
 	{
 		this.elseBranch = elseBranch;
+		addNode(elseBranch);
 	}
 }

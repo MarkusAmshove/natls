@@ -132,4 +132,53 @@ public class BooleanOperatorQuickfixShould extends CodeActionTest
 			END
 			""");
 	}
+
+	@Test
+	void fixAllIssuesInFile()
+	{
+		assertCodeActionWithTitle("Fix all operators in SUBMOD", "LIBONE", "SUBMOD.NSN", """
+			DEFINE DATA
+			LOCAL
+			END-DEFINE
+			
+			IF 5 GT 2
+			IGNORE
+			END-IF
+			
+			IF 10 L${}$T 10
+			IGNORE
+			END-IF
+			
+			DECIDE FOR FIRST CONDITION
+			WHEN 10 EQ 10
+			IGNORE
+			WHEN 10 = 10
+			IGNORE
+			END-DECIDE
+			
+			END
+			""")
+			.resultsApplied("""
+			DEFINE DATA
+			LOCAL
+			END-DEFINE
+			
+			IF 5 > 2
+			IGNORE
+			END-IF
+			
+			IF 10 < 10
+			IGNORE
+			END-IF
+			
+			DECIDE FOR FIRST CONDITION
+			WHEN 10 = 10
+			IGNORE
+			WHEN 10 = 10
+			IGNORE
+			END-DECIDE
+			
+			END
+			""");
+	}
 }
