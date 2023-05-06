@@ -207,6 +207,27 @@ class RenameSymbolActionShould extends LanguageServerTest
 			.changesText(4, "WRITE #GROUP.#MYVAR", "WRITE #GROUP.#NEWVAR", file);
 	}
 
+	@Test
+	void renameAVariableFromItsDecideOnBranch()
+	{
+		var source = SourceWithCursor.fromSourceWithCursor("""
+			DEFINE DATA LOCAL
+			1 #VAR1 (A10)
+			1 #VAR2 (A10)
+			END-DEFINE
+			DECIDE ON FIRST VALUE OF #VAR1
+			VALUE #VA${}$R2
+			NONE IGNORE
+			END-DECIDE
+			END
+			""");
+
+		var file = createOrSaveFile("LIBONE", "RENAM.NSN", source);
+		assertRename(new RenameParams(file, source.toSinglePosition(), "#NEWVAR"))
+			.changesText(2, "1 #VAR2 (A10)", "1 #NEWVAR (A10)", file)
+			.changesText(5, "VALUE #VAR2", "VALUE #NEWVAR", file);
+	}
+
 	private WorkspaceEditAssertion assertRename(RenameParams params)
 	{
 		var prepareParams = new PrepareRenameParams(params.getTextDocument(), params.getPosition());
