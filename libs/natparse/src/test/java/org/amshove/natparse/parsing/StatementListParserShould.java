@@ -263,6 +263,15 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void reportADiagnosticIfASubroutineHasAnEmptyBody()
+	{
+		assertDiagnostic("""
+			   DEFINE SUBROUTINE MY-SUBROUTINE
+			   END-SUBROUTINE
+			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
+	}
+
+	@Test
 	void parseASubroutineWithoutSubroutineKeyword()
 	{
 		var subroutine = assertParsesSingleStatement("""
@@ -477,6 +486,23 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void parseAnIfWithElse()
+	{
+		var ifStatement = assertParsesSingleStatement("""
+            IF TRUE
+            WRITE 'Hi'
+            ELSE
+            IGNORE
+            END-IF
+            """, IIfStatementNode.class);
+
+		assertThat(ifStatement.body().statements()).hasSize(1);
+		assertNodeType(ifStatement.body().statements().first(), IWriteNode.class);
+		assertThat(ifStatement.elseBranch().statements()).hasSize(1);
+		assertNodeType(ifStatement.elseBranch().statements().first(), IIgnoreNode.class);
+	}
+
+	@Test
 	void allowIfStatementsToContainTheThenKeyword()
 	{
 		var ifStatement = assertParsesSingleStatement("""
@@ -488,6 +514,26 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(ifStatement.condition().findDescendantToken(SyntaxKind.THEN)).isNull(); // should not be part of the condition
 		assertThat(ifStatement.findDescendantToken(SyntaxKind.THEN)).isNotNull(); // but be part of the if statement itself
 		assertThat(ifStatement.body().statements()).hasSize(1);
+	}
+
+	@Test
+	void reportADiagnosticIfAnIfStatementHasNoBody()
+	{
+		assertDiagnostic("""
+			IF #TEST = 5 THEN
+			END-IF
+			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
+	}
+
+	@Test
+	void reportADiagnosticIfAnElseBranchHasNoBody()
+	{
+		assertDiagnostic("""
+			IF #TEST = 5
+			IGNORE
+			ELSE
+			END-IF
+			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
 	}
 
 	@Test
@@ -562,6 +608,15 @@ class StatementListParserShould extends StatementParseTest
 			""", IForLoopNode.class);
 
 		assertThat(forLoopNode.body().statements()).hasSize(1);
+	}
+
+	@Test
+	void raiseADiagnosticIfAForLoopHasNoBody()
+	{
+		assertDiagnostic("""
+			FOR #I 1 10
+			END-FOR
+			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
 	}
 
 	@Test
@@ -961,13 +1016,6 @@ class StatementListParserShould extends StatementParseTest
 		var closePrinter = assertParsesSingleStatement("CLOSE PRINTER (PR5)", IClosePrinterNode.class);
 		assertThat(closePrinter.printer().kind()).isEqualTo(SyntaxKind.IDENTIFIER);
 		assertThat(closePrinter.printer().symbolName()).isEqualTo("PR5");
-	}
-
-	@Test
-	void rudimentaryParseDefineWindow()
-	{
-		var window = assertParsesSingleStatement("DEFINE WINDOW MAIN", IDefineWindowNode.class);
-		assertThat(window.name().symbolName()).isEqualTo("MAIN");
 	}
 
 	@Test
@@ -1689,6 +1737,46 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void raiseADiagnosticIfADecideForBranchHasNoBody()
+	{
+		assertDiagnostic("""
+				DECIDE FOR FIRST CONDITION
+				WHEN 5 < 2
+				END-DECIDE
+			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
+	}
+
+	@Test
+	void raiseADiagnosticIfADecideForWhenAllBranchHasNoBody()
+	{
+		assertDiagnostic("""
+				DECIDE FOR FIRST CONDITION
+				WHEN ALL
+				END-DECIDE
+			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
+	}
+
+	@Test
+	void raiseADiagnosticIfADecideForWhenAnyBranchHasNoBody()
+	{
+		assertDiagnostic("""
+				DECIDE FOR FIRST CONDITION
+				WHEN ANY
+				END-DECIDE
+			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
+	}
+
+	@Test
+	void raiseADiagnosticIfADecideForWhenNoneBranchHasNoBody()
+	{
+		assertDiagnostic("""
+				DECIDE FOR FIRST CONDITION
+				WHEN NONE
+				END-DECIDE
+			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
+	}
+
+	@Test
 	void parseDecideForWithComplexConditions()
 	{
 		var decide = assertParsesSingleStatement("""
@@ -2190,5 +2278,206 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var assign = assertParsesSingleStatement("LIMIT := 5", IAssignmentStatementNode.class);
 		assertIsVariableReference(assign.target(), "LIMIT");
+	}
+
+	@Test
+	void parseAnOnError()
+	{
+		var error = assertParsesSingleStatement("""
+			ON ERROR
+			IGNORE
+			END-ERROR
+			""", IOnErrorNode.class);
+
+		assertThat(error.body().statements()).hasSize(1);
+	}
+
+	@Test
+	void reportADiagnosticIfOnErrorHasEmptyBody()
+	{
+		assertDiagnostic("""
+			ON ERROR
+			END-ERROR
+			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"FIRST", "FIRST VALUE OF", "FIRST VALUE", "FIRST OF",
+		"EVERY", "EVERY VALUE OF", "EVERY VALUE", "EVERY OF"
+	})
+	void parseDecideOn(String permutation)
+	{
+		var decideOn = assertParsesSingleStatement("""
+			DECIDE ON %s #VAR
+			NONE
+			IGNORE
+			END-DECIDE
+			""".formatted(permutation), IDecideOnNode.class);
+		assertIsVariableReference(decideOn.operand(), "#VAR");
+		assertThat(decideOn.noneValue().statements()).hasSize(1);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"", "VALUE", "VALUES"
+	})
+	void parseDecideOnNoneBranch(String permutation)
+	{
+		var decideOn = assertParsesSingleStatement("""
+			DECIDE ON FIRST #VAR
+			NONE %s
+			IGNORE
+			END-DECIDE
+			""".formatted(permutation), IDecideOnNode.class);
+		assertThat(decideOn.noneValue().statements()).hasSize(1);
+	}
+
+	@Test
+	void parseDecideOnSubstring()
+	{
+		var decideOn = assertParsesSingleStatement("""
+			DECIDE ON FIRST SUBSTRING(#VAR, 1, 2)
+			NONE
+			IGNORE
+			END-DECIDE
+			""", IDecideOnNode.class);
+		assertNodeType(decideOn.operand(), ISubstringOperandNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"", "VALUE", "VALUES"
+	})
+	void parseAnyValueBranch(String permutation)
+	{
+		var decideOn = assertParsesSingleStatement("""
+			DECIDE ON FIRST #VAR
+			ANY %s
+			IGNORE
+			END-DECIDE
+			""".formatted(permutation), IDecideOnNode.class);
+
+		assertThat(decideOn.anyValue()).isNotNull();
+		assertThat(decideOn.anyValue().statements()).hasSize(1);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"", "VALUE", "VALUES"
+	})
+	void parseAllValueBranch(String permutation)
+	{
+		var decideOn = assertParsesSingleStatement("""
+			DECIDE ON FIRST #VAR
+			ALL %s
+			IGNORE
+			END-DECIDE
+			""".formatted(permutation), IDecideOnNode.class);
+
+		assertThat(decideOn.allValues()).isNotNull();
+		assertThat(decideOn.allValues().statements()).hasSize(1);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"VALUE", "VALUES"
+	})
+	void parseDecideOnWithBranches(String valueKeyword)
+	{
+		var decideOn = assertParsesSingleStatement("""
+			DECIDE ON FIRST #VAR
+			%s SUBSTRING(#VAR2, 1)
+			IGNORE
+			%s 'Hi'
+			IGNORE
+			%s #VAR2
+			IGNORE
+			NONE
+			IGNORE
+			END-DECIDE
+			""".formatted(valueKeyword, valueKeyword, valueKeyword), IDecideOnNode.class);
+
+		assertThat(decideOn.branches()).hasSize(3);
+		assertNodeType(decideOn.branches().get(0).values().first(), ISubstringOperandNode.class);
+		assertLiteral(decideOn.branches().get(1).values().first(), SyntaxKind.STRING_LITERAL);
+		assertIsVariableReference(decideOn.branches().get(2).values().first(), "#VAR2");
+	}
+
+	@Test
+	void parseDecideOnWithValueRange()
+	{
+		var decideOn = assertParsesSingleStatement("""
+			DECIDE ON FIRST #VAR
+			VALUES 1:10
+			IGNORE
+			VALUES #VAR:#VAR2
+			IGNORE
+			NONE
+			IGNORE
+			END-DECIDE
+			""", IDecideOnNode.class);
+
+		assertThat(decideOn.branches()).hasSize(2);
+		assertThat(decideOn.branches()).allMatch(IDecideOnBranchNode::hasValueRange);
+		var firstBranch = decideOn.branches().first();
+		assertThat(firstBranch.values()).hasSize(2);
+		assertLiteral(firstBranch.values().first(), SyntaxKind.NUMBER_LITERAL);
+		assertLiteral(firstBranch.values().last(), SyntaxKind.NUMBER_LITERAL);
+
+		var secondBranch = decideOn.branches().last();
+		assertThat(secondBranch.values()).hasSize(2);
+		assertIsVariableReference(secondBranch.values().first(), "#VAR");
+		assertIsVariableReference(secondBranch.values().last(), "#VAR2");
+	}
+
+	@Test
+	void parseADecideOnBranchWithMultipleValues()
+	{
+		var decide = assertParsesSingleStatement("""
+			DECIDE ON FIRST VALUE OF #VAR
+			VALUE #VAR2,#VAR3,#VAR4
+			IGNORE
+			NONE
+			IGNORE
+			END-DECIDE
+			""", IDecideOnNode.class);
+
+		assertThat(decide.branches()).hasSize(1);
+		var values = decide.branches().first().values();
+		assertIsVariableReference(values.get(0), "#VAR2");
+		assertIsVariableReference(values.get(1), "#VAR3");
+		assertIsVariableReference(values.get(2), "#VAR4");
+	}
+
+	@Test
+	void reportADiagnosticWhenDecideOnNoneBodyIsEmpty()
+	{
+		assertDiagnostic("""
+			DECIDE ON FIRST #VAR
+			NONE
+			END-DECIDE
+			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"ANY", "ALL", "VALUE 5", "VALUE #VAR", "VALUE #VAR(*)"
+	})
+	void reportADiagnosticWhenDecideOnBranchBodyIsEmpty(String branch)
+	{
+		assertDiagnostic("""
+			DECIDE ON FIRST #VAR
+			%s
+			NONE
+			IGNORE
+			END-DECIDE
+			""".formatted(branch), ParserError.STATEMENT_HAS_EMPTY_BODY);
 	}
 }

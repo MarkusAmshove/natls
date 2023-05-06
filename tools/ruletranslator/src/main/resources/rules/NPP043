@@ -1,0 +1,8 @@
+name: Statement can not have empty body
+priority: BLOCKER
+tags: compile-time
+type: BUG
+description:
+Statements where this diagnostic appears can't have an empty body.
+
+Add ``IGNORE`` as a single statement to the body or remove the statement.

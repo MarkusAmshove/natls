@@ -91,6 +91,20 @@ abstract class AbstractParser<T>
 		return tokens.peek();
 	}
 
+	/**
+	 * Safely peeks the current kind.
+	 */
+	protected SyntaxKind peekKind()
+	{
+		var token = peek();
+		if (token == null)
+		{
+			return SyntaxKind.EOF;
+		}
+
+		return token.kind();
+	}
+
 	protected boolean peekKind(int offset, SyntaxKind kind)
 	{
 		return !isAtEnd(offset) && peek(offset).kind() == kind;
@@ -860,6 +874,22 @@ abstract class AbstractParser<T>
 
 		diagnostics.add(ParserErrors.unexpectedToken(acceptedKinds, tokens));
 		throw new ParseError(peek());
+	}
+
+	protected IAttributeNode consumeSingleAttribute(BaseSyntaxNode node, SyntaxKind attributeKind) throws ParseError
+	{
+		if (!peekKind(SyntaxKind.LPAREN) && !peekKind(1, attributeKind))
+		{
+			report(ParserErrors.unexpectedToken(attributeKind, tokens));
+			throw new ParseError(peek());
+		}
+
+		var attribute = new AttributeNode(peek());
+		node.addNode(attribute);
+		consumeMandatory(attribute, SyntaxKind.LPAREN);
+		consume(attribute);
+		consumeMandatory(attribute, SyntaxKind.RPAREN);
+		return attribute;
 	}
 
 	protected void consumeAttributeDefinition(BaseSyntaxNode node) throws ParseError

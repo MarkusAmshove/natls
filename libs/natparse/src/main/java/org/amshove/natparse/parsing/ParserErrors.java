@@ -527,4 +527,22 @@ class ParserErrors
 			ParserError.INVALID_ARRAY_ACCESS
 		);
 	}
+
+	public static IDiagnostic emptyBodyDisallowed(IStatementWithBodyNode statement)
+	{
+		return ParserDiagnostic.create(
+			"Statement must have a body. Add IGNORE if body should be empty.",
+			statement,
+			ParserError.STATEMENT_HAS_EMPTY_BODY
+		);
+	}
+
+	public static IDiagnostic emptyBodyDisallowed(SyntaxToken errorToken)
+	{
+		return ParserDiagnostic.create(
+			"Statement must have a body. Add IGNORE if body should be empty.",
+			errorToken,
+			ParserError.STATEMENT_HAS_EMPTY_BODY
+		);
+	}
 }

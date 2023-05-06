@@ -54,19 +54,37 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private StatementListNode statementList()
 	{
-		return statementList(null);
+		return statementList(Set.of());
+	}
+
+	private boolean containsKindThatIsEndedByEndAll(Set<SyntaxKind> kinds)
+	{
+		for (var endAllKind : END_KINDS_THAT_END_ALL_ENDS)
+		{
+			if (kinds.contains(endAllKind))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private StatementListNode statementList(SyntaxKind endTokenKind)
+	{
+		return statementList(Set.of(endTokenKind));
+	}
+
+	private StatementListNode statementList(Set<SyntaxKind> endTokenKinds)
 	{
 		var statementList = new StatementListNode();
 		while (!tokens.isAtEnd())
 		{
 			try
 			{
-				if (endTokenKind != null
-					&& (peekKind(endTokenKind)
-						|| (peekKind(SyntaxKind.END_ALL) && END_KINDS_THAT_END_ALL_ENDS.contains(endTokenKind))))
+				if (!endTokenKinds.isEmpty()
+					&& (endTokenKinds.contains(peekKind())
+						|| (peekKind(SyntaxKind.END_ALL) && containsKindThatIsEndedByEndAll(endTokenKinds))))
 				{
 					break;
 				}
@@ -299,6 +317,21 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case TERMINATE:
 						statementList.addStatement(terminate());
 						break;
+					case DECIDE:
+						if (peekKind(1, SyntaxKind.FOR))
+						{
+							statementList.addStatement(decideFor());
+							break;
+						}
+						statementList.addStatement(decideOn());
+						break;
+					case ON:
+						if (peekKind(1, SyntaxKind.ERROR))
+						{
+							statementList.addStatement(onError());
+							break;
+						}
+						// some statements use the ON keyword in them, so fallthrough until the statements are parsed
 					case LPAREN:
 						if (getKind(1).isAttribute())
 						{
@@ -306,12 +339,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 							var tokenNode = new SyntheticTokenStatementNode();
 							consumeAttributeDefinition(tokenNode);
 							statementList.addStatement(tokenNode);
-							break;
-						}
-					case DECIDE:
-						if (peekKind(1, SyntaxKind.FOR))
-						{
-							statementList.addStatement(decideFor());
 							break;
 						}
 					case SET:
@@ -383,6 +410,16 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode onError() throws ParseError
+	{
+		var onError = new OnErrorNode();
+		consumeMandatory(onError, SyntaxKind.ON);
+		consumeMandatory(onError, SyntaxKind.ERROR);
+		onError.setBody(statementList(SyntaxKind.END_ERROR));
+		checkForEmptyBody(onError);
+		return onError;
 	}
 
 	private StatementNode definePrototype() throws ParseError
@@ -1750,9 +1787,93 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var window = new DefineWindowNode();
 		consumeMandatory(window, SyntaxKind.DEFINE);
 		consumeMandatory(window, SyntaxKind.WINDOW);
-		var name = consumeIdentifierTokenOnly();
-		window.setName(name);
-		window.addNode(new TokenNode(name));
+		var name = consumeMandatoryIdentifierTokenNode(window);
+		window.setName(name.token());
+
+		if (consumeOptionally(window, SyntaxKind.SIZE))
+		{
+			if (peekAny(List.of(SyntaxKind.AUTO, SyntaxKind.QUARTER)))
+			{
+				consumeAnyMandatory(window, List.of(SyntaxKind.AUTO, SyntaxKind.QUARTER));
+			}
+			else
+			{
+				consumeOperandNode(window);
+				consumeMandatory(window, SyntaxKind.ASTERISK);
+				consumeOperandNode(window);
+			}
+		}
+
+		if (consumeOptionally(window, SyntaxKind.BASE))
+		{
+			if (consumeAnyOptionally(window, List.of(SyntaxKind.TOP, SyntaxKind.BOTTOM)))
+			{
+				consumeAnyMandatory(window, List.of(SyntaxKind.LEFT, SyntaxKind.RIGHT));
+			}
+			else
+				if (peekKind(SyntaxKind.CURSOR))
+				{
+					consumeMandatory(window, SyntaxKind.CURSOR);
+				}
+				else
+				{
+					consumeOperandNode(window);
+					consumeMandatory(window, SyntaxKind.SLASH);
+					consumeOperandNode(window);
+				}
+		}
+
+		if (consumeOptionally(window, SyntaxKind.REVERSED))
+		{
+			if (peekKind(SyntaxKind.LPAREN))
+			{
+				consumeSingleAttribute(window, SyntaxKind.CD);
+			}
+		}
+
+		if (consumeOptionally(window, SyntaxKind.TITLE))
+		{
+			consumeOperandNode(window);
+		}
+
+		if (consumeOptionally(window, SyntaxKind.CONTROL))
+		{
+			consumeAnyMandatory(window, List.of(SyntaxKind.WINDOW, SyntaxKind.SCREEN));
+		}
+
+		if (consumeOptionally(window, SyntaxKind.FRAMED))
+		{
+			if (peekAny(List.of(SyntaxKind.ON, SyntaxKind.OFF)))
+			{
+				var token = consumeAnyMandatory(window, List.of(SyntaxKind.ON, SyntaxKind.OFF));
+				if (token != null && token.kind() == SyntaxKind.ON)
+				{
+					if (peekKind(SyntaxKind.LPAREN))
+					{
+						consumeSingleAttribute(window, SyntaxKind.CD);
+					}
+
+					if (consumeOptionally(window, SyntaxKind.POSITION))
+					{
+						var pos = consumeAnyMandatory(window, List.of(SyntaxKind.SYMBOL, SyntaxKind.TEXT, SyntaxKind.OFF));
+						if (pos.kind() == SyntaxKind.SYMBOL)
+						{
+							consumeAnyOptionally(window, List.of(SyntaxKind.TOP, SyntaxKind.BOTTOM));
+							consumeOptionally(window, SyntaxKind.AUTO);
+							consumeOptionally(window, SyntaxKind.SHORT);
+							consumeAnyOptionally(window, List.of(SyntaxKind.LEFT, SyntaxKind.RIGHT));
+						}
+						else
+							if (pos.kind() == SyntaxKind.TEXT && !consumeOptionally(window, SyntaxKind.OFF))
+							{
+								consumeOptionally(window, SyntaxKind.MORE);
+								consumeAnyOptionally(window, List.of(SyntaxKind.LEFT, SyntaxKind.RIGHT));
+							}
+					}
+				}
+			}
+		}
+
 		return window;
 	}
 
@@ -1909,6 +2030,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		loopNode.setBody(statementList(SyntaxKind.END_FOR));
+		checkForEmptyBody(loopNode);
 		consumeMandatoryClosing(loopNode, SyntaxKind.END_FOR, opening);
 
 		return loopNode;
@@ -1963,10 +2085,27 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		subroutine.setBody(statementList(SyntaxKind.END_SUBROUTINE));
 
 		consumeMandatoryClosing(subroutine, SyntaxKind.END_SUBROUTINE, opening);
+		checkForEmptyBody(subroutine);
 
 		referencableNodes.add(subroutine);
 
 		return subroutine;
+	}
+
+	private void checkForEmptyBody(IStatementWithBodyNode statement)
+	{
+		if (statement.body().statements().isEmpty())
+		{
+			report(ParserErrors.emptyBodyDisallowed(statement));
+		}
+	}
+
+	private void checkForEmptyBody(IStatementListNode statementList, SyntaxToken reportingToken)
+	{
+		if (statementList.statements().isEmpty())
+		{
+			report(ParserErrors.emptyBodyDisallowed(reportingToken));
+		}
 	}
 
 	private StatementNode end() throws ParseError
@@ -2147,6 +2286,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return fetch;
 	}
 
+	private static final Set<SyntaxKind> IF_STATEMENT_STOP_KINDS = Set.of(SyntaxKind.END_IF, SyntaxKind.ELSE);
+
 	private StatementNode ifStatement() throws ParseError
 	{
 		if (peekKind(1, SyntaxKind.NO))
@@ -2170,7 +2311,14 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		consumeOptionally(ifStatement, SyntaxKind.THEN);
 
-		ifStatement.setBody(statementList(SyntaxKind.END_IF));
+		ifStatement.setBody(statementList(IF_STATEMENT_STOP_KINDS));
+		checkForEmptyBody(ifStatement);
+		if (peekKind(SyntaxKind.ELSE))
+		{
+			var elseKeyword = consumeMandatory(ifStatement, SyntaxKind.ELSE);
+			ifStatement.setElseBranch(statementList(SyntaxKind.END_IF));
+			checkForEmptyBody(ifStatement.elseBranch(), elseKeyword);
+		}
 
 		consumeMandatoryClosing(ifStatement, SyntaxKind.END_IF, opening);
 
@@ -2679,45 +2827,136 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return statement;
 	}
 
+	private static final Set<SyntaxKind> DECIDE_ON_STOP_KINDS = Set.of(SyntaxKind.END_DECIDE, SyntaxKind.NONE, SyntaxKind.ANY, SyntaxKind.ALL, SyntaxKind.VALUE, SyntaxKind.VALUES);
+	private static final List<SyntaxKind> DECIDE_ON_VALUE_KEYWORDS = List.of(SyntaxKind.VALUE, SyntaxKind.VALUES);
+
+	private DecideOnNode decideOn() throws ParseError
+	{
+		var decideOn = new DecideOnNode();
+		var opening = consumeMandatory(decideOn, SyntaxKind.DECIDE);
+		consumeMandatory(decideOn, SyntaxKind.ON);
+		consumeAnyMandatory(decideOn, List.of(SyntaxKind.FIRST, SyntaxKind.EVERY));
+		consumeAnyOptionally(decideOn, DECIDE_ON_VALUE_KEYWORDS);
+		consumeOptionally(decideOn, SyntaxKind.OF);
+
+		decideOn.setOperand(consumeSubstringOrOperand(decideOn));
+
+		while (!isAtEnd() && !peekKind(SyntaxKind.END_DECIDE))
+		{
+			if (peekKind(SyntaxKind.NONE))
+			{
+				var none = consumeMandatory(decideOn, SyntaxKind.NONE);
+				consumeAnyOptionally(decideOn, DECIDE_ON_VALUE_KEYWORDS);
+				var noneValue = statementList(DECIDE_ON_STOP_KINDS);
+				decideOn.setNoneValue(noneValue);
+				checkForEmptyBody(noneValue, none);
+				continue;
+			}
+
+			if (peekKind(SyntaxKind.ANY))
+			{
+				var any = consumeMandatory(decideOn, SyntaxKind.ANY);
+				consumeAnyOptionally(decideOn, DECIDE_ON_VALUE_KEYWORDS);
+				var anyValue = statementList(DECIDE_ON_STOP_KINDS);
+				decideOn.setAnyValue(anyValue);
+				checkForEmptyBody(anyValue, any);
+				continue;
+			}
+
+			if (peekKind(SyntaxKind.ALL))
+			{
+				var all = consumeMandatory(decideOn, SyntaxKind.ALL);
+				consumeAnyOptionally(decideOn, DECIDE_ON_VALUE_KEYWORDS);
+				var allValues = statementList(DECIDE_ON_STOP_KINDS);
+				decideOn.setAllValues(allValues);
+				checkForEmptyBody(allValues, all);
+				continue;
+			}
+
+			decideOn.addBranch(decideOnBranch());
+		}
+
+		consumeMandatoryClosing(decideOn, SyntaxKind.END_DECIDE, opening);
+
+		return decideOn;
+	}
+
+	private IDecideOnBranchNode decideOnBranch() throws ParseError
+	{
+		var branch = new DecideOnBranchNode();
+		var branchStart = consumeAnyMandatory(branch, List.of(SyntaxKind.VALUE, SyntaxKind.VALUES));
+		branch.addOperand(consumeSubstringOrOperand(branch));
+
+		if (consumeOptionally(branch, SyntaxKind.COLON))
+		{
+			branch.setHasValueRange();
+			branch.addOperand(consumeSubstringOrOperand(branch));
+		}
+		else
+		{
+			while (!isAtEnd() && peekKind(SyntaxKind.COMMA))
+			{
+				consumeMandatory(branch, SyntaxKind.COMMA);
+				branch.addOperand(consumeSubstringOrOperand(branch));
+			}
+		}
+
+		branch.setBody(statementList(DECIDE_ON_STOP_KINDS));
+		checkForEmptyBody(branch.body(), branchStart);
+		return branch;
+	}
+
+	private static final Set<SyntaxKind> DECIDE_FOR_STOP_KINDS = Set.of(SyntaxKind.END_DECIDE, SyntaxKind.WHEN);
+
 	private DecideForConditionNode decideFor() throws ParseError
 	{
 		var decide = new DecideForConditionNode();
-		consumeMandatory(decide, SyntaxKind.DECIDE);
+		var opening = consumeMandatory(decide, SyntaxKind.DECIDE);
 		consumeMandatory(decide, SyntaxKind.FOR);
 		consumeEitherOptionally(decide, SyntaxKind.FIRST, SyntaxKind.EVERY);
 		consumeMandatory(decide, SyntaxKind.CONDITION);
 
 		while (!isAtEnd() && peekKind(SyntaxKind.WHEN))
 		{
-			consumeMandatory(decide, SyntaxKind.WHEN);
+			var whenBranch = consumeMandatory(decide, SyntaxKind.WHEN);
 
 			if (peekKind(SyntaxKind.ANY))
 			{
 				consumeMandatory(decide, SyntaxKind.ANY);
-				decide.setWhenAny(statementList(SyntaxKind.WHEN));
+				var whenAny = statementList(DECIDE_FOR_STOP_KINDS);
+				decide.setWhenAny(whenAny);
+				checkForEmptyBody(whenAny, whenBranch);
 				continue;
 			}
 
 			if (peekKind(SyntaxKind.ALL))
 			{
 				consumeMandatory(decide, SyntaxKind.ALL);
-				decide.setWhenAll(statementList(SyntaxKind.WHEN));
+				var whenAll = statementList(DECIDE_FOR_STOP_KINDS);
+				decide.setWhenAll(whenAll);
+				checkForEmptyBody(whenAll, whenBranch);
 				continue;
 			}
 
 			if (peekKind(SyntaxKind.NONE))
 			{
 				consumeMandatory(decide, SyntaxKind.NONE);
-				decide.setWhenNone(statementList(SyntaxKind.END_DECIDE));
+				var whenNone = statementList(SyntaxKind.END_DECIDE);
+				decide.setWhenNone(whenNone);
+				checkForEmptyBody(whenNone, whenBranch);
 				continue;
 			}
 
 			var branch = new DecideForConditionBranchNode();
 			var criteria = conditionNode();
 			branch.setCriteria(criteria);
-			branch.setBody(statementList(SyntaxKind.WHEN));
+			var branchStatements = statementList(DECIDE_FOR_STOP_KINDS);
+			branch.setBody(branchStatements);
+			checkForEmptyBody(branchStatements, whenBranch);
 			decide.addBranch(branch);
 		}
+
+		consumeMandatoryClosing(decide, SyntaxKind.END_DECIDE, opening);
 
 		return decide;
 	}
