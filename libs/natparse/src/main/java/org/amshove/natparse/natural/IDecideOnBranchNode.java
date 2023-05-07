@@ -2,7 +2,7 @@ package org.amshove.natparse.natural;
 
 import org.amshove.natparse.ReadOnlyList;
 
-public interface IDecideOnBranchNode
+public interface IDecideOnBranchNode extends ISyntaxNode
 {
 	/**
 	 * Contains only two operands if {@code hasValueRange()} is true.
