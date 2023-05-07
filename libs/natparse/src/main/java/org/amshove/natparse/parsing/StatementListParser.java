@@ -418,6 +418,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(onError, SyntaxKind.ON);
 		consumeMandatory(onError, SyntaxKind.ERROR);
 		onError.setBody(statementList(SyntaxKind.END_ERROR));
+		consumeMandatory(onError, SyntaxKind.END_ERROR);
 		checkForEmptyBody(onError);
 		return onError;
 	}
@@ -1226,10 +1227,16 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var processSql = new ProcessSqlNode();
 		consumeMandatory(processSql, SyntaxKind.PROCESS);
 		consumeMandatory(processSql, SyntaxKind.SQL);
-		while (!isAtEnd() && !isStatementStart() && !isStatementEndOrBranch())
+		consumeMandatoryIdentifier(processSql); // ddm name
+
+		consumeMandatory(processSql, SyntaxKind.LESSER_SIGN);
+		consumeMandatory(processSql, SyntaxKind.LESSER_SIGN);
+		while (!isAtEnd() && !peekKind(SyntaxKind.GREATER_SIGN))
 		{
 			consume(processSql);
 		}
+		consumeMandatory(processSql, SyntaxKind.GREATER_SIGN);
+		consumeMandatory(processSql, SyntaxKind.GREATER_SIGN);
 
 		return processSql;
 	}
@@ -3078,9 +3085,14 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				consumeLiteral(find);
 			}
 
-			var descriptor = consumeIdentifierTokenOnly(); // TODO(expressions): Must be ISearchCriteriaNode
-			var descriptorNode = new DescriptorNode(descriptor);
-			find.addNode(descriptorNode);
+			if (peekKind(SyntaxKind.STRING_LITERAL))
+			{
+				consumeLiteralNode(find);
+			}
+			else
+			{
+				find.addNode(conditionNode());
+			}
 		}
 
 		if (!hasNoBody)
