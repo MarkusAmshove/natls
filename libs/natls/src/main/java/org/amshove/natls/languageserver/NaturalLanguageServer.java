@@ -49,6 +49,8 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			capabilities.setTextDocumentSync(TextDocumentSyncKind.Full);
 			capabilities.setDefinitionProvider(true);
 			capabilities.setReferencesProvider(true);
+			capabilities.setFoldingRangeProvider(true);
+			log.info("Folding text: " + params.getCapabilities().getTextDocument().getFoldingRange().getFoldingRange().getCollapsedText());
 
 			// Don't add a dot. This re-triggers completion and loses the context on qualified variables.
 			// To support a trigger char, the completion has to take into account if it was triggered by a char and

@@ -10,6 +10,7 @@ import org.amshove.natls.codeactions.RefactoringContext;
 import org.amshove.natls.codeactions.RenameSymbolAction;
 import org.amshove.natls.codelens.CodeLensService;
 import org.amshove.natls.documentsymbol.DocumentSymbolProvider;
+import org.amshove.natls.folding.FoldingProvider;
 import org.amshove.natls.hover.HoverContext;
 import org.amshove.natls.hover.HoverProvider;
 import org.amshove.natls.inlayhints.InlayHintProvider;
@@ -985,6 +986,12 @@ public class NaturalLanguageService implements LanguageClientAware
 		return null;
 	}
 
+	public List<FoldingRange> foldingRange(FoldingRangeRequestParams params)
+	{
+		var file = findNaturalFile(LspUtil.uriToPath(params.getTextDocument().getUri()));
+		return new FoldingProvider().provideFolding(file.module());
+	}
+
 	private void assertCanRenameInFile(LanguageServerFile file)
 	{
 		var referenceLimit = 300; // Some arbitrary tested value
@@ -1044,4 +1051,5 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		return null;
 	}
+
 }
