@@ -50,5 +50,6 @@ public interface ISyntaxTree extends Iterable<ISyntaxNode>
 			.map(n -> (T) n);
 	}
 
-	void accept(ISyntaxNodeVisitor visitor);
+	void acceptNodeVisitor(ISyntaxNodeVisitor visitor);
+	void acceptStatementVisitor(IStatementVisitor visitor);
 }

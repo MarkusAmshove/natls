@@ -136,9 +136,13 @@ class SourceExtractorShould extends EmptyProjectTest
 		}
 
 		@Override
-		public void accept(ISyntaxNodeVisitor visitor)
+		public void acceptNodeVisitor(ISyntaxNodeVisitor visitor)
 		{
+		}
 
+		@Override
+		public void acceptStatementVisitor(IStatementVisitor visitor)
+		{
 		}
 
 		@Override

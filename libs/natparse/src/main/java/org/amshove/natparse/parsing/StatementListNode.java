@@ -3,6 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.IStatementListNode;
 import org.amshove.natparse.natural.IStatementNode;
+import org.amshove.natparse.natural.IStatementVisitor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +45,16 @@ class StatementListNode extends StatementNode implements IStatementListNode
 				return;
 			}
 			statements.set(oldIndex, newStatement);
+		}
+	}
+
+	@Override
+	public void acceptStatementVisitor(IStatementVisitor visitor)
+	{
+		visitor.visit(this);
+		for (var statement : statements)
+		{
+			statement.acceptStatementVisitor(visitor);
 		}
 	}
 }

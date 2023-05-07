@@ -93,7 +93,7 @@ public class SignatureHelpProvider
 		setActiveParameter(include, position, help);
 
 		var copyCodeParameter = new ArrayList<String>();
-		include.body().accept(n ->
+		include.body().acceptNodeVisitor(n ->
 		{
 			if (n instanceof ITokenNode tokenNode && tokenNode.token().kind() == SyntaxKind.IDENTIFIER && tokenNode.token().source().matches(".*?&\\d+&"))
 			{

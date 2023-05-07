@@ -18,7 +18,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 
 	public ReadOnlyList<IDiagnostic> check(ISyntaxTree tree)
 	{
-		tree.accept(this);
+		tree.acceptNodeVisitor(this);
 
 		return ReadOnlyList.from(diagnostics);
 	}

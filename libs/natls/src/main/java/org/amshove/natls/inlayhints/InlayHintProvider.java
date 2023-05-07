@@ -16,7 +16,7 @@ public class InlayHintProvider
 	{
 		var hints = new ArrayList<InlayHint>();
 
-		module.syntaxTree().accept(n ->
+		module.syntaxTree().acceptNodeVisitor(n ->
 		{
 			if (!n.isInFile(module.file().getPath()))
 			{
