@@ -70,9 +70,41 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			checkAlphanumericInitLength(typedVariableNode);
 		}
 
+		if (node instanceof IDecideOnNode decideOn)
+		{
+			checkDecideOnBranches(decideOn);
+		}
+
 		if (node instanceof IVariableReferenceNode variableReference)
 		{
 			checkVariableReference(variableReference);
+		}
+	}
+
+	private void checkDecideOnBranches(IDecideOnNode decideOn)
+	{
+		if (!(decideOn.operand()instanceof IVariableReferenceNode target)
+			|| !(target.reference()instanceof ITypedVariableNode typedTarget)
+			|| typedTarget.type() == null)
+		{
+			return;
+		}
+
+		for (var branch : decideOn.branches())
+		{
+			for (var value : branch.values())
+			{
+				var inferredType = inferDataType(value);
+				if (inferredType.format() != DataFormat.NONE && !inferredType.hasSameFamily(typedTarget.type()))
+				{
+					report(
+						ParserErrors.typeMismatch(
+							"Inferred format %s is not compatible with %s (%s)".formatted(inferredType.format(), typedTarget.declaration().symbolName(), typedTarget.type().format()),
+							value
+						)
+					);
+				}
+			}
 		}
 	}
 
@@ -340,4 +372,30 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			&& (lowerLiteral.token().kind() == SyntaxKind.ASTERISK
 				|| upperLiteral.token().kind() == SyntaxKind.ASTERISK);
 	}
+
+	private IDataType inferDataType(IOperandNode operand)
+	{
+		if (operand instanceof IVariableReferenceNode variable && variable.reference()instanceof ITypedVariableNode typedRef)
+		{
+			return typedRef.type();
+		}
+
+		if (operand instanceof ILiteralNode literal)
+		{
+			return literal.dataType();
+		}
+
+		if (operand instanceof ISystemFunctionNode sysFunction)
+		{
+			return BuiltInFunctionTable.getDefinition(sysFunction.systemFunction()).type();
+		}
+
+		if (operand instanceof ISystemVariableNode sysVar)
+		{
+			return BuiltInFunctionTable.getDefinition(sysVar.systemVariable()).type();
+		}
+
+		return new DataType(DataFormat.NONE, IDataType.ONE_GIGABYTE); // couldn't infer, don't raise something yet
+	}
+
 }

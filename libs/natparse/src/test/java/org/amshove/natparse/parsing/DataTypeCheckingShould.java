@@ -3,6 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IDataType;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -111,6 +112,48 @@ class DataTypeCheckingShould
 			type(DataFormat.fromSource(numericType), 8),
 			type(DataFormat.ALPHANUMERIC, 4)
 		);
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"N,N", "N,I", "N,F", "N,P", "N,B",
+			"A,U", "A,B", "A,A"
+		}
+	)
+	void recognizeDataFormatsAsTheSameFamily(String firstFormat, String secondFormat)
+	{
+		assertSameFamily(firstFormat, secondFormat);
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"N,A", "N,U", "N,L", "N,C", "N,D", "N,T",
+			"A,L", "A,C", "A,D", "A,F", "A,I", "A,P", "A,T",
+			"I,A", "I,U", "I,L", "I,C", "I,D", "I,T",
+			"P,A", "P,U", "P,L", "P,C", "P,D", "P,T",
+			"F,A", "F,U", "F,L", "F,C", "F,D", "F,T",
+			"L,B", "L,D", "L,T", "L,U", "L,A", "L,P"
+		}
+	)
+	void recognizeDataFormatsAsDifferentFamily(String firstFormat, String secondFormat)
+	{
+		assertDifferentFamily(firstFormat, secondFormat);
+	}
+
+	private void assertSameFamily(String firstFormat, String secondFormat)
+	{
+		assertThat(type(DataFormat.fromSource(firstFormat), IDataType.ONE_GIGABYTE).hasSameFamily(type(DataFormat.fromSource(secondFormat), IDataType.ONE_GIGABYTE)))
+			.as("Expected %s and %s to be the same format family".formatted(firstFormat, secondFormat))
+			.isTrue();
+	}
+
+	private void assertDifferentFamily(String firstFormat, String secondFormat)
+	{
+		assertThat(type(DataFormat.fromSource(firstFormat), IDataType.ONE_GIGABYTE).hasSameFamily(type(DataFormat.fromSource(secondFormat), IDataType.ONE_GIGABYTE)))
+			.as("Expected %s and %s to not be the same format family".formatted(firstFormat, secondFormat))
+			.isFalse();
 	}
 
 	private void assertCompatible(IDataType firstType, IDataType targetType)
