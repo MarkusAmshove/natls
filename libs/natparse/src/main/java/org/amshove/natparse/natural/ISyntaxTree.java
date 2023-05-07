@@ -51,5 +51,6 @@ public interface ISyntaxTree extends Iterable<ISyntaxNode>
 	}
 
 	void acceptNodeVisitor(ISyntaxNodeVisitor visitor);
+
 	void acceptStatementVisitor(IStatementVisitor visitor);
 }

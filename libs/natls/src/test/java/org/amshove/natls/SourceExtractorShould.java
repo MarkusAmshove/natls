@@ -137,13 +137,11 @@ class SourceExtractorShould extends EmptyProjectTest
 
 		@Override
 		public void acceptNodeVisitor(ISyntaxNodeVisitor visitor)
-		{
-		}
+		{}
 
 		@Override
 		public void acceptStatementVisitor(IStatementVisitor visitor)
-		{
-		}
+		{}
 
 		@Override
 		public Iterator<ISyntaxNode> iterator()

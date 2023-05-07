@@ -94,16 +94,16 @@ public class FoldingProvider
 				var start = include.position().line();
 				var end = include.position().line();
 				var range = new FoldingRange();
-				if (includeIndex > 0 && statements.get(includeIndex - 1) instanceof ICompressStatementNode compress
-					&& compress.intoTarget() instanceof IVariableReferenceNode targetVariable
+				if (includeIndex > 0 && statements.get(includeIndex - 1)instanceof ICompressStatementNode compress
+					&& compress.intoTarget()instanceof IVariableReferenceNode targetVariable
 					&& targetVariable.referencingToken().symbolName().equals("L4N-LOGTEXT"))
 				{
-					if (includeIndex > 1 && statements.get(includeIndex - 2) instanceof IAssignmentStatementNode assignment
-						&& assignment.target() instanceof IVariableReferenceNode assignTarget
+					if (includeIndex > 1 && statements.get(includeIndex - 2)instanceof IAssignmentStatementNode assignment
+						&& assignment.target()instanceof IVariableReferenceNode assignTarget
 						&& assignTarget.referencingToken().symbolName().equals("L4N-LOGLEVEL"))
 					{
 						start = assignment.position().line();
-						if (assignment.operand() instanceof IVariableReferenceNode logLevelVar)
+						if (assignment.operand()instanceof IVariableReferenceNode logLevelVar)
 						{
 							var logLevelName = logLevelVar.referencingToken().symbolName();
 							range.setCollapsedText("%s: %s".formatted(logLevelName.substring(logLevelName.lastIndexOf('-')), compress.operands()));
