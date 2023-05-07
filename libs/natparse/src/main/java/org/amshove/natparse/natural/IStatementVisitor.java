@@ -1,6 +1,5 @@
 package org.amshove.natparse.natural;
 
-
 @FunctionalInterface
 public interface IStatementVisitor
 {
