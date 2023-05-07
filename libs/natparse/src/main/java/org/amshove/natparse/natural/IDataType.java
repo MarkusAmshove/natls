@@ -1,5 +1,7 @@
 package org.amshove.natparse.natural;
 
+import static org.amshove.natparse.natural.DataFormat.*;
+
 public interface IDataType
 {
 	int ONE_GIGABYTE = 1073741824;
@@ -13,18 +15,50 @@ public interface IDataType
 
 	boolean hasDynamicLength();
 
+	/**
+	 * Determines if this type fits into the given type. Implicit conversion is taken into account.
+	 */
 	default boolean fitsInto(IDataType target)
 	{
 		var bytesFit = this.byteSize() <= target.byteSize();
-		var targetFormat = target.format();
-		var ourFormat = format();
-		var formatIsCompatible = ourFormat == targetFormat || switch (ourFormat)
-		{
-			case PACKED, FLOAT, INTEGER, NUMERIC -> targetFormat == DataFormat.ALPHANUMERIC || targetFormat == DataFormat.UNICODE;
-			default -> false; // we don't know whats implicitly compatible yet
-		};
+		var formatIsCompatible = hasCompatibleFormat(target);
 
 		return bytesFit && formatIsCompatible;
+	}
+
+	/**
+	 * Determines if both types have the same family, e.g. N, I, P are all numeric.
+	 */
+	default boolean hasSameFamily(IDataType other)
+	{
+		var targetFormat = other.format();
+		return format() == targetFormat || switch (format())
+		{
+			case PACKED, FLOAT, INTEGER, NUMERIC -> targetFormat == PACKED
+				|| targetFormat == FLOAT
+				|| targetFormat == INTEGER
+				|| targetFormat == NUMERIC
+				|| targetFormat == BINARY;
+			case ALPHANUMERIC, UNICODE, BINARY -> targetFormat == ALPHANUMERIC
+				|| targetFormat == UNICODE
+				|| targetFormat == BINARY;
+			default -> false;
+		};
+	}
+
+	/**
+	 * Takes implicit conversion into account, e.g. N -> A
+	 */
+	default boolean hasCompatibleFormat(IDataType other)
+	{
+		var targetFormat = other.format();
+		return hasSameFamily(other) || switch (format())
+		{
+			case PACKED, FLOAT, INTEGER, NUMERIC -> targetFormat == ALPHANUMERIC
+				|| targetFormat == UNICODE
+				|| targetFormat == BINARY;
+			default -> false; // we don't know whats implicitly compatible yet
+		};
 	}
 
 	default String toShortString()
@@ -34,7 +68,7 @@ public interface IDataType
 		details += "(%s".formatted(format().identifier());
 		if (length() > 0.0)
 		{
-			details += "%s".formatted(DataFormat.formatLength(length()));
+			details += "%s".formatted(formatLength(length()));
 		}
 		details += ")";
 
