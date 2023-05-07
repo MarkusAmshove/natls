@@ -843,8 +843,21 @@ class StatementListParserShould extends StatementParseTest
 			""", IFindNode.class);
 
 		assertThat(findStatement.viewReference()).isNotNull();
-		assertThat(findStatement.descendants()).anyMatch(n -> n instanceof IDescriptorNode);
-		assertThat(findStatement.descendants()).hasSize(8);
+		assertThat(findStatement.descendants()).anyMatch(n -> n instanceof IConditionNode);
+	}
+
+	@Test
+	void parseFindWithSetName()
+	{
+		var findStatement = assertParsesSingleStatement("""
+			FIND THE-VIEW WITH 'COMPLETE-SET'
+				IF TRUE
+			    IGNORE
+			    END-IF
+			END-FIND
+			""", IFindNode.class);
+
+		assertThat(findStatement.viewReference()).isNotNull();
 	}
 
 	@Test
@@ -857,8 +870,7 @@ class StatementListParserShould extends StatementParseTest
 			""", IFindNode.class);
 
 		assertThat(findStatement.viewReference()).isNotNull();
-		assertThat(findStatement.descendants()).anyMatch(n -> n instanceof IDescriptorNode);
-		assertThat(findStatement.descendants()).hasSize(11);
+		assertThat(findStatement.descendants()).anyMatch(n -> n instanceof IConditionNode);
 	}
 
 	@Test
@@ -869,7 +881,7 @@ class StatementListParserShould extends StatementParseTest
 			""", IFindNode.class);
 
 		assertThat(findStatement.viewReference()).isNotNull();
-		assertThat(findStatement.descendants()).anyMatch(n -> n instanceof IDescriptorNode);
+		assertThat(findStatement.descendants()).anyMatch(n -> n instanceof IConditionNode);
 		assertThat(findStatement.descendants()).hasSize(5);
 	}
 
@@ -1641,13 +1653,11 @@ class StatementListParserShould extends StatementParseTest
 	@ValueSource(strings =
 	{
 		"PROCESS SQL DB2-TABLE <<SET :CURR-SERV  = CURRENT SERVER>>",
-		"PROCESS SQL DB2-TABLE <<CONNECT TO :LOCATION>",
+		"PROCESS SQL DB2-TABLE <<CONNECT TO :LOCATION>>",
 	})
 	void parseProcessSql(String statement)
 	{
-		assertParsesSingleStatement("""
-			%s
-			""".formatted(statement), IProcessSqlNode.class);
+		assertParsesSingleStatement(statement, IProcessSqlNode.class);
 	}
 
 	@ParameterizedTest

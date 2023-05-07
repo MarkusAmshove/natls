@@ -1,6 +1,7 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.IDiagnostic;
+import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
@@ -79,6 +80,12 @@ final class TypeChecker implements ISyntaxNodeVisitor
 	{
 		if (!(variableReference.reference()instanceof IVariableNode target))
 		{
+			return;
+		}
+
+		if (NodeUtil.findFirstParentOfType(variableReference, IFindNode.class) != null)
+		{
+			// Can't correctly type check DDM fields yet, because DDM fields don't have their type loaded
 			return;
 		}
 
