@@ -149,6 +149,41 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 	}
 
 	@Test
+	void recognizeLabelUsingSlashAndIdentifier()
+	{
+		assertTokens(
+			"(R1./IX)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.LABEL_IDENTIFIER),
+			token(SyntaxKind.SLASH),
+			token(SyntaxKind.IDENTIFIER),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
+	void recognizeLabelUsingSlashAndAsterix()
+	{
+		assertTokens(
+			"(R1./*)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.LABEL_IDENTIFIER),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
+	void recognizeLabelUsingNone()
+	{
+		assertTokens(
+			"(R1.)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.LABEL_IDENTIFIER),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
 	void addADiagnosticForRecognizedIdentifiersThatEndWithADot()
 	{
 		assertDiagnostic("C*WHODOESTHIS.", assertedDiagnostic(0, 0, 0, 14, LexerError.INVALID_IDENTIFIER));

@@ -912,6 +912,16 @@ public class Lexer
 					break;
 			}
 
+			if (inParens && scanner.peek(-1) == '.' && (scanner.peek() == '/' || scanner.peek() == ')'))
+			{
+				createAndAdd(SyntaxKind.LABEL_IDENTIFIER);
+				if (scanner.peekText("/*")) // Otherwise it'll be confused with a comment
+				{
+					scanner.advance(2);
+				}
+				return;
+			}
+
 			if (scanner.peek() == '/' && lexerMode == LexerMode.IN_DATA_TYPE)
 			{
 				// Slash is a valid character for identifiers, if we're lexing a datatype we can be pretty confident about the slash being for array dimensions
@@ -995,14 +1005,13 @@ public class Lexer
 			kindHint = SyntaxKind.IDENTIFIER;
 		}
 
-		var lexeme = scanner.lexemeText();
-
 		if (kindHint != null)
 		{
 			createAndAdd(kindHint);
 			return;
 		}
 
+		var lexeme = scanner.lexemeText();
 		var kind = KeywordTable.getKeyword(lexeme);
 		if (kind != null)
 		{
