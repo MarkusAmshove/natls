@@ -94,7 +94,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		{
 			for (var value : branch.values())
 			{
-				var inferredType = inferDataType(value);
+				var inferredType = inferDataType(value, typedTarget.type().format());
 				if (inferredType.format() != DataFormat.NONE && !inferredType.hasSameFamily(typedTarget.type()))
 				{
 					report(
@@ -373,7 +373,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 				|| upperLiteral.token().kind() == SyntaxKind.ASTERISK);
 	}
 
-	private IDataType inferDataType(IOperandNode operand)
+	private IDataType inferDataType(IOperandNode operand, DataFormat targetFormat)
 	{
 		if (operand instanceof IVariableReferenceNode variable && variable.reference()instanceof ITypedVariableNode typedRef)
 		{
@@ -382,7 +382,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 
 		if (operand instanceof ILiteralNode literal)
 		{
-			return literal.dataType();
+			return literal.inferType(targetFormat);
 		}
 
 		if (operand instanceof ISystemFunctionNode sysFunction)

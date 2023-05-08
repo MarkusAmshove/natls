@@ -7,17 +7,27 @@ import org.amshove.natparse.natural.ILiteralNode;
 
 class LiteralNode extends TokenNode implements ILiteralNode
 {
-	private final IDataType dataType;
-
 	public LiteralNode(SyntaxToken token)
 	{
 		super(token);
+	}
 
-		dataType = switch (token.kind())
+	@Override
+	public IDataType inferType(DataFormat targetFormat)
+	{
+		var token = token();
+		return switch (token.kind())
 		{
-			case STRING_LITERAL -> new LiteralType(DataFormat.ALPHANUMERIC, token.stringValue().length());
-			case NUMBER_LITERAL -> new LiteralType(DataFormat.NUMERIC, getNumericLiteralLength(token.source()));
-			case TRUE, FALSE -> new LiteralType(DataFormat.LOGIC, 1);
+			case STRING_LITERAL -> new LiteralType(DataFormat.ALPHANUMERIC, token.stringValue().trim().length());
+			case NUMBER_LITERAL -> switch (targetFormat)
+				{
+					case BINARY -> new LiteralType(DataFormat.BINARY, getIntegerLiteralLength(token.source()));
+					case INTEGER -> new LiteralType(DataFormat.INTEGER, getIntegerLiteralLength(token.source()));
+					case FLOAT -> new LiteralType(DataFormat.FLOAT, getIntegerLiteralLength(token.source()));
+					case PACKED -> new LiteralType(DataFormat.PACKED, getNumericLiteralLength(token.source()));
+					default -> new LiteralType(DataFormat.NUMERIC, getNumericLiteralLength(token.source()));
+				};
+			case TRUE, FALSE -> new LiteralType(DataFormat.LOGIC, 0);
 			case ASTERISK -> new LiteralType(DataFormat.NONE, 0);
 
 			default -> throw new IllegalStateException("Invalid literal kind: " + token.kind());
@@ -40,10 +50,32 @@ class LiteralNode extends TokenNode implements ILiteralNode
 		return Double.parseDouble("%s.%s".formatted(split[0].length(), split[1].length())); // there must be a smarter way
 	}
 
-	@Override
-	public IDataType dataType()
+	private double getIntegerLiteralLength(String source)
 	{
-		return dataType;
+		if (source.contains(".") || source.contains(","))
+		{
+			return getNumericLiteralLength(source);
+		}
+
+		var byteSize = Long.toBinaryString(Long.parseLong(source)).length() / 8.0;
+		if (byteSize < 1)
+		{
+			return 1;
+		}
+
+		if (byteSize < 2)
+		{
+			return 2;
+		}
+
+		if (byteSize > 4)
+		{
+			// for too big literals, round the bytes up.
+			// I5 isn't a valid type, but will result in the correct type error.
+			return (int) (byteSize + 1);
+		}
+
+		return 4;
 	}
 
 	record LiteralType(DataFormat format, double length) implements IDataType

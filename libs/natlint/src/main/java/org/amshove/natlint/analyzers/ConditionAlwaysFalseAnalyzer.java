@@ -52,13 +52,14 @@ public class ConditionAlwaysFalseAnalyzer extends AbstractAnalyzer
 				continue;
 			}
 
-			if (!literal.dataType().fitsInto(typedTarget.type()))
+			var inferredType = literal.inferType(typedTarget.type().format());
+			if (!inferredType.fitsInto(typedTarget.type()))
 			{
 				context.report(
 					CONDITION_ALWAYS_FALSE.createFormattedDiagnostic(
 						literal.position(), "Inferred type %s does not fit into %s %s"
 							.formatted(
-								literal.dataType().toShortString(),
+								inferredType.toShortString(),
 								typedTarget.declaration().symbolName(),
 								typedTarget.type().toShortString()
 							)
