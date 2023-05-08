@@ -1746,12 +1746,32 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				{
 					break;
 				}
-				consumeOperandNode(write);
+				consumeWriteOperand(write);
 			}
 		}
 
 		// TODO: Actual operands to WRITE not added as operands
 		return write;
+	}
+
+	private void consumeWriteOperand(WriteNode write) throws ParseError
+	{
+		if (peekKind().isLiteralOrConst())
+		{
+			consumeLiteralNode(write, SyntaxKind.STRING_LITERAL);
+			if (peekKind(SyntaxKind.LPAREN))
+			{
+				// currently consume everything until closing parenthesis to consume attribute definition shorthands
+				while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+				{
+					consume(write);
+				}
+			}
+		}
+		else
+		{
+			consumeOperandNode(write);
+		}
 	}
 
 	private static final Set<SyntaxKind> FORMAT_MODIFIERS = Set.of(
