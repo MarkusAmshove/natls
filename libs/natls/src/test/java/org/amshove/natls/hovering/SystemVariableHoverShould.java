@@ -30,6 +30,18 @@ public class SystemVariableHoverShould extends HoveringTest
 	}
 
 	@Test
+	void hoverAVariableAndRemoveTheArtificialSyntaxKindPart()
+	{
+		assertHoverContains("""
+			WRITE *TI${}$ME
+			""", "*TIME");
+
+		assertHoverDoesNotContain("""
+			WRITE *TI${}$ME
+			""", "*SV-TIME");
+	}
+
+	@Test
 	void hoverAVariableAndIncludeThatTheContentIsModifiable()
 	{
 		assertHoverContains("""

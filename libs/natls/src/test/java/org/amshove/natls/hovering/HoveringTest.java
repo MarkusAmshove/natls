@@ -22,6 +22,11 @@ public class HoveringTest extends LanguageServerTest
 		assertThat(getHover(sourceWithCursor)).contains(expectedContain);
 	}
 
+	protected void assertHoverDoesNotContain(String sourceWithCursor, String doesNotContain)
+	{
+		assertThat(getHover(sourceWithCursor)).doesNotContain(doesNotContain);
+	}
+
 	private String getHover(String sourceWithCursor)
 	{
 
