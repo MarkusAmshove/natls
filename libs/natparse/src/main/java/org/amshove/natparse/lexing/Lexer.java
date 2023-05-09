@@ -917,7 +917,8 @@ public class Lexer
 				createAndAdd(SyntaxKind.LABEL_IDENTIFIER);
 				if (scanner.peekText("/*")) // Otherwise it'll be confused with a comment
 				{
-					scanner.advance(2);
+					createAndAddCurrentSingleToken(SyntaxKind.SLASH);
+					createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
 				}
 				return;
 			}

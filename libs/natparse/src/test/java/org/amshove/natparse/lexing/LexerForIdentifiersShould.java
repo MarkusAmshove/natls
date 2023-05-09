@@ -168,6 +168,8 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 			"(R1./*)",
 			token(SyntaxKind.LPAREN),
 			token(SyntaxKind.LABEL_IDENTIFIER),
+			token(SyntaxKind.SLASH),
+			token(SyntaxKind.ASTERISK),
 			token(SyntaxKind.RPAREN)
 		);
 	}
