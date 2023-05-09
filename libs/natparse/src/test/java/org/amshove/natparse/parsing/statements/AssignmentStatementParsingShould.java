@@ -99,4 +99,10 @@ class AssignmentStatementParsingShould extends StatementParseTest
 		assertThat(assertNodeType(secondAssign.operand(), ILiteralNode.class).token().intValue()).isEqualTo(5);
 	}
 
+	@Test
+	void parseControlAttributeAssignments()
+	{
+		var assignment = assertParsesSingleStatement("#VAR := (CD=RE)", IAssignmentStatementNode.class);
+		assertNodeType(assignment.operand(), IAttributeNode.class);
+	}
 }

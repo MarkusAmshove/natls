@@ -668,7 +668,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	 */
 	private IOperandNode consumeControlLiteralOrSubstringOrOperand(BaseSyntaxNode node) throws ParseError
 	{
-		if (peekKind(SyntaxKind.LPAREN) && peekKind(1, SyntaxKind.AD))
+		if (peekKind(SyntaxKind.LPAREN) && getKind(1).isAttribute())
 		{
 			return consumeLiteralNode(node);
 		}
