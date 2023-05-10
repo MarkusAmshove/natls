@@ -136,7 +136,7 @@ public enum SyntaxKind
 	COMPUTE(false, false, false),
 	COPY(false, false, false),
 	COS(false, false, false),
-	COUNT(true, false, false),
+	COUNT(false, false, false),
 	CREATE(false, false, false),
 	DECIDE(false, false, false),
 	DEFINE(false, false, false),

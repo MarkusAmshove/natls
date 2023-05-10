@@ -508,6 +508,14 @@ abstract class AbstractParser<T>
 			{
 				return sumOperand(node);
 			}
+			if (peek().kind() == SyntaxKind.TOTAL)
+			{
+				return totalOperand(node);
+			}
+			if (peek().kind() == SyntaxKind.COUNT)
+			{
+				return countOperand(node);
+			}
 			if (peek().kind() == SyntaxKind.LOG)
 			{
 				return logOperand(node);
@@ -603,6 +611,28 @@ abstract class AbstractParser<T>
 		return sumOperand;
 	}
 
+	private IOperandNode totalOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var totalOperand = new TotalOperandNode();
+		node.addNode(totalOperand);
+		consumeMandatory(totalOperand, SyntaxKind.TOTAL);
+		consumeMandatory(totalOperand, SyntaxKind.LPAREN);
+		totalOperand.setVariable(consumeVariableReferenceNode(totalOperand));
+		consumeMandatory(totalOperand, SyntaxKind.RPAREN);
+		return totalOperand;
+	}
+
+	private IOperandNode countOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var countOperand = new CountOperandNode();
+		node.addNode(countOperand);
+		consumeMandatory(countOperand, SyntaxKind.COUNT);
+		consumeMandatory(countOperand, SyntaxKind.LPAREN);
+		countOperand.setVariable(consumeVariableReferenceNode(countOperand));
+		consumeMandatory(countOperand, SyntaxKind.RPAREN);
+		return countOperand;
+	}
+
 	private IOperandNode logOperand(BaseSyntaxNode node) throws ParseError
 	{
 		var logOperand = new LogOperandNode();
@@ -664,18 +694,7 @@ abstract class AbstractParser<T>
 		node.addNode(retOperand);
 		consumeMandatory(retOperand, SyntaxKind.RET);
 		consumeMandatory(retOperand, SyntaxKind.LPAREN);
-		var referenceNode = new ModuleReferencingNode();
-		retOperand.addNode(referenceNode);
-		referenceNode.setReferencingToken(consumeLiteral(referenceNode));
-		if (referenceNode.referencingToken().kind() == SyntaxKind.STRING_LITERAL)
-		{
-			referenceNode.setReferencedModule((NaturalModule) sideloadModule(referenceNode.referencingToken().stringValue(), referenceNode.referencingToken()));
-		}
-		else
-		{
-			report(ParserErrors.invalidLiteralType(referenceNode.referencingToken(), SyntaxKind.STRING_LITERAL));
-		}
-		retOperand.setReference(referenceNode);
+		retOperand.setParameter(consumeLiteralNode(retOperand));
 		consumeMandatory(retOperand, SyntaxKind.RPAREN);
 		return retOperand;
 	}
@@ -1044,7 +1063,7 @@ abstract class AbstractParser<T>
 
 	/**
 	 * Does a forward peek in the same line until a given kind and checks if the other comes directly after.
-	 * 
+	 *
 	 * @param search The token to search for
 	 * @param after The expected token after {@code search}
 	 */
