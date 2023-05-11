@@ -1742,7 +1742,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			else
 			{
 				if ((consumeOptionally(write, SyntaxKind.NO) && consumeOptionally(write, SyntaxKind.PARAMETER))
-					|| !isOperand())
+					|| !isOperand() && !peekKind(SyntaxKind.TAB_SETTING))
 				{
 					break;
 				}
@@ -1756,6 +1756,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private void consumeWriteOperand(WriteNode write) throws ParseError
 	{
+		if (consumeOptionally(write, SyntaxKind.TAB_SETTING))
+		{
+			return;
+		}
+
 		if (peekKind().isLiteralOrConst())
 		{
 			consumeLiteralNode(write, SyntaxKind.STRING_LITERAL);
@@ -1766,6 +1771,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				{
 					consume(write);
 				}
+				consumeMandatory(write, SyntaxKind.RPAREN);
 			}
 		}
 		else
