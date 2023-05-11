@@ -354,7 +354,7 @@ public enum SyntaxKind
 	CS(true, false, false),
 	CURRENT(true, false, false),
 	CURSOR(true, false, false),
-	CV(true, false, false),
+	CV(false, false, false),
 	DATA(true, false, false),
 	DATAAREA(true, false, false),
 	DAY(true, false, false),
