@@ -151,6 +151,12 @@ public class NaturalDocumentService implements TextDocumentService
 		return CompletableFuture.completedFuture(unresolved);
 	}
 
+	@Override
+	public CompletableFuture<List<? extends TextEdit>> formatting(DocumentFormattingParams params)
+	{
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.format(params)));
+	}
+
 	public void setLanguageService(NaturalLanguageService languageService)
 	{
 		this.languageService = languageService;
