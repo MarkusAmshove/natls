@@ -98,7 +98,7 @@ class DefineWorkFileStatementParsingShould extends StatementParseTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"DEFAULT", "TRANSFER", "SAG", "ASCII", "ASCII-COMPRESSED", "ENTIRECONNECTION", "UNFORMATTED", "PORTABLE", "CSV"
+		"DEFAULT", "TRANSFER", "SAG", "ASCII", "ASCII-COMPRESSED", "ENTIRECONNECTION", "FORMATTED", "UNFORMATTED", "PORTABLE", "CSV"
 	})
 	void notRaiseADiagnosticForAllowedWorkfileTypes(String type)
 	{
