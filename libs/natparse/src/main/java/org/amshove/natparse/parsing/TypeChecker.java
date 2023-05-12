@@ -107,6 +107,17 @@ final class TypeChecker implements ISyntaxNodeVisitor
 				}
 			}
 		}
+
+		if (sysFuncNode.systemFunction() == SyntaxKind.TRIM && sysFuncNode.parameter().hasItems())
+		{
+			var parameter = sysFuncNode.parameter().first();
+
+			var type = inferDataType(parameter);
+			if (type != null && type.format() != DataFormat.NONE && type.format() != DataFormat.ALPHANUMERIC && type.format() != DataFormat.UNICODE && type.format() != DataFormat.BINARY)
+			{
+				report(ParserErrors.typeMismatch("Parameter to *TRIM must be of type A, B or U", parameter));
+			}
+		}
 	}
 
 	private void checkDecideOnBranches(IDecideOnNode decideOn)

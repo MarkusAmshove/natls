@@ -20,6 +20,8 @@ public enum SyntaxKind
 	SLASH(false, false, false),
 	BACKSLASH(false, false, false),
 	UNDERSCORE(false, false, false),
+	LEADING(true, false, false),
+	TRAILING(true, false, false),
 	SECTION_SYMBOL(false, false, false),
 	SEMICOLON(false, false, false),
 	GREATER_SIGN(false, false, false),

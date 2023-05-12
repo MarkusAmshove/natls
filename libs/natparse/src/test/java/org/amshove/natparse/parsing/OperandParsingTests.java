@@ -9,8 +9,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-import javax.print.DocFlavor.STRING;
-
 class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 {
 	protected OperandParsingTests()
@@ -63,6 +61,21 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(function.systemFunction()).isEqualTo(SyntaxKind.TRIM);
 		var parameter = assertNodeType(function.parameter().first(), ILiteralNode.class);
 		assertThat(parameter.token().source()).isEqualTo("' Hello '");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"LEADING", "TRAILING"
+	})
+	void parseTrimWithLeadingAndTrailing(String option)
+	{
+		var operand = parseOperand("*TRIM(' Hello ', %s)".formatted(option));
+		var function = assertNodeType(operand, ITrimFunctionNode.class);
+		assertThat(function.systemFunction()).isEqualTo(SyntaxKind.TRIM);
+		var parameter = assertNodeType(function.parameter().first(), ILiteralNode.class);
+		assertThat(parameter.token().source()).isEqualTo("' Hello '");
+		assertThat(function.option()).isEqualTo(SyntaxKind.valueOf(option));
 	}
 
 	@Test

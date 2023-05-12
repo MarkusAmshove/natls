@@ -721,6 +721,11 @@ abstract class AbstractParser<T>
 			return consumeSystemFunctionWithRepParameter(node, peek().kind());
 		}
 
+		if (peek().kind() == SyntaxKind.TRIM)
+		{
+			return consumeTrimFunction(node);
+		}
+
 		var systemFunction = new SystemFunctionNode();
 		systemFunction.setSystemFunction(peek().kind());
 		consume(systemFunction);
@@ -745,6 +750,22 @@ abstract class AbstractParser<T>
 		consumeMandatory(systemFunction, SyntaxKind.RPAREN);
 		node.addNode(systemFunction);
 		return systemFunction;
+	}
+
+	private ISystemFunctionNode consumeTrimFunction(BaseSyntaxNode node) throws ParseError
+	{
+		var trim = new TrimFunctionNode();
+		trim.setSystemFunction(consume(trim).kind());
+
+		consumeMandatory(trim, SyntaxKind.LPAREN);
+		trim.addParameter(consumeOperandNode(trim));
+		if (consumeOptionally(trim, SyntaxKind.COMMA))
+		{
+			trim.setOption(consumeAnyMandatory(trim, List.of(SyntaxKind.LEADING, SyntaxKind.TRAILING)).kind());
+		}
+		consumeMandatory(trim, SyntaxKind.RPAREN);
+		node.addNode(trim);
+		return trim;
 	}
 
 	private ISystemFunctionNode consumeSystemFunctionWithRepParameter(BaseSyntaxNode node, SyntaxKind kind) throws ParseError
