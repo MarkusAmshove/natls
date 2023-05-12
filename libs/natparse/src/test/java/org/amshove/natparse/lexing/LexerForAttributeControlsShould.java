@@ -197,6 +197,37 @@ class LexerForAttributeControlsShould extends AbstractLexerTest
 	}
 
 	@Test
+	void consumeSBWithALiteral()
+	{
+		assertTokens(
+			"(SB='literal', #VAR1, #VAR2)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.SB, "SB="),
+			token(SyntaxKind.STRING_LITERAL, "'literal'"),
+			token(SyntaxKind.COMMA, ","),
+			token(SyntaxKind.IDENTIFIER, "#VAR1"),
+			token(SyntaxKind.COMMA, ","),
+			token(SyntaxKind.IDENTIFIER, "#VAR2"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
+	void consumeSBWithArray()
+	{
+		assertTokens(
+			"(SB=#ARR(*))",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.SB, "SB="),
+			token(SyntaxKind.IDENTIFIER, "#ARR"),
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.ASTERISK),
+			token(SyntaxKind.RPAREN),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
 	void consumeES()
 	{
 		assertTokens(

@@ -855,6 +855,7 @@ public class Lexer
 				case "IP=" -> inputPromptAttribute();
 				case "IS=" -> identicalSuppressAttribute();
 				case "NL=" -> numericLengthAttribute();
+				case "SB=" -> selectionBoxAttribute();
 				case "SG=" -> signPosition();
 				case "ZP=" -> zeroPrintingAttribute();
 			}
@@ -1145,6 +1146,14 @@ public class Lexer
 		}
 
 		createAndAdd(SyntaxKind.NL);
+	}
+
+	private void selectionBoxAttribute()
+	{
+		scanner.start();
+		scanner.advance(3); // SB=
+		// we intentionally don't consume more, because the variables should be a list of IDENTIFIERs
+		createAndAdd(SyntaxKind.SB);
 	}
 
 	private void signPosition()

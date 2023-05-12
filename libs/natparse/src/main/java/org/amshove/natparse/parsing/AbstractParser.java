@@ -919,7 +919,7 @@ abstract class AbstractParser<T>
 		consumeMandatory(node, SyntaxKind.LPAREN);
 		while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
 		{
-			if (consumeOptionally(node, SyntaxKind.CV))
+			if (consumeOptionally(node, SyntaxKind.CV) || consumeOptionally(node, SyntaxKind.SB))
 			{
 				consumeVariableReferenceNode(node);
 			}
