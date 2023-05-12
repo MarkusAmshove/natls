@@ -1098,8 +1098,25 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var select = new SelectNode();
 		var opening = consumeMandatory(select, SyntaxKind.SELECT);
 
-		while (!isAtEnd() && !peekKind(SyntaxKind.END_SELECT) && !isStatementStart())
+		var numSelectExpected = 0;
+		while (!isAtEnd() && !peekKind(SyntaxKind.END_SELECT))
 		{
+			if (numSelectExpected > 0 && consumeOptionally(select, SyntaxKind.SELECT))
+			{
+				numSelectExpected--;
+				continue;
+			}
+
+			if (consumeAnyOptionally(select, List.of(SyntaxKind.UNION, SyntaxKind.EXCEPT, SyntaxKind.INTERSECT)))
+			{
+				numSelectExpected++;
+			}
+
+			if (isStatementStart())
+			{
+				break;
+			}
+
 			consume(select);
 		}
 
@@ -1128,7 +1145,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var numValues = 0;
 		while (!isAtEnd())
 		{
-			if (consumeOptionally(insert, SyntaxKind.VALUES))
+			if (consumeAnyOptionally(insert, List.of(SyntaxKind.VALUES, SyntaxKind.SELECT)))
 			{
 				numValues++;
 			}

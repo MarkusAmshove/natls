@@ -158,6 +158,14 @@ public class Lexer
 					}
 					createAndAddCurrentSingleToken(SyntaxKind.CARET);
 					continue;
+				case '!':
+					if (tryCreateIfFollowedBy('!', SyntaxKind.SQL_CONCAT))
+					{
+						continue;
+					}
+					// Single ! is likely to be the ID (Input delimiter char, in most cases this could be comma instead)
+					createAndAddCurrentSingleToken(SyntaxKind.COMMA);
+					continue;
 				case '%':
 					createAndAddCurrentSingleToken(SyntaxKind.PERCENT);
 					continue;
