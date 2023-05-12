@@ -1742,7 +1742,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			else
 			{
 				if ((consumeOptionally(write, SyntaxKind.NO) && consumeOptionally(write, SyntaxKind.PARAMETER))
-					|| !isOperand() && !peekKind(SyntaxKind.TAB_SETTING))
+					|| !isOperand() && !peekKind(SyntaxKind.TAB_SETTING) && !peekKind(SyntaxKind.SLASH) && !peekKind(SyntaxKind.OPERAND_SKIP))
 				{
 					break;
 				}
@@ -1756,7 +1756,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private void consumeWriteOperand(WriteNode write) throws ParseError
 	{
-		if (consumeOptionally(write, SyntaxKind.TAB_SETTING))
+		if (consumeOptionally(write, SyntaxKind.TAB_SETTING)
+			|| consumeOptionally(write, SyntaxKind.SLASH)
+			|| consumeOptionally(write, SyntaxKind.OPERAND_SKIP))
 		{
 			return;
 		}
