@@ -1,9 +1,29 @@
 package org.amshove.natparse.lexing;
 
 import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 class LexerForAttributeControlsShould extends AbstractLexerTest
 {
+	@Test
+	void recognizeAttributes()
+	{
+		assertThat(SyntaxKind.AD.isAttribute());
+		assertThat(SyntaxKind.DY.isAttribute());
+		assertThat(SyntaxKind.CD.isAttribute());
+		assertThat(SyntaxKind.EM.isAttribute());
+		assertThat(SyntaxKind.NL.isAttribute());
+		assertThat(SyntaxKind.AL.isAttribute());
+		assertThat(SyntaxKind.DF.isAttribute());
+		assertThat(SyntaxKind.IP.isAttribute());
+		assertThat(SyntaxKind.IS.isAttribute());
+		assertThat(SyntaxKind.CV.isAttribute());
+		assertThat(SyntaxKind.ZP.isAttribute());
+		assertThat(SyntaxKind.SG.isAttribute());
+		assertThat(SyntaxKind.ES.isAttribute());
+		assertThat(SyntaxKind.SB.isAttribute());
+	}
+
 	@Test
 	void consumeEverythingBelongingToAnEditorMask()
 	{
