@@ -2,6 +2,8 @@ package org.amshove.natls.testlifecycle;
 
 import org.eclipse.lsp4j.TextEdit;
 
+import java.util.List;
+
 public class TextEditApplier
 {
 	private int deletedLines = 0;
@@ -61,5 +63,16 @@ public class TextEditApplier
 		}
 
 		return resultingSource.toString();
+	}
+
+	public String applyAll(List<? extends TextEdit> edits, String source)
+	{
+		var editedSource = source;
+		for (var edit : edits)
+		{
+			editedSource = apply(edit, editedSource);
+		}
+
+		return editedSource;
 	}
 }

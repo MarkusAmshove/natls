@@ -111,7 +111,6 @@ class LexerForKeywordsShould extends AbstractLexerTest
 			keywordTest("CS", SyntaxKind.CS),
 			keywordTest("CURRENT", SyntaxKind.CURRENT),
 			keywordTest("CURSOR", SyntaxKind.CURSOR),
-			keywordTest("CV", SyntaxKind.CV),
 			keywordTest("DATA", SyntaxKind.DATA),
 			keywordTest("DATAAREA", SyntaxKind.DATAAREA),
 			keywordTest("DATE", SyntaxKind.DATE),

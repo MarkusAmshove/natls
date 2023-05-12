@@ -97,7 +97,6 @@ public class KeywordTable
 			case "cs" -> SyntaxKind.CS;
 			case "current" -> SyntaxKind.CURRENT;
 			case "cursor" -> SyntaxKind.CURSOR;
-			case "cv" -> SyntaxKind.CV;
 			case "data" -> SyntaxKind.DATA;
 			case "dataarea" -> SyntaxKind.DATAAREA;
 			case "date" -> SyntaxKind.DATE;

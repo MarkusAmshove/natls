@@ -1044,4 +1044,26 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		return null;
 	}
+
+	public List<TextEdit> format(DocumentFormattingParams params)
+	{
+		var file = findNaturalFile(LspUtil.uriToPath(params.getTextDocument().getUri()));
+		var edits = new ArrayList<TextEdit>();
+		file.tokens().forEach(t ->
+		{
+			if (t.kind() == SyntaxKind.STRING_LITERAL)
+			{
+				return;
+			}
+
+			var upper = t.source().toUpperCase();
+			if (!upper.equals(t.source()))
+			{
+				var edit = new TextEdit(LspUtil.toRange(t), upper);
+				edits.add(edit);
+			}
+		});
+
+		return edits;
+	}
 }

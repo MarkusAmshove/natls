@@ -1074,6 +1074,20 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(write.descendants()).hasSize(6);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"WRITE NOHDR ' literal ' (I)",
+		"WRITE NOHDR 25T '******' 'End of Data'(I) '******'"
+	})
+	void treatWriteIntensifiedAttributeToStringLiteralAsAttributeAndNotIdentifier(String writeSource)
+	{
+		var write = assertParsesSingleStatement(writeSource, IWriteNode.class);
+		assertThat(write.descendants())
+			.as("Write should not contain any variable reference")
+			.noneMatch(n -> n instanceof IVariableReferenceNode);
+	}
+
 	@Test
 	void notParseAttributeAsIsnParameter()
 	{

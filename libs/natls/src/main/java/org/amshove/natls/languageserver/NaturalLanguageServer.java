@@ -66,6 +66,8 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 
 			capabilities.setSignatureHelpProvider(new SignatureHelpOptions());
 
+			capabilities.setDocumentFormattingProvider(true);
+
 			var workspace = new WorkspaceServerCapabilities();
 			var fileOperations = new FileOperationsServerCapabilities();
 			fileOperations.setDidCreate(
