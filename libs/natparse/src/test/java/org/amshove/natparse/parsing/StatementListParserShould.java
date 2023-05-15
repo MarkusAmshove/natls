@@ -1567,6 +1567,20 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(select.body().statements().first()).isInstanceOf(IAddStatementNode.class);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"UNION", "UNION ALL", "UNION DISTINCT", "INTERSECT", "EXCEPT"
+	})
+	void parseSelectWithUnion(String operation)
+	{
+		assertParsesSingleStatement("""
+			SELECT * FROM DB2_TABLE WHERE COLUMN = 'search'
+			%s
+			SELECT * FROM ANOTHER_TABLE WHERE COLUMN = 'search'
+			END-SELECT""".formatted(operation), ISelectNode.class);
+	}
+
 	@Test
 	void parseDb2Insert()
 	{
@@ -1575,6 +1589,15 @@ class StatementListParserShould extends StatementParseTest
 			  (COL1, COL2, COL3)
 			  VALUES
 			  ('A', 'B', 'C')
+			""", IInsertStatementNode.class);
+	}
+
+	@Test
+	void parseDb2InsertWithSelect()
+	{
+		assertParsesSingleStatement("""
+			INSERT INTO DB2-TABLE
+			  (SELECT * FROM ANOTHER-TABLE WHERE COL1 = 'somevalue')
 			""", IInsertStatementNode.class);
 	}
 

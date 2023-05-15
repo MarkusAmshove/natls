@@ -29,6 +29,7 @@ public enum SyntaxKind
 	LESSER_SIGN(false, false, false),
 	LESSER_EQUALS_SIGN(false, false, false),
 	CIRCUMFLEX_EQUAL(false, false, false),
+	SQL_CONCAT(false, false, false),
 	NUMBER_LITERAL(false, false, false),
 	LESSER_GREATER(false, false, false),
 	STRING_LITERAL(false, false, false),
