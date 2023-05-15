@@ -1107,7 +1107,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				continue;
 			}
 
-			if (consumeAnyOptionally(select, List.of(SyntaxKind.UNION, SyntaxKind.EXCEPT, SyntaxKind.INTERSECT)))
+			if (peekAny(List.of(SyntaxKind.UNION, SyntaxKind.EXCEPT, SyntaxKind.INTERSECT)))
 			{
 				numSelectExpected++;
 			}
