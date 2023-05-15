@@ -1,9 +1,29 @@
 package org.amshove.natparse.lexing;
 
 import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 class LexerForAttributeControlsShould extends AbstractLexerTest
 {
+	@Test
+	void recognizeAttributes()
+	{
+		assertThat(SyntaxKind.AD.isAttribute());
+		assertThat(SyntaxKind.DY.isAttribute());
+		assertThat(SyntaxKind.CD.isAttribute());
+		assertThat(SyntaxKind.EM.isAttribute());
+		assertThat(SyntaxKind.NL.isAttribute());
+		assertThat(SyntaxKind.AL.isAttribute());
+		assertThat(SyntaxKind.DF.isAttribute());
+		assertThat(SyntaxKind.IP.isAttribute());
+		assertThat(SyntaxKind.IS.isAttribute());
+		assertThat(SyntaxKind.CV.isAttribute());
+		assertThat(SyntaxKind.ZP.isAttribute());
+		assertThat(SyntaxKind.SG.isAttribute());
+		assertThat(SyntaxKind.ES.isAttribute());
+		assertThat(SyntaxKind.SB.isAttribute());
+	}
+
 	@Test
 	void consumeEverythingBelongingToAnEditorMask()
 	{
@@ -192,6 +212,37 @@ class LexerForAttributeControlsShould extends AbstractLexerTest
 			token(SyntaxKind.LPAREN),
 			token(SyntaxKind.CV, "CV="),
 			token(SyntaxKind.IDENTIFIER, "#VAR"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
+	void consumeSBWithALiteral()
+	{
+		assertTokens(
+			"(SB='literal', #VAR1, #VAR2)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.SB, "SB="),
+			token(SyntaxKind.STRING_LITERAL, "'literal'"),
+			token(SyntaxKind.COMMA, ","),
+			token(SyntaxKind.IDENTIFIER, "#VAR1"),
+			token(SyntaxKind.COMMA, ","),
+			token(SyntaxKind.IDENTIFIER, "#VAR2"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
+	void consumeSBWithArray()
+	{
+		assertTokens(
+			"(SB=#ARR(*))",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.SB, "SB="),
+			token(SyntaxKind.IDENTIFIER, "#ARR"),
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.ASTERISK),
+			token(SyntaxKind.RPAREN),
 			token(SyntaxKind.RPAREN)
 		);
 	}
