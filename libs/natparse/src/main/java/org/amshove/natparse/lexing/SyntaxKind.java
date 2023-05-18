@@ -72,6 +72,8 @@ public enum SyntaxKind
 	PAGE_NUMBER(false, true, true),
 	WINDOW_LS(false, true, false),
 	WINDOW_PS(false, true, false),
+	PID(false, true, false),
+	WINDOW_POS(false, true, false),
 	LIBRARY_ID(false, true, false),
 	LINEX(false, true, false),
 	LINE_COUNT(false, true, true),
