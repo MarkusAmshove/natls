@@ -75,6 +75,7 @@ public class BuiltInFunctionTable
 			unmodifiableVariable(SyntaxKind.LINE_COUNT, "Returns the line number of the current pages's line.", PACKED, 5.0),
 			unmodifiableVariable(SyntaxKind.WINDOW_LS, "Returns the line size of the logical window (without the frame)", NUMERIC, 3.0),
 			unmodifiableVariable(SyntaxKind.WINDOW_PS, "Returns the page size of the logical window (without the frame)", NUMERIC, 3.0),
+			unmodifiableVariable(SyntaxKind.WINDOW_POS, "Returns the position of the upper left corner of the window (from `DEFINE WINDOW`)", NUMERIC, 6.0),
 			unmodifiableVariable(SyntaxKind.LIBRARY_ID, "Returns the ID the the current library. This returns the same as *APPLIC-ID", ALPHANUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.TRANSLATE, """
 				Converts the characters passed as first argument into either `LOWER` or `UPPER` case.
