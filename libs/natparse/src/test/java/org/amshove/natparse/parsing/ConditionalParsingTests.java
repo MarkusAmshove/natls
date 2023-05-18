@@ -705,6 +705,13 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		assertParsesCriteria("#VAR1 EQ 0 OR (#VAR2 + #VAR1 >= #VAR3)", IChainedCriteriaNode.class);
 	}
 
+	@Test
+	void parseConditionsWithDateLiterals()
+	{
+		var criteria = assertParsesCriteria("#VAR < D'1990-01-01'", IRelationalCriteriaNode.class);
+		assertNodeType(criteria.right(), ILiteralNode.class);
+	}
+
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
 	{
 		var list = assertParsesWithoutDiagnostics("IF %s\nIGNORE\nEND-IF".formatted(source));

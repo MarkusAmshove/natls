@@ -189,14 +189,23 @@ public class Lexer
 						consumeIdentifierOrKeyword();
 					}
 					continue;
+				case 'd':
+				case 'D':
+					if (scanner.peek(1) == '\'')
+					{
+						consumeDateLiteral();
+					}
+					else
+					{
+						consumeIdentifierOrKeyword();
+					}
+					continue;
 				case 'a':
 				case 'A':
 				case 'b':
 				case 'B':
 				case 'c':
 				case 'C':
-				case 'd':
-				case 'D':
 				case 'e':
 				case 'E':
 				case 'f':
@@ -1471,6 +1480,34 @@ public class Lexer
 	private boolean tokenBeforeLParenWas(SyntaxKind kind)
 	{
 		return inParens && lastBeforeOpenParens != null && lastBeforeOpenParens.kind() == kind;
+	}
+
+	private void consumeDateLiteral()
+	{
+		scanner.start();
+		scanner.advance(2); // D'
+		while (scanner.peek() != '\'' && !scanner.isAtEnd() && !isLineEnd())
+		{
+			scanner.advance();
+		}
+
+		if (scanner.peek() != '\'')
+		{
+			// Recovery
+			while (!isLineEnd() && !scanner.isAtEnd())
+			{
+				scanner.advance();
+			}
+
+			addDiagnostic("Unterminated String literal, expecting closing [']", LexerError.UNTERMINATED_STRING);
+
+			// We can still produce a valid token, although it is unterminated
+			createAndAdd(SyntaxKind.STRING_LITERAL);
+			return;
+		}
+
+		scanner.advance();
+		createAndAdd(SyntaxKind.DATE_LITERAL);
 	}
 
 	private void consumeHexString()
