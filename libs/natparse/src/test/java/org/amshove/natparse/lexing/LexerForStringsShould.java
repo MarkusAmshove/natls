@@ -197,4 +197,13 @@ class LexerForStringsShould extends AbstractLexerTest
 			token(SyntaxKind.DATE_LITERAL, "D'1990-01-01'")
 		);
 	}
+
+	@Test
+	void reportADiagnosticForUnterminatedDateLiterals()
+	{
+		assertDiagnostic(
+			"#D'1990-01-01",
+			assertedDiagnostic(2, 2, 0, 11, LexerError.UNTERMINATED_STRING)
+		);
+	}
 }

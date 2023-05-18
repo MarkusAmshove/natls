@@ -1486,23 +1486,9 @@ public class Lexer
 	{
 		scanner.start();
 		scanner.advance(2); // D'
-		while (scanner.peek() != '\'' && !scanner.isAtEnd() && !isLineEnd())
+
+		if (!consumeStringToEnd(SyntaxKind.DATE_LITERAL))
 		{
-			scanner.advance();
-		}
-
-		if (scanner.peek() != '\'')
-		{
-			// Recovery
-			while (!isLineEnd() && !scanner.isAtEnd())
-			{
-				scanner.advance();
-			}
-
-			addDiagnostic("Unterminated String literal, expecting closing [']", LexerError.UNTERMINATED_STRING);
-
-			// We can still produce a valid token, although it is unterminated
-			createAndAdd(SyntaxKind.STRING_LITERAL);
 			return;
 		}
 
@@ -1514,23 +1500,9 @@ public class Lexer
 	{
 		scanner.start();
 		scanner.advance(2); // H and '
-		while (scanner.peek() != '\'' && !scanner.isAtEnd() && !isLineEnd())
+
+		if (!consumeStringToEnd(SyntaxKind.STRING_LITERAL))
 		{
-			scanner.advance();
-		}
-
-		if (scanner.peek() != '\'')
-		{
-			// Recovery
-			while (!isLineEnd() && !scanner.isAtEnd())
-			{
-				scanner.advance();
-			}
-
-			addDiagnostic("Unterminated String literal, expecting closing [']", LexerError.UNTERMINATED_STRING);
-
-			// We can still produce a valid token, although it is unterminated
-			createAndAdd(SyntaxKind.STRING_LITERAL);
 			return;
 		}
 
@@ -1544,6 +1516,31 @@ public class Lexer
 		{
 			addDiagnostic("Invalid HEX literal. Number of characters must be even but was %d.".formatted(hexLiteralChars), LexerError.UNKNOWN_CHARACTER);
 		}
+	}
+
+	private boolean consumeStringToEnd(SyntaxKind kindToCreate)
+	{
+		while (scanner.peek() != '\'' && !scanner.isAtEnd() && !isLineEnd())
+		{
+			scanner.advance();
+		}
+
+		if (scanner.peek() != '\'')
+		{
+			// Recovery
+			while (!isLineEnd() && !scanner.isAtEnd())
+			{
+				scanner.advance();
+			}
+
+			addDiagnostic("Unterminated String literal, expecting closing [']", LexerError.UNTERMINATED_STRING);
+
+			// We can still produce a valid token, although it is unterminated
+			createAndAdd(kindToCreate);
+			return false;
+		}
+
+		return true;
 	}
 
 	private void consumeString(char c)
