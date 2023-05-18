@@ -1,27 +1,37 @@
 package org.amshove.natparse.lexing;
 
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
+
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 class LexerForAttributeControlsShould extends AbstractLexerTest
 {
-	@Test
-	void recognizeAttributes()
+	@TestFactory
+	Stream<DynamicTest> recognizeAttributes()
 	{
-		assertThat(SyntaxKind.AD.isAttribute());
-		assertThat(SyntaxKind.DY.isAttribute());
-		assertThat(SyntaxKind.CD.isAttribute());
-		assertThat(SyntaxKind.EM.isAttribute());
-		assertThat(SyntaxKind.NL.isAttribute());
-		assertThat(SyntaxKind.AL.isAttribute());
-		assertThat(SyntaxKind.DF.isAttribute());
-		assertThat(SyntaxKind.IP.isAttribute());
-		assertThat(SyntaxKind.IS.isAttribute());
-		assertThat(SyntaxKind.CV.isAttribute());
-		assertThat(SyntaxKind.ZP.isAttribute());
-		assertThat(SyntaxKind.SG.isAttribute());
-		assertThat(SyntaxKind.ES.isAttribute());
-		assertThat(SyntaxKind.SB.isAttribute());
+		var attributes = List.of(SyntaxKind.AD, SyntaxKind.DY, SyntaxKind.CD, SyntaxKind.EM, SyntaxKind.NL, SyntaxKind.AL, SyntaxKind.DF, SyntaxKind.IP, SyntaxKind.IS, SyntaxKind.CV, SyntaxKind.ZP, SyntaxKind.SG, SyntaxKind.ES, SyntaxKind.SG, SyntaxKind.SB);
+
+		var shouldBeAttributes = attributes.stream()
+			.map(a -> dynamicTest("%s should be attribute".formatted(a), () -> assertThat(a.isAttribute()).isTrue()));
+
+		var shouldNotBeAttributes = Arrays.stream(SyntaxKind.values())
+			.filter(sk -> !attributes.contains(sk))
+			.map(
+				sk -> dynamicTest(
+					"%s should not be an attribute", () -> assertThat(sk.isAttribute())
+						.as(sk + " returns true for isAttribute() but is not tested to be an attribute via the attributes list in this test. Is this correct?")
+						.isFalse()
+				)
+			);
+
+		return Stream.concat(shouldBeAttributes, shouldNotBeAttributes);
 	}
 
 	@Test
@@ -31,6 +41,17 @@ class LexerForAttributeControlsShould extends AbstractLexerTest
 			"(EM=YYYY-MM-DD)",
 			token(SyntaxKind.LPAREN),
 			token(SyntaxKind.EM, "EM=YYYY-MM-DD"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
+	void allowEditorMasksToContainNestedParens()
+	{
+		assertTokens(
+			"(EM=X'/'X(32)'/'X(32))",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.EM, "EM=X'/'X(32)'/'X(32)"),
 			token(SyntaxKind.RPAREN)
 		);
 	}
