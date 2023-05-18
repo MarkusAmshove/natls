@@ -755,6 +755,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.TRANSLATE);
 			return;
 		}
+		if (scanner.advanceIfIgnoreCase("PID"))
+		{
+			createAndAdd(SyntaxKind.PID);
+			return;
+		}
 		if (scanner.advanceIfIgnoreCase("MACHINE-CLASS"))
 		{
 			createAndAdd(SyntaxKind.MACHINE_CLASS);

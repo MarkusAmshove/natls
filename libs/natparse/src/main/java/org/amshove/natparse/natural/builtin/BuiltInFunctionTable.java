@@ -242,6 +242,7 @@ public class BuiltInFunctionTable
 
 				- If a page break occurs, the value changes to `ENTR`.
 				""", ALPHANUMERIC, 4),
+			unmodifiableVariable(SyntaxKind.PID, "Returns the current process ID as a string", ALPHANUMERIC, 32),
 			function(SyntaxKind.SV_ISN, """
 				Gets or sets the internal sequence number of the current Adabas record initiated by `FIND` or `READ`.
 

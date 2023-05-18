@@ -40,10 +40,6 @@ public class AnsiDiagnosticSink implements IDiagnosticSink
 		{
 			for (var diagnostic : sortedDiagnostics)
 			{
-				if (diagnostic.id().equals("NPP026"))
-				{
-					continue;
-				}
 				System.out.println(pathWithLineInformation(diagnostic));
 
 				System.out.println();

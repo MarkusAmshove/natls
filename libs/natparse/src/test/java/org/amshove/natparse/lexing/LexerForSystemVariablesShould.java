@@ -227,6 +227,12 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 	}
 
 	@Test
+	void lexPid()
+	{
+		assertTokens("*PID", token(SyntaxKind.PID, "*PID"));
+	}
+
+	@Test
 	void lexWindowPs()
 	{
 		assertTokens("*WINDOW-PS", token(SyntaxKind.WINDOW_PS, "*WINDOW-PS"));
