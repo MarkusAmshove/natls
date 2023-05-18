@@ -33,6 +33,7 @@ public enum SyntaxKind
 	NUMBER_LITERAL(false, false, false),
 	LESSER_GREATER(false, false, false),
 	STRING_LITERAL(false, false, false),
+	DATE_LITERAL(false, false, false),
 	IDENTIFIER(true, false, false),
 	LABEL_IDENTIFIER(false, false, false),
 	COMMENT(false, false, false),
@@ -758,7 +759,7 @@ public enum SyntaxKind
 
 	public boolean isLiteralOrConst()
 	{
-		return isBoolean() || this == NUMBER_LITERAL || this == STRING_LITERAL;
+		return isBoolean() || this == NUMBER_LITERAL || this == STRING_LITERAL || this == DATE_LITERAL;
 	}
 
 	public boolean canBeIdentifier()

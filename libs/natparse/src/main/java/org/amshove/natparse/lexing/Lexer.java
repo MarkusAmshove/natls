@@ -189,14 +189,23 @@ public class Lexer
 						consumeIdentifierOrKeyword();
 					}
 					continue;
+				case 'd':
+				case 'D':
+					if (scanner.peek(1) == '\'')
+					{
+						consumeDateLiteral();
+					}
+					else
+					{
+						consumeIdentifierOrKeyword();
+					}
+					continue;
 				case 'a':
 				case 'A':
 				case 'b':
 				case 'B':
 				case 'c':
 				case 'C':
-				case 'd':
-				case 'D':
 				case 'e':
 				case 'E':
 				case 'f':
@@ -1473,10 +1482,44 @@ public class Lexer
 		return inParens && lastBeforeOpenParens != null && lastBeforeOpenParens.kind() == kind;
 	}
 
+	private void consumeDateLiteral()
+	{
+		scanner.start();
+		scanner.advance(2); // D'
+
+		if (!consumeStringToEnd(SyntaxKind.DATE_LITERAL))
+		{
+			return;
+		}
+
+		scanner.advance();
+		createAndAdd(SyntaxKind.DATE_LITERAL);
+	}
+
 	private void consumeHexString()
 	{
 		scanner.start();
 		scanner.advance(2); // H and '
+
+		if (!consumeStringToEnd(SyntaxKind.STRING_LITERAL))
+		{
+			return;
+		}
+
+		// We don't evaluate the content. Is it worth it? We could convert it to the
+		// actual characters.
+
+		scanner.advance();
+		createAndAdd(SyntaxKind.STRING_LITERAL);
+		var hexLiteralChars = previousUnsafe().source().length() - 3; // - H''
+		if (hexLiteralChars % 2 != 0)
+		{
+			addDiagnostic("Invalid HEX literal. Number of characters must be even but was %d.".formatted(hexLiteralChars), LexerError.UNKNOWN_CHARACTER);
+		}
+	}
+
+	private boolean consumeStringToEnd(SyntaxKind kindToCreate)
+	{
 		while (scanner.peek() != '\'' && !scanner.isAtEnd() && !isLineEnd())
 		{
 			scanner.advance();
@@ -1493,20 +1536,11 @@ public class Lexer
 			addDiagnostic("Unterminated String literal, expecting closing [']", LexerError.UNTERMINATED_STRING);
 
 			// We can still produce a valid token, although it is unterminated
-			createAndAdd(SyntaxKind.STRING_LITERAL);
-			return;
+			createAndAdd(kindToCreate);
+			return false;
 		}
 
-		// We don't evaluate the content. Is it worth it? We could convert it to the
-		// actual characters.
-
-		scanner.advance();
-		createAndAdd(SyntaxKind.STRING_LITERAL);
-		var hexLiteralChars = previousUnsafe().source().length() - 3; // - H''
-		if (hexLiteralChars % 2 != 0)
-		{
-			addDiagnostic("Invalid HEX literal. Number of characters must be even but was %d.".formatted(hexLiteralChars), LexerError.UNKNOWN_CHARACTER);
-		}
+		return true;
 	}
 
 	private void consumeString(char c)

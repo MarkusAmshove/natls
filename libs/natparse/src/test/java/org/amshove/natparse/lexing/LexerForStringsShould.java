@@ -188,4 +188,22 @@ class LexerForStringsShould extends AbstractLexerTest
 		var write = tokens.advance();
 		assertThat(write.line()).isEqualTo(3);
 	}
+
+	@Test
+	void lexDateStringLiterals()
+	{
+		assertTokens(
+			"D'1990-01-01'",
+			token(SyntaxKind.DATE_LITERAL, "D'1990-01-01'")
+		);
+	}
+
+	@Test
+	void reportADiagnosticForUnterminatedDateLiterals()
+	{
+		assertDiagnostic(
+			"#D'1990-01-01",
+			assertedDiagnostic(2, 2, 0, 11, LexerError.UNTERMINATED_STRING)
+		);
+	}
 }
