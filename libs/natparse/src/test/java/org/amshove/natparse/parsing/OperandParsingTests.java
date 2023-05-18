@@ -533,4 +533,11 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		var reference = assertIsVariableReference(operand, "#ARR");
 		assertThat(reference.dimensions()).isEmpty();
 	}
+
+	@Test
+	void parseHexLiterals()
+	{
+		var operand = parseOperand("H'AA'");
+		assertLiteral(operand, SyntaxKind.HEX_LITERAL);
+	}
 }

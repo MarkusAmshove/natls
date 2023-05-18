@@ -18,6 +18,7 @@ class LiteralNode extends TokenNode implements ILiteralNode
 			case STRING_LITERAL -> new LiteralType(DataFormat.ALPHANUMERIC, token.stringValue().length());
 			case NUMBER_LITERAL -> new LiteralType(DataFormat.NUMERIC, getNumericLiteralLength(token.source()));
 			case DATE_LITERAL -> new LiteralType(DataFormat.DATE, 4);
+			case HEX_LITERAL -> new LiteralType(DataFormat.NUMERIC, token.stringValue().length() * 2);
 			case TRUE, FALSE -> new LiteralType(DataFormat.LOGIC, 1);
 			case ASTERISK -> new LiteralType(DataFormat.NONE, 0);
 
