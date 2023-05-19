@@ -389,11 +389,31 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void allowHexInitialValuesForAlphanumericFields()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 #ALPH (A5) INIT <H'0A'>
+			end-define
+			""");
+	}
+
+	@Test
 	void allowNumericConstValuesForAlphanumericFields()
 	{
 		assertParsesWithoutDiagnostics("""
 			define data local
 			1 #ALPH (A5) CONST <010>
+			end-define
+			""");
+	}
+
+	@Test
+	void allowHexConstValuesForAlphanumericFields()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 #ALPH (A5) CONST <H'0A'>
 			end-define
 			""");
 	}
