@@ -419,6 +419,26 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void allowDateLiteralsAsConstValuesForDateFields()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 #ALPH (D) CONST <D'1990-01-01'>
+			end-define
+			""");
+	}
+
+	@Test
+	void allowDateLiteralsAsInitialValuesForDateFields()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 #ALPH (D) INIT <D'1990-01-01'>
+			end-define
+			""");
+	}
+
+	@Test
 	void parseMultipleVariables()
 	{
 		var defineData = assertParsesWithoutDiagnostics("""

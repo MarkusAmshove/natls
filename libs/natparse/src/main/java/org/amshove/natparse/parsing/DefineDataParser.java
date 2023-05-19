@@ -770,9 +770,12 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 					expectInitialValueType(variable, SyntaxKind.STRING_LITERAL, SyntaxKind.NUMBER_LITERAL, SyntaxKind.HEX_LITERAL);
 					break;
 
+				case DATE:
+					expectInitialValueType(variable, SyntaxKind.DATE_LITERAL);
+					break;
+
 				case BINARY:
 				case CONTROL:
-				case DATE:
 				case TIME:
 				case UNICODE:
 				case NONE:
