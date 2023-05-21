@@ -235,7 +235,10 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 							statementList.addStatement(writeDownloadPc());
 							break;
 						}
-						statementList.addStatement(write());
+						statementList.addStatement(write(SyntaxKind.WRITE));
+						break;
+					case PRINT:
+						statementList.addStatement(write(SyntaxKind.PRINT));
 						break;
 					case DISPLAY:
 						statementList.addStatement(display());
@@ -1846,10 +1849,10 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private static final Set<SyntaxKind> OPTIONAL_WRITE_FLAGS = Set.of(SyntaxKind.NOTITLE, SyntaxKind.NOHDR, SyntaxKind.USING, SyntaxKind.MAP, SyntaxKind.FORM, SyntaxKind.TITLE, SyntaxKind.LEFT, SyntaxKind.JUSTIFIED, SyntaxKind.UNDERLINED);
 
-	private StatementNode write() throws ParseError
+	private StatementNode write(SyntaxKind statementKind) throws ParseError
 	{
 		var write = new WriteNode();
-		consumeMandatory(write, SyntaxKind.WRITE);
+		consumeMandatory(write, statementKind);
 		if (consumeOptionally(write, SyntaxKind.LPAREN))
 		{
 			if (peekKind(SyntaxKind.IDENTIFIER) && peekKind(1, SyntaxKind.RPAREN))

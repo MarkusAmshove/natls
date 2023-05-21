@@ -1094,6 +1094,20 @@ class StatementListParserShould extends StatementParseTest
 			.noneMatch(n -> n instanceof IVariableReferenceNode);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"PRINT (SV12) NOHDR ' literal ' (I)",
+		"PRINT (SV12) NOHDR 25T '******' 'End of Data'(I) '******'"
+	})
+	void treatPrintIntensifiedAttributeToStringLiteralAsAttributeAndNotIdentifier(String printSource)
+	{
+		var write = assertParsesSingleStatement(printSource, IPrintNode.class);
+		assertThat(write.descendants())
+			.as("Print should not contain any variable reference")
+			.noneMatch(n -> n instanceof IVariableReferenceNode);
+	}
+
 	@Test
 	void notParseAttributeAsIsnParameter()
 	{
