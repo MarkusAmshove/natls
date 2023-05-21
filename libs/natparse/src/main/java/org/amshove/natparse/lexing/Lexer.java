@@ -189,11 +189,11 @@ public class Lexer
 						consumeIdentifierOrKeyword();
 					}
 					continue;
-				case 'd':
-				case 'D':
+				case 't':
+				case 'T':
 					if (scanner.peek(1) == '\'')
 					{
-						consumeDateLiteral();
+						consumeTimeLiteral();
 					}
 					else
 					{
@@ -206,8 +206,30 @@ public class Lexer
 				case 'B':
 				case 'c':
 				case 'C':
+					consumeIdentifierOrKeyword();
+					continue;
+				case 'd':
+				case 'D':
+					if (scanner.peek(1) == '\'')
+					{
+						consumeDateLiteral();
+					}
+					else
+					{
+						consumeIdentifierOrKeyword();
+					}
+					continue;
 				case 'e':
 				case 'E':
+					if (scanner.peek(1) == '\'')
+					{
+						consumeExtendedTimeLiteral();
+					}
+					else
+					{
+						consumeIdentifierOrKeyword();
+					}
+					continue;
 				case 'f':
 				case 'F':
 				case 'g':
@@ -234,8 +256,6 @@ public class Lexer
 				case 'R':
 				case 's':
 				case 'S':
-				case 't':
-				case 'T':
 				case 'u':
 				case 'U':
 				case 'v':
@@ -1492,8 +1512,33 @@ public class Lexer
 			return;
 		}
 
-		scanner.advance();
 		createAndAdd(SyntaxKind.DATE_LITERAL);
+	}
+
+	private void consumeExtendedTimeLiteral()
+	{
+		scanner.start();
+		scanner.advance(2); // E'
+
+		if (!consumeStringToEnd(SyntaxKind.EXTENDED_TIME_LITERAL))
+		{
+			return;
+		}
+
+		createAndAdd(SyntaxKind.EXTENDED_TIME_LITERAL);
+	}
+
+	private void consumeTimeLiteral()
+	{
+		scanner.start();
+		scanner.advance(2); // T'
+
+		if (!consumeStringToEnd(SyntaxKind.TIME_LITERAL))
+		{
+			return;
+		}
+
+		createAndAdd(SyntaxKind.TIME_LITERAL);
 	}
 
 	private void consumeHexLiteral()
@@ -1506,10 +1551,6 @@ public class Lexer
 			return;
 		}
 
-		// We don't evaluate the content. Is it worth it? We could convert it to the
-		// actual characters.
-
-		scanner.advance();
 		createAndAdd(SyntaxKind.HEX_LITERAL);
 		var hexLiteralChars = previousUnsafe().source().length() - 3; // - H''
 		if (hexLiteralChars % 2 != 0)
@@ -1540,6 +1581,7 @@ public class Lexer
 			return false;
 		}
 
+		scanner.advance(); // closing '
 		return true;
 	}
 

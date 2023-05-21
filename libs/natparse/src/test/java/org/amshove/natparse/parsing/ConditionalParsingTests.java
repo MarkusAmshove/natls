@@ -709,7 +709,33 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	void parseConditionsWithDateLiterals()
 	{
 		var criteria = assertParsesCriteria("#VAR < D'1990-01-01'", IRelationalCriteriaNode.class);
-		assertNodeType(criteria.right(), ILiteralNode.class);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).token().kind()).isEqualTo(SyntaxKind.DATE_LITERAL);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).dataType().format()).isEqualTo(DataFormat.DATE);
+	}
+
+	@Test
+	void parseConditionsWithTimeLiterals()
+	{
+		var criteria = assertParsesCriteria("#VAR < T'15:00:00'", IRelationalCriteriaNode.class);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).token().kind()).isEqualTo(SyntaxKind.TIME_LITERAL);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).dataType().format()).isEqualTo(DataFormat.TIME);
+	}
+
+	@Test
+	void parseConditionsWithExtendedTimeLiterals()
+	{
+		var criteria = assertParsesCriteria("#VAR < E'2010-02-02 15:00:00'", IRelationalCriteriaNode.class);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).token().kind()).isEqualTo(SyntaxKind.EXTENDED_TIME_LITERAL);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).dataType().format()).isEqualTo(DataFormat.TIME);
+	}
+
+	@Test
+	void parseConditionsWithHexLiterals()
+	{
+		var criteria = assertParsesCriteria("#VAR = H'0A'", IRelationalCriteriaNode.class);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).token().kind()).isEqualTo(SyntaxKind.HEX_LITERAL);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).dataType().format()).isEqualTo(DataFormat.ALPHANUMERIC);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).dataType().length()).isEqualTo(1);
 	}
 
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
