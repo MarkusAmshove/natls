@@ -112,6 +112,16 @@ class InputStatementParsingShould extends StatementParseTest
 		assertNodeOperand(input, 2, IVariableReferenceNode.class, "#VAR");
 	}
 
+	@Test
+	void consumeTabsAndSkips()
+	{
+		var input = assertParsesSingleStatement("INPUT 'Hi' / 'Ho' 5T #VAR", IInputStatementNode.class);
+		assertThat(input.operands()).hasSize(3);
+		assertNodeOperand(input, 0, ILiteralNode.class, "'Hi'");
+		assertNodeOperand(input, 1, ILiteralNode.class, "'Ho'");
+		assertNodeOperand(input, 2, IVariableReferenceNode.class, "#VAR");
+	}
+
 	private void assertNodeOperand(IInputStatementNode input, int index, Class<? extends ITokenNode> operandType, String source)
 	{
 		assertThat(
