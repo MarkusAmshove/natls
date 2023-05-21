@@ -783,7 +783,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				var delimiter = consumeOperandNode(compress);
 				if (delimiter instanceof ILiteralNode literal)
 				{
-					if (checkLiteralType(literal, SyntaxKind.STRING_LITERAL))
+					if (checkLiteralType(literal, SyntaxKind.STRING_LITERAL, SyntaxKind.HEX_LITERAL))
 					{
 						checkStringLength(literal.token(), literal.token().stringValue(), 1);
 					}
@@ -2024,15 +2024,18 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return printer;
 	}
 
-	private boolean checkLiteralType(ILiteralNode literal, SyntaxKind allowedKind)
+	private boolean checkLiteralType(ILiteralNode literal, SyntaxKind... allowedKinds)
 	{
-		if (literal.token().kind() != allowedKind)
+		for (var allowedKind : allowedKinds)
 		{
-			report(ParserErrors.invalidLiteralType(literal, allowedKind));
-			return false;
+			if (literal.token().kind() == allowedKind)
+			{
+				return true;
+			}
 		}
 
-		return true;
+		report(ParserErrors.invalidLiteralType(literal, allowedKinds));
+		return false;
 	}
 
 	private void checkLiteralTypeIfLiteral(IOperandNode operand, SyntaxKind allowedKind)

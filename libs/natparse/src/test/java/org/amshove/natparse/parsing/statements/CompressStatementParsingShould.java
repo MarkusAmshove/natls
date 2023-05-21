@@ -84,6 +84,14 @@ class CompressStatementParsingShould extends StatementParseTest
 	}
 
 	@Test
+	void parseDelimiterWithHexLiteral()
+	{
+		var compress = assertParsesSingleStatement("COMPRESS #VARS(*) INTO #VAR WITH DELIMITER H'0A'", ICompressStatementNode.class);
+		assertThat(compress.isWithDelimiters()).isTrue();
+		assertThat(assertNodeType(compress.delimiter(), ILiteralNode.class).token().source()).isEqualTo("H'0A'");
+	}
+
+	@Test
 	void raiseADiagnosticIfTheDelimiterIsOfIncorrectType()
 	{
 		assertDiagnostic("COMPRESS #VAR INTO #VAR2 WITH ALL DELIMITERS 5", ParserError.TYPE_MISMATCH);
