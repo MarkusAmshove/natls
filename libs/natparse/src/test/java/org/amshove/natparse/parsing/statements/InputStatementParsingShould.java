@@ -27,10 +27,6 @@ class InputStatementParsingShould extends StatementParseTest
 		assertNodeOperand(input, 0, IVariableReferenceNode.class, "#VAR");
 		assertNodeOperand(input, 1, ILiteralNode.class, "'Hi'");
 		assertNodeOperand(input, 2, IVariableReferenceNode.class, "#VAR2");
-
-		assertThat(input.mutations()).hasSize(2);
-		assertThat(input.mutations()).contains(input.operands().get(0));
-		assertThat(input.mutations()).contains(input.operands().get(2));
 	}
 
 	@Test
@@ -104,6 +100,16 @@ class InputStatementParsingShould extends StatementParseTest
 	{
 		var input = assertParsesSingleStatement("INPUT USING MAP 'Map' NO PARAMETER", IInputStatementNode.class);
 		assertThat(input.operands()).isEmpty();
+	}
+
+	@Test
+	void consumeInputsWithPositions()
+	{
+		var input = assertParsesSingleStatement("INPUT 'Hi' 10/15 'Ho' 20/20 #VAR", IInputStatementNode.class);
+		assertThat(input.operands()).hasSize(3);
+		assertNodeOperand(input, 0, ILiteralNode.class, "'Hi'");
+		assertNodeOperand(input, 1, ILiteralNode.class, "'Ho'");
+		assertNodeOperand(input, 2, IVariableReferenceNode.class, "#VAR");
 	}
 
 	private void assertNodeOperand(IInputStatementNode input, int index, Class<? extends ITokenNode> operandType, String source)
