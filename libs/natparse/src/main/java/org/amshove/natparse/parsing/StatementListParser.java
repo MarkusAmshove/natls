@@ -176,6 +176,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case HISTOGRAM:
 						statementList.addStatement(histogram());
 						break;
+					case INPUT:
+						statementList.addStatement(inputStatement());
+						break;
 					case SELECT:
 						statementList.addStatement(select());
 						break;
@@ -1722,6 +1725,116 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return display;
 	}
 
+	private StatementNode inputStatement() throws ParseError
+	{
+		var input = new InputStatementNode();
+		consumeMandatory(input, SyntaxKind.INPUT);
+
+		if (consumeOptionally(input, SyntaxKind.WINDOW))
+		{
+			consumeMandatory(input, SyntaxKind.EQUALS_SIGN);
+			consumeLiteralNode(input, SyntaxKind.STRING_LITERAL);
+		}
+
+		if (consumeOptionally(input, SyntaxKind.NO))
+		{
+			consumeMandatory(input, SyntaxKind.ERASE);
+		}
+
+		if (consumeOptionally(input, SyntaxKind.LPAREN))
+		{
+			// statement attributes?
+			while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+			{
+				consume(input);
+			}
+			consumeMandatory(input, SyntaxKind.RPAREN);
+		}
+
+		if (peekKind(SyntaxKind.WITH) || peekKind(SyntaxKind.TEXT))
+		{
+			consumeOptionally(input, SyntaxKind.WITH);
+			consumeMandatory(input, SyntaxKind.TEXT);
+
+			consumeOptionally(input, SyntaxKind.ASTERISK);
+			consumeOperandNode(input);
+
+			if (consumeOptionally(input, SyntaxKind.LPAREN))
+			{
+				// statement attributes?
+				while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+				{
+					consume(input);
+				}
+				consumeMandatory(input, SyntaxKind.RPAREN);
+			}
+
+			while (consumeOptionally(input, SyntaxKind.COMMA))
+			{
+				consumeOperandNode(input);
+			}
+		}
+
+		if (consumeOptionally(input, SyntaxKind.MARK))
+		{
+			if (consumeOptionally(input, SyntaxKind.POSITION))
+			{
+				consumeOperandNode(input);
+				consumeOptionally(input, SyntaxKind.IN);
+			}
+
+			consumeOptionally(input, SyntaxKind.FIELD);
+			consumeOptionally(input, SyntaxKind.ASTERISK);
+			consumeOperandNode(input);
+		}
+
+		if (peekKind(SyntaxKind.AND) || peekKind(SyntaxKind.SOUND) || peekKind(SyntaxKind.ALARM))
+		{
+			consumeOptionally(input, SyntaxKind.AND);
+			consumeOptionally(input, SyntaxKind.SOUND);
+			consumeMandatory(input, SyntaxKind.ALARM);
+		}
+
+		if (peekKind(SyntaxKind.USING) || peekKind(SyntaxKind.MAP))
+		{
+			consumeOptionally(input, SyntaxKind.USING);
+			consumeMandatory(input, SyntaxKind.MAP);
+			consumeLiteralNode(input, SyntaxKind.STRING_LITERAL);
+			// TODO: Side load map. Create new type for Input that uses map, so that it can be IModuleReferencingNode ?
+			if (peekKind(SyntaxKind.NO) && peekKind(1, SyntaxKind.ERASE))
+			{
+				consumeMandatory(input, SyntaxKind.NO);
+				consumeMandatory(input, SyntaxKind.ERASE);
+			}
+
+			if (consumeOptionally(input, SyntaxKind.NO))
+			{
+				consumeMandatory(input, SyntaxKind.PARAMETER);
+				return input;
+			}
+		}
+
+		while (!isAtEnd() && !isStatementStart())
+		{
+			if (peekKind(SyntaxKind.LPAREN) && getKind(1).isAttribute())
+			{
+				consumeAttributeDefinition(input);
+			}
+			else
+			{
+				if ((consumeOptionally(input, SyntaxKind.NO) && consumeOptionally(input, SyntaxKind.PARAMETER))
+					|| !isOperand() && !peekKind(SyntaxKind.TAB_SETTING) && !peekKind(SyntaxKind.SLASH) && !peekKind(SyntaxKind.OPERAND_SKIP))
+				{
+					break;
+				}
+
+				input.addOperand(consumeWriteOperand(input));
+			}
+		}
+
+		return input;
+	}
+
 	private static final Set<SyntaxKind> OPTIONAL_WRITE_FLAGS = Set.of(SyntaxKind.NOTITLE, SyntaxKind.NOHDR, SyntaxKind.USING, SyntaxKind.MAP, SyntaxKind.FORM, SyntaxKind.TITLE, SyntaxKind.LEFT, SyntaxKind.JUSTIFIED, SyntaxKind.UNDERLINED);
 
 	private StatementNode write() throws ParseError
@@ -1738,7 +1851,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			else
 			{
 				// currently consume everything until closing parenthesis to consume things like attribute definition etc.
-				while (!peekKind(SyntaxKind.RPAREN))
+				while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
 				{
 					consume(write);
 				}
@@ -1771,31 +1884,32 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return write;
 	}
 
-	private void consumeWriteOperand(WriteNode write) throws ParseError
+	private IOperandNode consumeWriteOperand(BaseSyntaxNode writeLikeNode) throws ParseError
 	{
-		if (consumeOptionally(write, SyntaxKind.TAB_SETTING)
-			|| consumeOptionally(write, SyntaxKind.SLASH)
-			|| consumeOptionally(write, SyntaxKind.OPERAND_SKIP))
+		if (consumeOptionally(writeLikeNode, SyntaxKind.TAB_SETTING)
+			|| consumeOptionally(writeLikeNode, SyntaxKind.SLASH)
+			|| consumeOptionally(writeLikeNode, SyntaxKind.OPERAND_SKIP))
 		{
-			return;
+			return null;
 		}
 
 		if (peekKind().isLiteralOrConst())
 		{
-			consumeLiteralNode(write, SyntaxKind.STRING_LITERAL);
+			var literal = consumeLiteralNode(writeLikeNode, SyntaxKind.STRING_LITERAL);
 			if (peekKind(SyntaxKind.LPAREN))
 			{
 				// currently consume everything until closing parenthesis to consume attribute definition shorthands
 				while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
 				{
-					consume(write);
+					consume(writeLikeNode);
 				}
-				consumeMandatory(write, SyntaxKind.RPAREN);
+				consumeMandatory(writeLikeNode, SyntaxKind.RPAREN);
 			}
+			return literal;
 		}
 		else
 		{
-			consumeOperandNode(write);
+			return consumeOperandNode(writeLikeNode);
 		}
 	}
 
