@@ -206,4 +206,40 @@ class LexerForStringsShould extends AbstractLexerTest
 			assertedDiagnostic(2, 2, 0, 11, LexerError.UNTERMINATED_STRING)
 		);
 	}
+
+	@Test
+	void lexTimeStringLiterals()
+	{
+		assertTokens(
+			"T'09:10:12'",
+			token(SyntaxKind.TIME_LITERAL, "T'09:10:12'")
+		);
+	}
+
+	@Test
+	void reportADiagnosticForUnterminatedTimeLiterals()
+	{
+		assertDiagnostic(
+			"#T'09:10:12",
+			assertedDiagnostic(2, 2, 0, 9, LexerError.UNTERMINATED_STRING)
+		);
+	}
+
+	@Test
+	void lexExtendedTimeStringLiterals()
+	{
+		assertTokens(
+			"E'2010-05-05 09:10:12'",
+			token(SyntaxKind.EXTENDED_TIME_LITERAL, "E'2010-05-05 09:10:12'")
+		);
+	}
+
+	@Test
+	void reportADiagnosticForUnterminatedExtendedTimeLiterals()
+	{
+		assertDiagnostic(
+			"#E'2010-05-05",
+			assertedDiagnostic(2, 2, 0, 11, LexerError.UNTERMINATED_STRING)
+		);
+	}
 }
