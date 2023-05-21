@@ -182,7 +182,7 @@ public class Lexer
 				case 'H':
 					if (scanner.peek(1) == '\'')
 					{
-						consumeHexString();
+						consumeHexLiteral();
 					}
 					else
 					{
@@ -1496,12 +1496,12 @@ public class Lexer
 		createAndAdd(SyntaxKind.DATE_LITERAL);
 	}
 
-	private void consumeHexString()
+	private void consumeHexLiteral()
 	{
 		scanner.start();
 		scanner.advance(2); // H and '
 
-		if (!consumeStringToEnd(SyntaxKind.STRING_LITERAL))
+		if (!consumeStringToEnd(SyntaxKind.HEX_LITERAL))
 		{
 			return;
 		}
@@ -1510,7 +1510,7 @@ public class Lexer
 		// actual characters.
 
 		scanner.advance();
-		createAndAdd(SyntaxKind.STRING_LITERAL);
+		createAndAdd(SyntaxKind.HEX_LITERAL);
 		var hexLiteralChars = previousUnsafe().source().length() - 3; // - H''
 		if (hexLiteralChars % 2 != 0)
 		{

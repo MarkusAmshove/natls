@@ -61,7 +61,7 @@ class LexerForStringsShould extends AbstractLexerTest
 	@Test
 	void lexHexStrings()
 	{
-		assertTokens("H'00'", token(SyntaxKind.STRING_LITERAL, "H'00'"));
+		assertTokens("H'00'", token(SyntaxKind.HEX_LITERAL, "H'00'"));
 	}
 
 	@Test

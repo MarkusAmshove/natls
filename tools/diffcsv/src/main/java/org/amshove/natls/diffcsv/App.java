@@ -19,7 +19,7 @@ public class App
 			System.exit(1);
 		}
 
-		var arguments = Arrays.asList(args);
+		var arguments = new ArrayList<>(Arrays.asList(args));
 		var newMode = arguments.remove("--new");
 		if (!newMode)
 		{
