@@ -31,7 +31,6 @@ import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.builtin.BuiltInFunctionTable;
-import org.amshove.natparse.natural.builtin.IBuiltinFunctionDefinition;
 import org.amshove.natparse.natural.builtin.SystemFunctionDefinition;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
@@ -522,14 +521,14 @@ public class NaturalLanguageService implements LanguageClientAware
 			.filter(sk -> sk.isSystemVariable() || sk.isSystemFunction())
 			.map(sk ->
 			{
-				var callableName = sk.toString().replace("SV", "").replace("_", "-");
+				var callableName = sk.toString().replace("SV_", "").replace("_", "-");
 				var completionItem = new CompletionItem();
 				var definition = BuiltInFunctionTable.getDefinition(sk);
 				var label = "*" + callableName;
 				var insertion = triggered ? callableName : label;
 				completionItem.setDetail(definition.documentation());
 				completionItem.setKind(definition instanceof SystemFunctionDefinition ? CompletionItemKind.Function : CompletionItemKind.Variable);
-				completionItem.setLabel(label + " : %s".formatted(definition.type().toShortString()));
+				completionItem.setLabel(label + " :%s".formatted(definition.type().toShortString()));
 				completionItem.setSortText(
 					(triggered ? "0" : "9") + completionItem.getLabel()
 				); // if triggered, bring them to the front. else to the end.
