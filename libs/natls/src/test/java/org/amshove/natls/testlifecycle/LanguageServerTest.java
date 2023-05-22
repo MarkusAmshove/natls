@@ -28,6 +28,11 @@ public abstract class LanguageServerTest
 		return createOrSaveFile(libraryName, name, source.source());
 	}
 
+	protected TextDocumentIdentifier createOrSaveFileWithCursor(String libraryName, String name, String sourceWithCursor)
+	{
+		return createOrSaveFile(libraryName, name, SourceWithCursor.fromSourceWithCursor(sourceWithCursor));
+	}
+
 	protected void configureEditorConfig(String editorConfig)
 	{
 		getContext().languageService().loadEditorConfig(createFileRelativeToProjectRoot(".editorconfig", editorConfig));
