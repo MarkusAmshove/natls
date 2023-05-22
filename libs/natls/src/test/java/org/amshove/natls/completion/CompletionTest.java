@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-public class CompletionTest extends EmptyProjectTest
+public abstract class CompletionTest extends EmptyProjectTest
 {
 	protected CompletionAssertion assertCompletions(String libName, String fileName, String sourceWithCursor)
 	{
