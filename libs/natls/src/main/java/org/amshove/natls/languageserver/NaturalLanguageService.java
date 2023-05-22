@@ -30,6 +30,9 @@ import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.builtin.BuiltInFunctionTable;
+import org.amshove.natparse.natural.builtin.IBuiltinFunctionDefinition;
+import org.amshove.natparse.natural.builtin.SystemFunctionDefinition;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.natural.project.NaturalProject;
@@ -47,10 +50,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -516,6 +516,37 @@ public class NaturalLanguageService implements LanguageClientAware
 		return signatureHelp.provideSignatureHelp(module, position);
 	}
 
+	private List<CompletionItem> completeSystemVars(boolean triggered)
+	{
+		return Arrays.stream(SyntaxKind.values())
+			.filter(sk -> sk.isSystemVariable() || sk.isSystemFunction())
+			.map(sk ->
+			{
+				var callableName = sk.toString().replace("SV", "").replace("_", "-");
+				var completionItem = new CompletionItem();
+				var definition = BuiltInFunctionTable.getDefinition(sk);
+				var label = "*" + callableName;
+				var insertion = triggered ? callableName : label;
+				completionItem.setDetail(definition.documentation());
+				completionItem.setKind(definition instanceof SystemFunctionDefinition ? CompletionItemKind.Function : CompletionItemKind.Variable);
+				completionItem.setLabel(label + " : %s".formatted(definition.type().toShortString()));
+				completionItem.setSortText(
+					(triggered ? "0" : "9") + completionItem.getLabel()
+				); // if triggered, bring them to the front. else to the end.
+
+				completionItem.setInsertText(insertion);
+				if (definition instanceof SystemFunctionDefinition functionDefinition && !functionDefinition.parameter().isEmpty())
+				{
+					completionItem.setInsertText(insertion + "($1)$0");
+					completionItem.setInsertTextFormat(InsertTextFormat.Snippet);
+				}
+
+				return completionItem;
+			})
+			.toList();
+
+	}
+
 	public List<CompletionItem> complete(CompletionParams completionParams)
 	{
 		var fileUri = completionParams.getTextDocument().getUri();
@@ -549,6 +580,8 @@ public class NaturalLanguageService implements LanguageClientAware
 				})
 				.toList()
 		);
+
+		completionItems.addAll(completeSystemVars("*".equals(completionParams.getContext().getTriggerCharacter())));
 
 		return completionItems;
 	}
