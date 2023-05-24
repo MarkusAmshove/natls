@@ -873,6 +873,7 @@ abstract class AbstractParser<T>
 	{
 		var rangedAccess = new RangedArrayAccessNode();
 		parent.replaceChild((BaseSyntaxNode) lower, rangedAccess);
+		rangedAccess.addNode((BaseSyntaxNode) lower);
 		consumeMandatory(rangedAccess, SyntaxKind.COLON);
 		var upper = consumeArithmeticExpression(rangedAccess);
 

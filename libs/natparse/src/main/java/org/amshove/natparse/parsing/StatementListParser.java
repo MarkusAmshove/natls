@@ -824,17 +824,18 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		if (consumeOptionally(reduce, SyntaxKind.LPAREN))
 		{
-			while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+			do
 			{
-				consume(reduce);
+				reduce.addDimension(consumeArrayAccess(reduce));
 			}
-
+			while (consumeOptionally(reduce, SyntaxKind.COMMA));
 			consumeMandatory(reduce, SyntaxKind.RPAREN);
 		}
 		else
 		{
 			var literal = consumeLiteralNode(reduce, SyntaxKind.NUMBER_LITERAL);
 			checkIntLiteralValue(literal, 0);
+			reduce.addDimension(literal);
 		}
 
 		if (consumeOptionally(reduce, SyntaxKind.GIVING))
@@ -891,10 +892,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(expand, SyntaxKind.TO);
 
 		consumeMandatory(expand, SyntaxKind.LPAREN);
-		while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+		do
 		{
-			consume(expand);
+			expand.addDimension(consumeArrayAccess(expand));
 		}
+		while (consumeOptionally(expand, SyntaxKind.COMMA));
 		consumeMandatory(expand, SyntaxKind.RPAREN);
 
 		if (consumeOptionally(expand, SyntaxKind.GIVING))
@@ -956,11 +958,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(resize, SyntaxKind.TO);
 
 		consumeMandatory(resize, SyntaxKind.LPAREN);
-		while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+		do
 		{
-			consume(resize);
+			resize.addDimension(consumeArrayAccess(resize));
 		}
-
+		while (consumeOptionally(resize, SyntaxKind.COMMA));
 		consumeMandatory(resize, SyntaxKind.RPAREN);
 
 		if (consumeOptionally(resize, SyntaxKind.GIVING))
