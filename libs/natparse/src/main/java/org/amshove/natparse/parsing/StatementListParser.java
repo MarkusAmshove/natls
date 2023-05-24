@@ -824,17 +824,18 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		if (consumeOptionally(reduce, SyntaxKind.LPAREN))
 		{
-			while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+			do
 			{
-				consume(reduce);
+				reduce.addDimension(consumeArrayAccess(reduce));
 			}
-
+			while (consumeOptionally(reduce, SyntaxKind.COMMA));
 			consumeMandatory(reduce, SyntaxKind.RPAREN);
 		}
 		else
 		{
 			var literal = consumeLiteralNode(reduce, SyntaxKind.NUMBER_LITERAL);
 			checkIntLiteralValue(literal, 0);
+			reduce.addDimension(literal);
 		}
 
 		if (consumeOptionally(reduce, SyntaxKind.GIVING))

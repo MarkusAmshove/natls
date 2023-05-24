@@ -2117,6 +2117,23 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(reduce.arrayToReduce().referencingToken().symbolName()).isEqualTo("#ARR");
 	}
 
+	@Test
+	void parseReduceArrayToDimensionWithVariableReferences()
+	{
+		var reduce = assertParsesSingleStatement("REDUCE ARRAY ARR TO (1:#K)", IReduceArrayNode.class);
+		var variableRef = reduce.dimensions().first().findDescendantOfType(IVariableReferenceNode.class);
+		assertThat(variableRef).isNotNull();
+		assertIsVariableReference(variableRef, "#K");
+	}
+
+	@Test
+	void parseReduceArrayToMultipleDimensionsWithVariableReferences()
+	{
+		var reduce = assertParsesSingleStatement("REDUCE ARRAY ARR TO (1:#K,#L:5)", IReduceArrayNode.class);
+		assertIsVariableReference(reduce.dimensions().get(0).findDescendantOfType(IVariableReferenceNode.class), "#K");
+		assertIsVariableReference(reduce.dimensions().get(1).findDescendantOfType(IVariableReferenceNode.class), "#L");
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{

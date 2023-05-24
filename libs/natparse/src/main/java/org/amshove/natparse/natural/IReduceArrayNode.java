@@ -1,5 +1,7 @@
 package org.amshove.natparse.natural;
 
+import org.amshove.natparse.ReadOnlyList;
+
 import javax.annotation.Nullable;
 
 public interface IReduceArrayNode extends IStatementNode
@@ -8,4 +10,6 @@ public interface IReduceArrayNode extends IStatementNode
 
 	@Nullable
 	IVariableReferenceNode errorVariable();
+
+	ReadOnlyList<IOperandNode> dimensions();
 }
