@@ -128,6 +128,7 @@ public abstract class AbstractParserTest<NodeType>
 
 	protected IVariableReferenceNode assertIsVariableReference(IOperandNode operand, String name)
 	{
+		assertThat(operand).as("Expected a variable reference, but operand is null").isNotNull();
 		var variable = assertNodeType(operand, IVariableReferenceNode.class);
 		assertThat(variable.referencingToken().symbolName()).isEqualTo(name);
 		return variable;

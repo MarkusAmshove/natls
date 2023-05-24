@@ -891,10 +891,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(expand, SyntaxKind.TO);
 
 		consumeMandatory(expand, SyntaxKind.LPAREN);
-		while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+		do
 		{
-			consume(expand);
+			expand.addDimension(consumeArrayAccess(expand));
 		}
+		while (consumeOptionally(expand, SyntaxKind.COMMA));
 		consumeMandatory(expand, SyntaxKind.RPAREN);
 
 		if (consumeOptionally(expand, SyntaxKind.GIVING))

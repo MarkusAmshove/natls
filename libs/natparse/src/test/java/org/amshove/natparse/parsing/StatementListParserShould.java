@@ -2150,8 +2150,25 @@ class StatementListParserShould extends StatementParseTest
 	})
 	void parseExpandArrayToDimension(String source)
 	{
-		var reduce = assertParsesSingleStatement("EXPAND %s ARRAY #ARR TO (1:10,*:*,5:*)".formatted(source), IExpandArrayNode.class);
-		assertThat(reduce.arrayToExpand().referencingToken().symbolName()).isEqualTo("#ARR");
+		var expand = assertParsesSingleStatement("EXPAND %s ARRAY #ARR TO (1:10,*:*,5:*)".formatted(source), IExpandArrayNode.class);
+		assertThat(expand.arrayToExpand().referencingToken().symbolName()).isEqualTo("#ARR");
+	}
+
+	@Test
+	void parseExpandArrayToDimensionWithVariableReferences()
+	{
+		var expand = assertParsesSingleStatement("EXPAND ARRAY ARR TO (1:#K)", IExpandArrayNode.class);
+		var variableRef = expand.dimensions().first().findDescendantOfType(IVariableReferenceNode.class);
+		assertThat(variableRef).isNotNull();
+		assertIsVariableReference(variableRef, "#K");
+	}
+
+	@Test
+	void parseExpandArrayToMultipleDimensionsWithVariableReferences()
+	{
+		var expand = assertParsesSingleStatement("EXPAND ARRAY ARR TO (1:#K,#L:5)", IExpandArrayNode.class);
+		assertIsVariableReference(expand.dimensions().get(0).findDescendantOfType(IVariableReferenceNode.class), "#K");
+		assertIsVariableReference(expand.dimensions().get(1).findDescendantOfType(IVariableReferenceNode.class), "#L");
 	}
 
 	@ParameterizedTest
