@@ -1914,6 +1914,23 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(resize.findDescendantToken(SyntaxKind.RPAREN)).isNotNull();
 	}
 
+	@Test
+	void parseResizeArrayToDimensionWithVariableReferences()
+	{
+		var resize = assertParsesSingleStatement("RESIZE ARRAY ARR TO (1:#K)", IResizeArrayNode.class);
+		var variableRef = resize.dimensions().first().findDescendantOfType(IVariableReferenceNode.class);
+		assertThat(variableRef).isNotNull();
+		assertIsVariableReference(variableRef, "#K");
+	}
+
+	@Test
+	void parseResizeArrayToMultipleDimensionsWithVariableReferences()
+	{
+		var resize = assertParsesSingleStatement("RESIZE ARRAY ARR TO (1:#K,#L:5)", IResizeArrayNode.class);
+		assertIsVariableReference(resize.dimensions().get(0).findDescendantOfType(IVariableReferenceNode.class), "#K");
+		assertIsVariableReference(resize.dimensions().get(1).findDescendantOfType(IVariableReferenceNode.class), "#L");
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
