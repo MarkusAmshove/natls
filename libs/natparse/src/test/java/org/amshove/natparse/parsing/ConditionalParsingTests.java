@@ -206,6 +206,19 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(assertNodeType(criteria.upperBound(), ILiteralNode.class).token().intValue()).isEqualTo(10);
 	}
 
+	@Test
+	void parseAThruExtendedRelationalExpressionWithArithmetic()
+	{
+		var criteria = assertParsesCriteria("#VAR = 1 THRU #VAR2 - 1", IRangedExtendedRelationalCriteriaNode.class);
+		assertThat(assertNodeType(criteria.left(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+		assertThat(criteria.operator()).isEqualTo(ComparisonOperator.EQUAL);
+		assertThat(assertNodeType(criteria.lowerBound(), ILiteralNode.class).token().intValue()).isEqualTo(1);
+		var arithmetic = assertNodeType(criteria.upperBound(), IArithmeticExpressionNode.class);
+		assertIsVariableReference(arithmetic.left(), "#VAR2");
+		assertThat(arithmetic.operator()).isEqualTo(SyntaxKind.MINUS);
+		assertLiteral(arithmetic.right(), SyntaxKind.NUMBER_LITERAL);
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
