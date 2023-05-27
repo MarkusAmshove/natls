@@ -2862,14 +2862,14 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		var rangedCriteria = new RangedExtendedRelationalCriteriaNode(expression);
 		consumeMandatory(rangedCriteria, SyntaxKind.THRU);
-		rangedCriteria.setUpperBound(consumeOperandNode(rangedCriteria));
+		rangedCriteria.setUpperBound(consumeArithmeticExpression(rangedCriteria));
 		if (consumeOptionally(rangedCriteria, SyntaxKind.BUT))
 		{
 			consumeMandatory(rangedCriteria, SyntaxKind.NOT);
-			rangedCriteria.setExcludedLowerBound(consumeOperandNode(rangedCriteria));
+			rangedCriteria.setExcludedLowerBound(consumeArithmeticExpression(rangedCriteria));
 			if (consumeOptionally(rangedCriteria, SyntaxKind.THRU))
 			{
-				rangedCriteria.setExcludedUpperBound(consumeOperandNode(rangedCriteria));
+				rangedCriteria.setExcludedUpperBound(consumeArithmeticExpression(rangedCriteria));
 			}
 		}
 		return rangedCriteria;
