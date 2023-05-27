@@ -751,6 +751,12 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).dataType().length()).isEqualTo(1);
 	}
 
+	@Test
+	void parseConditionsWithSingleLiteralsInParens()
+	{
+		assertParsesCriteria("(5 = (-1) * 5)", IGroupedConditionCriteria.class);
+	}
+
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)
 	{
 		var list = assertParsesWithoutDiagnostics("IF %s\nIGNORE\nEND-IF".formatted(source));

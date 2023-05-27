@@ -418,6 +418,13 @@ abstract class AbstractParser<T>
 
 		var needRParen = consumeOptionally(node, SyntaxKind.LPAREN);
 		var operand = consumeOperandNode(node);
+
+		if (needRParen && peekKind(SyntaxKind.RPAREN))
+		{
+			needRParen = false;
+			consumeMandatory(node, SyntaxKind.RPAREN);
+		}
+
 		while (peekAny(ARITHMETIC_OPERATOR_KINDS))
 		{
 			var arithmetic = new ArithmeticExpressionNode();
