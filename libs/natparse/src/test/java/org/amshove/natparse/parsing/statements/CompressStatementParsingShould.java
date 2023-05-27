@@ -66,7 +66,7 @@ class CompressStatementParsingShould extends StatementParseTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"WITH DELIMITERS", "WITH ALL DELIMITERS", "WITH DELIMITER", "WITH ALL DELIMITER"
+		"WITH DELIMITERS", "WITH ALL DELIMITERS", "WITH DELIMITER", "WITH ALL DELIMITER", "WITH"
 	})
 	void parseWithDelimiters(String permutation)
 	{

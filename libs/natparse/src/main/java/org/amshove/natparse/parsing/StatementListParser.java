@@ -783,7 +783,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			}
 
 			compress.setWithAllDelimiters(consumeOptionally(compress, SyntaxKind.ALL));
-			consumeAnyMandatory(compress, List.of(SyntaxKind.DELIMITER, SyntaxKind.DELIMITERS));
+			consumeAnyOptionally(compress, List.of(SyntaxKind.DELIMITER, SyntaxKind.DELIMITERS));
 			if (isOperand())
 			{
 				var delimiter = consumeOperandNode(compress);
