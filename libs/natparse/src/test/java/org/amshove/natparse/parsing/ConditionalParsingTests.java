@@ -206,6 +206,19 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(assertNodeType(criteria.upperBound(), ILiteralNode.class).token().intValue()).isEqualTo(10);
 	}
 
+	@Test
+	void parseAThruExtendedRelationalExpressionWithArithmetic()
+	{
+		var criteria = assertParsesCriteria("#VAR = 1 THRU #VAR2 - 1", IRangedExtendedRelationalCriteriaNode.class);
+		assertThat(assertNodeType(criteria.left(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+		assertThat(criteria.operator()).isEqualTo(ComparisonOperator.EQUAL);
+		assertThat(assertNodeType(criteria.lowerBound(), ILiteralNode.class).token().intValue()).isEqualTo(1);
+		var arithmetic = assertNodeType(criteria.upperBound(), IArithmeticExpressionNode.class);
+		assertIsVariableReference(arithmetic.left(), "#VAR2");
+		assertThat(arithmetic.operator()).isEqualTo(SyntaxKind.MINUS);
+		assertLiteral(arithmetic.right(), SyntaxKind.NUMBER_LITERAL);
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
@@ -703,6 +716,45 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	void parseGroupedCriteriaWithArithmeticsOnTheRhs()
 	{
 		assertParsesCriteria("#VAR1 EQ 0 OR (#VAR2 + #VAR1 >= #VAR3)", IChainedCriteriaNode.class);
+	}
+
+	@Test
+	void parseConditionsWithDateLiterals()
+	{
+		var criteria = assertParsesCriteria("#VAR < D'1990-01-01'", IRelationalCriteriaNode.class);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).token().kind()).isEqualTo(SyntaxKind.DATE_LITERAL);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).dataType().format()).isEqualTo(DataFormat.DATE);
+	}
+
+	@Test
+	void parseConditionsWithTimeLiterals()
+	{
+		var criteria = assertParsesCriteria("#VAR < T'15:00:00'", IRelationalCriteriaNode.class);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).token().kind()).isEqualTo(SyntaxKind.TIME_LITERAL);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).dataType().format()).isEqualTo(DataFormat.TIME);
+	}
+
+	@Test
+	void parseConditionsWithExtendedTimeLiterals()
+	{
+		var criteria = assertParsesCriteria("#VAR < E'2010-02-02 15:00:00'", IRelationalCriteriaNode.class);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).token().kind()).isEqualTo(SyntaxKind.EXTENDED_TIME_LITERAL);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).dataType().format()).isEqualTo(DataFormat.TIME);
+	}
+
+	@Test
+	void parseConditionsWithHexLiterals()
+	{
+		var criteria = assertParsesCriteria("#VAR = H'0A'", IRelationalCriteriaNode.class);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).token().kind()).isEqualTo(SyntaxKind.HEX_LITERAL);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).dataType().format()).isEqualTo(DataFormat.ALPHANUMERIC);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).dataType().length()).isEqualTo(1);
+	}
+
+	@Test
+	void parseConditionsWithSingleLiteralsInParens()
+	{
+		assertParsesCriteria("(5 = (-1) * 5)", IGroupedConditionCriteria.class);
 	}
 
 	protected <T extends ILogicalConditionCriteriaNode> T assertParsesCriteria(String source, Class<T> criteriaType)

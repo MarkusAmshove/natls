@@ -66,7 +66,7 @@ class CompressStatementParsingShould extends StatementParseTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"WITH DELIMITERS", "WITH ALL DELIMITERS", "WITH DELIMITER", "WITH ALL DELIMITER"
+		"WITH DELIMITERS", "WITH ALL DELIMITERS", "WITH DELIMITER", "WITH ALL DELIMITER", "WITH"
 	})
 	void parseWithDelimiters(String permutation)
 	{
@@ -81,6 +81,14 @@ class CompressStatementParsingShould extends StatementParseTest
 		assertThat(compress.isWithDelimiters()).isTrue();
 		assertThat(compress.isWithAllDelimiters()).isTrue();
 		assertThat(assertNodeType(compress.delimiter(), ILiteralNode.class).token().stringValue()).isEqualTo(";");
+	}
+
+	@Test
+	void parseDelimiterWithHexLiteral()
+	{
+		var compress = assertParsesSingleStatement("COMPRESS #VARS(*) INTO #VAR WITH DELIMITER H'0A'", ICompressStatementNode.class);
+		assertThat(compress.isWithDelimiters()).isTrue();
+		assertThat(assertNodeType(compress.delimiter(), ILiteralNode.class).token().source()).isEqualTo("H'0A'");
 	}
 
 	@Test

@@ -20,6 +20,8 @@ public enum SyntaxKind
 	SLASH(false, false, false),
 	BACKSLASH(false, false, false),
 	UNDERSCORE(false, false, false),
+	LEADING(true, false, false),
+	TRAILING(true, false, false),
 	SECTION_SYMBOL(false, false, false),
 	SEMICOLON(false, false, false),
 	GREATER_SIGN(false, false, false),
@@ -27,9 +29,14 @@ public enum SyntaxKind
 	LESSER_SIGN(false, false, false),
 	LESSER_EQUALS_SIGN(false, false, false),
 	CIRCUMFLEX_EQUAL(false, false, false),
+	SQL_CONCAT(false, false, false),
 	NUMBER_LITERAL(false, false, false),
 	LESSER_GREATER(false, false, false),
 	STRING_LITERAL(false, false, false),
+	HEX_LITERAL(false, false, false),
+	DATE_LITERAL(false, false, false),
+	TIME_LITERAL(false, false, false),
+	EXTENDED_TIME_LITERAL(false, false, false),
 	IDENTIFIER(true, false, false),
 	LABEL_IDENTIFIER(false, false, false),
 	COMMENT(false, false, false),
@@ -69,6 +76,8 @@ public enum SyntaxKind
 	PAGE_NUMBER(false, true, true),
 	WINDOW_LS(false, true, false),
 	WINDOW_PS(false, true, false),
+	PID(false, true, false),
+	WINDOW_POS(false, true, false),
 	LIBRARY_ID(false, true, false),
 	LINEX(false, true, false),
 	LINE_COUNT(false, true, true),
@@ -136,7 +145,7 @@ public enum SyntaxKind
 	COMPUTE(false, false, false),
 	COPY(false, false, false),
 	COS(false, false, false),
-	COUNT(true, false, false),
+	COUNT(false, false, false),
 	CREATE(false, false, false),
 	DECIDE(false, false, false),
 	DEFINE(false, false, false),
@@ -354,7 +363,7 @@ public enum SyntaxKind
 	CS(true, false, false),
 	CURRENT(true, false, false),
 	CURSOR(true, false, false),
-	CV(true, false, false),
+	CV(false, false, false),
 	DATA(true, false, false),
 	DATAAREA(true, false, false),
 	DAY(true, false, false),
@@ -644,6 +653,7 @@ public enum SyntaxKind
 	SEQUENCE(true, false, false),
 	SERVER(true, false, false),
 	SETS(true, false, false),
+	SB(false, false, false),
 	SF(true, false, false),
 	SG(true, false, false),
 	SHORT(true, false, false),
@@ -752,7 +762,7 @@ public enum SyntaxKind
 
 	public boolean isLiteralOrConst()
 	{
-		return isBoolean() || this == NUMBER_LITERAL || this == STRING_LITERAL;
+		return isBoolean() || this == NUMBER_LITERAL || this == STRING_LITERAL || this == DATE_LITERAL || this == HEX_LITERAL || this == TIME_LITERAL || this == EXTENDED_TIME_LITERAL;
 	}
 
 	public boolean canBeIdentifier()
@@ -762,6 +772,6 @@ public enum SyntaxKind
 
 	public boolean isAttribute()
 	{
-		return this == AD || this == DY || this == CD || this == EM || this == NL || this == AL || this == DF || this == IP || this == IS || this == CV || this == ZP || this == SG || this == ES;
+		return this == AD || this == DY || this == CD || this == EM || this == NL || this == AL || this == DF || this == IP || this == IS || this == CV || this == ZP || this == SG || this == ES || this == SB;
 	}
 }

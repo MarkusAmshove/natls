@@ -421,10 +421,13 @@ class ParserErrors
 		);
 	}
 
-	public static IDiagnostic invalidLiteralType(ILiteralNode literal, SyntaxKind allowedKind)
+	public static IDiagnostic invalidLiteralType(ILiteralNode literal, SyntaxKind... allowedKinds)
 	{
+		var format = allowedKinds.length == 1
+			? allowedKinds[0].name()
+			: "one of (" + Arrays.stream(allowedKinds).map(SyntaxKind::name).collect(Collectors.joining(", ")) + ")";
 		return ParserDiagnostic.create(
-			"Invalid type for literal. Expected %s but got %s".formatted(allowedKind, literal.token().kind()),
+			"Invalid type for literal. Expected %s but got %s".formatted(format, literal.token().kind()),
 			literal,
 			ParserError.TYPE_MISMATCH
 		);

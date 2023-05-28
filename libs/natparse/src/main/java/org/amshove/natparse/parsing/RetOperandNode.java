@@ -1,20 +1,20 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.natural.IModuleReferencingNode;
+import org.amshove.natparse.natural.ILiteralNode;
 import org.amshove.natparse.natural.IRetOperandNode;
 
 class RetOperandNode extends BaseSyntaxNode implements IRetOperandNode
 {
-	private IModuleReferencingNode reference;
+	private ILiteralNode parameter;
 
 	@Override
-	public IModuleReferencingNode reference()
+	public ILiteralNode parameter()
 	{
-		return reference;
+		return parameter;
 	}
 
-	void setReference(IModuleReferencingNode referencingNode)
+	void setParameter(ILiteralNode parameter)
 	{
-		this.reference = referencingNode;
+		this.parameter = parameter;
 	}
 }

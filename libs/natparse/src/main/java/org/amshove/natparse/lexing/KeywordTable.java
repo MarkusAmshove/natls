@@ -97,7 +97,6 @@ public class KeywordTable
 			case "cs" -> SyntaxKind.CS;
 			case "current" -> SyntaxKind.CURRENT;
 			case "cursor" -> SyntaxKind.CURSOR;
-			case "cv" -> SyntaxKind.CV;
 			case "data" -> SyntaxKind.DATA;
 			case "dataarea" -> SyntaxKind.DATAAREA;
 			case "date" -> SyntaxKind.DATE;
@@ -310,6 +309,7 @@ public class KeywordTable
 			case "last" -> SyntaxKind.LAST;
 			case "lc" -> SyntaxKind.LC;
 			case "le" -> SyntaxKind.LE;
+			case "leading" -> SyntaxKind.LEADING;
 			case "leave" -> SyntaxKind.LEAVE;
 			case "leaving" -> SyntaxKind.LEAVING;
 			case "left" -> SyntaxKind.LEFT;
@@ -569,6 +569,7 @@ public class KeywordTable
 			case "tp" -> SyntaxKind.TP;
 			case "tr" -> SyntaxKind.TR;
 			case "trailer" -> SyntaxKind.TRAILER;
+			case "trailing" -> SyntaxKind.TRAILING;
 			case "transaction" -> SyntaxKind.TRANSACTION;
 			case "transfer" -> SyntaxKind.TRANSFER;
 			case "translate" -> SyntaxKind.TRANSLATE;

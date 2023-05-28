@@ -20,3 +20,6 @@ project(':libs/natqube').name = 'natqube'
 
 include 'tools/explore'
 project(':tools/explore').name = 'explore'
+
+include 'tools/diffcsv'
+project(':tools/diffcsv').name = 'diffcsv'

@@ -53,7 +53,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			// Don't add a dot. This re-triggers completion and loses the context on qualified variables.
 			// To support a trigger char, the completion has to take into account if it was triggered by a char and
 			// then filter based on previous tokens, which the client does not send over.
-			capabilities.setCompletionProvider(new CompletionOptions(true, List.of()));
+			capabilities.setCompletionProvider(new CompletionOptions(true, List.of("*")));
 
 			capabilities.setCodeLensProvider(new CodeLensOptions(false));
 			capabilities.setCallHierarchyProvider(true);
@@ -65,6 +65,8 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			capabilities.setInlayHintProvider(inlayHintRegistrationOptions);
 
 			capabilities.setSignatureHelpProvider(new SignatureHelpOptions());
+
+			capabilities.setDocumentFormattingProvider(true);
 
 			var workspace = new WorkspaceServerCapabilities();
 			var fileOperations = new FileOperationsServerCapabilities();

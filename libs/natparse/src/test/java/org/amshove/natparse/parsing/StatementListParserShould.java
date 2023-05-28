@@ -1068,10 +1068,44 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void parseWriteWithLineAdvancement()
+	{
+		assertParsesSingleStatement("WRITE (1) // 10X 'literal' (I)", IWriteNode.class);
+	}
+
+	@Test
 	void parseWriteWithAttributeDefinition()
 	{
 		var write = assertParsesSingleStatement("WRITE (AD=UL AL=17 NL=8)", IWriteNode.class);
 		assertThat(write.descendants()).hasSize(6);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"WRITE NOHDR ' literal ' (I)",
+		"WRITE NOHDR 25T '******' 'End of Data'(I) '******'"
+	})
+	void treatWriteIntensifiedAttributeToStringLiteralAsAttributeAndNotIdentifier(String writeSource)
+	{
+		var write = assertParsesSingleStatement(writeSource, IWriteNode.class);
+		assertThat(write.descendants())
+			.as("Write should not contain any variable reference")
+			.noneMatch(n -> n instanceof IVariableReferenceNode);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"PRINT (SV12) NOHDR ' literal ' (I)",
+		"PRINT (SV12) NOHDR 25T '******' 'End of Data'(I) '******'"
+	})
+	void treatPrintIntensifiedAttributeToStringLiteralAsAttributeAndNotIdentifier(String printSource)
+	{
+		var write = assertParsesSingleStatement(printSource, IPrintNode.class);
+		assertThat(write.descendants())
+			.as("Print should not contain any variable reference")
+			.noneMatch(n -> n instanceof IVariableReferenceNode);
 	}
 
 	@Test
@@ -1547,6 +1581,20 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(select.body().statements().first()).isInstanceOf(IAddStatementNode.class);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"UNION", "UNION ALL", "UNION DISTINCT", "INTERSECT", "EXCEPT"
+	})
+	void parseSelectWithUnion(String operation)
+	{
+		assertParsesSingleStatement("""
+			SELECT * FROM DB2_TABLE WHERE COLUMN = 'search'
+			%s
+			SELECT * FROM ANOTHER_TABLE WHERE COLUMN = 'search'
+			END-SELECT""".formatted(operation), ISelectNode.class);
+	}
+
 	@Test
 	void parseDb2Insert()
 	{
@@ -1555,6 +1603,15 @@ class StatementListParserShould extends StatementParseTest
 			  (COL1, COL2, COL3)
 			  VALUES
 			  ('A', 'B', 'C')
+			""", IInsertStatementNode.class);
+	}
+
+	@Test
+	void parseDb2InsertWithSelect()
+	{
+		assertParsesSingleStatement("""
+			INSERT INTO DB2-TABLE
+			  (SELECT * FROM ANOTHER-TABLE WHERE COL1 = 'somevalue')
 			""", IInsertStatementNode.class);
 	}
 
@@ -1857,6 +1914,23 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(resize.findDescendantToken(SyntaxKind.RPAREN)).isNotNull();
 	}
 
+	@Test
+	void parseResizeArrayToDimensionWithVariableReferences()
+	{
+		var resize = assertParsesSingleStatement("RESIZE ARRAY ARR TO (1:#K)", IResizeArrayNode.class);
+		var variableRef = resize.dimensions().first().findDescendantOfType(IVariableReferenceNode.class);
+		assertThat(variableRef).isNotNull();
+		assertIsVariableReference(variableRef, "#K");
+	}
+
+	@Test
+	void parseResizeArrayToMultipleDimensionsWithVariableReferences()
+	{
+		var resize = assertParsesSingleStatement("RESIZE ARRAY ARR TO (1:#K,#L:5)", IResizeArrayNode.class);
+		assertIsVariableReference(resize.dimensions().get(0).findDescendantOfType(IVariableReferenceNode.class), "#K");
+		assertIsVariableReference(resize.dimensions().get(1).findDescendantOfType(IVariableReferenceNode.class), "#L");
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
@@ -2060,6 +2134,23 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(reduce.arrayToReduce().referencingToken().symbolName()).isEqualTo("#ARR");
 	}
 
+	@Test
+	void parseReduceArrayToDimensionWithVariableReferences()
+	{
+		var reduce = assertParsesSingleStatement("REDUCE ARRAY ARR TO (1:#K)", IReduceArrayNode.class);
+		var variableRef = reduce.dimensions().first().findDescendantOfType(IVariableReferenceNode.class);
+		assertThat(variableRef).isNotNull();
+		assertIsVariableReference(variableRef, "#K");
+	}
+
+	@Test
+	void parseReduceArrayToMultipleDimensionsWithVariableReferences()
+	{
+		var reduce = assertParsesSingleStatement("REDUCE ARRAY ARR TO (1:#K,#L:5)", IReduceArrayNode.class);
+		assertIsVariableReference(reduce.dimensions().get(0).findDescendantOfType(IVariableReferenceNode.class), "#K");
+		assertIsVariableReference(reduce.dimensions().get(1).findDescendantOfType(IVariableReferenceNode.class), "#L");
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
@@ -2093,8 +2184,25 @@ class StatementListParserShould extends StatementParseTest
 	})
 	void parseExpandArrayToDimension(String source)
 	{
-		var reduce = assertParsesSingleStatement("EXPAND %s ARRAY #ARR TO (1:10,*:*,5:*)".formatted(source), IExpandArrayNode.class);
-		assertThat(reduce.arrayToExpand().referencingToken().symbolName()).isEqualTo("#ARR");
+		var expand = assertParsesSingleStatement("EXPAND %s ARRAY #ARR TO (1:10,*:*,5:*)".formatted(source), IExpandArrayNode.class);
+		assertThat(expand.arrayToExpand().referencingToken().symbolName()).isEqualTo("#ARR");
+	}
+
+	@Test
+	void parseExpandArrayToDimensionWithVariableReferences()
+	{
+		var expand = assertParsesSingleStatement("EXPAND ARRAY ARR TO (1:#K)", IExpandArrayNode.class);
+		var variableRef = expand.dimensions().first().findDescendantOfType(IVariableReferenceNode.class);
+		assertThat(variableRef).isNotNull();
+		assertIsVariableReference(variableRef, "#K");
+	}
+
+	@Test
+	void parseExpandArrayToMultipleDimensionsWithVariableReferences()
+	{
+		var expand = assertParsesSingleStatement("EXPAND ARRAY ARR TO (1:#K,#L:5)", IExpandArrayNode.class);
+		assertIsVariableReference(expand.dimensions().get(0).findDescendantOfType(IVariableReferenceNode.class), "#K");
+		assertIsVariableReference(expand.dimensions().get(1).findDescendantOfType(IVariableReferenceNode.class), "#L");
 	}
 
 	@ParameterizedTest

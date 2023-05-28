@@ -75,6 +75,7 @@ public class BuiltInFunctionTable
 			unmodifiableVariable(SyntaxKind.LINE_COUNT, "Returns the line number of the current pages's line.", PACKED, 5.0),
 			unmodifiableVariable(SyntaxKind.WINDOW_LS, "Returns the line size of the logical window (without the frame)", NUMERIC, 3.0),
 			unmodifiableVariable(SyntaxKind.WINDOW_PS, "Returns the page size of the logical window (without the frame)", NUMERIC, 3.0),
+			unmodifiableVariable(SyntaxKind.WINDOW_POS, "Returns the position of the upper left corner of the window (from `DEFINE WINDOW`)", NUMERIC, 6.0),
 			unmodifiableVariable(SyntaxKind.LIBRARY_ID, "Returns the ID the the current library. This returns the same as *APPLIC-ID", ALPHANUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.TRANSLATE, """
 				Converts the characters passed as first argument into either `LOWER` or `UPPER` case.
@@ -241,6 +242,7 @@ public class BuiltInFunctionTable
 
 				- If a page break occurs, the value changes to `ENTR`.
 				""", ALPHANUMERIC, 4),
+			unmodifiableVariable(SyntaxKind.PID, "Returns the current process ID as a string", ALPHANUMERIC, 32),
 			function(SyntaxKind.SV_ISN, """
 				Gets or sets the internal sequence number of the current Adabas record initiated by `FIND` or `READ`.
 
@@ -387,14 +389,17 @@ public class BuiltInFunctionTable
 
 	private static Map.Entry<SyntaxKind, SystemVariableDefinition> variable(SyntaxKind kind, String documentation, DataFormat format, double length, boolean modifiable)
 	{
-		var name = kind.toString().replace("_", "-");
-		return Map.entry(kind, new SystemVariableDefinition("*%s".formatted(name), documentation, new DataType(format, length), modifiable));
+		return Map.entry(kind, new SystemVariableDefinition("*%s".formatted(getName(kind)), documentation, new DataType(format, length), modifiable));
 	}
 
 	private static Map.Entry<SyntaxKind, SystemFunctionDefinition> function(SyntaxKind kind, String documentation, DataFormat format, double length, BuiltInFunctionParameter... parameter)
 	{
-		var name = kind.toString().replace("_", "-");
-		return Map.entry(kind, new SystemFunctionDefinition("*%s".formatted(name), documentation, new DataType(format, length), Arrays.asList(parameter)));
+		return Map.entry(kind, new SystemFunctionDefinition("*%s".formatted(getName(kind)), documentation, new DataType(format, length), Arrays.asList(parameter)));
+	}
+
+	private static String getName(SyntaxKind kind)
+	{
+		return kind.toString().replace("_", "-").replace("SV-", "");
 	}
 
 	private BuiltInFunctionTable()

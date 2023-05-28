@@ -63,6 +63,21 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(parameter.token().source()).isEqualTo("' Hello '");
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"LEADING", "TRAILING"
+	})
+	void parseTrimWithLeadingAndTrailing(String option)
+	{
+		var operand = parseOperand("*TRIM(' Hello ', %s)".formatted(option));
+		var function = assertNodeType(operand, ITrimFunctionNode.class);
+		assertThat(function.systemFunction()).isEqualTo(SyntaxKind.TRIM);
+		var parameter = assertNodeType(function.parameter().first(), ILiteralNode.class);
+		assertThat(parameter.token().source()).isEqualTo("' Hello '");
+		assertThat(function.option()).isEqualTo(SyntaxKind.valueOf(option));
+	}
+
 	@Test
 	void parseSystemFunctionsWithMultipleParameter()
 	{
@@ -171,6 +186,42 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		var operand = parseOperand("SUM(#THEVAR)");
 		var sumNode = assertNodeType(operand, ISumOperandNode.class);
 		assertThat(sumNode.variable().referencingToken().symbolName()).isEqualTo("#THEVAR");
+	}
+
+	@Test
+	void parseSumWithNestedOperand()
+	{
+		var operand = parseOperand("SUM(#THEVAR(1))");
+		var sumNode = assertNodeType(operand, ISumOperandNode.class);
+		var reference = assertNodeType(sumNode.variable(), IVariableReferenceNode.class);
+		assertThat(sumNode.variable().referencingToken().symbolName()).isEqualTo("#THEVAR");
+		assertThat(assertNodeType(reference.dimensions().first(), ILiteralNode.class).token().intValue()).isEqualTo(1);
+	}
+
+	@Test
+	void parseTotal()
+	{
+		var operand = parseOperand("TOTAL(#THEVAR)");
+		var totalNode = assertNodeType(operand, ITotalOperandNode.class);
+		assertThat(totalNode.variable().referencingToken().symbolName()).isEqualTo("#THEVAR");
+	}
+
+	@Test
+	void parseCount()
+	{
+		var operand = parseOperand("COUNT(#THEVAR)");
+		var countNode = assertNodeType(operand, ICountOperandNode.class);
+		assertThat(countNode.variable().referencingToken().symbolName()).isEqualTo("#THEVAR");
+	}
+
+	@Test
+	void parseCountWithNestedOperand()
+	{
+		var operand = parseOperand("COUNT(#THEVAR(1))");
+		var countNode = assertNodeType(operand, ICountOperandNode.class);
+		var reference = assertNodeType(countNode.variable(), IVariableReferenceNode.class);
+		assertThat(countNode.variable().referencingToken().symbolName()).isEqualTo("#THEVAR");
+		assertThat(assertNodeType(reference.dimensions().first(), ILiteralNode.class).token().intValue()).isEqualTo(1);
 	}
 
 	@Test
@@ -421,16 +472,10 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	@Test
 	void parseRetOperand()
 	{
-		ignoreModuleProvider();
 		var operand = parseOperand("RET('MODULE')");
 		var retOperand = assertNodeType(operand, IRetOperandNode.class);
-		assertThat(retOperand.reference().referencingToken().stringValue()).isEqualTo("MODULE");
-	}
-
-	@Test
-	void raiseADiagnosticForInvalidRetLiterals()
-	{
-		assertDiagnostic("#I := RET(5)", ParserError.INVALID_LITERAL_VALUE);
+		var ref = assertNodeType(retOperand.parameter(), ILiteralNode.class);
+		assertThat(assertNodeType(ref, ILiteralNode.class).token().stringValue()).isEqualTo("MODULE");
 	}
 
 	@Test
@@ -487,5 +532,12 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		var operand = parseOperand("#ARR(R1.)");
 		var reference = assertIsVariableReference(operand, "#ARR");
 		assertThat(reference.dimensions()).isEmpty();
+	}
+
+	@Test
+	void parseHexLiterals()
+	{
+		var operand = parseOperand("H'AA'");
+		assertLiteral(operand, SyntaxKind.HEX_LITERAL);
 	}
 }

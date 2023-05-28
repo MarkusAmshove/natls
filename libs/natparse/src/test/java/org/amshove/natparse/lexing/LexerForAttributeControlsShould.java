@@ -1,9 +1,39 @@
 package org.amshove.natparse.lexing;
 
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 class LexerForAttributeControlsShould extends AbstractLexerTest
 {
+	@TestFactory
+	Stream<DynamicTest> recognizeAttributes()
+	{
+		var attributes = List.of(SyntaxKind.AD, SyntaxKind.DY, SyntaxKind.CD, SyntaxKind.EM, SyntaxKind.NL, SyntaxKind.AL, SyntaxKind.DF, SyntaxKind.IP, SyntaxKind.IS, SyntaxKind.CV, SyntaxKind.ZP, SyntaxKind.SG, SyntaxKind.ES, SyntaxKind.SG, SyntaxKind.SB);
+
+		var shouldBeAttributes = attributes.stream()
+			.map(a -> dynamicTest("%s should be attribute".formatted(a), () -> assertThat(a.isAttribute()).isTrue()));
+
+		var shouldNotBeAttributes = Arrays.stream(SyntaxKind.values())
+			.filter(sk -> !attributes.contains(sk))
+			.map(
+				sk -> dynamicTest(
+					"%s should not be an attribute", () -> assertThat(sk.isAttribute())
+						.as(sk + " returns true for isAttribute() but is not tested to be an attribute via the attributes list in this test. Is this correct?")
+						.isFalse()
+				)
+			);
+
+		return Stream.concat(shouldBeAttributes, shouldNotBeAttributes);
+	}
+
 	@Test
 	void consumeEverythingBelongingToAnEditorMask()
 	{
@@ -11,6 +41,17 @@ class LexerForAttributeControlsShould extends AbstractLexerTest
 			"(EM=YYYY-MM-DD)",
 			token(SyntaxKind.LPAREN),
 			token(SyntaxKind.EM, "EM=YYYY-MM-DD"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
+	void allowEditorMasksToContainNestedParens()
+	{
+		assertTokens(
+			"(EM=X'/'X(32)'/'X(32))",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.EM, "EM=X'/'X(32)'/'X(32)"),
 			token(SyntaxKind.RPAREN)
 		);
 	}
@@ -192,6 +233,37 @@ class LexerForAttributeControlsShould extends AbstractLexerTest
 			token(SyntaxKind.LPAREN),
 			token(SyntaxKind.CV, "CV="),
 			token(SyntaxKind.IDENTIFIER, "#VAR"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
+	void consumeSBWithALiteral()
+	{
+		assertTokens(
+			"(SB='literal', #VAR1, #VAR2)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.SB, "SB="),
+			token(SyntaxKind.STRING_LITERAL, "'literal'"),
+			token(SyntaxKind.COMMA, ","),
+			token(SyntaxKind.IDENTIFIER, "#VAR1"),
+			token(SyntaxKind.COMMA, ","),
+			token(SyntaxKind.IDENTIFIER, "#VAR2"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
+	void consumeSBWithArray()
+	{
+		assertTokens(
+			"(SB=#ARR(*))",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.SB, "SB="),
+			token(SyntaxKind.IDENTIFIER, "#ARR"),
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.ASTERISK),
+			token(SyntaxKind.RPAREN),
 			token(SyntaxKind.RPAREN)
 		);
 	}

@@ -77,6 +77,15 @@ class ArithmeticParsingShould extends AbstractParserTest<IStatementListNode>
 		assertNumericOperand(lhsOfLastExpressionInFirstParens.right(), 3);
 	}
 
+	@Test
+	void parseArithmeticWithNamesOfAttributesWithoutDiagnostics()
+	{
+		// This was an error because it's (CV - a common check if the next operand is a attribute is "LPAREN and isAttribute() after LPAREN"
+		// However, attributes always look like CV= so this was a false positive
+		parseArithmetic("(CV + 5) + (CV * 10)");
+		parseArithmetic("(SB(1) + 5) / SB(2)");
+	}
+
 	protected ArithmeticParsingShould()
 	{
 		super(StatementListParser::new);

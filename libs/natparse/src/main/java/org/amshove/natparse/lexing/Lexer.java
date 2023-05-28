@@ -158,6 +158,14 @@ public class Lexer
 					}
 					createAndAddCurrentSingleToken(SyntaxKind.CARET);
 					continue;
+				case '!':
+					if (tryCreateIfFollowedBy('!', SyntaxKind.SQL_CONCAT))
+					{
+						continue;
+					}
+					// Single ! is likely to be the ID (Input delimiter char, in most cases this could be comma instead)
+					createAndAddCurrentSingleToken(SyntaxKind.COMMA);
+					continue;
 				case '%':
 					createAndAddCurrentSingleToken(SyntaxKind.PERCENT);
 					continue;
@@ -174,7 +182,18 @@ public class Lexer
 				case 'H':
 					if (scanner.peek(1) == '\'')
 					{
-						consumeHexString();
+						consumeHexLiteral();
+					}
+					else
+					{
+						consumeIdentifierOrKeyword();
+					}
+					continue;
+				case 't':
+				case 'T':
+					if (scanner.peek(1) == '\'')
+					{
+						consumeTimeLiteral();
 					}
 					else
 					{
@@ -187,10 +206,30 @@ public class Lexer
 				case 'B':
 				case 'c':
 				case 'C':
+					consumeIdentifierOrKeyword();
+					continue;
 				case 'd':
 				case 'D':
+					if (scanner.peek(1) == '\'')
+					{
+						consumeDateLiteral();
+					}
+					else
+					{
+						consumeIdentifierOrKeyword();
+					}
+					continue;
 				case 'e':
 				case 'E':
+					if (scanner.peek(1) == '\'')
+					{
+						consumeExtendedTimeLiteral();
+					}
+					else
+					{
+						consumeIdentifierOrKeyword();
+					}
+					continue;
 				case 'f':
 				case 'F':
 				case 'g':
@@ -217,8 +256,6 @@ public class Lexer
 				case 'R':
 				case 's':
 				case 'S':
-				case 't':
-				case 'T':
 				case 'u':
 				case 'U':
 				case 'v':
@@ -732,6 +769,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.WINDOW_PS);
 			return;
 		}
+		if (scanner.advanceIfIgnoreCase("WINDOW-POS"))
+		{
+			createAndAdd(SyntaxKind.WINDOW_POS);
+			return;
+		}
 		if (scanner.advanceIfIgnoreCase("WINDOW-LS"))
 		{
 			createAndAdd(SyntaxKind.WINDOW_LS);
@@ -740,6 +782,11 @@ public class Lexer
 		if (scanner.advanceIfIgnoreCase("TRANSLATE"))
 		{
 			createAndAdd(SyntaxKind.TRANSLATE);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("PID"))
+		{
+			createAndAdd(SyntaxKind.PID);
 			return;
 		}
 		if (scanner.advanceIfIgnoreCase("MACHINE-CLASS"))
@@ -855,6 +902,7 @@ public class Lexer
 				case "IP=" -> inputPromptAttribute();
 				case "IS=" -> identicalSuppressAttribute();
 				case "NL=" -> numericLengthAttribute();
+				case "SB=" -> selectionBoxAttribute();
 				case "SG=" -> signPosition();
 				case "ZP=" -> zeroPrintingAttribute();
 			}
@@ -910,6 +958,17 @@ public class Lexer
 						kindHint = SyntaxKind.IDENTIFIER;
 					}
 					break;
+			}
+
+			if (inParens && scanner.peek(-1) == '.' && (scanner.peek() == '/' || scanner.peek() == ')'))
+			{
+				createAndAdd(SyntaxKind.LABEL_IDENTIFIER);
+				if (scanner.peekText("/*")) // Otherwise it'll be confused with a comment
+				{
+					createAndAddCurrentSingleToken(SyntaxKind.SLASH);
+					createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
+				}
+				return;
 			}
 
 			if (scanner.peek() == '/' && lexerMode == LexerMode.IN_DATA_TYPE)
@@ -995,14 +1054,13 @@ public class Lexer
 			kindHint = SyntaxKind.IDENTIFIER;
 		}
 
-		var lexeme = scanner.lexemeText();
-
 		if (kindHint != null)
 		{
 			createAndAdd(kindHint);
 			return;
 		}
 
+		var lexeme = scanner.lexemeText();
 		var kind = KeywordTable.getKeyword(lexeme);
 		if (kind != null)
 		{
@@ -1027,8 +1085,19 @@ public class Lexer
 		scanner.start();
 		scanner.advance(3); // EM=
 		var isInString = false;
-		while (!scanner.isAtEnd() && scanner.peek() != ')')
+		var nestedParens = 0;
+		while (!scanner.isAtEnd() && !(scanner.peek() == ')' && nestedParens == 0))
 		{
+			if (scanner.peek() == '(')
+			{
+				nestedParens++;
+			}
+
+			if (scanner.peek() == ')')
+			{
+				nestedParens--;
+			}
+
 			if (scanner.peek() == '\'' || scanner.peek() == '"')
 			{
 				isInString = !isInString;
@@ -1135,6 +1204,14 @@ public class Lexer
 		}
 
 		createAndAdd(SyntaxKind.NL);
+	}
+
+	private void selectionBoxAttribute()
+	{
+		scanner.start();
+		scanner.advance(3); // SB=
+		// we intentionally don't consume more, because the variables should be a list of IDENTIFIERs
+		createAndAdd(SyntaxKind.SB);
 	}
 
 	private void signPosition()
@@ -1425,10 +1502,65 @@ public class Lexer
 		return inParens && lastBeforeOpenParens != null && lastBeforeOpenParens.kind() == kind;
 	}
 
-	private void consumeHexString()
+	private void consumeDateLiteral()
+	{
+		scanner.start();
+		scanner.advance(2); // D'
+
+		if (!consumeStringToEnd(SyntaxKind.DATE_LITERAL))
+		{
+			return;
+		}
+
+		createAndAdd(SyntaxKind.DATE_LITERAL);
+	}
+
+	private void consumeExtendedTimeLiteral()
+	{
+		scanner.start();
+		scanner.advance(2); // E'
+
+		if (!consumeStringToEnd(SyntaxKind.EXTENDED_TIME_LITERAL))
+		{
+			return;
+		}
+
+		createAndAdd(SyntaxKind.EXTENDED_TIME_LITERAL);
+	}
+
+	private void consumeTimeLiteral()
+	{
+		scanner.start();
+		scanner.advance(2); // T'
+
+		if (!consumeStringToEnd(SyntaxKind.TIME_LITERAL))
+		{
+			return;
+		}
+
+		createAndAdd(SyntaxKind.TIME_LITERAL);
+	}
+
+	private void consumeHexLiteral()
 	{
 		scanner.start();
 		scanner.advance(2); // H and '
+
+		if (!consumeStringToEnd(SyntaxKind.HEX_LITERAL))
+		{
+			return;
+		}
+
+		createAndAdd(SyntaxKind.HEX_LITERAL);
+		var hexLiteralChars = previousUnsafe().source().length() - 3; // - H''
+		if (hexLiteralChars % 2 != 0)
+		{
+			addDiagnostic("Invalid HEX literal. Number of characters must be even but was %d.".formatted(hexLiteralChars), LexerError.UNKNOWN_CHARACTER);
+		}
+	}
+
+	private boolean consumeStringToEnd(SyntaxKind kindToCreate)
+	{
 		while (scanner.peek() != '\'' && !scanner.isAtEnd() && !isLineEnd())
 		{
 			scanner.advance();
@@ -1445,20 +1577,12 @@ public class Lexer
 			addDiagnostic("Unterminated String literal, expecting closing [']", LexerError.UNTERMINATED_STRING);
 
 			// We can still produce a valid token, although it is unterminated
-			createAndAdd(SyntaxKind.STRING_LITERAL);
-			return;
+			createAndAdd(kindToCreate);
+			return false;
 		}
 
-		// We don't evaluate the content. Is it worth it? We could convert it to the
-		// actual characters.
-
-		scanner.advance();
-		createAndAdd(SyntaxKind.STRING_LITERAL);
-		var hexLiteralChars = previousUnsafe().source().length() - 3; // - H''
-		if (hexLiteralChars % 2 != 0)
-		{
-			addDiagnostic("Invalid HEX literal. Number of characters must be even but was %d.".formatted(hexLiteralChars), LexerError.UNKNOWN_CHARACTER);
-		}
+		scanner.advance(); // closing '
+		return true;
 	}
 
 	private void consumeString(char c)

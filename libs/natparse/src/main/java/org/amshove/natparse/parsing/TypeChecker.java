@@ -5,9 +5,7 @@ import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
-import org.amshove.natparse.natural.builtin.BuiltInFunctionTable;
-import org.amshove.natparse.natural.builtin.IBuiltinFunctionDefinition;
-import org.amshove.natparse.natural.builtin.SystemVariableDefinition;
+import org.amshove.natparse.natural.builtin.*;
 import org.amshove.natparse.natural.conditionals.ISpecifiedCriteriaNode;
 
 import java.util.ArrayList;
@@ -78,6 +76,47 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		if (node instanceof IVariableReferenceNode variableReference)
 		{
 			checkVariableReference(variableReference);
+		}
+
+		if (node instanceof ISystemFunctionNode sysFuncNode)
+		{
+			checkSystemFunctionParameter(sysFuncNode);
+		}
+	}
+
+	private void checkSystemFunctionParameter(ISystemFunctionNode sysFuncNode)
+	{
+		if (sysFuncNode.systemFunction() == SyntaxKind.SV_LENGTH)
+		{
+			for (var parameter : sysFuncNode.parameter())
+			{
+				var type = inferDataType(parameter);
+				if (type == null)
+				{
+					continue;
+				}
+
+				if (type.format() != DataFormat.ALPHANUMERIC && type.format() != DataFormat.UNICODE && type.format() != DataFormat.BINARY)
+				{
+					report(ParserErrors.typeMismatch("Parameter to *LENGTH must be of type A, B or U", parameter));
+				}
+
+				if (!type.hasDynamicLength())
+				{
+					report(ParserErrors.typeMismatch("Parameter to *LENGTH must have dynamic length (e.g. A DYNAMIC)", parameter));
+				}
+			}
+		}
+
+		if (sysFuncNode.systemFunction() == SyntaxKind.TRIM && sysFuncNode.parameter().hasItems())
+		{
+			var parameter = sysFuncNode.parameter().first();
+
+			var type = inferDataType(parameter);
+			if (type != null && type.format() != DataFormat.NONE && type.format() != DataFormat.ALPHANUMERIC && type.format() != DataFormat.UNICODE && type.format() != DataFormat.BINARY)
+			{
+				report(ParserErrors.typeMismatch("Parameter to *TRIM must be of type A, B or U", parameter));
+			}
 		}
 	}
 

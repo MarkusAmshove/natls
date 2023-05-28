@@ -1,12 +1,18 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.IExpandArrayNode;
+import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.IVariableReferenceNode;
+
+import java.util.ArrayList;
+import java.util.List;
 
 class ExpandArrayNode extends StatementNode implements IExpandArrayNode
 {
 	private IVariableReferenceNode arrayToExpand;
 	private IVariableReferenceNode errorVariable;
+	private final List<IOperandNode> dimensions = new ArrayList<>();
 
 	@Override
 	public IVariableReferenceNode arrayToExpand()
@@ -20,6 +26,12 @@ class ExpandArrayNode extends StatementNode implements IExpandArrayNode
 		return errorVariable;
 	}
 
+	@Override
+	public ReadOnlyList<IOperandNode> dimensions()
+	{
+		return ReadOnlyList.from(dimensions);
+	}
+
 	void setArrayToExpand(IVariableReferenceNode array)
 	{
 		arrayToExpand = array;
@@ -28,5 +40,10 @@ class ExpandArrayNode extends StatementNode implements IExpandArrayNode
 	void setErrorVariable(IVariableReferenceNode errorVariable)
 	{
 		this.errorVariable = errorVariable;
+	}
+
+	void addDimension(IOperandNode dimension)
+	{
+		dimensions.add(dimension);
 	}
 }

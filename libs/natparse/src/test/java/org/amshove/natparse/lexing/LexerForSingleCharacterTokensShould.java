@@ -107,6 +107,13 @@ public class LexerForSingleCharacterTokensShould extends AbstractLexerTest
 	}
 
 	@Test
+	void lexExclamationMark()
+	{
+		assertTokens("!", token(SyntaxKind.COMMA, "!"));
+		assertTokens("!!", token(SyntaxKind.SQL_CONCAT, "!!"));
+	}
+
+	@Test
 	void lexPercent()
 	{
 		assertTokens("%", token(SyntaxKind.PERCENT, "%"));

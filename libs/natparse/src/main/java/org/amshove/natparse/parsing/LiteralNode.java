@@ -18,8 +18,8 @@ class LiteralNode extends TokenNode implements ILiteralNode
 		var token = token();
 		return switch (token.kind())
 		{
-			case STRING_LITERAL -> new LiteralType(DataFormat.ALPHANUMERIC, token.stringValue().trim().length());
-			case NUMBER_LITERAL -> switch (targetFormat)
+			case STRING_LITERAL -> new LiteralType(DataFormat.ALPHANUMERIC, token.stringValue().length());
+			case NUMBER_LITERAL ->  switch (targetFormat)
 				{
 					case BINARY -> new LiteralType(DataFormat.BINARY, getIntegerLiteralLength(token.source()));
 					case INTEGER -> new LiteralType(DataFormat.INTEGER, getIntegerLiteralLength(token.source()));
@@ -27,7 +27,13 @@ class LiteralNode extends TokenNode implements ILiteralNode
 					case PACKED -> new LiteralType(DataFormat.PACKED, getNumericLiteralLength(token.source()));
 					default -> new LiteralType(DataFormat.NUMERIC, getNumericLiteralLength(token.source()));
 				};
-			case TRUE, FALSE -> new LiteralType(DataFormat.LOGIC, 0);
+			case DATE_LITERAL -> new LiteralType(DataFormat.DATE, 4);
+			case TIME_LITERAL, EXTENDED_TIME_LITERAL -> new LiteralType(DataFormat.TIME, 7);
+
+			// docs(User-Defined constants): When a hexadecimal constant is transferred to another field, it will be treated as an alphanumeric value (format A).
+			case HEX_LITERAL -> new LiteralType(DataFormat.ALPHANUMERIC, token.stringValue().length());
+
+			case TRUE, FALSE -> new LiteralType(DataFormat.LOGIC, 1);
 			case ASTERISK -> new LiteralType(DataFormat.NONE, 0);
 
 			default -> throw new IllegalStateException("Invalid literal kind: " + token.kind());

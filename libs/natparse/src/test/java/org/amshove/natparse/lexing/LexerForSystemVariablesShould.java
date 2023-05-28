@@ -1,8 +1,6 @@
 package org.amshove.natparse.lexing;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 class LexerForSystemVariablesShould extends AbstractLexerTest
 {
@@ -229,9 +227,21 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 	}
 
 	@Test
+	void lexPid()
+	{
+		assertTokens("*PID", token(SyntaxKind.PID, "*PID"));
+	}
+
+	@Test
 	void lexWindowPs()
 	{
 		assertTokens("*WINDOW-PS", token(SyntaxKind.WINDOW_PS, "*WINDOW-PS"));
+	}
+
+	@Test
+	void lexWindowPos()
+	{
+		assertTokens("*WINDOW-POS", token(SyntaxKind.WINDOW_POS, "*WINDOW-POS"));
 	}
 
 	@Test
