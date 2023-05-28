@@ -328,7 +328,16 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			return;
 		}
 
-		report(ParserErrors.referenceNotMutable("Operand is not modifiable by statement", operand));
+		if (operand instanceof ISubstringOperandNode substring)
+		{
+			ensureMutable(substring.operand());
+			return;
+		}
+
+		if (operand instanceof ILiteralNode)
+		{
+			report(ParserErrors.referenceNotMutable("Operand is not modifiable by statement", operand));
+		}
 	}
 
 	private void ensureMutable(IVariableReferenceNode variableReference)
