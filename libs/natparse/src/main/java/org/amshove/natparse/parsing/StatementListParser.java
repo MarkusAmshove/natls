@@ -16,6 +16,8 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.regex.Pattern;
 
+import javax.annotation.Syntax;
+
 public class StatementListParser extends AbstractParser<IStatementListNode>
 {
 	private static final Pattern SETKEY_PATTERN = Pattern.compile("(ENTR|CLR|PA[1-3]|PF([1-9]|[0-1][\\d]|2[0-4]))\\b");
@@ -139,6 +141,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						break;
 					case COMPRESS:
 						statementList.addStatement(compress());
+						break;
+					case COMPOSE:
+						statementList.addStatement(compose());
 						break;
 					case COMPUTE:
 						statementList.addStatements(assignOrCompute(SyntaxKind.COMPUTE));
@@ -741,7 +746,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return work;
 	}
 
-	private static final List<SyntaxKind> COMPRESS_TO_INTO = List.of(SyntaxKind.INTO, SyntaxKind.TO);
+	private static final List<SyntaxKind> TO_INTO = List.of(SyntaxKind.INTO, SyntaxKind.TO);
 
 	private CompressStatementNode compress() throws ParseError
 	{
@@ -751,7 +756,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		compress.setNumeric(consumeOptionally(compress, SyntaxKind.NUMERIC));
 		compress.setFull(consumeOptionally(compress, SyntaxKind.FULL));
 
-		while (!peekAny(COMPRESS_TO_INTO) && !tokens.isAtEnd())
+		while (!peekAny(TO_INTO) && !tokens.isAtEnd())
 		{
 			var operand = consumeSubstringOrOperand(compress);
 			compress.addOperand(operand);
@@ -765,7 +770,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			}
 		}
 
-		consumeAnyMandatory(compress, COMPRESS_TO_INTO); // TO not documented but okay
+		consumeAnyMandatory(compress, TO_INTO); // TO not documented but okay
 		compress.setIntoTarget(consumeSubstringOrOperand(compress));
 
 		var consumedLeaving = consumeOptionally(compress, SyntaxKind.LEAVING);
@@ -801,6 +806,299 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return compress;
+	}
+
+	private static final List<SyntaxKind> COMPOSE_SUBCLAUSES = List.of(SyntaxKind.RESETTING, SyntaxKind.MOVING, SyntaxKind.ASSIGNING, SyntaxKind.FORMATTING, SyntaxKind.EXTRACTING);
+	private static final List<SyntaxKind> COMPOSE_RESETTING_SUBCLAUSES = List.of(SyntaxKind.DATAAREA, SyntaxKind.TEXTAREA, SyntaxKind.MACROAREA, SyntaxKind.ALL);
+	private static final List<SyntaxKind> COMPOSE_FORMATTING_SUBCLAUSES = List.of(SyntaxKind.OUTPUT, SyntaxKind.INPUT, SyntaxKind.STATUS, SyntaxKind.PROFILE, SyntaxKind.MESSAGES, SyntaxKind.ERRORS, SyntaxKind.ENDING, SyntaxKind.STARTING);
+	private static final List<SyntaxKind> COMPOSE_FORMATTING_OUTPUT = List.of(SyntaxKind.SUPPRESSED, SyntaxKind.CALLING, SyntaxKind.TO, SyntaxKind.DOCUMENT);
+	private static final List<SyntaxKind> COMPOSE_ALL_SUBCLAUSES = List.of(SyntaxKind.DATAAREA, SyntaxKind.TO, SyntaxKind.LAST, SyntaxKind.VARIABLES, SyntaxKind.OUTPUT, SyntaxKind.INPUT, SyntaxKind.STATUS, SyntaxKind.PROFILE, SyntaxKind.MESSAGES, SyntaxKind.ERRORS, SyntaxKind.ENDING, SyntaxKind.STARTING);
+
+	private ComposeStatementNode compose() throws ParseError
+	{
+		var compose = new ComposeStatementNode();
+		consumeMandatory(compose, SyntaxKind.COMPOSE);
+
+		while (peekAny(COMPOSE_SUBCLAUSES))
+		{
+			var consumed = consumeAnyMandatory(compose, COMPOSE_SUBCLAUSES);
+			switch (consumed.kind())
+			{
+				case RESETTING:
+					consumeAnyOptionally(compose, COMPOSE_RESETTING_SUBCLAUSES);
+					break;
+				case MOVING:
+					if (consumeOptionally(compose, SyntaxKind.LAST))
+					{
+						consumeOptionally(compose, SyntaxKind.OUTPUT);
+						if (consumeOptionally(compose, SyntaxKind.TO))
+						{
+							consumeMandatory(compose, SyntaxKind.VARIABLES);
+						}
+						consumeComposeOperands(compose);
+						consumeComposeMovingStatus(compose);
+						break;
+					}
+
+					if (consumeOptionally(compose, SyntaxKind.OUTPUT))
+					{
+						if (consumeOptionally(compose, SyntaxKind.TO))
+						{
+							consumeMandatory(compose, SyntaxKind.VARIABLES);
+						}
+						consumeComposeOperands(compose);
+						consumeComposeMovingStatus(compose);
+						break;
+					}
+
+					if (isOperand())
+					{
+						var numConsumed = consumeComposeOperands(compose);
+						if (numConsumed == 1)
+						{
+							if (peekKind(SyntaxKind.TO) && peekKind(1, SyntaxKind.DATAAREA))
+							{
+								consumeMandatory(compose, SyntaxKind.TO);
+								consumeMandatory(compose, SyntaxKind.DATAAREA);
+							}
+							consumeOptionally(compose, SyntaxKind.OUTPUT);
+							if (consumeOptionally(compose, SyntaxKind.TO))
+							{
+								consumeMandatory(compose, SyntaxKind.VARIABLES);
+							}
+							consumeComposeOperands(compose);
+						}
+						else
+						{
+							if (consumeOptionally(compose, SyntaxKind.TO))
+							{
+								consumeMandatory(compose, SyntaxKind.DATAAREA);
+							}
+							consumeOptionally(compose, SyntaxKind.LAST);
+						}
+					}
+
+					consumeComposeMovingStatus(compose);
+					break;
+				case FORMATTING:
+					while (peekAny(COMPOSE_FORMATTING_SUBCLAUSES))
+					{
+						consumed = consumeAnyMandatory(compose, COMPOSE_FORMATTING_SUBCLAUSES);
+						switch (consumed.kind())
+						{
+							case OUTPUT:
+								// (rep) specified
+								if (consumeOptionally(compose, SyntaxKind.LPAREN))
+								{
+									while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+									{
+										consume(compose);
+									}
+									consumeMandatory(compose, SyntaxKind.RPAREN);
+									break;
+								}
+								consumed = consumeAnyMandatory(compose, COMPOSE_FORMATTING_OUTPUT);
+								switch (consumed.kind())
+								{
+									case SUPPRESSED:
+										break;
+									case CALLING:
+										var node = consumeOperandNode(compose);
+										checkOperand(node, "The type of %s can only be a constant string or a variable reference.".formatted(consumed.kind()), AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+										checkLiteralTypeIfLiteral(node, SyntaxKind.STRING_LITERAL);
+										break;
+									case TO:
+										consumeMandatory(compose, SyntaxKind.VARIABLES);
+										consumeOptionally(compose, SyntaxKind.CONTROL);
+										consumeComposeOperands(compose);
+										break;
+									case DOCUMENT:
+										consumeAnyOptionally(compose, TO_INTO);
+										consumeEitherOptionally(compose, SyntaxKind.FINAL, SyntaxKind.INTERMEDIATE);
+										if (consumeOptionally(compose, SyntaxKind.CABINET))
+										{
+											var cab = consumeOperandNode(compose);
+											checkOperand(cab, "The CABINET can only be a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+											checkLiteralTypeIfLiteral(cab, SyntaxKind.STRING_LITERAL);
+											if (consumeOptionally(compose, SyntaxKind.PASSW))
+											{
+												consumeMandatory(compose, SyntaxKind.EQUALS_SIGN);
+												var passw = consumeOperandNode(compose);
+												checkOperand(passw, "The PASSW can only be a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+												checkLiteralTypeIfLiteral(passw, SyntaxKind.STRING_LITERAL);
+											}
+										}
+										consumeOptionally(compose, SyntaxKind.GIVING);
+										consumeComposeOperands(compose);
+									default:
+										break;
+								}
+
+								break;
+							case INPUT:
+								if (!consumeOptionally(compose, SyntaxKind.DATAAREA))
+								{
+									var input = consumeOperandNode(compose);
+									checkOperand(input, "The INPUT clause must be followed by DATAAREA or exactly one constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+									checkLiteralTypeIfLiteral(input, SyntaxKind.STRING_LITERAL);
+								}
+								if (consumeOptionally(compose, SyntaxKind.FROM))
+								{
+									consumed = consumeAnyMandatory(compose, List.of(SyntaxKind.EXIT, SyntaxKind.CABINET));
+									if (consumed.kind() == SyntaxKind.CABINET)
+									{
+										var cab = consumeOperandNode(compose);
+										checkOperand(cab, "The CABINET can only be a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+										checkLiteralTypeIfLiteral(cab, SyntaxKind.STRING_LITERAL);
+										if (consumeOptionally(compose, SyntaxKind.PASSW))
+										{
+											consumeMandatory(compose, SyntaxKind.EQUALS_SIGN);
+											var passw = consumeOperandNode(compose);
+											checkOperand(passw, "The PASSW can only be a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+											checkLiteralTypeIfLiteral(passw, SyntaxKind.STRING_LITERAL);
+										}
+										consumeComposeOperands(compose);
+									}
+									if (consumed.kind() == SyntaxKind.EXIT)
+									{
+										var exit = consumeOperandNode(compose);
+										checkOperand(exit, "The EXIT can only be a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+										checkLiteralTypeIfLiteral(exit, SyntaxKind.STRING_LITERAL);
+									}
+								}
+								break;
+							case STATUS:
+								//TODO: How can we do this elegant in case there is no operand at all?
+								var stat = consumeOperandNode(compose);
+								checkOperand(stat, "The STATUS clause must be followed by a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+								checkLiteralTypeIfLiteral(stat, SyntaxKind.STRING_LITERAL);
+								consumeComposeOperands(compose);
+								break;
+							case PROFILE:
+								var prof = consumeOperandNode(compose);
+								checkOperand(prof, "The PROFILE name can only be a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+								checkLiteralTypeIfLiteral(prof, SyntaxKind.STRING_LITERAL);
+								break;
+							case MESSAGES:
+								if (!consumeOptionally(compose, SyntaxKind.SUPPRESSED))
+								{
+									consumeOptionally(compose, SyntaxKind.LISTED);
+									consumeOptionally(compose, SyntaxKind.ON);
+									consumeMandatory(compose, SyntaxKind.LPAREN);
+									// currently consume everything until closing parenthesis to consume things like attribute definition etc.
+									while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+									{
+										consume(compose);
+									}
+									consumeMandatory(compose, SyntaxKind.RPAREN);
+								}
+								break;
+							case ERRORS:
+								if (!consumeOptionally(compose, SyntaxKind.INTERCEPTED))
+								{
+									consumeOptionally(compose, SyntaxKind.LISTED);
+									consumeOptionally(compose, SyntaxKind.ON);
+									consumeMandatory(compose, SyntaxKind.LPAREN);
+									// currently consume everything until closing parenthesis to consume things like attribute definition etc.
+									while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+									{
+										consume(compose);
+									}
+									consumeMandatory(compose, SyntaxKind.RPAREN);
+								}
+								break;
+							case ENDING:
+								if (consumeOptionally(compose, SyntaxKind.AFTER))
+								{
+									var ending = consumeOperandNode(compose);
+									checkOperand(ending, "The ENDING operand can only be a constant numeric or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+									checkLiteralTypeIfLiteral(ending, SyntaxKind.NUMBER_LITERAL);
+									consumeOptionally(compose, SyntaxKind.PAGES);
+								}
+								else
+								{
+									consumeOptionally(compose, SyntaxKind.AT);
+									consumeOptionally(compose, SyntaxKind.PAGE);
+									var ending = consumeOperandNode(compose);
+									checkOperand(ending, "The ENDING operand can only be a constant numeric or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+									checkLiteralTypeIfLiteral(ending, SyntaxKind.NUMBER_LITERAL);
+								}
+								break;
+							case STARTING:
+								consumeOptionally(compose, SyntaxKind.FROM);
+								consumeOptionally(compose, SyntaxKind.PAGE);
+								var starting = consumeOperandNode(compose);
+								checkOperand(starting, "The STARTING operand can only be a constant numeric or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+								checkLiteralTypeIfLiteral(starting, SyntaxKind.NUMBER_LITERAL);
+								break;
+							default:
+								break;
+						}
+					}
+					break;
+				case ASSIGNING:
+					consumeOptionally(compose, SyntaxKind.TEXTVARIABLE);
+					consumeAssigning(compose);
+					while (peekKind(SyntaxKind.COMMA))
+					{
+						consumeMandatory(compose, SyntaxKind.COMMA);
+						consumeAssigning(compose);
+					}
+					break;
+				case EXTRACTING:
+					consumeOptionally(compose, SyntaxKind.TEXTVARIABLE);
+					consumeExtracting(compose);
+					while (peekKind(SyntaxKind.COMMA))
+					{
+						consumeMandatory(compose, SyntaxKind.COMMA);
+						consumeExtracting(compose);
+					}
+					break;
+				default:
+					break;
+			}
+		}
+		return compose;
+	}
+
+	private void consumeComposeMovingStatus(ComposeStatementNode node) throws ParseError
+	{
+		if (consumeOptionally(node, SyntaxKind.STATUS))
+		{
+			consumeOptionally(node, SyntaxKind.TO);
+			consumeComposeOperands(node);
+		}
+	}
+
+	private void consumeAssigning(ComposeStatementNode node) throws ParseError
+	{
+		var left = consumeOperandNode(node);
+		checkOperand(left, "The left side can only be a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+		consumeMandatory(node, SyntaxKind.EQUALS_SIGN);
+		var right = consumeOperandNode(node);
+		checkOperand(right, "The right side can only be a constant string or numeric or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+		checkLiteralTypeIfLiteral(right, SyntaxKind.STRING_LITERAL, SyntaxKind.NUMBER_LITERAL);
+	}
+
+	private void consumeExtracting(ComposeStatementNode node) throws ParseError
+	{
+		var left = consumeOperandNode(node);
+		checkOperand(left, "The left side can only be a variable reference.", AllowedOperand.VARIABLE_REFERENCE);
+		consumeMandatory(node, SyntaxKind.EQUALS_SIGN);
+		var right = consumeOperandNode(node);
+		checkOperand(right, "The right side can only be a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+		checkLiteralTypeIfLiteral(right, SyntaxKind.STRING_LITERAL);
+	}
+
+	private int consumeComposeOperands(ComposeStatementNode node) throws ParseError
+	{
+		int numFound = 0;
+		while (isOperand() && !(peekAny(COMPOSE_SUBCLAUSES) || peekAny(COMPOSE_ALL_SUBCLAUSES) || isStatementStart()))
+		{
+			numFound++;
+			consumeOperandNode(node);
+		}
+		return numFound;
 	}
 
 	private StatementNode reduce() throws ParseError
@@ -2166,11 +2464,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return false;
 	}
 
-	private void checkLiteralTypeIfLiteral(IOperandNode operand, SyntaxKind allowedKind)
+	private void checkLiteralTypeIfLiteral(IOperandNode operand, SyntaxKind... allowedKinds)
 	{
 		if (operand instanceof ILiteralNode literalNode)
 		{
-			checkLiteralType(literalNode, allowedKind);
+			checkLiteralType(literalNode, allowedKinds);
 		}
 	}
 
@@ -2304,7 +2602,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		consumeMandatory(callnat, SyntaxKind.CALLNAT);
 
-		if (isNotCallnatOrFetchModule())
+		if (!isStringLiteralOrIdentifier())
 		{
 			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.IDENTIFIER), tokens));
 		}
@@ -2437,7 +2735,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		consumeEitherOptionally(fetch, SyntaxKind.RETURN, SyntaxKind.REPEAT);
 
-		if (isNotCallnatOrFetchModule())
+		if (!isStringLiteralOrIdentifier())
 		{
 			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.IDENTIFIER), tokens));
 		}
@@ -3389,9 +3687,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return isOperand() || peekKind(SyntaxKind.OPERAND_SKIP);
 	}
 
-	private boolean isNotCallnatOrFetchModule()
+	private boolean isStringLiteralOrIdentifier()
 	{
-		return !peekKind(SyntaxKind.STRING_LITERAL) && !peekKind(SyntaxKind.IDENTIFIER);
+		return peekKind(SyntaxKind.STRING_LITERAL) || peekKind(SyntaxKind.IDENTIFIER);
 	}
 
 	private void resolveUnresolvedExternalPerforms()
@@ -3465,7 +3763,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		return switch (currentKind)
 		{
-			case ACCEPT, ADD, ASSIGN, BEFORE, BACKOUT, CALL, CALLNAT, CLOSE, COMMIT, COMPRESS, COMPUTE, DECIDE, DEFINE, DELETE, DISPLAY, DIVIDE, DO, DOEND, DOWNLOAD, EJECT, END, ESCAPE, EXAMINE, EXPAND, FETCH, FIND, FOR, FORMAT, GET, HISTOGRAM, IF, IGNORE, INCLUDE, INPUT, INSERT, INTERFACE, LOOP, METHOD, MOVE, MULTIPLY, NEWPAGE, OBTAIN, OPTIONS, PASSW, PERFORM, PRINT, PROCESS, PROPERTY, READ, REDEFINE, REDUCE, REINPUT, REJECT, RELEASE, REPEAT, RESET, RESIZE, RETRY, ROLLBACK, RUN, SELECT, SEPARATE, SET, SKIP, SORT, STACK, STOP, STORE, SUBTRACT, TERMINATE, UPDATE, WRITE -> true;
+			case ACCEPT, ADD, ASSIGN, BEFORE, BACKOUT, CALL, CALLNAT, CLOSE, COMMIT, COMPOSE, COMPRESS, COMPUTE, DECIDE, DEFINE, DELETE, DISPLAY, DIVIDE, DO, DOEND, DOWNLOAD, EJECT, END, ESCAPE, EXAMINE, EXPAND, FETCH, FIND, FOR, FORMAT, GET, HISTOGRAM, IF, IGNORE, INCLUDE, INPUT, INSERT, INTERFACE, LOOP, METHOD, MOVE, MULTIPLY, NEWPAGE, OBTAIN, OPTIONS, PASSW, PERFORM, PRINT, PROCESS, PROPERTY, READ, REDEFINE, REDUCE, REINPUT, REJECT, RELEASE, REPEAT, RESET, RESIZE, RETRY, ROLLBACK, RUN, SELECT, SEPARATE, SET, SKIP, SORT, STACK, STOP, STORE, SUBTRACT, TERMINATE, UPDATE, WRITE -> true;
 			case ON -> peekKind(1, SyntaxKind.ERROR);
 			case OPEN -> peekKind(1, SyntaxKind.CONVERSATION);
 			case PARSE -> peekKind(1, SyntaxKind.XML);

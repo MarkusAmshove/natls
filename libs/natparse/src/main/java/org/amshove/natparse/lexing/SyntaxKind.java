@@ -582,6 +582,7 @@ public enum SyntaxKind
 	OUTPUT(true, false, false),
 	PACKAGESET(true, false, false),
 	PAGE(true, false, false),
+	PAGES(true, false, false),
 	PARAMETER(true, false, false),
 	PARAMETERS(true, false, false),
 	PARENT(true, false, false),

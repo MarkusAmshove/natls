@@ -405,6 +405,7 @@ public class KeywordTable
 			case "output" -> SyntaxKind.OUTPUT;
 			case "packageset" -> SyntaxKind.PACKAGESET;
 			case "page" -> SyntaxKind.PAGE;
+			case "pages" -> SyntaxKind.PAGES;
 			case "parameter" -> SyntaxKind.PARAMETER;
 			case "parameters" -> SyntaxKind.PARAMETERS;
 			case "parent" -> SyntaxKind.PARENT;
