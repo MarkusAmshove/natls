@@ -16,8 +16,6 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import javax.annotation.Syntax;
-
 public class StatementListParser extends AbstractParser<IStatementListNode>
 {
 	private static final Pattern SETKEY_PATTERN = Pattern.compile("(ENTR|CLR|PA[1-3]|PF([1-9]|[0-1][\\d]|2[0-4]))\\b");
@@ -930,6 +928,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 										}
 										consumeOptionally(compose, SyntaxKind.GIVING);
 										consumeComposeOperands(compose);
+										break;
 									default:
 										break;
 								}
@@ -968,7 +967,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 								}
 								break;
 							case STATUS:
-								//TODO: How can we do this elegant in case there is no operand at all?
 								var stat = consumeOperandNode(compose);
 								checkOperand(stat, "The STATUS clause must be followed by a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
 								checkLiteralTypeIfLiteral(stat, SyntaxKind.STRING_LITERAL);
