@@ -1080,20 +1080,25 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			{
 				if (previousToken().kind() == SyntaxKind.ENDING)
 				{
-					consumeOptionally(histogram, SyntaxKind.AT);
+					if (consumeOptionally(histogram, SyntaxKind.AT))
+					{
+						consumeOperandNode(histogram);
+					}
 				}
 			}
 			else
 			{
-				consumeOptionally(histogram, SyntaxKind.TO);
-			}
-
-			if (isOperand())
-			{
-				consumeOperandNode(histogram);
+				if (consumeOptionally(histogram, SyntaxKind.TO))
+				{
+					consumeOperandNode(histogram);
+				}
 			}
 		}
 
+		if (consumeOptionally(histogram, SyntaxKind.WHERE))
+		{
+			histogram.setCondition(conditionNode());
+		}
 		histogram.setBody(statementList(SyntaxKind.END_HISTOGRAM));
 		consumeMandatoryClosing(histogram, SyntaxKind.END_HISTOGRAM, start);
 
@@ -1849,7 +1854,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return input;
 	}
 
-	private static final Set<SyntaxKind> OPTIONAL_WRITE_FLAGS = Set.of(SyntaxKind.NOTITLE, SyntaxKind.NOHDR, SyntaxKind.USING, SyntaxKind.MAP, SyntaxKind.FORM, SyntaxKind.TITLE, SyntaxKind.LEFT, SyntaxKind.JUSTIFIED, SyntaxKind.UNDERLINED);
+	private static final Set<SyntaxKind> OPTIONAL_WRITE_FLAGS = Set.of(SyntaxKind.NOTITLE, SyntaxKind.NOTIT, SyntaxKind.NOHDR, SyntaxKind.USING, SyntaxKind.MAP, SyntaxKind.FORM, SyntaxKind.TITLE, SyntaxKind.TRAILER, SyntaxKind.LEFT, SyntaxKind.JUSTIFIED, SyntaxKind.UNDERLINED);
 
 	private StatementNode write(SyntaxKind statementKind) throws ParseError
 	{
