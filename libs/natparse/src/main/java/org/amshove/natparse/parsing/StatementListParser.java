@@ -1314,6 +1314,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return skip;
 	}
 
+	private static final Set<SyntaxKind> HISTOGRAM_CONDITIONAL_OPERATORS = Set
+		.of(SyntaxKind.LESSER_GREATER, SyntaxKind.LESSER_SIGN, SyntaxKind.LT, SyntaxKind.LESS, SyntaxKind.LESSER_EQUALS_SIGN, SyntaxKind.LE, SyntaxKind.GREATER_SIGN, SyntaxKind.GT, SyntaxKind.GREATER, SyntaxKind.GREATER_EQUALS_SIGN, SyntaxKind.GE);
+
 	private StatementNode histogram() throws ParseError
 	{
 		var histogram = new HistogramNode();
@@ -1376,20 +1379,35 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			{
 				if (previousToken().kind() == SyntaxKind.ENDING)
 				{
-					consumeOptionally(histogram, SyntaxKind.AT);
+					consumeMandatory(histogram, SyntaxKind.AT);
+					consumeOperandNode(histogram);
 				}
 			}
 			else
 			{
-				consumeOptionally(histogram, SyntaxKind.TO);
+				if (consumeOptionally(histogram, SyntaxKind.TO))
+				{
+					consumeOperandNode(histogram);
+				}
 			}
-
-			if (isOperand())
+		}
+		else
+		{
+			if (HISTOGRAM_CONDITIONAL_OPERATORS.contains(peek().kind()))
 			{
+				var consumed = consume(histogram);
+				if (consumed.kind() == SyntaxKind.LESS || consumed.kind() == SyntaxKind.GREATER)
+				{
+					consumeAnyMandatory(histogram, List.of(SyntaxKind.THAN, SyntaxKind.EQUAL));
+				}
 				consumeOperandNode(histogram);
 			}
 		}
 
+		if (consumeOptionally(histogram, SyntaxKind.WHERE))
+		{
+			histogram.setCondition(conditionNode());
+		}
 		histogram.setBody(statementList(SyntaxKind.END_HISTOGRAM));
 		consumeMandatoryClosing(histogram, SyntaxKind.END_HISTOGRAM, start);
 
@@ -2145,7 +2163,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return input;
 	}
 
-	private static final Set<SyntaxKind> OPTIONAL_WRITE_FLAGS = Set.of(SyntaxKind.NOTITLE, SyntaxKind.NOHDR, SyntaxKind.USING, SyntaxKind.MAP, SyntaxKind.FORM, SyntaxKind.TITLE, SyntaxKind.LEFT, SyntaxKind.JUSTIFIED, SyntaxKind.UNDERLINED);
+	private static final Set<SyntaxKind> OPTIONAL_WRITE_FLAGS = Set.of(SyntaxKind.NOTITLE, SyntaxKind.NOTIT, SyntaxKind.NOHDR, SyntaxKind.USING, SyntaxKind.MAP, SyntaxKind.FORM, SyntaxKind.TITLE, SyntaxKind.TRAILER, SyntaxKind.LEFT, SyntaxKind.JUSTIFIED, SyntaxKind.UNDERLINED);
 
 	private StatementNode write(SyntaxKind statementKind) throws ParseError
 	{

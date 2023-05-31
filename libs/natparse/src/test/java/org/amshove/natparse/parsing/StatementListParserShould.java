@@ -1083,6 +1083,17 @@ class StatementListParserShould extends StatementParseTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
+		"WRITE (01) TITLE LEFT JUSTIFIED UNDERLINED 58T W-PRODUKT-TEKST / 1T TITLE-POL / 'Prisspecifikation' /",
+		"WRITE (01) TRAILER LEFT JUSTIFIED / *TIMX (EM=DD.MM.YYYY' 'HH:II) 69T  'Side' *PAGE-NUMBER (01)",
+	})
+	void parseOtherFormsOfWrite(String writeSource)
+	{
+		assertParsesSingleStatement(writeSource, IWriteNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
 		"WRITE NOHDR ' literal ' (I)",
 		"WRITE NOHDR 25T '******' 'End of Data'(I) '******'"
 	})
@@ -1502,7 +1513,7 @@ class StatementListParserShould extends StatementParseTest
 	void parseASimpleHistogram()
 	{
 		var histogram = assertParsesSingleStatement("""
-			HISTOGRAM THE-VIEW THE-DESC STARTING FROM 'M'
+			HISTOGRAM THE-VIEW PASSWORD='password' THE-DESC STARTING FROM 'M'
 			IGNORE
 			END-HISTOGRAM""", IHistogramNode.class);
 		assertThat(histogram.view().token().symbolName()).isEqualTo("THE-VIEW");
@@ -1560,6 +1571,27 @@ class StatementListParserShould extends StatementParseTest
 			HISTOGRAM THE-VIEW %s THE-DESC
 			IGNORE
 			END-HISTOGRAM""".formatted(sorting), IHistogramNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"WHERE FIELD > 0",
+		"WHERE FIELD > 0 AND FIELD < 100",
+		"WHERE FIELD = 0 OR FIELD > 100",
+		"GT 'XXX' WHERE FIELD > 0",
+		"LESS THAN 'XXX' WHERE FIELD > 0",
+		"GREATER EQUAL 'XXX' WHERE FIELD > 0",
+		"STARTING FROM 'M' ENDING AT 'Q' WHERE FIELD < 100",
+		"STARTING FROM 'M' TO 'Q' WHERE FIELD > 0 AND FIELD < 100",
+	})
+	void parseHistogramWithWhere(String where)
+	{
+		var histogram = assertParsesSingleStatement("""
+			HISTOGRAM THE-VIEW FOR THE-DESC %s
+			IGNORE
+			END-HISTOGRAM""".formatted(where), IHistogramNode.class);
+		assertThat(histogram.condition()).isNotNull();
 	}
 
 	@Test
