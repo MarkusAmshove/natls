@@ -1513,7 +1513,7 @@ class StatementListParserShould extends StatementParseTest
 	void parseASimpleHistogram()
 	{
 		var histogram = assertParsesSingleStatement("""
-			HISTOGRAM THE-VIEW THE-DESC STARTING FROM 'M'
+			HISTOGRAM THE-VIEW PASSWORD='password' THE-DESC STARTING FROM 'M'
 			IGNORE
 			END-HISTOGRAM""", IHistogramNode.class);
 		assertThat(histogram.view().token().symbolName()).isEqualTo("THE-VIEW");
@@ -1579,15 +1579,18 @@ class StatementListParserShould extends StatementParseTest
 		"WHERE FIELD > 0",
 		"WHERE FIELD > 0 AND FIELD < 100",
 		"WHERE FIELD = 0 OR FIELD > 100",
+		"GT 'XXX' WHERE FIELD > 0",
+		"LESS THAN 'XXX' WHERE FIELD > 0",
 		"STARTING FROM 'M' ENDING AT 'Q' WHERE FIELD < 100",
 		"STARTING FROM 'M' TO 'Q' WHERE FIELD > 0 AND FIELD < 100",
 	})
-	void parseHistogramWithWhere(String sorting)
+	void parseHistogramWithWhere(String where)
 	{
-		assertParsesSingleStatement("""
+		var histogram = assertParsesSingleStatement("""
 			HISTOGRAM THE-VIEW FOR THE-DESC %s
 			IGNORE
-			END-HISTOGRAM""".formatted(sorting), IHistogramNode.class);
+			END-HISTOGRAM""".formatted(where), IHistogramNode.class);
+		assertThat(histogram.condition()).isNotNull();
 	}
 
 	@Test

@@ -1018,6 +1018,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return skip;
 	}
 
+	private static final Set<SyntaxKind> HISTOGRAM_CONDITIONAL_OPERATORS = Set
+		.of(SyntaxKind.LESSER_GREATER, SyntaxKind.LESSER_SIGN, SyntaxKind.LT, SyntaxKind.LESS, SyntaxKind.LESSER_EQUALS_SIGN, SyntaxKind.LE, SyntaxKind.GREATER_SIGN, SyntaxKind.GT, SyntaxKind.GREATER, SyntaxKind.GREATER_EQUALS_SIGN, SyntaxKind.GE);
+
 	private StatementNode histogram() throws ParseError
 	{
 		var histogram = new HistogramNode();
@@ -1080,10 +1083,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			{
 				if (previousToken().kind() == SyntaxKind.ENDING)
 				{
-					if (consumeOptionally(histogram, SyntaxKind.AT))
-					{
-						consumeOperandNode(histogram);
-					}
+					consumeMandatory(histogram, SyntaxKind.AT);
+					consumeOperandNode(histogram);
 				}
 			}
 			else
@@ -1092,6 +1093,15 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				{
 					consumeOperandNode(histogram);
 				}
+			}
+		}
+		else
+		{
+			if (HISTOGRAM_CONDITIONAL_OPERATORS.contains(peek().kind()))
+			{
+				consume(histogram);
+				consumeOptionally(histogram, SyntaxKind.THAN);
+				consumeOperandNode(histogram);
 			}
 		}
 
