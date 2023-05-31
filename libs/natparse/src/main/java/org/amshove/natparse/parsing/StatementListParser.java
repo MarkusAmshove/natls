@@ -1100,7 +1100,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			if (HISTOGRAM_CONDITIONAL_OPERATORS.contains(peek().kind()))
 			{
 				consume(histogram);
-				consumeOptionally(histogram, SyntaxKind.THAN);
+				consumeAnyOptionally(histogram, List.of(SyntaxKind.THAN, SyntaxKind.EQUAL));
 				consumeOperandNode(histogram);
 			}
 		}

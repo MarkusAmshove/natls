@@ -1581,6 +1581,7 @@ class StatementListParserShould extends StatementParseTest
 		"WHERE FIELD = 0 OR FIELD > 100",
 		"GT 'XXX' WHERE FIELD > 0",
 		"LESS THAN 'XXX' WHERE FIELD > 0",
+		"GREATER EQUAL 'XXX' WHERE FIELD > 0",
 		"STARTING FROM 'M' ENDING AT 'Q' WHERE FIELD < 100",
 		"STARTING FROM 'M' TO 'Q' WHERE FIELD > 0 AND FIELD < 100",
 	})
