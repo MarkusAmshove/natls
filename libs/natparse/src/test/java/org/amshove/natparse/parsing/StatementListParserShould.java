@@ -1750,6 +1750,221 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(skip.reportSpecification().get().reportSpecification().symbolName()).isEqualTo("PR2");
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"RESETTING",
+		"RESETTING DATAAREA",
+		"RESETTING TEXTAREA",
+		"RESETTING MACROAREA",
+		"RESETTING ALL",
+		"MOVING",
+		"ASSIGNING #VAR1 = #VAR2",
+		"FORMATTING",
+		"EXTRACTING #VAR2 = #VAR1",
+	})
+	void parseSimpleComposeStatements(String statement)
+	{
+		assertParsesSingleStatement("COMPOSE %s".formatted(statement), IComposeStatementNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"VAR1 VAR2 VAR3 TO DATAAREA LAST STATUS TO STAT1",
+		"VAR1 VAR2 LAST STATUS TO STAT1 STAT2",
+		"VAR1 VAR2 VAR3 STATUS TO STAT1 STAT2",
+		"VAR1 TO DATAAREA OUTPUT TO VARIABLES VAR1 VAR2 VAR3 STATUS TO STAT1 STAT2",
+		"LAST OUTPUT TO VARIABLES VAR1 VAR2 VAR3 STATUS TO STAT1 STAT2",
+		"VAR1 TO VARIABLES VAR1 VAR2 VAR3 STATUS TO STAT1 STAT2",
+		"VAR1 TO VARIABLES VAR1 VAR2 VAR3",
+		"OUTPUT TO VARIABLES VAR1 VAR2 VAR3 STATUS TO STAT1",
+	})
+	void parseComposeMovingStatements(String statement)
+	{
+		assertParsesSingleStatement("COMPOSE MOVING %s".formatted(statement), IComposeStatementNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"(01)",
+		"SUPPRESSED",
+		"CALLING 'string'",
+		"CALLING VAR1",
+		"TO VARIABLES CONTROL CNTL1 CNTL2 VAR1 VAR2 VAR3",
+		"TO VARIABLES VAR1 VAR2 VAR3",
+		"DOCUMENT",
+		"DOCUMENT TO FINAL",
+		"DOCUMENT TO INTERMEDIATE",
+		"DOCUMENT TO FINAL CABINET #CAB GIVING VAR1",
+		"DOCUMENT TO INTERMEDIATE CABINET 'CABINET' VAR1",
+		"DOCUMENT TO INTERMEDIATE CABINET 'CABINET' PASSW='password' GIVING VAR1",
+		"DOCUMENT INTO FINAL CABINET 'CABINET' PASSW='password' VAR1 VAR2",
+		"DOCUMENT INTO CABINET 'CABINET' PASSW='password' GIVING VAR1 VAR2",
+	})
+	void parseComposeFormattingOutputStatements(String statement)
+	{
+		assertParsesSingleStatement("COMPOSE FORMATTING OUTPUT %s".formatted(statement), IComposeStatementNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"DATAAREA",
+		"DATAAREA FROM EXIT #VAR1",
+		"DATAAREA FROM CABINET #CAB #VAR1",
+		"DATAAREA FROM CABINET 'CAB' PASSW=#PSW",
+		"DATAAREA FROM CABINET 'CAB' PASSW=#PSW #VAR2 #VAR3 #VAR4 #VAR5",
+		"#VAR1 FROM EXIT #VAR1",
+		"#VAR1 FROM CABINET 'CAB' PASSW=#PSW #VAR2 #VAR3 #VAR4 #VAR5",
+	})
+	void parseComposeFormattingInputStatements(String statement)
+	{
+		assertParsesSingleStatement("COMPOSE FORMATTING INPUT %s".formatted(statement), IComposeStatementNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"ASSIGNING TEXTVARIABLE #VAR1 = #VAR2",
+		"ASSIGNING TEXTVARIABLE 'VARNAME1' = #VAR1",
+		"EXTRACTING TEXTVARIABLE #VAR1 = #VAR2",
+		"EXTRACTING TEXTVARIABLE #VAR1 = 'VARNAME'",
+		"ASSIGNING TEXTVARIABLE #VAR1 = #VAR2, #VAR3 = #VAR4",
+		"ASSIGNING TEXTVARIABLE 'VARNAME1' = #VAR1, #VAR3 = #VAR4",
+		"EXTRACTING TEXTVARIABLE #VAR1 = #VAR2, #VAR3 = #VAR4",
+		"EXTRACTING TEXTVARIABLE #VAR1 = 'VARNAME', #VAR3 = #VAR4",
+		"ASSIGNING #VAR1 = #VAR2",
+		"ASSIGNING 'VARNAME1' = #VAR1",
+		"EXTRACTING #VAR1 = #VAR2",
+		"EXTRACTING #VAR1 = 'VARNAME'",
+		"ASSIGNING #VAR1 = #VAR2, #VAR3 = #VAR4",
+		"ASSIGNING 'VARNAME1' = #VAR1, #VAR3 = #VAR4",
+		"EXTRACTING #VAR1 = #VAR2, #VAR3 = #VAR4",
+		"EXTRACTING #VAR1 = 'VARNAME', #VAR3 = #VAR4",
+	})
+	void parseComposeAssigningAndExtractingStatements(String statement)
+	{
+		assertParsesSingleStatement("COMPOSE %s".formatted(statement), IComposeStatementNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"ENDING AT PAGE #VAR1",
+		"ENDING AT #VAR1",
+		"ENDING PAGE #VAR1",
+		"ENDING #VAR1",
+		"ENDING AT PAGE 11",
+		"ENDING AT 11",
+		"ENDING PAGE 11",
+		"ENDING 11",
+		"ENDING AFTER #VAR1 PAGES",
+		"ENDING AFTER 12 PAGES",
+		"ENDING AFTER 12",
+		"STARTING FROM PAGE #VAR",
+		"STARTING FROM #VAR",
+		"STARTING PAGE #VAR",
+		"STARTING #VAR",
+		"STARTING FROM PAGE 13",
+		"STARTING FROM 13",
+		"STARTING PAGE 13",
+		"STARTING 13",
+	})
+	void parseComposeFormattingStartingEndingStatements(String statement)
+	{
+		assertParsesSingleStatement("COMPOSE FORMATTING %s".formatted(statement), IComposeStatementNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"STATUS #VAR1",
+		"STATUS #VAR1 #VAR2 #VAR3 #VAR4",
+		"PROFILE #VAR1",
+		"MESSAGES SUPPRESSED",
+		"MESSAGES LISTED ON (01)",
+		"MESSAGES LISTED (01)",
+		"MESSAGES ON (01)",
+		"MESSAGES (01)",
+		"ERRORS INTERCEPTED",
+		"ERRORS LISTED ON (01)",
+		"ERRORS LISTED (01)",
+		"ERRORS ON (01)",
+		"ERRORS (01)",
+	})
+	void parseComposeFormattingOtherStatements(String statement)
+	{
+		assertParsesSingleStatement("COMPOSE FORMATTING %s".formatted(statement), IComposeStatementNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"RESETTING DATAAREA MOVING ASSIGNING A = B FORMATTING STATUS VAR MESSAGES SUPPRESSED",
+	})
+	void parseComposeMultiClausesStatements(String statement)
+	{
+		assertParsesSingleStatement("COMPOSE %s".formatted(statement), IComposeStatementNode.class);
+	}
+
+	@Test
+	void parseComposeRealLifeStatement()
+	{
+		assertParsesSingleStatement("""
+			COMPOSE RESETTING ALL
+			MOVING '.EM AUTE-KONSULENTBREV'
+			ASSIGNING
+			'FORSIDENT'        = POLICE-FORS-IDENT,
+			'SKADEDATO'        = ' ',
+			'LBNR'             = ' ',
+			'SAGSBEHANDLER'    = BEGAERING-SAGSBEHANDLER,
+			'AKTIVITETSTYPE'   = AKTIVITET-SKADE.AKTIVITET-TYPE,
+			'AKTIVITETSTEKST'  = 'Brev om ....',
+			'FORSTAGER'        = FORS-TAGER,
+			'FTAGKONTAKTADR'   = FORS-TAGER-KONTAKT,
+			'FORSTYPE'         = KODE-TEKST,
+			'OBJEKTTYPE'       = ' ',
+			'UDLOEBSDATO'      = UDLQBS-DATO
+			FORMATTING
+			OUTPUT DOCUMENT GIVING ISN-B4
+			INPUT 'CONNECT-ADVIS-UDLQB-FEJL' FROM CABINET 'SKAETEXT'
+			STATUS STATUS-KODE
+			""", IComposeStatementNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"EXTRACTING 'VARNAME' = #VAR1",
+	})
+	void reportADiagnosticForInvalidOperandForCompose(String statement)
+	{
+		assertDiagnostic("""
+			COMPOSE %s
+            """.formatted(statement), ParserError.INVALID_OPERAND);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"ASSIGNING #VAR2 = H'FF'",
+		"ASSIGNING #VAR2 = TRUE",
+		"EXTRACTING #VAR3 = 10",
+		"EXTRACTING #VAR3 = FALSE",
+		"FORMATTING OUTPUT CALLING 10",
+		"FORMATTING OUTPUT DOCUMENT CABINET 'CAB' PASSW=10",
+	})
+	void reportADiagnosticForTypeMismatchForCompose(String statement)
+	{
+		assertDiagnostic(
+			"""
+			COMPOSE %s
+            """.formatted(statement), ParserError.TYPE_MISMATCH
+		);
+	}
+
 	@Test
 	void reportADiagnosticIfDecideForMissesNone()
 	{
