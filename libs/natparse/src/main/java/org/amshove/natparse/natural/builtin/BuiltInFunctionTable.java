@@ -17,7 +17,7 @@ public class BuiltInFunctionTable
 	{
 		TABLE = Map.ofEntries(
 			unmodifiableVariable(SyntaxKind.APPLIC_ID, "Returns the ID of the current library", ALPHANUMERIC, 8.0),
-			unmodifiableVariable(SyntaxKind.APPLIC_NAME, """
+			unmodifiableVariable(SyntaxKind.APPLIC_NAME,"""
 				If Natural Security is installed, the variable contains the
 				name of library to which the user is logged on.
 
