@@ -1,5 +1,6 @@
 package org.amshove.natls.project;
 
+import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
@@ -98,5 +99,11 @@ public class LanguageServerProject
 	public Path rootPath()
 	{
 		return project.getRootPath();
+	}
+
+	public void renameFile(String oldUri, String newUri)
+	{
+		var oldFile = findFile(LspUtil.uriToPath(oldUri));
+		oldFile.getLibrary().rename(oldFile, LspUtil.uriToPath(newUri));
 	}
 }

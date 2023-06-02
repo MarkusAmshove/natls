@@ -153,4 +153,20 @@ public class LanguageServerLibrary
 	{
 		return fileByReferableName.get(referableName);
 	}
+
+	public void rename(LanguageServerFile oldFile, Path newPath)
+	{
+		fileByReferableName.remove(oldFile.getReferableName());
+
+		var newName = newPath.getFileName().toString().split("\\.")[0];
+		var oldLibrary = oldFile.getLibrary().getLibrary();
+		var newNaturalFile = new NaturalFile(newName, newPath, oldFile.getType(), oldLibrary);
+		oldLibrary.addFile(newNaturalFile);
+		addFile(new LanguageServerFile(newNaturalFile));
+		for (var incomingReference : oldFile.getIncomingReferences())
+		{
+			incomingReference.removeOutgoingReference(oldFile);
+		}
+		oldFile.reparseCallers();
+	}
 }

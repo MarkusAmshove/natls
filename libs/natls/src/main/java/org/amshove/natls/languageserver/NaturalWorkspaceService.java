@@ -31,10 +31,15 @@ public class NaturalWorkspaceService implements WorkspaceService
 	}
 
 	@Override
+	public CompletableFuture<WorkspaceEdit> willRenameFiles(RenameFilesParams params)
+	{
+		return CompletableFuture.supplyAsync(() -> languageService.willRename(params.getFiles()));
+	}
+
+	@Override
 	public void didRenameFiles(RenameFilesParams params)
 	{
-		WorkspaceService.super.didRenameFiles(params);
-		// TODO: Do it here
+		languageService.didRenameFiles(params.getFiles());
 	}
 
 	@Override

@@ -81,6 +81,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 					.toList()
 			);
 			fileOperations.setDidCreate(naturalFileOperationOptions);
+			fileOperations.setWillRename(naturalFileOperationOptions);
 			fileOperations.setDidRename(naturalFileOperationOptions);
 			workspace.setFileOperations(fileOperations);
 			capabilities.setWorkspace(workspace);

@@ -1098,4 +1098,53 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		return edits;
 	}
+
+	public WorkspaceEdit willRename(List<FileRename> renames)
+	{
+		var edit = new WorkspaceEdit();
+		var fileChanges = new HashMap<String, List<TextEdit>>();
+
+		for (var rename : renames)
+		{
+			var newNameRaw = LspUtil.uriToPath(rename.getNewUri()).getFileName().toString().split("\\.")[0];
+
+			var oldPath = LspUtil.uriToPath(rename.getOldUri());
+			var oldFile = findNaturalFile(oldPath);
+			oldFile.parse(ParseStrategy.WITH_CALLERS);
+			var oldModule = oldFile.module();
+
+			if (oldModule.file().getFiletype() == NaturalFileType.SUBROUTINE)
+			{
+				continue;
+			}
+
+			var newName = switch (oldModule.file().getFiletype())
+			{
+				case SUBPROGRAM, PROGRAM -> "'%s'".formatted(newNameRaw);
+				default -> newNameRaw;
+			};
+
+			var callers = oldModule.callers();
+
+			for (var caller : callers)
+			{
+				var changes = fileChanges.computeIfAbsent(caller.referencingToken().filePath().toUri().toString(), u -> new ArrayList<>());
+				var textEdit = new TextEdit();
+				textEdit.setNewText(newName);
+				textEdit.setRange(LspUtil.toRange(caller.referencingToken()));
+				changes.add(textEdit);
+			}
+		}
+
+		edit.setChanges(fileChanges);
+		return edit;
+	}
+
+	public void didRenameFiles(List<FileRename> renames)
+	{
+		for (var rename : renames)
+		{
+			languageServerProject.renameFile(rename.getOldUri(), rename.getNewUri());
+		}
+	}
 }

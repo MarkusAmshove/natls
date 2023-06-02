@@ -462,7 +462,7 @@ public class LanguageServerFile implements IModuleProvider
 		outgoingReferences.add(calledModule);
 	}
 
-	private void removeOutgoingReference(LanguageServerFile calledModule)
+	public void removeOutgoingReference(LanguageServerFile calledModule)
 	{
 		outgoingReferences.remove(calledModule);
 	}
