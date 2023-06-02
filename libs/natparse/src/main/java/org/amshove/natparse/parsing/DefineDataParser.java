@@ -220,7 +220,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			{
 				if (variable.level() == 1)
 				{
-					addDeclaredVariable((VariableNode) variable);
+					addDeclaredVariable((VariableNode) variable, using);
 				}
 			}
 
@@ -1241,11 +1241,16 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private void addDeclaredVariable(VariableNode variable)
 	{
+		addDeclaredVariable(variable, variable);
+	}
+
+	private void addDeclaredVariable(VariableNode variable, ISyntaxNode diagnosticPosition)
+	{
 		if (variable instanceof GroupNode groupNode)
 		{
 			for (var nestedVariable : groupNode.variables())
 			{
-				addDeclaredVariable((VariableNode) nestedVariable);
+				addDeclaredVariable((VariableNode) nestedVariable, diagnosticPosition);
 			}
 		}
 
@@ -1266,7 +1271,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 			else
 			{
-				report(ParserErrors.duplicatedSymbols(variable, alreadyDefined));
+				report(ParserErrors.duplicatedSymbols(variable, alreadyDefined, diagnosticPosition));
 			}
 
 			return;
