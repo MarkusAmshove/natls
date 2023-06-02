@@ -1538,6 +1538,49 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void showNoDiagnosticForRedefinesWithGroupsInvolved()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 #grp
+			2 #var1 (A1/1:1000)
+			2 #var2 (A1/1:100)
+			1 redefine #grp
+			2 #bytes1 (A1/1:250)
+			2 #bytes2 (A1/1:850)
+			2 redefine #bytes2
+			3 #bytes-str (A750)
+			3 #r1 (a1/101:450)
+			1 redefine #grp
+			2 #var3 (A300)
+			end-define
+			""");
+	}
+
+	@Disabled // This should fail, but does not. Seems the nested REDEFINE for #bytes2 is not handled. @Markus
+	void showADiagnosticForRedefinesWithGroupsInvolved()
+	{
+		assertDiagnostic(
+			"""
+			define data local
+			1 #grp
+			2 #var1 (A1/1:1000)
+			2 #var2 (A1/1:100)
+			1 redefine #grp
+			2 #bytes1 (A1/1:250)
+			2 #bytes2 (A1/1:850)
+			2 redefine #bytes2
+			3 #bytes-str (A750)
+			3 #r1 (a1/1:450)
+			1 redefine #grp
+			2 #var3 (A300)
+			end-define
+			""",
+			ParserError.REDEFINE_LENGTH_EXCEEDS_TARGET_LENGTH
+		);
+	}
+
+	@Test
 	void showADiagnosticForRedefinesWhenThereAreMoreMembersThanArrayDimensions()
 	{
 		assertDiagnostic(

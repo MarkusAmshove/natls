@@ -1149,26 +1149,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		var targetLength = calculateVariableLengthInBytes(target);
 		var redefineLength = calculateVariableLengthInBytes(redefinitionNode);
-
 		var skipLengthCheck = false;
-
-		if (target.isArray())
-		{
-			var totalOccurrences = 0;
-			for (var dimension : target.dimensions())
-			{
-				if (dimension.isLowerUnbound() || dimension.isUpperUnbound())
-				{
-					report(ParserErrors.redefineTargetCantBeXArray(dimension));
-					skipLengthCheck = true;
-				}
-				else
-				{
-					totalOccurrences += dimension.occurerences();
-				}
-			}
-			targetLength *= totalOccurrences;
-		}
 
 		for (var variable : redefinitionNode.variables())
 		{
@@ -1193,21 +1174,33 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 	}
 
-	private double calculateVariableLengthInBytes(IVariableNode target)
+	private int calculateVariableLengthInBytes(IVariableNode target)
 	{
 		if (target instanceof ITypedVariableNode typedNode)
 		{
+			if (typedNode.isArray())
+			{
+				return calculateLengthInBytesWithArray(typedNode);
+			}
+
 			return typedNode.type().byteSize();
 		}
 
 		if (target instanceof IRedefinitionNode redefinitionNode)
 		{
-			var groupLength = 0.0;
+			var groupLength = 0;
 			for (var member : redefinitionNode.variables())
 			{
 				if (member instanceof ITypedVariableNode typedVariableNode)
 				{
-					groupLength += typedVariableNode.type().byteSize();
+					if (typedVariableNode.isArray())
+					{
+						groupLength += calculateLengthInBytesWithArray(typedVariableNode);
+					}
+					else
+					{
+						groupLength += typedVariableNode.type().byteSize();
+					}
 				}
 			}
 
@@ -1216,7 +1209,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		else
 			if (target instanceof IGroupNode groupNode)
 			{
-				var groupLength = 0.0;
+				var groupLength = 0;
 				for (var member : groupNode.variables())
 				{
 					groupLength += calculateVariableLengthInBytes(member);
@@ -1225,7 +1218,26 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				return groupLength;
 			}
 
-		return 0.0;
+		return 0;
+	}
+
+	private int calculateLengthInBytesWithArray(ITypedVariableNode target)
+	{
+		var totalOccurrences = 0;
+		for (var dimension : target.dimensions())
+		{
+			if (dimension.isLowerUnbound() || dimension.isUpperUnbound())
+			{
+				report(ParserErrors.redefineTargetCantBeXArray(dimension));
+			}
+			else
+			{
+				totalOccurrences += dimension.occurerences();
+			}
+		}
+
+		var lgh = target.type().byteSize();
+		return lgh *= totalOccurrences;
 	}
 
 	private boolean isVariableDeclared(String potentialVariableName)
