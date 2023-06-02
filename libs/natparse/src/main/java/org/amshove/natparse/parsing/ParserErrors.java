@@ -328,14 +328,14 @@ class ParserErrors
 		);
 	}
 
-	public static IDiagnostic duplicatedSymbols(ISymbolNode duplicatedSymbol, ISymbolNode firstDeclaration)
+	public static IDiagnostic duplicatedSymbols(ISymbolNode duplicatedSymbol, ISymbolNode firstDeclaration, ISyntaxNode diagnosticPosition)
 	{
 		return ParserDiagnostic.create(
 			"Symbol with name %s already declared in %s".formatted(
 				duplicatedSymbol.declaration().symbolName(),
 				firstDeclaration.position().fileNameWithoutExtension()
 			),
-			duplicatedSymbol,
+			diagnosticPosition,
 			ParserError.DUPLICATED_SYMBOL
 		);
 	}
