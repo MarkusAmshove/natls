@@ -941,28 +941,32 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 									checkOperand(input, "The INPUT clause must be followed by DATAAREA or exactly one constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
 									checkLiteralTypeIfLiteral(input, SyntaxKind.STRING_LITERAL);
 								}
+
 								if (consumeOptionally(compose, SyntaxKind.FROM))
 								{
-									consumed = consumeAnyMandatory(compose, List.of(SyntaxKind.EXIT, SyntaxKind.CABINET));
-									if (consumed.kind() == SyntaxKind.CABINET)
+									while (peekAny(List.of(SyntaxKind.EXIT, SyntaxKind.CABINET)))
 									{
-										var cab = consumeOperandNode(compose);
-										checkOperand(cab, "The CABINET can only be a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
-										checkLiteralTypeIfLiteral(cab, SyntaxKind.STRING_LITERAL);
-										if (consumeOptionally(compose, SyntaxKind.PASSW))
+										consumed = consumeAnyMandatory(compose, List.of(SyntaxKind.EXIT, SyntaxKind.CABINET));
+
+										if (consumed.kind() == SyntaxKind.CABINET)
 										{
-											consumeMandatory(compose, SyntaxKind.EQUALS_SIGN);
-											var passw = consumeOperandNode(compose);
-											checkOperand(passw, "The PASSW can only be a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
-											checkLiteralTypeIfLiteral(passw, SyntaxKind.STRING_LITERAL);
+											var cab = consumeOperandNode(compose);
+											checkOperand(cab, "The CABINET can only be a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+											checkLiteralTypeIfLiteral(cab, SyntaxKind.STRING_LITERAL);
+											if (consumeOptionally(compose, SyntaxKind.PASSW))
+											{
+												consumeMandatory(compose, SyntaxKind.EQUALS_SIGN);
+												var passw = consumeOperandNode(compose);
+												checkOperand(passw, "The PASSW can only be a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+												checkLiteralTypeIfLiteral(passw, SyntaxKind.STRING_LITERAL);
+											}
 										}
-										consumeComposeOperands(compose);
-									}
-									if (consumed.kind() == SyntaxKind.EXIT)
-									{
-										var exit = consumeOperandNode(compose);
-										checkOperand(exit, "The EXIT can only be a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
-										checkLiteralTypeIfLiteral(exit, SyntaxKind.STRING_LITERAL);
+										if (consumed.kind() == SyntaxKind.EXIT)
+										{
+											var exit = consumeOperandNode(compose);
+											checkOperand(exit, "The EXIT can only be a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+											checkLiteralTypeIfLiteral(exit, SyntaxKind.STRING_LITERAL);
+										}
 									}
 								}
 								break;
@@ -1817,6 +1821,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			{
 				consumeMandatory(newPage, SyntaxKind.TITLE);
 			}
+			if (consumeOptionally(newPage, SyntaxKind.LEFT))
+			{
+				consumeOptionally(newPage, SyntaxKind.JUSTIFIED);
+			}
+			consumeOptionally(newPage, SyntaxKind.UNDERLINED);
 			consumeOperandNode(newPage);
 		}
 

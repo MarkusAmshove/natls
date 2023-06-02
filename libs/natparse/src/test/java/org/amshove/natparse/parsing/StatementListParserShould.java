@@ -1234,23 +1234,23 @@ class StatementListParserShould extends StatementParseTest
 	@Test
 	void parseNewPage()
 	{
-		var newPage = assertParsesSingleStatement("NEWPAGE EVEN IF TOP OF PAGE WITH TITLE 'The Title'", INewPageNode.class);
-		assertThat(newPage.descendants()).hasSize(9);
+		var newPage = assertParsesSingleStatement("NEWPAGE EVEN IF TOP OF PAGE WITH TITLE LEFT JUSTIFIED 'The Title'", INewPageNode.class);
+		assertThat(newPage.descendants()).hasSize(11);
 	}
 
 	@Test
 	void parseNewPageWithoutTitle()
 	{
-		var newPage = assertParsesSingleStatement("NEWPAGE WHEN LESS THAN 10 LINES LEFT", INewPageNode.class);
-		assertThat(newPage.descendants()).hasSize(7);
+		var newPage = assertParsesSingleStatement("NEWPAGE WHEN LESS THAN 10 LINES", INewPageNode.class);
+		assertThat(newPage.descendants()).hasSize(6);
 	}
 
 	@Test
 	void parseNewPageWithNumericReportSpecification()
 	{
-		var newPage = assertParsesSingleStatement("NEWPAGE(5) WHEN LESS 10 TITLE 'The Title'", INewPageNode.class);
+		var newPage = assertParsesSingleStatement("NEWPAGE(5) WHEN LESS 10 TITLE UNDERLINED 'The Title'", INewPageNode.class);
 		assertThat(newPage.reportSpecification()).map(SyntaxToken::intValue).hasValue(5);
-		assertThat(newPage.descendants()).hasSize(9);
+		assertThat(newPage.descendants()).hasSize(10);
 	}
 
 	@Test
@@ -1845,11 +1845,14 @@ class StatementListParserShould extends StatementParseTest
 	{
 		"DATAAREA",
 		"DATAAREA FROM EXIT #VAR1",
-		"DATAAREA FROM CABINET #CAB #VAR1",
-		"DATAAREA FROM CABINET 'CAB' PASSW=#PSW",
-		"DATAAREA FROM CABINET 'CAB' PASSW=#PSW #VAR2 #VAR3 #VAR4 #VAR5",
-		"#VAR1 FROM EXIT #VAR1",
-		"#VAR1 FROM CABINET 'CAB' PASSW=#PSW #VAR2 #VAR3 #VAR4 #VAR5",
+		"DATAAREA FROM CABINET #CAB1",
+		"DATAAREA FROM CABINET #CAB1 CABINET #CAB2",
+		"DATAAREA FROM CABINET 'CAB' PASSW=#PSW1 CABINET #CAB2",
+		"DATAAREA FROM CABINET 'CAB' PASSW=#PSW1  CABINET #CAB2 PASSW=#PSW2",
+		"#VAR1 FROM EXIT #EXIT1",
+		"#VAR1 FROM EXIT #EXIT1 EXIT #EXIT2",
+		"#VAR1 FROM CABINET 'CAB' PASSW=#PSW1",
+		"#VAR1 FROM CABINET 'CAB' PASSW=#PSW1  CABINET #CAB2 PASSW=#PSW2",
 	})
 	void parseComposeFormattingInputStatements(String statement)
 	{

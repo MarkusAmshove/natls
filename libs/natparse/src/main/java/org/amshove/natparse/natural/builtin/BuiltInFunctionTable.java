@@ -17,6 +17,15 @@ public class BuiltInFunctionTable
 	{
 		TABLE = Map.ofEntries(
 			unmodifiableVariable(SyntaxKind.APPLIC_ID, "Returns the ID of the current library", ALPHANUMERIC, 8.0),
+			unmodifiableVariable(SyntaxKind.APPLIC_NAME, """
+				If Natural Security is installed, the variable contains the
+				name of library to which the user is logged on.
+
+				If the user is logged on via a special link and nothing is stated to the contrary,
+				it contains the link name instead.
+
+				If Natural Security is not installed, variable contains	the name 'SYSTEM'.
+				""", ALPHANUMERIC, 32.0),
 			unmodifiableVariable(SyntaxKind.INIT_ID, "Returns the ID of the device that Natural invoked", ALPHANUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.SV_TIME, "Returns the current time of the day as A10 in format HH:II:SS.T", ALPHANUMERIC, 10.0),
 			unmodifiableVariable(SyntaxKind.TIMX, "Returns the current time of the day as builtin time format", TIME, 0.0),
@@ -58,6 +67,16 @@ public class BuiltInFunctionTable
 			unmodifiableVariable(SyntaxKind.DATVS, "Returns the current date in the format `DDMONYYYY`, where MON is the name of the month", ALPHANUMERIC, 9.0),
 			unmodifiableVariable(SyntaxKind.LINESIZE, "Returns the physical line size of the I/O device Natural was started with. For vertical look at `*PAGESIZE`", NUMERIC, 7.0),
 			unmodifiableVariable(SyntaxKind.PAGESIZE, "Returns the physical page size of the I/O device Natural was started with. For horizontal look at `*LINESIZE`", NUMERIC, 7.0),
+			unmodifiableVariable(SyntaxKind.NET_USER, """
+				Contains the complete user ID of an authenticated client request.
+				The ID consists of the domain name and the actual user ID.
+
+				The default value is the value of *USER.
+				When a NaturalX server receives an authenticated request,
+				the user ID of this request is passed to the server and placed
+				into *NET-USER. After the request, *NET-USER is reset to the value of *USER.
+				""", ALPHANUMERIC, 253.0),
+			unmodifiableVariable(SyntaxKind.HOSTNAME, "Name of the machine Natural runs on", ALPHANUMERIC, 64.0),
 			unmodifiableVariable(SyntaxKind.MACHINE_CLASS, """
 				Returns the name of the machine class Natural was started on
 
@@ -150,6 +169,8 @@ public class BuiltInFunctionTable
 			modifiableVariable(SyntaxKind.CURS_COL, """
 				Get or set the number of the column where the current cursor is located
 				""", PACKED, 3),
+			unmodifiableVariable(SyntaxKind.PARSE_COL, "Column where the parser is currently working at", INTEGER, 4),
+			unmodifiableVariable(SyntaxKind.PARSE_ROW, "Row where the parser is currently working at", INTEGER, 4),
 			unmodifiableVariable(SyntaxKind.DEVICE, """
 				Returns the type or mode of the device from which Natural was started.
 
@@ -217,6 +238,8 @@ public class BuiltInFunctionTable
 				More in depth information can be retrieved with a combination of `MACHINE-CLASS`, `*HARDWARE` and `*OS`.
 				""", ALPHANUMERIC, 8),
 			unmodifiableVariable(SyntaxKind.PROGRAM, "Returns the name of the current Natural object", ALPHANUMERIC, 8),
+			unmodifiableVariable(SyntaxKind.SV_GROUP, "Returns Group ID or user's own ID taken from Natural Security logon", ALPHANUMERIC, 8),
+			unmodifiableVariable(SyntaxKind.USER_NAME, "Returns the user name of the current user, as taken from Natural Security", ALPHANUMERIC, 32),
 			unmodifiableVariable(SyntaxKind.SV_USER, "Returns the user id of the current user, as taken from Natural Security", ALPHANUMERIC, 8),
 			unmodifiableVariable(SyntaxKind.INIT_USER, """
 				Returns the value of the profile parameter `USER`.
