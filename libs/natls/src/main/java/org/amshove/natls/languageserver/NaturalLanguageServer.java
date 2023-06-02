@@ -70,18 +70,18 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 
 			var workspace = new WorkspaceServerCapabilities();
 			var fileOperations = new FileOperationsServerCapabilities();
-			fileOperations.setDidCreate(
-				new FileOperationOptions(
-					Arrays.stream(NaturalFileType.values()).map(
-						ft -> new FileOperationFilter(
-							new FileOperationPattern(
-								"**/Natural-Libraries/**/*.%s".formatted(ft.getExtension())
-							)
+			var naturalFileOperationOptions = new FileOperationOptions(
+				Arrays.stream(NaturalFileType.values()).map(
+					ft -> new FileOperationFilter(
+						new FileOperationPattern(
+							"**/Natural-Libraries/**/*.%s".formatted(ft.getExtension())
 						)
 					)
-						.toList()
 				)
+					.toList()
 			);
+			fileOperations.setDidCreate(naturalFileOperationOptions);
+			fileOperations.setDidRename(naturalFileOperationOptions);
 			workspace.setFileOperations(fileOperations);
 			capabilities.setWorkspace(workspace);
 

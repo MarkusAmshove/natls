@@ -31,6 +31,13 @@ public class NaturalWorkspaceService implements WorkspaceService
 	}
 
 	@Override
+	public void didRenameFiles(RenameFilesParams params)
+	{
+		WorkspaceService.super.didRenameFiles(params);
+		// TODO: Do it here
+	}
+
+	@Override
 	public void didCreateFiles(CreateFilesParams params)
 	{
 		for (var file : params.getFiles())
