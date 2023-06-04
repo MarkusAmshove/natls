@@ -163,10 +163,5 @@ public class LanguageServerLibrary
 		var newNaturalFile = new NaturalFile(newName, newPath, oldFile.getType(), oldLibrary);
 		oldLibrary.addFile(newNaturalFile);
 		addFile(new LanguageServerFile(newNaturalFile));
-		for (var incomingReference : oldFile.getIncomingReferences())
-		{
-			incomingReference.removeOutgoingReference(oldFile);
-		}
-		oldFile.reparseCallers();
 	}
 }

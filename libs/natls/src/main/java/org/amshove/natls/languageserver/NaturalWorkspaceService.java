@@ -37,12 +37,6 @@ public class NaturalWorkspaceService implements WorkspaceService
 	}
 
 	@Override
-	public void didRenameFiles(RenameFilesParams params)
-	{
-		languageService.didRenameFiles(params.getFiles());
-	}
-
-	@Override
 	public void didCreateFiles(CreateFilesParams params)
 	{
 		for (var file : params.getFiles())
