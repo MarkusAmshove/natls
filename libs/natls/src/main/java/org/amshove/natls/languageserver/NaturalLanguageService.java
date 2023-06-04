@@ -1118,6 +1118,12 @@ public class NaturalLanguageService implements LanguageClientAware
 				continue;
 			}
 
+			if (newNameRaw.toUpperCase().equals(oldFile.getReferableName()))
+			{
+				// The file has just been moved, the name remains the same
+				continue;
+			}
+
 			var newName = switch (oldModule.file().getFiletype())
 			{
 				case SUBPROGRAM, PROGRAM -> "'%s'".formatted(newNameRaw);
@@ -1134,12 +1140,7 @@ public class NaturalLanguageService implements LanguageClientAware
 				textEdit.setRange(LspUtil.toRange(caller.referencingToken()));
 				changes.add(textEdit);
 			}
-		}
 
-		edit.setChanges(fileChanges);
-
-		for (var rename : renames)
-		{
 			// This is here and not in didRename because the client changes the files after this call.
 			// The changed files then can't reference the new file if `renameFile` wasn't run.
 			// Moving this to `didRename`, which sounds fine, can't take up the references to the file anymore,
@@ -1147,6 +1148,8 @@ public class NaturalLanguageService implements LanguageClientAware
 			// They're gone because the changes in the referencing files cause a reparse.
 			languageServerProject.renameFile(rename.getOldUri(), rename.getNewUri());
 		}
+
+		edit.setChanges(fileChanges);
 
 		return edit;
 	}
