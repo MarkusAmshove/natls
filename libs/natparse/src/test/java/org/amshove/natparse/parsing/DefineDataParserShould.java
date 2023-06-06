@@ -5,7 +5,6 @@ import org.amshove.natparse.natural.*;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -563,7 +562,6 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""");
 	}
 
-	@Disabled("Does not work yet")
 	void parseAnArrayWithWhitespaceAfterTheSlash()
 	{
 		assertParsesWithoutDiagnostics("""
