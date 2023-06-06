@@ -1944,6 +1944,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return examine;
 	}
 
+	private static final List<SyntaxKind> SEPARATE_KEYWORDS = List.of(SyntaxKind.WITH, SyntaxKind.IGNORE, SyntaxKind.REMAINDER, SyntaxKind.GIVING, SyntaxKind.KW_NUMBER);
+
 	private StatementNode separate() throws ParseError
 	{
 		var separate = new SeparateStatementNode();
@@ -1966,20 +1968,16 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		consumeMandatory(separate, SyntaxKind.INTO);
-		consumeMandatoryIdentifier(separate);
-		while (peek().kind().isIdentifier() && !(isAtEnd() || isStatementStart() || isStatementEndOrBranch()))
+		while (isOperand() && !(peekAny(SEPARATE_KEYWORDS) || isStatementStart() || isStatementEndOrBranch()))
 		{
-			consumeOperandNode(separate);
+			separate.addOperand(consumeOperandNode(separate));
 		}
 
-		if (consumeEitherOptionally(separate, SyntaxKind.IGNORE, SyntaxKind.REMAINDER))
+		if (consumeEitherOptionally(separate, SyntaxKind.IGNORE, SyntaxKind.REMAINDER) && previousToken().kind() == SyntaxKind.REMAINDER)
 		{
-			if (previousToken().kind() == SyntaxKind.REMAINDER)
-			{
-				consumeOptionally(separate, SyntaxKind.POSITION);
-				var node = consumeOperandNode(separate);
-				checkOperand(node, "REMAINDER [POSITION] must be followed by a variable reference", AllowedOperand.VARIABLE_REFERENCE);
-			}
+			consumeOptionally(separate, SyntaxKind.POSITION);
+			var operand = consumeOperandNode(separate);
+			checkOperand(operand, "REMAINDER [POSITION] must be followed by a variable reference", AllowedOperand.VARIABLE_REFERENCE);
 		}
 
 		if (consumeOptionally(separate, SyntaxKind.WITH))
@@ -2007,7 +2005,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 			if (operandRequired)
 			{
-				consumeMandatoryIdentifier(separate);
+				var operand = consumeOperandNode(separate);
+				checkOperand(operand, "DELIMITER(S) must be followed by a constant string or a variable reference", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
 			}
 		}
 

@@ -1232,6 +1232,110 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void parseASimpleSeparate()
+	{
+		var separate = assertParsesSingleStatement("SEPARATE #VAR INTO #ARR(*)", ISeparateStatementNode.class);
+		assertThat(separate.separated()).isNotNull();
+		assertThat(assertNodeType(separate.separated(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+		assertThat(separate.intoList()).hasSize(1);
+		var reference = assertNodeType(separate.intoList().first(), VariableReferenceNode.class);
+		assertThat(reference.token().source()).isEqualTo("#ARR");
+		var rangedAccess = assertNodeType(reference.dimensions().first(), IRangedArrayAccessNode.class);
+		assertThat(assertNodeType(rangedAccess.lowerBound(), ITokenNode.class).token().kind()).isEqualTo(SyntaxKind.ASTERISK);
+		assertThat(assertNodeType(rangedAccess.upperBound(), ITokenNode.class).token().kind()).isEqualTo(SyntaxKind.ASTERISK);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"STARTING", "FROM", "FROM POSITION", "STARTING FROM", "STARTING FROM POSITION"
+	})
+	void parseASeparateWithStartingFrom(String from)
+	{
+		var separate = assertParsesSingleStatement("SEPARATE #VAR1 %s #POS INTO #VAR2 #VAR3 #VAR4".formatted(from), ISeparateStatementNode.class);
+		assertThat(separate.separated()).isNotNull();
+		assertThat(assertNodeType(separate.separated(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
+		assertThat(separate.intoList()).hasSize(3);
+		var reference = assertNodeType(separate.intoList().first(), VariableReferenceNode.class);
+		assertThat(reference.dimensions().isEmpty());
+		assertThat(reference.token().source()).isEqualTo("#VAR2");
+		assertThat(assertNodeType(separate.intoList().get(1), VariableReferenceNode.class).token().source()).isEqualTo("#VAR3");
+		assertThat(assertNodeType(separate.intoList().get(2), VariableReferenceNode.class).token().source()).isEqualTo("#VAR4");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"IGNORE", "REMAINDER #REM", "REMAINDER POSITION #POS"
+	})
+	void parseASeparateWithIgnoreOrRemainder(String rem)
+	{
+		var separate = assertParsesSingleStatement("SEPARATE #VAR INTO #VAR2 #VAR3 #VAR4 %s".formatted(rem), ISeparateStatementNode.class);
+		assertThat(separate.separated()).isNotNull();
+		assertThat(assertNodeType(separate.separated(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+	}
+
+	@Test
+	void parseASeparateWithSubstring()
+	{
+		var separate = assertParsesSingleStatement("SEPARATE SUBSTR(#VAR, 1, 5) LEFT INTO #ARR(*)", ISeparateStatementNode.class);
+		assertThat(separate.separated()).isNotNull();
+		var substringOperand = assertNodeType(separate.separated(), ISubstringOperandNode.class);
+		assertThat(assertNodeType(substringOperand.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+		assertThat(assertNodeType(substringOperand.startPosition().orElseThrow(), ILiteralNode.class).token().intValue()).isEqualTo(1);
+		assertThat(assertNodeType(substringOperand.length().orElseThrow(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+		assertThat(separate.descendants().size()).isEqualTo(10);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"WITH RETAINED ANY DELIMITER", "WITH RETAINED ANY DELIMITERS", "WITH ANY DELIMITER", "WITH ANY DELIMITERS",
+		"WITH RETAINED INPUT DELIMITER", "WITH RETAINED INPUT DELIMITERS", "WITH INPUT DELIMITER", "WITH INPUT DELIMITERS",
+		"WITH RETAINED DELIMITER ' '", "WITH RETAINED DELIMITERS ' '", "WITH DELIMITER ' '", "WITH DELIMITERS ' '",
+		"WITH RETAINED DELIMITER #DEL", "WITH RETAINED DELIMITERS #DEL", "WITH DELIMITER #DEL", "WITH DELIMITERS #DEL",
+	})
+	void parseAnSeparateWithDelimiters(String delimiter)
+	{
+		assertParsesSingleStatement("SEPARATE #VAR LEFT JUSTIFIED INTO #ARR(*) %s".formatted(delimiter), ISeparateStatementNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"GIVING NUMBER IN", "GIVING NUMBER", "NUMBER IN"
+	})
+	void parseAnSeparateWithGiving(String delimiter)
+	{
+		assertParsesSingleStatement("SEPARATE #VAR INTO #ARR(*) %s #NUM".formatted(delimiter), ISeparateStatementNode.class);
+	}
+
+	@Test
+	void parseAComplexSeparate()
+	{
+		var separate = assertParsesSingleStatement("SEPARATE #VAR1 STARTING FROM POSITION 1 LEFT INTO #VAR2 #ARR(*) REMAINDER POSITION #POS WITH RETAINED DELIMITER '#' GIVING NUMBER #NUM", ISeparateStatementNode.class);
+		assertThat(separate.descendants().size()).isEqualTo(20);
+	}
+
+	@Test
+	void reportADiagnosticIfNoSeparateField()
+	{
+		assertDiagnostic("SEPARATE INTO #ARR", ParserError.UNEXPECTED_TOKEN);
+	}
+
+	@Test
+	void reportADiagnosticIfIntoIsMissing()
+	{
+		assertDiagnostic("SEPARATE #VAR #ARR IGNORE NUMBER #NUM", ParserError.UNEXPECTED_TOKEN);
+	}
+
+	@Test
+	void reportADiagnosticIfRemainderFieldIdLiteral()
+	{
+		assertDiagnostic("SEPARATE #VAR INTO #ARR REMAINDER ' '", ParserError.INVALID_OPERAND);
+	}
+
+	@Test
 	void parseNewPage()
 	{
 		var newPage = assertParsesSingleStatement("NEWPAGE EVEN IF TOP OF PAGE WITH TITLE 'The Title'", INewPageNode.class);
