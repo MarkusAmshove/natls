@@ -24,7 +24,7 @@ public class BuiltInFunctionTable
 				If the user is logged on via a special link and nothing is stated to the contrary,
 				it contains the link name instead.
 
-				If Natural Security is not installed, variable contains	the name 'SYSTEM'.
+				If Natural Security is not installed, variable contains the name 'SYSTEM'.
 				""", ALPHANUMERIC, 32.0),
 			unmodifiableVariable(SyntaxKind.INIT_ID, "Returns the ID of the device that Natural invoked", ALPHANUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.SV_TIME, "Returns the current time of the day as A10 in format HH:II:SS.T", ALPHANUMERIC, 10.0),
