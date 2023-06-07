@@ -1,0 +1,18 @@
+/* This used to make the NaturalParser parse the DEFINE DATA as TokenNodes instead of a proper
+/* DEFINE DATA.
+/* That was because the NaturalParser looked for "DEFINE DATA" after lexing and if these weren't
+/* the current tokens, the DEFINE DATA wasn't parsed by the DefineDataParser.
+/* Instead all the tokens went into the StatementListParser
+INCLUDE SOMECC
+DEFINE DATA
+LOCAL
+1 TMP1 (A) DYNAMIC
+END-DEFINE
+
+/* This line raised a diagnostic, because the variable wasn't referenced.
+/* The variable wasn't referenced, because the DefineDataParser wasn't called.
+IF *LENGTH(TMP1) = 5
+
+  IGNORE
+END-IF
+END

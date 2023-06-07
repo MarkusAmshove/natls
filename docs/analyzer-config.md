@@ -10,7 +10,7 @@ The following configurations can be set in a `.editorconfig` file to configure p
 
 ```editorconfig
 [*]
-natls.style.comparison=sign
+natls.style.comparisons=sign
 [**/*.NSC]
-natls.style.comparison=short
+natls.style.comparisons=short
 ```
