@@ -83,6 +83,10 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 				)
 			);
 			workspace.setFileOperations(fileOperations);
+			var workspaceFoldersOptions = new WorkspaceFoldersOptions();
+			workspaceFoldersOptions.setSupported(false);
+			workspaceFoldersOptions.setChangeNotifications(true);
+			workspace.setWorkspaceFolders(workspaceFoldersOptions);
 			capabilities.setWorkspace(workspace);
 
 			MarkupContentBuilderFactory.configureFactory(MarkdownContentBuilder::new);
@@ -143,6 +147,11 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			log.info("Initialization done. Took %dms".formatted(initEnd - initStart));
 			return new InitializeResult(capabilities, new ServerInfo(lspName != null ? lspName : "natls", lspVersion != null ? lspVersion : "dev"));
 		});
+	}
+
+	@Override
+	public void initialized(InitializedParams params)
+	{
 	}
 
 	@Override

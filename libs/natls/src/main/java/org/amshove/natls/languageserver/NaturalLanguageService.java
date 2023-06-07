@@ -51,6 +51,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -1097,5 +1099,9 @@ public class NaturalLanguageService implements LanguageClientAware
 		});
 
 		return edits;
+	}
+
+	public void didChangeConfiguration()
+	{
 	}
 }
