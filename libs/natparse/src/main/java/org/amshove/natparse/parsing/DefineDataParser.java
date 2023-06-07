@@ -1236,8 +1236,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 		}
 
-		var lgh = target.type().byteSize();
-		return lgh *= totalOccurrences;
+		return (target.type().byteSize()) * totalOccurrences;
 	}
 
 	private boolean isVariableDeclared(String potentialVariableName)
