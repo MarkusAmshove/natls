@@ -150,11 +150,6 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 	}
 
 	@Override
-	public void initialized(InitializedParams params)
-	{
-	}
-
-	@Override
 	public CompletableFuture<Object> shutdown()
 	{
 		return CompletableFuture.completedFuture(new Object());

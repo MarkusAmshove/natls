@@ -9,6 +9,7 @@ import org.amshove.natls.codeactions.CodeActionRegistry;
 import org.amshove.natls.codeactions.RefactoringContext;
 import org.amshove.natls.codeactions.RenameSymbolAction;
 import org.amshove.natls.codelens.CodeLensService;
+import org.amshove.natls.config.LSConfiguration;
 import org.amshove.natls.documentsymbol.DocumentSymbolProvider;
 import org.amshove.natls.hover.HoverContext;
 import org.amshove.natls.hover.HoverProvider;
@@ -51,8 +52,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -71,7 +70,9 @@ public class NaturalLanguageService implements LanguageClientAware
 	private HoverProvider hoverProvider;
 	private final RenameSymbolAction renameComputer = new RenameSymbolAction();
 	private SnippetEngine snippetEngine;
-	private CodeLensService codeLensService = new CodeLensService();
+	private final CodeLensService codeLensService = new CodeLensService();
+
+	private LSConfiguration config = LSConfiguration.createDefault();
 	private final ReferenceFinder referenceFinder = new ReferenceFinder();
 	private final SignatureHelpProvider signatureHelp = new SignatureHelpProvider();
 
@@ -130,6 +131,11 @@ public class NaturalLanguageService implements LanguageClientAware
 		var path = LspUtil.uriToPath(uri);
 		var lspFile = languageServerProject.addFile(path);
 		lspFile.parse();
+	}
+
+	public void setConfiguration(LSConfiguration configuration)
+	{
+		config = configuration;
 	}
 
 	public List<? extends SymbolInformation> findWorkspaceSymbols(String query, CancelChecker cancelChecker)
@@ -645,7 +651,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var item = new CompletionItem();
 		var variableName = variableNode.name();
 
-		if (referencableNodes.stream().filter(n -> n.declaration().symbolName().equals(variableNode.name())).count() > 1)
+		if (config.getCompletion().isQualify() || referencableNodes.stream().filter(n -> n.declaration().symbolName().equals(variableNode.name())).count() > 1)
 		{
 			variableName = variableNode.qualifiedName();
 		}
@@ -1102,6 +1108,5 @@ public class NaturalLanguageService implements LanguageClientAware
 	}
 
 	public void didChangeConfiguration()
-	{
-	}
+	{}
 }
