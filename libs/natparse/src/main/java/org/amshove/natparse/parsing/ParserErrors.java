@@ -195,7 +195,7 @@ class ParserErrors
 		);
 	}
 
-	public static ParserDiagnostic redefinitionLengthIsTooLong(RedefinitionNode node, double redefinitionLength, double maxLength)
+	public static ParserDiagnostic redefinitionLengthIsTooLong(IRedefinitionNode node, double redefinitionLength, double maxLength)
 	{
 		return ParserDiagnostic.create(
 			"Length of redefinition (%s bytes) exceeds target length (%s bytes) of %s".formatted(DataFormat.formatLength(redefinitionLength), DataFormat.formatLength(maxLength), node.declaration().source()),

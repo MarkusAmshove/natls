@@ -1,6 +1,7 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.NaturalParseException;
+import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
@@ -86,6 +87,15 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			// it's okay, we're done here.
 		}
 
+		for (var variable : defineData.variables())
+		{
+			if (variable instanceof RedefinitionNode redefinitionNode)
+			{
+				addTargetToRedefine(redefinitionNode);
+				checkRedefineLength(redefinitionNode);
+			}
+		}
+
 		return defineData;
 	}
 
@@ -135,10 +145,10 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 					checkIndependentVariable(variable);
 				}
 
-				if (variable instanceof RedefinitionNode redefinitionNode)
-				{
-					addTargetToRedefine(scopeNode, redefinitionNode);
-				}
+				//				if (variable instanceof RedefinitionNode redefinitionNode)
+				//				{
+				//					addTargetToRedefine(scopeNode.variables(), redefinitionNode);
+				//				}
 
 				scopeNode.addVariable(variable);
 				addDeclaredVariable(variable);
@@ -383,6 +393,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 
 			var nestedVariable = variable(groupNode.getDimensions());
+
 			groupNode.addVariable(nestedVariable);
 
 			if (peek().line() == previousToken().line()
@@ -1120,11 +1131,24 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 	}
 
-	private void addTargetToRedefine(ScopeNode scopeNode, RedefinitionNode redefinitionNode)
+	private void addTargetToRedefine(RedefinitionNode redefinitionNode)
+	{
+		if (redefinitionNode.parent()instanceof ScopeNode scope)
+		{
+			addTargetToRedefine(scope.variables(), redefinitionNode);
+		}
+
+		if (redefinitionNode.parent()instanceof IGroupNode group)
+		{
+			addTargetToRedefine(group.variables(), redefinitionNode);
+		}
+	}
+
+	private void addTargetToRedefine(Iterable<IVariableNode> possibleVariables, RedefinitionNode redefinitionNode)
 	{
 		IVariableNode target = null;
 
-		for (var variable : scopeNode.variables())
+		for (var variable : possibleVariables)
 		{
 			if (variable.name().equalsIgnoreCase(redefinitionNode.name()))
 			{
@@ -1139,13 +1163,28 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			return;
 		}
 
-		if (target instanceof TypedVariableNode typedTarget && typedTarget.type().hasDynamicLength())
+		if (target instanceof TypedVariableNode typedTarget
+			&& typedTarget.type() != null // TODO: no types for view stuff yet :(
+			&& typedTarget.type().hasDynamicLength())
 		{
 			report(ParserErrors.redefineCantTargetDynamic(redefinitionNode));
 			return;
 		}
 
 		redefinitionNode.setTarget(target);
+
+		// length check for redefine will be done afterward
+	}
+
+	private void checkRedefineLength(IRedefinitionNode redefinitionNode)
+	{
+		var target = redefinitionNode.target();
+
+		if (target instanceof ITypedVariableNode typedTarget && typedTarget.type() == null)
+		{
+			// The target is a VIEW variable which has no explicit type
+			return;
+		}
 
 		var targetLength = calculateVariableLengthInBytes(target);
 		var redefineLength = calculateVariableLengthInBytes(redefinitionNode);

@@ -4,7 +4,6 @@ import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -1556,7 +1555,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""");
 	}
 
-	@Disabled("This should fail, but does not. Seems the nested REDEFINE for #bytes2 is not handled.")
+	@Test
 	void showADiagnosticForRedefinesWithGroupsInvolved()
 	{
 		assertDiagnostic(
