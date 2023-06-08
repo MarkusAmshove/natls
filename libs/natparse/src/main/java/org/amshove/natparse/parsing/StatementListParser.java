@@ -227,6 +227,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case EXAMINE:
 						statementList.addStatement(examine());
 						break;
+					case SEPARATE:
+						statementList.addStatement(separate());
+						break;
 					case WRITE:
 						if (peekKind(1, SyntaxKind.WORK))
 						{
@@ -1948,6 +1951,85 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return examine;
+	}
+
+	private static final List<SyntaxKind> SEPARATE_KEYWORDS = List.of(SyntaxKind.WITH, SyntaxKind.IGNORE, SyntaxKind.REMAINDER, SyntaxKind.GIVING, SyntaxKind.KW_NUMBER);
+
+	private StatementNode separate() throws ParseError
+	{
+		var separate = new SeparateStatementNode();
+		consumeMandatory(separate, SyntaxKind.SEPARATE);
+
+		var separated = consumeSubstringOrOperand(separate);
+		separate.setSeparated(separated);
+
+		var hasPositionClause = consumeOptionally(separate, SyntaxKind.STARTING);
+		hasPositionClause = consumeOptionally(separate, SyntaxKind.FROM) || hasPositionClause;
+		if (hasPositionClause)
+		{
+			consumeOptionally(separate, SyntaxKind.POSITION);
+			consumeOperandNode(separate);
+		}
+
+		if (consumeOptionally(separate, SyntaxKind.LEFT))
+		{
+			consumeOptionally(separate, SyntaxKind.JUSTIFIED);
+		}
+
+		consumeMandatory(separate, SyntaxKind.INTO);
+		while (isOperand() && !(peekAny(SEPARATE_KEYWORDS) || isStatementStart() || isStatementEndOrBranch()))
+		{
+			separate.addOperand(consumeOperandNode(separate));
+		}
+
+		if (consumeEitherOptionally(separate, SyntaxKind.IGNORE, SyntaxKind.REMAINDER) && previousToken().kind() == SyntaxKind.REMAINDER)
+		{
+			consumeOptionally(separate, SyntaxKind.POSITION);
+			var operand = consumeOperandNode(separate);
+			checkOperand(operand, "REMAINDER [POSITION] must be followed by a variable reference", AllowedOperand.VARIABLE_REFERENCE);
+		}
+
+		if (consumeOptionally(separate, SyntaxKind.WITH))
+		{
+			var operandRequired = true;
+			consumeOptionally(separate, SyntaxKind.RETAINED);
+
+			if (peekAny(List.of(SyntaxKind.ANY, SyntaxKind.INPUT)))
+			{
+				// DELIMITER is allowed even though it's not documented
+				consumeAnyMandatory(separate, List.of(SyntaxKind.ANY, SyntaxKind.INPUT));
+				consumeAnyMandatory(separate, List.of(SyntaxKind.DELIMITER, SyntaxKind.DELIMITERS));
+				operandRequired = false;
+			}
+			else
+			{
+				consumeAnyMandatory(separate, List.of(SyntaxKind.DELIMITER, SyntaxKind.DELIMITERS));
+				// if next is GIVEN or NUMBER (continuation of SEPARATE), then operand is not specified.
+				// Same if next is a new statement or end of file.
+				if (peekAny(List.of(SyntaxKind.GIVING, SyntaxKind.KW_NUMBER)) || isAtEnd() || isStatementStart() || isStatementEndOrBranch())
+				{
+					operandRequired = false;
+				}
+			}
+
+			if (operandRequired)
+			{
+				var operand = consumeOperandNode(separate);
+				checkOperand(operand, "DELIMITER(S) must be followed by a constant string or a variable reference", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+			}
+		}
+
+		if (consumeAnyOptionally(separate, List.of(SyntaxKind.GIVING, SyntaxKind.KW_NUMBER)))
+		{
+			if (previousToken().kind() == SyntaxKind.GIVING)
+			{
+				consumeMandatory(separate, SyntaxKind.KW_NUMBER);
+			}
+			consumeOptionally(separate, SyntaxKind.IN);
+			consumeOperandNode(separate);
+		}
+
+		return separate;
 	}
 
 	private IOperandNode consumeSubstringOrOperand(BaseSyntaxNode node) throws ParseError
