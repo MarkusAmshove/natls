@@ -107,8 +107,8 @@ public class NaturalLanguageService implements LanguageClientAware
 		try
 		{
 			var content = Files.readString(path);
-			var config = new EditorConfigParser().parse(content);
-			LinterContext.INSTANCE.updateEditorConfig(config);
+			var newConfig = new EditorConfigParser().parse(content);
+			LinterContext.INSTANCE.updateEditorConfig(newConfig);
 		}
 		catch (Exception e)
 		{
@@ -1106,7 +1106,4 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		return edits;
 	}
-
-	public void didChangeConfiguration()
-	{}
 }
