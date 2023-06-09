@@ -4,9 +4,12 @@ import org.amshove.natparse.ReadOnlyList;
 
 public abstract class AbstractAnalyzer
 {
+	public static final String OPTION_TRUE = "true";
+	public static final String OPTION_FALSE = "false";
+
 	/**
 	 * This returns all {@link DiagnosticDescription}s that an analyzer can raise.
-	 * 
+	 *
 	 * @return all {@link DiagnosticDescription}s this analyzer may raise
 	 */
 	public abstract ReadOnlyList<DiagnosticDescription> getDiagnosticDescriptions();

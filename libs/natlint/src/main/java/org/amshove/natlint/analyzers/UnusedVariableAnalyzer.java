@@ -38,6 +38,8 @@ public class UnusedVariableAnalyzer extends AbstractAnalyzer
 		{
 			case MAP, COPYCODE, GDA, PDA, DDM, LDA:
 				return;
+			default:
+				break;
 		}
 
 		if (!NodeUtil.moduleContainsNode(context.getModule(), syntaxNode))
