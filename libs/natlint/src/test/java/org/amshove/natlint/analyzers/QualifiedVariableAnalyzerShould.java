@@ -79,6 +79,7 @@ class QualifiedVariableAnalyzerShould extends AbstractAnalyzerTest
 			expectNoDiagnosticOfType(QualifiedVariableAnalyzer.VARIABLE_SHOULD_BE_QUALIFIED)
 		);
 	}
+
 	@Test
 	void reportNoDiagnosticForLevel1TypedVariablesInCopycode(@ProjectName("natunit") NaturalProject project)
 	{
