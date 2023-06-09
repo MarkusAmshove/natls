@@ -1,6 +1,8 @@
 package org.amshove.natlint.analyzers;
 
 import org.amshove.natlint.linter.AbstractAnalyzerTest;
+import org.amshove.natparse.natural.project.NaturalProject;
+import org.amshove.testhelpers.ProjectName;
 import org.junit.jupiter.api.Test;
 
 class QualifiedVariableAnalyzerShould extends AbstractAnalyzerTest
@@ -63,4 +65,31 @@ class QualifiedVariableAnalyzerShould extends AbstractAnalyzerTest
 		);
 	}
 
+	@Test
+	void reportNoDiagnosticForUnqualifiedVarsInCopycode(@ProjectName("natunit") NaturalProject project)
+	{
+		configureEditorConfig("""
+			[*]
+			natls.style.qualifyvars=true
+			""");
+
+		testDiagnostics(
+			project.findModule("INCL-C1"),
+			expectNoDiagnosticOfType(QualifiedVariableAnalyzer.LEVEL_1_TYPED_VARIABLES_IS_DISCOURAGED),
+			expectNoDiagnosticOfType(QualifiedVariableAnalyzer.VARIABLE_SHOULD_BE_QUALIFIED)
+		);
+	}
+	@Test
+	void reportNoDiagnosticForLevel1TypedVariablesInCopycode(@ProjectName("natunit") NaturalProject project)
+	{
+		configureEditorConfig("""
+			[*]
+			natls.style.level1vars=true
+			""");
+
+		testDiagnostics(
+			project.findModule("INCL-C2"),
+			expectNoDiagnosticOfType(QualifiedVariableAnalyzer.LEVEL_1_TYPED_VARIABLES_IS_DISCOURAGED)
+		);
+	}
 }

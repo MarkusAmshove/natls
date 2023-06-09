@@ -1,4 +1,4 @@
-name: Typed variable should be qualified
+name: Typed variables should be qualified
 priority: MINOR
 tags: bad-practice
 type: CODE_SMELL
