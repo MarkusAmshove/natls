@@ -1548,7 +1548,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			2 #bytes2 (A1/1:850)
 			2 redefine #bytes2
 			3 #bytes-str (A750)
-			3 #r1 (a1/101:450)
+			3 #r1 (a1/101:150)
 			1 redefine #grp
 			2 #var3 (A300)
 			end-define
