@@ -89,7 +89,7 @@ class QualifiedVariableAnalyzerShould extends AbstractAnalyzerTest
 			""");
 
 		testDiagnostics(
-			project.findModule("INCL-C2"),
+			project.findModule("USELDA"),
 			expectNoDiagnosticOfType(QualifiedVariableAnalyzer.LEVEL_1_TYPED_VARIABLES_IS_DISCOURAGED)
 		);
 	}

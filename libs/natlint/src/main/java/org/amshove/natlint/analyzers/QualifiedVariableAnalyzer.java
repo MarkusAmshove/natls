@@ -9,10 +9,7 @@ import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.ITypedVariableNode;
-import org.amshove.natparse.natural.IVariableNode;
 import org.amshove.natparse.natural.IVariableReferenceNode;
-
-import java.util.List;
 
 public class QualifiedVariableAnalyzer extends AbstractAnalyzer
 {
