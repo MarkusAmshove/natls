@@ -35,6 +35,7 @@ partial - partially implemented to prevent false positives (12)
 | CLOSE WORK FILE | :white_check_mark: |
 | COMMIT (SQL) | :x:                |
 | COMPRESS | :white_check_mark: |
+| COMPOSE | :white_check_mark: |
 | COMPUTE | :white_check_mark: |
 | CREATE OBJECT | :x:                |
 | DECIDE FOR | :white_check_mark: |
@@ -107,9 +108,9 @@ partial - partially implemented to prevent false positives (12)
 | RETRY | :x:                |
 | ROLLBACK (SQL) | :x:                |
 | RUN | :x:                |
-| SELECT (SQL) | :white_check_mark: |
+| SELECT (SQL) | partial            |
 | SEND METHOD | :x:                |
-| SEPARATE | :x:                |
+| SEPARATE | :white_check_mark: |
 | SET CONTROL | :x:                |
 | SET GLOBALS | :x:                |
 | SET KEY | :white_check_mark: |

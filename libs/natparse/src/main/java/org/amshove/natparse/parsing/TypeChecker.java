@@ -98,12 +98,12 @@ final class TypeChecker implements ISyntaxNodeVisitor
 
 				if (type.format() != DataFormat.ALPHANUMERIC && type.format() != DataFormat.UNICODE && type.format() != DataFormat.BINARY)
 				{
-					report(ParserErrors.typeMismatch("Parameter to *LENGTH must be of type A, B or U", parameter));
+					report(ParserErrors.typeMismatch("Parameter to *LENGTH must be of type A, B or U but is %s".formatted(type.toShortString()), parameter));
 				}
 
 				if (!type.hasDynamicLength())
 				{
-					report(ParserErrors.typeMismatch("Parameter to *LENGTH must have dynamic length (e.g. A DYNAMIC)", parameter));
+					report(ParserErrors.typeMismatch("Parameter to *LENGTH must have dynamic length (e.g. A DYNAMIC) but is %s".formatted(type.toShortString()), parameter));
 				}
 			}
 		}
@@ -115,7 +115,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			var type = inferDataType(parameter);
 			if (type != null && type.format() != DataFormat.NONE && type.format() != DataFormat.ALPHANUMERIC && type.format() != DataFormat.UNICODE && type.format() != DataFormat.BINARY)
 			{
-				report(ParserErrors.typeMismatch("Parameter to *TRIM must be of type A, B or U", parameter));
+				report(ParserErrors.typeMismatch("Parameter to *TRIM must be of type A, B or U but is %s".formatted(type.toShortString()), parameter));
 			}
 		}
 	}
@@ -328,7 +328,16 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			return;
 		}
 
-		report(ParserErrors.referenceNotMutable("Operand is not modifiable by statement", operand));
+		if (operand instanceof ISubstringOperandNode substring)
+		{
+			ensureMutable(substring.operand());
+			return;
+		}
+
+		if (operand instanceof ILiteralNode)
+		{
+			report(ParserErrors.referenceNotMutable("Operand is not modifiable by statement", operand));
+		}
 	}
 
 	private void ensureMutable(IVariableReferenceNode variableReference)

@@ -1,5 +1,9 @@
 package org.amshove.natls.testlifecycle;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import org.amshove.natls.config.LSConfiguration;
+import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -36,6 +40,15 @@ public abstract class LanguageServerTest
 	protected void configureEditorConfig(String editorConfig)
 	{
 		getContext().languageService().loadEditorConfig(createFileRelativeToProjectRoot(".editorconfig", editorConfig));
+	}
+
+	protected void configureLSConfig(LSConfiguration config)
+	{
+		var gson = new Gson();
+		var jsonObj = new JsonObject();
+		var jsonConfig = gson.toJsonTree(config);
+		jsonObj.add("natls", jsonConfig);
+		getContext().workspaceService().didChangeConfiguration(new DidChangeConfigurationParams(jsonObj));
 	}
 
 	private Path createFileRelativeToProjectRoot(String relativePath, String content)

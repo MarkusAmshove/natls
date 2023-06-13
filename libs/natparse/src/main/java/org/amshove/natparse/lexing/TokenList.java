@@ -264,4 +264,13 @@ public class TokenList implements Iterable<SyntaxToken>
 	{
 		return tokens.iterator();
 	}
+
+	/**
+	 * Advances the current offset in an unsafe manner. <strong>This does not check if the offset goes out of
+	 * bounds!</strong>
+	 */
+	public void advanceBy(int offset)
+	{
+		currentOffset += offset;
+	}
 }

@@ -14,6 +14,10 @@ END-DEFINE
 /* NPP039: Mutability
 /* NPP037: Type mismatch
 
+SUBSTRING(#MUTABLE, 1, 5) := 'hello' /* okay, is mutable
+COMPRESS 'Hi' INTO SUBSTRING(#C-CONST, 1, 1) /* !{D:ERROR:NPP039}
+COMPRESS 'Hi' INTO 5 /* !{D:ERROR:NPP039}
+
 #MUTABLE := 'Hello' /* Okay, #MUTABLE is not const
 #C-CONST := 'CD' /* !{D:ERROR:NPP039} this variable is const, this is not allowed
 

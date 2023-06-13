@@ -1083,6 +1083,17 @@ class StatementListParserShould extends StatementParseTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
+		"WRITE (01) TITLE LEFT JUSTIFIED UNDERLINED 58T W-PRODUKT-TEKST / 1T TITLE-POL / 'Prisspecifikation' /",
+		"WRITE (01) TRAILER LEFT JUSTIFIED / *TIMX (EM=DD.MM.YYYY' 'HH:II) 69T  'Side' *PAGE-NUMBER (01)",
+	})
+	void parseOtherFormsOfWrite(String writeSource)
+	{
+		assertParsesSingleStatement(writeSource, IWriteNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
 		"WRITE NOHDR ' literal ' (I)",
 		"WRITE NOHDR 25T '******' 'End of Data'(I) '******'"
 	})
@@ -1221,25 +1232,130 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void parseASimpleSeparate()
+	{
+		var separate = assertParsesSingleStatement("SEPARATE #VAR INTO #ARR(*)", ISeparateStatementNode.class);
+		assertThat(separate.separated()).isNotNull();
+		assertThat(assertNodeType(separate.separated(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+		assertThat(separate.intoList()).hasSize(1);
+		var reference = assertNodeType(separate.intoList().first(), VariableReferenceNode.class);
+		assertThat(reference.token().source()).isEqualTo("#ARR");
+		var rangedAccess = assertNodeType(reference.dimensions().first(), IRangedArrayAccessNode.class);
+		assertThat(assertNodeType(rangedAccess.lowerBound(), ITokenNode.class).token().kind()).isEqualTo(SyntaxKind.ASTERISK);
+		assertThat(assertNodeType(rangedAccess.upperBound(), ITokenNode.class).token().kind()).isEqualTo(SyntaxKind.ASTERISK);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"STARTING", "FROM", "FROM POSITION", "STARTING FROM", "STARTING FROM POSITION"
+	})
+	void parseASeparateWithStartingFrom(String from)
+	{
+		var separate = assertParsesSingleStatement("SEPARATE #VAR1 %s #POS INTO #VAR2 #VAR3 #VAR4".formatted(from), ISeparateStatementNode.class);
+		assertThat(separate.separated()).isNotNull();
+		assertThat(assertNodeType(separate.separated(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
+		assertThat(separate.intoList()).hasSize(3);
+		var reference = assertNodeType(separate.intoList().first(), VariableReferenceNode.class);
+		assertThat(reference.dimensions().isEmpty());
+		assertThat(reference.token().source()).isEqualTo("#VAR2");
+		assertThat(assertNodeType(separate.intoList().get(1), VariableReferenceNode.class).token().source()).isEqualTo("#VAR3");
+		assertThat(assertNodeType(separate.intoList().get(2), VariableReferenceNode.class).token().source()).isEqualTo("#VAR4");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"IGNORE", "REMAINDER #REM", "REMAINDER POSITION #POS"
+	})
+	void parseASeparateWithIgnoreOrRemainder(String rem)
+	{
+		var separate = assertParsesSingleStatement("SEPARATE #VAR INTO #VAR2 #VAR3 #VAR4 %s".formatted(rem), ISeparateStatementNode.class);
+		assertThat(separate.separated()).isNotNull();
+		assertThat(assertNodeType(separate.separated(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+	}
+
+	@Test
+	void parseASeparateWithSubstring()
+	{
+		var separate = assertParsesSingleStatement("SEPARATE SUBSTR(#VAR, 1, 5) LEFT INTO #ARR(*)", ISeparateStatementNode.class);
+		assertThat(separate.separated()).isNotNull();
+		var substringOperand = assertNodeType(separate.separated(), ISubstringOperandNode.class);
+		assertThat(assertNodeType(substringOperand.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+		assertThat(assertNodeType(substringOperand.startPosition().orElseThrow(), ILiteralNode.class).token().intValue()).isEqualTo(1);
+		assertThat(assertNodeType(substringOperand.length().orElseThrow(), ILiteralNode.class).token().intValue()).isEqualTo(5);
+		assertThat(separate.descendants().size()).isEqualTo(10);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"WITH RETAINED ANY DELIMITER", "WITH RETAINED ANY DELIMITERS", "WITH ANY DELIMITER", "WITH ANY DELIMITERS",
+		"WITH RETAINED INPUT DELIMITER", "WITH RETAINED INPUT DELIMITERS", "WITH INPUT DELIMITER", "WITH INPUT DELIMITERS",
+		"WITH RETAINED DELIMITER ' '", "WITH RETAINED DELIMITERS ' '", "WITH DELIMITER ' '", "WITH DELIMITERS ' '",
+		"WITH RETAINED DELIMITER #DEL", "WITH RETAINED DELIMITERS #DEL", "WITH DELIMITER #DEL", "WITH DELIMITERS #DEL",
+		"WITH RETAINED DELIMITER", "WITH RETAINED DELIMITERS", "WITH DELIMITER", "WITH DELIMITERS",
+	})
+	void parseAnSeparateWithDelimiters(String delimiter)
+	{
+		assertParsesSingleStatement("SEPARATE #VAR LEFT JUSTIFIED INTO #ARR(*) %s".formatted(delimiter), ISeparateStatementNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"GIVING NUMBER IN", "GIVING NUMBER", "NUMBER IN"
+	})
+	void parseAnSeparateWithGiving(String delimiter)
+	{
+		assertParsesSingleStatement("SEPARATE #VAR INTO #ARR(*) %s #NUM".formatted(delimiter), ISeparateStatementNode.class);
+	}
+
+	@Test
+	void parseAComplexSeparate()
+	{
+		var separate = assertParsesSingleStatement("SEPARATE #VAR1 STARTING FROM POSITION 1 LEFT INTO #VAR2 #ARR(*) REMAINDER POSITION #POS WITH RETAINED DELIMITER '#' GIVING NUMBER #NUM", ISeparateStatementNode.class);
+		assertThat(separate.descendants().size()).isEqualTo(20);
+	}
+
+	@Test
+	void reportADiagnosticIfNoSeparateField()
+	{
+		assertDiagnostic("SEPARATE INTO #ARR", ParserError.UNEXPECTED_TOKEN);
+	}
+
+	@Test
+	void reportADiagnosticIfIntoIsMissing()
+	{
+		assertDiagnostic("SEPARATE #VAR #ARR IGNORE NUMBER #NUM", ParserError.UNEXPECTED_TOKEN);
+	}
+
+	@Test
+	void reportADiagnosticIfRemainderFieldIdLiteral()
+	{
+		assertDiagnostic("SEPARATE #VAR INTO #ARR REMAINDER ' '", ParserError.INVALID_OPERAND);
+	}
+
+	@Test
 	void parseNewPage()
 	{
-		var newPage = assertParsesSingleStatement("NEWPAGE EVEN IF TOP OF PAGE WITH TITLE 'The Title'", INewPageNode.class);
-		assertThat(newPage.descendants()).hasSize(9);
+		var newPage = assertParsesSingleStatement("NEWPAGE EVEN IF TOP OF PAGE WITH TITLE LEFT JUSTIFIED 'The Title'", INewPageNode.class);
+		assertThat(newPage.descendants()).hasSize(11);
 	}
 
 	@Test
 	void parseNewPageWithoutTitle()
 	{
-		var newPage = assertParsesSingleStatement("NEWPAGE WHEN LESS THAN 10 LINES LEFT", INewPageNode.class);
-		assertThat(newPage.descendants()).hasSize(7);
+		var newPage = assertParsesSingleStatement("NEWPAGE WHEN LESS THAN 10 LINES", INewPageNode.class);
+		assertThat(newPage.descendants()).hasSize(6);
 	}
 
 	@Test
 	void parseNewPageWithNumericReportSpecification()
 	{
-		var newPage = assertParsesSingleStatement("NEWPAGE(5) WHEN LESS 10 TITLE 'The Title'", INewPageNode.class);
+		var newPage = assertParsesSingleStatement("NEWPAGE(5) WHEN LESS 10 TITLE UNDERLINED 'The Title'", INewPageNode.class);
 		assertThat(newPage.reportSpecification()).map(SyntaxToken::intValue).hasValue(5);
-		assertThat(newPage.descendants()).hasSize(9);
+		assertThat(newPage.descendants()).hasSize(10);
 	}
 
 	@Test
@@ -1502,7 +1618,7 @@ class StatementListParserShould extends StatementParseTest
 	void parseASimpleHistogram()
 	{
 		var histogram = assertParsesSingleStatement("""
-			HISTOGRAM THE-VIEW THE-DESC STARTING FROM 'M'
+			HISTOGRAM THE-VIEW PASSWORD='password' THE-DESC STARTING FROM 'M'
 			IGNORE
 			END-HISTOGRAM""", IHistogramNode.class);
 		assertThat(histogram.view().token().symbolName()).isEqualTo("THE-VIEW");
@@ -1560,6 +1676,27 @@ class StatementListParserShould extends StatementParseTest
 			HISTOGRAM THE-VIEW %s THE-DESC
 			IGNORE
 			END-HISTOGRAM""".formatted(sorting), IHistogramNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"WHERE FIELD > 0",
+		"WHERE FIELD > 0 AND FIELD < 100",
+		"WHERE FIELD = 0 OR FIELD > 100",
+		"GT 'XXX' WHERE FIELD > 0",
+		"LESS THAN 'XXX' WHERE FIELD > 0",
+		"GREATER EQUAL 'XXX' WHERE FIELD > 0",
+		"STARTING FROM 'M' ENDING AT 'Q' WHERE FIELD < 100",
+		"STARTING FROM 'M' TO 'Q' WHERE FIELD > 0 AND FIELD < 100",
+	})
+	void parseHistogramWithWhere(String where)
+	{
+		var histogram = assertParsesSingleStatement("""
+			HISTOGRAM THE-VIEW FOR THE-DESC %s
+			IGNORE
+			END-HISTOGRAM""".formatted(where), IHistogramNode.class);
+		assertThat(histogram.condition()).isNotNull();
 	}
 
 	@Test
@@ -1748,6 +1885,224 @@ class StatementListParserShould extends StatementParseTest
 		var skip = assertParsesSingleStatement("SKIP (PR2) 5 LINES", ISkipStatementNode.class);
 		assertThat(skip.reportSpecification()).isPresent();
 		assertThat(skip.reportSpecification().get().reportSpecification().symbolName()).isEqualTo("PR2");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"RESETTING",
+		"RESETTING DATAAREA",
+		"RESETTING TEXTAREA",
+		"RESETTING MACROAREA",
+		"RESETTING ALL",
+		"MOVING",
+		"ASSIGNING #VAR1 = #VAR2",
+		"FORMATTING",
+		"EXTRACTING #VAR2 = #VAR1",
+	})
+	void parseSimpleComposeStatements(String statement)
+	{
+		assertParsesSingleStatement("COMPOSE %s".formatted(statement), IComposeStatementNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"VAR1 VAR2 VAR3 TO DATAAREA LAST STATUS TO STAT1",
+		"VAR1 VAR2 LAST STATUS TO STAT1 STAT2",
+		"VAR1 VAR2 VAR3 STATUS TO STAT1 STAT2",
+		"VAR1 TO DATAAREA OUTPUT TO VARIABLES VAR1 VAR2 VAR3 STATUS TO STAT1 STAT2",
+		"LAST OUTPUT TO VARIABLES VAR1 VAR2 VAR3 STATUS TO STAT1 STAT2",
+		"VAR1 TO VARIABLES VAR1 VAR2 VAR3 STATUS TO STAT1 STAT2",
+		"VAR1 TO VARIABLES VAR1 VAR2 VAR3",
+		"OUTPUT TO VARIABLES VAR1 VAR2 VAR3 STATUS TO STAT1",
+	})
+	void parseComposeMovingStatements(String statement)
+	{
+		assertParsesSingleStatement("COMPOSE MOVING %s".formatted(statement), IComposeStatementNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"(01)",
+		"SUPPRESSED",
+		"CALLING 'string'",
+		"CALLING VAR1",
+		"TO VARIABLES CONTROL CNTL1 CNTL2 VAR1 VAR2 VAR3",
+		"TO VARIABLES VAR1 VAR2 VAR3",
+		"DOCUMENT",
+		"DOCUMENT TO FINAL",
+		"DOCUMENT TO INTERMEDIATE",
+		"DOCUMENT TO FINAL CABINET #CAB GIVING VAR1",
+		"DOCUMENT TO INTERMEDIATE CABINET 'CABINET' VAR1",
+		"DOCUMENT TO INTERMEDIATE CABINET 'CABINET' PASSW='password' GIVING VAR1",
+		"DOCUMENT INTO FINAL CABINET 'CABINET' PASSW='password' VAR1 VAR2",
+		"DOCUMENT INTO CABINET 'CABINET' PASSW='password' GIVING VAR1 VAR2",
+	})
+	void parseComposeFormattingOutputStatements(String statement)
+	{
+		assertParsesSingleStatement("COMPOSE FORMATTING OUTPUT %s".formatted(statement), IComposeStatementNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"DATAAREA",
+		"DATAAREA FROM EXIT #VAR1",
+		"DATAAREA FROM CABINET #CAB1",
+		"DATAAREA FROM CABINET #CAB1 CABINET #CAB2",
+		"DATAAREA FROM CABINET 'CAB' PASSW=#PSW1 CABINET #CAB2",
+		"DATAAREA FROM CABINET 'CAB' PASSW=#PSW1  CABINET #CAB2 PASSW=#PSW2",
+		"#VAR1 FROM EXIT #EXIT1",
+		"#VAR1 FROM EXIT #EXIT1 EXIT #EXIT2",
+		"#VAR1 FROM CABINET 'CAB' PASSW=#PSW1",
+		"#VAR1 FROM CABINET 'CAB' PASSW=#PSW1  CABINET #CAB2 PASSW=#PSW2",
+	})
+	void parseComposeFormattingInputStatements(String statement)
+	{
+		assertParsesSingleStatement("COMPOSE FORMATTING INPUT %s".formatted(statement), IComposeStatementNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"ASSIGNING TEXTVARIABLE #VAR1 = #VAR2",
+		"ASSIGNING TEXTVARIABLE 'VARNAME1' = #VAR1",
+		"EXTRACTING TEXTVARIABLE #VAR1 = #VAR2",
+		"EXTRACTING TEXTVARIABLE #VAR1 = 'VARNAME'",
+		"ASSIGNING TEXTVARIABLE #VAR1 = #VAR2, #VAR3 = #VAR4",
+		"ASSIGNING TEXTVARIABLE 'VARNAME1' = #VAR1, #VAR3 = #VAR4",
+		"EXTRACTING TEXTVARIABLE #VAR1 = #VAR2, #VAR3 = #VAR4",
+		"EXTRACTING TEXTVARIABLE #VAR1 = 'VARNAME', #VAR3 = #VAR4",
+		"ASSIGNING #VAR1 = #VAR2",
+		"ASSIGNING 'VARNAME1' = #VAR1",
+		"EXTRACTING #VAR1 = #VAR2",
+		"EXTRACTING #VAR1 = 'VARNAME'",
+		"ASSIGNING #VAR1 = #VAR2, #VAR3 = #VAR4",
+		"ASSIGNING 'VARNAME1' = #VAR1, #VAR3 = #VAR4",
+		"EXTRACTING #VAR1 = #VAR2, #VAR3 = #VAR4",
+		"EXTRACTING #VAR1 = 'VARNAME', #VAR3 = #VAR4",
+	})
+	void parseComposeAssigningAndExtractingStatements(String statement)
+	{
+		assertParsesSingleStatement("COMPOSE %s".formatted(statement), IComposeStatementNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"ENDING AT PAGE #VAR1",
+		"ENDING AT #VAR1",
+		"ENDING PAGE #VAR1",
+		"ENDING #VAR1",
+		"ENDING AT PAGE 11",
+		"ENDING AT 11",
+		"ENDING PAGE 11",
+		"ENDING 11",
+		"ENDING AFTER #VAR1 PAGES",
+		"ENDING AFTER 12 PAGES",
+		"ENDING AFTER 12",
+		"STARTING FROM PAGE #VAR",
+		"STARTING FROM #VAR",
+		"STARTING PAGE #VAR",
+		"STARTING #VAR",
+		"STARTING FROM PAGE 13",
+		"STARTING FROM 13",
+		"STARTING PAGE 13",
+		"STARTING 13",
+	})
+	void parseComposeFormattingStartingEndingStatements(String statement)
+	{
+		assertParsesSingleStatement("COMPOSE FORMATTING %s".formatted(statement), IComposeStatementNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"STATUS #VAR1",
+		"STATUS #VAR1 #VAR2 #VAR3 #VAR4",
+		"PROFILE #VAR1",
+		"MESSAGES SUPPRESSED",
+		"MESSAGES LISTED ON (01)",
+		"MESSAGES LISTED (01)",
+		"MESSAGES ON (01)",
+		"MESSAGES (01)",
+		"ERRORS INTERCEPTED",
+		"ERRORS LISTED ON (01)",
+		"ERRORS LISTED (01)",
+		"ERRORS ON (01)",
+		"ERRORS (01)",
+	})
+	void parseComposeFormattingOtherStatements(String statement)
+	{
+		assertParsesSingleStatement("COMPOSE FORMATTING %s".formatted(statement), IComposeStatementNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"RESETTING DATAAREA MOVING ASSIGNING A = B FORMATTING STATUS VAR MESSAGES SUPPRESSED",
+	})
+	void parseComposeMultiClausesStatements(String statement)
+	{
+		assertParsesSingleStatement("COMPOSE %s".formatted(statement), IComposeStatementNode.class);
+	}
+
+	@Test
+	void parseComposeRealLifeStatement()
+	{
+		assertParsesSingleStatement("""
+			COMPOSE RESETTING ALL
+			MOVING '.EM AUTE-KONSULENTBREV'
+			ASSIGNING
+			'FORSIDENT'        = POLICE-FORS-IDENT,
+			'SKADEDATO'        = ' ',
+			'LBNR'             = ' ',
+			'SAGSBEHANDLER'    = BEGAERING-SAGSBEHANDLER,
+			'AKTIVITETSTYPE'   = AKTIVITET-SKADE.AKTIVITET-TYPE,
+			'AKTIVITETSTEKST'  = 'Brev om ....',
+			'FORSTAGER'        = FORS-TAGER,
+			'FTAGKONTAKTADR'   = FORS-TAGER-KONTAKT,
+			'FORSTYPE'         = KODE-TEKST,
+			'OBJEKTTYPE'       = ' ',
+			'UDLOEBSDATO'      = UDLQBS-DATO
+			FORMATTING
+			OUTPUT DOCUMENT GIVING ISN-B4
+			INPUT 'CONNECT-ADVIS-UDLQB-FEJL' FROM CABINET 'SKAETEXT'
+			STATUS STATUS-KODE
+			""", IComposeStatementNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"EXTRACTING 'VARNAME' = #VAR1",
+	})
+	void reportADiagnosticForInvalidOperandForCompose(String statement)
+	{
+		assertDiagnostic("""
+			COMPOSE %s
+            """.formatted(statement), ParserError.INVALID_OPERAND);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"ASSIGNING #VAR2 = H'FF'",
+		"ASSIGNING #VAR2 = TRUE",
+		"EXTRACTING #VAR3 = 10",
+		"EXTRACTING #VAR3 = FALSE",
+		"FORMATTING OUTPUT CALLING 10",
+		"FORMATTING OUTPUT DOCUMENT CABINET 'CAB' PASSW=10",
+	})
+	void reportADiagnosticForTypeMismatchForCompose(String statement)
+	{
+		assertDiagnostic(
+			"""
+			COMPOSE %s
+            """.formatted(statement), ParserError.TYPE_MISMATCH
+		);
 	}
 
 	@Test

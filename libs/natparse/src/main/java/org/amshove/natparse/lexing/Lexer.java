@@ -410,6 +410,10 @@ public class Lexer
 			case 'D':
 			case 'e':
 			case 'E':
+			case 'g':
+			case 'G':
+			case 'h':
+			case 'H':
 			case 'i':
 			case 'I':
 			case 'l':
@@ -649,6 +653,16 @@ public class Lexer
 			createAndAdd(SyntaxKind.UBOUND);
 			return;
 		}
+		if (scanner.advanceIfIgnoreCase("GROUP"))
+		{
+			createAndAdd(SyntaxKind.SV_GROUP);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("USER-NAME"))
+		{
+			createAndAdd(SyntaxKind.USER_NAME);
+			return;
+		}
 		if (scanner.advanceIfIgnoreCase("USER"))
 		{
 			createAndAdd(SyntaxKind.SV_USER);
@@ -682,6 +696,16 @@ public class Lexer
 		if (scanner.advanceIfIgnoreCase("CURS-FIELD"))
 		{
 			createAndAdd(SyntaxKind.CURS_FIELD);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("PARSE-COL"))
+		{
+			createAndAdd(SyntaxKind.PARSE_COL);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("PARSE-ROW"))
+		{
+			createAndAdd(SyntaxKind.PARSE_ROW);
 			return;
 		}
 		if (scanner.advanceIfIgnoreCase("INIT-USER"))
@@ -744,6 +768,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.APPLIC_ID);
 			return;
 		}
+		if (scanner.advanceIfIgnoreCase("APPLIC-NAME"))
+		{
+			createAndAdd(SyntaxKind.APPLIC_NAME);
+			return;
+		}
 		if (scanner.advanceIfIgnoreCase("SERVER-TYPE"))
 		{
 			createAndAdd(SyntaxKind.SERVER_TYPE);
@@ -787,6 +816,16 @@ public class Lexer
 		if (scanner.advanceIfIgnoreCase("PID"))
 		{
 			createAndAdd(SyntaxKind.PID);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("NET-USER"))
+		{
+			createAndAdd(SyntaxKind.NET_USER);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("HOSTNAME"))
+		{
+			createAndAdd(SyntaxKind.HOSTNAME);
 			return;
 		}
 		if (scanner.advanceIfIgnoreCase("MACHINE-CLASS"))

@@ -4,8 +4,8 @@ import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -563,7 +563,6 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""");
 	}
 
-	@Disabled("Does not work yet")
 	void parseAnArrayWithWhitespaceAfterTheSlash()
 	{
 		assertParsesWithoutDiagnostics("""
@@ -1535,6 +1534,49 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			 2 #r3 (i4)
 			 end-define
 			""");
+	}
+
+	@Test
+	void showNoDiagnosticForRedefinesWithGroupsInvolved()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 #grp
+			2 #var1 (A1/1:1000)
+			2 #var2 (A1/1:100)
+			1 redefine #grp
+			2 #bytes1 (A1/1:250)
+			2 #bytes2 (A1/1:850)
+			2 redefine #bytes2
+			3 #bytes-str (A750)
+			3 #r1 (a1/101:450)
+			1 redefine #grp
+			2 #var3 (A300)
+			end-define
+			""");
+	}
+
+	@Disabled("This should fail, but does not. Seems the nested REDEFINE for #bytes2 is not handled.")
+	void showADiagnosticForRedefinesWithGroupsInvolved()
+	{
+		assertDiagnostic(
+			"""
+			define data local
+			1 #grp
+			2 #var1 (A1/1:1000)
+			2 #var2 (A1/1:100)
+			1 redefine #grp
+			2 #bytes1 (A1/1:250)
+			2 #bytes2 (A1/1:850)
+			2 redefine #bytes2
+			3 #bytes-str (A750)
+			3 #r1 (a1/1:450)
+			1 redefine #grp
+			2 #var3 (A300)
+			end-define
+			""",
+			ParserError.REDEFINE_LENGTH_EXCEEDS_TARGET_LENGTH
+		);
 	}
 
 	@Test

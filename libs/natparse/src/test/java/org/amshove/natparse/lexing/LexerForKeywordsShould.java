@@ -416,6 +416,7 @@ class LexerForKeywordsShould extends AbstractLexerTest
 			keywordTest("OUTPUT", SyntaxKind.OUTPUT),
 			keywordTest("PACKAGESET", SyntaxKind.PACKAGESET),
 			keywordTest("PAGE", SyntaxKind.PAGE),
+			keywordTest("PAGES", SyntaxKind.PAGES),
 			keywordTest("PARAMETER", SyntaxKind.PARAMETER),
 			keywordTest("PARAMETERS", SyntaxKind.PARAMETERS),
 			keywordTest("PARENT", SyntaxKind.PARENT),
