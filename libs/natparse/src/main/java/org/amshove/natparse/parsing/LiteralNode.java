@@ -19,7 +19,7 @@ class LiteralNode extends TokenNode implements ILiteralNode
 		return switch (token.kind())
 		{
 			case STRING_LITERAL -> new LiteralType(DataFormat.ALPHANUMERIC, token.stringValue().length());
-			case NUMBER_LITERAL ->  switch (targetFormat)
+			case NUMBER_LITERAL -> switch (targetFormat)
 				{
 					case BINARY -> new LiteralType(DataFormat.BINARY, getIntegerLiteralLength(token.source()));
 					case INTEGER -> new LiteralType(DataFormat.INTEGER, getIntegerLiteralLength(token.source()));
