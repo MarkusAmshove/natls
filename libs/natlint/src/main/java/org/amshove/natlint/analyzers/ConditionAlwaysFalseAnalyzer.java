@@ -7,7 +7,6 @@ import org.amshove.natlint.api.ILinterContext;
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.*;
-import org.amshove.natparse.natural.conditionals.ILogicalConditionCriteriaNode;
 
 public class ConditionAlwaysFalseAnalyzer extends AbstractAnalyzer
 {
@@ -27,11 +26,7 @@ public class ConditionAlwaysFalseAnalyzer extends AbstractAnalyzer
 	public void initialize(ILinterContext context)
 	{
 		context.registerNodeAnalyzer(IDecideOnBranchNode.class, this::analyzeDecideBranch);
-		context.registerNodeAnalyzer(ILogicalConditionCriteriaNode.class, this::analyzeCondition);
 	}
-
-	private void analyzeCondition(ISyntaxNode iSyntaxNode, IAnalyzeContext iAnalyzeContext)
-	{}
 
 	private void analyzeDecideBranch(ISyntaxNode node, IAnalyzeContext context)
 	{
@@ -52,20 +47,25 @@ public class ConditionAlwaysFalseAnalyzer extends AbstractAnalyzer
 				continue;
 			}
 
-			var inferredType = literal.inferType(typedTarget.type().format());
-			if (!inferredType.fitsInto(typedTarget.type()))
-			{
-				context.report(
-					CONDITION_ALWAYS_FALSE.createFormattedDiagnostic(
-						literal.position(), "Inferred type %s does not fit into %s %s"
-							.formatted(
-								inferredType.toShortString(),
-								typedTarget.declaration().symbolName(),
-								typedTarget.type().toShortString()
-							)
-					)
-				);
-			}
+			checkLiteralType(context, typedTarget, literal);
+		}
+	}
+
+	private static void checkLiteralType(IAnalyzeContext context, ITypedVariableNode typedTarget, ILiteralNode literal)
+	{
+		var inferredType = literal.inferType(typedTarget.type().format());
+		if (!inferredType.fitsInto(typedTarget.type()))
+		{
+			context.report(
+				CONDITION_ALWAYS_FALSE.createFormattedDiagnostic(
+					literal.position(), "Inferred type %s does not fit into %s %s"
+						.formatted(
+							inferredType.toShortString(),
+							typedTarget.declaration().symbolName(),
+							typedTarget.type().toShortString()
+						)
+				)
+			);
 		}
 	}
 }
