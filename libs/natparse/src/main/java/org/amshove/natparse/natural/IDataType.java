@@ -16,14 +16,17 @@ public interface IDataType
 	boolean hasDynamicLength();
 
 	/**
-	 * Determines if this type fits into the given type. Implicit conversion is taken into account.
+	 * Determines if this type fits into the given type. Implicit conversion is taken into account.</br>
+	 * <strong>This does not compare by byte size</strong>
 	 */
 	default boolean fitsInto(IDataType target)
 	{
-		var bytesFit = this.byteSize() <= target.byteSize();
+		var ourLength = this.hasDynamicLength() ? ONE_GIGABYTE : length();
+		var theirLength = target.hasDynamicLength() ? ONE_GIGABYTE : target.length();
+		var lengthFits = ourLength <= theirLength;
 		var formatIsCompatible = hasCompatibleFormat(target);
 
-		return bytesFit && formatIsCompatible;
+		return lengthFits && formatIsCompatible;
 	}
 
 	/**
@@ -120,7 +123,7 @@ public interface IDataType
 		return Math.max(1, digitsBeforeDecimalPoint + digitsAfterDecimalPoint);
 	}
 
-	private int calculatePackedSize()
+	default int calculatePackedSize()
 	{
 		return Math.max(1, (int) (Math.round((calculateNumericSize() + 1) / 2.0)));
 	}

@@ -723,7 +723,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	{
 		var criteria = assertParsesCriteria("#VAR < D'1990-01-01'", IRelationalCriteriaNode.class);
 		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).token().kind()).isEqualTo(SyntaxKind.DATE_LITERAL);
-		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).dataType().format()).isEqualTo(DataFormat.DATE);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).inferType(DataFormat.DATE).format()).isEqualTo(DataFormat.DATE);
 	}
 
 	@Test
@@ -731,7 +731,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	{
 		var criteria = assertParsesCriteria("#VAR < T'15:00:00'", IRelationalCriteriaNode.class);
 		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).token().kind()).isEqualTo(SyntaxKind.TIME_LITERAL);
-		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).dataType().format()).isEqualTo(DataFormat.TIME);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).inferType(DataFormat.TIME).format()).isEqualTo(DataFormat.TIME);
 	}
 
 	@Test
@@ -739,7 +739,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	{
 		var criteria = assertParsesCriteria("#VAR < E'2010-02-02 15:00:00'", IRelationalCriteriaNode.class);
 		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).token().kind()).isEqualTo(SyntaxKind.EXTENDED_TIME_LITERAL);
-		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).dataType().format()).isEqualTo(DataFormat.TIME);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).inferType(DataFormat.TIME).format()).isEqualTo(DataFormat.TIME);
 	}
 
 	@Test
@@ -747,8 +747,8 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	{
 		var criteria = assertParsesCriteria("#VAR = H'0A'", IRelationalCriteriaNode.class);
 		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).token().kind()).isEqualTo(SyntaxKind.HEX_LITERAL);
-		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).dataType().format()).isEqualTo(DataFormat.ALPHANUMERIC);
-		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).dataType().length()).isEqualTo(1);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).inferType(DataFormat.ALPHANUMERIC).format()).isEqualTo(DataFormat.ALPHANUMERIC);
+		assertThat(assertNodeType(criteria.right(), ILiteralNode.class).inferType(DataFormat.ALPHANUMERIC).length()).isEqualTo(1);
 	}
 
 	@Test
