@@ -110,7 +110,7 @@ partial - partially implemented to prevent false positives (12)
 | RUN | :x:                |
 | SELECT (SQL) | partial            |
 | SEND METHOD | :x:                |
-| SEPARATE | :x:                |
+| SEPARATE | :white_check_mark: |
 | SET CONTROL | :x:                |
 | SET GLOBALS | :x:                |
 | SET KEY | :white_check_mark: |

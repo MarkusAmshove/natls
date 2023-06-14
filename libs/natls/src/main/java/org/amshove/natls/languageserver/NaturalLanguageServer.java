@@ -83,6 +83,10 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 				)
 			);
 			workspace.setFileOperations(fileOperations);
+			var workspaceFoldersOptions = new WorkspaceFoldersOptions();
+			workspaceFoldersOptions.setSupported(false);
+			workspaceFoldersOptions.setChangeNotifications(true);
+			workspace.setWorkspaceFolders(workspaceFoldersOptions);
 			capabilities.setWorkspace(workspace);
 
 			MarkupContentBuilderFactory.configureFactory(MarkdownContentBuilder::new);

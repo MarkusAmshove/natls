@@ -90,7 +90,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		{
 			for (var parameter : sysFuncNode.parameter())
 			{
-				var type = inferDataType(parameter);
+				var type = inferDataType(parameter, DataFormat.ALPHANUMERIC);
 				if (type == null)
 				{
 					continue;
@@ -112,7 +112,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		{
 			var parameter = sysFuncNode.parameter().first();
 
-			var type = inferDataType(parameter);
+			var type = inferDataType(parameter, DataFormat.ALPHANUMERIC);
 			if (type != null && type.format() != DataFormat.NONE && type.format() != DataFormat.ALPHANUMERIC && type.format() != DataFormat.UNICODE && type.format() != DataFormat.BINARY)
 			{
 				report(ParserErrors.typeMismatch("Parameter to *TRIM must be of type A, B or U but is %s".formatted(type.toShortString()), parameter));
@@ -133,7 +133,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		{
 			for (var value : branch.values())
 			{
-				var inferredType = inferDataType(value);
+				var inferredType = inferDataType(value, typedTarget.type().format());
 				if (inferredType.format() != DataFormat.NONE && !inferredType.hasSameFamily(typedTarget.type()))
 				{
 					report(
@@ -421,7 +421,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 				|| upperLiteral.token().kind() == SyntaxKind.ASTERISK);
 	}
 
-	private IDataType inferDataType(IOperandNode operand)
+	private IDataType inferDataType(IOperandNode operand, DataFormat targetFormat)
 	{
 		if (operand instanceof IVariableReferenceNode variable && variable.reference()instanceof ITypedVariableNode typedRef)
 		{
@@ -430,7 +430,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 
 		if (operand instanceof ILiteralNode literal)
 		{
-			return literal.dataType();
+			return literal.inferType(targetFormat);
 		}
 
 		if (operand instanceof ISystemFunctionNode sysFunction)
