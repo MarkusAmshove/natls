@@ -15,7 +15,7 @@ class AttributeNode extends TokenNode implements IAttributeNode
 	}
 
 	@Override
-	public IDataType inferType(DataFormat targetFormat)
+	public IDataType inferType()
 	{
 		return DATA_TYPE;
 	}

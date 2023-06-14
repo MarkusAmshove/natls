@@ -23,12 +23,12 @@ class LiteralTypeInferenceShould
 			"200,I2",
 			"12345,I2",
 			"2147483647,I4",
-			"2147483648,I4",
+			"2147483648,N10",
 		}
 	)
-	void inferTheCorrectTypeBasedOnTargetTypeForIntegers(String source, String expectedInferredType)
+	void inferTheCorrectTypeBasedOnTargetTypeForIntegers(String source, String targetType)
 	{
-		assertInferredType("I4", source, expectedInferredType);
+		assertCompatibleType(targetType, source);
 	}
 
 	@ParameterizedTest
@@ -39,29 +39,28 @@ class LiteralTypeInferenceShould
 			"200,B2",
 			"12345,B2",
 			"2147483647,B4",
-			"2147483648,B4",
+			"2147483648,B10",
 		}
 	)
-	void inferTheCorrectTypeBasedOnTargetTypeForBinary(String source, String expectedInferredType)
+	void inferTheCorrectTypeBasedOnTargetTypeForBinary(String source, String targetType)
 	{
-		assertInferredType("B4", source, expectedInferredType);
+		assertCompatibleType(targetType, source);
 	}
 
 	@ParameterizedTest
 	@CsvSource(
 		{
-			"-126,F1",
-			"127,F1",
-			"200,F2",
-			"12345,F2",
-			"2147483647,F4",
-			"2147483648,F4",
+			"-126",
+			"127",
+			"200",
+			"12345",
+			"2147483647"
 		}
 	)
 	// TODO: What about actual decimal numbers?
-	void inferTheCorrectTypeBasedOnTargetTypeForFloats(String source, String expectedInferredType)
+	void inferTheCorrectTypeBasedOnTargetTypeForFloats(String source)
 	{
-		assertInferredType("F4", source, expectedInferredType);
+		assertCompatibleType("F8", source);
 	}
 
 	@ParameterizedTest
@@ -76,9 +75,9 @@ class LiteralTypeInferenceShould
 			"2147483648.123,P10.3",
 		}
 	)
-	void inferTheCorrectTypeBasedOnTargetTypeForPacked(String source, String expectedInferredType)
+	void inferTheCorrectTypeBasedOnTargetTypeForPacked(String source, String targetType)
 	{
-		assertInferredType("P4", source, expectedInferredType);
+		assertCompatibleType(targetType, source);
 	}
 
 	@ParameterizedTest
@@ -94,15 +93,29 @@ class LiteralTypeInferenceShould
 	@ParameterizedTest
 	@CsvSource(
 		{
-			"12345,N5",
-			"2147483647,N10",
+			"12345",
+			"2147483647",
+			"2147483648",
+			"2147483648.123",
+		}
+	)
+	void inferTheCorrectTypeBasedOnTargetTypeForNumerics(String source)
+	{
+		assertCompatibleType("N10.3", source);
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"12345,I2",
+			"2147483647,I4",
 			"2147483648,N10",
 			"2147483648.123,N10.3",
 		}
 	)
-	void inferTheCorrectTypeBasedOnTargetTypeForNumerics(String source, String expectedInferredType)
+	void inferTheCorrectTypeForNumericLiterals(String source, String targetType)
 	{
-		assertInferredType("N1", source, expectedInferredType);
+		assertCompatibleType(targetType, source);
 	}
 
 	private void assertInferredType(String targetType, String source, String expectedInferredType)
@@ -111,7 +124,7 @@ class LiteralTypeInferenceShould
 		var expectedType = createType(expectedInferredType);
 
 		var literal = literal(source);
-		var inferredType = literal.inferType(typedTarget.format());
+		var inferredType = literal.inferType();
 
 		assertThat(inferredType.format())
 			.as("Expected the inferred DataFormat to match")
@@ -123,6 +136,17 @@ class LiteralTypeInferenceShould
 				.as("Expected the inferred length to match")
 				.isEqualTo(expectedType.length());
 		}
+	}
+
+	private void assertCompatibleType(String targetType, String source)
+	{
+		var typedTarget = createType(targetType);
+
+		var literal = literal(source);
+		var inferredType = literal.inferType();
+		assertThat(inferredType.fitsInto(typedTarget))
+			.as("Expected the inferred type %s to fit into %s (e.g. having implicit conversion)".formatted(inferredType, typedTarget))
+			.isTrue();
 	}
 
 	private DataType createType(String typeSource)

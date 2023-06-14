@@ -7,26 +7,15 @@ import org.amshove.natparse.natural.ILiteralNode;
 
 class LiteralNode extends TokenNode implements ILiteralNode
 {
+	private final IDataType inferredType;
+
 	public LiteralNode(SyntaxToken token)
 	{
 		super(token);
-	}
-
-	@Override
-	public IDataType inferType(DataFormat targetFormat)
-	{
-		var token = token();
-		return switch (token.kind())
+		inferredType = switch (token.kind())
 		{
 			case STRING_LITERAL -> new LiteralType(DataFormat.ALPHANUMERIC, token.stringValue().trim().length());
-			case NUMBER_LITERAL -> switch (targetFormat)
-				{
-					case BINARY -> new LiteralType(DataFormat.BINARY, getIntegerLiteralLength(token.source()));
-					case INTEGER -> new LiteralType(DataFormat.INTEGER, getIntegerLiteralLength(token.source()));
-					case FLOAT -> new LiteralType(DataFormat.FLOAT, getIntegerLiteralLength(token.source()));
-					case PACKED -> new LiteralType(DataFormat.PACKED, getNumericLiteralLength(token.source()));
-					default -> new LiteralType(DataFormat.NUMERIC, getNumericLiteralLength(token.source()));
-				};
+			case NUMBER_LITERAL -> inferNumeric(token);
 			case DATE_LITERAL -> new LiteralType(DataFormat.DATE, 4);
 			case TIME_LITERAL, EXTENDED_TIME_LITERAL -> new LiteralType(DataFormat.TIME, 7);
 
@@ -40,12 +29,29 @@ class LiteralNode extends TokenNode implements ILiteralNode
 		};
 	}
 
-	private double getNumericLiteralLength(String source)
+	@Override
+	public IDataType inferType()
 	{
+		return inferredType;
+	}
+
+	private IDataType inferNumeric(SyntaxToken token)
+	{
+		var source = token.source();
 		if (!source.contains(".") && !source.contains(","))
 		{
-			return source.length();
+			var length = getIntegerLiteralLength(source);
+			return length > 4
+				? new LiteralType(DataFormat.PACKED, Math.round((source.length() + 1) / 2.0))
+				: new LiteralType(DataFormat.INTEGER, length);
 		}
+
+		var numericLiteralLength = getNumericLiteralLength(token.source());
+		return new LiteralType(DataFormat.NUMERIC, Math.round((numericLiteralLength + 1) / 2.0));
+	}
+
+	private double getNumericLiteralLength(String source)
+	{
 
 		var normalized = source.replace(',', '.');
 		var split = normalized.split("\\.");
@@ -63,7 +69,14 @@ class LiteralNode extends TokenNode implements ILiteralNode
 			return getNumericLiteralLength(source);
 		}
 
-		var byteSize = Long.toBinaryString(Long.parseLong(source)).length() / 8.0;
+		var parsedNumber = Long.parseLong(source);
+
+		if (parsedNumber > Integer.MAX_VALUE || parsedNumber < Integer.MIN_VALUE)
+		{
+			return 8; // I8 is not a valid type, but will be inferred to NUMERIC instead
+		}
+
+		var byteSize = Long.toBinaryString(parsedNumber).length() / 8.0;
 		if (byteSize < 1)
 		{
 			return 1;
