@@ -27,14 +27,14 @@ final class TypeChecker implements ISyntaxNodeVisitor
 	{
 		try
 		{
-			//			if (node instanceof IStatementNode statementNode)
-			//			{
-			//				checkStatement(statementNode);
-			//			}
-			//			else
-			//			{
-			checkNode(node);
-			//			}
+			if (node instanceof IStatementNode statementNode)
+			{
+				checkStatement(statementNode);
+			}
+			else
+			{
+				checkNode(node);
+			}
 		}
 		catch (Exception e)
 		{
@@ -53,9 +53,32 @@ final class TypeChecker implements ISyntaxNodeVisitor
 
 	private void checkStatement(IStatementNode statement)
 	{
+		if (statement instanceof IMutateVariables mutator)
+		{
+			ensureMutable(mutator);
+		}
+
 		if (statement instanceof IAssignmentStatementNode assignment)
 		{
 			checkAssign(assignment);
+			return;
+		}
+
+		if (statement instanceof IDivideStatementNode divide)
+		{
+			checkDivide(divide);
+			return;
+		}
+
+		if (statement instanceof IWriteWorkNode writeWork)
+		{
+			checkWriteWork(writeWork);
+			return;
+		}
+
+		if (statement instanceof IDecideOnNode decideOn)
+		{
+			checkDecideOnBranches(decideOn);
 		}
 	}
 
@@ -77,31 +100,11 @@ final class TypeChecker implements ISyntaxNodeVisitor
 
 	private void checkNode(ISyntaxNode node)
 	{
-		if (node instanceof IMutateVariables mutator)
-		{
-			ensureMutable(mutator);
-		}
-
-		if (node instanceof IDivideStatementNode divide)
-		{
-			checkDivide(divide);
-		}
-
-		if (node instanceof IWriteWorkNode writeWork)
-		{
-			checkWriteWork(writeWork);
-		}
-
 		if (node instanceof ITypedVariableNode typedVariableNode
 			&& typedVariableNode.type() != null
 			&& typedVariableNode.type().initialValue() != null)
 		{
 			checkAlphanumericInitLength(typedVariableNode);
-		}
-
-		if (node instanceof IDecideOnNode decideOn)
-		{
-			checkDecideOnBranches(decideOn);
 		}
 
 		if (node instanceof IVariableReferenceNode variableReference)
