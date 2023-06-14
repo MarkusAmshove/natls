@@ -1,0 +1,11 @@
+DEFINE DATA LOCAL
+1 #N1 (N1)
+1 #I1 (I1)
+END-DEFINE
+
+#N1 := 23 /* !{D:ERROR:NPP037}
+#N1 := 2
+#I1 := 128 /* !{D:ERROR:NPP037}
+#I1 := 127
+
+END

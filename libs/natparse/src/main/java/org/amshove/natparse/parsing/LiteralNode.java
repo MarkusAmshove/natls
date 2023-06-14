@@ -97,6 +97,22 @@ class LiteralNode extends TokenNode implements ILiteralNode
 		return 4;
 	}
 
+	@Override
+	public IDataType reInferType(IDataType targetType)
+	{
+		if (!targetType.hasSameFamily(inferredType))
+		{
+			return inferredType;
+		}
+
+		if (targetType.format() == DataFormat.NUMERIC && inferredType.format() == DataFormat.INTEGER)
+		{
+			return new LiteralType(DataFormat.NUMERIC, token().source().length());
+		}
+
+		return inferredType;
+	}
+
 	record LiteralType(DataFormat format, double length) implements IDataType
 	{
 		@Override

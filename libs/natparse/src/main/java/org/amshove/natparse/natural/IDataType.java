@@ -116,7 +116,7 @@ public interface IDataType
 		return calculateNumericSize();
 	}
 
-	private int calculateNumericSize()
+	default int calculateNumericSize()
 	{
 		var digitsBeforeDecimalPoint = (int) length();
 		var digitsAfterDecimalPoint = calculateDigitsAfterDecimalPoint();

@@ -2,6 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IDataType;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -140,6 +141,15 @@ class DataTypeCheckingShould
 	void recognizeDataFormatsAsDifferentFamily(String firstFormat, String secondFormat)
 	{
 		assertDifferentFamily(firstFormat, secondFormat);
+	}
+
+	@Test
+	void recognizeIntegersNotFittingIntoNumerics()
+	{
+		assertNotCompatible(
+			type(DataFormat.INTEGER, 2),
+			type(DataFormat.NUMERIC, 1)
+		);
 	}
 
 	private void assertSameFamily(String firstFormat, String secondFormat)

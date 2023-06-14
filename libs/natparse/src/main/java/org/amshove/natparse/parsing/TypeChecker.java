@@ -96,6 +96,36 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			return;
 		}
 
+		var targetType = assignment.target()instanceof ITypeInferable inferableTarget
+			? inferableTarget.inferType()
+			: null;
+
+		var operandType = assignment.operand()instanceof ITypeInferable inferableOperand
+			? inferableOperand.inferType()
+			: null;
+
+		if (targetType == null || operandType == null)
+		{
+			return;
+		}
+
+		if (assignment.operand()instanceof ILiteralNode literal)
+		{
+			operandType = literal.reInferType(targetType);
+		}
+
+		if (!operandType.fitsInto(targetType))
+		{
+			report(
+				ParserErrors.typeMismatch(
+					"Type mismatch: Inferred type %s is not compatible with target type %s".formatted(
+						operandType.toShortString(),
+						targetType.toShortString()
+					),
+					assignment.operand()
+				)
+			);
+		}
 	}
 
 	private void checkNode(ISyntaxNode node)
