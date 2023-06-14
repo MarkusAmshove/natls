@@ -15,13 +15,13 @@ public class QualifiedVariableAnalyzer extends AbstractAnalyzer
 {
 	public static final DiagnosticDescription VARIABLE_SHOULD_BE_QUALIFIED = DiagnosticDescription.create(
 		"NL018",
-		"Variable should be qualified",
+		"Variable %s should be qualified, change it to %s",
 		DiagnosticSeverity.INFO
 	);
 
 	public static final DiagnosticDescription LEVEL_1_TYPED_VARIABLES_IS_DISCOURAGED = DiagnosticDescription.create(
 		"NL019",
-		"A typed variable should not be defined at level 1",
+		"The typed variable %s should not be defined at level 1, add a group for typed variables",
 		DiagnosticSeverity.INFO
 	);
 
@@ -45,7 +45,7 @@ public class QualifiedVariableAnalyzer extends AbstractAnalyzer
 	public void beforeAnalyzing(IAnalyzeContext context)
 	{
 		isQualifiedVarsOff = !context.getConfiguration(context.getModule().file(), "natls.style.qualifyvars", OPTION_FALSE).equalsIgnoreCase(OPTION_TRUE);
-		isLevel1VarsOff = !context.getConfiguration(context.getModule().file(), "natls.style.level1vars", OPTION_FALSE).equalsIgnoreCase(OPTION_TRUE);
+		isLevel1VarsOff = !context.getConfiguration(context.getModule().file(), "natls.style.disallowtoplevelvars", OPTION_FALSE).equalsIgnoreCase(OPTION_TRUE);
 	}
 
 	private void analyzeQualifiedVariable(ISyntaxNode node, IAnalyzeContext context)
@@ -68,7 +68,7 @@ public class QualifiedVariableAnalyzer extends AbstractAnalyzer
 		var variable = (IVariableReferenceNode) node;
 		if (variable.reference()instanceof ITypedVariableNode typedVariable && !typedVariable.qualifiedName().equals(variable.referencingToken().symbolName()))
 		{
-			context.report(VARIABLE_SHOULD_BE_QUALIFIED.createFormattedDiagnostic(variable.referencingToken(), variable.referencingToken().source()));
+			context.report(VARIABLE_SHOULD_BE_QUALIFIED.createFormattedDiagnostic(variable.referencingToken(), variable.referencingToken().source(), typedVariable.qualifiedName()));
 		}
 	}
 
@@ -92,7 +92,7 @@ public class QualifiedVariableAnalyzer extends AbstractAnalyzer
 		var variable = (ITypedVariableNode) node;
 		if (variable.level() == 1)
 		{
-			context.report(LEVEL_1_TYPED_VARIABLES_IS_DISCOURAGED.createFormattedDiagnostic(variable.declaration(), variable));
+			context.report(LEVEL_1_TYPED_VARIABLES_IS_DISCOURAGED.createFormattedDiagnostic(variable.declaration(), variable.name()));
 		}
 	}
 }

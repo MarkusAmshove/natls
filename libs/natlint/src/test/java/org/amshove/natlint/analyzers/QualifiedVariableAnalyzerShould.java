@@ -17,7 +17,7 @@ class QualifiedVariableAnalyzerShould extends AbstractAnalyzerTest
 	{
 		configureEditorConfig("""
 			[*]
-			natls.style.level1vars=true
+			natls.style.disallowtoplevelvars=true
 			natls.style.qualifyvars=true
 			""");
 
@@ -42,7 +42,7 @@ class QualifiedVariableAnalyzerShould extends AbstractAnalyzerTest
 	{
 		configureEditorConfig("""
 			[*]
-			natls.style.level1vars=true
+			natls.style.disallowtoplevelvars=true
 			natls.style.qualifyvars=true
 			""");
 
@@ -85,7 +85,7 @@ class QualifiedVariableAnalyzerShould extends AbstractAnalyzerTest
 	{
 		configureEditorConfig("""
 			[*]
-			natls.style.level1vars=true
+			natls.style.disallowtoplevelvars=true
 			""");
 
 		testDiagnostics(
