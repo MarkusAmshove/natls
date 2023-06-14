@@ -1,12 +1,12 @@
 # Configuration
 
-The following configurations can be set in a `.editorconfig` file to configure preferences for analyzers.
+The following configurations can be set in a `.editorconfig` file to configure preferences for analyzers. Note, that **all** configurations are set to false by default, so you have to turn them on individually according to the below table.
 
-| Property | Possible values | Default value |
+| Property | Possible values | Description |
 | --- | --- | --- |
-| `natls.style.comparisons` | `sign` (`<`, `=`, etc.), `short` (`LT`, `EQ`, etc.) | `sign` |
-| `natls.style.qualifyvars` | `true`, `false` | `false` |
-| `natls.style.disallowtoplevelvars` | `true`, `false` | `false` |
+| `natls.style.comparisons` | `sign`, `short`, `false` | [`NL006`](..\tools/ruletranslator/src/main/resources/rules/NL006)|
+| `natls.style.disallowtoplevelvars` | `true`, `false` | [`NL018`](..\tools/ruletranslator/src/main/resources/rules/NL018)|
+| `natls.style.qualifyvars` | `true`, `false` | [`NL019`](..\tools/ruletranslator/src/main/resources/rules/NL019)|
 
 
 # Example

@@ -5,12 +5,14 @@ type: CODE_SMELL
 description:
 A typed variable should always have a group parent, so that it can be qualified.
 
-Consider this DEFINE DATA structure:
-DEFINE DATA
+Consider this ``DEFINE DATA`` structure:
+``DEFINE DATA
 LOCAL
 1 #MYVAR1 (N1)
 1 #WORK
   2 #MYVAR2 (N1)
-END-DEFINE
+END-DEFINE``
 
-#MYVAR1 is incorrectly defined on level 1, whereas #MYVAR2 is defined correctly with a group parent.
+``#MYVAR1`` is incorrectly defined on level 1, whereas ``#MYVAR2`` is defined correctly with a group parent.
+
+This behavior can be configured using the ``natls.style.qualifyvars`` option in the [analyzer configuration](/docs/analyzer-config.md)
