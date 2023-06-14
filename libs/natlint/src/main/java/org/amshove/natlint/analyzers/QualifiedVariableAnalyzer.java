@@ -14,13 +14,13 @@ import org.amshove.natparse.natural.IVariableReferenceNode;
 public class QualifiedVariableAnalyzer extends AbstractAnalyzer
 {
 	public static final DiagnosticDescription VARIABLE_SHOULD_BE_QUALIFIED = DiagnosticDescription.create(
-		"NL017",
+		"NL018",
 		"Variable should be qualified",
 		DiagnosticSeverity.INFO
 	);
 
 	public static final DiagnosticDescription LEVEL_1_TYPED_VARIABLES_IS_DISCOURAGED = DiagnosticDescription.create(
-		"NL018",
+		"NL019",
 		"A typed variable should not be defined at level 1",
 		DiagnosticSeverity.INFO
 	);
