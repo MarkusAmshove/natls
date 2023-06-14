@@ -104,7 +104,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			? inferableOperand.inferType()
 			: null;
 
-		if (targetType == null || operandType == null)
+		if (targetType == null || operandType == null || targetType == IDataType.UNTYPED || operandType == IDataType.UNTYPED)
 		{
 			return;
 		}
@@ -125,6 +125,9 @@ final class TypeChecker implements ISyntaxNodeVisitor
 
 		if (!operandType.fitsInto(targetType))
 		{
+			// Only do this for incompatible types and literals?
+			// #N5 := #N10 is legal compiler wise, but might result in a runtime error
+			// but do we want to flag that? this could come up a humongus amount of times
 			report(
 				ParserErrors.typeMismatch(
 					"Type mismatch: Inferred type %s is not compatible with target type %s".formatted(
