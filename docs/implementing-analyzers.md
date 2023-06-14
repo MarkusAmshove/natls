@@ -401,7 +401,7 @@ Properties:
 - `type`: Type of the issue, either `CODE_SMELL`, `BUG`, `VULNERABILITY` or `SECURITY_HOTSPOT`
 - `description`: A description of the issue. This should be human-readable and explain what the issue is and how to resolve it.
 
-Note that for SonarQube to format stuff as code (e.g. in mono font) you have to use double backticks, opposed to single backticks in markdown.
+Note that for SonarQube to format stuff as code (e.g. in mono font) you have to use double backticks, opposed to single backticks in markdown. You can find all formatting related information in the [SonarQube documentation](https://next.sonarqube.com/sonarqube/formatting/help).
 
 Now all the tests are happy, and we are done implementing our analyzer.
 
