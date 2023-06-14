@@ -1,4 +1,5 @@
 DEFINE DATA LOCAL
+1 #CONST-N1-I4 (I4) CONST<1>
 1 #N1 (N1)
 1 #I1 (I1)
 END-DEFINE
@@ -7,5 +8,7 @@ END-DEFINE
 #N1 := 2
 #I1 := 128 /* !{D:ERROR:NPP037}
 #I1 := 127
+
+#N1 := #CONST-N1-I4 /* Should work, the constant *value* is N1
 
 END

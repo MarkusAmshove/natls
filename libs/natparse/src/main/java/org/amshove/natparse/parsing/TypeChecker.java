@@ -114,6 +114,15 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			operandType = literal.reInferType(targetType);
 		}
 
+		if (assignment.operand()instanceof IVariableReferenceNode refOperand
+			&& refOperand.reference()instanceof ITypedVariableNode refVariable
+			&& refVariable.type() != null
+			&& refVariable.type().isConstant()
+			&& refVariable.type().initialValue().kind().isLiteralOrConst())
+		{
+			operandType = new LiteralNode(refVariable.type().initialValue()).reInferType(targetType);
+		}
+
 		if (!operandType.fitsInto(targetType))
 		{
 			report(
