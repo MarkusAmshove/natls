@@ -1,0 +1,16 @@
+name: Level 1 typed variables is discouraged
+priority: MINOR
+tags: bad-practice
+type: CODE_SMELL
+description:
+A typed variable should always have a group parent, so that it can be qualified.
+
+Consider this DEFINE DATA structure:
+DEFINE DATA
+LOCAL
+1 #MYVAR1 (N1)
+1 #WORK
+  2 #MYVAR2 (N1)
+END-DEFINE
+
+#MYVAR1 is incorrectly defined on level 1, whereas #MYVAR2 is defined correctly with a group parent.
