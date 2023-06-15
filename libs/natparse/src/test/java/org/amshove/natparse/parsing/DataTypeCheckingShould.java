@@ -152,6 +152,24 @@ class DataTypeCheckingShould
 		);
 	}
 
+	@Test
+	void recognizeTimeCompatibleWithAlphanumeric()
+	{
+		assertCompatible(
+			type(DataFormat.TIME, 0),
+			type(DataFormat.ALPHANUMERIC, 8)
+		);
+	}
+
+	@Test
+	void recognizeDateCompatibleWithAlphanumeric()
+	{
+		assertCompatible(
+			type(DataFormat.DATE, 0),
+			type(DataFormat.ALPHANUMERIC, 8)
+		);
+	}
+
 	private void assertSameFamily(String firstFormat, String secondFormat)
 	{
 		assertThat(type(DataFormat.fromSource(firstFormat), IDataType.ONE_GIGABYTE).hasSameFamily(type(DataFormat.fromSource(secondFormat), IDataType.ONE_GIGABYTE)))

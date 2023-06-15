@@ -3,6 +3,9 @@ DEFINE DATA LOCAL
 1 #N1 (N1)
 1 #I1 (I1)
 1 #A1 (A1)
+1 #T (T)
+1 #D (D)
+1 #A10 (A10)
 1 #ARR (N10/*)
 1 THEVIEW VIEW OF THE-DDM
 2 #TYPED-IN-VIEW
@@ -22,5 +25,8 @@ END-DEFINE
 #A1 := *OCC(#ARR) /* I4 has implicit conversion to A1
 #A1 := #N1 /* N1 has implicit conversion to A1
 #A1 := 1 /* I1 has implicit conversion to A1
+
+#A10 := #T /* Implicit conversion
+#A10 := #D /* Implicit conversion
 
 END
