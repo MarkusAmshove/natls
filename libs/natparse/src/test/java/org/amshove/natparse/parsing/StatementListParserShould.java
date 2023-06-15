@@ -1237,8 +1237,8 @@ class StatementListParserShould extends StatementParseTest
 		var separate = assertParsesSingleStatement("SEPARATE #VAR INTO #ARR(*)", ISeparateStatementNode.class);
 		assertThat(separate.separated()).isNotNull();
 		assertThat(assertNodeType(separate.separated(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
-		assertThat(separate.intoList()).hasSize(1);
-		var reference = assertNodeType(separate.intoList().first(), VariableReferenceNode.class);
+		assertThat(separate.targets()).hasSize(1);
+		var reference = assertNodeType(separate.targets().first(), VariableReferenceNode.class);
 		assertThat(reference.token().source()).isEqualTo("#ARR");
 		var rangedAccess = assertNodeType(reference.dimensions().first(), IRangedArrayAccessNode.class);
 		assertThat(assertNodeType(rangedAccess.lowerBound(), ITokenNode.class).token().kind()).isEqualTo(SyntaxKind.ASTERISK);
@@ -1255,12 +1255,12 @@ class StatementListParserShould extends StatementParseTest
 		var separate = assertParsesSingleStatement("SEPARATE #VAR1 %s #POS INTO #VAR2 #VAR3 #VAR4".formatted(from), ISeparateStatementNode.class);
 		assertThat(separate.separated()).isNotNull();
 		assertThat(assertNodeType(separate.separated(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
-		assertThat(separate.intoList()).hasSize(3);
-		var reference = assertNodeType(separate.intoList().first(), VariableReferenceNode.class);
+		assertThat(separate.targets()).hasSize(3);
+		var reference = assertNodeType(separate.targets().first(), VariableReferenceNode.class);
 		assertThat(reference.dimensions().isEmpty());
 		assertThat(reference.token().source()).isEqualTo("#VAR2");
-		assertThat(assertNodeType(separate.intoList().get(1), VariableReferenceNode.class).token().source()).isEqualTo("#VAR3");
-		assertThat(assertNodeType(separate.intoList().get(2), VariableReferenceNode.class).token().source()).isEqualTo("#VAR4");
+		assertThat(assertNodeType(separate.targets().get(1), VariableReferenceNode.class).token().source()).isEqualTo("#VAR3");
+		assertThat(assertNodeType(separate.targets().get(2), VariableReferenceNode.class).token().source()).isEqualTo("#VAR4");
 	}
 
 	@ParameterizedTest
