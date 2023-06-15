@@ -8,7 +8,6 @@ The following configurations can be set in a `.editorconfig` file to configure p
 | `natls.style.disallowtoplevelvars` | `true`, `false` | [`NL018`](../tools/ruletranslator/src/main/resources/rules/NL018)|
 | `natls.style.qualifyvars` | `true`, `false` | [`NL019`](../tools/ruletranslator/src/main/resources/rules/NL019)|
 
-
 # Example
 
 ```editorconfig
