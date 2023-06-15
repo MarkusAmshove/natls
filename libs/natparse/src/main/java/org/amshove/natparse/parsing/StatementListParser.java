@@ -91,6 +91,12 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 				switch (tokens.peek().kind())
 				{
+					case ACCEPT:
+						statementList.addStatement(acceptOrReject());
+						break;
+					case REJECT:
+						statementList.addStatement(acceptOrReject());
+						break;
 					case ADD:
 						statementList.addStatement(addStatement());
 						break;
@@ -366,14 +372,14 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						}
 						// FALLTHROUGH TO DEFAULT INTENDED - SET CONTROL etc. not implemented
 					case IF:
-						if (peekKind(SyntaxKind.IF) && (peek(-1) == null || peek(-1).kind() != SyntaxKind.REJECT && peek(-1).kind() != SyntaxKind.ACCEPT)) // TODO: until ACCEPT/REJECT IF
+						if (peekKind(SyntaxKind.IF))
 						{
 							statementList.addStatement(ifStatement());
 							break;
 						}
 						// FALLTHROUGH TO DEFAULT INTENDED
 					case FOR:
-						if (peekKind(SyntaxKind.FOR) && (peek(-1) == null || (peek(1).kind() == SyntaxKind.IDENTIFIER && peek(-1).kind() != SyntaxKind.REJECT && peek(-1).kind() != SyntaxKind.ACCEPT)))
+						if (peekKind(SyntaxKind.FOR) && (peek(-1) == null || (peek(1).kind() == SyntaxKind.IDENTIFIER)))
 						// TODO: until we support EXAMINE, DECIDE, HISTOGRAM, ...
 						//      just.. implement them already and don't try to understand the conditions
 						{
@@ -2872,6 +2878,15 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			}
 
 		return fetch;
+	}
+
+	private StatementNode acceptOrReject() throws ParseError
+	{
+		var acceptReject = new AcceptRejectNode();
+		consumeAnyMandatory(acceptReject, List.of(SyntaxKind.ACCEPT, SyntaxKind.REJECT));
+		consumeOptionally(acceptReject, SyntaxKind.IF);
+		acceptReject.setCondition(conditionNode());
+		return acceptReject;
 	}
 
 	private static final Set<SyntaxKind> IF_STATEMENT_STOP_KINDS = Set.of(SyntaxKind.END_IF, SyntaxKind.ELSE);
