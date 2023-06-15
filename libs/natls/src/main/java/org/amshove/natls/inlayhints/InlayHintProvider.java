@@ -29,7 +29,7 @@ public class InlayHintProvider
 				return;
 			}
 
-			if (NaturalLanguageService.config.getInlayhints().isShowAssignmentTargetType() && n instanceof IAssignmentStatementNode assignment && assignment.target()instanceof IVariableReferenceNode reference && reference.reference()instanceof ITypedVariableNode typedRef && typedRef.type() != null)
+			if (NaturalLanguageService.getConfig().getInlayhints().isShowAssignmentTargetType() && n instanceof IAssignmentStatementNode assignment && assignment.target()instanceof IVariableReferenceNode reference && reference.reference()instanceof ITypedVariableNode typedRef && typedRef.type() != null)
 			{
 				var hint = new InlayHint();
 				hint.setPosition(LspUtil.toPositionAfter(reference.diagnosticPosition()));
