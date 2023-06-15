@@ -62,6 +62,7 @@ public interface IDataType
 				|| targetFormat == UNICODE
 				|| targetFormat == BINARY;
 			case TIME, DATE -> targetFormat == ALPHANUMERIC;
+			case LOGIC -> targetFormat == ALPHANUMERIC;
 			default -> false; // we don't know whats implicitly compatible yet
 		};
 	}

@@ -30,4 +30,7 @@ END-DEFINE
 #A10 := #T /* Implicit conversion
 #A10 := #D /* Implicit conversion
 
+#A1 := TRUE /* Converted to single character
+#A1 := FALSE /* Converted to single character
+
 END
