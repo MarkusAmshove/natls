@@ -72,7 +72,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	private SnippetEngine snippetEngine;
 	private final CodeLensService codeLensService = new CodeLensService();
 
-	private LSConfiguration config = LSConfiguration.createDefault();
+	public static LSConfiguration config = LSConfiguration.createDefault();
 	private final ReferenceFinder referenceFinder = new ReferenceFinder();
 	private final SignatureHelpProvider signatureHelp = new SignatureHelpProvider();
 

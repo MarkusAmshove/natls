@@ -1,6 +1,7 @@
 package org.amshove.natls.inlayhints;
 
 import org.amshove.natls.languageserver.LspUtil;
+import org.amshove.natls.languageserver.NaturalLanguageService;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
 import org.eclipse.lsp4j.InlayHint;
@@ -25,6 +26,17 @@ public class InlayHintProvider
 
 			if (n.diagnosticPosition().line() < range.getStart().getLine() || n.diagnosticPosition().line() > range.getEnd().getLine())
 			{
+				return;
+			}
+
+			if (NaturalLanguageService.config.getInlayhints().isShowAssignmentTargetType() && n instanceof IAssignmentStatementNode assignment && assignment.target()instanceof IVariableReferenceNode reference && reference.reference()instanceof ITypedVariableNode typedRef && typedRef.type() != null)
+			{
+				var hint = new InlayHint();
+				hint.setPosition(LspUtil.toPositionAfter(reference.diagnosticPosition()));
+				hint.setLabel(typedRef.formatTypeForDisplay());
+				hint.setKind(InlayHintKind.Type);
+				hint.setPaddingLeft(true);
+				hints.add(hint);
 				return;
 			}
 
