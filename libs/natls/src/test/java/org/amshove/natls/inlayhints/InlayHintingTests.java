@@ -1,5 +1,6 @@
 package org.amshove.natls.inlayhints;
 
+import org.amshove.natls.config.LSConfiguration;
 import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natls.testlifecycle.LanguageServerTest;
 import org.amshove.natls.testlifecycle.LspProjectName;
@@ -70,6 +71,57 @@ class InlayHintingTests extends LanguageServerTest
 				hints -> assertThat(hints.get(0).getPaddingLeft()).isTrue(),
 				hints -> assertThat(hints.get(0).getPosition().getLine()).isEqualTo(5),
 				hints -> assertThat(hints.get(0).getPosition().getCharacter()).isEqualTo(7)
+			);
+	}
+
+	@Test
+	void inlayHintsShouldBeAddedForTheTargetVariableOnAssignmentsWhenEnabled()
+	{
+		var config = LSConfiguration.createDefault();
+		config.getInlayhints().setShowAssignmentTargetType(true);
+		configureLSConfig(config);
+
+		var td = createOrSaveFile("LIBONE", "MYMODULE.NSN", """
+			DEFINE DATA LOCAL
+			1 #VAR (A10)
+			END-DEFINE
+			#VAR := 'Hi'
+			END
+			""");
+
+		var request = getContext().documentService().inlayHint(new InlayHintParams(td, LspUtil.newRange(0, 0, 5, 0)));
+		assertThat(request)
+			.succeedsWithin(1, TimeUnit.SECONDS)
+			.satisfies(
+				hints -> assertThat(hints).hasSize(1),
+				hints -> assertThat(hints.get(0).getKind()).isEqualTo(InlayHintKind.Type),
+				hints -> assertThat(hints.get(0).getLabel().getLeft()).isEqualTo("(A10)"),
+				hints -> assertThat(hints.get(0).getPaddingLeft()).isTrue(),
+				hints -> assertThat(hints.get(0).getPosition().getLine()).isEqualTo(3),
+				hints -> assertThat(hints.get(0).getPosition().getCharacter()).isEqualTo(4)
+			);
+	}
+
+	@Test
+	void inlayHintsShouldNotBeAddedForTheTargetVariableOnAssignmentsWhenHintsAreDisabled()
+	{
+		var config = LSConfiguration.createDefault();
+		config.getInlayhints().setShowAssignmentTargetType(false);
+		configureLSConfig(config);
+
+		var td = createOrSaveFile("LIBONE", "MYMODULE.NSN", """
+			DEFINE DATA LOCAL
+			1 #VAR (A10)
+			END-DEFINE
+			#VAR := 'Hi'
+			END
+			""");
+
+		var request = getContext().documentService().inlayHint(new InlayHintParams(td, LspUtil.newRange(0, 0, 5, 0)));
+		assertThat(request)
+			.succeedsWithin(1, TimeUnit.SECONDS)
+			.satisfies(
+				hints -> assertThat(hints).isEmpty()
 			);
 	}
 

@@ -72,7 +72,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	private SnippetEngine snippetEngine;
 	private final CodeLensService codeLensService = new CodeLensService();
 
-	private LSConfiguration config = LSConfiguration.createDefault();
+	private static LSConfiguration config = LSConfiguration.createDefault();
 	private final ReferenceFinder referenceFinder = new ReferenceFinder();
 	private final SignatureHelpProvider signatureHelp = new SignatureHelpProvider();
 
@@ -133,7 +133,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		lspFile.parse();
 	}
 
-	public void setConfiguration(LSConfiguration configuration)
+	public static void setConfiguration(LSConfiguration configuration)
 	{
 		config = configuration;
 	}
@@ -442,6 +442,11 @@ public class NaturalLanguageService implements LanguageClientAware
 		}
 
 		return hoverText;
+	}
+
+	public static LSConfiguration getConfig()
+	{
+		return config;
 	}
 
 	private String readSource(Path path)
