@@ -2,6 +2,8 @@ DEFINE DATA LOCAL
 1 #CONST-N1-I4 (I4) CONST<1>
 1 #N1 (N1)
 1 #I1 (I1)
+1 #A1 (A1)
+1 #ARR (N10/*)
 1 THEVIEW VIEW OF THE-DDM
 2 #TYPED-IN-VIEW
 END-DEFINE
@@ -10,10 +12,15 @@ END-DEFINE
 #N1 := 2
 #I1 := 128 /* !{D:ERROR:NPP037}
 #I1 := 127
+#N1 := 'Hi' /* !{D:ERROR:NPP037}
 
 #N1 := #CONST-N1-I4 /* Should work, the constant *value* is N1
 
 #TYPED-IN-VIEW := 'Hi' /* DDM stuff not yet inferred, don't add a diagnostic
 #N1 := #TYPED-IN-VIEW /* DDM stuff not yet inferred, don't add a diagnostic
+
+#A1 := *OCC(#ARR) /* I4 has implicit conversion to A1
+#A1 := #N1 /* N1 has implicit conversion to A1
+#A1 := 1 /* I1 has implicit conversion to A1
 
 END

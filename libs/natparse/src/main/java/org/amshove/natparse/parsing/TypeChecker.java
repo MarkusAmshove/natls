@@ -123,7 +123,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			operandType = new LiteralNode(refVariable.type().initialValue()).reInferType(targetType);
 		}
 
-		if (!operandType.fitsInto(targetType))
+		if (assignment.operand() instanceof ILiteralNode && !operandType.fitsInto(targetType))
 		{
 			// Only do this for incompatible types and literals?
 			// #N5 := #N10 is legal compiler wise, but might result in a runtime error
@@ -138,6 +138,19 @@ final class TypeChecker implements ISyntaxNodeVisitor
 				)
 			);
 		}
+		else
+			if (!operandType.hasSameFamily(targetType) && !operandType.hasCompatibleFormat(targetType))
+			{
+				report(
+					ParserErrors.typeMismatch(
+						"Type mismatch: Inferred type %s is not implicitly convertable to target type %s".formatted(
+							operandType.toShortString(),
+							targetType.toShortString()
+						),
+						assignment.operand()
+					)
+				);
+			}
 	}
 
 	private void checkNode(ISyntaxNode node)
