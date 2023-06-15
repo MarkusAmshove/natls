@@ -60,7 +60,8 @@ public interface IDataType
 		{
 			case PACKED, FLOAT, INTEGER, NUMERIC -> targetFormat == ALPHANUMERIC
 				|| targetFormat == UNICODE
-				|| targetFormat == BINARY;
+				|| targetFormat == BINARY
+				|| targetFormat == TIME;
 			case TIME, DATE -> targetFormat == ALPHANUMERIC
 				|| targetFormat == NUMERIC
 				|| targetFormat == PACKED

@@ -33,6 +33,10 @@ END-DEFINE
 
 #A10 := #T /* Implicit conversion
 #A10 := #D /* Implicit conversion
+#T := 10 /* Implicit conversion
+#T := #N1 /* Implicit conversion
+#D := 10 /* !{D:ERROR:NPP037}
+#D := #N1 /* !{D:ERROR:NPP037}
 
 #A1 := TRUE /* Converted to single character
 #A1 := FALSE /* Converted to single character
