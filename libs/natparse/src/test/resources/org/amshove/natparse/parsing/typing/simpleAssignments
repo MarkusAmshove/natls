@@ -15,9 +15,12 @@ DEFINE DATA LOCAL
 2 #TYPED-IN-VIEW
 END-DEFINE
 
-#N1 := 23 /* !{D:ERROR:NPP037}
+/* NPP037: Type mismatch
+/* NPP045: Literal value truncation
+
+#N1 := 23 /* !{D:WARNING:NPP045}
 #N1 := 2
-#I1 := 128 /* !{D:ERROR:NPP037}
+#I1 := 128 /* !{D:WARNING:NPP045}
 #I1 := 127
 #N1 := 'Hi' /* !{D:ERROR:NPP037}
 
@@ -29,7 +32,7 @@ END-DEFINE
 #A1 := *OCC(#ARR) /* I4 has implicit conversion to A1
 #A1 := #N1 /* N1 has implicit conversion to A1
 #A1 := 1 /* I1 has implicit conversion to A1
-#A1 := 10 /* !{D:ERROR:NPP037} value is truncated
+#A1 := 10 /* !{D:WARNING:NPP045} value is truncated
 
 #A10 := #T /* Implicit conversion
 #A10 := #D /* Implicit conversion

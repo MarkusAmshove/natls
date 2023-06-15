@@ -125,24 +125,33 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		}
 
 		if (assignment.operand() instanceof ILiteralNode && !operandType.fitsInto(targetType))
+		// Only do this for literals
+		// #N5 := #N10 is legal compiler wise, but might result in a runtime error
 		{
-			var message = operandType.hasCompatibleFormat(targetType)
-				? "Value is truncated from %s to %s at runtime. Remove the truncated parts from this literal.".formatted(
-					operandType.toShortString(),
-					targetType.toShortString()
-				)
-				: "Type mismatch: Inferred type %s is not compatible with target type %s".formatted(
-					operandType.toShortString(),
-					targetType.toShortString()
+			if (operandType.hasCompatibleFormat(targetType))
+			{
+				report(
+					ParserErrors.valueTruncation(
+						"Value is truncated from %s to %s at runtime. Remove the truncated parts from this literal.".formatted(
+							operandType.toShortString(),
+							targetType.toShortString()
+						),
+						assignment.operand()
+					)
 				);
-			// Only do this for literals
-			// #N5 := #N10 is legal compiler wise, but might result in a runtime error
-			report(
-				ParserErrors.typeMismatch(
-					message,
-					assignment.operand()
-				)
-			);
+			}
+			else
+			{
+				report(
+					ParserErrors.typeMismatch(
+						"Type mismatch: Inferred type %s is not compatible with target type %s".formatted(
+							operandType.toShortString(),
+							targetType.toShortString()
+						),
+						assignment.operand()
+					)
+				);
+			}
 			return;
 		}
 
