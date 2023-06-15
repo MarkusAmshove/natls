@@ -5,6 +5,7 @@ import static org.amshove.natparse.natural.DataFormat.*;
 public interface IDataType
 {
 	int ONE_GIGABYTE = 1073741824;
+	IDataType UNTYPED = new Untyped();
 
 	DataFormat format();
 
@@ -21,8 +22,8 @@ public interface IDataType
 	 */
 	default boolean fitsInto(IDataType target)
 	{
-		var ourLength = this.hasDynamicLength() ? ONE_GIGABYTE : length();
-		var theirLength = target.hasDynamicLength() ? ONE_GIGABYTE : target.length();
+		var ourLength = this.hasDynamicLength() ? ONE_GIGABYTE : byteSize();
+		var theirLength = target.hasDynamicLength() ? ONE_GIGABYTE : target.byteSize();
 		var lengthFits = ourLength <= theirLength;
 		var formatIsCompatible = hasCompatibleFormat(target);
 
@@ -59,7 +60,13 @@ public interface IDataType
 		{
 			case PACKED, FLOAT, INTEGER, NUMERIC -> targetFormat == ALPHANUMERIC
 				|| targetFormat == UNICODE
-				|| targetFormat == BINARY;
+				|| targetFormat == BINARY
+				|| targetFormat == TIME;
+			case TIME, DATE -> targetFormat == ALPHANUMERIC
+				|| targetFormat == NUMERIC
+				|| targetFormat == PACKED
+				|| targetFormat == INTEGER; // this one can fail, but not for early times
+			case LOGIC -> targetFormat == ALPHANUMERIC;
 			default -> false; // we don't know whats implicitly compatible yet
 		};
 	}
@@ -115,7 +122,7 @@ public interface IDataType
 		return calculateNumericSize();
 	}
 
-	private int calculateNumericSize()
+	default int calculateNumericSize()
 	{
 		var digitsBeforeDecimalPoint = (int) length();
 		var digitsAfterDecimalPoint = calculateDigitsAfterDecimalPoint();

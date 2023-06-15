@@ -55,9 +55,19 @@ public class ParserDiagnostic implements IDiagnostic
 		return create(message, node.diagnosticPosition(), node.position(), error);
 	}
 
+	public static ParserDiagnostic create(String message, ISyntaxNode node, ParserError error, DiagnosticSeverity severity)
+	{
+		return create(message, node.diagnosticPosition(), node.position(), error, severity);
+	}
+
 	public static ParserDiagnostic create(String message, SyntaxToken token, ParserError error)
 	{
 		return create(message, token.diagnosticPosition(), token, error);
+	}
+
+	public static ParserDiagnostic create(String message, IPosition diagnosticPosition, IPosition originalPosition, ParserError error, DiagnosticSeverity severity)
+	{
+		return new ParserDiagnostic(message, diagnosticPosition.offset(), diagnosticPosition.offsetInLine(), diagnosticPosition.line(), diagnosticPosition.length(), diagnosticPosition.filePath(), originalPosition, error, severity);
 	}
 
 	public static ParserDiagnostic create(String message, IPosition diagnosticPosition, IPosition originalPosition, ParserError error)

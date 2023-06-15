@@ -53,7 +53,7 @@ public class ConditionAlwaysFalseAnalyzer extends AbstractAnalyzer
 
 	private static void checkLiteralType(IAnalyzeContext context, ITypedVariableNode typedTarget, ILiteralNode literal)
 	{
-		var inferredType = literal.inferType(typedTarget.type().format());
+		var inferredType = literal.inferType();
 		if (!inferredType.fitsInto(typedTarget.type()))
 		{
 			context.report(

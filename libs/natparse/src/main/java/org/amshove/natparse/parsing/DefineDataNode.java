@@ -78,6 +78,11 @@ class DefineDataNode extends BaseSyntaxNode implements IDefineData
 		{
 			if (variable instanceof IViewNode viewNode)
 			{
+				if (viewNode.ddm() == null)
+				{
+					return null;
+				}
+
 				var field = viewNode.ddm().findField(symbolName);
 				if (field != null)
 				{
