@@ -5,9 +5,12 @@ import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IDataType;
 import org.amshove.natparse.natural.ILiteralNode;
 
+import java.math.BigInteger;
+
 class LiteralNode extends TokenNode implements ILiteralNode
 {
 	private final IDataType inferredType;
+	private static final int LONG_MAX_VALUE_LENGTH = Long.toString(Long.MAX_VALUE).length();
 
 	public LiteralNode(SyntaxToken token)
 	{
@@ -69,6 +72,11 @@ class LiteralNode extends TokenNode implements ILiteralNode
 			return getNumericLiteralLength(source);
 		}
 
+		if (source.length() > LONG_MAX_VALUE_LENGTH)
+		{
+			return getByteSizeBigInteger(source);
+		}
+
 		var parsedNumber = Long.parseLong(source);
 
 		if (parsedNumber > Integer.MAX_VALUE || parsedNumber < Integer.MIN_VALUE)
@@ -95,6 +103,12 @@ class LiteralNode extends TokenNode implements ILiteralNode
 		}
 
 		return 4;
+	}
+
+	private double getByteSizeBigInteger(String source)
+	{
+		var bigInt = new BigInteger(source);
+		return bigInt.bitLength() / 8.0;
 	}
 
 	private IDataType reInferNumeric()
