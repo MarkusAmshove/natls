@@ -61,7 +61,10 @@ public interface IDataType
 			case PACKED, FLOAT, INTEGER, NUMERIC -> targetFormat == ALPHANUMERIC
 				|| targetFormat == UNICODE
 				|| targetFormat == BINARY;
-			case TIME, DATE -> targetFormat == ALPHANUMERIC;
+			case TIME, DATE -> targetFormat == ALPHANUMERIC
+				|| targetFormat == NUMERIC
+				|| targetFormat == PACKED
+				|| targetFormat == INTEGER; // this one can fail, but not for early times
 			case LOGIC -> targetFormat == ALPHANUMERIC;
 			default -> false; // we don't know whats implicitly compatible yet
 		};

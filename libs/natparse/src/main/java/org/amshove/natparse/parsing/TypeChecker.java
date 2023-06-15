@@ -143,20 +143,21 @@ final class TypeChecker implements ISyntaxNodeVisitor
 					assignment.operand()
 				)
 			);
+			return;
 		}
-		else
-			if (!operandType.hasSameFamily(targetType) && !operandType.hasCompatibleFormat(targetType))
-			{
-				report(
-					ParserErrors.typeMismatch(
-						"Type mismatch: Inferred type %s is not implicitly convertable to target type %s".formatted(
-							operandType.toShortString(),
-							targetType.toShortString()
-						),
-						assignment.operand()
-					)
-				);
-			}
+
+		if (!operandType.hasSameFamily(targetType) && !operandType.hasCompatibleFormat(targetType))
+		{
+			report(
+				ParserErrors.typeMismatch(
+					"Type mismatch: Inferred type %s is not implicitly convertable to target type %s".formatted(
+						operandType.toShortString(),
+						targetType.toShortString()
+					),
+					assignment.operand()
+				)
+			);
+		}
 	}
 
 	private void checkNode(ISyntaxNode node)

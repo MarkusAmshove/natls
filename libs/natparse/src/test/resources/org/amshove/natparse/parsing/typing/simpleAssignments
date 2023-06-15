@@ -3,10 +3,14 @@ DEFINE DATA LOCAL
 1 #N1 (N1)
 1 #I1 (I1)
 1 #A1 (A1)
+1 #P1 (P1)
 1 #T (T)
 1 #D (D)
 1 #A10 (A10)
 1 #ARR (N10/*)
+1 #N12 (N12)
+1 #P12 (P12)
+1 #I4 (I4)
 1 THEVIEW VIEW OF THE-DDM
 2 #TYPED-IN-VIEW
 END-DEFINE
@@ -32,5 +36,8 @@ END-DEFINE
 
 #A1 := TRUE /* Converted to single character
 #A1 := FALSE /* Converted to single character
+
+#N12 := *TIMX /* fine
+#P12 := *TIMX /* fine
 
 END
