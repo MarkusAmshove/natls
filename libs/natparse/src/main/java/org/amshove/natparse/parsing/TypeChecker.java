@@ -132,7 +132,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			{
 				report(
 					ParserErrors.valueTruncation(
-						"Value is truncated from %s to %s at runtime. Remove the truncated parts from this literal.".formatted(
+						"Value is truncated from %s to %s at runtime. Extend the target variable or remove the truncated parts from this literal.".formatted(
 							operandType.toShortString(),
 							targetType.toShortString()
 						),
