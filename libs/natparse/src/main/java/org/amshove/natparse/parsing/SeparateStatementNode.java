@@ -2,14 +2,15 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.ISeparateStatementNode;
+import org.amshove.natparse.natural.IMutateVariables;
 import org.amshove.natparse.ReadOnlyList;
 
 import java.util.ArrayList;
 import java.util.List;
 
-class SeparateStatementNode extends StatementNode implements ISeparateStatementNode
+class SeparateStatementNode extends StatementNode implements ISeparateStatementNode, IMutateVariables
 {
-	private final List<IOperandNode> intoList = new ArrayList<>();
+	private final List<IOperandNode> targets = new ArrayList<>();
 
 	private IOperandNode separated;
 
@@ -25,14 +26,20 @@ class SeparateStatementNode extends StatementNode implements ISeparateStatementN
 	}
 
 	@Override
-	public ReadOnlyList<IOperandNode> intoList()
+	public ReadOnlyList<IOperandNode> targets()
 	{
-		return ReadOnlyList.from(intoList);
+		return ReadOnlyList.from(targets);
 	}
 
-	void addOperand(IOperandNode operand)
+	void addTarget(IOperandNode operand)
 	{
-		intoList.add(operand);
+		targets.add(operand);
+	}
+
+	@Override
+	public ReadOnlyList<IOperandNode> mutations()
+	{
+		return ReadOnlyList.from(targets);
 	}
 
 }

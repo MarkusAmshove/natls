@@ -1985,7 +1985,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(separate, SyntaxKind.INTO);
 		while (isOperand() && !(peekAny(SEPARATE_KEYWORDS) || isStatementStart() || isStatementEndOrBranch()))
 		{
-			separate.addOperand(consumeOperandNode(separate));
+			separate.addTarget(consumeOperandNode(separate));
 		}
 
 		if (consumeEitherOptionally(separate, SyntaxKind.IGNORE, SyntaxKind.REMAINDER) && previousToken().kind() == SyntaxKind.REMAINDER)
