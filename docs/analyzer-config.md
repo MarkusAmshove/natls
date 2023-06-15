@@ -4,10 +4,9 @@ The following configurations can be set in a `.editorconfig` file to configure p
 
 | Property | Possible values | Description |
 | --- | --- | --- |
-| `natls.style.comparisons` | `sign`, `short`, `false` | [`NL006`](..\tools/ruletranslator/src/main/resources/rules/NL006)|
-| `natls.style.disallowtoplevelvars` | `true`, `false` | [`NL018`](..\tools/ruletranslator/src/main/resources/rules/NL018)|
-| `natls.style.qualifyvars` | `true`, `false` | [`NL019`](..\tools/ruletranslator/src/main/resources/rules/NL019)|
-
+| `natls.style.comparisons` | `sign`, `short`, `false` | [`NL006`](../tools/ruletranslator/src/main/resources/rules/NL006)|
+| `natls.style.disallowtoplevelvars` | `true`, `false` | [`NL018`](../tools/ruletranslator/src/main/resources/rules/NL018)|
+| `natls.style.qualifyvars` | `true`, `false` | [`NL019`](../tools/ruletranslator/src/main/resources/rules/NL019)|
 
 # Example
 
