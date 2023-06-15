@@ -471,6 +471,23 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(statementList.statements()).noneMatch(s -> s instanceof IFunctionCallNode);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"ACCEPT IF #TEST = 3",
+		"ACCEPT #TEST = 3",
+		"REJECT IF #TEST = 3",
+		"REJECT #TEST = 3",
+	})
+	void parseAcceptRejectIfStatements(String statement)
+	{
+		var acceptReject = assertParsesSingleStatement("""
+			%s
+			""".formatted(statement), IAcceptRejectNode.class);
+
+		assertThat(acceptReject.condition()).isNotNull();
+	}
+
 	@Test
 	void parseIfStatements()
 	{
