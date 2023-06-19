@@ -84,6 +84,11 @@ class LiteralNode extends TokenNode implements ILiteralNode
 			return 8; // I8 is not a valid type, but will be inferred to NUMERIC instead
 		}
 
+		if (parsedNumber >= Byte.MIN_VALUE && parsedNumber <= Byte.MAX_VALUE) // handles the sign better than binaryString
+		{
+			return 1;
+		}
+
 		var byteSize = Long.toBinaryString(parsedNumber).length() / 8.0;
 		if (byteSize < 1)
 		{
@@ -116,6 +121,11 @@ class LiteralNode extends TokenNode implements ILiteralNode
 		return new LiteralType(DataFormat.NUMERIC, token().source().length());
 	}
 
+	private IDataType reInferInteger()
+	{
+		return new LiteralType(DataFormat.INTEGER, getIntegerLiteralLength(token().source()));
+	}
+
 	@Override
 	public IDataType reInferType(IDataType targetType)
 	{
@@ -132,6 +142,11 @@ class LiteralNode extends TokenNode implements ILiteralNode
 		if (targetType.format() == DataFormat.NUMERIC && inferredType.format() == DataFormat.INTEGER)
 		{
 			return reInferNumeric();
+		}
+
+		if (targetType.format() == DataFormat.INTEGER)
+		{
+			return reInferInteger();
 		}
 
 		return inferredType;
