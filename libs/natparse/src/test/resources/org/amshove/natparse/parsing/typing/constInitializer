@@ -7,6 +7,7 @@ LOCAL
 
 1 #C-I-1 (I1) INIT<-1> /* Length matches
 1 #C-I-1-BIG (I1) INIT<280> /* !{D:ERROR:NPP037}
+1 #C-N-1 (N1) INIT<005> /* Should be fine
 
 1 #C-A-INIT-1 (A1) INIT<'ABC'> /* !{D:ERROR:NPP037}
 1 #C-A-INIT-2 (A1) INIT<'A'> /* Length matches
