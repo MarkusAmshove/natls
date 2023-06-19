@@ -410,11 +410,13 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		{
 			// This check is special for initializers, because the Natural compiler only treats same types which don't fit as errors.
 			// Others are happily truncated ¯\_()_/¯
-			report(ParserErrors.typeMismatch(
-				"Type mismatch: Initializer %s (inferred %s) does not fit into %s"
-					.formatted(typedVariable.type().initialValue().source(), inferredInitialType.toShortString(), typedVariable.type().toShortString()),
-				literalInitializer
-			));
+			report(
+				ParserErrors.typeMismatch(
+					"Type mismatch: Initializer %s (inferred %s) does not fit into %s"
+						.formatted(typedVariable.type().initialValue().source(), inferredInitialType.toShortString(), typedVariable.type().toShortString()),
+					literalInitializer
+				)
+			);
 		}
 		else
 		{
