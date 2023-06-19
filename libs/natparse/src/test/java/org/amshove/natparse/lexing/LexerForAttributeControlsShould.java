@@ -290,4 +290,23 @@ class LexerForAttributeControlsShould extends AbstractLexerTest
 			token(SyntaxKind.RPAREN)
 		);
 	}
+
+	@Test
+	void recognizeASecondAttributeAfterCVWhenCVHadAnArrayIndexer()
+	{
+		// the ) from A(1) terminated the `inParens` state from the Lexer
+		// which resulted DY to not be treated as an attribute, because the Lexer
+		// thought it is not in parens anymore.
+		assertTokens(
+			"(CV=A(1) DY='3'2'4)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.CV),
+			token(SyntaxKind.IDENTIFIER),
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.NUMBER_LITERAL),
+			token(SyntaxKind.RPAREN),
+			token(SyntaxKind.DY, "DY='3'2'4"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
 }
