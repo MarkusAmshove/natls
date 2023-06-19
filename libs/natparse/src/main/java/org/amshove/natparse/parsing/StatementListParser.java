@@ -335,6 +335,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case TERMINATE:
 						statementList.addStatement(terminate());
 						break;
+					case IF:
+						statementList.addStatement(ifStatement());
+						break;
 					case DECIDE:
 						if (peekKind(1, SyntaxKind.FOR))
 						{
@@ -371,13 +374,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 							break;
 						}
 						// FALLTHROUGH TO DEFAULT INTENDED - SET CONTROL etc. not implemented
-					case IF:
-						if (peekKind(SyntaxKind.IF))
-						{
-							statementList.addStatement(ifStatement());
-							break;
-						}
-						// FALLTHROUGH TO DEFAULT INTENDED
 					case FOR:
 						if (peekKind(SyntaxKind.FOR) && (peek(-1) == null || (peek(1).kind() == SyntaxKind.IDENTIFIER)))
 						// TODO: until we support EXAMINE, DECIDE, HISTOGRAM, ...
