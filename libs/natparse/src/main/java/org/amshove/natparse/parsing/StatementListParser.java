@@ -1841,7 +1841,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(examine, SyntaxKind.EXAMINE);
 		if (consumeOptionally(examine, SyntaxKind.DIRECTION))
 		{
-			consumeAnyOptionally(examine, List.of(SyntaxKind.FORWARD, SyntaxKind.BACKWARD));
+			if (!consumeAnyOptionally(examine, List.of(SyntaxKind.FORWARD, SyntaxKind.BACKWARD)))
+			{
+				// Direction can be specified as an operand (TODO: Type-check A1 or string literal of length 1)
+				consumeOperandNode(examine);
+			}
 		}
 		if (consumeOptionally(examine, SyntaxKind.FULL))
 		{
