@@ -5,7 +5,9 @@ import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
-import org.amshove.natparse.natural.builtin.*;
+import org.amshove.natparse.natural.builtin.BuiltInFunctionTable;
+import org.amshove.natparse.natural.builtin.IBuiltinFunctionDefinition;
+import org.amshove.natparse.natural.builtin.SystemVariableDefinition;
 import org.amshove.natparse.natural.conditionals.ISpecifiedCriteriaNode;
 
 import java.util.ArrayList;
@@ -124,37 +126,19 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			operandType = new LiteralNode(refVariable.type().initialValue()).reInferType(targetType);
 		}
 
-		if (assignment.operand() instanceof ILiteralNode && !operandType.fitsInto(targetType))
+		if (assignment.operand() instanceof ILiteralNode)
 		// Only do this for literals
 		// #N5 := #N10 is legal compiler wise, but might result in a runtime error
 		{
-			if (operandType.hasCompatibleFormat(targetType))
-			{
-				report(
-					ParserErrors.valueTruncation(
-						"Value is truncated from %s to %s at runtime. Extend the target variable or remove the truncated parts from this literal.".formatted(
-							operandType.toShortString(),
-							targetType.toShortString()
-						),
-						assignment.operand()
-					)
-				);
-			}
-			else
-			{
-				report(
-					ParserErrors.typeMismatch(
-						"Type mismatch: Inferred type %s is not compatible with target type %s".formatted(
-							operandType.toShortString(),
-							targetType.toShortString()
-						),
-						assignment.operand()
-					)
-				);
-			}
+			checkTypeCompatibleOrTruncation(operandType, targetType, assignment.operand());
 			return;
 		}
 
+		checkTypeConvertable(operandType, targetType, assignment.operand());
+	}
+
+	private void checkTypeConvertable(IDataType operandType, IDataType targetType, ISyntaxNode location)
+	{
 		if (!operandType.hasSameFamily(targetType) && !operandType.hasCompatibleFormat(targetType))
 		{
 			report(
@@ -163,7 +147,40 @@ final class TypeChecker implements ISyntaxNodeVisitor
 						operandType.toShortString(),
 						targetType.toShortString()
 					),
-					assignment.operand()
+					location
+				)
+			);
+		}
+	}
+
+	private void checkTypeCompatibleOrTruncation(IDataType operandType, IDataType targetType, ISyntaxNode location)
+	{
+		if (operandType.fitsInto(targetType))
+		{
+			return;
+		}
+
+		if (operandType.hasCompatibleFormat(targetType))
+		{
+			report(
+				ParserErrors.valueTruncation(
+					"Value is truncated from %s to %s at runtime. Extend the target variable or remove the truncated parts from this literal.".formatted(
+						operandType.toShortString(),
+						targetType.toShortString()
+					),
+					location
+				)
+			);
+		}
+		else
+		{
+			report(
+				ParserErrors.typeMismatch(
+					"Type mismatch: Inferred type %s is not compatible with target type %s".formatted(
+						operandType.toShortString(),
+						targetType.toShortString()
+					),
+					location
 				)
 			);
 		}
@@ -175,7 +192,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			&& typedVariableNode.type() != null
 			&& typedVariableNode.type().initialValue() != null)
 		{
-			checkAlphanumericInitLength(typedVariableNode);
+			checkVariableInitType(typedVariableNode);
 		}
 
 		if (node instanceof IVariableReferenceNode variableReference)
@@ -379,24 +396,31 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		}
 	}
 
-	private void checkAlphanumericInitLength(ITypedVariableNode typedVariable)
+	private void checkVariableInitType(ITypedVariableNode typedVariable)
 	{
-		if (typedVariable.type().hasDynamicLength())
+		if (typedVariable.type().hasDynamicLength() || typedVariable.type().initialValue() == null || !typedVariable.type().initialValue().kind().isLiteralOrConst())
 		{
 			return;
 		}
 
-		if (typedVariable.type().format() == DataFormat.ALPHANUMERIC
-			&& typedVariable.type().initialValue().kind() == SyntaxKind.STRING_LITERAL
-			&& typedVariable.type().initialValue().stringValue().length() > typedVariable.type().length()) // TODO: The initializer has to be a IOperandNode
+		var literalInitializer = new LiteralNode(typedVariable.type().initialValue());
+		var inferredInitialType = literalInitializer.reInferType(typedVariable.type());
+
+		if (inferredInitialType.format() == typedVariable.type().format() && !inferredInitialType.fitsInto(typedVariable.type()))
 		{
+			// This check is special for initializers, because the Natural compiler only treats same types which don't fit as errors.
+			// Others are happily truncated ¯\_()_/¯
 			report(
 				ParserErrors.typeMismatch(
-					"Initializer literal length %d is longer than data type length %d"
-						.formatted(typedVariable.type().initialValue().stringValue().length(), (int) typedVariable.type().length()),
-					typedVariable.identifierNode()
+					"Type mismatch: Initializer %s (inferred %s) does not fit into %s"
+						.formatted(typedVariable.type().initialValue().source(), inferredInitialType.toShortString(), typedVariable.type().toShortString()),
+					literalInitializer
 				)
 			);
+		}
+		else
+		{
+			checkTypeCompatibleOrTruncation(inferredInitialType, typedVariable.type(), literalInitializer);
 		}
 	}
 

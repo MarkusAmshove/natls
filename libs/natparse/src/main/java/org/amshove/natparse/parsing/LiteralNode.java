@@ -84,6 +84,11 @@ class LiteralNode extends TokenNode implements ILiteralNode
 			return 8; // I8 is not a valid type, but will be inferred to NUMERIC instead
 		}
 
+		if (parsedNumber >= Byte.MIN_VALUE && parsedNumber <= Byte.MAX_VALUE) // handles the sign better than binaryString
+		{
+			return 1;
+		}
+
 		var byteSize = Long.toBinaryString(parsedNumber).length() / 8.0;
 		if (byteSize < 1)
 		{
@@ -111,9 +116,15 @@ class LiteralNode extends TokenNode implements ILiteralNode
 		return bigInt.bitLength() / 8.0;
 	}
 
-	private IDataType reInferNumeric()
+	private IDataType reInferNumericWithoutDecimals()
 	{
-		return new LiteralType(DataFormat.NUMERIC, token().source().length());
+		var digits = Long.toString(Long.parseLong(token().source())).length();
+		return new LiteralType(DataFormat.NUMERIC, digits);
+	}
+
+	private IDataType reInferInteger()
+	{
+		return new LiteralType(DataFormat.INTEGER, getIntegerLiteralLength(token().source()));
 	}
 
 	@Override
@@ -121,7 +132,7 @@ class LiteralNode extends TokenNode implements ILiteralNode
 	{
 		if (targetType.format() == DataFormat.ALPHANUMERIC && inferredType.format() == DataFormat.INTEGER)
 		{
-			return reInferNumeric();
+			return reInferNumericWithoutDecimals();
 		}
 
 		if (!targetType.hasSameFamily(inferredType))
@@ -131,7 +142,12 @@ class LiteralNode extends TokenNode implements ILiteralNode
 
 		if (targetType.format() == DataFormat.NUMERIC && inferredType.format() == DataFormat.INTEGER)
 		{
-			return reInferNumeric();
+			return reInferNumericWithoutDecimals();
+		}
+
+		if (targetType.format() == DataFormat.INTEGER)
+		{
+			return reInferInteger();
 		}
 
 		return inferredType;

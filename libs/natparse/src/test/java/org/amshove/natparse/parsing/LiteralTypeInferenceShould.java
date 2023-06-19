@@ -5,6 +5,7 @@ import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.DataType;
 import org.amshove.natparse.natural.ILiteralNode;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -104,6 +105,12 @@ class LiteralTypeInferenceShould
 		assertCompatibleType("N10.3", source);
 	}
 
+	@Test
+	void ignoreLeadingZeroesWhenInferringNumerics()
+	{
+		assertReInferredType("N1", "007", "N1");
+	}
+
 	@ParameterizedTest
 	@CsvSource(
 		{
@@ -133,6 +140,26 @@ class LiteralTypeInferenceShould
 		if (typedTarget.length() > 0.0)
 		{
 			assertThat(inferredType.length())
+				.as("Expected the inferred length to match")
+				.isEqualTo(expectedType.length());
+		}
+	}
+
+	private void assertReInferredType(String targetType, String source, String expectedInferredType)
+	{
+		var typedTarget = createType(targetType);
+		var expectedType = createType(expectedInferredType);
+
+		var literal = literal(source);
+		var reInferredType = literal.reInferType(typedTarget);
+
+		assertThat(reInferredType.format())
+			.as("Expected the inferred DataFormat to match")
+			.isEqualTo(expectedType.format());
+
+		if (typedTarget.length() > 0.0)
+		{
+			assertThat(reInferredType.length())
 				.as("Expected the inferred length to match")
 				.isEqualTo(expectedType.length());
 		}
