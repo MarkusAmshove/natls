@@ -278,4 +278,16 @@ class LexerForAttributeControlsShould extends AbstractLexerTest
 			token(SyntaxKind.RPAREN)
 		);
 	}
+
+	@Test
+	void consumeMultipleAttributesWithStringLiteralInOne()
+	{
+		assertTokens(
+			"(EM=99')' CD=YE)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.EM, "EM=99')'"),
+			token(SyntaxKind.CD, "CD=YE"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
 }

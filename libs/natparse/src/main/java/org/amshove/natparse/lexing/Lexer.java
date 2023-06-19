@@ -1125,7 +1125,7 @@ public class Lexer
 		scanner.advance(3); // EM=
 		var isInString = false;
 		var nestedParens = 0;
-		while (!scanner.isAtEnd() && !(scanner.peek() == ')' && nestedParens == 0))
+		while (!scanner.isAtEnd() && !(scanner.peek() == ')' && nestedParens == 0) || isInString)
 		{
 			if (scanner.peek() == '(')
 			{
