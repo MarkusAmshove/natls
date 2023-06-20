@@ -523,6 +523,63 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		assertThat(afterGroup.type().format()).isEqualTo(DataFormat.TIME);
 	}
 
+	@Test
+	void raiseAnErrorOnGroupsThatContainConstAndNonConst()
+	{
+		assertDiagnostic(
+			"""
+			define data local
+			1 #GRP1
+			2 #G1-CONST (A1) CONST<'A'>
+			2 #NOCONST (A2)
+			end-define
+			""",
+			ParserError.GROUP_HAS_MIXED_CONST
+		);
+	}
+
+	@Test
+	void raiseAnErrorOnGroupsThatContainConstAndNonConstInNestedGroup()
+	{
+		assertDiagnostic(
+			"""
+			define data local
+			1 #GRP1
+			2 #NO-CONST (A1)
+			2 #GRP2
+			3 #CONST (A2) CONST<'A'>
+			end-define
+			""",
+			ParserError.GROUP_HAS_MIXED_CONST
+		);
+	}
+
+	@Test
+	void raiseNoErrorIfNoGroupVariableIsConst()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 #GRP1
+			2 #G1-NOCONST (A1)
+			2 #GRP2
+			3 #NOCONST (A2)
+			end-define
+			""");
+	}
+
+	@Test
+	void raiseNoErrorIfAllGroupVariableAreConst()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 #GRP1
+			2 #G1-CONST (A1) CONST<'A'>
+			2 #GRP2
+			3 #CONST (A2) CONST<'B'>
+			end-define
+			""");
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
