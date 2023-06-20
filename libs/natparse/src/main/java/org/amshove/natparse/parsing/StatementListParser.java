@@ -323,6 +323,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case TOP:
 						statementList.addStatement(parseAtPositionOf(SyntaxKind.TOP, SyntaxKind.PAGE, SyntaxKind.END_TOPPAGE, false, new TopOfPageNode()));
 						break;
+					case REPEAT:
+						statementList.addStatement(repeatLoop());
+						break;
 					case RESET:
 						statementList.addStatement(resetStatement());
 						break;
@@ -345,6 +348,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 							break;
 						}
 						statementList.addStatement(decideOn());
+						break;
+					// Below this line, add statements that can we used as keywords within other statements.
+					// Like FOR is a keyword in HISTOGRAM etc.
+					case FOR:
+						statementList.addStatement(forLoop());
 						break;
 					case ON:
 						if (peekKind(1, SyntaxKind.ERROR))
@@ -374,18 +382,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 							break;
 						}
 						// FALLTHROUGH TO DEFAULT INTENDED - SET CONTROL etc. not implemented
-					case REPEAT:
-						statementList.addStatement(repeatLoop());
-						break;
-					case FOR:
-						if (peekKind(SyntaxKind.FOR) && (peek(-1) == null || (peek(1).kind() == SyntaxKind.IDENTIFIER)))
-						// TODO: until we support EXAMINE, DECIDE, HISTOGRAM, ...
-						//      just.. implement them already and don't try to understand the conditions
-						{
-							statementList.addStatement(forLoop());
-							break;
-						}
-						// FALLTHROUGH TO DEFAULT INTENDED
 					default:
 
 						if (isAssignmentStart())
@@ -2608,23 +2604,24 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 	}
 
-	private static final Set<SyntaxKind> REPEAT_CONDITIONS = Set.of(SyntaxKind.UNTIL, SyntaxKind.WHILE);
+	private static final Set<SyntaxKind> REPEAT_TERMINATION = Set.of(SyntaxKind.UNTIL, SyntaxKind.WHILE, SyntaxKind.END_REPEAT);
 
 	private StatementNode repeatLoop() throws ParseError
 	{
 		var loopNode = new RepeatLoopNode();
-
 		var opening = consumeMandatory(loopNode, SyntaxKind.REPEAT);
 		if (consumeEitherOptionally(loopNode, SyntaxKind.UNTIL, SyntaxKind.WHILE))
 		{
-			var conditionNode = new ConditionNode();
-			conditionNode.setCriteria(chainedCriteria());
+			loopNode.setCondition(conditionNode());
 			loopNode.setBody(statementList(SyntaxKind.END_REPEAT));
 		}
 		else
 		{
-			loopNode.setBody(statementList(REPEAT_CONDITIONS));
-			consumeAnyMandatory(loopNode, REPEAT_CONDITIONS);
+			loopNode.setBody(statementList(REPEAT_TERMINATION));
+			if (consumeEitherOptionally(loopNode, SyntaxKind.UNTIL, SyntaxKind.WHILE))
+			{
+				loopNode.setCondition(conditionNode());
+			}
 		}
 
 		checkForEmptyBody(loopNode);
