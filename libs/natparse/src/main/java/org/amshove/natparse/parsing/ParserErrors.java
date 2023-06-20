@@ -568,4 +568,13 @@ class ParserErrors
 			ParserError.STATEMENT_HAS_EMPTY_BODY
 		);
 	}
+
+	public static IDiagnostic groupHasMixedConstVariables(ISyntaxNode variable)
+	{
+		return ParserDiagnostic.create(
+			"A group can not have a mix of CONST and non-CONST variables. Either make all CONST or none.",
+			variable,
+			ParserError.GROUP_HAS_MIXED_CONST
+		);
+	}
 }
