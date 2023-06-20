@@ -9,15 +9,12 @@ import org.amshove.natparse.natural.conditionals.ComparisonOperator;
 import org.amshove.natparse.natural.conditionals.IHasComparisonOperator;
 import org.amshove.natparse.natural.conditionals.ILogicalConditionCriteriaNode;
 import org.amshove.natparse.natural.project.NaturalFileType;
-import org.checkerframework.checker.units.qual.s;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.regex.Pattern;
-
-import javax.lang.model.util.ElementScanner14;
 
 public class StatementListParser extends AbstractParser<IStatementListNode>
 {
@@ -3840,6 +3837,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				case ALL:
 					move.setAll(true);
 					move.setOperand(consumeSubstringOrOperand(move));
+					break;
 				default:
 					break;
 			}

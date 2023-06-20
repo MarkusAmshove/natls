@@ -969,14 +969,14 @@ class StatementListParserShould extends StatementParseTest
 	void parseMoveRounded()
 	{
 		var move = assertParsesSingleStatement("MOVE ROUNDED #VAR1 TO #VAR2", IMoveStatementNode.class);
-		assertThat(move.isRounded()).isEqualTo(true);
+		assertThat(move.isRounded()).isTrue();
 	}
 
 	@Test
 	void parseMoveRoundedMulti()
 	{
 		var move = assertParsesSingleStatement("MOVE ROUNDED #VAR1 TO #VAR2 #VAR3 #VAR4", IMoveStatementNode.class);
-		assertThat(move.isRounded()).isEqualTo(true);
+		assertThat(move.isRounded()).isTrue();
 		assertThat(move.targets()).hasSize(3);
 	}
 
@@ -1005,14 +1005,14 @@ class StatementListParserShould extends StatementParseTest
 	void parseMoveEditedApplyingMask()
 	{
 		var move = assertParsesSingleStatement("MOVE EDITED #VAR1 (EM=XX) TO #VAR2", IMoveStatementNode.class);
-		assertThat(move.isEdited()).isEqualTo(true);
+		assertThat(move.isEdited()).isTrue();
 	}
 
 	@Test
 	void parseMoveEditedUsingMask()
 	{
 		var move = assertParsesSingleStatement("MOVE EDITED #VAR1 TO #VAR2 (EM=XX)", IMoveStatementNode.class);
-		assertThat(move.isEdited()).isEqualTo(true);
+		assertThat(move.isEdited()).isTrue();
 	}
 
 	@Test
@@ -1033,7 +1033,7 @@ class StatementListParserShould extends StatementParseTest
 	void parseMoveNormalized()
 	{
 		var move = assertParsesSingleStatement("MOVE NORMALIZED #VAR1 TO #VAR2", IMoveStatementNode.class);
-		assertThat(move.isNormalized()).isEqualTo(true);
+		assertThat(move.isNormalized()).isTrue();
 	}
 
 	@ParameterizedTest
@@ -1046,12 +1046,14 @@ class StatementListParserShould extends StatementParseTest
 		"A IN CODEPAGE #CP TO B",
 		"A IN CODEPAGE #CP TO B CODEPAGE #CP",
 		"A IN CODEPAGE #CP TO B IN CODEPAGE #CP",
+		"A IN CODEPAGE #CP TO B IN CODEPAGE #CP GIVING #RC",
 		"A IN CODEPAGE 'CP1' TO B IN CODEPAGE 'CP2'",
+		"A IN CODEPAGE 'CP1' TO B IN CODEPAGE 'CP2' GIVING #RC",
 	})
 	void parseMoveEncoded(String statement)
 	{
 		var move = assertParsesSingleStatement("MOVE ENCODED %s".formatted(statement), IMoveStatementNode.class);
-		assertThat(move.isEncoded()).isEqualTo(true);
+		assertThat(move.isEncoded()).isTrue();
 	}
 
 	@ParameterizedTest
@@ -1067,7 +1069,7 @@ class StatementListParserShould extends StatementParseTest
 	void parseMoveAll(String statement)
 	{
 		var move = assertParsesSingleStatement("MOVE ALL %s".formatted(statement), IMoveStatementNode.class);
-		assertThat(move.isAll()).isEqualTo(true);
+		assertThat(move.isAll()).isTrue();
 	}
 
 	@Test
