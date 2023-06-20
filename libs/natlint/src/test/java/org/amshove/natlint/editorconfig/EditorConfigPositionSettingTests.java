@@ -20,6 +20,7 @@ class EditorConfigPositionSettingTests extends AbstractAnalyzerTest
 		configureEditorConfig("""
 			[*]
 			natls.NL006.severity=error
+			natls.style.comparisons=sign
 
 			[**/*.NSC]
 			natls.NL006.severity=none
