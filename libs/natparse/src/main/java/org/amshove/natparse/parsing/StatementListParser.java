@@ -374,6 +374,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 							break;
 						}
 						// FALLTHROUGH TO DEFAULT INTENDED - SET CONTROL etc. not implemented
+					case REPEAT:
+						statementList.addStatement(repeatLoop());
+						break;
 					case FOR:
 						if (peekKind(SyntaxKind.FOR) && (peek(-1) == null || (peek(1).kind() == SyntaxKind.IDENTIFIER)))
 						// TODO: until we support EXAMINE, DECIDE, HISTOGRAM, ...
@@ -2603,6 +2606,31 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			report(ParserErrors.invalidLengthForLiteral(token, maxLength));
 		}
+	}
+
+	private static final Set<SyntaxKind> REPEAT_CONDITIONS = Set.of(SyntaxKind.UNTIL, SyntaxKind.WHILE);
+
+	private StatementNode repeatLoop() throws ParseError
+	{
+		var loopNode = new RepeatLoopNode();
+
+		var opening = consumeMandatory(loopNode, SyntaxKind.REPEAT);
+		if (consumeEitherOptionally(loopNode, SyntaxKind.UNTIL, SyntaxKind.WHILE))
+		{
+			var conditionNode = new ConditionNode();
+			conditionNode.setCriteria(chainedCriteria());
+			loopNode.setBody(statementList(SyntaxKind.END_REPEAT));
+		}
+		else
+		{
+			loopNode.setBody(statementList(REPEAT_CONDITIONS));
+			consumeAnyMandatory(loopNode, REPEAT_CONDITIONS);
+		}
+
+		checkForEmptyBody(loopNode);
+		consumeMandatoryClosing(loopNode, SyntaxKind.END_REPEAT, opening);
+
+		return loopNode;
 	}
 
 	private StatementNode forLoop() throws ParseError
