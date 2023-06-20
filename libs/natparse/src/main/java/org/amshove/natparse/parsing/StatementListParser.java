@@ -3788,7 +3788,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				case ROUNDED:
 					move.setRounded(true);
 					move.setOperand(consumeSubstringOrOperand(move));
-					consumeMoveAttribute(move);
+					consumeMoveAttributes(move);
 					break;
 				// Syntax 3
 				case BY:
@@ -3815,7 +3815,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					move.setDirection(move.moveKind());
 					consumeOptionally(move, SyntaxKind.JUSTIFIED);
 					move.setOperand(consumeOperandNode(move));
-					consumeMoveAttribute(move);
+					consumeMoveAttributes(move);
 					break;
 				// Syntax 7
 				case NORMALIZED:
@@ -3846,8 +3846,15 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			// Syntax 1 (not ROUNDED) + Syntax 2
 			move.setMoveKind(SyntaxKind.MOVE);
-			move.setOperand(consumeSubstringOrOperand(move));
-			consumeMoveAttribute(move);
+			if (peekKind(SyntaxKind.LPAREN) && getKind(1).isAttribute())
+			{
+				consumeAttributeDefinition(move);
+			}
+			else
+			{
+				move.setOperand(consumeSubstringOrOperand(move));
+				consumeMoveAttributes(move);
+			}
 		}
 
 		consumeMandatory(move, SyntaxKind.TO);
@@ -3903,7 +3910,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return move;
 	}
 
-	private boolean consumeMoveAttribute(BaseSyntaxNode node) throws ParseError
+	private boolean consumeMoveAttributes(BaseSyntaxNode node) throws ParseError
 	{
 		if (peekKind(SyntaxKind.LPAREN))
 		{

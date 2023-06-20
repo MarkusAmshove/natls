@@ -933,6 +933,14 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void parseMoveAttributeDefinition()
+	{
+		var move = assertParsesSingleStatement("MOVE (AD=I CD=RE) TO #CV", IMoveStatementNode.class);
+		assertThat(move.targets()).hasSize(1);
+		assertThat(assertNodeType(move.targets().first(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#CV");
+	}
+
+	@Test
 	void parseMoveSubstring()
 	{
 		var move = assertParsesSingleStatement("MOVE SUBSTRING(#VAR1,1,2) TO #VAR2", IMoveStatementNode.class);
