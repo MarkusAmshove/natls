@@ -1071,7 +1071,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return compose;
 	}
 
-	private void consumeComposeMovingStatus(ComposeStatementNode node) throws ParseError
+	private void consumeComposeMovingStatus(BaseSyntaxNode node) throws ParseError
 	{
 		if (consumeOptionally(node, SyntaxKind.STATUS))
 		{
@@ -1080,7 +1080,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 	}
 
-	private void consumeAssigning(ComposeStatementNode node) throws ParseError
+	private void consumeAssigning(BaseSyntaxNode node) throws ParseError
 	{
 		var left = consumeOperandNode(node);
 		checkOperand(left, "The left side can only be a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
@@ -1090,7 +1090,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		checkLiteralTypeIfLiteral(right, SyntaxKind.STRING_LITERAL, SyntaxKind.NUMBER_LITERAL);
 	}
 
-	private void consumeExtracting(ComposeStatementNode node) throws ParseError
+	private void consumeExtracting(BaseSyntaxNode node) throws ParseError
 	{
 		var left = consumeOperandNode(node);
 		checkOperand(left, "The left side can only be a variable reference.", AllowedOperand.VARIABLE_REFERENCE);
@@ -1100,7 +1100,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		checkLiteralTypeIfLiteral(right, SyntaxKind.STRING_LITERAL);
 	}
 
-	private int consumeComposeOperands(ComposeStatementNode node) throws ParseError
+	private int consumeComposeOperands(BaseSyntaxNode node) throws ParseError
 	{
 		int numFound = 0;
 		while (isOperand() && !(peekAny(COMPOSE_SUBCLAUSES) || peekAny(COMPOSE_ALL_SUBCLAUSES) || isStatementStart()))
@@ -3895,6 +3895,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				{
 					move.addTarget(consumeSubstringOrOperand(move));
 				}
+				break;
 			default:
 				break;
 		}

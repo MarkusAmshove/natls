@@ -14,7 +14,7 @@ partial - partially implemented to prevent false positives (12)
 
 | Statement | Status             |
 | --- |--------------------|
-| ACCEPT/REJECT | :x:                |
+| ACCEPT/REJECT | :white_check_mark: |
 | ADD | :white_check_mark: |
 | ASSIGN | :white_check_mark: |
 | AT BREAK | :white_check_mark: |
@@ -76,8 +76,7 @@ partial - partially implemented to prevent false positives (12)
 | INTERFACE | :x:                |
 | LIMIT | :white_check_mark: |
 | METHOD | :x:                |
-| MOVE | :x:                |
-| MOVE INDEXED | :x:                |
+| MOVE | :white_check_mark: |
 | MULTIPLY | :white_check_mark: |
 | NEWPAGE | :white_check_mark: |
 | ON ERROR | :white_check_mark: |
@@ -99,7 +98,6 @@ partial - partially implemented to prevent false positives (12)
 | READLOB | :x:                |
 | REDUCE | :white_check_mark: |
 | REINPUT | :x:                |
-| REJECT | :x:                |
 | RELEASE | :x:                |
 | REPEAT | :x:                |
 | REQUEST DOCUMENT | :x:                |
@@ -137,7 +135,8 @@ partial - partially implemented to prevent false positives (12)
 
 These are not planned to be implemented, because they're reporting mode only.
 
-- `LOOP`
 - `DO/DOEND`
+- `LOOP`
+- `MOVE INDEXED`
 - `OBTAIN`
 - `REDEFINE`
