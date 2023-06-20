@@ -612,6 +612,7 @@ class StatementListParserShould extends StatementParseTest
 			""", IRepeatLoopNode.class);
 
 		assertThat(repeatLoop.body().statements()).hasSize(1);
+		assertNodeType(repeatLoop.body().statements().first(), IIgnoreNode.class);
 		assertThat(repeatLoop.descendants()).hasSize(5);
 	}
 
@@ -620,13 +621,14 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var repeatLoop = assertParsesSingleStatement("""
 			REPEAT
-				IGNORE
+				WRITE 'HEY!'
 			WHILE A = B OR B > C OR (X = 10)
 			END-REPEAT
 			""", IRepeatLoopNode.class);
 
 		assertThat(repeatLoop.body().statements()).hasSize(1);
-		assertThat(repeatLoop.descendants()).hasSize(5);
+		assertNodeType(repeatLoop.body().statements().first(), IWriteNode.class);
+		assertThat(repeatLoop.condition()).isNotNull();
 	}
 
 	@Test
@@ -641,7 +643,7 @@ class StatementListParserShould extends StatementParseTest
 			""", IRepeatLoopNode.class);
 
 		assertThat(repeatLoop.body().statements()).hasSize(1);
-		assertThat(repeatLoop.descendants()).hasSize(3);
+		assertNodeType(repeatLoop.body().statements().first(), IIfStatementNode.class);
 	}
 
 	@Test
