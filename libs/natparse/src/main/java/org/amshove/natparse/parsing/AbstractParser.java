@@ -945,6 +945,7 @@ abstract class AbstractParser<T>
 		// we don't do anything special yet, need some experience on where attribute definitions are allowed
 		// this was built for CALLNAT, where a variable reference as parameter can have attribute definitions (only AD)
 		// might be reusable for WRITE, DISPLAY, etc. for all kind of operands, but has to be fleshed out then
+		// At that point, we could also add something similar for EM=
 		consumeMandatory(node, SyntaxKind.LPAREN);
 		while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
 		{

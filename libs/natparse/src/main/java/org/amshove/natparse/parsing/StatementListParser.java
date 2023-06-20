@@ -9,12 +9,15 @@ import org.amshove.natparse.natural.conditionals.ComparisonOperator;
 import org.amshove.natparse.natural.conditionals.IHasComparisonOperator;
 import org.amshove.natparse.natural.conditionals.ILogicalConditionCriteriaNode;
 import org.amshove.natparse.natural.project.NaturalFileType;
+import org.checkerframework.checker.units.qual.s;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.regex.Pattern;
+
+import javax.lang.model.util.ElementScanner14;
 
 public class StatementListParser extends AbstractParser<IStatementListNode>
 {
@@ -102,6 +105,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						break;
 					case ASSIGN:
 						statementList.addStatements(assignOrCompute(SyntaxKind.ASSIGN));
+						break;
+					case MOVE:
+						statementList.addStatement(moveStatement());
 						break;
 					case AT:
 						if (peekKind(1, SyntaxKind.END) && (peekKind(3, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE)))
@@ -2036,9 +2042,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return separate;
 	}
 
+	private static final List<SyntaxKind> SUBSTRINGS = List.of(SyntaxKind.SUBSTR, SyntaxKind.SUBSTRING);
+
 	private IOperandNode consumeSubstringOrOperand(BaseSyntaxNode node) throws ParseError
 	{
-		if (peekKind(SyntaxKind.SUBSTR) || peekKind(SyntaxKind.SUBSTRING))
+		if (peekAny(SUBSTRINGS))
 		{
 			return consumeSubstring(node);
 		}
@@ -2052,7 +2060,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		var substring = new SubstringOperandNode();
 		node.addNode(substring);
-		consumeAnyMandatory(node, List.of(SyntaxKind.SUBSTR, SyntaxKind.SUBSTRING));
+		consumeAnyMandatory(node, SUBSTRINGS);
 
 		consumeMandatory(node, SyntaxKind.LPAREN);
 		substring.setOperand(consumeOperandNode(substring));
@@ -3763,6 +3771,147 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statements;
+	}
+
+	private static final List<SyntaxKind> SPECIAL_MOVE_KINDS = List.of(SyntaxKind.ROUNDED, SyntaxKind.BY, SyntaxKind.EDITED, SyntaxKind.LEFT, SyntaxKind.RIGHT, SyntaxKind.NORMALIZED, SyntaxKind.ENCODED, SyntaxKind.ALL);
+	private static final List<SyntaxKind> MOVE_BY_KINDS = List.of(SyntaxKind.NAME, SyntaxKind.POSITION);
+
+	private MoveStatementNode moveStatement() throws ParseError
+	{
+		var move = new MoveStatementNode();
+		boolean usingEditMask = false;
+		consumeMandatory(move, SyntaxKind.MOVE);
+
+		if (peekAny(SPECIAL_MOVE_KINDS))
+		{
+			move.setMoveKind(consumeAnyMandatory(move, SPECIAL_MOVE_KINDS).kind());
+			switch (move.moveKind())
+			{
+				// Syntax 1
+				case ROUNDED:
+					move.setRounded(true);
+					move.setOperand(consumeSubstringOrOperand(move));
+					consumeMoveAttribute(move);
+					break;
+				// Syntax 3
+				case BY:
+					if (peekAny(MOVE_BY_KINDS))
+					{
+						move.setByKind(consumeAnyMandatory(move, MOVE_BY_KINDS).kind());
+					}
+					move.setOperand(consumeOperandNode(move));
+					break;
+				// Syntax 4+5
+				case EDITED:
+					move.setEdited(true);
+					move.setOperand(consumeOperandNode(move));
+					// Syntax 5
+					if (!peekKind(SyntaxKind.TO))
+					{
+						consumeAttributeDefinition(move);
+						break;
+					}
+					usingEditMask = true;
+					break;
+				// Syntax 6
+				case LEFT, RIGHT:
+					move.setDirection(move.moveKind());
+					consumeOptionally(move, SyntaxKind.JUSTIFIED);
+					move.setOperand(consumeOperandNode(move));
+					consumeMoveAttribute(move);
+					break;
+				// Syntax 7
+				case NORMALIZED:
+					move.setNormalized(true);
+					move.setOperand(consumeOperandNode(move));
+					break;
+				// Syntax 8
+				case ENCODED:
+					move.setEncoded(true);
+					move.setOperand(consumeOperandNode(move));
+					if (peekAny(List.of(SyntaxKind.IN, SyntaxKind.CODEPAGE)))
+					{
+						consumeOptionally(move, SyntaxKind.IN);
+						consumeMandatory(move, SyntaxKind.CODEPAGE);
+						consumeOperandNode(move);
+					}
+					break;
+				// Syntax 9
+				case ALL:
+					move.setAll(true);
+					move.setOperand(consumeSubstringOrOperand(move));
+				default:
+					break;
+			}
+		}
+		else
+		{
+			// Syntax 1 (not ROUNDED) + Syntax 2
+			move.setMoveKind(SyntaxKind.MOVE);
+			move.setOperand(consumeSubstringOrOperand(move));
+			consumeMoveAttribute(move);
+		}
+
+		consumeMandatory(move, SyntaxKind.TO);
+
+		switch (move.moveKind())
+		{
+			case ROUNDED:
+				while (isOperand())
+				{
+					move.addTarget(consumeOperandNode(move));
+				}
+				break;
+			case BY, LEFT, RIGHT, NORMALIZED:
+				move.addTarget(consumeOperandNode(move));
+				break;
+			case EDITED:
+				move.addTarget(consumeOperandNode(move));
+				if (usingEditMask)
+				{
+					consumeAttributeDefinition(move);
+				}
+				break;
+			case ENCODED:
+				move.addTarget(consumeOperandNode(move));
+				if (peekAny(List.of(SyntaxKind.IN, SyntaxKind.CODEPAGE)))
+				{
+					consumeOptionally(move, SyntaxKind.IN);
+					consumeMandatory(move, SyntaxKind.CODEPAGE);
+					consumeOperandNode(move);
+				}
+				if (consumeOptionally(move, SyntaxKind.GIVING))
+				{
+					consumeOperandNode(move);
+				}
+				break;
+			case ALL:
+				move.addTarget(consumeSubstringOrOperand(move));
+				if (consumeOptionally(move, SyntaxKind.UNTIL))
+				{
+					consumeOperandNode(move);
+				}
+				break;
+			case MOVE:
+				while (isOperand() || peekAny(SUBSTRINGS))
+				{
+					move.addTarget(consumeSubstringOrOperand(move));
+				}
+			default:
+				break;
+		}
+
+		return move;
+	}
+
+	private boolean consumeMoveAttribute(BaseSyntaxNode node) throws ParseError
+	{
+		if (peekKind(SyntaxKind.LPAREN))
+		{
+			consumeAttributeDefinition(node);
+			return true;
+		}
+		return false;
 	}
 
 	private ResetStatementNode resetStatement() throws ParseError
