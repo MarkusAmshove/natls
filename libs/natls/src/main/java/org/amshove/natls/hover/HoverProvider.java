@@ -120,9 +120,8 @@ public class HoverProvider
 		return new Hover(contentBuilder.build());
 	}
 
-	private Hover hoverExternalModule(IModuleReferencingNode moduleReferencingNode)
+	public Hover hoverModule(INaturalModule module)
 	{
-		var module = moduleReferencingNode.reference();
 		if (module == null)
 		{
 			return EMPTY_HOVER;
@@ -151,6 +150,12 @@ public class HoverProvider
 		addModuleParameter(contentBuilder, module);
 
 		return new Hover(contentBuilder.build());
+	}
+
+	private Hover hoverExternalModule(IModuleReferencingNode moduleReferencingNode)
+	{
+		var module = moduleReferencingNode.reference();
+		return hoverModule(module);
 	}
 
 	private Hover hoverBuiltinFunction(SyntaxKind kind)

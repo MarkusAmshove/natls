@@ -16,10 +16,7 @@ import org.amshove.natls.hover.HoverProvider;
 import org.amshove.natls.inlayhints.InlayHintProvider;
 import org.amshove.natls.progress.IProgressMonitor;
 import org.amshove.natls.progress.ProgressTasks;
-import org.amshove.natls.project.LanguageServerFile;
-import org.amshove.natls.project.LanguageServerProject;
-import org.amshove.natls.project.ModuleReferenceParser;
-import org.amshove.natls.project.ParseStrategy;
+import org.amshove.natls.project.*;
 import org.amshove.natls.referencing.ReferenceFinder;
 import org.amshove.natls.signaturehelp.SignatureHelpProvider;
 import org.amshove.natls.snippets.SnippetEngine;
@@ -578,6 +575,8 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		completionItems.addAll(snippetEngine.provideSnippets(file));
 
+		completionItems.addAll(functionCompletions(file.getLibrary()));
+
 		completionItems.addAll(
 			module.referencableNodes().stream()
 				.filter(v -> !(v instanceof IRedefinitionNode)) // this is the `REDEFINE #VAR`, which results in the variable being doubled in completion
@@ -598,9 +597,46 @@ public class NaturalLanguageService implements LanguageClientAware
 		return completionItems;
 	}
 
+	private Collection<? extends CompletionItem> functionCompletions(LanguageServerLibrary library)
+	{
+		return library.getModulesOfType(NaturalFileType.FUNCTION, true)
+			.stream()
+			.map(f ->
+			{
+				var item = new CompletionItem(f.getReferableName());
+				item.setData(new UnresolvedCompletionInfo(f.getReferableName(), f.getUri()));
+				item.setKind(CompletionItemKind.Function);
+				return item;
+			})
+			.toList();
+	}
+
+	private String functionParameterListAsSnippet(LanguageServerFile function)
+	{
+		if (!(function.module()instanceof IHasDefineData hasDefineData) || hasDefineData.defineData() == null)
+		{
+			return "";
+		}
+
+		var builder = new StringBuilder();
+		var index = 1;
+		for (var parameter : hasDefineData.defineData().parameterInOrder())
+		{
+			if (index > 1)
+			{
+				builder.append(", ");
+			}
+			var parameterName = parameter instanceof IUsingNode using ? using.target().symbolName() : ((IVariableNode) parameter).name();
+			builder.append("${%d:%s}".formatted(index, parameterName));
+			index++;
+		}
+
+		return builder.toString();
+	}
+
 	public CompletionItem resolveComplete(CompletionItem item)
 	{
-		if (item.getKind() != CompletionItemKind.Variable)
+		if (item.getKind() != CompletionItemKind.Variable && item.getKind() != CompletionItemKind.Function)
 		{
 			return item;
 		}
@@ -609,23 +645,40 @@ public class NaturalLanguageService implements LanguageClientAware
 		var info = new Gson().fromJson(jsonData, UnresolvedCompletionInfo.class);
 		var file = findNaturalFile(LspUtil.uriToPath(info.getUri()));
 		var module = file.module();
-		if (!(module instanceof IHasDefineData hasDefineData))
+		if (item.getKind() == CompletionItemKind.Variable)
 		{
+
+			if (!(module instanceof IHasDefineData hasDefineData))
+			{
+				return item;
+			}
+
+			var variableNode = hasDefineData.defineData().variables().stream().filter(v -> v.qualifiedName().equals(info.getQualifiedName())).findFirst().orElse(null);
+			if (variableNode == null)
+			{
+				return item;
+			}
+
+			item.setDocumentation(
+				new MarkupContent(
+					MarkupKind.MARKDOWN,
+					hoverProvider.createHover(new HoverContext(variableNode, variableNode.declaration(), file)).getContents().getRight().getValue()
+				)
+			);
 			return item;
 		}
-
-		var variableNode = hasDefineData.defineData().variables().stream().filter(v -> v.qualifiedName().equals(info.getQualifiedName())).findFirst().orElse(null);
-		if (variableNode == null)
+		else
 		{
-			return item;
+			item.setInsertTextFormat(InsertTextFormat.Snippet);
+			item.setDocumentation(
+				new MarkupContent(
+					MarkupKind.MARKDOWN,
+					hoverProvider.hoverModule(module).getContents().getRight().getValue()
+				)
+			);
+			item.setInsertText("%s(<%s>)$0".formatted(file.getReferableName(), functionParameterListAsSnippet(file)));
 		}
 
-		item.setDocumentation(
-			new MarkupContent(
-				MarkupKind.MARKDOWN,
-				hoverProvider.createHover(new HoverContext(variableNode, variableNode.declaration(), file)).getContents().getRight().getValue()
-			)
-		);
 		return item;
 	}
 
