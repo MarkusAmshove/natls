@@ -830,23 +830,20 @@ abstract class AbstractParser<T>
 		previousNode = reference;
 		node.addNode(reference);
 
-		if (peekKind(SyntaxKind.LPAREN) && !getKind(1).isAttribute() && !peekKind(1, SyntaxKind.LABEL_IDENTIFIER))
+		if (peekKind(SyntaxKind.LPAREN) && !getKind(1).isAttribute())
 		{
 			consumeMandatory(reference, SyntaxKind.LPAREN);
-			reference.addDimension(consumeArrayAccess(reference));
-			while (peekKind(SyntaxKind.COMMA))
+			var isArrayRef = consumeOptionally(reference, SyntaxKind.LABEL_IDENTIFIER) && consumeOptionally(reference, SyntaxKind.SLASH);
+			// If just RPAREN left, then this was just a LABEL_IDENTIFIER and thus not an array.
+			isArrayRef = isArrayRef || !peekKind(SyntaxKind.RPAREN);
+			if (isArrayRef)
 			{
-				consume(reference);
 				reference.addDimension(consumeArrayAccess(reference));
-			}
-			consumeMandatory(reference, SyntaxKind.RPAREN);
-		}
-
-		if (peekKind(SyntaxKind.LPAREN) && peekKind(1, SyntaxKind.LABEL_IDENTIFIER))
-		{
-			while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
-			{
-				consume(reference);
+				while (peekKind(SyntaxKind.COMMA))
+				{
+					consume(reference);
+					reference.addDimension(consumeArrayAccess(reference));
+				}
 			}
 			consumeMandatory(reference, SyntaxKind.RPAREN);
 		}

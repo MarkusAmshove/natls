@@ -55,8 +55,9 @@ class QualifiedVariableAnalyzerShould extends AbstractAnalyzerTest
 			1 #GRP
 			2 NOTATYPEDLEVEL1 (I1)
 			END-DEFINE
-			MOVE 1 TO WORK.#VAR(#I)
-			MOVE 2 TO #GRP.NOTATYPEDLEVEL1
+			MOVE 1 TO WORK.#VAR(LABEL1./#I)
+			MOVE WORK.#VAR(LABEL1./1) TO WORK.#I
+			MOVE WORK.#I(LABEL1.) TO #GRP.NOTATYPEDLEVEL1
 			END
 			""",
 			expectNoDiagnostic(5, QualifiedVariableAnalyzer.LEVEL_1_TYPED_VARIABLES_IS_DISCOURAGED),
