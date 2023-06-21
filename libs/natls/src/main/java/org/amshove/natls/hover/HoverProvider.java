@@ -48,12 +48,12 @@ public class HoverProvider
 			return hoverBuiltinFunction(context.tokenToHover().kind());
 		}
 
-		if (context.nodeToHover()instanceof IModuleReferencingNode moduleReferencingNode)
+		if (context.nodeToHover().parent()instanceof IModuleReferencingNode moduleReferencingNode)
 		{
 			return hoverExternalModule(moduleReferencingNode);
 		}
 
-		if (context.nodeToHover()instanceof IVariableNode variableNode)
+		if (context.nodeToHover().parent()instanceof IVariableNode variableNode)
 		{
 			return hoverVariable(variableNode, context);
 		}
