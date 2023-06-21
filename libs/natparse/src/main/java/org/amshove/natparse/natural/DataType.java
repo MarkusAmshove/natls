@@ -14,4 +14,23 @@ public record DataType(DataFormat format, double length) implements IDataType
 	{
 		return length == DYNAMIC_LENGTH;
 	}
+
+	public static DataType fromString(String type)
+	{
+		var format = DataFormat.fromSource(type);
+		var lengthString = new StringBuilder();
+		for (var i = 1; i < type.length(); i++)
+		{
+			var ch = type.charAt(i);
+			if (!Character.isDigit(ch) && ch != '.' && ch != ',')
+			{
+				break;
+			}
+
+			lengthString.append(ch);
+		}
+
+		var length = lengthString.length() > 0 ? Double.parseDouble(lengthString.toString().replace(",", ".")) : 1.0;
+		return new DataType(format, length);
+	}
 }

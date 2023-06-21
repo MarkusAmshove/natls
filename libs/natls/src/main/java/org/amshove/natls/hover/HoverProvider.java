@@ -11,6 +11,7 @@ import org.amshove.natparse.natural.builtin.SystemFunctionDefinition;
 import org.amshove.natparse.natural.builtin.SystemVariableDefinition;
 import org.eclipse.lsp4j.Hover;
 
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -129,12 +130,6 @@ public class HoverProvider
 
 		var contentBuilder = MarkupContentBuilderFactory.newBuilder();
 		contentBuilder.appendStrong("%s.%s".formatted(module.file().getLibrary().getName(), module.file().getReferableName())).appendNewline();
-		/*
-		if(module instanceof IFunction function)
-		{
-			TODO: Add return type
-		}
-		 */
 
 		if (!module.file().getFilenameWithoutExtension().equals(module.file().getReferableName()))
 		{
@@ -145,6 +140,14 @@ public class HoverProvider
 		if (documentation != null && !documentation.trim().isEmpty())
 		{
 			contentBuilder.appendCode(documentation);
+		}
+
+		if (module instanceof IFunction function && function.returnType() != null)
+		{
+			contentBuilder.appendSection(
+				"Result", cb -> cb
+					.appendCode("RETURNS " + Objects.requireNonNull(function.returnType()).toShortString()).appendNewline()
+			);
 		}
 
 		addModuleParameter(contentBuilder, module);
