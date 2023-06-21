@@ -635,8 +635,12 @@ public class NaturalLanguageService implements LanguageClientAware
 			return item;
 		}
 
-		var jsonData = (JsonObject) item.getData();
-		var info = new Gson().fromJson(jsonData, UnresolvedCompletionInfo.class);
+		if (item.getData() == null)
+		{
+			return item;
+		}
+
+		var info = extractJsonObject(item.getData(), UnresolvedCompletionInfo.class);
 		var file = findNaturalFile(LspUtil.uriToPath(info.getUri()));
 		var module = file.module();
 		if (item.getKind() == CompletionItemKind.Variable)
@@ -1157,5 +1161,16 @@ public class NaturalLanguageService implements LanguageClientAware
 		});
 
 		return edits;
+	}
+
+	private <T> T extractJsonObject(Object obj, Class<T> clazz)
+	{
+		if (clazz.isInstance(obj))
+		{
+			return clazz.cast(obj);
+		}
+
+		var jsonData = (JsonObject) obj;
+		return new Gson().fromJson(jsonData, clazz);
 	}
 }
