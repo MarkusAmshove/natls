@@ -93,6 +93,25 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void notImportVariablesFromModulesThatAreNotDataAreas()
+	{
+		useStubModuleProvider();
+		var subprogram = newEmptySubprogram();
+		moduleProvider.addModule("SUBPROG", subprogram);
+
+		var source = """
+			DEFINE DATA 
+			LOCAL USING SUBPROG
+			END-DEFINE
+			""";
+
+		var defineData = assertDiagnostic(source, ParserError.INVALID_MODULE_TYPE);
+		var using = defineData.localUsings().first();
+		assertThat(using.referencingToken().symbolName()).isEqualTo("SUBPROG");
+		assertThat(using.reference()).isNull();
+	}
+
+	@Test
 	void setTheCorrectParentForNodes()
 	{
 		var source = """

@@ -7,6 +7,7 @@ import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.project.NaturalFileType;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -71,12 +72,27 @@ abstract class AbstractParser<T>
 		return module;
 	}
 
+	private static final Set<NaturalFileType> TYPES_FOR_USINGS = Set.of(NaturalFileType.GDA, NaturalFileType.LDA, NaturalFileType.PDA);
+
 	protected IHasDefineData sideloadDefineData(TokenNode importNode)
 	{
-		if (sideloadModule(importNode.token().symbolName(), importNode.token())instanceof IHasDefineData hasDefineData)
+		var module = sideloadModule(importNode.token().symbolName(), importNode.token());
+		if (module instanceof IHasDefineData hasDefineData
+			&& TYPES_FOR_USINGS.contains(module.file().getFiletype()))
 		{
 			return hasDefineData;
 		}
+		else
+			if (module != null)
+			{
+				report(
+					ParserErrors.invalidModuleType(
+						"Only data areas can be imported via USING. This is a %s."
+							.formatted(module.file().getFiletype()),
+						importNode.token()
+					)
+				);
+			}
 
 		return null;
 	}
