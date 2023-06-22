@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-class sortStatementNode extends StatementWithBodyNode implements ISortStatementNode
+class SortStatementNode extends StatementWithBodyNode implements ISortStatementNode
 {
 	private static final Map<IOperandNode, SortDirection> operands = new HashMap<>();
 	private final List<IOperandNode> usings = new ArrayList<>();

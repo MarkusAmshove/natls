@@ -17,9 +17,4 @@ public enum SortDirection
 			default -> throw new NaturalParseException("Could not determine SortDirection from SyntaxKind");
 		};
 	}
-
-	public SortDirection get()
-	{
-		return this;
-	}
 }

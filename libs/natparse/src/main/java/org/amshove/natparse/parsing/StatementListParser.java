@@ -4,7 +4,6 @@ import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
-import org.amshove.natparse.natural.builtin.SystemFunctionDefinition;
 import org.amshove.natparse.natural.conditionals.ChainedCriteriaOperator;
 import org.amshove.natparse.natural.conditionals.ComparisonOperator;
 import org.amshove.natparse.natural.conditionals.IHasComparisonOperator;
@@ -16,9 +15,6 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.regex.Pattern;
-
-import javax.annotation.Syntax;
-import javax.annotation.WillClose;
 
 public class StatementListParser extends AbstractParser<IStatementListNode>
 {
@@ -2668,7 +2664,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private StatementNode sortStatement() throws ParseError
 	{
-		var sort = new sortStatementNode();
+		var sort = new SortStatementNode();
 		consumeMandatory(sort, SyntaxKind.END_ALL);
 		consumeOptionally(sort, SyntaxKind.AND);
 		var opening = consumeMandatory(sort, SyntaxKind.SORT);

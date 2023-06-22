@@ -668,6 +668,8 @@ class StatementListParserShould extends StatementParseTest
 		"SORT BY #VAR1 USING #KEY1",
 		"SORT BY #VAR1 USING #KEY1 #KEY2",
 		"SORT BY #VAR1 USING #KEY1 #KEY2",
+		"SORT BY #VAR1 ASC #VAR2 DESC USING #KEY1 #KEY2",
+		"SORT BY #VAR1 ASCENDING #VAR2 DESCENDING USING #KEY1 #KEY2",
 		"SORT BY #VAR1 USING #KEY1 #KEY2 GIVE MIN MAX AVER #GIVE",
 		"SORT BY #VAR1 USING KEYS GIVE MIN MAX AVER OF #GIVE",
 		"SORT BY #VAR1 USING KEYS GIVE MIN MAX AVER (#GIVE1) SUM TOTAL OF (#GIVE2)",
@@ -680,6 +682,18 @@ class StatementListParserShould extends StatementParseTest
 			%s
 			END-SORT
 			""".formatted(statement), ISortStatementNode.class);
+	}
+
+	@Test
+	void parseSortWithSortDirection()
+	{
+		var sort = assertParsesSingleStatement("""
+			END-ALL
+			SORT BY #VAR1 ASC #VAR2 DESC #VAR3 ASCENDING #VAR4 DESCENDING #VAR5
+			END-SORT
+			""", ISortStatementNode.class);
+		assertThat(sort.usings().isEmpty());
+//		assertThat(sort.operands()...?
 	}
 
 	@Test
