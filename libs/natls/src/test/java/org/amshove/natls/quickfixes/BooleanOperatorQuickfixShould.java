@@ -47,7 +47,7 @@ public class BooleanOperatorQuickfixShould extends CodeActionTest
 
 		configureEditorConfig("""
 			[*]
-			natls.style.comparisons=signs
+			natls.style.comparisons=sign
 			""");
 
 		assertCodeActionWithTitle("Change operator to %s".formatted(preferredOperator), "LIBONE", "MEINS.NSN", """
@@ -108,6 +108,11 @@ public class BooleanOperatorQuickfixShould extends CodeActionTest
 	@Test
 	void recognizeTheQuickFixForInvalidNatUnitTestComparison()
 	{
+		configureEditorConfig("""
+			[*]
+			natls.style.comparisons=sign
+			""");
+
 		assertCodeActionWithTitle("Change operator to EQ", "LIBONE", "TCTEST.NSN", """
 			DEFINE DATA
 			LOCAL USING NUTESTP
@@ -136,48 +141,54 @@ public class BooleanOperatorQuickfixShould extends CodeActionTest
 	@Test
 	void fixAllIssuesInFile()
 	{
+
+		configureEditorConfig("""
+			[*]
+			natls.style.comparisons=sign
+			""");
+
 		assertCodeActionWithTitle("Fix all operators in SUBMOD", "LIBONE", "SUBMOD.NSN", """
 			DEFINE DATA
 			LOCAL
 			END-DEFINE
-			
+
 			IF 5 GT 2
 			IGNORE
 			END-IF
-			
+
 			IF 10 L${}$T 10
 			IGNORE
 			END-IF
-			
+
 			DECIDE FOR FIRST CONDITION
 			WHEN 10 EQ 10
 			IGNORE
 			WHEN 10 = 10
 			IGNORE
 			END-DECIDE
-			
+
 			END
 			""")
 			.resultsApplied("""
 			DEFINE DATA
 			LOCAL
 			END-DEFINE
-			
+
 			IF 5 > 2
 			IGNORE
 			END-IF
-			
+
 			IF 10 < 10
 			IGNORE
 			END-IF
-			
+
 			DECIDE FOR FIRST CONDITION
 			WHEN 10 = 10
 			IGNORE
 			WHEN 10 = 10
 			IGNORE
 			END-DECIDE
-			
+
 			END
 			""");
 	}

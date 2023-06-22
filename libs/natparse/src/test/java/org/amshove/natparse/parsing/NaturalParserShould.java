@@ -1,5 +1,7 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.natural.DataFormat;
+import org.amshove.natparse.natural.IFunction;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.testhelpers.ProjectName;
 import org.junit.jupiter.api.Test;
@@ -18,6 +20,35 @@ class NaturalParserShould extends ParserIntegrationTest
 	void notReportDiagnosticsForReferencesToTheFunctionName(@ProjectName("variablereferencetests") NaturalProject project)
 	{
 		assertParsesWithoutAnyDiagnostics(project.findModule("LIBONE", "FUNC"));
+	}
+
+	@Test
+	void parseTheReturnTypesOfFunctions(@ProjectName("naturalParserTests") NaturalProject project)
+	{
+		var module = parse(project.findModule("TEST", "FUNC"));
+		assertThat(module).isInstanceOf(IFunction.class);
+		var function = (IFunction) module;
+		assertThat(function.returnType().format()).isEqualTo(DataFormat.LOGIC);
+	}
+
+	@Test
+	void parseTheReturnTypesOfFunctionsWithDynamicLength(@ProjectName("naturalParserTests") NaturalProject project)
+	{
+		var module = parse(project.findModule("TEST", "FUNCDYN"));
+		assertThat(module).isInstanceOf(IFunction.class);
+		var function = (IFunction) module;
+		assertThat(function.returnType().format()).isEqualTo(DataFormat.ALPHANUMERIC);
+		assertThat(function.returnType().hasDynamicLength()).isTrue();
+	}
+
+	@Test
+	void parseTheReturnTypesOfFunctionsWithFixedLength(@ProjectName("naturalParserTests") NaturalProject project)
+	{
+		var module = parse(project.findModule("TEST", "FUNCSET"));
+		assertThat(module).isInstanceOf(IFunction.class);
+		var function = (IFunction) module;
+		assertThat(function.returnType().format()).isEqualTo(DataFormat.NUMERIC);
+		assertThat(function.returnType().length()).isEqualTo(12.7);
 	}
 
 	@Test

@@ -10,6 +10,7 @@ import org.amshove.natparse.natural.project.NaturalProgrammingMode;
 
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,7 +65,7 @@ class ParserErrors
 		);
 	}
 
-	public static ParserDiagnostic unexpectedToken(List<SyntaxKind> expectedTokenKinds, TokenList tokens)
+	public static ParserDiagnostic unexpectedToken(Collection<SyntaxKind> expectedTokenKinds, TokenList tokens)
 	{
 		var currentToken = tokens.peek();
 		var invalidToken = currentToken != null ? currentToken : tokens.peek(-1);
@@ -566,6 +567,15 @@ class ParserErrors
 			"Statement must have a body. Add IGNORE if body should be empty.",
 			errorToken,
 			ParserError.STATEMENT_HAS_EMPTY_BODY
+		);
+	}
+
+	public static IDiagnostic groupHasMixedConstVariables(ISyntaxNode variable)
+	{
+		return ParserDiagnostic.create(
+			"A group can not have a mix of CONST and non-CONST variables. Either make all CONST or none.",
+			variable,
+			ParserError.GROUP_HAS_MIXED_CONST
 		);
 	}
 }

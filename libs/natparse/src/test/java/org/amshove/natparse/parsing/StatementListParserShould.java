@@ -604,6 +604,59 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void parseRepeatLoopConditionFirst()
+	{
+		var repeatLoop = assertParsesSingleStatement("""
+			REPEAT UNTIL A = B OR B > C OR (X = 10)
+				IGNORE
+			END-REPEAT
+			""", IRepeatLoopNode.class);
+
+		assertThat(repeatLoop.body().statements()).hasSize(1);
+		assertNodeType(repeatLoop.body().statements().first(), IIgnoreNode.class);
+		assertThat(repeatLoop.descendants()).hasSize(5);
+	}
+
+	@Test
+	void parseRepeatLoopConditionLast()
+	{
+		var repeatLoop = assertParsesSingleStatement("""
+			REPEAT
+				WRITE 'HEY!'
+			WHILE A = B OR B > C OR (X = 10)
+			END-REPEAT
+			""", IRepeatLoopNode.class);
+
+		assertThat(repeatLoop.body().statements()).hasSize(1);
+		assertNodeType(repeatLoop.body().statements().first(), IWriteNode.class);
+		assertThat(repeatLoop.condition()).isNotNull();
+	}
+
+	@Test
+	void parseRepeatLoopNoCondition()
+	{
+		var repeatLoop = assertParsesSingleStatement("""
+			REPEAT
+				IF X > Y
+				  ESCAPE BOTTOM
+				END-IF
+			END-REPEAT
+			""", IRepeatLoopNode.class);
+
+		assertThat(repeatLoop.body().statements()).hasSize(1);
+		assertNodeType(repeatLoop.body().statements().first(), IIfStatementNode.class);
+	}
+
+	@Test
+	void raiseADiagnosticIfARepeatLoopHasNoBody()
+	{
+		assertDiagnostic("""
+			REPEAT
+			END-REPEAT
+			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
+	}
+
+	@Test
 	void parseForColonEqualsToStatements()
 	{
 		var forLoopNode = assertParsesSingleStatement("""

@@ -99,7 +99,7 @@ partial - partially implemented to prevent false positives (12)
 | REDUCE | :white_check_mark: |
 | REINPUT | :x:                |
 | RELEASE | :x:                |
-| REPEAT | :x:                |
+| REPEAT | :white_check_mark: |
 | REQUEST DOCUMENT | :x:                |
 | RESET | :white_check_mark: |
 | RESIZE | :white_check_mark: |

@@ -1,0 +1,34 @@
+name: Enclosing group has a mix of CONST and non-CONST variables
+priority: BLOCKER
+tags: compile-time
+type: BUG
+description:
+A group of variables can not have a mix of CONST and non-CONST variables.
+
+== Non-compliant
+
+``
+DEFINE DATA LOCAL
+1 #GRP
+2 #CONST (A1) CONST<'A'>
+2 #GRP2
+3 #NON-CONST (A1)
+``
+
+== Compliant
+
+``
+DEFINE DATA LOCAL
+1 #GRP
+2 #NON-CONST-1 (A1)
+2 #GRP2
+3 #NON-CONST-2 (A1)
+``
+
+``
+DEFINE DATA LOCAL
+1 #GRP
+2 #CONST-1 (A1) CONST<'A'>
+2 #GRP2
+3 #CONST-2 (A1) CONST<'B'>
+``
