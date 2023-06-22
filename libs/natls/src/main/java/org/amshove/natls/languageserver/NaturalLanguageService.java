@@ -181,7 +181,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var module = file.module();
 
 		// special case for the callnat string containing the called module
-		var node = NodeUtil.findTokenNodeAtPosition(position.getLine(), position.getCharacter(), module.syntaxTree());
+		var node = NodeUtil.findTokenNodeAtPosition(filepath, position.getLine(), position.getCharacter(), module.syntaxTree());
 
 		var symbolToSearchFor = findTokenAtPosition(file, position); // TODO: Actually look for a node, could be ISymbolReferenceNode
 		var providedHover = hoverProvider.createHover(new HoverContext(node, symbolToSearchFor, file));
@@ -317,7 +317,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	private SyntaxToken findTokenAtPosition(LanguageServerFile file, Position position)
 	{
-		return NodeUtil.findTokenNodeAtPosition(position.getLine(), position.getCharacter(), file.module().syntaxTree()).token();
+		return NodeUtil.findTokenNodeAtPosition(file.getPath(), position.getLine(), position.getCharacter(), file.module().syntaxTree()).token();
 	}
 
 	private String getLineComment(int line, Path filePath)
@@ -476,7 +476,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var file = findNaturalFile(filePath);
 		var position = params.getPosition();
 
-		var node = NodeUtil.findTokenNodeAtPosition(position.getLine(), position.getCharacter(), file.module().syntaxTree());
+		var node = NodeUtil.findTokenNodeAtPosition(filePath, position.getLine(), position.getCharacter(), file.module().syntaxTree());
 		if (node == null)
 		{
 			return List.of();
@@ -1022,7 +1022,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var path = LspUtil.uriToPath(params.getTextDocument().getUri());
 		var file = findNaturalFile(path);
 
-		var node = NodeUtil.findTokenNodeAtPosition(params.getPosition().getLine(), params.getPosition().getCharacter(), file.module().syntaxTree());
+		var node = NodeUtil.findTokenNodeAtPosition(path, params.getPosition().getLine(), params.getPosition().getCharacter(), file.module().syntaxTree());
 
 		String placeholder = null;
 
@@ -1062,7 +1062,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var path = LspUtil.uriToPath(params.getTextDocument().getUri());
 		var file = findNaturalFile(path);
 
-		var node = NodeUtil.findTokenNodeAtPosition(params.getPosition().getLine(), params.getPosition().getCharacter(), file.module().syntaxTree());
+		var node = NodeUtil.findTokenNodeAtPosition(path, params.getPosition().getLine(), params.getPosition().getCharacter(), file.module().syntaxTree());
 		if (node instanceof ISymbolReferenceNode symbolReferenceNode)
 		{
 			return renameComputer.rename(symbolReferenceNode, params.getNewName());
