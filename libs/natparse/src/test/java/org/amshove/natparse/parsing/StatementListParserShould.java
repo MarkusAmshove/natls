@@ -10,6 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 class StatementListParserShould extends StatementParseTest
@@ -1011,6 +1012,184 @@ class StatementListParserShould extends StatementParseTest
 			FIND MULTI-FETCH %s THE-VIEW WITH THE-DESCRIPTOR = 'Asd'
 			IGNORE
 			END-FIND""".formatted(multifetch), IFindNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"#VAR1 TO #VAR2",
+		"#VAR1 (PM=I) TO #VAR2",
+		"#VAR1 (DF=I) TO #VAR2",
+		"#VAR1 (DF=I PM=I) TO #VAR2",
+	})
+	void parseMove(String statement)
+	{
+		var move = assertParsesSingleStatement("MOVE %s".formatted(statement), IMoveStatementNode.class);
+		assertThat(assertNodeType(move.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
+		assertThat(move.targets()).hasSize(1);
+		assertThat(assertNodeType(move.targets().first(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"OLD(#VAR1) INTO #VAR2",
+		"OLD(*ISN) TO #VAR2",
+		"SUM(#VAR1) INTO #VAR2"
+	})
+	void parseMoveWithSystemFunctions(String statement)
+	{
+		var move = assertParsesSingleStatement("MOVE %s".formatted(statement), IMoveStatementNode.class);
+		assertThat(move.targets()).hasSize(1);
+		assertThat(assertNodeType(move.targets().first(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+	}
+
+	@Test
+	void parseMoveAttributeDefinition()
+	{
+		var move = assertParsesSingleStatement("MOVE (AD=I CD=RE) TO #CV", IMoveStatementNode.class);
+		assertThat(move.targets()).hasSize(1);
+		assertThat(assertNodeType(move.targets().first(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#CV");
+	}
+
+	@Test
+	void parseMoveSubstring()
+	{
+		var move = assertParsesSingleStatement("MOVE SUBSTRING(#VAR1,1,2) TO #VAR2", IMoveStatementNode.class);
+		var substringOperand = assertNodeType(move.operand(), ISubstringOperandNode.class);
+		assertThat(assertNodeType(substringOperand.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
+		assertThat(move.targets()).hasSize(1);
+		assertThat(assertNodeType(move.targets().first(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+	}
+
+	@Test
+	void parseMoveSubstringToSubstring()
+	{
+		var move = assertParsesSingleStatement("MOVE SUBSTRING(#VAR1,1,2) TO SUBSTRING(#VAR2,5)", IMoveStatementNode.class);
+		var substringOperand = assertNodeType(move.operand(), ISubstringOperandNode.class);
+		assertThat(assertNodeType(substringOperand.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
+		assertThat(move.targets()).hasSize(1);
+		substringOperand = assertNodeType(move.targets().first(), ISubstringOperandNode.class);
+		assertThat(assertNodeType(substringOperand.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+	}
+
+	@Test
+	void parseMoveSubstringToSubstringMultiTargets()
+	{
+		var move = assertParsesSingleStatement("MOVE SUBSTRING(#VAR1,1,2) (PM=I) TO SUBSTRING(#VAR2,5) SUBSTRING(#VAR3,5) #VAR4", IMoveStatementNode.class);
+		var substringOperand = assertNodeType(move.operand(), ISubstringOperandNode.class);
+		assertThat(assertNodeType(substringOperand.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
+		assertThat(move.targets()).hasSize(3);
+		substringOperand = assertNodeType(move.targets().first(), ISubstringOperandNode.class);
+		assertThat(assertNodeType(substringOperand.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+		assertThat(assertNodeType(move.targets().last(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR4");
+	}
+
+	@Test
+	void parseMoveRounded()
+	{
+		var move = assertParsesSingleStatement("MOVE ROUNDED #VAR1 TO #VAR2", IMoveStatementNode.class);
+		assertThat(move.isRounded()).isTrue();
+	}
+
+	@Test
+	void parseMoveRoundedMulti()
+	{
+		var move = assertParsesSingleStatement("MOVE ROUNDED #VAR1 TO #VAR2 #VAR3 #VAR4", IMoveStatementNode.class);
+		assertThat(move.isRounded()).isTrue();
+		assertThat(move.targets()).hasSize(3);
+	}
+
+	@Test
+	void parseMoveByName()
+	{
+		var move = assertParsesSingleStatement("MOVE BY NAME #VAR1 TO #VAR2", IMoveStatementNode.class);
+		assertThat(move.byKind()).isEqualTo(SyntaxKind.NAME);
+	}
+
+	@Test
+	void parseMoveByNameDefault()
+	{
+		var move = assertParsesSingleStatement("MOVE BY #VAR1 TO #VAR2", IMoveStatementNode.class);
+		assertThat(move.byKind()).isEqualTo(SyntaxKind.NAME);
+	}
+
+	@Test
+	void parseMoveByPosition()
+	{
+		var move = assertParsesSingleStatement("MOVE BY POSITION #VAR1 TO #VAR2", IMoveStatementNode.class);
+		assertThat(move.byKind()).isEqualTo(SyntaxKind.POSITION);
+	}
+
+	@Test
+	void parseMoveEditedApplyingMask()
+	{
+		var move = assertParsesSingleStatement("MOVE EDITED #VAR1 (EM=XX) TO #VAR2", IMoveStatementNode.class);
+		assertThat(move.isEdited()).isTrue();
+	}
+
+	@Test
+	void parseMoveEditedUsingMask()
+	{
+		var move = assertParsesSingleStatement("MOVE EDITED #VAR1 TO #VAR2 (EM=XX)", IMoveStatementNode.class);
+		assertThat(move.isEdited()).isTrue();
+	}
+
+	@Test
+	void parseMoveLeft()
+	{
+		var move = assertParsesSingleStatement("MOVE LEFT #VAR1 TO #VAR2", IMoveStatementNode.class);
+		assertThat(move.direction()).isEqualTo(SyntaxKind.LEFT);
+	}
+
+	@Test
+	void parseMoveRight()
+	{
+		var move = assertParsesSingleStatement("MOVE RIGHT JUSTIFIED #VAR1 TO #VAR2", IMoveStatementNode.class);
+		assertThat(move.direction()).isEqualTo(SyntaxKind.RIGHT);
+	}
+
+	@Test
+	void parseMoveNormalized()
+	{
+		var move = assertParsesSingleStatement("MOVE NORMALIZED #VAR1 TO #VAR2", IMoveStatementNode.class);
+		assertThat(move.isNormalized()).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"A TO B",
+		"A CODEPAGE #CP TO B",
+		"A CODEPAGE #CP TO B CODEPAGE #CP",
+		"A CODEPAGE #CP TO B IN CODEPAGE #CP",
+		"A IN CODEPAGE #CP TO B",
+		"A IN CODEPAGE #CP TO B CODEPAGE #CP",
+		"A IN CODEPAGE #CP TO B IN CODEPAGE #CP",
+		"A IN CODEPAGE #CP TO B IN CODEPAGE #CP GIVING #RC",
+		"A IN CODEPAGE 'CP1' TO B IN CODEPAGE 'CP2'",
+		"A IN CODEPAGE 'CP1' TO B IN CODEPAGE 'CP2' GIVING #RC",
+	})
+	void parseMoveEncoded(String statement)
+	{
+		var move = assertParsesSingleStatement("MOVE ENCODED %s".formatted(statement), IMoveStatementNode.class);
+		assertThat(move.isEncoded()).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"'-' TO B",
+		"'-' TO B UNTIL 10",
+		"'-' TO SUBSTRING(B,10)",
+		"A TO B",
+		"A TO B UNTIL 10",
+		"A TO B UNTIL #UNTIL",
+	})
+	void parseMoveAll(String statement)
+	{
+		var move = assertParsesSingleStatement("MOVE ALL %s".formatted(statement), IMoveStatementNode.class);
+		assertThat(move.isAll()).isTrue();
 	}
 
 	@Test

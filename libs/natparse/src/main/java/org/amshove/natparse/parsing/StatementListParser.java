@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 public class StatementListParser extends AbstractParser<IStatementListNode>
 {
 	private static final Pattern SETKEY_PATTERN = Pattern.compile("(ENTR|CLR|PA[1-3]|PF([1-9]|[0-1][\\d]|2[0-4]))\\b");
+	private static final List<SyntaxKind> TO_INTO = List.of(SyntaxKind.INTO, SyntaxKind.TO);
 
 	private List<IReferencableNode> referencableNodes;
 
@@ -102,6 +103,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						break;
 					case ASSIGN:
 						statementList.addStatements(assignOrCompute(SyntaxKind.ASSIGN));
+						break;
+					case MOVE:
+						statementList.addStatement(moveStatement());
 						break;
 					case AT:
 						if (peekKind(1, SyntaxKind.END) && (peekKind(3, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE)))
@@ -753,8 +757,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return work;
 	}
 
-	private static final List<SyntaxKind> TO_INTO = List.of(SyntaxKind.INTO, SyntaxKind.TO);
-
 	private CompressStatementNode compress() throws ParseError
 	{
 		var compress = new CompressStatementNode();
@@ -1072,7 +1074,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return compose;
 	}
 
-	private void consumeComposeMovingStatus(ComposeStatementNode node) throws ParseError
+	private void consumeComposeMovingStatus(BaseSyntaxNode node) throws ParseError
 	{
 		if (consumeOptionally(node, SyntaxKind.STATUS))
 		{
@@ -1081,7 +1083,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 	}
 
-	private void consumeAssigning(ComposeStatementNode node) throws ParseError
+	private void consumeAssigning(BaseSyntaxNode node) throws ParseError
 	{
 		var left = consumeOperandNode(node);
 		checkOperand(left, "The left side can only be a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
@@ -1091,7 +1093,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		checkLiteralTypeIfLiteral(right, SyntaxKind.STRING_LITERAL, SyntaxKind.NUMBER_LITERAL);
 	}
 
-	private void consumeExtracting(ComposeStatementNode node) throws ParseError
+	private void consumeExtracting(BaseSyntaxNode node) throws ParseError
 	{
 		var left = consumeOperandNode(node);
 		checkOperand(left, "The left side can only be a variable reference.", AllowedOperand.VARIABLE_REFERENCE);
@@ -1101,7 +1103,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		checkLiteralTypeIfLiteral(right, SyntaxKind.STRING_LITERAL);
 	}
 
-	private int consumeComposeOperands(ComposeStatementNode node) throws ParseError
+	private int consumeComposeOperands(BaseSyntaxNode node) throws ParseError
 	{
 		int numFound = 0;
 		while (isOperand() && !(peekAny(COMPOSE_SUBCLAUSES) || peekAny(COMPOSE_ALL_SUBCLAUSES) || isStatementStart()))
@@ -2040,9 +2042,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return separate;
 	}
 
+	private static final List<SyntaxKind> SUBSTRINGS = List.of(SyntaxKind.SUBSTR, SyntaxKind.SUBSTRING);
+
 	private IOperandNode consumeSubstringOrOperand(BaseSyntaxNode node) throws ParseError
 	{
-		if (peekKind(SyntaxKind.SUBSTR) || peekKind(SyntaxKind.SUBSTRING))
+		if (peekAny(SUBSTRINGS))
 		{
 			return consumeSubstring(node);
 		}
@@ -2056,7 +2060,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		var substring = new SubstringOperandNode();
 		node.addNode(substring);
-		consumeAnyMandatory(node, List.of(SyntaxKind.SUBSTR, SyntaxKind.SUBSTRING));
+		consumeAnyMandatory(node, SUBSTRINGS);
 
 		consumeMandatory(node, SyntaxKind.LPAREN);
 		substring.setOperand(consumeOperandNode(substring));
@@ -3854,6 +3858,156 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statements;
+	}
+
+	private static final List<SyntaxKind> SPECIAL_MOVE_KINDS = List.of(SyntaxKind.ROUNDED, SyntaxKind.BY, SyntaxKind.EDITED, SyntaxKind.LEFT, SyntaxKind.RIGHT, SyntaxKind.NORMALIZED, SyntaxKind.ENCODED, SyntaxKind.ALL);
+	private static final List<SyntaxKind> MOVE_BY_KINDS = List.of(SyntaxKind.NAME, SyntaxKind.POSITION);
+
+	private MoveStatementNode moveStatement() throws ParseError
+	{
+		var move = new MoveStatementNode();
+		boolean usingEditMask = false;
+		consumeMandatory(move, SyntaxKind.MOVE);
+
+		if (peekAny(SPECIAL_MOVE_KINDS))
+		{
+			move.setMoveKind(consumeAnyMandatory(move, SPECIAL_MOVE_KINDS).kind());
+			switch (move.moveKind())
+			{
+				// Syntax 1
+				case ROUNDED:
+					move.setRounded(true);
+					move.setOperand(consumeSubstringOrOperand(move));
+					consumeMoveAttributes(move);
+					break;
+				// Syntax 3
+				case BY:
+					if (peekAny(MOVE_BY_KINDS))
+					{
+						move.setByKind(consumeAnyMandatory(move, MOVE_BY_KINDS).kind());
+					}
+					move.setOperand(consumeOperandNode(move));
+					break;
+				// Syntax 4+5
+				case EDITED:
+					move.setEdited(true);
+					move.setOperand(consumeOperandNode(move));
+					// Syntax 5
+					if (!peekKind(SyntaxKind.TO))
+					{
+						consumeAttributeDefinition(move);
+						break;
+					}
+					usingEditMask = true;
+					break;
+				// Syntax 6
+				case LEFT, RIGHT:
+					move.setDirection(move.moveKind());
+					consumeOptionally(move, SyntaxKind.JUSTIFIED);
+					move.setOperand(consumeOperandNode(move));
+					consumeMoveAttributes(move);
+					break;
+				// Syntax 7
+				case NORMALIZED:
+					move.setNormalized(true);
+					move.setOperand(consumeOperandNode(move));
+					break;
+				// Syntax 8
+				case ENCODED:
+					move.setEncoded(true);
+					move.setOperand(consumeOperandNode(move));
+					if (peekAny(List.of(SyntaxKind.IN, SyntaxKind.CODEPAGE)))
+					{
+						consumeOptionally(move, SyntaxKind.IN);
+						consumeMandatory(move, SyntaxKind.CODEPAGE);
+						consumeOperandNode(move);
+					}
+					break;
+				// Syntax 9
+				case ALL:
+					move.setAll(true);
+					move.setOperand(consumeSubstringOrOperand(move));
+					break;
+				default:
+					break;
+			}
+		}
+		else
+		{
+			// Syntax 1 (not ROUNDED) + Syntax 2
+			move.setMoveKind(SyntaxKind.MOVE);
+			if (peekKind(SyntaxKind.LPAREN) && getKind(1).isAttribute())
+			{
+				consumeAttributeDefinition(move);
+			}
+			else
+			{
+				move.setOperand(consumeSubstringOrOperand(move));
+				consumeMoveAttributes(move);
+			}
+		}
+
+		consumeAnyMandatory(move, TO_INTO);
+
+		switch (move.moveKind())
+		{
+			case ROUNDED:
+				while (isOperand())
+				{
+					move.addTarget(consumeOperandNode(move));
+				}
+				break;
+			case BY, LEFT, RIGHT, NORMALIZED:
+				move.addTarget(consumeOperandNode(move));
+				break;
+			case EDITED:
+				move.addTarget(consumeOperandNode(move));
+				if (usingEditMask)
+				{
+					consumeAttributeDefinition(move);
+				}
+				break;
+			case ENCODED:
+				move.addTarget(consumeOperandNode(move));
+				if (peekAny(List.of(SyntaxKind.IN, SyntaxKind.CODEPAGE)))
+				{
+					consumeOptionally(move, SyntaxKind.IN);
+					consumeMandatory(move, SyntaxKind.CODEPAGE);
+					consumeOperandNode(move);
+				}
+				if (consumeOptionally(move, SyntaxKind.GIVING))
+				{
+					consumeOperandNode(move);
+				}
+				break;
+			case ALL:
+				move.addTarget(consumeSubstringOrOperand(move));
+				if (consumeOptionally(move, SyntaxKind.UNTIL))
+				{
+					consumeOperandNode(move);
+				}
+				break;
+			case MOVE:
+				while (isOperand() || peekAny(SUBSTRINGS))
+				{
+					move.addTarget(consumeSubstringOrOperand(move));
+				}
+				break;
+			default:
+				break;
+		}
+
+		return move;
+	}
+
+	private boolean consumeMoveAttributes(BaseSyntaxNode node) throws ParseError
+	{
+		if (peekKind(SyntaxKind.LPAREN))
+		{
+			consumeAttributeDefinition(node);
+			return true;
+		}
+		return false;
 	}
 
 	private ResetStatementNode resetStatement() throws ParseError
