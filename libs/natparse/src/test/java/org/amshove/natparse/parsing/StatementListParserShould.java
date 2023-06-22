@@ -655,6 +655,33 @@ class StatementListParserShould extends StatementParseTest
 			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"SORT #VAR1",
+		"SORT THEM #VAR1",
+		"SORT RECORD #VAR1",
+		"SORT RECORDS BY #VAR1",
+		"AND SORT THEM BY #VAR1 #VAR2",
+		"SORT BY #VAR1 USING KEY",
+		"SORT BY #VAR1 USING KEYS",
+		"SORT BY #VAR1 USING #KEY1",
+		"SORT BY #VAR1 USING #KEY1 #KEY2",
+		"SORT BY #VAR1 USING #KEY1 #KEY2",
+		"SORT BY #VAR1 USING #KEY1 #KEY2 GIVE MIN MAX AVER #GIVE",
+		"SORT BY #VAR1 USING KEYS GIVE MIN MAX AVER OF #GIVE",
+		"SORT BY #VAR1 USING KEYS GIVE MIN MAX AVER (#GIVE1) SUM TOTAL OF (#GIVE2)",
+		"AND SORT THEM BY #VAR1 #VAR2 USING #KEY1 #KEY2 GIVING MIN MAX AVER (#GIVE1) SUM TOTAL OF (#GIVE2) (NL=10)",
+	})
+	void parseSortStatements(String statement)
+	{
+		assertParsesSingleStatement("""
+			END-ALL
+			%s
+			END-SORT
+			""".formatted(statement), ISortStatementNode.class);
+	}
+
 	@Test
 	void parseForColonEqualsToStatements()
 	{
@@ -696,7 +723,11 @@ class StatementListParserShould extends StatementParseTest
 			FOR #I := 1 TO 10
 			    FOR #J := 1 TO 20
 			        WRITE #I #J
-			END-ALL""");
+			END-ALL
+			AND
+			SORT THEM BY #I #J
+			END-SORT
+			""");
 	}
 
 	@Test
