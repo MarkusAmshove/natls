@@ -113,7 +113,7 @@ public class NaturalParser
 	{
 		SyntaxToken current;
 		SyntaxToken next;
-		for (var offset = 0; offset < tokens.size(); offset += 2)
+		for (var offset = 0; offset < tokens.size(); offset++)
 		{
 			current = tokens.peek(offset);
 			next = tokens.peek(offset + 1);
