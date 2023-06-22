@@ -694,7 +694,7 @@ class StatementListParserShould extends StatementParseTest
 			END-SORT
 			""", ISortStatementNode.class);
 		assertThat(sort.usings().isEmpty());
-//		assertThat(sort.operands()...?
+		//		assertThat(sort.operands()...?
 	}
 
 	@Test
