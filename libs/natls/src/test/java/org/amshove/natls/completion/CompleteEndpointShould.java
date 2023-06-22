@@ -136,4 +136,52 @@ class CompleteEndpointShould extends CompletionTest
 			.assertContainsVariableCompleting("#GRP.#VAR :(A1) (SUB2)", "#GRP.#VAR")
 			.assertContainsVariableCompleting("#GRP2.#VAR :(A1) (SUB2)", "#GRP2.#VAR");
 	}
+
+	@Test
+	void completeFunctions()
+	{
+		createOrSaveFile("LIBONE", "FUNC.NS7", """
+		    DEFINE FUNCTION FUNC
+		    RETURNS (L)
+		    DEFINE DATA LOCAL
+		    END-DEFINE
+		    FUNC := TRUE
+		    END-FUNCTION
+            """);
+
+		assertCompletions("LIBONE", "SUB2.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+			IF ${}$
+			IGNORE
+			END-IF
+			END
+			""")
+			.assertContainsCompleting("FUNC", CompletionItemKind.Function, "FUNC(<>)$0");
+	}
+
+	@Test
+	void completeFunctionsWithParameter()
+	{
+		createOrSaveFile("LIBONE", "FUNC.NS7", """
+		    DEFINE FUNCTION FUNC
+		    RETURNS (L)
+		    DEFINE DATA
+		   	PARAMETER
+		   	1 P-PARAM (A1)
+		    END-DEFINE
+		    FUNC := TRUE
+		    END-FUNCTION
+            """);
+
+		assertCompletions("LIBONE", "SUB2.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+			IF ${}$
+			IGNORE
+			END-IF
+			END
+			""")
+			.assertContainsCompleting("FUNC", CompletionItemKind.Function, "FUNC(<${1:P-PARAM}>)$0");
+	}
 }

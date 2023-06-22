@@ -11,6 +11,7 @@ import org.amshove.natparse.natural.builtin.SystemFunctionDefinition;
 import org.amshove.natparse.natural.builtin.SystemVariableDefinition;
 import org.eclipse.lsp4j.Hover;
 
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -52,7 +53,17 @@ public class HoverProvider
 			return hoverExternalModule(moduleReferencingNode);
 		}
 
+		if (context.nodeToHover().parent()instanceof IModuleReferencingNode moduleReferencingNode)
+		{
+			return hoverExternalModule(moduleReferencingNode);
+		}
+
 		if (context.nodeToHover()instanceof IVariableNode variableNode)
+		{
+			return hoverVariable(variableNode, context);
+		}
+
+		if (context.nodeToHover().parent()instanceof IVariableNode variableNode)
 		{
 			return hoverVariable(variableNode, context);
 		}
@@ -120,9 +131,8 @@ public class HoverProvider
 		return new Hover(contentBuilder.build());
 	}
 
-	private Hover hoverExternalModule(IModuleReferencingNode moduleReferencingNode)
+	public Hover hoverModule(INaturalModule module)
 	{
-		var module = moduleReferencingNode.reference();
 		if (module == null)
 		{
 			return EMPTY_HOVER;
@@ -130,12 +140,6 @@ public class HoverProvider
 
 		var contentBuilder = MarkupContentBuilderFactory.newBuilder();
 		contentBuilder.appendStrong("%s.%s".formatted(module.file().getLibrary().getName(), module.file().getReferableName())).appendNewline();
-		/*
-		if(module instanceof IFunction function)
-		{
-			TODO: Add return type
-		}
-		 */
 
 		if (!module.file().getFilenameWithoutExtension().equals(module.file().getReferableName()))
 		{
@@ -148,9 +152,23 @@ public class HoverProvider
 			contentBuilder.appendCode(documentation);
 		}
 
+		if (module instanceof IFunction function && function.returnType() != null)
+		{
+			contentBuilder.appendSection(
+				"Result", cb -> cb
+					.appendCode("RETURNS " + Objects.requireNonNull(function.returnType()).toShortString()).appendNewline()
+			);
+		}
+
 		addModuleParameter(contentBuilder, module);
 
 		return new Hover(contentBuilder.build());
+	}
+
+	private Hover hoverExternalModule(IModuleReferencingNode moduleReferencingNode)
+	{
+		var module = moduleReferencingNode.reference();
+		return hoverModule(module);
 	}
 
 	private Hover hoverBuiltinFunction(SyntaxKind kind)
