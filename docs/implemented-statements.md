@@ -101,7 +101,7 @@ partial - partially implemented to prevent false positives (12)
 | REINPUT | :x:                |
 | REJECT | :x:                |
 | RELEASE | :x:                |
-| REPEAT | :x:                |
+| REPEAT | :white_check_mark: |
 | REQUEST DOCUMENT | :x:                |
 | RESET | :white_check_mark: |
 | RESIZE | :white_check_mark: |
