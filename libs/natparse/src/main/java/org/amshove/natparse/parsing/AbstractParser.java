@@ -673,7 +673,7 @@ abstract class AbstractParser<T>
 		node.addNode(oldOperand);
 		consumeMandatory(oldOperand, SyntaxKind.OLD);
 		consumeMandatory(oldOperand, SyntaxKind.LPAREN);
-		oldOperand.setVariable(consumeVariableReferenceNode(oldOperand));
+		oldOperand.setOperand(consumeOperandNode(oldOperand));
 		consumeMandatory(oldOperand, SyntaxKind.RPAREN);
 		return oldOperand;
 	}
@@ -846,23 +846,20 @@ abstract class AbstractParser<T>
 		previousNode = reference;
 		node.addNode(reference);
 
-		if (peekKind(SyntaxKind.LPAREN) && !getKind(1).isAttribute() && !peekKind(1, SyntaxKind.LABEL_IDENTIFIER))
+		if (peekKind(SyntaxKind.LPAREN) && !getKind(1).isAttribute())
 		{
 			consumeMandatory(reference, SyntaxKind.LPAREN);
-			reference.addDimension(consumeArrayAccess(reference));
-			while (peekKind(SyntaxKind.COMMA))
+			var isArrayRef = consumeOptionally(reference, SyntaxKind.LABEL_IDENTIFIER) && consumeOptionally(reference, SyntaxKind.SLASH);
+			// If just RPAREN left, then this was just a LABEL_IDENTIFIER and thus not an array.
+			isArrayRef = isArrayRef || !peekKind(SyntaxKind.RPAREN);
+			if (isArrayRef)
 			{
-				consume(reference);
 				reference.addDimension(consumeArrayAccess(reference));
-			}
-			consumeMandatory(reference, SyntaxKind.RPAREN);
-		}
-
-		if (peekKind(SyntaxKind.LPAREN) && peekKind(1, SyntaxKind.LABEL_IDENTIFIER))
-		{
-			while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
-			{
-				consume(reference);
+				while (peekKind(SyntaxKind.COMMA))
+				{
+					consume(reference);
+					reference.addDimension(consumeArrayAccess(reference));
+				}
 			}
 			consumeMandatory(reference, SyntaxKind.RPAREN);
 		}
@@ -961,6 +958,7 @@ abstract class AbstractParser<T>
 		// we don't do anything special yet, need some experience on where attribute definitions are allowed
 		// this was built for CALLNAT, where a variable reference as parameter can have attribute definitions (only AD)
 		// might be reusable for WRITE, DISPLAY, etc. for all kind of operands, but has to be fleshed out then
+		// At that point, we could also add something similar for EM=
 		consumeMandatory(node, SyntaxKind.LPAREN);
 		while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
 		{

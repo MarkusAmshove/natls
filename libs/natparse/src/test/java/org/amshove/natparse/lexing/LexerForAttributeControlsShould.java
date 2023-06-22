@@ -16,7 +16,7 @@ class LexerForAttributeControlsShould extends AbstractLexerTest
 	@TestFactory
 	Stream<DynamicTest> recognizeAttributes()
 	{
-		var attributes = List.of(SyntaxKind.AD, SyntaxKind.DY, SyntaxKind.CD, SyntaxKind.EM, SyntaxKind.NL, SyntaxKind.AL, SyntaxKind.DF, SyntaxKind.IP, SyntaxKind.IS, SyntaxKind.CV, SyntaxKind.ZP, SyntaxKind.SG, SyntaxKind.ES, SyntaxKind.SG, SyntaxKind.SB);
+		var attributes = List.of(SyntaxKind.AD, SyntaxKind.DY, SyntaxKind.CD, SyntaxKind.EM, SyntaxKind.NL, SyntaxKind.AL, SyntaxKind.DF, SyntaxKind.PM, SyntaxKind.IP, SyntaxKind.IS, SyntaxKind.CV, SyntaxKind.ZP, SyntaxKind.SG, SyntaxKind.ES, SyntaxKind.SG, SyntaxKind.SB);
 
 		var shouldBeAttributes = attributes.stream()
 			.map(a -> dynamicTest("%s should be attribute".formatted(a), () -> assertThat(a.isAttribute()).isTrue()));
