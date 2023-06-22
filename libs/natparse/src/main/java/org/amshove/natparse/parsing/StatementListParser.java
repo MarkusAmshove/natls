@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 public class StatementListParser extends AbstractParser<IStatementListNode>
 {
 	private static final Pattern SETKEY_PATTERN = Pattern.compile("(ENTR|CLR|PA[1-3]|PF([1-9]|[0-1][\\d]|2[0-4]))\\b");
+	private static final List<SyntaxKind> TO_INTO = List.of(SyntaxKind.INTO, SyntaxKind.TO);
 
 	private List<IReferencableNode> referencableNodes;
 
@@ -750,8 +751,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		return work;
 	}
-
-	private static final List<SyntaxKind> TO_INTO = List.of(SyntaxKind.INTO, SyntaxKind.TO);
 
 	private CompressStatementNode compress() throws ParseError
 	{
@@ -3882,7 +3881,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			}
 		}
 
-		consumeMandatory(move, SyntaxKind.TO);
+		consumeAnyMandatory(move, TO_INTO);
 
 		switch (move.moveKind())
 		{

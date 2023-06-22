@@ -985,6 +985,20 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(assertNodeType(move.targets().first(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"OLD(#VAR1) INTO #VAR2",
+		"OLD(*ISN) TO #VAR2",
+		"SUM(#VAR1) INTO #VAR2"
+	})
+	void parseMoveWithSystemFunctions(String statement)
+	{
+		var move = assertParsesSingleStatement("MOVE %s".formatted(statement), IMoveStatementNode.class);
+		assertThat(move.targets()).hasSize(1);
+		assertThat(assertNodeType(move.targets().first(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+	}
+
 	@Test
 	void parseMoveAttributeDefinition()
 	{
