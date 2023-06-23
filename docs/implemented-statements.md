@@ -5,11 +5,11 @@ This document tracks the implementation status of Natural statements.
 Legend:
 
 
-:x: - not implemented (55)
+:x: - not implemented (47)
 
-:white_check_mark: - implemented or reporting (55)
+:white_check_mark: - implemented or reporting (57)
 
-partial - partially implemented to prevent false positives (12)
+partial - partially implemented to prevent false positives (13)
 
 
 | Statement | Status             |
