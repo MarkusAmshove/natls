@@ -42,6 +42,21 @@ class NaturalParserShould extends ParserIntegrationTest
 	}
 
 	@Test
+	void stillParseTheDefineDataWhenParsingTheFunctionReturnType(@ProjectName("naturalParserTests") NaturalProject project)
+	{
+		var module = parse(project.findModule("TEST", "FUNC2"));
+		assertThat(module).isInstanceOf(IFunction.class);
+		var function = (IFunction) module;
+		assertThat(function.returnType().format()).isEqualTo(DataFormat.ALPHANUMERIC);
+		assertThat(function.returnType().hasDynamicLength()).isTrue();
+
+		var defineData = ((IFunction) module).defineData();
+		assertThat(defineData).isNotNull();
+		assertThat(defineData.parameterInOrder()).hasSize(1);
+		assertThat(defineData.findVariable("#VAR1")).isNotNull();
+	}
+
+	@Test
 	void parseTheReturnTypesOfFunctionsWithFixedLength(@ProjectName("naturalParserTests") NaturalProject project)
 	{
 		var module = parse(project.findModule("TEST", "FUNCSET"));
