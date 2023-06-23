@@ -678,11 +678,12 @@ class StatementListParserShould extends StatementParseTest
 	})
 	void parseSortStatements(String statement)
 	{
-		assertParsesSingleStatement("""
+		var sort = assertParsesSingleStatement("""
 			END-ALL
 			%s
 			END-SORT
 			""".formatted(statement), ISortStatementNode.class);
+		assertThat(sort.body().statements().isEmpty());
 	}
 
 	@Test
@@ -691,8 +692,10 @@ class StatementListParserShould extends StatementParseTest
 		var sort = assertParsesSingleStatement("""
 			END-ALL
 			SORT BY #VAR1 ASC #VAR2 DESC #VAR3 ASCENDING #VAR4 DESCENDING #VAR5
+			WRITE 'Hey!'
 			END-SORT
 			""", ISortStatementNode.class);
+		assertThat(sort.body().statements()).hasSize(1);
 		assertThat(sort.usings().isEmpty());
 		assertThat(assertNodeType(sort.operands().get(0).operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
 		assertThat(sort.operands().get(0).direction()).isEqualTo(SortDirection.ASCENDING);

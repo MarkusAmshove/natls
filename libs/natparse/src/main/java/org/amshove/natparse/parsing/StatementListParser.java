@@ -2719,6 +2719,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			}
 		}
 
+		sort.setBody(statementList(SyntaxKind.END_SORT));
 		consumeMandatoryClosing(sort, SyntaxKind.END_SORT, opening);
 
 		return sort;
