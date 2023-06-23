@@ -694,7 +694,16 @@ class StatementListParserShould extends StatementParseTest
 			END-SORT
 			""", ISortStatementNode.class);
 		assertThat(sort.usings().isEmpty());
-		//		assertThat(sort.operands()...?
+		assertThat(assertNodeType(sort.operands().get(0).operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
+		assertThat(sort.operands().get(0).direction()).isEqualTo(SortDirection.ASCENDING);
+		assertThat(assertNodeType(sort.operands().get(1).operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+		assertThat(sort.operands().get(1).direction()).isEqualTo(SortDirection.DESCENDING);
+		assertThat(assertNodeType(sort.operands().get(2).operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR3");
+		assertThat(sort.operands().get(2).direction()).isEqualTo(SortDirection.ASCENDING);
+		assertThat(assertNodeType(sort.operands().get(3).operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR4");
+		assertThat(sort.operands().get(3).direction()).isEqualTo(SortDirection.DESCENDING);
+		assertThat(assertNodeType(sort.operands().get(4).operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR5");
+		assertThat(sort.operands().get(4).direction()).isEqualTo(SortDirection.ASCENDING);
 	}
 
 	@Test

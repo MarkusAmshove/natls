@@ -2683,7 +2683,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			{
 				sortDirection = SortDirection.fromSyntaxKind(previousToken().kind());
 			}
-			sort.addSortBy(operand, sortDirection);
+
+			sort.addSortBy(new SortedOperand(operand, sortDirection));
 		}
 
 		if (consumeOptionally(sort, SyntaxKind.USING) && !consumeEitherOptionally(sort, SyntaxKind.KEYS, SyntaxKind.KEY))

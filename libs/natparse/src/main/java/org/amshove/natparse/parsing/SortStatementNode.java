@@ -1,21 +1,19 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.natural.SortDirection;
 import org.amshove.natparse.natural.ISortStatementNode;
+import org.amshove.natparse.natural.SortedOperand;
 import org.amshove.natparse.natural.IOperandNode;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 class SortStatementNode extends StatementWithBodyNode implements ISortStatementNode
 {
-	private static final Map<IOperandNode, SortDirection> operands = new HashMap<>();
+	private static final List<SortedOperand> operands = new ArrayList<>();
 	private final List<IOperandNode> usings = new ArrayList<>();
 
 	@Override
-	public Map<IOperandNode, SortDirection> operands()
+	public List<SortedOperand> operands()
 	{
 		return operands;
 	}
@@ -26,9 +24,9 @@ class SortStatementNode extends StatementWithBodyNode implements ISortStatementN
 		return usings;
 	}
 
-	void addSortBy(IOperandNode operand, SortDirection direction)
+	void addSortBy(SortedOperand operand)
 	{
-		operands.put(operand, direction);
+		operands.add(operand);
 	}
 
 	void addUsing(IOperandNode using)
