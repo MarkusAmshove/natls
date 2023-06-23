@@ -982,7 +982,9 @@ class StatementListParserShould extends StatementParseTest
 			""", IReadNode.class);
 
 		assertThat(read.viewReference()).isNotNull();
-		assertThat(read.readSequence().isPhysicalSequence());
+		assertThat(read.readSequence().isPhysicalSequence()).isTrue();
+		assertThat(read.readSequence().isIsnSequence()).isFalse();
+		assertThat(read.readSequence().isLogicalSequence()).isFalse();
 	}
 
 	@Test
@@ -994,7 +996,9 @@ class StatementListParserShould extends StatementParseTest
 			""", IReadNode.class);
 
 		assertThat(read.viewReference()).isNotNull();
-		assertThat(read.readSequence().isIsnSequence());
+		assertThat(read.readSequence().isPhysicalSequence()).isFalse();
+		assertThat(read.readSequence().isIsnSequence()).isTrue();
+		assertThat(read.readSequence().isLogicalSequence()).isFalse();
 	}
 
 	@Test
@@ -1006,7 +1010,9 @@ class StatementListParserShould extends StatementParseTest
 			""", IReadNode.class);
 
 		assertThat(read.viewReference()).isNotNull();
-		assertThat(read.readSequence().isLogicalSequence());
+		assertThat(read.readSequence().isPhysicalSequence()).isFalse();
+		assertThat(read.readSequence().isIsnSequence()).isFalse();
+		assertThat(read.readSequence().isLogicalSequence()).isTrue();
 	}
 
 	@ParameterizedTest

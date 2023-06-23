@@ -3691,13 +3691,41 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				find.addNode(conditionNode());
 			}
 		}
-		//TODO: consumeCoupledClause;
+
+		//Coupled Clause:
+		if (consumeEitherOptionally(find, SyntaxKind.AND, SyntaxKind.OR))
+		{
+			consumeMandatory(find, SyntaxKind.COUPLED);
+			consumeOptionally(find, SyntaxKind.TO);
+			consumeOptionally(find, SyntaxKind.FILE);
+			consumeOperandNode(find);
+			if (consumeOptionally(find, SyntaxKind.VIA))
+			{
+				consumeOperandNode(find);
+				consumeAnyMandatory(find, List.of(SyntaxKind.EQ, SyntaxKind.EQUALS_SIGN, SyntaxKind.EQUAL));
+				if (previousToken().kind() == SyntaxKind.EQUAL)
+				{
+					consumeOptionally(find, SyntaxKind.TO);
+				}
+				consumeOperandNode(find);
+			}
+			consumeOptionally(find, SyntaxKind.WITH);
+			find.addNode(conditionNode());
+		}
+
 		consumeStartingWithIsn(find);
-		//TODO: consumeSortedByClause
-		//TODO: consumeRetainAsClause
+		//Sorted-By Clause OR Retain-As Clause
+		if (consumeOptionally(find, SyntaxKind.SORTED))
+		{
+			consumeOptionally(find, SyntaxKind.BY);
+			//while (isOperand())
+			//	cons
+		}
+		//TODO: consume
 		consumeSharedHold(find);
 		consumeSkipRecordsInHold(find);
 		//TODO: consumeWhereClause(find);
+		//TODO: IF NO moves here?
 
 		if (!hasNoBody)
 		{
