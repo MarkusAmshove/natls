@@ -969,6 +969,30 @@ class StatementListParserShould extends StatementParseTest
 			END-FIND""".formatted(multifetch), IFindNode.class);
 	}
 
+	@Test
+	void parseReadPhysical()
+	{
+		var read = assertParsesSingleStatement("""
+			READ MULTI-FETCH ON THE-VIEW IN PHYSICAL ASC SEQUENCE
+			    IGNORE
+			END-READ
+			""", IReadNode.class);
+
+		assertThat(read.viewReference()).isNotNull();
+	}
+
+	@Test
+	void parseReadByIsn()
+	{
+		var read = assertParsesSingleStatement("""
+			READ MULTI-FETCH ON THE-VIEW BY ISN
+			    IGNORE
+			END-READ
+			""", IReadNode.class);
+
+		assertThat(read.viewReference()).isNotNull();
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{

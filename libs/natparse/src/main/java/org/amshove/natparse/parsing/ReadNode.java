@@ -1,9 +1,9 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.natural.IFindNode;
+import org.amshove.natparse.natural.IReadNode;
 import org.amshove.natparse.natural.IVariableReferenceNode;
 
-class FindNode extends StatementWithBodyNode implements IFindNode
+class ReadNode extends StatementWithBodyNode implements IReadNode
 {
 	private IVariableReferenceNode view;
 

@@ -349,6 +349,7 @@ public class KeywordTable
 			case "min" -> SyntaxKind.MIN;
 			case "minute" -> SyntaxKind.MINUTE;
 			case "modal" -> SyntaxKind.MODAL;
+			case "mode" -> SyntaxKind.MODE;
 			case "modified" -> SyntaxKind.MODIFIED;
 			case "module" -> SyntaxKind.MODULE;
 			case "month" -> SyntaxKind.MONTH;
@@ -510,6 +511,7 @@ public class KeywordTable
 			case "sf" -> SyntaxKind.SF;
 			case "sg" -> SyntaxKind.SG;
 			case "sgn" -> SyntaxKind.SGN;
+			case "shared" -> SyntaxKind.SHARED;
 			case "short" -> SyntaxKind.SHORT;
 			case "show" -> SyntaxKind.SHOW;
 			case "sin" -> SyntaxKind.SIN;
