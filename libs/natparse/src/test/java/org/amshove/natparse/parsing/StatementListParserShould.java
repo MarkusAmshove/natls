@@ -944,16 +944,20 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(findStatement.descendants()).anyMatch(n -> n instanceof IConditionNode);
 	}
 
-	@Test
-	void parseFindWithoutBody()
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"FIRST", "NUMBER", "UNIQUE"
+	})
+	void parseFindWithoutBody(String findOption)
 	{
 		var findStatement = assertParsesSingleStatement("""
-			FIND FIRST THE-VIEW WITH THE-DESCRIPTOR = 'Asd'
-			""", IFindNode.class);
+			FIND %s THE-VIEW WITH LIMIT 5 THE-DESCRIPTOR = 'Asd'
+			""".formatted(findOption), IFindNode.class);
 
 		assertThat(findStatement.viewReference()).isNotNull();
 		assertThat(findStatement.descendants()).anyMatch(n -> n instanceof IConditionNode);
-		assertThat(findStatement.descendants()).hasSize(5);
+		assertThat(findStatement.descendants()).hasSize(7);
 	}
 
 	@ParameterizedTest
@@ -973,24 +977,36 @@ class StatementListParserShould extends StatementParseTest
 	void parseReadPhysical()
 	{
 		var read = assertParsesSingleStatement("""
-			READ MULTI-FETCH ON THE-VIEW IN PHYSICAL ASC SEQUENCE
-			    IGNORE
+			READ THE-VIEW IN PHYSICAL ASCENDING SEQUENCE
 			END-READ
 			""", IReadNode.class);
 
 		assertThat(read.viewReference()).isNotNull();
+		assertThat(read.readSequence().isPhysicalSequence());
 	}
 
 	@Test
 	void parseReadByIsn()
 	{
 		var read = assertParsesSingleStatement("""
-			READ MULTI-FETCH ON THE-VIEW BY ISN
-			    IGNORE
+			READ THE-VIEW BY ISN
 			END-READ
 			""", IReadNode.class);
 
 		assertThat(read.viewReference()).isNotNull();
+		assertThat(read.readSequence().isIsnSequence());
+	}
+
+	@Test
+	void parseReadLogical()
+	{
+		var read = assertParsesSingleStatement("""
+			READ THE-VIEW BY THE-DESC
+			END-READ
+			""", IReadNode.class);
+
+		assertThat(read.viewReference()).isNotNull();
+		assertThat(read.readSequence().isLogicalSequence());
 	}
 
 	@ParameterizedTest

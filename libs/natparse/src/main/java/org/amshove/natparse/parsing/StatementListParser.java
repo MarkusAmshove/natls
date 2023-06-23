@@ -3691,13 +3691,13 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				find.addNode(conditionNode());
 			}
 		}
-		//consumeCoupledClause;
+		//TODO: consumeCoupledClause;
 		consumeStartingWithIsn(find);
-		//consumeSortedByClause
-		//consumeRetainAsClause
+		//TODO: consumeSortedByClause
+		//TODO: consumeRetainAsClause
 		consumeSharedHold(find);
 		consumeSkipRecordsInHold(find);
-		//consumeWhereClause(find);
+		//TODO: consumeWhereClause(find);
 
 		if (!hasNoBody)
 		{
@@ -3737,9 +3737,10 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			numConsumed++;
 			readSeq = ReadSequence.fromSyntaxKind(consumed.kind());
 		}
-		// Reset the token pointer, now the type of READ is known
+		// Rollback the token pointer, now that the type of READ is known
 		rollback(numConsumed);
 
+		read.setReadSequence(readSeq);
 		switch (readSeq)
 		{
 			case PHYSICAL:
@@ -3762,8 +3763,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					consumeOperandNode(read);
 				}
 				consumeAnyMandatory(read, List.of(SyntaxKind.BY, SyntaxKind.WITH));
-				//descriptor here
-				//then logical crit type 1-2-3
+				//descriptor here then logical crit type 1-2-3
 				break;
 			default:
 				break;
@@ -3772,7 +3772,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeStartingWithIsn(read);
 		consumeSharedHold(read);
 		consumeSkipRecordsInHold(read);
-		//consumeWhere
+		//TODO: consumeWhere
 
 		read.setBody(statementList(SyntaxKind.END_READ));
 		consumeMandatoryClosing(read, SyntaxKind.END_READ, opening);
