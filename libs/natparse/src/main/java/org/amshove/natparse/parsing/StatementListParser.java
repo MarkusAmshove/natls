@@ -3713,19 +3713,42 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			find.addNode(conditionNode());
 		}
 
-		consumeStartingWithIsn(find);
-		//Sorted-By Clause OR Retain-As Clause
-		if (consumeOptionally(find, SyntaxKind.SORTED))
+		if (!hasNoBody)
 		{
-			consumeOptionally(find, SyntaxKind.BY);
-			//while (isOperand())
-			//	cons
+			consumeStartingWithIsn(find);
 		}
-		//TODO: consume
-		consumeSharedHold(find);
-		consumeSkipRecordsInHold(find);
-		//TODO: consumeWhereClause(find);
-		//TODO: IF NO moves here?
+
+		//Sorted-By Clause OR Retain-As Clause (you can't have both)
+		if (consumeAnyOptionally(find, List.of(SyntaxKind.SORTED, SyntaxKind.RETAIN)))
+		{
+			if (previousToken().kind() == SyntaxKind.SORTED)
+			{
+				consumeOptionally(find, SyntaxKind.BY);
+				while (!(peekAny(List.of(SyntaxKind.DESCENDING, SyntaxKind.DESC))) && isOperand() && !isStatementStart())
+				{
+					consumeOperandNode(find);
+				}
+				consumeAnyOptionally(find, List.of(SyntaxKind.DESCENDING, SyntaxKind.DESC));
+			}
+			else
+			{
+				consumeMandatory(find, SyntaxKind.AS);
+				consumeOperandNode(find);
+			}
+		}
+
+		if (!hasNoBody)
+		{
+			consumeSharedHold(find);
+			consumeSkipRecordsInHold(find);
+		}
+
+		if (consumeOptionally(find, SyntaxKind.WHERE))
+		{
+			find.addNode(conditionNode());
+		}
+
+		//TODO: IF NO RECORD should move here?
 
 		if (!hasNoBody)
 		{
@@ -3800,7 +3823,10 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeStartingWithIsn(read);
 		consumeSharedHold(read);
 		consumeSkipRecordsInHold(read);
-		//TODO: consumeWhere
+		if (consumeOptionally(read, SyntaxKind.WHERE))
+		{
+			read.addNode(conditionNode());
+		}
 
 		read.setBody(statementList(SyntaxKind.END_READ));
 		consumeMandatoryClosing(read, SyntaxKind.END_READ, opening);
@@ -3850,6 +3876,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			consumeMandatory(node, SyntaxKind.WITH);
 			consumeMandatory(node, SyntaxKind.KW_ISN);
+			consumeMandatory(node, SyntaxKind.EQUALS_SIGN);
 			consumeOperandNode(node);
 		}
 	}
@@ -3875,7 +3902,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		if (consumeOptionally(node, SyntaxKind.SKIP))
 		{
-			consumeAnyMandatory(node, List.of(SyntaxKind.RECORDS, SyntaxKind.RECORD));
+			consumeAnyOptionally(node, List.of(SyntaxKind.RECORDS, SyntaxKind.RECORD));
 			consumeMandatory(node, SyntaxKind.IN);
 			consumeMandatory(node, SyntaxKind.HOLD);
 		}

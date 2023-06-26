@@ -973,6 +973,29 @@ class StatementListParserShould extends StatementParseTest
 			END-FIND""".formatted(multifetch), IFindNode.class);
 	}
 
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"FIND THE-VIEW WITH DESC1 = 'Asd' OR COUPLED TO FILE ANOTHER-VIEW VIA DESC2 = DESC1 DESC = 1",
+		"FIND THE-VIEW WITH DESC1 = 'Asd' SORTED BY DESC2 DESC3 DESC4 DESCENDING",
+		"FIND THE-VIEW WITH DESC1 = 'Asd' RETAIN AS 'RetainedSet'",
+		"FIND THE-VIEW WITH DESC1 = 'Asd' PASSWORD='psw' CIPHER=123",
+		"FIND THE-VIEW WITH DESC1 = 'Asd' STARTING WITH ISN = 1 SORTED BY DESC2 DESC3 DESC4 DESCENDING WHERE X > Y",
+		"FIND THE-VIEW WITH DESC1 = 'Asd' SHARED HOLD SKIP RECORD IN HOLD",
+		"FIND THE-VIEW WITH DESC1 = 'Asd' IN SHARED HOLD SKIP IN HOLD",
+	})
+	void parseAdvancedFinds(String statement)
+	{
+		var findStatement = assertParsesSingleStatement("""
+			%s
+			    IGNORE
+			END-FIND
+			""".formatted(statement), IFindNode.class);
+
+		assertThat(findStatement.viewReference()).isNotNull();
+	}
+
 	@Test
 	void parseReadPhysical()
 	{
