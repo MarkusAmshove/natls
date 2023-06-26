@@ -2875,7 +2875,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private ILogicalConditionCriteriaNode chainedCriteria() throws ParseError
 	{
 		var left = conditionCriteria();
-		if (peekKind(SyntaxKind.AND) || peekKind(SyntaxKind.OR))
+		if (peekKind(SyntaxKind.AND) || peekKind(SyntaxKind.OR) && !peekKind(1, SyntaxKind.COUPLED))
 		{
 			var chainedCriteria = new ChainedCriteriaNode();
 			chainedCriteria.setLeft(left);
@@ -3805,7 +3805,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			case ISN:
 				consumeAnyMandatory(read, List.of(SyntaxKind.BY, SyntaxKind.WITH));
 				consumeMandatory(read, SyntaxKind.KW_ISN);
-				//fromthru1
+				consumeReadCondition(read, readSeq);
 				break;
 			case LOGICAL:
 				consumeAnyOptionally(read, List.of(SyntaxKind.IN, SyntaxKind.LOGICAL));
@@ -3814,7 +3814,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					consumeOperandNode(read);
 				}
 				consumeAnyMandatory(read, List.of(SyntaxKind.BY, SyntaxKind.WITH));
-				//descriptor here then logical crit type 1-2-3
+				consumeOperandNode(read);
+				consumeReadCondition(read, readSeq);
 				break;
 			default:
 				break;
@@ -3905,6 +3906,46 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			consumeAnyOptionally(node, List.of(SyntaxKind.RECORDS, SyntaxKind.RECORD));
 			consumeMandatory(node, SyntaxKind.IN);
 			consumeMandatory(node, SyntaxKind.HOLD);
+		}
+	}
+
+	private void consumeReadCondition(BaseSyntaxNode node, ReadSequence readSeq) throws ParseError
+	{
+
+		if (consumeAnyOptionally(node, List.of(SyntaxKind.STARTING, SyntaxKind.FROM)) && previousToken().kind() == SyntaxKind.STARTING)
+		{
+			consumeMandatory(node, SyntaxKind.FROM);
+		}
+		else
+		{
+			try
+			{
+				var expression = new RelationalCriteriaNode();
+				var operator = parseRelationalOperator(expression);
+			}
+			catch (Exception e)
+			{
+				return;
+			}
+
+		}
+
+		consumeOperandNode(node);
+
+		if (readSeq == ReadSequence.LOGICAL && consumeOptionally(node, SyntaxKind.TO))
+		{
+			consumeOperandNode(node);
+		}
+		else
+		{
+			if (consumeAnyOptionally(node, List.of(SyntaxKind.THRU, SyntaxKind.ENDING)))
+			{
+				if (previousToken().kind() == SyntaxKind.ENDING)
+				{
+					consumeMandatory(node, SyntaxKind.AT);
+				}
+				consumeOperandNode(node);
+			}
 		}
 	}
 

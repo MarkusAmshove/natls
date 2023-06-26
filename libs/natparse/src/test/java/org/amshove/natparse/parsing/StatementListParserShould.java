@@ -976,19 +976,19 @@ class StatementListParserShould extends StatementParseTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"FIND THE-VIEW WITH DESC1 = 'Asd' OR COUPLED TO FILE ANOTHER-VIEW VIA DESC2 = DESC1 DESC = 1",
-		"FIND THE-VIEW WITH DESC1 = 'Asd' SORTED BY DESC2 DESC3 DESC4 DESCENDING",
-		"FIND THE-VIEW WITH DESC1 = 'Asd' RETAIN AS 'RetainedSet'",
-		"FIND THE-VIEW WITH DESC1 = 'Asd' PASSWORD='psw' CIPHER=123",
-		"FIND THE-VIEW WITH DESC1 = 'Asd' STARTING WITH ISN = 1 SORTED BY DESC2 DESC3 DESC4 DESCENDING WHERE X > Y",
-		"FIND THE-VIEW WITH DESC1 = 'Asd' SHARED HOLD SKIP RECORD IN HOLD",
-		"FIND THE-VIEW WITH DESC1 = 'Asd' IN SHARED HOLD SKIP IN HOLD",
+		"OR COUPLED TO FILE ANOTHER-VIEW VIA DESC2 = DESC1 DESC = 1",
+		"SORTED BY DESC2 DESC3 DESC4 DESCENDING",
+		"RETAIN AS 'RetainedSet'",
+		"PASSWORD='psw' CIPHER=123",
+		"STARTING WITH ISN = 1 SORTED BY DESC2 DESC3 DESC4 DESCENDING WHERE X > Y",
+		"SHARED HOLD SKIP RECORD IN HOLD",
+		"IN SHARED HOLD SKIP IN HOLD",
 	})
 	void parseAdvancedFinds(String statement)
 	{
 		var findStatement = assertParsesSingleStatement("""
-			%s
-			    IGNORE
+			FIND THE-VIEW WITH DESC1 = 'Asd' %s
+				IGNORE
 			END-FIND
 			""".formatted(statement), IFindNode.class);
 
@@ -1035,6 +1035,39 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(read.readSequence().isPhysicalSequence()).isFalse();
 		assertThat(read.readSequence().isIsnSequence()).isFalse();
 		assertThat(read.readSequence().isLogicalSequence()).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"IN PHYSICAL VARIABLE 'A' SEQUENCE",
+		"PHYSICAL DYNAMIC #DIRECTION",
+		"BY ISN",
+		"BY ISN FROM 123",
+		"BY ISN STARTING FROM 123",
+		"BY ISN EQUAL 123",
+		"BY ISN >= 123",
+		"BY DESC1",
+		"BY DESC1 STARTING FROM 'Asd' ENDING AT 'def'",
+		"BY DESC1 FROM 'Asd' THRU 'def'",
+		"WITH DESC1 EQUAL TO 'Asd'",
+		"WITH DESC1 GT 'Asd'",
+		"WITH DESC1 LESS THAN 'Asd'",
+		"WITH DESC1 <= 'Asd'",
+		"BY DESC1 = 'Asd' PASSWORD='psw' CIPHER=123 WITH REPOSITION",
+		"BY DESC1 = 'Asd' STARTING WITH ISN = 1 SORTED BY DESC2 DESC3 DESC4 DESCENDING WHERE X > Y",
+		"BY DESC1 = 'Asd' SHARED HOLD SKIP RECORD IN HOLD",
+		"BY DESC1 = 'Asd' IN SHARED HOLD SKIP IN HOLD",
+	})
+	void parseAdvancedReads(String statement)
+	{
+		var readStatement = assertParsesSingleStatement("""
+			BROWSE (100) THE-VIEW %s
+				IGNORE
+			END-READ
+			""".formatted(statement), IReadNode.class);
+
+		assertThat(readStatement.viewReference()).isNotNull();
 	}
 
 	@ParameterizedTest
