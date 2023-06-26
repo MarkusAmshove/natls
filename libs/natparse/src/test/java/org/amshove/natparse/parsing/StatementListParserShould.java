@@ -973,7 +973,6 @@ class StatementListParserShould extends StatementParseTest
 			END-FIND""".formatted(multifetch), IFindNode.class);
 	}
 
-
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
