@@ -571,6 +571,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		completionItems.addAll(functionCompletions(file.getLibrary()));
 		completionItems.addAll(externalSubroutineCompletions(file.getLibrary()));
+		completionItems.addAll(subprogramCompletions(file.getLibrary()));
 
 		completionItems.addAll(
 			module.referencableNodes().stream()
@@ -601,6 +602,20 @@ public class NaturalLanguageService implements LanguageClientAware
 				var item = new CompletionItem(f.getReferableName());
 				item.setData(new UnresolvedCompletionInfo(f.getReferableName(), f.getUri()));
 				item.setKind(CompletionItemKind.Event);
+				return item;
+			})
+			.toList();
+	}
+
+	private Collection<? extends CompletionItem> subprogramCompletions(LanguageServerLibrary library)
+	{
+		return library.getModulesOfType(NaturalFileType.SUBPROGRAM, true)
+			.stream()
+			.map(f ->
+			{
+				var item = new CompletionItem(f.getReferableName());
+				item.setData(new UnresolvedCompletionInfo(f.getReferableName(), f.getUri()));
+				item.setKind(CompletionItemKind.Class);
 				return item;
 			})
 			.toList();
@@ -665,7 +680,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	public CompletionItem resolveComplete(CompletionItem item)
 	{
-		if (item.getKind() != CompletionItemKind.Variable && item.getKind() != CompletionItemKind.Function && item.getKind() != CompletionItemKind.Event)
+		if (item.getKind() != CompletionItemKind.Variable && item.getKind() != CompletionItemKind.Function && item.getKind() != CompletionItemKind.Event && item.getKind() != CompletionItemKind.Class)
 		{
 			return item;
 		}
@@ -724,6 +739,18 @@ public class NaturalLanguageService implements LanguageClientAware
 					);
 					item.setInsertText("PERFORM %s%s%n$0".formatted(file.getReferableName(), externalSubroutineParameterListAsSnippet(file)));
 				}
+				else
+					if (item.getKind() == CompletionItemKind.Class)
+					{
+						item.setInsertTextFormat(InsertTextFormat.Snippet);
+						item.setDocumentation(
+							new MarkupContent(
+								MarkupKind.MARKDOWN,
+								hoverProvider.hoverModule(module).getContents().getRight().getValue()
+							)
+						);
+						item.setInsertText("CALLNAT '%s'%s%n$0".formatted(file.getReferableName(), externalSubroutineParameterListAsSnippet(file)));
+					}
 
 		return item;
 	}
