@@ -977,6 +977,8 @@ class StatementListParserShould extends StatementParseTest
 	@ValueSource(strings =
 	{
 		"OR COUPLED TO FILE ANOTHER-VIEW VIA DESC2 = DESC1 DESC = 1",
+		"AND COUPLED TO FILE ANOTHER-VIEW VIA DESC2 EQUAL TO DESC1 DESC = 1",
+		"AND COUPLED TO FILE ANOTHER-VIEW WITH DESC = 1",
 		"SORTED BY DESC2 DESC3 DESC4 DESCENDING",
 		"RETAIN AS 'RetainedSet'",
 		"PASSWORD='psw' CIPHER=123",
@@ -987,7 +989,7 @@ class StatementListParserShould extends StatementParseTest
 	void parseAdvancedFinds(String statement)
 	{
 		var findStatement = assertParsesSingleStatement("""
-			FIND THE-VIEW WITH DESC1 = 'Asd' %s
+			FIND THE-VIEW DESC1 = 'Asd' %s
 				IGNORE
 			END-FIND
 			""".formatted(statement), IFindNode.class);
@@ -1052,6 +1054,7 @@ class StatementListParserShould extends StatementParseTest
 		"BY DESC1 STARTING FROM 'Asd' ENDING AT 'def'",
 		"BY DESC1 FROM 'Asd' TO 'def'",
 		"BY DESC1 FROM 'Asd' THRU 'def'",
+		"LOGICAL DYNAMIC #DIRECTION SEQUENCE BY DESC1",
 		"WITH DESC1 EQUAL TO 'Asd'",
 		"WITH DESC1 GT 'Asd'",
 		"WITH DESC1 LESS THAN 'Asd'",
@@ -1060,7 +1063,7 @@ class StatementListParserShould extends StatementParseTest
 		"BY ISN WHERE *ISN > 1000",
 		"BY DESC1 = 'Asd' SHARED HOLD SKIP RECORD IN HOLD",
 		"BY DESC1 = 'Asd' IN SHARED HOLD SKIP IN HOLD",
-		"BY DESC1 = 'Asd' SHARED HOLD SKIP RECORDS IN HOLD MODE='Q'",
+		"BY DESC1 = 'Asd' SHARED HOLD MODE='Q' SKIP RECORDS IN HOLD",
 	})
 	void parseAdvancedReads(String statement)
 	{

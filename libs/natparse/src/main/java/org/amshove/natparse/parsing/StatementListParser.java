@@ -3758,7 +3758,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	}
 
 	private static final Set<SyntaxKind> READ_SYNTAXES = Set
-		.of(SyntaxKind.BY, SyntaxKind.WITH, SyntaxKind.KW_ISN, SyntaxKind.IN, SyntaxKind.PHYSICAL, SyntaxKind.ASCENDING, SyntaxKind.ASC, SyntaxKind.DESCENDING, SyntaxKind.DESC, SyntaxKind.VARIABLE, SyntaxKind.DYNAMIC, SyntaxKind.SEQUENCE);
+		.of(SyntaxKind.BY, SyntaxKind.WITH, SyntaxKind.KW_ISN, SyntaxKind.IN, SyntaxKind.PHYSICAL, SyntaxKind.LOGICAL, SyntaxKind.ASCENDING, SyntaxKind.ASC, SyntaxKind.DESCENDING, SyntaxKind.DESC, SyntaxKind.VARIABLE, SyntaxKind.DYNAMIC, SyntaxKind.SEQUENCE);
 	private static final List<SyntaxKind> READ_SEQUENCES = List
 		.of(SyntaxKind.ASCENDING, SyntaxKind.ASC, SyntaxKind.DESCENDING, SyntaxKind.DESC, SyntaxKind.VARIABLE, SyntaxKind.DYNAMIC);
 
@@ -3780,7 +3780,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		var numConsumed = 0;
 		var readSeq = ReadSequence.PHYSICAL;
-		while (!isAtEnd() && READ_SYNTAXES.contains(peek().kind()))
+		while (!isAtEnd() && readSeq != ReadSequence.ISN && READ_SYNTAXES.contains(peek().kind()))
 		{
 			var consumed = consume(read);
 			numConsumed++;
@@ -3811,6 +3811,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				{
 					consumeOperandNode(read);
 				}
+				consumeOptionally(read, SyntaxKind.SEQUENCE);
 				/* Actually, Natural seems to support not specifying a descriptor (even though syntax diagram does not show it).
 				That's dirty! We want to enforce it. */
 				consumeAnyMandatory(read, List.of(SyntaxKind.BY, SyntaxKind.WITH));

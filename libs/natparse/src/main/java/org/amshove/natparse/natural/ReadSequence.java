@@ -13,7 +13,7 @@ public enum ReadSequence
 		return switch (kind)
 		{
 			case KW_ISN -> ISN;
-			case BY, WITH -> LOGICAL;
+			case LOGICAL, BY, WITH -> LOGICAL;
 			default -> PHYSICAL;
 		};
 	}
