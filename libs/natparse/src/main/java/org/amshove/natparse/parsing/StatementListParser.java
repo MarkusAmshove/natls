@@ -3675,21 +3675,21 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		find.setView(consumeVariableReferenceNode(find));
 		consumePasswordAndCipher(find);
 
-		if (consumeOptionally(find, SyntaxKind.WITH))
-		{
-			if (consumeOptionally(find, SyntaxKind.LIMIT))
-			{
-				consumeLiteral(find);
-			}
+		// WITH is not required, however the descriptor and logical criteria is
+		consumeOptionally(find, SyntaxKind.WITH);
 
-			if (peekKind(SyntaxKind.STRING_LITERAL))
-			{
-				consumeLiteralNode(find);
-			}
-			else
-			{
-				find.addNode(conditionNode());
-			}
+		if (consumeOptionally(find, SyntaxKind.LIMIT))
+		{
+			consumeLiteral(find);
+		}
+
+		if (peekKind(SyntaxKind.STRING_LITERAL))
+		{
+			consumeLiteralNode(find);
+		}
+		else
+		{
+			find.addNode(conditionNode());
 		}
 
 		//Coupled Clause:
@@ -3748,8 +3748,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			find.addNode(conditionNode());
 		}
 
-		//TODO: IF NO RECORD should move here?
-
 		if (!hasNoBody)
 		{
 			find.setBody(statementList(SyntaxKind.END_FIND));
@@ -3796,7 +3794,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			case PHYSICAL:
 				consumeAnyOptionally(read, List.of(SyntaxKind.IN, SyntaxKind.PHYSICAL));
-				if (consumeAnyOptionally(read, READ_SEQUENCES) && previousToken().kind() == SyntaxKind.VARIABLE || previousToken().kind() == SyntaxKind.DYNAMIC)
+				if (consumeAnyOptionally(read, READ_SEQUENCES) && (previousToken().kind() == SyntaxKind.VARIABLE || previousToken().kind() == SyntaxKind.DYNAMIC))
 				{
 					consumeOperandNode(read);
 				}
@@ -3809,10 +3807,12 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				break;
 			case LOGICAL:
 				consumeAnyOptionally(read, List.of(SyntaxKind.IN, SyntaxKind.LOGICAL));
-				if (consumeAnyOptionally(read, READ_SEQUENCES) && previousToken().kind() == SyntaxKind.VARIABLE || previousToken().kind() == SyntaxKind.DYNAMIC)
+				if (consumeAnyOptionally(read, READ_SEQUENCES) && (previousToken().kind() == SyntaxKind.VARIABLE || previousToken().kind() == SyntaxKind.DYNAMIC))
 				{
 					consumeOperandNode(read);
 				}
+				/* Actually, Natural seems to support not specifying a descriptor (even though syntax diagram does not show it).
+				That's dirty! We want to enforce it. */
 				consumeAnyMandatory(read, List.of(SyntaxKind.BY, SyntaxKind.WITH));
 				consumeOperandNode(read);
 				consumeReadCondition(read, readSeq);
@@ -3921,7 +3921,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			try
 			{
 				var expression = new RelationalCriteriaNode();
-				var operator = parseRelationalOperator(expression);
+				parseRelationalOperator(expression);
+				expression.destroy();
 			}
 			catch (Exception e)
 			{

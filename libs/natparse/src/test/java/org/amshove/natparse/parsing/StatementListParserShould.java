@@ -932,10 +932,10 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
-	void parseFindWithNumberLimit()
+	void parseFindWithNumberLimitAndNoWith()
 	{
 		var findStatement = assertParsesSingleStatement("""
-			FIND (5) THE-VIEW WITH THE-DESCRIPTOR = 'Asd'
+			FIND (5) THE-VIEW THE-DESCRIPTOR = 'Asd'
 			IGNORE
 			END-FIND
 			""", IFindNode.class);
@@ -1045,19 +1045,22 @@ class StatementListParserShould extends StatementParseTest
 		"BY ISN",
 		"BY ISN FROM 123",
 		"BY ISN STARTING FROM 123",
+		"BY ISN STARTING FROM 123 ENDING AT 234",
 		"BY ISN EQUAL 123",
 		"BY ISN >= 123",
 		"BY DESC1",
 		"BY DESC1 STARTING FROM 'Asd' ENDING AT 'def'",
+		"BY DESC1 FROM 'Asd' TO 'def'",
 		"BY DESC1 FROM 'Asd' THRU 'def'",
 		"WITH DESC1 EQUAL TO 'Asd'",
 		"WITH DESC1 GT 'Asd'",
 		"WITH DESC1 LESS THAN 'Asd'",
 		"WITH DESC1 <= 'Asd'",
-		"BY DESC1 = 'Asd' PASSWORD='psw' CIPHER=123 WITH REPOSITION",
-		"BY DESC1 = 'Asd' STARTING WITH ISN = 1 SORTED BY DESC2 DESC3 DESC4 DESCENDING WHERE X > Y",
+		"PASSWORD='psw' CIPHER=123 WITH REPOSITION BY DESC1 = 'Asd'",
+		"BY ISN WHERE *ISN > 1000",
 		"BY DESC1 = 'Asd' SHARED HOLD SKIP RECORD IN HOLD",
 		"BY DESC1 = 'Asd' IN SHARED HOLD SKIP IN HOLD",
+		"BY DESC1 = 'Asd' SHARED HOLD SKIP RECORDS IN HOLD MODE='Q'",
 	})
 	void parseAdvancedReads(String statement)
 	{
