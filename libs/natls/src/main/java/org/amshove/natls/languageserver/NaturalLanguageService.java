@@ -570,6 +570,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		completionItems.addAll(snippetEngine.provideSnippets(file));
 
 		completionItems.addAll(functionCompletions(file.getLibrary()));
+		completionItems.addAll(externalSubroutineCompletions(file.getLibrary()));
 
 		completionItems.addAll(
 			module.referencableNodes().stream()
@@ -589,6 +590,20 @@ public class NaturalLanguageService implements LanguageClientAware
 		completionItems.addAll(completeSystemVars("*".equals(completionParams.getContext().getTriggerCharacter())));
 
 		return completionItems;
+	}
+
+	private Collection<? extends CompletionItem> externalSubroutineCompletions(LanguageServerLibrary library)
+	{
+		return library.getModulesOfType(NaturalFileType.SUBROUTINE, true)
+			.stream()
+			.map(f ->
+			{
+				var item = new CompletionItem(f.getReferableName());
+				item.setData(new UnresolvedCompletionInfo(f.getReferableName(), f.getUri()));
+				item.setKind(CompletionItemKind.Event);
+				return item;
+			})
+			.toList();
 	}
 
 	private Collection<? extends CompletionItem> functionCompletions(LanguageServerLibrary library)
@@ -628,9 +643,29 @@ public class NaturalLanguageService implements LanguageClientAware
 		return builder.toString();
 	}
 
+	private String externalSubroutineParameterListAsSnippet(LanguageServerFile subroutine)
+	{
+		if (!(subroutine.module()instanceof IHasDefineData hasDefineData) || hasDefineData.defineData() == null)
+		{
+			return "";
+		}
+
+		var builder = new StringBuilder();
+		var index = 1;
+		for (var parameter : hasDefineData.defineData().parameterInOrder())
+		{
+			builder.append(" ");
+			var parameterName = parameter instanceof IUsingNode using ? using.target().symbolName() : ((IVariableNode) parameter).name();
+			builder.append("${%d:%s}".formatted(index, parameterName));
+			index++;
+		}
+
+		return builder.toString();
+	}
+
 	public CompletionItem resolveComplete(CompletionItem item)
 	{
-		if (item.getKind() != CompletionItemKind.Variable && item.getKind() != CompletionItemKind.Function)
+		if (item.getKind() != CompletionItemKind.Variable && item.getKind() != CompletionItemKind.Function && item.getKind() != CompletionItemKind.Event)
 		{
 			return item;
 		}
@@ -666,16 +701,29 @@ public class NaturalLanguageService implements LanguageClientAware
 			return item;
 		}
 		else
-		{
-			item.setInsertTextFormat(InsertTextFormat.Snippet);
-			item.setDocumentation(
-				new MarkupContent(
-					MarkupKind.MARKDOWN,
-					hoverProvider.hoverModule(module).getContents().getRight().getValue()
-				)
-			);
-			item.setInsertText("%s(<%s>)$0".formatted(file.getReferableName(), functionParameterListAsSnippet(file)));
-		}
+			if (item.getKind() == CompletionItemKind.Function)
+			{
+				item.setInsertTextFormat(InsertTextFormat.Snippet);
+				item.setDocumentation(
+					new MarkupContent(
+						MarkupKind.MARKDOWN,
+						hoverProvider.hoverModule(module).getContents().getRight().getValue()
+					)
+				);
+				item.setInsertText("%s(<%s>)$0".formatted(file.getReferableName(), functionParameterListAsSnippet(file)));
+			}
+			else
+				if (item.getKind() == CompletionItemKind.Event)
+				{
+					item.setInsertTextFormat(InsertTextFormat.Snippet);
+					item.setDocumentation(
+						new MarkupContent(
+							MarkupKind.MARKDOWN,
+							hoverProvider.hoverModule(module).getContents().getRight().getValue()
+						)
+					);
+					item.setInsertText("PERFORM %s%s%n$0".formatted(file.getReferableName(), externalSubroutineParameterListAsSnippet(file)));
+				}
 
 		return item;
 	}
