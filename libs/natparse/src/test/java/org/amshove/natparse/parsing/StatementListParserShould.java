@@ -997,13 +997,26 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(findStatement.viewReference()).isNotNull();
 	}
 
-	@Test
-	void parseReadPhysical()
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"IN PHYSICAL ASCENDING SEQUENCE",
+		"IN PHYSICAL VARIABLE 'A' SEQUENCE",
+		"PHYSICAL DYNAMIC #DIRECTION",
+		"ASC",
+		"DESC",
+		"VARIABLE 'A'",
+		"DYNAMIC #DIRECTION",
+		"VARIABLE 'A' SEQUENCE",
+		"DYNAMIC #DIRECTION SEQUENCE",
+		"",
+	})
+	void parseReadPhysical(String statement)
 	{
 		var read = assertParsesSingleStatement("""
-			READ THE-VIEW IN PHYSICAL ASCENDING SEQUENCE
+			READ THE-VIEW %s
 			END-READ
-			""", IReadNode.class);
+			""".formatted(statement), IReadNode.class);
 
 		assertThat(read.viewReference()).isNotNull();
 		assertThat(read.readSequence().isPhysicalSequence()).isTrue();
@@ -1011,13 +1024,23 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(read.readSequence().isLogicalSequence()).isFalse();
 	}
 
-	@Test
-	void parseReadByIsn()
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"BY ISN",
+		"BY ISN FROM 123",
+		"BY ISN STARTING FROM 123",
+		"BY ISN STARTING FROM 123 ENDING AT 234",
+		"BY ISN EQUAL 123",
+		"BY ISN >= 123",
+		"BY ISN WHERE *ISN > 1000",
+	})
+	void parseReadByIsn(String statement)
 	{
 		var read = assertParsesSingleStatement("""
-			READ THE-VIEW BY ISN
+			READ THE-VIEW %s
 			END-READ
-			""", IReadNode.class);
+			""".formatted(statement), IReadNode.class);
 
 		assertThat(read.viewReference()).isNotNull();
 		assertThat(read.readSequence().isPhysicalSequence()).isFalse();
@@ -1025,13 +1048,30 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(read.readSequence().isLogicalSequence()).isFalse();
 	}
 
-	@Test
-	void parseReadLogical()
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"BY DESC1 = 'Asd' SHARED HOLD SKIP RECORD IN HOLD",
+		"BY DESC1 = 'Asd' IN SHARED HOLD SKIP IN HOLD",
+		"BY DESC1 = 'Asd' SHARED HOLD MODE='Q' SKIP RECORDS IN HOLD",
+		"BY DESC1",
+		"BY DESC1 STARTING FROM 'Asd' THRU 'def'",
+		"BY DESC1 STARTING FROM 'Asd' ENDING AT 'def'",
+		"BY DESC1 FROM 'Asd' TO 'def'",
+		"BY DESC1 FROM 'Asd' THRU 'def'",
+		"LOGICAL DYNAMIC #DIRECTION SEQUENCE BY DESC1",
+		"LOGICAL DYNAMIC #DIRECTION SEQUENCE BY DESC1 FROM 'A' TO 'Z'",
+		"WITH DESC1 EQUAL TO 'Asd'",
+		"WITH DESC1 GT 'Asd'",
+		"WITH DESC1 LESS THAN 'Asd'",
+		"WITH DESC1 <= 'Asd'",
+	})
+	void parseReadLogical(String statement)
 	{
 		var read = assertParsesSingleStatement("""
-			READ THE-VIEW BY THE-DESC
+			READ THE-VIEW %s
 			END-READ
-			""", IReadNode.class);
+			""".formatted(statement), IReadNode.class);
 
 		assertThat(read.viewReference()).isNotNull();
 		assertThat(read.readSequence().isPhysicalSequence()).isFalse();
@@ -1042,28 +1082,8 @@ class StatementListParserShould extends StatementParseTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"IN PHYSICAL VARIABLE 'A' SEQUENCE",
-		"PHYSICAL DYNAMIC #DIRECTION",
-		"BY ISN",
-		"BY ISN FROM 123",
-		"BY ISN STARTING FROM 123",
-		"BY ISN STARTING FROM 123 ENDING AT 234",
-		"BY ISN EQUAL 123",
-		"BY ISN >= 123",
-		"BY DESC1",
-		"BY DESC1 STARTING FROM 'Asd' ENDING AT 'def'",
-		"BY DESC1 FROM 'Asd' TO 'def'",
-		"BY DESC1 FROM 'Asd' THRU 'def'",
-		"LOGICAL DYNAMIC #DIRECTION SEQUENCE BY DESC1",
-		"WITH DESC1 EQUAL TO 'Asd'",
-		"WITH DESC1 GT 'Asd'",
-		"WITH DESC1 LESS THAN 'Asd'",
-		"WITH DESC1 <= 'Asd'",
 		"PASSWORD='psw' CIPHER=123 WITH REPOSITION BY DESC1 = 'Asd'",
-		"BY ISN WHERE *ISN > 1000",
-		"BY DESC1 = 'Asd' SHARED HOLD SKIP RECORD IN HOLD",
-		"BY DESC1 = 'Asd' IN SHARED HOLD SKIP IN HOLD",
-		"BY DESC1 = 'Asd' SHARED HOLD MODE='Q' SKIP RECORDS IN HOLD",
+		"WITH REPOSITION BY DESC1 = 'Asd' WHERE X > Y",
 	})
 	void parseAdvancedReads(String statement)
 	{
