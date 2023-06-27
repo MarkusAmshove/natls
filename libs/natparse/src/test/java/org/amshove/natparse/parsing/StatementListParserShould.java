@@ -932,10 +932,10 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
-	void parseFindWithNumberLimit()
+	void parseFindWithNumberLimitAndNoWith()
 	{
 		var findStatement = assertParsesSingleStatement("""
-			FIND (5) THE-VIEW WITH THE-DESCRIPTOR = 'Asd'
+			FIND (5) THE-VIEW THE-DESCRIPTOR = 'Asd'
 			IGNORE
 			END-FIND
 			""", IFindNode.class);
@@ -944,16 +944,20 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(findStatement.descendants()).anyMatch(n -> n instanceof IConditionNode);
 	}
 
-	@Test
-	void parseFindWithoutBody()
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"FIRST", "NUMBER", "UNIQUE"
+	})
+	void parseFindWithoutBody(String findOption)
 	{
 		var findStatement = assertParsesSingleStatement("""
-			FIND FIRST THE-VIEW WITH THE-DESCRIPTOR = 'Asd'
-			""", IFindNode.class);
+			FIND %s THE-VIEW WITH LIMIT 5 THE-DESCRIPTOR = 'Asd'
+			""".formatted(findOption), IFindNode.class);
 
 		assertThat(findStatement.viewReference()).isNotNull();
 		assertThat(findStatement.descendants()).anyMatch(n -> n instanceof IConditionNode);
-		assertThat(findStatement.descendants()).hasSize(5);
+		assertThat(findStatement.descendants()).hasSize(7);
 	}
 
 	@ParameterizedTest
@@ -967,6 +971,165 @@ class StatementListParserShould extends StatementParseTest
 			FIND MULTI-FETCH %s THE-VIEW WITH THE-DESCRIPTOR = 'Asd'
 			IGNORE
 			END-FIND""".formatted(multifetch), IFindNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"OR COUPLED TO FILE ANOTHER-VIEW VIA DESC2 = DESC1 DESC = 1",
+		"AND COUPLED TO FILE ANOTHER-VIEW VIA DESC2 EQUAL TO DESC1 DESC = 1",
+		"AND COUPLED TO FILE ANOTHER-VIEW WITH DESC = 1",
+		"SORTED BY DESC2 DESC3 DESC4 DESCENDING",
+		"RETAIN AS 'RetainedSet'",
+		"PASSWORD='psw' CIPHER=123",
+		"STARTING WITH ISN = 1 SORTED BY DESC2 DESC3 DESC4 DESCENDING WHERE X > Y",
+		"SHARED HOLD SKIP RECORD IN HOLD",
+		"IN SHARED HOLD SKIP IN HOLD",
+	})
+	void parseAdvancedFinds(String statement)
+	{
+		var findStatement = assertParsesSingleStatement("""
+			FIND THE-VIEW DESC1 = 'Asd' %s
+				IGNORE
+			END-FIND
+			""".formatted(statement), IFindNode.class);
+
+		assertThat(findStatement.viewReference()).isNotNull();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"IN PHYSICAL ASCENDING SEQUENCE",
+		"IN PHYSICAL VARIABLE 'A' SEQUENCE",
+		"PHYSICAL DYNAMIC #DIRECTION",
+		"ASC",
+		"DESC",
+		"VARIABLE 'A'",
+		"DYNAMIC #DIRECTION",
+		"VARIABLE 'A' SEQUENCE",
+		"DYNAMIC #DIRECTION SEQUENCE",
+		"",
+	})
+	void parseReadPhysical(String statement)
+	{
+		var read = assertParsesSingleStatement("""
+			READ THE-VIEW %s
+			END-READ
+			""".formatted(statement), IReadNode.class);
+
+		assertThat(read.viewReference()).isNotNull();
+		assertThat(read.readSequence().isPhysicalSequence()).isTrue();
+		assertThat(read.readSequence().isIsnSequence()).isFalse();
+		assertThat(read.readSequence().isLogicalSequence()).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"BY ISN",
+		"BY ISN FROM 123",
+		"BY ISN STARTING FROM 123",
+		"BY ISN STARTING FROM 123 ENDING AT 234",
+		"BY ISN EQUAL 123",
+		"BY ISN >= 123",
+		"BY ISN WHERE *ISN > 1000",
+	})
+	void parseReadByIsn(String statement)
+	{
+		var read = assertParsesSingleStatement("""
+			READ THE-VIEW %s
+			END-READ
+			""".formatted(statement), IReadNode.class);
+
+		assertThat(read.viewReference()).isNotNull();
+		assertThat(read.readSequence().isPhysicalSequence()).isFalse();
+		assertThat(read.readSequence().isIsnSequence()).isTrue();
+		assertThat(read.readSequence().isLogicalSequence()).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"BY DESC1 = 'Asd' SHARED HOLD SKIP RECORD IN HOLD",
+		"BY DESC1 = 'Asd' IN SHARED HOLD SKIP IN HOLD",
+		"BY DESC1 = 'Asd' SHARED HOLD MODE='Q' SKIP RECORDS IN HOLD",
+		"BY DESC1",
+		"BY DESC1 STARTING FROM 'Asd' THRU 'def'",
+		"BY DESC1 STARTING FROM 'Asd' ENDING AT 'def'",
+		"BY DESC1 FROM 'Asd' TO 'def'",
+		"BY DESC1 FROM 'Asd' THRU 'def'",
+		"LOGICAL DYNAMIC #DIRECTION SEQUENCE BY DESC1",
+		"LOGICAL DYNAMIC #DIRECTION SEQUENCE BY DESC1 FROM 'A' TO 'Z'",
+		"WITH DESC1 EQUAL TO 'Asd'",
+		"WITH DESC1 GT 'Asd'",
+		"WITH DESC1 LESS THAN 'Asd'",
+		"WITH DESC1 <= 'Asd'",
+	})
+	void parseReadLogical(String statement)
+	{
+		var read = assertParsesSingleStatement("""
+			READ THE-VIEW %s
+			END-READ
+			""".formatted(statement), IReadNode.class);
+
+		assertThat(read.viewReference()).isNotNull();
+		assertThat(read.readSequence().isPhysicalSequence()).isFalse();
+		assertThat(read.readSequence().isIsnSequence()).isFalse();
+		assertThat(read.readSequence().isLogicalSequence()).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"PASSWORD='psw' CIPHER=123 WITH REPOSITION BY DESC1 = 'Asd'",
+		"WITH REPOSITION BY DESC1 = 'Asd' WHERE X > Y",
+	})
+	void parseAdvancedReads(String statement)
+	{
+		var readStatement = assertParsesSingleStatement("""
+			BROWSE (100) THE-VIEW %s
+				IGNORE
+			END-READ
+			""".formatted(statement), IReadNode.class);
+
+		assertThat(readStatement.viewReference()).isNotNull();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"1 #VAR1 VAR2 VAR3 VAR4",
+		"FILE 1 #VAR1 VAR2 VAR3 VAR4",
+		"FILE 1 RECORD #RECORD",
+		"FILE 1 AND SELECT OFFSET 1 #VAR1 OFFSET 2 #VAR2 FILLER 10X #VAR3",
+		"FILE 1 AND SELECT OFFSET 1 #VAR1 FILLER 10X #VAR3(*) AND ADJUST",
+	})
+	void parseReadWorkFileWithBody(String statement)
+	{
+		var work = assertParsesSingleStatement("""
+			READ WORK %s
+			END-WORK
+			""".formatted(statement), IReadWorkNode.class);
+		assertThat(work.workFileNumber().token().intValue()).isEqualTo(1);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"1 ONCE #VAR1 VAR2 VAR3 VAR4",
+		"FILE 1 ONCE #VAR1 VAR2 VAR3 VAR4",
+		"FILE 1 ONCE RECORD #RECORD",
+		"FILE 1 ONCE AND SELECT OFFSET 1 #VAR1 OFFSET 2 #VAR2 FILLER 10X #VAR3",
+		"FILE 1 ONCE AND SELECT OFFSET 1 #VAR1 FILLER 10X #VAR3(*) AND ADJUST",
+		"FILE 1 ONCE #VAR1 VAR2 VAR3 VAR4 AT END OF FILE IGNORE END-ENDFILE",
+	})
+	void parseReadWorkFileWithNoBody(String statement)
+	{
+		var work = assertParsesSingleStatement("""
+			READ WORK %s
+			""".formatted(statement), IReadWorkNode.class);
+		assertThat(work.workFileNumber().token().intValue()).isEqualTo(1);
 	}
 
 	@ParameterizedTest

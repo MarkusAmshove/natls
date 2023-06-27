@@ -311,6 +311,7 @@ public enum SyntaxKind
 	ACTIVATION(true, false, false),
 	AD(true, false, false), // Attribute Definition
 	CD(true, false, false), // Color Definition
+	ADJUST(true, false, false),
 	AFTER(true, false, false),
 	AL(true, false, false),
 	ALARM(true, false, false),
@@ -546,6 +547,7 @@ public enum SyntaxKind
 	MICROSECOND(true, false, false),
 	MINUTE(true, false, false),
 	MODAL(true, false, false),
+	MODE(true, false, false),
 	MODIFIED(true, false, false),
 	MODULE(true, false, false),
 	MONTH(true, false, false),
@@ -664,6 +666,7 @@ public enum SyntaxKind
 	SB(false, false, false),
 	SF(true, false, false),
 	SG(true, false, false),
+	SHARED(true, false, false),
 	SHORT(true, false, false),
 	SINGLE(true, false, false),
 	SIZE(true, false, false),

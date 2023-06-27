@@ -1029,6 +1029,11 @@ abstract class AbstractParser<T>
 		tokens.rollback(1);
 	}
 
+	protected void rollback(int offset)
+	{
+		tokens.rollback(offset);
+	}
+
 	protected SyntaxToken peekNextLine()
 	{
 		var offset = 0;
