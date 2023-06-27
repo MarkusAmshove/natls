@@ -29,6 +29,7 @@ class LexerForKeywordsShould extends AbstractLexerTest
 			keywordTest("AD", SyntaxKind.AD),
 			keywordTest("CD", SyntaxKind.CD),
 			keywordTest("ADD", SyntaxKind.ADD),
+			keywordTest("ADJUST", SyntaxKind.ADJUST),
 			keywordTest("AFTER", SyntaxKind.AFTER),
 			keywordTest("AL", SyntaxKind.AL),
 			keywordTest("ALARM", SyntaxKind.ALARM),

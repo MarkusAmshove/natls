@@ -319,6 +319,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case READ:
 						if (peek(1).kind() == SyntaxKind.WORK)
 						{
+							statementList.addStatement(readWork());
 							break;
 						}
 						statementList.addStatement(readStatement());
@@ -3755,6 +3756,89 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return find;
+	}
+
+	private ReadWorkNode readWork() throws ParseError
+	{
+		var work = new ReadWorkNode();
+
+		var opening = consumeMandatory(work, SyntaxKind.READ);
+		consumeMandatory(work, SyntaxKind.WORK);
+		consumeOptionally(work, SyntaxKind.FILE);
+		var number = consumeLiteralNode(work, SyntaxKind.NUMBER_LITERAL);
+		checkNumericRange(number, 1, 32);
+		work.setWorkFileNumber(number);
+		var hasNoBody = consumeOptionally(work, SyntaxKind.ONCE);
+		var operandLoop = true;
+
+		if (consumeOptionally(work, SyntaxKind.RECORD))
+		{
+			operandLoop = false;
+			consumeOperandNode(work);
+		}
+
+		if (peekAny(List.of(SyntaxKind.AND, SyntaxKind.SELECT, SyntaxKind.OFFSET, SyntaxKind.FILLER)))
+		{
+			operandLoop = false;
+			consumeOptionally(work, SyntaxKind.AND);
+			consumeOptionally(work, SyntaxKind.SELECT);
+
+			while (consumeEitherOptionally(work, SyntaxKind.OFFSET, SyntaxKind.FILLER))
+			{
+				if (previousToken().kind() == SyntaxKind.OFFSET)
+				{
+					consumeLiteralNode(work, SyntaxKind.NUMBER_LITERAL);
+				}
+				else
+				{
+					consumeMandatory(work, SyntaxKind.OPERAND_SKIP);
+				}
+
+				consumeOperandNode(work);
+			}
+
+			consumeOptionally(work, SyntaxKind.AND);
+			consumeOptionally(work, SyntaxKind.ADJUST);
+			consumeOptionally(work, SyntaxKind.OCCURRENCES);
+		}
+
+		if (operandLoop)
+		{
+			while (isOperand() && !isStatementStart())
+			{
+				consumeOperandNode(work);
+			}
+		}
+
+		if (hasNoBody)
+		{
+			if (peekKind(SyntaxKind.AT))
+			{
+				atEndOfFile();
+			}
+		}
+		else
+		{
+			work.setBody(statementList(SyntaxKind.END_WORK));
+			consumeMandatoryClosing(work, SyntaxKind.END_WORK, opening);
+		}
+
+		return work;
+	}
+
+	private AtEndOfFileNode atEndOfFile() throws ParseError
+	{
+		var statement = new AtEndOfFileNode();
+
+		var opening = consumeMandatory(statement, SyntaxKind.AT);
+		consumeOptionally(statement, SyntaxKind.END);
+		consumeOptionally(statement, SyntaxKind.OF);
+		consumeOptionally(statement, SyntaxKind.FILE);
+
+		statement.setBody(statementList(SyntaxKind.END_ENDFILE));
+		consumeMandatoryClosing(statement, SyntaxKind.END_ENDFILE, opening);
+
+		return statement;
 	}
 
 	private static final Set<SyntaxKind> READ_SYNTAXES = Set

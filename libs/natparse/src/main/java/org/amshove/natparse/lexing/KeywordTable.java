@@ -16,6 +16,7 @@ public class KeywordTable
 			case "activation" -> SyntaxKind.ACTIVATION;
 			case "ad" -> SyntaxKind.AD;
 			case "add" -> SyntaxKind.ADD;
+			case "adjust" -> SyntaxKind.ADJUST;
 			case "after" -> SyntaxKind.AFTER;
 			case "al" -> SyntaxKind.AL;
 			case "alarm" -> SyntaxKind.ALARM;

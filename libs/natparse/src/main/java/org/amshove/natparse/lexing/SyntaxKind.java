@@ -311,6 +311,7 @@ public enum SyntaxKind
 	ACTIVATION(true, false, false),
 	AD(true, false, false), // Attribute Definition
 	CD(true, false, false), // Color Definition
+	ADJUST(true, false, false),
 	AFTER(true, false, false),
 	AL(true, false, false),
 	ALARM(true, false, false),

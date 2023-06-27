@@ -1099,6 +1099,42 @@ class StatementListParserShould extends StatementParseTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
+		"1 #VAR1 VAR2 VAR3 VAR4",
+		"FILE 1 #VAR1 VAR2 VAR3 VAR4",
+		"FILE 1 RECORD #RECORD",
+		"FILE 1 AND SELECT OFFSET 1 #VAR1 OFFSET 2 #VAR2 FILLER 10X #VAR3",
+		"FILE 1 AND SELECT OFFSET 1 #VAR1 FILLER 10X #VAR3(*) AND ADJUST",
+	})
+	void parseReadWorkFileWithBody(String statement)
+	{
+		var work = assertParsesSingleStatement("""
+			READ WORK %s
+			END-WORK
+			""".formatted(statement), IReadWorkNode.class);
+		assertThat(work.workFileNumber().token().intValue()).isEqualTo(1);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"1 ONCE #VAR1 VAR2 VAR3 VAR4",
+		"FILE 1 ONCE #VAR1 VAR2 VAR3 VAR4",
+		"FILE 1 ONCE RECORD #RECORD",
+		"FILE 1 ONCE AND SELECT OFFSET 1 #VAR1 OFFSET 2 #VAR2 FILLER 10X #VAR3",
+		"FILE 1 ONCE AND SELECT OFFSET 1 #VAR1 FILLER 10X #VAR3(*) AND ADJUST",
+		"FILE 1 ONCE #VAR1 VAR2 VAR3 VAR4 AT END OF FILE IGNORE END-ENDFILE",
+	})
+	void parseReadWorkFileWithNoBody(String statement)
+	{
+		var work = assertParsesSingleStatement("""
+			READ WORK %s
+			""".formatted(statement), IReadWorkNode.class);
+		assertThat(work.workFileNumber().token().intValue()).isEqualTo(1);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
 		"#VAR1 TO #VAR2",
 		"#VAR1 (PM=I) TO #VAR2",
 		"#VAR1 (DF=I) TO #VAR2",
