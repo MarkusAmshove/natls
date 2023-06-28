@@ -25,18 +25,17 @@ import org.amshove.natls.referencing.ReferenceFinder;
 import org.amshove.natls.signaturehelp.SignatureHelpProvider;
 import org.amshove.natls.snippets.SnippetEngine;
 import org.amshove.natparse.NodeUtil;
-import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
-import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
-import org.amshove.natparse.lexing.TokenList;
-import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.IModuleReferencingNode;
+import org.amshove.natparse.natural.IReferencableNode;
+import org.amshove.natparse.natural.ISymbolReferenceNode;
+import org.amshove.natparse.natural.IVariableReferenceNode;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
-import org.amshove.natparse.parsing.DefineDataParser;
 import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
@@ -53,24 +52,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class NaturalLanguageService implements LanguageClientAware
 {
 	private static final Hover EMPTY_HOVER = null; // This should be done according to the spec
-	private final CodeActionRegistry codeActionRegistry = CodeActionRegistry.INSTANCE;
+	private static final CodeActionRegistry codeActionRegistry = CodeActionRegistry.INSTANCE;
 	private NaturalProject project; // TODO: Replace
 	private LanguageServerProject languageServerProject;
 	private LanguageClient client;
 	private boolean initialized;
 	private Path workspaceRoot;
 
-	// TODO: These should all either be DI'd through constructor or created based on capabilities
 	private final InlayHintProvider inlayHintProvider = new InlayHintProvider();
 	private HoverProvider hoverProvider;
 	private final RenameSymbolAction renameComputer = new RenameSymbolAction();
-	private SnippetEngine snippetEngine;
 	private final CodeLensService codeLensService = new CodeLensService();
 
 	private static LSConfiguration config = LSConfiguration.createDefault();
@@ -99,10 +95,9 @@ public class NaturalLanguageService implements LanguageClientAware
 		languageServerProject = LanguageServerProject.fromProject(project);
 		parseFileReferences(progressMonitor);
 		preParseDataAreas(progressMonitor);
-		snippetEngine = new SnippetEngine(languageServerProject);
 		initialized = true;
 		hoverProvider = new HoverProvider();
-		completionProvider = new CompletionProvider(snippetEngine, hoverProvider);
+		completionProvider = new CompletionProvider(new SnippetEngine(languageServerProject), hoverProvider);
 	}
 
 	public void loadEditorConfig(Path path)
@@ -191,134 +186,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		var symbolToSearchFor = findTokenAtPosition(file, position); // TODO: Actually look for a node, could be ISymbolReferenceNode
 		var providedHover = hoverProvider.createHover(new HoverContext(node, symbolToSearchFor, file));
-		if (providedHover != null)
-		{
-			return providedHover;
-		}
-
-		if (symbolToSearchFor == null)
-		{
-			// No position found where we can provide hover for
-			return EMPTY_HOVER;
-		}
-
-		if (symbolToSearchFor.kind() == SyntaxKind.STRING_LITERAL)
-		{
-			return hoverExternalModule(symbolToSearchFor);
-		}
-
-		var externalSubroutineHover = hoverExternalModule(symbolToSearchFor);
-		if (externalSubroutineHover != EMPTY_HOVER)
-		{
-			return externalSubroutineHover;
-		}
-
-		if (!(module instanceof IHasDefineData hasDefineData))
-		{
-			return EMPTY_HOVER;
-		}
-
-		Predicate<IVariableNode> variableFilter = symbolToSearchFor.symbolName().contains(".")
-			? v -> v.qualifiedName().equals(symbolToSearchFor.symbolName())
-			: v -> v.declaration().symbolName().equals(symbolToSearchFor.symbolName());
-		return hasDefineData
-			.defineData()
-			.variables().stream()
-			.filter(variableFilter)
-			.map(
-				v -> new Hover(
-					new MarkupContent(
-						MarkupKind.MARKDOWN,
-						createHoverMarkdownText(v, module)
-					)
-				)
-			)
-			.findFirst()
-			.orElse(EMPTY_HOVER);
-	}
-
-	private Hover hoverExternalModule(SyntaxToken symbolToSearchFor)
-	{
-		if (symbolToSearchFor.kind() != SyntaxKind.STRING_LITERAL && symbolToSearchFor.kind() != SyntaxKind.IDENTIFIER)
-		{
-			return EMPTY_HOVER;
-		}
-		var module = project.findModule(symbolToSearchFor.kind().isIdentifier() ? symbolToSearchFor.symbolName() : symbolToSearchFor.stringValue());
-		if (module == null)
-		{
-			return EMPTY_HOVER;
-		}
-
-		var tokens = lexPath(module.getPath());
-		var defineData = parseDefineData(tokens);
-		if (defineData == null)
-		{
-			return EMPTY_HOVER;
-		}
-
-		var hoverText = "**%s.%s**".formatted(module.getLibrary().getName(), module.getReferableName());
-		if (!module.getFilenameWithoutExtension().equals(module.getReferableName()))
-		{
-			hoverText += " (%s)".formatted(module.getFilenameWithoutExtension());
-		}
-
-		var documentation = extractDocumentation(tokens.comments(), tokens.subrange(0, 0).first().line());
-		if (documentation != null && !documentation.isEmpty())
-		{
-			hoverText += "\n```natural\n";
-			hoverText += "\n" + documentation;
-			hoverText += "\n```";
-		}
-
-		if (module.getFiletype() == NaturalFileType.SUBROUTINE
-			|| module.getFiletype() == NaturalFileType.SUBPROGRAM
-			|| module.getFiletype() == NaturalFileType.PROGRAM
-			|| module.getFiletype() == NaturalFileType.FUNCTION)
-		{
-			// TODO: Hover level 1 variables for *DAs
-			hoverText += "\n\nParameter:\n```natural\n";
-
-			// TODO: Order is not correct. DefineData should have .parameter() which have USINGs and non-USINGS
-			//  mixed in definition order
-			hoverText += defineData.parameterUsings().stream()
-				.map(using -> "PARAMETER USING %s %s".formatted(using.target().source(), extractLineComment(tokens.comments(), using.position().line())).trim())
-				.collect(Collectors.joining("\n"));
-			hoverText += "\n```\n";
-			hoverText += defineData.variables().stream()
-				.filter(v -> v.scope() == VariableScope.PARAMETER)
-				.map(v -> "%s %s%n```".formatted(formatVariableHover(v, false), extractLineComment(tokens.comments(), v.position().line())).trim())
-				.collect(Collectors.joining("\n"));
-		}
-
-		return new Hover(
-			new MarkupContent(
-				MarkupKind.MARKDOWN,
-				hoverText
-			)
-		);
-	}
-
-	private String extractLineComment(ReadOnlyList<SyntaxToken> comments, int line)
-	{
-		return comments.stream().filter(t -> t.line() == line)
-			.findFirst()
-			.map(SyntaxToken::source)
-			.orElse("");
-	}
-
-	private String extractDocumentation(ReadOnlyList<SyntaxToken> comments, int firstLineOfCode)
-	{
-		if (comments.isEmpty())
-		{
-			return null;
-		}
-
-		return comments.stream()
-			.takeWhile(t -> t.line() < firstLineOfCode)
-			.map(SyntaxToken::source)
-			.filter(l -> !l.startsWith("* >") && !l.startsWith("* <") && !l.startsWith("* :"))
-			.filter(l -> !l.trim().endsWith("*"))
-			.collect(Collectors.joining(System.lineSeparator()));
+		return providedHover;
 	}
 
 	private SyntaxToken findTokenAtPosition(LanguageServerFile file, Position position)
@@ -326,153 +194,9 @@ public class NaturalLanguageService implements LanguageClientAware
 		return NodeUtil.findTokenNodeAtPosition(file.getPath(), position.getLine(), position.getCharacter(), file.module().syntaxTree()).token();
 	}
 
-	private String getLineComment(int line, Path filePath)
-	{
-		return getLineComment(line, findNaturalFile(filePath));
-	}
-
-	private String getLineComment(int line, LanguageServerFile file)
-	{
-		return file.module().comments().stream()
-			.filter(t -> t.line() == line)
-			.map(SyntaxToken::source)
-			.findFirst()
-			.orElse(null);
-	}
-
-	private String createHoverMarkdownText(IVariableNode v, INaturalModule originalModule)
-	{
-		var hoverText = formatVariableHover(v);
-		hoverText += "\n";
-
-		var hasUsingComment = false;
-		if (!originalModule.file().getPath().equals(v.position().filePath()))
-		{
-			// This is an imported variable
-			var importedFile = findNaturalFile(v.position().filePath());
-			var importedModule = importedFile.module();
-			var using = ((IHasDefineData) originalModule).defineData().usings().stream().filter(u -> u.target().symbolName().equals(importedModule.name())).findFirst().orElse(null);
-			if (using != null)
-			{
-				var usingComment = getLineComment(using.position().line(), using.position().filePath());
-				if (usingComment != null)
-				{
-					hasUsingComment = true;
-					hoverText += "\n*using comment:*\n ```natural\n " + usingComment + "\n```\n";
-				}
-			}
-		}
-
-		var originalPositionComment = getLineComment(v.position().line(), v.position().filePath());
-		if (originalPositionComment != null)
-		{
-			var commentTitle = hasUsingComment ? "origin comment" : "comment";
-			hoverText += "%n*%s*:%n```natural%n ".formatted(commentTitle) + originalPositionComment + "\n```\n";
-		}
-
-		if (v.level() > 1)
-		{
-			var groupOwner = v.parent();
-			while (!(groupOwner instanceof IGroupNode group) || ((IGroupNode) groupOwner).level() > 1)
-			{
-				groupOwner = ((ISyntaxNode) groupOwner).parent();
-			}
-
-			hoverText += "\n\n*member of:*";
-			hoverText += "%n ```natural%n %s %d %s%n```".formatted(group.scope().name(), group.level(), group.name());
-		}
-
-		hoverText += "\n\n*source:*";
-		hoverText += "\n- %s".formatted(v.position().filePath().toFile().getName());
-
-		return hoverText;
-	}
-
-	private String formatVariableHover(IVariableNode v)
-	{
-		return formatVariableHover(v, true);
-	}
-
-	private String formatVariableHover(IVariableNode v, boolean closeMarkdown)
-	{
-		var hoverText = "```natural%n%s %d %s".formatted(v.scope().name(), v.level(), v.name());
-		if (v instanceof ITypedVariableNode typedVariable)
-		{
-			hoverText += " (%c".formatted(typedVariable.type().format().identifier());
-			if (typedVariable.type().length() > 0.0)
-			{
-				hoverText += "%s)".formatted(DataFormat.formatLength(typedVariable.type().length()));
-			}
-			if (typedVariable.type().hasDynamicLength())
-			{
-				hoverText += ") DYNAMIC";
-			}
-			if (typedVariable.type().isConstant())
-			{
-				hoverText += " CONST<";
-			}
-			if (typedVariable.type().initialValue() != null)
-			{
-				if (!typedVariable.type().isConstant())
-				{
-					hoverText += " INIT<";
-				}
-
-				hoverText += "%s>".formatted(typedVariable.type().initialValue().source());
-			}
-		}
-
-		if (v.findDescendantToken(SyntaxKind.OPTIONAL) != null)
-		{
-			hoverText += " OPTIONAL";
-		}
-
-		if (closeMarkdown)
-		{
-			hoverText += "\n```";
-		}
-
-		if (v.isArray())
-		{
-			hoverText += "\n\n*dimensions:*";
-			hoverText += "%n ```%n%s%n```".formatted(v.dimensions().stream().map(IArrayDimension::displayFormat).collect(Collectors.joining(",")));
-		}
-
-		return hoverText;
-	}
-
 	public static LSConfiguration getConfig()
 	{
 		return config;
-	}
-
-	private String readSource(Path path)
-	{
-		try
-		{
-			return Files.readString(path);
-		}
-		catch (IOException e)
-		{
-			throw new UncheckedIOException(e);
-		}
-	}
-
-	private TokenList lexSource(String source, Path path)
-	{
-		return new Lexer().lex(source, path);
-	}
-
-	private TokenList lexPath(Path path)
-	{
-		return lexSource(readSource(path), path);
-	}
-
-	// TODO: Remove
-	private IDefineData parseDefineData(TokenList tokens)
-	{
-		var parser = new DefineDataParser(null);
-		return parser.parse(tokens).result();
 	}
 
 	public List<Location> gotoDefinition(DefinitionParams params)
