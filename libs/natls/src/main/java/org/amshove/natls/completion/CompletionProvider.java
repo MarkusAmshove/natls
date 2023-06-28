@@ -31,7 +31,6 @@ public class CompletionProvider
 
 	public List<CompletionItem> prepareCompletion(LanguageServerFile file, CompletionParams params, LSConfiguration config)
 	{
-		var filePath = file.getPath();
 		this.config = config;
 		if (!file.getType().canHaveBody())
 		{
@@ -47,20 +46,7 @@ public class CompletionProvider
 		completionItems.addAll(externalSubroutineCompletions(file.getLibrary()));
 		completionItems.addAll(subprogramCompletions(file.getLibrary()));
 
-		completionItems.addAll(
-			module.referencableNodes().stream()
-				.filter(v -> !(v instanceof IRedefinitionNode)) // this is the `REDEFINE #VAR`, which results in the variable being doubled in completion
-				.map(n -> createCompletionItem(n, file, module.referencableNodes()))
-				.filter(Objects::nonNull)
-				.peek(i ->
-				{
-					if (i.getKind() == CompletionItemKind.Variable)
-					{
-						i.setData(new UnresolvedCompletionInfo((String) i.getData(), filePath.toUri().toString()));
-					}
-				})
-				.toList()
-		);
+		completionItems.addAll(variableCompletion(module, file));
 
 		completionItems.addAll(completeSystemVars("*".equals(params.getContext().getTriggerCharacter())));
 
@@ -70,10 +56,6 @@ public class CompletionProvider
 	public CompletionItem resolveComplete(CompletionItem item, LanguageServerFile file, UnresolvedCompletionInfo info, LSConfiguration config)
 	{
 		this.config = config;
-		if (item.getKind() != CompletionItemKind.Variable && item.getKind() != CompletionItemKind.Function && item.getKind() != CompletionItemKind.Event && item.getKind() != CompletionItemKind.Class)
-		{
-			return item;
-		}
 
 		if (item.getData() == null)
 		{
@@ -81,30 +63,31 @@ public class CompletionProvider
 		}
 
 		var module = file.module();
-		if (item.getKind() == CompletionItemKind.Variable)
+
+		return switch (item.getKind())
 		{
-
-			if (!(module instanceof IHasDefineData hasDefineData))
+			case Variable ->
 			{
-				return item;
-			}
+				if (!(module instanceof IHasDefineData hasDefineData))
+				{
+					yield item;
+				}
 
-			var variableNode = hasDefineData.defineData().variables().stream().filter(v -> v.qualifiedName().equals(info.getQualifiedName())).findFirst().orElse(null);
-			if (variableNode == null)
-			{
-				return item;
-			}
+				var variableNode = hasDefineData.defineData().variables().stream().filter(v -> v.qualifiedName().equals(info.getQualifiedName())).findFirst().orElse(null);
+				if (variableNode == null)
+				{
+					yield item;
+				}
 
-			item.setDocumentation(
-				new MarkupContent(
-					MarkupKind.MARKDOWN,
-					hoverProvider.createHover(new HoverContext(variableNode, variableNode.declaration(), file)).getContents().getRight().getValue()
-				)
-			);
-			return item;
-		}
-		else
-			if (item.getKind() == CompletionItemKind.Function)
+				item.setDocumentation(
+					new MarkupContent(
+						MarkupKind.MARKDOWN,
+						hoverProvider.createHover(new HoverContext(variableNode, variableNode.declaration(), file)).getContents().getRight().getValue()
+					)
+				);
+				yield item;
+			}
+			case Function ->
 			{
 				item.setInsertTextFormat(InsertTextFormat.Snippet);
 				item.setDocumentation(
@@ -114,33 +97,51 @@ public class CompletionProvider
 					)
 				);
 				item.setInsertText("%s(<%s>)$0".formatted(file.getReferableName(), functionParameterListAsSnippet(file)));
+				yield item;
 			}
-			else
-				if (item.getKind() == CompletionItemKind.Event)
-				{
-					item.setInsertTextFormat(InsertTextFormat.Snippet);
-					item.setDocumentation(
-						new MarkupContent(
-							MarkupKind.MARKDOWN,
-							hoverProvider.hoverModule(module).getContents().getRight().getValue()
-						)
-					);
-					item.setInsertText("PERFORM %s%s%n$0".formatted(file.getReferableName(), externalSubroutineParameterListAsSnippet(file)));
-				}
-				else
-					if (item.getKind() == CompletionItemKind.Class)
-					{
-						item.setInsertTextFormat(InsertTextFormat.Snippet);
-						item.setDocumentation(
-							new MarkupContent(
-								MarkupKind.MARKDOWN,
-								hoverProvider.hoverModule(module).getContents().getRight().getValue()
-							)
-						);
-						item.setInsertText("CALLNAT '%s'%s%n$0".formatted(file.getReferableName(), externalSubroutineParameterListAsSnippet(file)));
-					}
+			case Event ->
+			{
+				item.setInsertTextFormat(InsertTextFormat.Snippet);
+				item.setDocumentation(
+					new MarkupContent(
+						MarkupKind.MARKDOWN,
+						hoverProvider.hoverModule(module).getContents().getRight().getValue()
+					)
+				);
+				item.setInsertText("PERFORM %s%s%n$0".formatted(file.getReferableName(), externalSubroutineParameterListAsSnippet(file)));
+				yield item;
+			}
+			case Class ->
+			{
+				item.setInsertTextFormat(InsertTextFormat.Snippet);
+				item.setDocumentation(
+					new MarkupContent(
+						MarkupKind.MARKDOWN,
+						hoverProvider.hoverModule(module).getContents().getRight().getValue()
+					)
+				);
+				item.setInsertText("CALLNAT '%s'%s%n$0".formatted(file.getReferableName(), externalSubroutineParameterListAsSnippet(file)));
+				yield item;
+			}
+			default -> item;
+		};
+	}
 
-		return item;
+	private List<CompletionItem> variableCompletion(INaturalModule module, LanguageServerFile file)
+	{
+		return module.referencableNodes().stream()
+			.filter(v -> !(v instanceof IRedefinitionNode)) // this is the `REDEFINE #VAR`, which results in the variable being doubled in completion
+			.map(n ->
+			{
+				var item = createCompletionItem(n, file, module.referencableNodes());
+				if (item != null && item.getKind() == CompletionItemKind.Variable)
+				{
+					item.setData(new UnresolvedCompletionInfo((String) item.getData(), file.getPath().toUri().toString()));
+				}
+				return item;
+			})
+			.filter(Objects::nonNull)
+			.toList();
 	}
 
 	private Collection<? extends CompletionItem> functionCompletions(LanguageServerLibrary library)
