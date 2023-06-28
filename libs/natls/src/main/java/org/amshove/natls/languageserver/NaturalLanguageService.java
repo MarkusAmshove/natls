@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import org.amshove.natlint.editorconfig.EditorConfigParser;
 import org.amshove.natlint.linter.LinterContext;
 import org.amshove.natls.DiagnosticTool;
+import org.amshove.natls.LanguageServerException;
 import org.amshove.natls.codeactions.CodeActionRegistry;
 import org.amshove.natls.codeactions.RefactoringContext;
 import org.amshove.natls.codeactions.RenameSymbolAction;
@@ -56,7 +57,6 @@ import java.util.stream.Collectors;
 
 public class NaturalLanguageService implements LanguageClientAware
 {
-	private static final Hover EMPTY_HOVER = null; // This should be done according to the spec
 	private static final CodeActionRegistry codeActionRegistry = CodeActionRegistry.INSTANCE;
 	private NaturalProject project; // TODO: Replace
 	private LanguageServerProject languageServerProject;
@@ -80,7 +80,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var projectFile = new ActualFilesystem().findNaturalProjectFile(workspaceRoot);
 		if (projectFile.isEmpty())
 		{
-			throw new RuntimeException("Could not load Natural project. .natural or _naturalBuild not found");
+			throw new LanguageServerException("Could not load Natural project. .natural or _naturalBuild not found");
 		}
 		var project = new BuildFileProjectReader().getNaturalProject(projectFile.get());
 		var editorconfigPath = projectFile.get().getParent().resolve(".editorconfig");
@@ -176,7 +176,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var file = findNaturalFile(filepath);
 		if (file.getType() == NaturalFileType.COPYCODE)
 		{
-			return EMPTY_HOVER;
+			return HoverProvider.EMPTY_HOVER;
 		}
 
 		var module = file.module();
@@ -186,7 +186,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		var symbolToSearchFor = findTokenAtPosition(file, position); // TODO: Actually look for a node, could be ISymbolReferenceNode
 		var providedHover = hoverProvider.createHover(new HoverContext(node, symbolToSearchFor, file));
-		return providedHover;
+		return providedHover != null ? providedHover : HoverProvider.EMPTY_HOVER;
 	}
 
 	private SyntaxToken findTokenAtPosition(LanguageServerFile file, Position position)

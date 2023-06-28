@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 public class HoverProvider
 {
-	private static final Hover EMPTY_HOVER = null; // This should be null according to the LSP spec
+	public static final Hover EMPTY_HOVER = null; // This should be null according to the LSP spec
 
 	public Hover createHover(HoverContext context)
 	{
