@@ -656,6 +656,59 @@ class StatementListParserShould extends StatementParseTest
 			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"SORT #VAR1",
+		"SORT THEM #VAR1",
+		"SORT RECORD #VAR1",
+		"SORT RECORDS BY #VAR1",
+		"AND SORT THEM BY #VAR1 #VAR2",
+		"SORT BY #VAR1 USING KEY",
+		"SORT BY #VAR1 USING KEYS",
+		"SORT BY #VAR1 USING #KEY1",
+		"SORT BY #VAR1 USING #KEY1 #KEY2",
+		"SORT BY #VAR1 USING #KEY1 #KEY2",
+		"SORT BY #VAR1 ASC #VAR2 DESC USING #KEY1 #KEY2",
+		"SORT BY #VAR1 ASCENDING #VAR2 DESCENDING USING #KEY1 #KEY2",
+		"SORT BY #VAR1 USING #KEY1 #KEY2 GIVE MIN MAX AVER #GIVE",
+		"SORT BY #VAR1 USING KEYS GIVE MIN MAX AVER OF #GIVE",
+		"SORT BY #VAR1 USING KEYS GIVE MIN MAX AVER (#GIVE1) SUM TOTAL OF (#GIVE2)",
+		"AND SORT THEM BY #VAR1 #VAR2 USING #KEY1 #KEY2 GIVING MIN MAX AVER (#GIVE1) SUM TOTAL OF (#GIVE2) (NL=10)",
+	})
+	void parseSortStatements(String statement)
+	{
+		var sort = assertParsesSingleStatement("""
+			END-ALL
+			%s
+			END-SORT
+			""".formatted(statement), ISortStatementNode.class);
+		assertThat(sort.body().statements().isEmpty());
+	}
+
+	@Test
+	void parseSortWithSortDirection()
+	{
+		var sort = assertParsesSingleStatement("""
+			END-ALL
+			SORT BY #VAR1 ASC #VAR2 DESC #VAR3 ASCENDING #VAR4 DESCENDING #VAR5
+			WRITE 'Hey!'
+			END-SORT
+			""", ISortStatementNode.class);
+		assertThat(sort.body().statements()).hasSize(1);
+		assertThat(sort.usings().isEmpty());
+		assertThat(assertNodeType(sort.operands().get(0).operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
+		assertThat(sort.operands().get(0).direction()).isEqualTo(SortDirection.ASCENDING);
+		assertThat(assertNodeType(sort.operands().get(1).operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+		assertThat(sort.operands().get(1).direction()).isEqualTo(SortDirection.DESCENDING);
+		assertThat(assertNodeType(sort.operands().get(2).operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR3");
+		assertThat(sort.operands().get(2).direction()).isEqualTo(SortDirection.ASCENDING);
+		assertThat(assertNodeType(sort.operands().get(3).operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR4");
+		assertThat(sort.operands().get(3).direction()).isEqualTo(SortDirection.DESCENDING);
+		assertThat(assertNodeType(sort.operands().get(4).operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR5");
+		assertThat(sort.operands().get(4).direction()).isEqualTo(SortDirection.ASCENDING);
+	}
+
 	@Test
 	void parseForColonEqualsToStatements()
 	{
@@ -697,7 +750,11 @@ class StatementListParserShould extends StatementParseTest
 			FOR #I := 1 TO 10
 			    FOR #J := 1 TO 20
 			        WRITE #I #J
-			END-ALL""");
+			END-ALL
+			AND
+			SORT THEM BY #I #J
+			END-SORT
+			""");
 	}
 
 	@Test

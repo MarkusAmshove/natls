@@ -364,10 +364,15 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						}
 						statementList.addStatement(decideOn());
 						break;
-					// Below this line, add statements that can we used as keywords within other statements.
+					// Below this line, add statements that can be used as keywords within other statements.
 					// Like FOR is a keyword in HISTOGRAM etc.
 					case FOR:
 						statementList.addStatement(forLoop());
+						break;
+					// SORT statement has to start with END-ALL, so because consumeMandatoryClosing()
+					// is checking for END-ALL, we have to parse it very late.
+					case END_ALL, SORT:
+						statementList.addStatement(sortStatement());
 						break;
 					case ON:
 						if (peekKind(1, SyntaxKind.ERROR))
@@ -2566,6 +2571,69 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatoryClosing(loopNode, SyntaxKind.END_FOR, opening);
 
 		return loopNode;
+	}
+
+	private static final List<SyntaxKind> END_OF_SORT_KINDS = List.of(SyntaxKind.USING, SyntaxKind.GIVE, SyntaxKind.GIVING, SyntaxKind.END_SORT);
+	private static final List<SyntaxKind> SORT_DIRECTIONS_KINDS = List.of(SyntaxKind.ASC, SyntaxKind.ASCENDING, SyntaxKind.DESC, SyntaxKind.DESCENDING);
+	private static final List<SyntaxKind> ALLOWED_SYSTEMFUNCTIONS = List.of(SyntaxKind.MAX, SyntaxKind.MIN, SyntaxKind.NMIN, SyntaxKind.COUNT, SyntaxKind.NCOUNT, SyntaxKind.OLD, SyntaxKind.AVER, SyntaxKind.NAVER, SyntaxKind.SUM, SyntaxKind.TOTAL);
+
+	private StatementNode sortStatement() throws ParseError
+	{
+		var sort = new SortStatementNode();
+		consumeMandatory(sort, SyntaxKind.END_ALL);
+		consumeOptionally(sort, SyntaxKind.AND);
+		var opening = consumeMandatory(sort, SyntaxKind.SORT);
+		consumeAnyOptionally(sort, List.of(SyntaxKind.THEM, SyntaxKind.RECORDS, SyntaxKind.RECORD));
+		consumeOptionally(sort, SyntaxKind.BY);
+
+		while ((isOperand() || peekAny(SORT_DIRECTIONS_KINDS)) && !peekAny(END_OF_SORT_KINDS))
+		{
+			var operand = consumeOperandNode(sort);
+			var sortDirection = SortDirection.fromSyntaxKind(SyntaxKind.ASCENDING);
+			if (consumeAnyOptionally(sort, SORT_DIRECTIONS_KINDS))
+			{
+				sortDirection = SortDirection.fromSyntaxKind(previousToken().kind());
+			}
+
+			sort.addSortBy(new SortedOperand(operand, sortDirection));
+		}
+
+		if (consumeOptionally(sort, SyntaxKind.USING) && !consumeEitherOptionally(sort, SyntaxKind.KEYS, SyntaxKind.KEY))
+		{
+			while (isOperand() && !peekAny(END_OF_SORT_KINDS))
+			{
+				var node = consumeOperandNode(sort);
+				sort.addUsing(node);
+			}
+		}
+
+		if (consumeEitherOptionally(sort, SyntaxKind.GIVE, SyntaxKind.GIVING))
+		{
+			while (!peekKind(SyntaxKind.END_SORT))
+			{
+				consumeAnyMandatory(sort, ALLOWED_SYSTEMFUNCTIONS);
+				while (consumeAnyOptionally(sort, ALLOWED_SYSTEMFUNCTIONS))
+				{
+					// It's fine, don't worry
+				}
+				consumeOptionally(sort, SyntaxKind.OF);
+				var lparen = consumeOptionally(sort, SyntaxKind.LPAREN);
+				consumeOperandNode(sort);
+				if (lparen)
+				{
+					consumeMandatory(sort, SyntaxKind.RPAREN);
+				}
+				if (peekKind(SyntaxKind.LPAREN))
+				{
+					consumeAttributeDefinition(sort);
+				}
+			}
+		}
+
+		sort.setBody(statementList(SyntaxKind.END_SORT));
+		consumeMandatoryClosing(sort, SyntaxKind.END_SORT, opening);
+
+		return sort;
 	}
 
 	private StatementNode perform() throws ParseError
