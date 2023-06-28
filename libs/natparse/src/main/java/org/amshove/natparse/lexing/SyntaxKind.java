@@ -139,7 +139,7 @@ public enum SyntaxKind
 	ATN(false, false, false),
 	AVER(false, false, false),
 	BACKOUT(false, false, false),
-	BEFORE(true, false, false), // TODO: Should be false, but is currently used by NatUnit
+	BEFORE(false, false, false),
 	BREAK(false, false, false),
 	BROWSE(false, false, false),
 	CALL(false, false, false),

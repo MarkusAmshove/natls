@@ -683,7 +683,20 @@ class StatementListParserShould extends StatementParseTest
 			%s
 			END-SORT
 			""".formatted(statement), ISortStatementNode.class);
-		assertThat(sort.body().statements().isEmpty());
+		assertThat(sort.body().statements()).isEmpty();
+	}
+
+	@Test
+	void recognizeBeforeBreakAsStatementInsteadOfOperandToSort()
+	{
+		assertParsesSingleStatement("""
+			END-ALL
+			SORT BY #VAR1
+			BEFORE BREAK PROCESSING
+			IGNORE
+			END-BEFORE
+			END-SORT
+			""", ISortStatementNode.class);
 	}
 
 	@Test
