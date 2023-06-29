@@ -7,6 +7,7 @@ import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.project.NaturalFileType;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -71,12 +72,27 @@ abstract class AbstractParser<T>
 		return module;
 	}
 
+	private static final Set<NaturalFileType> TYPES_FOR_USINGS = Set.of(NaturalFileType.GDA, NaturalFileType.LDA, NaturalFileType.PDA);
+
 	protected IHasDefineData sideloadDefineData(TokenNode importNode)
 	{
-		if (sideloadModule(importNode.token().symbolName(), importNode.token())instanceof IHasDefineData hasDefineData)
+		var module = sideloadModule(importNode.token().symbolName(), importNode.token());
+		if (module instanceof IHasDefineData hasDefineData
+			&& TYPES_FOR_USINGS.contains(module.file().getFiletype()))
 		{
 			return hasDefineData;
 		}
+		else
+			if (module != null)
+			{
+				report(
+					ParserErrors.invalidModuleType(
+						"Only data areas can be imported via USING. This is a %s."
+							.formatted(module.file().getFiletype()),
+						importNode.token()
+					)
+				);
+			}
 
 		return null;
 	}
@@ -657,7 +673,7 @@ abstract class AbstractParser<T>
 		node.addNode(oldOperand);
 		consumeMandatory(oldOperand, SyntaxKind.OLD);
 		consumeMandatory(oldOperand, SyntaxKind.LPAREN);
-		oldOperand.setVariable(consumeVariableReferenceNode(oldOperand));
+		oldOperand.setOperand(consumeOperandNode(oldOperand));
 		consumeMandatory(oldOperand, SyntaxKind.RPAREN);
 		return oldOperand;
 	}
@@ -830,23 +846,20 @@ abstract class AbstractParser<T>
 		previousNode = reference;
 		node.addNode(reference);
 
-		if (peekKind(SyntaxKind.LPAREN) && !getKind(1).isAttribute() && !peekKind(1, SyntaxKind.LABEL_IDENTIFIER))
+		if (peekKind(SyntaxKind.LPAREN) && !getKind(1).isAttribute())
 		{
 			consumeMandatory(reference, SyntaxKind.LPAREN);
-			reference.addDimension(consumeArrayAccess(reference));
-			while (peekKind(SyntaxKind.COMMA))
+			var isArrayRef = consumeOptionally(reference, SyntaxKind.LABEL_IDENTIFIER) && consumeOptionally(reference, SyntaxKind.SLASH);
+			// If just RPAREN left, then this was just a LABEL_IDENTIFIER and thus not an array.
+			isArrayRef = isArrayRef || !peekKind(SyntaxKind.RPAREN);
+			if (isArrayRef)
 			{
-				consume(reference);
 				reference.addDimension(consumeArrayAccess(reference));
-			}
-			consumeMandatory(reference, SyntaxKind.RPAREN);
-		}
-
-		if (peekKind(SyntaxKind.LPAREN) && peekKind(1, SyntaxKind.LABEL_IDENTIFIER))
-		{
-			while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
-			{
-				consume(reference);
+				while (peekKind(SyntaxKind.COMMA))
+				{
+					consume(reference);
+					reference.addDimension(consumeArrayAccess(reference));
+				}
 			}
 			consumeMandatory(reference, SyntaxKind.RPAREN);
 		}
@@ -910,7 +923,7 @@ abstract class AbstractParser<T>
 		return false;
 	}
 
-	protected SyntaxToken consumeAnyMandatory(BaseSyntaxNode node, List<SyntaxKind> acceptedKinds) throws ParseError
+	protected SyntaxToken consumeAnyMandatory(BaseSyntaxNode node, Collection<SyntaxKind> acceptedKinds) throws ParseError
 	{
 		for (SyntaxKind acceptedKind : acceptedKinds)
 		{
@@ -945,6 +958,7 @@ abstract class AbstractParser<T>
 		// we don't do anything special yet, need some experience on where attribute definitions are allowed
 		// this was built for CALLNAT, where a variable reference as parameter can have attribute definitions (only AD)
 		// might be reusable for WRITE, DISPLAY, etc. for all kind of operands, but has to be fleshed out then
+		// At that point, we could also add something similar for EM=
 		consumeMandatory(node, SyntaxKind.LPAREN);
 		while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
 		{
@@ -1013,6 +1027,11 @@ abstract class AbstractParser<T>
 	protected void rollbackOnce()
 	{
 		tokens.rollback(1);
+	}
+
+	protected void rollback(int offset)
+	{
+		tokens.rollback(offset);
 	}
 
 	protected SyntaxToken peekNextLine()

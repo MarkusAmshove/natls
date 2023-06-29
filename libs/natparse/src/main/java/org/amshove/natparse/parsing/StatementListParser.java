@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 public class StatementListParser extends AbstractParser<IStatementListNode>
 {
 	private static final Pattern SETKEY_PATTERN = Pattern.compile("(ENTR|CLR|PA[1-3]|PF([1-9]|[0-1][\\d]|2[0-4]))\\b");
+	private static final List<SyntaxKind> TO_INTO = List.of(SyntaxKind.INTO, SyntaxKind.TO);
 
 	private List<IReferencableNode> referencableNodes;
 
@@ -91,11 +92,20 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 				switch (tokens.peek().kind())
 				{
+					case ACCEPT:
+						statementList.addStatement(acceptOrReject());
+						break;
+					case REJECT:
+						statementList.addStatement(acceptOrReject());
+						break;
 					case ADD:
 						statementList.addStatement(addStatement());
 						break;
 					case ASSIGN:
 						statementList.addStatements(assignOrCompute(SyntaxKind.ASSIGN));
+						break;
+					case MOVE:
+						statementList.addStatement(moveStatement());
 						break;
 					case AT:
 						if (peekKind(1, SyntaxKind.END) && (peekKind(3, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE)))
@@ -175,9 +185,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						break;
 					case FORMAT:
 						statementList.addStatement(formatNode());
-						break;
-					case HISTOGRAM:
-						statementList.addStatement(histogram());
 						break;
 					case INPUT:
 						statementList.addStatement(inputStatement());
@@ -300,8 +307,22 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case NEWPAGE:
 						statementList.addStatement(newPage());
 						break;
+					case HISTOGRAM:
+						statementList.addStatement(histogram());
+						break;
 					case FIND:
 						statementList.addStatement(find());
+						break;
+					case BROWSE:
+						statementList.addStatement(readStatement());
+						break;
+					case READ:
+						if (peek(1).kind() == SyntaxKind.WORK)
+						{
+							statementList.addStatement(readWork());
+							break;
+						}
+						statementList.addStatement(readStatement());
 						break;
 					case PERFORM:
 						if (peek(1).kind() == SyntaxKind.BREAK)
@@ -317,6 +338,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case TOP:
 						statementList.addStatement(parseAtPositionOf(SyntaxKind.TOP, SyntaxKind.PAGE, SyntaxKind.END_TOPPAGE, false, new TopOfPageNode()));
 						break;
+					case REPEAT:
+						statementList.addStatement(repeatLoop());
+						break;
 					case RESET:
 						statementList.addStatement(resetStatement());
 						break;
@@ -329,6 +353,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case TERMINATE:
 						statementList.addStatement(terminate());
 						break;
+					case IF:
+						statementList.addStatement(ifStatement());
+						break;
 					case DECIDE:
 						if (peekKind(1, SyntaxKind.FOR))
 						{
@@ -336,6 +363,16 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 							break;
 						}
 						statementList.addStatement(decideOn());
+						break;
+					// Below this line, add statements that can be used as keywords within other statements.
+					// Like FOR is a keyword in HISTOGRAM etc.
+					case FOR:
+						statementList.addStatement(forLoop());
+						break;
+					// SORT statement has to start with END-ALL, so because consumeMandatoryClosing()
+					// is checking for END-ALL, we have to parse it very late.
+					case END_ALL, SORT:
+						statementList.addStatement(sortStatement());
 						break;
 					case ON:
 						if (peekKind(1, SyntaxKind.ERROR))
@@ -365,22 +402,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 							break;
 						}
 						// FALLTHROUGH TO DEFAULT INTENDED - SET CONTROL etc. not implemented
-					case IF:
-						if (peekKind(SyntaxKind.IF) && (peek(-1) == null || peek(-1).kind() != SyntaxKind.REJECT && peek(-1).kind() != SyntaxKind.ACCEPT)) // TODO: until ACCEPT/REJECT IF
-						{
-							statementList.addStatement(ifStatement());
-							break;
-						}
-						// FALLTHROUGH TO DEFAULT INTENDED
-					case FOR:
-						if (peekKind(SyntaxKind.FOR) && (peek(-1) == null || (peek(1).kind() == SyntaxKind.IDENTIFIER && peek(-1).kind() != SyntaxKind.REJECT && peek(-1).kind() != SyntaxKind.ACCEPT)))
-						// TODO: until we support EXAMINE, DECIDE, HISTOGRAM, ...
-						//      just.. implement them already and don't try to understand the conditions
-						{
-							statementList.addStatement(forLoop());
-							break;
-						}
-						// FALLTHROUGH TO DEFAULT INTENDED
 					default:
 
 						if (isAssignmentStart())
@@ -747,8 +768,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return work;
 	}
 
-	private static final List<SyntaxKind> TO_INTO = List.of(SyntaxKind.INTO, SyntaxKind.TO);
-
 	private CompressStatementNode compress() throws ParseError
 	{
 		var compress = new CompressStatementNode();
@@ -1066,7 +1085,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return compose;
 	}
 
-	private void consumeComposeMovingStatus(ComposeStatementNode node) throws ParseError
+	private void consumeComposeMovingStatus(BaseSyntaxNode node) throws ParseError
 	{
 		if (consumeOptionally(node, SyntaxKind.STATUS))
 		{
@@ -1075,7 +1094,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 	}
 
-	private void consumeAssigning(ComposeStatementNode node) throws ParseError
+	private void consumeAssigning(BaseSyntaxNode node) throws ParseError
 	{
 		var left = consumeOperandNode(node);
 		checkOperand(left, "The left side can only be a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
@@ -1085,7 +1104,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		checkLiteralTypeIfLiteral(right, SyntaxKind.STRING_LITERAL, SyntaxKind.NUMBER_LITERAL);
 	}
 
-	private void consumeExtracting(ComposeStatementNode node) throws ParseError
+	private void consumeExtracting(BaseSyntaxNode node) throws ParseError
 	{
 		var left = consumeOperandNode(node);
 		checkOperand(left, "The left side can only be a variable reference.", AllowedOperand.VARIABLE_REFERENCE);
@@ -1095,7 +1114,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		checkLiteralTypeIfLiteral(right, SyntaxKind.STRING_LITERAL);
 	}
 
-	private int consumeComposeOperands(ComposeStatementNode node) throws ParseError
+	private int consumeComposeOperands(BaseSyntaxNode node) throws ParseError
 	{
 		int numFound = 0;
 		while (isOperand() && !(peekAny(COMPOSE_SUBCLAUSES) || peekAny(COMPOSE_ALL_SUBCLAUSES) || isStatementStart()))
@@ -1319,106 +1338,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeOptionally(skip, SyntaxKind.LINES);
 
 		return skip;
-	}
-
-	private static final Set<SyntaxKind> HISTOGRAM_CONDITIONAL_OPERATORS = Set
-		.of(SyntaxKind.LESSER_GREATER, SyntaxKind.LESSER_SIGN, SyntaxKind.LT, SyntaxKind.LESS, SyntaxKind.LESSER_EQUALS_SIGN, SyntaxKind.LE, SyntaxKind.GREATER_SIGN, SyntaxKind.GT, SyntaxKind.GREATER, SyntaxKind.GREATER_EQUALS_SIGN, SyntaxKind.GE);
-
-	private StatementNode histogram() throws ParseError
-	{
-		var histogram = new HistogramNode();
-		consumeMandatory(histogram, SyntaxKind.HISTOGRAM);
-		var start = previousToken();
-
-		consumeAnyOptionally(histogram, List.of(SyntaxKind.ALL, SyntaxKind.LPAREN));
-		if (previousToken().kind() == SyntaxKind.LPAREN)
-		{
-			consumeOperandNode(histogram); // limit
-			consumeMandatory(histogram, SyntaxKind.RPAREN);
-		}
-
-		if (consumeOptionally(histogram, SyntaxKind.MULTI_FETCH) && !consumeAnyOptionally(histogram, List.of(SyntaxKind.ON, SyntaxKind.OFF)))
-		{
-			consumeOptionally(histogram, SyntaxKind.OF);
-			consumeOperandNode(histogram); // number to fetch
-		}
-
-		consumeOptionally(histogram, SyntaxKind.IN);
-		consumeOptionally(histogram, SyntaxKind.FILE);
-
-		histogram.setView(consumeVariableReferenceNode(histogram));
-		if (consumeOptionally(histogram, SyntaxKind.PASSWORD))
-		{
-			consumeMandatory(histogram, SyntaxKind.EQUALS_SIGN);
-			consumeOperandNode(histogram);
-		}
-
-		if (consumeAnyOptionally(histogram, List.of(SyntaxKind.IN, SyntaxKind.ASC, SyntaxKind.ASCENDING, SyntaxKind.DESC, SyntaxKind.DESCENDING, SyntaxKind.VARIABLE, SyntaxKind.DYNAMIC)))
-		{
-			if (previousToken().kind() == SyntaxKind.IN)
-			{
-				consumeAnyMandatory(histogram, List.of(SyntaxKind.ASC, SyntaxKind.ASCENDING, SyntaxKind.DESC, SyntaxKind.DESCENDING, SyntaxKind.VARIABLE, SyntaxKind.DYNAMIC));
-			}
-
-			if (previousToken().kind() == SyntaxKind.VARIABLE || previousToken().kind() == SyntaxKind.DYNAMIC)
-			{
-				consumeOperandNode(histogram);
-			}
-
-			consumeOptionally(histogram, SyntaxKind.SEQUENCE);
-		}
-
-		consumeOptionally(histogram, SyntaxKind.VALUE);
-		consumeOptionally(histogram, SyntaxKind.FOR);
-		consumeOptionally(histogram, SyntaxKind.FIELD);
-		histogram.setDescriptor(consumeMandatoryIdentifier(histogram));
-
-		if (consumeAnyOptionally(histogram, List.of(SyntaxKind.STARTING, SyntaxKind.ENDING)))
-		{
-			if (previousToken().kind() == SyntaxKind.STARTING)
-			{
-				consumeAnyOptionally(histogram, List.of(SyntaxKind.WITH, SyntaxKind.FROM));
-				consumeAnyOptionally(histogram, List.of(SyntaxKind.VALUE, SyntaxKind.VALUES));
-				consumeOperandNode(histogram);
-			}
-
-			if (consumeAnyOptionally(histogram, List.of(SyntaxKind.THRU, SyntaxKind.ENDING)))
-			{
-				if (previousToken().kind() == SyntaxKind.ENDING)
-				{
-					consumeMandatory(histogram, SyntaxKind.AT);
-					consumeOperandNode(histogram);
-				}
-			}
-			else
-			{
-				if (consumeOptionally(histogram, SyntaxKind.TO))
-				{
-					consumeOperandNode(histogram);
-				}
-			}
-		}
-		else
-		{
-			if (HISTOGRAM_CONDITIONAL_OPERATORS.contains(peek().kind()))
-			{
-				var consumed = consume(histogram);
-				if (consumed.kind() == SyntaxKind.LESS || consumed.kind() == SyntaxKind.GREATER)
-				{
-					consumeAnyMandatory(histogram, List.of(SyntaxKind.THAN, SyntaxKind.EQUAL));
-				}
-				consumeOperandNode(histogram);
-			}
-		}
-
-		if (consumeOptionally(histogram, SyntaxKind.WHERE))
-		{
-			histogram.setCondition(conditionNode());
-		}
-		histogram.setBody(statementList(SyntaxKind.END_HISTOGRAM));
-		consumeMandatoryClosing(histogram, SyntaxKind.END_HISTOGRAM, start);
-
-		return histogram;
 	}
 
 	private StatementNode select() throws ParseError
@@ -1839,10 +1758,12 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		var examine = new ExamineNode();
 		consumeMandatory(examine, SyntaxKind.EXAMINE);
-		if (consumeOptionally(examine, SyntaxKind.DIRECTION))
+		if (consumeOptionally(examine, SyntaxKind.DIRECTION) && !consumeAnyOptionally(examine, List.of(SyntaxKind.FORWARD, SyntaxKind.BACKWARD)))
 		{
-			consumeAnyOptionally(examine, List.of(SyntaxKind.FORWARD, SyntaxKind.BACKWARD));
+			// Direction can be specified as an operand (TODO: Type-check A1 or string literal of length 1)
+			consumeOperandNode(examine);
 		}
+
 		if (consumeOptionally(examine, SyntaxKind.FULL))
 		{
 			if (consumeOptionally(examine, SyntaxKind.VALUE))
@@ -1979,7 +1900,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(separate, SyntaxKind.INTO);
 		while (isOperand() && !(peekAny(SEPARATE_KEYWORDS) || isStatementStart() || isStatementEndOrBranch()))
 		{
-			separate.addOperand(consumeOperandNode(separate));
+			separate.addTarget(consumeOperandNode(separate));
 		}
 
 		if (consumeEitherOptionally(separate, SyntaxKind.IGNORE, SyntaxKind.REMAINDER) && previousToken().kind() == SyntaxKind.REMAINDER)
@@ -2032,9 +1953,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return separate;
 	}
 
+	private static final List<SyntaxKind> SUBSTRINGS = List.of(SyntaxKind.SUBSTR, SyntaxKind.SUBSTRING);
+
 	private IOperandNode consumeSubstringOrOperand(BaseSyntaxNode node) throws ParseError
 	{
-		if (peekKind(SyntaxKind.SUBSTR) || peekKind(SyntaxKind.SUBSTRING))
+		if (peekAny(SUBSTRINGS))
 		{
 			return consumeSubstring(node);
 		}
@@ -2048,7 +1971,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		var substring = new SubstringOperandNode();
 		node.addNode(substring);
-		consumeAnyMandatory(node, List.of(SyntaxKind.SUBSTR, SyntaxKind.SUBSTRING));
+		consumeAnyMandatory(node, SUBSTRINGS);
 
 		consumeMandatory(node, SyntaxKind.LPAREN);
 		substring.setOperand(consumeOperandNode(substring));
@@ -2601,6 +2524,32 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 	}
 
+	private static final Set<SyntaxKind> REPEAT_TERMINATION = Set.of(SyntaxKind.UNTIL, SyntaxKind.WHILE, SyntaxKind.END_REPEAT);
+
+	private StatementNode repeatLoop() throws ParseError
+	{
+		var loopNode = new RepeatLoopNode();
+		var opening = consumeMandatory(loopNode, SyntaxKind.REPEAT);
+		if (consumeEitherOptionally(loopNode, SyntaxKind.UNTIL, SyntaxKind.WHILE))
+		{
+			loopNode.setCondition(conditionNode());
+			loopNode.setBody(statementList(SyntaxKind.END_REPEAT));
+		}
+		else
+		{
+			loopNode.setBody(statementList(REPEAT_TERMINATION));
+			if (consumeEitherOptionally(loopNode, SyntaxKind.UNTIL, SyntaxKind.WHILE))
+			{
+				loopNode.setCondition(conditionNode());
+			}
+		}
+
+		checkForEmptyBody(loopNode);
+		consumeMandatoryClosing(loopNode, SyntaxKind.END_REPEAT, opening);
+
+		return loopNode;
+	}
+
 	private StatementNode forLoop() throws ParseError
 	{
 		var loopNode = new ForLoopNode();
@@ -2622,6 +2571,69 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatoryClosing(loopNode, SyntaxKind.END_FOR, opening);
 
 		return loopNode;
+	}
+
+	private static final List<SyntaxKind> END_OF_SORT_KINDS = List.of(SyntaxKind.USING, SyntaxKind.GIVE, SyntaxKind.GIVING, SyntaxKind.END_SORT);
+	private static final List<SyntaxKind> SORT_DIRECTIONS_KINDS = List.of(SyntaxKind.ASC, SyntaxKind.ASCENDING, SyntaxKind.DESC, SyntaxKind.DESCENDING);
+	private static final List<SyntaxKind> ALLOWED_SYSTEMFUNCTIONS = List.of(SyntaxKind.MAX, SyntaxKind.MIN, SyntaxKind.NMIN, SyntaxKind.COUNT, SyntaxKind.NCOUNT, SyntaxKind.OLD, SyntaxKind.AVER, SyntaxKind.NAVER, SyntaxKind.SUM, SyntaxKind.TOTAL);
+
+	private StatementNode sortStatement() throws ParseError
+	{
+		var sort = new SortStatementNode();
+		consumeMandatory(sort, SyntaxKind.END_ALL);
+		consumeOptionally(sort, SyntaxKind.AND);
+		var opening = consumeMandatory(sort, SyntaxKind.SORT);
+		consumeAnyOptionally(sort, List.of(SyntaxKind.THEM, SyntaxKind.RECORDS, SyntaxKind.RECORD));
+		consumeOptionally(sort, SyntaxKind.BY);
+
+		while ((isOperand() || peekAny(SORT_DIRECTIONS_KINDS)) && !peekAny(END_OF_SORT_KINDS))
+		{
+			var operand = consumeOperandNode(sort);
+			var sortDirection = SortDirection.fromSyntaxKind(SyntaxKind.ASCENDING);
+			if (consumeAnyOptionally(sort, SORT_DIRECTIONS_KINDS))
+			{
+				sortDirection = SortDirection.fromSyntaxKind(previousToken().kind());
+			}
+
+			sort.addSortBy(new SortedOperand(operand, sortDirection));
+		}
+
+		if (consumeOptionally(sort, SyntaxKind.USING) && !consumeEitherOptionally(sort, SyntaxKind.KEYS, SyntaxKind.KEY))
+		{
+			while (isOperand() && !peekAny(END_OF_SORT_KINDS))
+			{
+				var node = consumeOperandNode(sort);
+				sort.addUsing(node);
+			}
+		}
+
+		if (consumeEitherOptionally(sort, SyntaxKind.GIVE, SyntaxKind.GIVING))
+		{
+			while (!peekKind(SyntaxKind.END_SORT))
+			{
+				consumeAnyMandatory(sort, ALLOWED_SYSTEMFUNCTIONS);
+				while (consumeAnyOptionally(sort, ALLOWED_SYSTEMFUNCTIONS))
+				{
+					// It's fine, don't worry
+				}
+				consumeOptionally(sort, SyntaxKind.OF);
+				var lparen = consumeOptionally(sort, SyntaxKind.LPAREN);
+				consumeOperandNode(sort);
+				if (lparen)
+				{
+					consumeMandatory(sort, SyntaxKind.RPAREN);
+				}
+				if (peekKind(SyntaxKind.LPAREN))
+				{
+					consumeAttributeDefinition(sort);
+				}
+			}
+		}
+
+		sort.setBody(statementList(SyntaxKind.END_SORT));
+		consumeMandatoryClosing(sort, SyntaxKind.END_SORT, opening);
+
+		return sort;
 	}
 
 	private StatementNode perform() throws ParseError
@@ -2874,6 +2886,15 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return fetch;
 	}
 
+	private StatementNode acceptOrReject() throws ParseError
+	{
+		var acceptReject = new AcceptRejectNode();
+		consumeAnyMandatory(acceptReject, List.of(SyntaxKind.ACCEPT, SyntaxKind.REJECT));
+		consumeOptionally(acceptReject, SyntaxKind.IF);
+		acceptReject.setCondition(conditionNode());
+		return acceptReject;
+	}
+
 	private static final Set<SyntaxKind> IF_STATEMENT_STOP_KINDS = Set.of(SyntaxKind.END_IF, SyntaxKind.ELSE);
 
 	private StatementNode ifStatement() throws ParseError
@@ -2923,7 +2944,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private ILogicalConditionCriteriaNode chainedCriteria() throws ParseError
 	{
 		var left = conditionCriteria();
-		if (peekKind(SyntaxKind.AND) || peekKind(SyntaxKind.OR))
+		if (peekKind(SyntaxKind.AND) || peekKind(SyntaxKind.OR) && !peekKind(1, SyntaxKind.COUPLED))
 		{
 			var chainedCriteria = new ChainedCriteriaNode();
 			chainedCriteria.setLeft(left);
@@ -3634,56 +3655,455 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return statement;
 	}
 
+	private static final Set<SyntaxKind> DBMS_CONDITIONAL_OPERATORS = Set
+		.of(SyntaxKind.LESSER_GREATER, SyntaxKind.LESSER_SIGN, SyntaxKind.LT, SyntaxKind.LESS, SyntaxKind.LESSER_EQUALS_SIGN, SyntaxKind.LE, SyntaxKind.GREATER_SIGN, SyntaxKind.GT, SyntaxKind.GREATER, SyntaxKind.GREATER_EQUALS_SIGN, SyntaxKind.GE);
+
+	private StatementNode histogram() throws ParseError
+	{
+		var histogram = new HistogramNode();
+		var opening = consumeMandatory(histogram, SyntaxKind.HISTOGRAM);
+		consumeDbmsStart(histogram);
+		histogram.setView(consumeVariableReferenceNode(histogram));
+		consumePasswordAndCipher(histogram);
+
+		if (consumeAnyOptionally(histogram, List.of(SyntaxKind.IN, SyntaxKind.ASC, SyntaxKind.ASCENDING, SyntaxKind.DESC, SyntaxKind.DESCENDING, SyntaxKind.VARIABLE, SyntaxKind.DYNAMIC)))
+		{
+			if (previousToken().kind() == SyntaxKind.IN)
+			{
+				consumeAnyMandatory(histogram, List.of(SyntaxKind.ASC, SyntaxKind.ASCENDING, SyntaxKind.DESC, SyntaxKind.DESCENDING, SyntaxKind.VARIABLE, SyntaxKind.DYNAMIC));
+			}
+
+			if (previousToken().kind() == SyntaxKind.VARIABLE || previousToken().kind() == SyntaxKind.DYNAMIC)
+			{
+				consumeOperandNode(histogram);
+			}
+
+			consumeOptionally(histogram, SyntaxKind.SEQUENCE);
+		}
+
+		consumeOptionally(histogram, SyntaxKind.VALUE);
+		consumeOptionally(histogram, SyntaxKind.FOR);
+		consumeOptionally(histogram, SyntaxKind.FIELD);
+		histogram.setDescriptor(consumeMandatoryIdentifier(histogram));
+
+		if (consumeAnyOptionally(histogram, List.of(SyntaxKind.STARTING, SyntaxKind.ENDING)))
+		{
+			if (previousToken().kind() == SyntaxKind.STARTING)
+			{
+				consumeAnyOptionally(histogram, List.of(SyntaxKind.WITH, SyntaxKind.FROM));
+				consumeAnyOptionally(histogram, List.of(SyntaxKind.VALUE, SyntaxKind.VALUES));
+				consumeOperandNode(histogram);
+			}
+
+			if (consumeAnyOptionally(histogram, List.of(SyntaxKind.THRU, SyntaxKind.ENDING)))
+			{
+				if (previousToken().kind() == SyntaxKind.ENDING)
+				{
+					consumeMandatory(histogram, SyntaxKind.AT);
+					consumeOperandNode(histogram);
+				}
+			}
+			else
+			{
+				if (consumeOptionally(histogram, SyntaxKind.TO))
+				{
+					consumeOperandNode(histogram);
+				}
+			}
+		}
+		else
+		{
+			if (DBMS_CONDITIONAL_OPERATORS.contains(peek().kind()))
+			{
+				var consumed = consume(histogram);
+				if (consumed.kind() == SyntaxKind.LESS || consumed.kind() == SyntaxKind.GREATER)
+				{
+					consumeAnyMandatory(histogram, List.of(SyntaxKind.THAN, SyntaxKind.EQUAL));
+				}
+				consumeOperandNode(histogram);
+			}
+		}
+
+		if (consumeOptionally(histogram, SyntaxKind.WHERE))
+		{
+			histogram.setCondition(conditionNode());
+		}
+		histogram.setBody(statementList(SyntaxKind.END_HISTOGRAM));
+		consumeMandatoryClosing(histogram, SyntaxKind.END_HISTOGRAM, opening);
+
+		return histogram;
+	}
+
 	private FindNode find() throws ParseError
 	{
 		var find = new FindNode();
 
-		var open = consumeMandatory(find, SyntaxKind.FIND);
+		var opening = consumeMandatory(find, SyntaxKind.FIND);
 		var hasNoBody = consumeOptionally(find, SyntaxKind.FIRST) || consumeOptionally(find, SyntaxKind.KW_NUMBER) || consumeOptionally(find, SyntaxKind.UNIQUE);
-		consumeOptionally(find, SyntaxKind.ALL);
-		if (consumeOptionally(find, SyntaxKind.LPAREN))
+		consumeDbmsStart(find);
+		find.setView(consumeVariableReferenceNode(find));
+		consumePasswordAndCipher(find);
+
+		// WITH is not required, however the descriptor and logical criteria is
+		consumeOptionally(find, SyntaxKind.WITH);
+
+		if (consumeOptionally(find, SyntaxKind.LIMIT))
 		{
+			consumeLiteral(find);
+		}
+
+		if (peekKind(SyntaxKind.STRING_LITERAL))
+		{
+			consumeLiteralNode(find);
+		}
+		else
+		{
+			find.addNode(conditionNode());
+		}
+
+		//Coupled Clause:
+		if (consumeEitherOptionally(find, SyntaxKind.AND, SyntaxKind.OR))
+		{
+			consumeMandatory(find, SyntaxKind.COUPLED);
+			consumeOptionally(find, SyntaxKind.TO);
+			consumeOptionally(find, SyntaxKind.FILE);
 			consumeOperandNode(find);
-			consumeMandatory(find, SyntaxKind.RPAREN);
-		}
-		if (consumeOptionally(find, SyntaxKind.MULTI_FETCH) && !consumeAnyOptionally(find, List.of(SyntaxKind.ON, SyntaxKind.OFF)))
-		{
-			consumeOptionally(find, SyntaxKind.OF);
-			consumeOperandNode(find); // number to fetch
-		}
-
-		consumeEitherOptionally(find, SyntaxKind.RECORDS, SyntaxKind.RECORD);
-		consumeOptionally(find, SyntaxKind.IN);
-		consumeOptionally(find, SyntaxKind.FILE);
-
-		var viewName = symbolReferenceNode(consumeIdentifierTokenOnly());
-		find.setView(viewName);
-
-		if (consumeOptionally(find, SyntaxKind.WITH))
-		{
-			if (consumeOptionally(find, SyntaxKind.LIMIT))
+			if (consumeOptionally(find, SyntaxKind.VIA))
 			{
-				consumeLiteral(find);
+				consumeOperandNode(find);
+				consumeAnyMandatory(find, List.of(SyntaxKind.EQ, SyntaxKind.EQUALS_SIGN, SyntaxKind.EQUAL));
+				if (previousToken().kind() == SyntaxKind.EQUAL)
+				{
+					consumeOptionally(find, SyntaxKind.TO);
+				}
+				consumeOperandNode(find);
 			}
+			consumeOptionally(find, SyntaxKind.WITH);
+			find.addNode(conditionNode());
+		}
 
-			if (peekKind(SyntaxKind.STRING_LITERAL))
+		if (!hasNoBody)
+		{
+			consumeStartingWithIsn(find);
+		}
+
+		//Sorted-By Clause OR Retain-As Clause (you can't have both)
+		if (consumeAnyOptionally(find, List.of(SyntaxKind.SORTED, SyntaxKind.RETAIN)))
+		{
+			if (previousToken().kind() == SyntaxKind.SORTED)
 			{
-				consumeLiteralNode(find);
+				consumeOptionally(find, SyntaxKind.BY);
+				while (!(peekAny(List.of(SyntaxKind.DESCENDING, SyntaxKind.DESC))) && isOperand() && !isStatementStart())
+				{
+					consumeOperandNode(find);
+				}
+				consumeAnyOptionally(find, List.of(SyntaxKind.DESCENDING, SyntaxKind.DESC));
 			}
 			else
 			{
-				find.addNode(conditionNode());
+				consumeMandatory(find, SyntaxKind.AS);
+				consumeOperandNode(find);
 			}
 		}
 
 		if (!hasNoBody)
 		{
-			find.setBody(statementList(SyntaxKind.END_FIND));
+			consumeSharedHold(find);
+			consumeSkipRecordsInHold(find);
+		}
 
-			consumeMandatoryClosing(find, SyntaxKind.END_FIND, open);
+		if (consumeOptionally(find, SyntaxKind.WHERE))
+		{
+			find.addNode(conditionNode());
+		}
+
+		if (!hasNoBody)
+		{
+			find.setBody(statementList(SyntaxKind.END_FIND));
+			consumeMandatoryClosing(find, SyntaxKind.END_FIND, opening);
 		}
 
 		return find;
+	}
+
+	private ReadWorkNode readWork() throws ParseError
+	{
+		var work = new ReadWorkNode();
+
+		var opening = consumeMandatory(work, SyntaxKind.READ);
+		consumeMandatory(work, SyntaxKind.WORK);
+		consumeOptionally(work, SyntaxKind.FILE);
+		var number = consumeLiteralNode(work, SyntaxKind.NUMBER_LITERAL);
+		checkNumericRange(number, 1, 32);
+		work.setWorkFileNumber(number);
+		var hasNoBody = consumeOptionally(work, SyntaxKind.ONCE);
+		var operandLoop = true;
+
+		if (consumeOptionally(work, SyntaxKind.RECORD))
+		{
+			operandLoop = false;
+			consumeOperandNode(work);
+		}
+
+		if (peekAny(List.of(SyntaxKind.AND, SyntaxKind.SELECT, SyntaxKind.OFFSET, SyntaxKind.FILLER)))
+		{
+			operandLoop = false;
+			consumeOptionally(work, SyntaxKind.AND);
+			consumeOptionally(work, SyntaxKind.SELECT);
+
+			while (consumeEitherOptionally(work, SyntaxKind.OFFSET, SyntaxKind.FILLER))
+			{
+				if (previousToken().kind() == SyntaxKind.OFFSET)
+				{
+					consumeLiteralNode(work, SyntaxKind.NUMBER_LITERAL);
+				}
+				else
+				{
+					consumeMandatory(work, SyntaxKind.OPERAND_SKIP);
+				}
+
+				consumeOperandNode(work);
+			}
+
+			consumeOptionally(work, SyntaxKind.AND);
+			consumeOptionally(work, SyntaxKind.ADJUST);
+			consumeOptionally(work, SyntaxKind.OCCURRENCES);
+		}
+
+		if (operandLoop)
+		{
+			while (isOperand() && !isStatementStart())
+			{
+				consumeOperandNode(work);
+			}
+		}
+
+		if (hasNoBody)
+		{
+			if (peekKind(SyntaxKind.AT))
+			{
+				atEndOfFile();
+			}
+		}
+		else
+		{
+			work.setBody(statementList(SyntaxKind.END_WORK));
+			consumeMandatoryClosing(work, SyntaxKind.END_WORK, opening);
+		}
+
+		return work;
+	}
+
+	private AtEndOfFileNode atEndOfFile() throws ParseError
+	{
+		var statement = new AtEndOfFileNode();
+
+		var opening = consumeMandatory(statement, SyntaxKind.AT);
+		consumeOptionally(statement, SyntaxKind.END);
+		consumeOptionally(statement, SyntaxKind.OF);
+		consumeOptionally(statement, SyntaxKind.FILE);
+
+		statement.setBody(statementList(SyntaxKind.END_ENDFILE));
+		consumeMandatoryClosing(statement, SyntaxKind.END_ENDFILE, opening);
+
+		return statement;
+	}
+
+	private static final Set<SyntaxKind> READ_SYNTAXES = Set
+		.of(SyntaxKind.BY, SyntaxKind.WITH, SyntaxKind.KW_ISN, SyntaxKind.IN, SyntaxKind.PHYSICAL, SyntaxKind.LOGICAL, SyntaxKind.SEQUENCE);
+	private static final List<SyntaxKind> READ_SEQUENCES = List
+		.of(SyntaxKind.ASCENDING, SyntaxKind.ASC, SyntaxKind.DESCENDING, SyntaxKind.DESC, SyntaxKind.VARIABLE, SyntaxKind.DYNAMIC);
+
+	private ReadNode readStatement() throws ParseError
+	{
+		var read = new ReadNode();
+
+		var opening = consumeAnyMandatory(read, List.of(SyntaxKind.READ, SyntaxKind.BROWSE));
+		consumeDbmsStart(read);
+		read.setView(consumeVariableReferenceNode(read));
+		consumePasswordAndCipher(read);
+
+		// WITH can be part of search specification, therefore:
+		if (peekKind(SyntaxKind.WITH) && peekKind(1, SyntaxKind.REPOSITION))
+		{
+			consumeMandatory(read, SyntaxKind.WITH);
+			consumeMandatory(read, SyntaxKind.REPOSITION);
+		}
+
+		var numConsumed = 0;
+		var readSeq = ReadSequence.PHYSICAL;
+		while (!isAtEnd() && READ_SYNTAXES.contains(peek().kind()))
+		{
+			var consumed = consume(read);
+			numConsumed++;
+			readSeq = ReadSequence.fromSyntaxKind(consumed.kind());
+		}
+		// Rollback the token pointer, now that the type of READ is known
+		rollback(numConsumed);
+
+		read.setReadSequence(readSeq);
+		switch (readSeq)
+		{
+			case PHYSICAL:
+				consumeAnyOptionally(read, List.of(SyntaxKind.IN, SyntaxKind.PHYSICAL));
+				if (consumeAnyOptionally(read, READ_SEQUENCES) && (previousToken().kind() == SyntaxKind.VARIABLE || previousToken().kind() == SyntaxKind.DYNAMIC))
+				{
+					consumeOperandNode(read);
+				}
+				consumeOptionally(read, SyntaxKind.SEQUENCE);
+				break;
+			case ISN:
+				consumeAnyMandatory(read, List.of(SyntaxKind.BY, SyntaxKind.WITH));
+				consumeMandatory(read, SyntaxKind.KW_ISN);
+				consumeReadCondition(read, readSeq);
+				break;
+			case LOGICAL:
+				consumeAnyOptionally(read, List.of(SyntaxKind.IN, SyntaxKind.LOGICAL));
+				if (consumeAnyOptionally(read, READ_SEQUENCES) && (previousToken().kind() == SyntaxKind.VARIABLE || previousToken().kind() == SyntaxKind.DYNAMIC))
+				{
+					consumeOperandNode(read);
+				}
+				consumeOptionally(read, SyntaxKind.SEQUENCE);
+				/* Actually, Natural seems to support not specifying a descriptor (even though syntax diagram does not show it).
+				That's dirty! We want to enforce it. */
+				consumeAnyMandatory(read, List.of(SyntaxKind.BY, SyntaxKind.WITH));
+				consumeOperandNode(read);
+				consumeReadCondition(read, readSeq);
+				break;
+			default:
+				break;
+		}
+
+		consumeStartingWithIsn(read);
+		consumeSharedHold(read);
+		consumeSkipRecordsInHold(read);
+		if (consumeOptionally(read, SyntaxKind.WHERE))
+		{
+			read.addNode(conditionNode());
+		}
+
+		read.setBody(statementList(SyntaxKind.END_READ));
+		consumeMandatoryClosing(read, SyntaxKind.END_READ, opening);
+		return read;
+	}
+
+	private void consumeDbmsStart(BaseSyntaxNode node) throws ParseError
+	{
+		consumeAnyOptionally(node, List.of(SyntaxKind.ALL, SyntaxKind.LPAREN));
+		if (previousToken().kind() == SyntaxKind.LPAREN)
+		{
+			consumeOperandNode(node);
+			consumeMandatory(node, SyntaxKind.RPAREN);
+		}
+		consumeMultiFetch(node);
+		consumeEitherOptionally(node, SyntaxKind.RECORDS, SyntaxKind.RECORD);
+		consumeOptionally(node, SyntaxKind.IN);
+		consumeOptionally(node, SyntaxKind.FILE);
+	}
+
+	private void consumeMultiFetch(BaseSyntaxNode node) throws ParseError
+	{
+		if (consumeOptionally(node, SyntaxKind.MULTI_FETCH) && !consumeAnyOptionally(node, List.of(SyntaxKind.ON, SyntaxKind.OFF)))
+		{
+			consumeOptionally(node, SyntaxKind.OF);
+			consumeOperandNode(node); // number to fetch
+		}
+	}
+
+	private void consumePasswordAndCipher(BaseSyntaxNode node) throws ParseError
+	{
+		if (consumeOptionally(node, SyntaxKind.PASSWORD))
+		{
+			consumeMandatory(node, SyntaxKind.EQUALS_SIGN);
+			consumeOperandNode(node);
+		}
+		if (consumeOptionally(node, SyntaxKind.CIPHER))
+		{
+			consumeMandatory(node, SyntaxKind.EQUALS_SIGN);
+			consumeOperandNode(node);
+		}
+	}
+
+	private void consumeStartingWithIsn(BaseSyntaxNode node) throws ParseError
+	{
+		if (consumeOptionally(node, SyntaxKind.STARTING))
+		{
+			consumeMandatory(node, SyntaxKind.WITH);
+			consumeMandatory(node, SyntaxKind.KW_ISN);
+			consumeMandatory(node, SyntaxKind.EQUALS_SIGN);
+			consumeOperandNode(node);
+		}
+	}
+
+	private void consumeSharedHold(BaseSyntaxNode node) throws ParseError
+	{
+		if (consumeAnyOptionally(node, List.of(SyntaxKind.IN, SyntaxKind.SHARED)))
+		{
+			if (previousToken().kind() == SyntaxKind.IN)
+			{
+				consumeMandatory(node, SyntaxKind.SHARED);
+			}
+			consumeMandatory(node, SyntaxKind.HOLD);
+			if (consumeOptionally(node, SyntaxKind.MODE))
+			{
+				consumeMandatory(node, SyntaxKind.EQUALS_SIGN);
+				consumeOperandNode(node);
+			}
+		}
+	}
+
+	private void consumeSkipRecordsInHold(BaseSyntaxNode node) throws ParseError
+	{
+		if (consumeOptionally(node, SyntaxKind.SKIP))
+		{
+			consumeAnyOptionally(node, List.of(SyntaxKind.RECORDS, SyntaxKind.RECORD));
+			consumeMandatory(node, SyntaxKind.IN);
+			consumeMandatory(node, SyntaxKind.HOLD);
+		}
+	}
+
+	private void consumeReadCondition(BaseSyntaxNode node, ReadSequence readSeq) throws ParseError
+	{
+
+		if (consumeAnyOptionally(node, List.of(SyntaxKind.STARTING, SyntaxKind.FROM)))
+		{
+			if (previousToken().kind() == SyntaxKind.STARTING)
+			{
+				consumeMandatory(node, SyntaxKind.FROM);
+			}
+		}
+		else
+		{
+			try
+			{
+				var expression = new RelationalCriteriaNode();
+				parseRelationalOperator(expression);
+				expression.destroy();
+			}
+			catch (Exception e)
+			{
+				return;
+			}
+
+		}
+
+		consumeOperandNode(node);
+
+		if (readSeq == ReadSequence.LOGICAL && consumeOptionally(node, SyntaxKind.TO))
+		{
+			consumeOperandNode(node);
+		}
+		else
+		{
+			if (consumeAnyOptionally(node, List.of(SyntaxKind.THRU, SyntaxKind.ENDING)))
+			{
+				if (previousToken().kind() == SyntaxKind.ENDING)
+				{
+					consumeMandatory(node, SyntaxKind.AT);
+				}
+				consumeOperandNode(node);
+			}
+		}
 	}
 
 	private List<StatementNode> assignmentsOrIdentifierReference() throws ParseError
@@ -3750,6 +4170,156 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statements;
+	}
+
+	private static final List<SyntaxKind> SPECIAL_MOVE_KINDS = List.of(SyntaxKind.ROUNDED, SyntaxKind.BY, SyntaxKind.EDITED, SyntaxKind.LEFT, SyntaxKind.RIGHT, SyntaxKind.NORMALIZED, SyntaxKind.ENCODED, SyntaxKind.ALL);
+	private static final List<SyntaxKind> MOVE_BY_KINDS = List.of(SyntaxKind.NAME, SyntaxKind.POSITION);
+
+	private MoveStatementNode moveStatement() throws ParseError
+	{
+		var move = new MoveStatementNode();
+		boolean usingEditMask = false;
+		consumeMandatory(move, SyntaxKind.MOVE);
+
+		if (peekAny(SPECIAL_MOVE_KINDS))
+		{
+			move.setMoveKind(consumeAnyMandatory(move, SPECIAL_MOVE_KINDS).kind());
+			switch (move.moveKind())
+			{
+				// Syntax 1
+				case ROUNDED:
+					move.setRounded(true);
+					move.setOperand(consumeSubstringOrOperand(move));
+					consumeMoveAttributes(move);
+					break;
+				// Syntax 3
+				case BY:
+					if (peekAny(MOVE_BY_KINDS))
+					{
+						move.setByKind(consumeAnyMandatory(move, MOVE_BY_KINDS).kind());
+					}
+					move.setOperand(consumeOperandNode(move));
+					break;
+				// Syntax 4+5
+				case EDITED:
+					move.setEdited(true);
+					move.setOperand(consumeOperandNode(move));
+					// Syntax 5
+					if (!peekKind(SyntaxKind.TO))
+					{
+						consumeAttributeDefinition(move);
+						break;
+					}
+					usingEditMask = true;
+					break;
+				// Syntax 6
+				case LEFT, RIGHT:
+					move.setDirection(move.moveKind());
+					consumeOptionally(move, SyntaxKind.JUSTIFIED);
+					move.setOperand(consumeOperandNode(move));
+					consumeMoveAttributes(move);
+					break;
+				// Syntax 7
+				case NORMALIZED:
+					move.setNormalized(true);
+					move.setOperand(consumeOperandNode(move));
+					break;
+				// Syntax 8
+				case ENCODED:
+					move.setEncoded(true);
+					move.setOperand(consumeOperandNode(move));
+					if (peekAny(List.of(SyntaxKind.IN, SyntaxKind.CODEPAGE)))
+					{
+						consumeOptionally(move, SyntaxKind.IN);
+						consumeMandatory(move, SyntaxKind.CODEPAGE);
+						consumeOperandNode(move);
+					}
+					break;
+				// Syntax 9
+				case ALL:
+					move.setAll(true);
+					move.setOperand(consumeSubstringOrOperand(move));
+					break;
+				default:
+					break;
+			}
+		}
+		else
+		{
+			// Syntax 1 (not ROUNDED) + Syntax 2
+			move.setMoveKind(SyntaxKind.MOVE);
+			if (peekKind(SyntaxKind.LPAREN) && getKind(1).isAttribute())
+			{
+				consumeAttributeDefinition(move);
+			}
+			else
+			{
+				move.setOperand(consumeSubstringOrOperand(move));
+				consumeMoveAttributes(move);
+			}
+		}
+
+		consumeAnyMandatory(move, TO_INTO);
+
+		switch (move.moveKind())
+		{
+			case ROUNDED:
+				while (isOperand())
+				{
+					move.addTarget(consumeOperandNode(move));
+				}
+				break;
+			case BY, LEFT, RIGHT, NORMALIZED:
+				move.addTarget(consumeOperandNode(move));
+				break;
+			case EDITED:
+				move.addTarget(consumeOperandNode(move));
+				if (usingEditMask)
+				{
+					consumeAttributeDefinition(move);
+				}
+				break;
+			case ENCODED:
+				move.addTarget(consumeOperandNode(move));
+				if (peekAny(List.of(SyntaxKind.IN, SyntaxKind.CODEPAGE)))
+				{
+					consumeOptionally(move, SyntaxKind.IN);
+					consumeMandatory(move, SyntaxKind.CODEPAGE);
+					consumeOperandNode(move);
+				}
+				if (consumeOptionally(move, SyntaxKind.GIVING))
+				{
+					consumeOperandNode(move);
+				}
+				break;
+			case ALL:
+				move.addTarget(consumeSubstringOrOperand(move));
+				if (consumeOptionally(move, SyntaxKind.UNTIL))
+				{
+					consumeOperandNode(move);
+				}
+				break;
+			case MOVE:
+				while (isOperand() || peekAny(SUBSTRINGS))
+				{
+					move.addTarget(consumeSubstringOrOperand(move));
+				}
+				break;
+			default:
+				break;
+		}
+
+		return move;
+	}
+
+	private boolean consumeMoveAttributes(BaseSyntaxNode node) throws ParseError
+	{
+		if (peekKind(SyntaxKind.LPAREN))
+		{
+			consumeAttributeDefinition(node);
+			return true;
+		}
+		return false;
 	}
 
 	private ResetStatementNode resetStatement() throws ParseError

@@ -20,7 +20,7 @@ public class Lexer
 	private NaturalHeader sourceHeader;
 	private IPosition relocatedDiagnosticPosition;
 
-	private boolean inParens;
+	private int parensLevel;
 	private boolean inSourceHeader;
 	private boolean sourceHeaderDone;
 	private SyntaxToken lastBeforeOpenParens;
@@ -72,7 +72,7 @@ public class Lexer
 					consumeNewLine();
 					continue;
 				case '(':
-					inParens = true;
+					parensLevel++;
 					lastBeforeOpenParens = previous();
 					if (lexerMode == LexerMode.IN_DEFINE_DATA && previous().kind() != SyntaxKind.LESSER_SIGN)
 					{
@@ -81,7 +81,7 @@ public class Lexer
 					createAndAddCurrentSingleToken(SyntaxKind.LPAREN);
 					continue;
 				case ')':
-					inParens = false;
+					parensLevel--;
 					if (lexerMode == LexerMode.IN_DATA_TYPE)
 					{
 						lexerMode = LexerMode.IN_DEFINE_DATA;
@@ -924,7 +924,7 @@ public class Lexer
 
 	private void consumeIdentifierOrKeyword()
 	{
-		if (inParens && scanner.peek(2) == '=')
+		if (isInParens() && scanner.peek(2) == '=')
 		{
 			var attributeLookahead = scanner.peekText(3);
 			var previous = previous();
@@ -952,7 +952,7 @@ public class Lexer
 			}
 		}
 
-		if (inParens && tokens.size() > 2)
+		if (isInParens() && tokens.size() > 2)
 		{
 			var prevLastToken = tokens.get(tokens.size() - 2).kind();
 
@@ -999,7 +999,7 @@ public class Lexer
 					break;
 			}
 
-			if (inParens && scanner.peek(-1) == '.' && (scanner.peek() == '/' || scanner.peek() == ')'))
+			if (isInParens() && scanner.peek(-1) == '.' && (scanner.peek() == '/' || scanner.peek() == ')'))
 			{
 				createAndAdd(SyntaxKind.LABEL_IDENTIFIER);
 				if (scanner.peekText("/*")) // Otherwise it'll be confused with a comment
@@ -1125,7 +1125,7 @@ public class Lexer
 		scanner.advance(3); // EM=
 		var isInString = false;
 		var nestedParens = 0;
-		while (!scanner.isAtEnd() && !(scanner.peek() == ')' && nestedParens == 0))
+		while (!scanner.isAtEnd() && !(scanner.peek() == ')' && nestedParens == 0) || isInString)
 		{
 			if (scanner.peek() == '(')
 			{
@@ -1491,7 +1491,7 @@ public class Lexer
 		scanner.start();
 		while (Character.isDigit(scanner.peek())
 			|| scanner.peek() == '.'
-			|| (scanner.peek() == ',' && !(inParens && tokenBeforeLParenWas(SyntaxKind.IDENTIFIER))) // added to disambiguate between array access #ARR(1,1,1) and floating point numbers
+			|| (scanner.peek() == ',' && !(isInParens() && tokenBeforeLParenWas(SyntaxKind.IDENTIFIER))) // added to disambiguate between array access #ARR(1,1,1) and floating point numbers
 		)
 		{
 			if (scanner.peek() == ',' && !Character.isDigit(scanner.peek(1)))
@@ -1538,7 +1538,7 @@ public class Lexer
 
 	private boolean tokenBeforeLParenWas(SyntaxKind kind)
 	{
-		return inParens && lastBeforeOpenParens != null && lastBeforeOpenParens.kind() == kind;
+		return isInParens() && lastBeforeOpenParens != null && lastBeforeOpenParens.kind() == kind;
 	}
 
 	private void consumeDateLiteral()
@@ -1802,5 +1802,10 @@ public class Lexer
 	{
 		// Every identifier name is allowed after the AIV plus, except for numbers
 		return isValidIdentifierCharacter(character) && !Character.isDigit(character);
+	}
+
+	private boolean isInParens()
+	{
+		return parensLevel > 0;
 	}
 }

@@ -60,7 +60,7 @@ public class BuiltInFunctionTable
 			unmodifiableVariable(SyntaxKind.DATJ, "Returns the current date in the format `YYJJJ` (Julian date)", ALPHANUMERIC, 5.0),
 			unmodifiableVariable(SyntaxKind.DAT4J, "Returns the current date in the format `YYYYJJJ` (Julian date)", ALPHANUMERIC, 7.0),
 			unmodifiableVariable(SyntaxKind.DATX, "Returns the current date as internal date for mat", DATE, 0.0),
-			unmodifiableVariable(SyntaxKind.DATN, "Returns the current date in the format `YYYYMMDD`", ALPHANUMERIC, 10.0),
+			unmodifiableVariable(SyntaxKind.DATN, "Returns the current date in the format `YYYYMMDD`", NUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.DATU, "Returns the current date in the format `MM/DD/YY`", ALPHANUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.DAT4U, "Returns the current date in the format `MM/DD/YYYY`", ALPHANUMERIC, 10.0),
 			unmodifiableVariable(SyntaxKind.DATV, "Returns the current date in the format `DD-MON-YY`, where MON is the name of the month", ALPHANUMERIC, 11.0),

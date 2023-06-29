@@ -103,4 +103,50 @@ class ExternalModuleHoverShould extends HoveringTest
 			PARAMETER 1 #OPTIONAL (N5) OPTIONAL
 			```""");
 	}
+
+	@Test
+	void hoverFunctions()
+	{
+		createOrSaveFile("LIBONE", "FUNC.NS7", """
+			/* MODULE DOCUMENTATION
+			DEFINE FUNCTION FUNC
+			RETURNS (L)
+			DEFINE DATA
+			PARAMETER
+			1 P-PARAM (A10) BY VALUE
+			END-DEFINE
+			FUNC := TRUE
+			END-FUNCTION
+			""");
+
+		assertHover("""
+			DEFINE DATA
+			LOCAL
+			END-DEFINE
+			
+			IF F${}$UNC(<'A'>)
+			IGNORE
+			END-IF
+			
+			END
+			""", """
+			**LIBONE.FUNC**
+
+			```natural
+			/* MODULE DOCUMENTATION
+			```
+
+			*Result:*
+			```natural
+			RETURNS (L1)
+			```
+
+
+
+
+			*Parameter:*
+			```natural
+			PARAMETER 1 P-PARAM (A10)
+			```""");
+	}
 }

@@ -77,4 +77,15 @@ class SyntheticVariableStatementNode extends StatementNode implements IVariableR
 	{
 		dimensions.add(dimension);
 	}
+
+	@Override
+	public IDataType inferType()
+	{
+		if (reference() == null || !(reference()instanceof ITypedVariableNode typedRef) || typedRef.type() == null)
+		{
+			return IDataType.UNTYPED;
+		}
+
+		return typedRef.type();
+	}
 }

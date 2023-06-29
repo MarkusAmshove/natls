@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 class OperandParsingTests extends AbstractParserTest<IStatementListNode>
@@ -168,7 +169,7 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		var operand = parseOperand("VAL(OLD(#VAR))");
 		var valNode = assertNodeType(operand, IValOperandNode.class);
 		var old = assertNodeType(valNode.operand(), IOldOperandNode.class);
-		assertThat(old.variable().referencingToken().symbolName()).isEqualTo("#VAR");
+		assertIsVariableReference(old.operand(), "#VAR");
 	}
 
 	@Test
@@ -239,7 +240,7 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	{
 		var operand = parseOperand("OLD(#THEVAR)");
 		var oldNode = assertNodeType(operand, IOldOperandNode.class);
-		assertThat(oldNode.variable().referencingToken().symbolName()).isEqualTo("#THEVAR");
+		assertIsVariableReference(oldNode.operand(), "#THEVAR");
 	}
 
 	@Test

@@ -139,7 +139,7 @@ public enum SyntaxKind
 	ATN(false, false, false),
 	AVER(false, false, false),
 	BACKOUT(false, false, false),
-	BEFORE(true, false, false), // TODO: Should be false, but is currently used by NatUnit
+	BEFORE(false, false, false),
 	BREAK(false, false, false),
 	BROWSE(false, false, false),
 	CALL(false, false, false),
@@ -311,6 +311,7 @@ public enum SyntaxKind
 	ACTIVATION(true, false, false),
 	AD(true, false, false), // Attribute Definition
 	CD(true, false, false), // Color Definition
+	ADJUST(true, false, false),
 	AFTER(true, false, false),
 	AL(true, false, false),
 	ALARM(true, false, false),
@@ -546,6 +547,7 @@ public enum SyntaxKind
 	MICROSECOND(true, false, false),
 	MINUTE(true, false, false),
 	MODAL(true, false, false),
+	MODE(true, false, false),
 	MODIFIED(true, false, false),
 	MODULE(true, false, false),
 	MONTH(true, false, false),
@@ -664,6 +666,7 @@ public enum SyntaxKind
 	SB(false, false, false),
 	SF(true, false, false),
 	SG(true, false, false),
+	SHARED(true, false, false),
 	SHORT(true, false, false),
 	SINGLE(true, false, false),
 	SIZE(true, false, false),
@@ -780,6 +783,6 @@ public enum SyntaxKind
 
 	public boolean isAttribute()
 	{
-		return this == AD || this == DY || this == CD || this == EM || this == NL || this == AL || this == DF || this == IP || this == IS || this == CV || this == ZP || this == SG || this == ES || this == SB;
+		return this == AD || this == DY || this == CD || this == EM || this == NL || this == AL || this == DF || this == PM || this == IP || this == IS || this == CV || this == ZP || this == SG || this == ES || this == SB;
 	}
 }

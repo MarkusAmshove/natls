@@ -3,6 +3,8 @@ package org.amshove.natparse;
 import org.amshove.natparse.natural.*;
 
 import javax.annotation.Nullable;
+
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -36,14 +38,14 @@ public class NodeUtil
 
 	public static @Nullable ISyntaxNode findNodeAtPosition(int line, int character, INaturalModule module)
 	{
-		return findNodeAtPosition(line, character, module.syntaxTree());
+		return findNodeAtPosition(module.file().getPath(), line, character, module.syntaxTree());
 	}
 
 	/**
 	 * Tries to find the first node with a subtype of {@link ITokenNode} at the given position.<br/>
 	 * Can be used to prefer finding {@link ISymbolReferenceNode}, {@link IVariableReferenceNode} etc.
 	 */
-	public static @Nullable ITokenNode findTokenNodeAtPosition(int line, int character, ISyntaxTree syntaxTree)
+	public static @Nullable ITokenNode findTokenNodeAtPosition(Path filePath, int line, int character, ISyntaxTree syntaxTree)
 	{
 		if (syntaxTree == null)
 		{
@@ -52,6 +54,11 @@ public class NodeUtil
 
 		for (var node : syntaxTree)
 		{
+			if (!node.position().filePath().equals(filePath))
+			{
+				continue;
+			}
+
 			var isInLine = node.position().line() == line;
 			var isTokenNode = node instanceof ITokenNode;
 
@@ -65,7 +72,7 @@ public class NodeUtil
 				return (ITokenNode) node;
 			}
 
-			var foundDescendant = findTokenNodeAtPosition(line, character, node);
+			var foundDescendant = findTokenNodeAtPosition(filePath, line, character, node);
 			if (foundDescendant != null)
 			{
 				return foundDescendant;
@@ -79,7 +86,7 @@ public class NodeUtil
 	 * Tries to find the node at the given position. It does try to not return an {@link ITokenNode}, but the node that
 	 * contains the {@link ITokenNode}.
 	 */
-	public static @Nullable ISyntaxNode findNodeAtPosition(int line, int character, ISyntaxTree syntaxTree)
+	public static @Nullable ISyntaxNode findNodeAtPosition(Path filePath, int line, int character, ISyntaxTree syntaxTree)
 	{
 		if (syntaxTree == null)
 		{
@@ -90,6 +97,11 @@ public class NodeUtil
 
 		for (var node : syntaxTree)
 		{
+			if (!node.position().filePath().equals(filePath))
+			{
+				continue;
+			}
+
 			if (node.position().line() == line && node.position().offsetInLine() == character)
 			{
 				return node;
@@ -104,11 +116,11 @@ public class NodeUtil
 			{
 				if (node instanceof IStatementListNode)
 				{
-					return findNodeAtPosition(line, character, node);
+					return findNodeAtPosition(filePath, line, character, node);
 				}
 				if (node.descendants().hasItems())
 				{
-					var descendant = findNodeAtPosition(line, character, node);
+					var descendant = findNodeAtPosition(filePath, line, character, node);
 					if (descendant != null && !(descendant instanceof ITokenNode))
 					{
 						return descendant;
@@ -119,7 +131,7 @@ public class NodeUtil
 
 			if (node.position().line() > line)
 			{
-				return findNodeAtPosition(line, character, previousNode);
+				return findNodeAtPosition(filePath, line, character, previousNode);
 			}
 
 			previousNode = node;
@@ -136,13 +148,13 @@ public class NodeUtil
 		if (previousNode != null
 			&& previousNode.position().line() < line)
 		{
-			return findNodeAtPosition(line, character, previousNode);
+			return findNodeAtPosition(filePath, line, character, previousNode);
 		}
 
 		if (previousNode != null
 			&& previousNode.position().line() == line)
 		{
-			return findNodeAtPosition(line, character, previousNode);
+			return findNodeAtPosition(filePath, line, character, previousNode);
 		}
 
 		return null;
@@ -174,10 +186,15 @@ public class NodeUtil
 		return (IVariableNode) owner;
 	}
 
-	public static Optional<IStatementNode> findStatementInLine(int line, IStatementListNode statementList)
+	public static Optional<IStatementNode> findStatementInLine(Path filePath, int line, IStatementListNode statementList)
 	{
 		for (var statement : statementList.statements())
 		{
+			if (!statement.position().filePath().equals(filePath))
+			{
+				continue;
+			}
+
 			if (statement.diagnosticPosition().line() == line)
 			{
 				return Optional.of(statement);
@@ -187,7 +204,7 @@ public class NodeUtil
 				&& withBody.descendants().first().diagnosticPosition().line() <= line
 				&& withBody.descendants().last().diagnosticPosition().line() >= line)
 			{
-				var childStatement = findStatementInLine(line, withBody.body());
+				var childStatement = findStatementInLine(filePath, line, withBody.body());
 				if (childStatement.isPresent())
 				{
 					return childStatement;

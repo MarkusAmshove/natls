@@ -4,6 +4,22 @@ public class LSConfiguration
 {
 
 	private CompletionConfiguration completion;
+	private InlayHintsConfiguration inlayhints;
+
+	public static LSConfiguration createDefault()
+	{
+		var config = new LSConfiguration();
+
+		var completion = new CompletionConfiguration();
+		completion.setQualify(false);
+		config.setCompletion(completion);
+
+		var inlay = new InlayHintsConfiguration();
+		inlay.setShowAssignmentTargetType(false);
+		config.setInlayhints(inlay);
+
+		return config;
+	}
 
 	public CompletionConfiguration getCompletion()
 	{
@@ -15,14 +31,13 @@ public class LSConfiguration
 		this.completion = completion;
 	}
 
-	public static LSConfiguration createDefault()
+	public InlayHintsConfiguration getInlayhints()
 	{
-		var config = new LSConfiguration();
+		return inlayhints;
+	}
 
-		var completion = new CompletionConfiguration();
-		completion.setQualify(false);
-
-		config.setCompletion(completion);
-		return config;
+	public void setInlayhints(InlayHintsConfiguration inlayhints)
+	{
+		this.inlayhints = inlayhints;
 	}
 }

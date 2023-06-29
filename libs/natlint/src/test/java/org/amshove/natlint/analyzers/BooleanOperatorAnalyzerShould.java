@@ -118,10 +118,35 @@ class BooleanOperatorAnalyzerShould extends AbstractAnalyzerTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
+		"GT", "LT", "GE", "LE", "NE", "EQ", ">", "<", "<>", ">=", "<=", "="
+	})
+	void reportNoDiagnosticWithoutAEditorConfigSetting(String operator)
+	{
+		testDiagnostics(
+			"""
+			DEFINE DATA LOCAL
+			END-DEFINE
+
+			IF 5 %s 2
+			  IGNORE
+			END-IF
+			END
+			""".formatted(operator),
+			expectNoDiagnosticOfType(BooleanOperatorAnalyzer.DISCOURAGED_BOOLEAN_OPERATOR)
+		);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
 		"GT", "LT", "GE", "LE", "NE", "EQ"
 	})
 	void reportDiagnosticsForShortFormOperatorsThatAreNotPreferred(String operator)
 	{
+		configureEditorConfig("""
+			[*]
+			natls.style.comparisons=sign
+			""");
 		testDiagnostics(
 			"""
 			DEFINE DATA LOCAL

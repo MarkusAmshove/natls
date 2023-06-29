@@ -32,6 +32,14 @@ public abstract class ResourceFolderBasedTest
 	 */
 	protected Iterable<DynamicTest> testFolder(String relativeFolderPath, String testToRun)
 	{
+		return testFolder(relativeFolderPath, testToRun, -1);
+	}
+
+	/**
+	 * Only runs the specified test and line. Pass null or omit to run all tests.
+	 */
+	protected Iterable<DynamicTest> testFolder(String relativeFolderPath, String testToRun, int nonZeroIndexedLineNumber)
+	{
 		var testFiles = ResourceHelper.findRelativeResourceFiles(relativeFolderPath, getClass());
 
 		if (testFiles.isEmpty())
@@ -79,6 +87,11 @@ public abstract class ResourceFolderBasedTest
 
 				for (var diagnostic : diagnostics)
 				{
+					if (nonZeroIndexedLineNumber > 0 && diagnostic.line() + 1 != nonZeroIndexedLineNumber)
+					{
+						continue;
+					}
+
 					testsInFile.add(dynamicTest(testFileName + ": Actual diagnostic in line " + (diagnostic.line() + 1), () ->
 					{
 						if (expectedDiagnostics.stream().noneMatch(d -> d.matches(diagnostic)))
@@ -95,6 +108,10 @@ public abstract class ResourceFolderBasedTest
 
 				for (var expectedDiagnostic : expectedDiagnostics)
 				{
+					if (nonZeroIndexedLineNumber > 0 && expectedDiagnostic.line() + 1 != nonZeroIndexedLineNumber)
+					{
+						continue;
+					}
 					testsInFile.add(dynamicTest(testFileName + ": Expected diagnostic in line " + (expectedDiagnostic.line + 1) + " not found", () ->
 					{
 						if (diagnostics.stream().noneMatch(d -> ExpectedDiagnostic.doMatch(expectedDiagnostic, d)))

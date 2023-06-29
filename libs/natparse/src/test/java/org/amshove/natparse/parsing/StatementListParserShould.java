@@ -10,6 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 class StatementListParserShould extends StatementParseTest
@@ -471,6 +472,23 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(statementList.statements()).noneMatch(s -> s instanceof IFunctionCallNode);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"ACCEPT IF #TEST = 3",
+		"ACCEPT #TEST = 3",
+		"REJECT IF #TEST = 3",
+		"REJECT #TEST = 3",
+	})
+	void parseAcceptRejectIfStatements(String statement)
+	{
+		var acceptReject = assertParsesSingleStatement("""
+			%s
+			""".formatted(statement), IAcceptRejectNode.class);
+
+		assertThat(acceptReject.condition()).isNotNull();
+	}
+
 	@Test
 	void parseIfStatements()
 	{
@@ -586,6 +604,125 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void parseRepeatLoopConditionFirst()
+	{
+		var repeatLoop = assertParsesSingleStatement("""
+			REPEAT UNTIL A = B OR B > C OR (X = 10)
+				IGNORE
+			END-REPEAT
+			""", IRepeatLoopNode.class);
+
+		assertThat(repeatLoop.body().statements()).hasSize(1);
+		assertNodeType(repeatLoop.body().statements().first(), IIgnoreNode.class);
+		assertThat(repeatLoop.descendants()).hasSize(5);
+	}
+
+	@Test
+	void parseRepeatLoopConditionLast()
+	{
+		var repeatLoop = assertParsesSingleStatement("""
+			REPEAT
+				WRITE 'HEY!'
+			WHILE A = B OR B > C OR (X = 10)
+			END-REPEAT
+			""", IRepeatLoopNode.class);
+
+		assertThat(repeatLoop.body().statements()).hasSize(1);
+		assertNodeType(repeatLoop.body().statements().first(), IWriteNode.class);
+		assertThat(repeatLoop.condition()).isNotNull();
+	}
+
+	@Test
+	void parseRepeatLoopNoCondition()
+	{
+		var repeatLoop = assertParsesSingleStatement("""
+			REPEAT
+				IF X > Y
+				  ESCAPE BOTTOM
+				END-IF
+			END-REPEAT
+			""", IRepeatLoopNode.class);
+
+		assertThat(repeatLoop.body().statements()).hasSize(1);
+		assertNodeType(repeatLoop.body().statements().first(), IIfStatementNode.class);
+	}
+
+	@Test
+	void raiseADiagnosticIfARepeatLoopHasNoBody()
+	{
+		assertDiagnostic("""
+			REPEAT
+			END-REPEAT
+			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"SORT #VAR1",
+		"SORT THEM #VAR1",
+		"SORT RECORD #VAR1",
+		"SORT RECORDS BY #VAR1",
+		"AND SORT THEM BY #VAR1 #VAR2",
+		"SORT BY #VAR1 USING KEY",
+		"SORT BY #VAR1 USING KEYS",
+		"SORT BY #VAR1 USING #KEY1",
+		"SORT BY #VAR1 USING #KEY1 #KEY2",
+		"SORT BY #VAR1 USING #KEY1 #KEY2",
+		"SORT BY #VAR1 ASC #VAR2 DESC USING #KEY1 #KEY2",
+		"SORT BY #VAR1 ASCENDING #VAR2 DESCENDING USING #KEY1 #KEY2",
+		"SORT BY #VAR1 USING #KEY1 #KEY2 GIVE MIN MAX AVER #GIVE",
+		"SORT BY #VAR1 USING KEYS GIVE MIN MAX AVER OF #GIVE",
+		"SORT BY #VAR1 USING KEYS GIVE MIN MAX AVER (#GIVE1) SUM TOTAL OF (#GIVE2)",
+		"AND SORT THEM BY #VAR1 #VAR2 USING #KEY1 #KEY2 GIVING MIN MAX AVER (#GIVE1) SUM TOTAL OF (#GIVE2) (NL=10)",
+	})
+	void parseSortStatements(String statement)
+	{
+		var sort = assertParsesSingleStatement("""
+			END-ALL
+			%s
+			END-SORT
+			""".formatted(statement), ISortStatementNode.class);
+		assertThat(sort.body().statements()).isEmpty();
+	}
+
+	@Test
+	void recognizeBeforeBreakAsStatementInsteadOfOperandToSort()
+	{
+		assertParsesSingleStatement("""
+			END-ALL
+			SORT BY #VAR1
+			BEFORE BREAK PROCESSING
+			IGNORE
+			END-BEFORE
+			END-SORT
+			""", ISortStatementNode.class);
+	}
+
+	@Test
+	void parseSortWithSortDirection()
+	{
+		var sort = assertParsesSingleStatement("""
+			END-ALL
+			SORT BY #VAR1 ASC #VAR2 DESC #VAR3 ASCENDING #VAR4 DESCENDING #VAR5
+			WRITE 'Hey!'
+			END-SORT
+			""", ISortStatementNode.class);
+		assertThat(sort.body().statements()).hasSize(1);
+		assertThat(sort.usings().isEmpty());
+		assertThat(assertNodeType(sort.operands().get(0).operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
+		assertThat(sort.operands().get(0).direction()).isEqualTo(SortDirection.ASCENDING);
+		assertThat(assertNodeType(sort.operands().get(1).operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+		assertThat(sort.operands().get(1).direction()).isEqualTo(SortDirection.DESCENDING);
+		assertThat(assertNodeType(sort.operands().get(2).operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR3");
+		assertThat(sort.operands().get(2).direction()).isEqualTo(SortDirection.ASCENDING);
+		assertThat(assertNodeType(sort.operands().get(3).operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR4");
+		assertThat(sort.operands().get(3).direction()).isEqualTo(SortDirection.DESCENDING);
+		assertThat(assertNodeType(sort.operands().get(4).operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR5");
+		assertThat(sort.operands().get(4).direction()).isEqualTo(SortDirection.ASCENDING);
+	}
+
+	@Test
 	void parseForColonEqualsToStatements()
 	{
 		var forLoopNode = assertParsesSingleStatement("""
@@ -626,7 +763,11 @@ class StatementListParserShould extends StatementParseTest
 			FOR #I := 1 TO 10
 			    FOR #J := 1 TO 20
 			        WRITE #I #J
-			END-ALL""");
+			END-ALL
+			AND
+			SORT THEM BY #I #J
+			END-SORT
+			""");
 	}
 
 	@Test
@@ -861,10 +1002,10 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
-	void parseFindWithNumberLimit()
+	void parseFindWithNumberLimitAndNoWith()
 	{
 		var findStatement = assertParsesSingleStatement("""
-			FIND (5) THE-VIEW WITH THE-DESCRIPTOR = 'Asd'
+			FIND (5) THE-VIEW THE-DESCRIPTOR = 'Asd'
 			IGNORE
 			END-FIND
 			""", IFindNode.class);
@@ -873,16 +1014,20 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(findStatement.descendants()).anyMatch(n -> n instanceof IConditionNode);
 	}
 
-	@Test
-	void parseFindWithoutBody()
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"FIRST", "NUMBER", "UNIQUE"
+	})
+	void parseFindWithoutBody(String findOption)
 	{
 		var findStatement = assertParsesSingleStatement("""
-			FIND FIRST THE-VIEW WITH THE-DESCRIPTOR = 'Asd'
-			""", IFindNode.class);
+			FIND %s THE-VIEW WITH LIMIT 5 THE-DESCRIPTOR = 'Asd'
+			""".formatted(findOption), IFindNode.class);
 
 		assertThat(findStatement.viewReference()).isNotNull();
 		assertThat(findStatement.descendants()).anyMatch(n -> n instanceof IConditionNode);
-		assertThat(findStatement.descendants()).hasSize(5);
+		assertThat(findStatement.descendants()).hasSize(7);
 	}
 
 	@ParameterizedTest
@@ -896,6 +1041,343 @@ class StatementListParserShould extends StatementParseTest
 			FIND MULTI-FETCH %s THE-VIEW WITH THE-DESCRIPTOR = 'Asd'
 			IGNORE
 			END-FIND""".formatted(multifetch), IFindNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"OR COUPLED TO FILE ANOTHER-VIEW VIA DESC2 = DESC1 DESC = 1",
+		"AND COUPLED TO FILE ANOTHER-VIEW VIA DESC2 EQUAL TO DESC1 DESC = 1",
+		"AND COUPLED TO FILE ANOTHER-VIEW WITH DESC = 1",
+		"SORTED BY DESC2 DESC3 DESC4 DESCENDING",
+		"RETAIN AS 'RetainedSet'",
+		"PASSWORD='psw' CIPHER=123",
+		"STARTING WITH ISN = 1 SORTED BY DESC2 DESC3 DESC4 DESCENDING WHERE X > Y",
+		"SHARED HOLD SKIP RECORD IN HOLD",
+		"IN SHARED HOLD SKIP IN HOLD",
+	})
+	void parseAdvancedFinds(String statement)
+	{
+		var findStatement = assertParsesSingleStatement("""
+			FIND THE-VIEW DESC1 = 'Asd' %s
+				IGNORE
+			END-FIND
+			""".formatted(statement), IFindNode.class);
+
+		assertThat(findStatement.viewReference()).isNotNull();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"IN PHYSICAL ASCENDING SEQUENCE",
+		"IN PHYSICAL VARIABLE 'A' SEQUENCE",
+		"PHYSICAL DYNAMIC #DIRECTION",
+		"ASC",
+		"DESC",
+		"VARIABLE 'A'",
+		"DYNAMIC #DIRECTION",
+		"VARIABLE 'A' SEQUENCE",
+		"DYNAMIC #DIRECTION SEQUENCE",
+		"",
+	})
+	void parseReadPhysical(String statement)
+	{
+		var read = assertParsesSingleStatement("""
+			READ THE-VIEW %s
+			END-READ
+			""".formatted(statement), IReadNode.class);
+
+		assertThat(read.viewReference()).isNotNull();
+		assertThat(read.readSequence().isPhysicalSequence()).isTrue();
+		assertThat(read.readSequence().isIsnSequence()).isFalse();
+		assertThat(read.readSequence().isLogicalSequence()).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"BY ISN",
+		"BY ISN FROM 123",
+		"BY ISN STARTING FROM 123",
+		"BY ISN STARTING FROM 123 ENDING AT 234",
+		"BY ISN EQUAL 123",
+		"BY ISN >= 123",
+		"BY ISN WHERE *ISN > 1000",
+	})
+	void parseReadByIsn(String statement)
+	{
+		var read = assertParsesSingleStatement("""
+			READ THE-VIEW %s
+			END-READ
+			""".formatted(statement), IReadNode.class);
+
+		assertThat(read.viewReference()).isNotNull();
+		assertThat(read.readSequence().isPhysicalSequence()).isFalse();
+		assertThat(read.readSequence().isIsnSequence()).isTrue();
+		assertThat(read.readSequence().isLogicalSequence()).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"BY DESC1 = 'Asd' SHARED HOLD SKIP RECORD IN HOLD",
+		"BY DESC1 = 'Asd' IN SHARED HOLD SKIP IN HOLD",
+		"BY DESC1 = 'Asd' SHARED HOLD MODE='Q' SKIP RECORDS IN HOLD",
+		"BY DESC1",
+		"BY DESC1 STARTING FROM 'Asd' THRU 'def'",
+		"BY DESC1 STARTING FROM 'Asd' ENDING AT 'def'",
+		"BY DESC1 FROM 'Asd' TO 'def'",
+		"BY DESC1 FROM 'Asd' THRU 'def'",
+		"LOGICAL DYNAMIC #DIRECTION SEQUENCE BY DESC1",
+		"LOGICAL DYNAMIC #DIRECTION SEQUENCE BY DESC1 FROM 'A' TO 'Z'",
+		"WITH DESC1 EQUAL TO 'Asd'",
+		"WITH DESC1 GT 'Asd'",
+		"WITH DESC1 LESS THAN 'Asd'",
+		"WITH DESC1 <= 'Asd'",
+	})
+	void parseReadLogical(String statement)
+	{
+		var read = assertParsesSingleStatement("""
+			READ THE-VIEW %s
+			END-READ
+			""".formatted(statement), IReadNode.class);
+
+		assertThat(read.viewReference()).isNotNull();
+		assertThat(read.readSequence().isPhysicalSequence()).isFalse();
+		assertThat(read.readSequence().isIsnSequence()).isFalse();
+		assertThat(read.readSequence().isLogicalSequence()).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"PASSWORD='psw' CIPHER=123 WITH REPOSITION BY DESC1 = 'Asd'",
+		"WITH REPOSITION BY DESC1 = 'Asd' WHERE X > Y",
+	})
+	void parseAdvancedReads(String statement)
+	{
+		var readStatement = assertParsesSingleStatement("""
+			BROWSE (100) THE-VIEW %s
+				IGNORE
+			END-READ
+			""".formatted(statement), IReadNode.class);
+
+		assertThat(readStatement.viewReference()).isNotNull();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"1 #VAR1 VAR2 VAR3 VAR4",
+		"FILE 1 #VAR1 VAR2 VAR3 VAR4",
+		"FILE 1 RECORD #RECORD",
+		"FILE 1 AND SELECT OFFSET 1 #VAR1 OFFSET 2 #VAR2 FILLER 10X #VAR3",
+		"FILE 1 AND SELECT OFFSET 1 #VAR1 FILLER 10X #VAR3(*) AND ADJUST",
+	})
+	void parseReadWorkFileWithBody(String statement)
+	{
+		var work = assertParsesSingleStatement("""
+			READ WORK %s
+			END-WORK
+			""".formatted(statement), IReadWorkNode.class);
+		assertThat(work.workFileNumber().token().intValue()).isEqualTo(1);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"1 ONCE #VAR1 VAR2 VAR3 VAR4",
+		"FILE 1 ONCE #VAR1 VAR2 VAR3 VAR4",
+		"FILE 1 ONCE RECORD #RECORD",
+		"FILE 1 ONCE AND SELECT OFFSET 1 #VAR1 OFFSET 2 #VAR2 FILLER 10X #VAR3",
+		"FILE 1 ONCE AND SELECT OFFSET 1 #VAR1 FILLER 10X #VAR3(*) AND ADJUST",
+		"FILE 1 ONCE #VAR1 VAR2 VAR3 VAR4 AT END OF FILE IGNORE END-ENDFILE",
+	})
+	void parseReadWorkFileWithNoBody(String statement)
+	{
+		var work = assertParsesSingleStatement("""
+			READ WORK %s
+			""".formatted(statement), IReadWorkNode.class);
+		assertThat(work.workFileNumber().token().intValue()).isEqualTo(1);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"#VAR1 TO #VAR2",
+		"#VAR1 (PM=I) TO #VAR2",
+		"#VAR1 (DF=I) TO #VAR2",
+		"#VAR1 (DF=I PM=I) TO #VAR2",
+	})
+	void parseMove(String statement)
+	{
+		var move = assertParsesSingleStatement("MOVE %s".formatted(statement), IMoveStatementNode.class);
+		assertThat(assertNodeType(move.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
+		assertThat(move.targets()).hasSize(1);
+		assertThat(assertNodeType(move.targets().first(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"OLD(#VAR1) INTO #VAR2",
+		"OLD(*ISN) TO #VAR2",
+		"SUM(#VAR1) INTO #VAR2"
+	})
+	void parseMoveWithSystemFunctions(String statement)
+	{
+		var move = assertParsesSingleStatement("MOVE %s".formatted(statement), IMoveStatementNode.class);
+		assertThat(move.targets()).hasSize(1);
+		assertThat(assertNodeType(move.targets().first(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+	}
+
+	@Test
+	void parseMoveAttributeDefinition()
+	{
+		var move = assertParsesSingleStatement("MOVE (AD=I CD=RE) TO #CV", IMoveStatementNode.class);
+		assertThat(move.targets()).hasSize(1);
+		assertThat(assertNodeType(move.targets().first(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#CV");
+	}
+
+	@Test
+	void parseMoveSubstring()
+	{
+		var move = assertParsesSingleStatement("MOVE SUBSTRING(#VAR1,1,2) TO #VAR2", IMoveStatementNode.class);
+		var substringOperand = assertNodeType(move.operand(), ISubstringOperandNode.class);
+		assertThat(assertNodeType(substringOperand.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
+		assertThat(move.targets()).hasSize(1);
+		assertThat(assertNodeType(move.targets().first(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+	}
+
+	@Test
+	void parseMoveSubstringToSubstring()
+	{
+		var move = assertParsesSingleStatement("MOVE SUBSTRING(#VAR1,1,2) TO SUBSTRING(#VAR2,5)", IMoveStatementNode.class);
+		var substringOperand = assertNodeType(move.operand(), ISubstringOperandNode.class);
+		assertThat(assertNodeType(substringOperand.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
+		assertThat(move.targets()).hasSize(1);
+		substringOperand = assertNodeType(move.targets().first(), ISubstringOperandNode.class);
+		assertThat(assertNodeType(substringOperand.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+	}
+
+	@Test
+	void parseMoveSubstringToSubstringMultiTargets()
+	{
+		var move = assertParsesSingleStatement("MOVE SUBSTRING(#VAR1,1,2) (PM=I) TO SUBSTRING(#VAR2,5) SUBSTRING(#VAR3,5) #VAR4", IMoveStatementNode.class);
+		var substringOperand = assertNodeType(move.operand(), ISubstringOperandNode.class);
+		assertThat(assertNodeType(substringOperand.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
+		assertThat(move.targets()).hasSize(3);
+		substringOperand = assertNodeType(move.targets().first(), ISubstringOperandNode.class);
+		assertThat(assertNodeType(substringOperand.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+		assertThat(assertNodeType(move.targets().last(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR4");
+	}
+
+	@Test
+	void parseMoveRounded()
+	{
+		var move = assertParsesSingleStatement("MOVE ROUNDED #VAR1 TO #VAR2", IMoveStatementNode.class);
+		assertThat(move.isRounded()).isTrue();
+	}
+
+	@Test
+	void parseMoveRoundedMulti()
+	{
+		var move = assertParsesSingleStatement("MOVE ROUNDED #VAR1 TO #VAR2 #VAR3 #VAR4", IMoveStatementNode.class);
+		assertThat(move.isRounded()).isTrue();
+		assertThat(move.targets()).hasSize(3);
+	}
+
+	@Test
+	void parseMoveByName()
+	{
+		var move = assertParsesSingleStatement("MOVE BY NAME #VAR1 TO #VAR2", IMoveStatementNode.class);
+		assertThat(move.byKind()).isEqualTo(SyntaxKind.NAME);
+	}
+
+	@Test
+	void parseMoveByNameDefault()
+	{
+		var move = assertParsesSingleStatement("MOVE BY #VAR1 TO #VAR2", IMoveStatementNode.class);
+		assertThat(move.byKind()).isEqualTo(SyntaxKind.NAME);
+	}
+
+	@Test
+	void parseMoveByPosition()
+	{
+		var move = assertParsesSingleStatement("MOVE BY POSITION #VAR1 TO #VAR2", IMoveStatementNode.class);
+		assertThat(move.byKind()).isEqualTo(SyntaxKind.POSITION);
+	}
+
+	@Test
+	void parseMoveEditedApplyingMask()
+	{
+		var move = assertParsesSingleStatement("MOVE EDITED #VAR1 (EM=XX) TO #VAR2", IMoveStatementNode.class);
+		assertThat(move.isEdited()).isTrue();
+	}
+
+	@Test
+	void parseMoveEditedUsingMask()
+	{
+		var move = assertParsesSingleStatement("MOVE EDITED #VAR1 TO #VAR2 (EM=XX)", IMoveStatementNode.class);
+		assertThat(move.isEdited()).isTrue();
+	}
+
+	@Test
+	void parseMoveLeft()
+	{
+		var move = assertParsesSingleStatement("MOVE LEFT #VAR1 TO #VAR2", IMoveStatementNode.class);
+		assertThat(move.direction()).isEqualTo(SyntaxKind.LEFT);
+	}
+
+	@Test
+	void parseMoveRight()
+	{
+		var move = assertParsesSingleStatement("MOVE RIGHT JUSTIFIED #VAR1 TO #VAR2", IMoveStatementNode.class);
+		assertThat(move.direction()).isEqualTo(SyntaxKind.RIGHT);
+	}
+
+	@Test
+	void parseMoveNormalized()
+	{
+		var move = assertParsesSingleStatement("MOVE NORMALIZED #VAR1 TO #VAR2", IMoveStatementNode.class);
+		assertThat(move.isNormalized()).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"A TO B",
+		"A CODEPAGE #CP TO B",
+		"A CODEPAGE #CP TO B CODEPAGE #CP",
+		"A CODEPAGE #CP TO B IN CODEPAGE #CP",
+		"A IN CODEPAGE #CP TO B",
+		"A IN CODEPAGE #CP TO B CODEPAGE #CP",
+		"A IN CODEPAGE #CP TO B IN CODEPAGE #CP",
+		"A IN CODEPAGE #CP TO B IN CODEPAGE #CP GIVING #RC",
+		"A IN CODEPAGE 'CP1' TO B IN CODEPAGE 'CP2'",
+		"A IN CODEPAGE 'CP1' TO B IN CODEPAGE 'CP2' GIVING #RC",
+	})
+	void parseMoveEncoded(String statement)
+	{
+		var move = assertParsesSingleStatement("MOVE ENCODED %s".formatted(statement), IMoveStatementNode.class);
+		assertThat(move.isEncoded()).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"'-' TO B",
+		"'-' TO B UNTIL 10",
+		"'-' TO SUBSTRING(B,10)",
+		"A TO B",
+		"A TO B UNTIL 10",
+		"A TO B UNTIL #UNTIL",
+	})
+	void parseMoveAll(String statement)
+	{
+		var move = assertParsesSingleStatement("MOVE ALL %s".formatted(statement), IMoveStatementNode.class);
+		assertThat(move.isAll()).isTrue();
 	}
 
 	@Test
@@ -1206,7 +1688,7 @@ class StatementListParserShould extends StatementParseTest
 	@Test
 	void parseAComplexExamineDeleteGiving()
 	{
-		var examine = assertParsesSingleStatement("EXAMINE DIRECTION FORWARD FULL VALUE OF #DOC STARTING FROM POSITION 7 ENDING AT POSITION 10 FOR FULL VALUE OF PATTERN #HTML(*) WITH DELIMITERS ',' AND DELETE FIRST GIVING INDEX IN #ASD #EFG #HIJ", IExamineNode.class);
+		var examine = assertParsesSingleStatement("EXAMINE DIRECTION #FWD FULL VALUE OF #DOC STARTING FROM POSITION 7 ENDING AT POSITION 10 FOR FULL VALUE OF PATTERN #HTML(*) WITH DELIMITERS ',' AND DELETE FIRST GIVING INDEX IN #ASD #EFG #HIJ", IExamineNode.class);
 		assertThat(examine.descendants().size()).isEqualTo(33);
 	}
 
@@ -1237,8 +1719,8 @@ class StatementListParserShould extends StatementParseTest
 		var separate = assertParsesSingleStatement("SEPARATE #VAR INTO #ARR(*)", ISeparateStatementNode.class);
 		assertThat(separate.separated()).isNotNull();
 		assertThat(assertNodeType(separate.separated(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
-		assertThat(separate.intoList()).hasSize(1);
-		var reference = assertNodeType(separate.intoList().first(), VariableReferenceNode.class);
+		assertThat(separate.targets()).hasSize(1);
+		var reference = assertNodeType(separate.targets().first(), VariableReferenceNode.class);
 		assertThat(reference.token().source()).isEqualTo("#ARR");
 		var rangedAccess = assertNodeType(reference.dimensions().first(), IRangedArrayAccessNode.class);
 		assertThat(assertNodeType(rangedAccess.lowerBound(), ITokenNode.class).token().kind()).isEqualTo(SyntaxKind.ASTERISK);
@@ -1255,12 +1737,12 @@ class StatementListParserShould extends StatementParseTest
 		var separate = assertParsesSingleStatement("SEPARATE #VAR1 %s #POS INTO #VAR2 #VAR3 #VAR4".formatted(from), ISeparateStatementNode.class);
 		assertThat(separate.separated()).isNotNull();
 		assertThat(assertNodeType(separate.separated(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
-		assertThat(separate.intoList()).hasSize(3);
-		var reference = assertNodeType(separate.intoList().first(), VariableReferenceNode.class);
+		assertThat(separate.targets()).hasSize(3);
+		var reference = assertNodeType(separate.targets().first(), VariableReferenceNode.class);
 		assertThat(reference.dimensions().isEmpty());
 		assertThat(reference.token().source()).isEqualTo("#VAR2");
-		assertThat(assertNodeType(separate.intoList().get(1), VariableReferenceNode.class).token().source()).isEqualTo("#VAR3");
-		assertThat(assertNodeType(separate.intoList().get(2), VariableReferenceNode.class).token().source()).isEqualTo("#VAR4");
+		assertThat(assertNodeType(separate.targets().get(1), VariableReferenceNode.class).token().source()).isEqualTo("#VAR3");
+		assertThat(assertNodeType(separate.targets().get(2), VariableReferenceNode.class).token().source()).isEqualTo("#VAR4");
 	}
 
 	@ParameterizedTest

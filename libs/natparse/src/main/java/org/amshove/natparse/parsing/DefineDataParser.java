@@ -411,7 +411,42 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		currentRedefineNode = previousRedefine;
 
+		if (groupNode.level() == 1 && !(groupNode instanceof IRedefinitionNode))
+		{
+			ensureAllConstOrNoneConst(groupNode.variables(), new GroupConstStatistic());
+		}
+
 		return groupNode;
+	}
+
+	private void ensureAllConstOrNoneConst(Iterable<IVariableNode> variables, GroupConstStatistic statistic)
+	{
+		for (var variable : variables)
+		{
+			if (variable instanceof IGroupNode nestedGroup && !(variable instanceof IRedefinitionNode))
+			{
+				ensureAllConstOrNoneConst(nestedGroup.variables(), statistic);
+				continue;
+			}
+
+			if (variable instanceof ITypedVariableNode typedVar
+				&& typedVar.type() != null)
+			{
+				if (typedVar.type().isConstant())
+				{
+					statistic.constEncountered++;
+				}
+				else
+				{
+					statistic.nonConstEncountered++;
+				}
+
+				if (statistic.hasMixedConst())
+				{
+					report(ParserErrors.groupHasMixedConstVariables(variable.identifierNode()));
+				}
+			}
+		}
 	}
 
 	private boolean mightBeFillerBytes(SyntaxToken fillerToken, SyntaxToken maybeFillerBytes)
@@ -1328,5 +1363,16 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 
 		declaredVariables.put(variable.name(), variable);
+	}
+
+	private static class GroupConstStatistic
+	{
+		private int constEncountered;
+		private int nonConstEncountered;
+
+		private boolean hasMixedConst()
+		{
+			return constEncountered > 0 && nonConstEncountered > 0;
+		}
 	}
 }

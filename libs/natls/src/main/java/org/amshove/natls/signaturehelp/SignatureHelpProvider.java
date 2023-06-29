@@ -25,14 +25,14 @@ public class SignatureHelpProvider
 		}
 
 		// If we find a module referencing statement, that's the most likely match
-		var maybeStatement = NodeUtil.findStatementInLine(position.getLine(), hasBody.body());
+		var maybeStatement = NodeUtil.findStatementInLine(module.file().getPath(), position.getLine(), hasBody.body());
 		if (maybeStatement.isPresent() && maybeStatement.get()instanceof IModuleReferencingNode moduleReferencingNode)
 		{
 			return provideSignatureForStatement(moduleReferencingNode, position);
 		}
 
 		// Look deeper to find the exact Node the cursor on
-		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), hasBody.body());
+		var node = NodeUtil.findNodeAtPosition(module.file().getPath(), position.getLine(), position.getCharacter(), hasBody.body());
 		if (node instanceof IModuleReferencingNode moduleReferencingNode)
 		{
 			return provideSignatureForStatement(moduleReferencingNode, position);

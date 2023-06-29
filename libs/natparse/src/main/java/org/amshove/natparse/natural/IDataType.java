@@ -5,6 +5,7 @@ import static org.amshove.natparse.natural.DataFormat.*;
 public interface IDataType
 {
 	int ONE_GIGABYTE = 1073741824;
+	IDataType UNTYPED = new Untyped();
 
 	DataFormat format();
 
@@ -16,14 +17,17 @@ public interface IDataType
 	boolean hasDynamicLength();
 
 	/**
-	 * Determines if this type fits into the given type. Implicit conversion is taken into account.
+	 * Determines if this type fits into the given type. Implicit conversion is taken into account.</br>
+	 * <strong>This does not compare by byte size</strong>
 	 */
 	default boolean fitsInto(IDataType target)
 	{
-		var bytesFit = this.byteSize() <= target.byteSize();
+		var ourLength = this.hasDynamicLength() ? ONE_GIGABYTE : byteSize();
+		var theirLength = target.hasDynamicLength() ? ONE_GIGABYTE : target.byteSize();
+		var lengthFits = ourLength <= theirLength;
 		var formatIsCompatible = hasCompatibleFormat(target);
 
-		return bytesFit && formatIsCompatible;
+		return lengthFits && formatIsCompatible;
 	}
 
 	/**
@@ -56,7 +60,13 @@ public interface IDataType
 		{
 			case PACKED, FLOAT, INTEGER, NUMERIC -> targetFormat == ALPHANUMERIC
 				|| targetFormat == UNICODE
-				|| targetFormat == BINARY;
+				|| targetFormat == BINARY
+				|| targetFormat == TIME;
+			case TIME, DATE -> targetFormat == ALPHANUMERIC
+				|| targetFormat == NUMERIC
+				|| targetFormat == PACKED
+				|| targetFormat == INTEGER; // this one can fail, but not for early times
+			case LOGIC -> targetFormat == ALPHANUMERIC;
 			default -> false; // we don't know whats implicitly compatible yet
 		};
 	}
@@ -66,7 +76,7 @@ public interface IDataType
 		var details = "";
 
 		details += "(%s".formatted(format().identifier());
-		if (length() > 0.0)
+		if (length() > 0.0 && !hasDynamicLength())
 		{
 			details += "%s".formatted(formatLength(length()));
 		}
@@ -112,7 +122,7 @@ public interface IDataType
 		return calculateNumericSize();
 	}
 
-	private int calculateNumericSize()
+	default int calculateNumericSize()
 	{
 		var digitsBeforeDecimalPoint = (int) length();
 		var digitsAfterDecimalPoint = calculateDigitsAfterDecimalPoint();
@@ -120,7 +130,7 @@ public interface IDataType
 		return Math.max(1, digitsBeforeDecimalPoint + digitsAfterDecimalPoint);
 	}
 
-	private int calculatePackedSize()
+	default int calculatePackedSize()
 	{
 		return Math.max(1, (int) (Math.round((calculateNumericSize() + 1) / 2.0)));
 	}

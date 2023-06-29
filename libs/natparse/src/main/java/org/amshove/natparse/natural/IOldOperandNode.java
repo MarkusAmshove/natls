@@ -2,5 +2,5 @@ package org.amshove.natparse.natural;
 
 public interface IOldOperandNode extends IOperandNode
 {
-	IVariableReferenceNode variable();
+	IOperandNode operand();
 }

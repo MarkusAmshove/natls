@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
@@ -9,6 +10,7 @@ import org.amshove.natparse.natural.project.NaturalProgrammingMode;
 
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -63,7 +65,7 @@ class ParserErrors
 		);
 	}
 
-	public static ParserDiagnostic unexpectedToken(List<SyntaxKind> expectedTokenKinds, TokenList tokens)
+	public static ParserDiagnostic unexpectedToken(Collection<SyntaxKind> expectedTokenKinds, TokenList tokens)
 	{
 		var currentToken = tokens.peek();
 		var invalidToken = currentToken != null ? currentToken : tokens.peek(-1);
@@ -505,6 +507,16 @@ class ParserErrors
 		);
 	}
 
+	public static IDiagnostic valueTruncation(String message, ISyntaxNode node)
+	{
+		return ParserDiagnostic.create(
+			message,
+			node,
+			ParserError.LITERAL_VALUE_TRUNCATED,
+			DiagnosticSeverity.WARNING
+		);
+	}
+
 	public static IDiagnostic typeMismatch(String message, ISyntaxNode node)
 	{
 		return ParserDiagnostic.create(
@@ -555,6 +567,15 @@ class ParserErrors
 			"Statement must have a body. Add IGNORE if body should be empty.",
 			errorToken,
 			ParserError.STATEMENT_HAS_EMPTY_BODY
+		);
+	}
+
+	public static IDiagnostic groupHasMixedConstVariables(ISyntaxNode variable)
+	{
+		return ParserDiagnostic.create(
+			"A group can not have a mix of CONST and non-CONST variables. Either make all CONST or none.",
+			variable,
+			ParserError.GROUP_HAS_MIXED_CONST
 		);
 	}
 }

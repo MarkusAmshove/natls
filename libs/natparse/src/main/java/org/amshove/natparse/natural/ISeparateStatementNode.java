@@ -6,5 +6,5 @@ public interface ISeparateStatementNode extends IStatementNode
 {
 	IOperandNode separated();
 
-	ReadOnlyList<IOperandNode> intoList();
+	ReadOnlyList<IOperandNode> targets();
 }

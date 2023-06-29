@@ -5,7 +5,9 @@ import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
-import org.amshove.natparse.natural.builtin.*;
+import org.amshove.natparse.natural.builtin.BuiltInFunctionTable;
+import org.amshove.natparse.natural.builtin.IBuiltinFunctionDefinition;
+import org.amshove.natparse.natural.builtin.SystemVariableDefinition;
 import org.amshove.natparse.natural.conditionals.ISpecifiedCriteriaNode;
 
 import java.util.ArrayList;
@@ -27,7 +29,14 @@ final class TypeChecker implements ISyntaxNodeVisitor
 	{
 		try
 		{
-			checkNode(node);
+			if (node instanceof IStatementNode statementNode)
+			{
+				checkStatement(statementNode);
+			}
+			else
+			{
+				checkNode(node);
+			}
 		}
 		catch (Exception e)
 		{
@@ -44,33 +53,146 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		}
 	}
 
-	private void checkNode(ISyntaxNode node)
+	private void checkStatement(IStatementNode statement)
 	{
-		if (node instanceof IMutateVariables mutator)
+		if (statement instanceof IMutateVariables mutator)
 		{
 			ensureMutable(mutator);
 		}
 
-		if (node instanceof IDivideStatementNode divide)
+		if (statement instanceof IAssignmentStatementNode assignment)
+		{
+			checkAssign(assignment);
+			return;
+		}
+
+		if (statement instanceof IDivideStatementNode divide)
 		{
 			checkDivide(divide);
+			return;
 		}
 
-		if (node instanceof IWriteWorkNode writeWork)
+		if (statement instanceof IWriteWorkNode writeWork)
 		{
 			checkWriteWork(writeWork);
+			return;
 		}
 
+		if (statement instanceof IDecideOnNode decideOn)
+		{
+			checkDecideOnBranches(decideOn);
+		}
+	}
+
+	private void checkAssign(IAssignmentStatementNode assignment)
+	{
+		if (!(assignment.target()instanceof IVariableReferenceNode targetRef
+			&& targetRef.reference()instanceof ITypedVariableNode typedTarget
+			&& typedTarget.type() != null))
+		{
+			return;
+		}
+
+		if (assignment.operand() instanceof IArithmeticExpressionNode)
+		{
+			return;
+		}
+
+		var targetType = assignment.target()instanceof ITypeInferable inferableTarget
+			? inferableTarget.inferType()
+			: null;
+
+		var operandType = assignment.operand()instanceof ITypeInferable inferableOperand
+			? inferableOperand.inferType()
+			: null;
+
+		if (targetType == null || operandType == null || targetType == IDataType.UNTYPED || operandType == IDataType.UNTYPED)
+		{
+			return;
+		}
+
+		if (assignment.operand()instanceof ILiteralNode literal)
+		{
+			operandType = literal.reInferType(targetType);
+		}
+
+		if (assignment.operand()instanceof IVariableReferenceNode refOperand
+			&& refOperand.reference()instanceof ITypedVariableNode refVariable
+			&& refVariable.type() != null
+			&& refVariable.type().isConstant()
+			&& refVariable.type().initialValue() != null
+			&& refVariable.type().initialValue().kind().isLiteralOrConst())
+		{
+			operandType = new LiteralNode(refVariable.type().initialValue()).reInferType(targetType);
+		}
+
+		if (assignment.operand() instanceof ILiteralNode)
+		// Only do this for literals
+		// #N5 := #N10 is legal compiler wise, but might result in a runtime error
+		{
+			checkTypeCompatibleOrTruncation(operandType, targetType, assignment.operand());
+			return;
+		}
+
+		checkTypeConvertable(operandType, targetType, assignment.operand());
+	}
+
+	private void checkTypeConvertable(IDataType operandType, IDataType targetType, ISyntaxNode location)
+	{
+		if (!operandType.hasSameFamily(targetType) && !operandType.hasCompatibleFormat(targetType))
+		{
+			report(
+				ParserErrors.typeMismatch(
+					"Type mismatch: Inferred type %s is not implicitly convertable to target type %s".formatted(
+						operandType.toShortString(),
+						targetType.toShortString()
+					),
+					location
+				)
+			);
+		}
+	}
+
+	private void checkTypeCompatibleOrTruncation(IDataType operandType, IDataType targetType, ISyntaxNode location)
+	{
+		if (operandType.fitsInto(targetType))
+		{
+			return;
+		}
+
+		if (operandType.hasCompatibleFormat(targetType))
+		{
+			report(
+				ParserErrors.valueTruncation(
+					"Value is truncated from %s to %s at runtime. Extend the target variable or remove the truncated parts from this literal.".formatted(
+						operandType.toShortString(),
+						targetType.toShortString()
+					),
+					location
+				)
+			);
+		}
+		else
+		{
+			report(
+				ParserErrors.typeMismatch(
+					"Type mismatch: Inferred type %s is not compatible with target type %s".formatted(
+						operandType.toShortString(),
+						targetType.toShortString()
+					),
+					location
+				)
+			);
+		}
+	}
+
+	private void checkNode(ISyntaxNode node)
+	{
 		if (node instanceof ITypedVariableNode typedVariableNode
 			&& typedVariableNode.type() != null
 			&& typedVariableNode.type().initialValue() != null)
 		{
-			checkAlphanumericInitLength(typedVariableNode);
-		}
-
-		if (node instanceof IDecideOnNode decideOn)
-		{
-			checkDecideOnBranches(decideOn);
+			checkVariableInitType(typedVariableNode);
 		}
 
 		if (node instanceof IVariableReferenceNode variableReference)
@@ -274,24 +396,31 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		}
 	}
 
-	private void checkAlphanumericInitLength(ITypedVariableNode typedVariable)
+	private void checkVariableInitType(ITypedVariableNode typedVariable)
 	{
-		if (typedVariable.type().hasDynamicLength())
+		if (typedVariable.type().hasDynamicLength() || typedVariable.type().initialValue() == null || !typedVariable.type().initialValue().kind().isLiteralOrConst())
 		{
 			return;
 		}
 
-		if (typedVariable.type().format() == DataFormat.ALPHANUMERIC
-			&& typedVariable.type().initialValue().kind() == SyntaxKind.STRING_LITERAL
-			&& typedVariable.type().initialValue().stringValue().length() > typedVariable.type().length()) // TODO: The initializer has to be a IOperandNode
+		var literalInitializer = new LiteralNode(typedVariable.type().initialValue());
+		var inferredInitialType = literalInitializer.reInferType(typedVariable.type());
+
+		if (inferredInitialType.format() == typedVariable.type().format() && !inferredInitialType.fitsInto(typedVariable.type()))
 		{
+			// This check is special for initializers, because the Natural compiler only treats same types which don't fit as errors.
+			// Others are happily truncated ¯\_()_/¯
 			report(
 				ParserErrors.typeMismatch(
-					"Initializer literal length %d is longer than data type length %d"
-						.formatted(typedVariable.type().initialValue().stringValue().length(), (int) typedVariable.type().length()),
-					typedVariable.identifierNode()
+					"Type mismatch: Initializer %s (inferred %s) does not fit into %s"
+						.formatted(typedVariable.type().initialValue().source(), inferredInitialType.toShortString(), typedVariable.type().toShortString()),
+					literalInitializer
 				)
 			);
+		}
+		else
+		{
+			checkTypeCompatibleOrTruncation(inferredInitialType, typedVariable.type(), literalInitializer);
 		}
 	}
 
@@ -430,7 +559,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 
 		if (operand instanceof ILiteralNode literal)
 		{
-			return literal.dataType();
+			return literal.inferType();
 		}
 
 		if (operand instanceof ISystemFunctionNode sysFunction)

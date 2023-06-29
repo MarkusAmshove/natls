@@ -57,8 +57,36 @@ public class NaturalParser
 		if (file.getFiletype() == NaturalFileType.FUNCTION) // skip over DEFINE FUNCTION
 		{
 			// TODO: Implement proper when implementing different NaturalModules
-			while (!(tokens.peek().kind() == SyntaxKind.DEFINE && tokens.peek(1).kind() == SyntaxKind.DATA))
+			while (!tokens.isAtEnd())
 			{
+				if (tokens.peek().kind() == SyntaxKind.DEFINE && tokens.peek(1).kind() == SyntaxKind.DATA)
+				{
+					break;
+				}
+				if (tokens.peek().kind() == SyntaxKind.RETURNS)
+				{
+					tokens.advance(); // RETURNS
+					if (tokens.peek().kind() == SyntaxKind.LPAREN)
+					{
+						tokens.advance(); // (
+						var typeTokenSource = tokens.advance().source();
+						if (tokens.peek().kind() == SyntaxKind.COMMA || tokens.peek().kind() == SyntaxKind.DOT)
+						{
+							typeTokenSource += tokens.advance().source(); // decimal
+							typeTokenSource += tokens.advance().source(); // next number
+						}
+						var type = DataType.fromString(typeTokenSource);
+						tokens.advance(); // )
+						if (tokens.peek().kind() == SyntaxKind.DYNAMIC)
+						{
+							type = DataType.ofDynamicLength(type.format());
+						}
+						naturalModule.setReturnType(type);
+					}
+					advanceToDefineData(tokens);
+					break;
+				}
+
 				tokens.advance();
 			}
 		}
@@ -85,7 +113,7 @@ public class NaturalParser
 	{
 		SyntaxToken current;
 		SyntaxToken next;
-		for (var offset = 0; offset < tokens.size(); offset += 2)
+		for (var offset = 0; offset < tokens.size(); offset++)
 		{
 			current = tokens.peek(offset);
 			next = tokens.peek(offset + 1);

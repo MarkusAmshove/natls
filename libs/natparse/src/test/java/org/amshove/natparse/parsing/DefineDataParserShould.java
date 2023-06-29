@@ -92,6 +92,25 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void notImportVariablesFromModulesThatAreNotDataAreas()
+	{
+		useStubModuleProvider();
+		var subprogram = newEmptySubprogram();
+		moduleProvider.addModule("SUBPROG", subprogram);
+
+		var source = """
+			DEFINE DATA 
+			LOCAL USING SUBPROG
+			END-DEFINE
+			""";
+
+		var defineData = assertDiagnostic(source, ParserError.INVALID_MODULE_TYPE);
+		var using = defineData.localUsings().first();
+		assertThat(using.referencingToken().symbolName()).isEqualTo("SUBPROG");
+		assertThat(using.reference()).isNull();
+	}
+
+	@Test
 	void setTheCorrectParentForNodes()
 	{
 		var source = """
@@ -520,6 +539,63 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		assertThat(afterGroup.name()).isEqualTo("#ONEAGAIN");
 		assertThat(afterGroup.qualifiedName()).isEqualTo("#ONEAGAIN");
 		assertThat(afterGroup.type().format()).isEqualTo(DataFormat.TIME);
+	}
+
+	@Test
+	void raiseAnErrorOnGroupsThatContainConstAndNonConst()
+	{
+		assertDiagnostic(
+			"""
+			define data local
+			1 #GRP1
+			2 #G1-CONST (A1) CONST<'A'>
+			2 #NOCONST (A2)
+			end-define
+			""",
+			ParserError.GROUP_HAS_MIXED_CONST
+		);
+	}
+
+	@Test
+	void raiseAnErrorOnGroupsThatContainConstAndNonConstInNestedGroup()
+	{
+		assertDiagnostic(
+			"""
+			define data local
+			1 #GRP1
+			2 #NO-CONST (A1)
+			2 #GRP2
+			3 #CONST (A2) CONST<'A'>
+			end-define
+			""",
+			ParserError.GROUP_HAS_MIXED_CONST
+		);
+	}
+
+	@Test
+	void raiseNoErrorIfNoGroupVariableIsConst()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 #GRP1
+			2 #G1-NOCONST (A1)
+			2 #GRP2
+			3 #NOCONST (A2)
+			end-define
+			""");
+	}
+
+	@Test
+	void raiseNoErrorIfAllGroupVariableAreConst()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 #GRP1
+			2 #G1-CONST (A1) CONST<'A'>
+			2 #GRP2
+			3 #CONST (A2) CONST<'B'>
+			end-define
+			""");
 	}
 
 	@ParameterizedTest
