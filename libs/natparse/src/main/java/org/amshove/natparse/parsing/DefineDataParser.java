@@ -132,7 +132,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 					block(); // TODO: Maybe do something with block
 				}
 
-				var variable = variable();
+				var variable = variable(List.of());
 				variable.setScope(currentScope);
 				for (var dimension : variable.dimensions())
 				{
@@ -145,7 +145,6 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				}
 
 				scopeNode.addVariable(variable);
-				addDeclaredVariable(variable);
 			}
 			catch (ParseError e)
 			{
@@ -271,11 +270,6 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		return block;
 	}
 
-	private VariableNode variable() throws ParseError
-	{
-		return variable(List.of());
-	}
-
 	private VariableNode variable(List<IArrayDimension> inheritedDimensions) throws ParseError
 	{
 		if (peek(2).kind() == SyntaxKind.VIEW)
@@ -326,6 +320,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			skipToNextLineAsRecovery(e);
 		}
 
+		addDeclaredVariable(variable);
 		return variable;
 	}
 
@@ -343,8 +338,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private GroupNode groupVariable(VariableNode variable) throws ParseError
 	{
-		var groupNode = variable instanceof RedefinitionNode
-			? (RedefinitionNode) variable
+		var groupNode = variable instanceof RedefinitionNode redefine
+			? redefine
 			: new GroupNode(variable);
 
 		var previousRedefine = currentRedefineNode;
@@ -387,8 +382,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 
 			var nestedVariable = variable(groupNode.getDimensions());
-
 			groupNode.addVariable(nestedVariable);
+			addDeclaredVariable(nestedVariable); // we do this here and do the early return in `addDeclaredVariable` because it doesn't know its nested until added to a group
 
 			if (peek().line() == previousToken().line()
 				&& peek().kind() != SyntaxKind.NUMBER_LITERAL) // multiple variables declared in the same line...
@@ -424,7 +419,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 
 			if (variable instanceof ITypedVariableNode typedVar
-				&& typedVar.type() != null)
+				&& typedVar.type() != null
+				&& !(typedVar.parent() instanceof IRedefinitionNode)) // doesn't matter for REDEFINE children
 			{
 				if (typedVar.type().isConstant())
 				{
@@ -1179,7 +1175,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		for (var variable : possibleVariables)
 		{
-			if (variable.name().equalsIgnoreCase(redefinitionNode.name()))
+			if (variable.name() != null && variable.name().equalsIgnoreCase(redefinitionNode.name()))
 			{
 				target = variable;
 				break;
@@ -1325,25 +1321,32 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private void addDeclaredVariable(VariableNode variable, ISyntaxNode diagnosticPosition)
 	{
-		if (variable instanceof GroupNode groupNode)
+		if (variable.level() > 1 && variable.parent() == null)
 		{
-			for (var nestedVariable : groupNode.variables())
-			{
-				addDeclaredVariable((VariableNode) nestedVariable, diagnosticPosition);
-			}
+			// will be added by the group in `groupVariable()` after it has been assigned its parent
+			return;
 		}
 
-		if (variable instanceof IRedefinitionNode)
+		if (variable instanceof RedefinitionNode)
 		{
-			// Nested variables are already handled above. The #VAR in `REDEFINE #VAR` doesn't need to be added
+			// REDEFINE doesn't need to be a declared variable, because
+			// the target of REDEFINE has been declared.
 			return;
 		}
 
 		if (declaredVariables.containsKey(variable.name()))
 		{
 			var alreadyDefined = declaredVariables.get(variable.name());
+			if (alreadyDefined.position().isSamePositionAs(variable.position()))
+			{
+				return;
+			}
+
 			if (!variable.qualifiedName().equals(alreadyDefined.qualifiedName()))
 			{
+				// Variable with the same name exists, but qualified names differ.
+				// Re-add the old with the qualified name and also add the new one
+				// qualified
 				declaredVariables.remove(variable.name());
 				declaredVariables.put(alreadyDefined.qualifiedName(), alreadyDefined);
 				declaredVariables.put(variable.qualifiedName(), variable);

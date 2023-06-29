@@ -192,7 +192,7 @@ class ParserErrors
 	{
 		return ParserDiagnostic.create(
 			"No target for REDEFINE found. The redefined variable must be declared beforehand",
-			redefinitionNode.identifierNode(),
+			redefinitionNode.identifierNode() != null ? redefinitionNode.identifierNode() : redefinitionNode,
 			ParserError.NO_TARGET_VARIABLE_FOR_REDEFINE_FOUND
 		);
 	}

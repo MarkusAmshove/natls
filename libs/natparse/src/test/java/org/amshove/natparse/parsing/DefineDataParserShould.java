@@ -1027,6 +1027,22 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void allowToRedefineWithXArraysHavingConstBounds()
+	{
+		assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 DTAC
+			  2 VAR-MAX (I2) CONST<2>
+			  2 VAR
+				  3 VAR-1 (A8) CONST<'ABC'>
+				  3 VAR-2 (A8) CONST<'DEF'>
+			  2 REDEFINE VAR
+				3 PROCESS-ALL (A8/1:VAR-MAX)
+			END-DEFINE
+			""");
+	}
+
+	@Test
 	void redefineIndependentVariables()
 	{
 		var source = """
