@@ -1,7 +1,6 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.NaturalParseException;
-import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
@@ -144,11 +143,6 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				{
 					checkIndependentVariable(variable);
 				}
-
-				//				if (variable instanceof RedefinitionNode redefinitionNode)
-				//				{
-				//					addTargetToRedefine(scopeNode.variables(), redefinitionNode);
-				//				}
 
 				scopeNode.addVariable(variable);
 				addDeclaredVariable(variable);
