@@ -1050,7 +1050,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			   INDEPENDENT
 			   1 +MY-AIV (A10)
 			   1 REDEFINE +MY-AIV
-			   2 #INSIDE (A2)
+				   2 #INSIDE (A2)
 			   END-DEFINE
 			""";
 
@@ -1835,9 +1835,9 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			define data local
 			1 #var1 (A10)
 			1 redefine #var1
-			2 #thegroup
-			3 filler 5X
-			3 rest (a5)
+				2 #thegroup
+					3 filler 5X
+					3 rest (a5)
 			end-define
 			""");
 	}

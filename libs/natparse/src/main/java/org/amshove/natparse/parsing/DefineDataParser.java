@@ -10,6 +10,7 @@ import org.amshove.natparse.natural.project.NaturalFileType;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 public class DefineDataParser extends AbstractParser<IDefineData>
 {
@@ -20,10 +21,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	 * addDeclaredVariable for error handling.
 	 */
 	private Map<String, VariableNode> declaredVariables;
+	private Stack<GroupNode> groupStack;
 
 	private VariableScope currentScope;
-
-	private RedefinitionNode currentRedefineNode;
 
 	private DefineDataNode defineData;
 
@@ -37,6 +37,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	{
 		defineData = new DefineDataNode();
 		declaredVariables = new HashMap<>();
+		groupStack = new Stack<>();
 
 		advanceToDefineData(tokens);
 		if (!isAtStartOfDefineData(tokens))
@@ -88,14 +89,36 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		for (var variable : defineData.variables())
 		{
+			if (variable instanceof GroupNode groupNode)
+			{
+				checkGroupIsNotEmpty(groupNode);
+				if (groupNode.level() == 1 && !(groupNode instanceof IRedefinitionNode))
+				{
+					ensureAllConstOrNoneConst(groupNode.variables(), new GroupConstStatistic());
+				}
+			}
+
 			if (variable instanceof RedefinitionNode redefinitionNode)
 			{
 				addTargetToRedefine(redefinitionNode);
 				checkRedefineLength(redefinitionNode);
 			}
+
 		}
 
 		return defineData;
+	}
+
+	private void checkGroupIsNotEmpty(GroupNode groupNode)
+	{
+		if (groupNode instanceof ViewNode)
+		{
+			return;
+		}
+		if (groupNode.variables().size() == 0)
+		{
+			report(ParserErrors.emptyGroupVariable(groupNode));
+		}
 	}
 
 	private BaseSyntaxNode dataDefinition() throws ParseError
@@ -126,6 +149,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		{
 			try
 			{
+				popGroupIfNecessary();
+
 				if (peekKind(SyntaxKind.BLOCK))
 				{
 					/*var block = */
@@ -144,7 +169,35 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 					checkIndependentVariable(variable);
 				}
 
-				scopeNode.addVariable(variable);
+				if (peekKind(1, SyntaxKind.FILLER))
+				{
+					var currentRedefineNode = currentRedefine();
+					if (currentRedefineNode != null)
+					{
+						if (mightBeFillerBytes(peek(1), peek(2)))
+						{
+							parseRedefineFiller(currentRedefineNode);
+						}
+					}
+					else
+					{
+						// TODO: Diagnostic: Filler can only be used on redefines
+					}
+				}
+
+				if (variable.level() == 1)
+				{
+					scopeNode.addVariable(variable);
+				}
+				else
+				{
+					addVariableToCurrentGroup(variable);
+				}
+
+				if (variable instanceof GroupNode groupNode)
+				{
+					groupStack.add(groupNode);
+				}
 			}
 			catch (ParseError e)
 			{
@@ -157,6 +210,14 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 
 		passDownArrayDimensions(scopeNode);
+		if (groupStack.size() > 1)
+		{
+			throw new NaturalParseException("More than one leftover group");
+		}
+		else
+		{
+			groupStack.clear();
+		}
 
 		return scopeNode;
 	}
@@ -342,12 +403,6 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			? redefine
 			: new GroupNode(variable);
 
-		var previousRedefine = currentRedefineNode;
-		if (groupNode instanceof RedefinitionNode redefine)
-		{
-			currentRedefineNode = redefine;
-		}
-
 		if (variable.dimensions().hasItems())
 		{
 			for (var dimension : variable.dimensions())
@@ -365,45 +420,25 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			consumeMandatory(groupNode, SyntaxKind.RPAREN);
 		}
 
-		while (peekKind(SyntaxKind.NUMBER_LITERAL))
-		{
-			if (peek().intValue() <= groupNode.level())
-			{
-				break;
-			}
-
-			if (peek(1).kind() == SyntaxKind.FILLER && currentRedefineNode != null)
-			{
-				if (mightBeFillerBytes(peek(1), peek(2)))
-				{
-					parseRedefineFiller(currentRedefineNode);
-					continue;
-				}
-			}
-
-			var nestedVariable = variable(groupNode.getDimensions());
-			groupNode.addVariable(nestedVariable);
-			addDeclaredVariable(nestedVariable); // we do this here and do the early return in `addDeclaredVariable` because it doesn't know its nested until added to a group
-
-			if (peek().line() == previousToken().line()
-				&& peek().kind() != SyntaxKind.NUMBER_LITERAL) // multiple variables declared in the same line...
-			{
-				// Error handling for trailing stuff that shouldn't be there
-				skipToNextLineReportingEveryToken();
-			}
-		}
-
-		if (groupNode.variables().size() == 0)
-		{
-			report(ParserErrors.emptyGroupVariable(groupNode));
-		}
-
-		currentRedefineNode = previousRedefine;
-
-		if (groupNode.level() == 1 && !(groupNode instanceof IRedefinitionNode))
-		{
-			ensureAllConstOrNoneConst(groupNode.variables(), new GroupConstStatistic());
-		}
+		//		while (peekKind(SyntaxKind.NUMBER_LITERAL))
+		//		{
+		//			if (peek().intValue() <= groupNode.level())
+		//			{
+		//				break;
+		//			}
+		//
+		//
+		//			var nestedVariable = variable(groupNode.getDimensions());
+		//			groupNode.addVariable(nestedVariable);
+		//			addDeclaredVariable(nestedVariable); // we do this here and do the early return in `addDeclaredVariable` because it doesn't know its nested until added to a group
+		//
+		//			if (peek().line() == previousToken().line()
+		//				&& peek().kind() != SyntaxKind.NUMBER_LITERAL) // multiple variables declared in the same line...
+		//			{
+		//				// Error handling for trailing stuff that shouldn't be there
+		//				skipToNextLineReportingEveryToken();
+		//			}
+		//		}
 
 		return groupNode;
 	}
@@ -1145,6 +1180,11 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private void checkIndependentVariable(VariableNode variable)
 	{
+		if (variable instanceof IRedefinitionNode || currentRedefine() != null)
+		{
+			return;
+		}
+
 		if (!variable.name().startsWith("+"))
 		{
 			report(ParserErrors.invalidAivNaming(variable));
@@ -1360,6 +1400,50 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 
 		declaredVariables.put(variable.name(), variable);
+	}
+
+	private void addVariableToCurrentGroup(VariableNode variable)
+	{
+		if (groupStack.isEmpty())
+		{
+			return;
+		}
+
+		if (groupStack.peek().level() == variable.level() - 1)
+		{
+			groupStack.peek().addVariable(variable);
+		}
+	}
+
+	private void popGroupIfNecessary()
+	{
+		if (groupStack.isEmpty())
+		{
+			return;
+		}
+
+		if (peekKind(SyntaxKind.NUMBER_LITERAL) && peek().intValue() == groupStack.peek().level())
+		{
+			groupStack.pop();
+		}
+	}
+
+	private RedefinitionNode currentRedefine()
+	{
+		if (groupStack.isEmpty())
+		{
+			return null;
+		}
+
+		for (var i = groupStack.size() - 1; i >= 0; i--)
+		{
+			if (groupStack.get(i)instanceof RedefinitionNode redefine)
+			{
+				return redefine;
+			}
+		}
+
+		return null;
 	}
 
 	private static class GroupConstStatistic
