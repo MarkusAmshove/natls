@@ -16,9 +16,13 @@ import org.amshove.natparse.natural.project.NaturalFileType;
 import org.eclipse.lsp4j.*;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class CompletionProvider
 {
+	private static final Logger log = Logger.getAnonymousLogger();
+
 	private final SnippetEngine snippetEngine;
 	private final HoverProvider hoverProvider;
 	private LSConfiguration config;
@@ -133,12 +137,20 @@ public class CompletionProvider
 			.filter(v -> !(v instanceof IRedefinitionNode)) // this is the `REDEFINE #VAR`, which results in the variable being doubled in completion
 			.map(n ->
 			{
-				var item = createCompletionItem(n, file, module.referencableNodes());
-				if (item != null && item.getKind() == CompletionItemKind.Variable)
+				try
 				{
-					item.setData(new UnresolvedCompletionInfo((String) item.getData(), file.getPath().toUri().toString()));
+					var item = createCompletionItem(n, file, module.referencableNodes());
+					if (item != null && item.getKind() == CompletionItemKind.Variable)
+					{
+						item.setData(new UnresolvedCompletionInfo((String) item.getData(), file.getPath().toUri().toString()));
+					}
+					return item;
 				}
-				return item;
+				catch (Exception e)
+				{
+					log.log(Level.SEVERE, "Variable completion threw an exception", e);
+					return null;
+				}
 			})
 			.filter(Objects::nonNull)
 			.toList();
@@ -150,11 +162,20 @@ public class CompletionProvider
 			.stream()
 			.map(f ->
 			{
-				var item = new CompletionItem(f.getReferableName());
-				item.setData(new UnresolvedCompletionInfo(f.getReferableName(), f.getUri()));
-				item.setKind(CompletionItemKind.Function);
-				return item;
+				try
+				{
+					var item = new CompletionItem(f.getReferableName());
+					item.setData(new UnresolvedCompletionInfo(f.getReferableName(), f.getUri()));
+					item.setKind(CompletionItemKind.Function);
+					return item;
+				}
+				catch (Exception e)
+				{
+					log.log(Level.SEVERE, "Function completion threw an exception", e);
+					return null;
+				}
 			})
+			.filter(Objects::nonNull)
 			.toList();
 	}
 
@@ -207,11 +228,20 @@ public class CompletionProvider
 			.stream()
 			.map(f ->
 			{
-				var item = new CompletionItem(f.getReferableName());
-				item.setData(new UnresolvedCompletionInfo(f.getReferableName(), f.getUri()));
-				item.setKind(CompletionItemKind.Class);
-				return item;
+				try
+				{
+					var item = new CompletionItem(f.getReferableName());
+					item.setData(new UnresolvedCompletionInfo(f.getReferableName(), f.getUri()));
+					item.setKind(CompletionItemKind.Class);
+					return item;
+				}
+				catch (Exception e)
+				{
+					log.log(Level.SEVERE, "Subprogram completion threw an exception", e);
+					return null;
+				}
 			})
+			.filter(Objects::nonNull)
 			.toList();
 	}
 
@@ -221,11 +251,20 @@ public class CompletionProvider
 			.stream()
 			.map(f ->
 			{
-				var item = new CompletionItem(f.getReferableName());
-				item.setData(new UnresolvedCompletionInfo(f.getReferableName(), f.getUri()));
-				item.setKind(CompletionItemKind.Event);
-				return item;
+				try
+				{
+					var item = new CompletionItem(f.getReferableName());
+					item.setData(new UnresolvedCompletionInfo(f.getReferableName(), f.getUri()));
+					item.setKind(CompletionItemKind.Event);
+					return item;
+				}
+				catch (Exception e)
+				{
+					log.log(Level.SEVERE, "External Subroutine completion threw an exception", e);
+					return null;
+				}
 			})
+			.filter(Objects::nonNull)
 			.toList();
 	}
 
