@@ -171,7 +171,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 				if (peekKind(1, SyntaxKind.FILLER))
 				{
-					var currentRedefineNode = currentRedefine();
+					var currentRedefineNode = currentRedefine(variable);
 					if (currentRedefineNode != null)
 					{
 						if (mightBeFillerBytes(peek(1), peek(2)))
@@ -1173,7 +1173,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private void checkIndependentVariable(VariableNode variable)
 	{
-		if (variable instanceof IRedefinitionNode || currentRedefine() != null)
+		if (currentRedefine(variable) != null)
 		{
 			return;
 		}
@@ -1421,8 +1421,13 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 	}
 
-	private RedefinitionNode currentRedefine()
+	private RedefinitionNode currentRedefine(VariableNode currentVar)
 	{
+		if (currentVar instanceof RedefinitionNode redefine)
+		{
+			return redefine;
+		}
+
 		if (groupStack.isEmpty())
 		{
 			return null;
