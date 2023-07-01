@@ -157,7 +157,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 					block(); // TODO: Maybe do something with block
 				}
 
-				var variable = variable(List.of());
+				var variable = variable(currentGroupsDimensions());
 				variable.setScope(currentScope);
 				for (var dimension : variable.dimensions())
 				{
@@ -1437,6 +1437,15 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 
 		return null;
+	}
+
+	private List<IArrayDimension> currentGroupsDimensions()
+	{
+		if (groupStack.empty())
+		{
+			return List.of();
+		}
+		return groupStack.peek().getDimensions();
 	}
 
 	private static class GroupConstStatistic

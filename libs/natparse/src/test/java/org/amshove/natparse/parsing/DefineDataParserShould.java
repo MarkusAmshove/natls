@@ -1407,6 +1407,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var inside = data.variables().last();
 		assertThat(inside.name()).isEqualTo("#INSIDE");
+		assertThat(inside.dimensions()).hasSize(1);
 		assertThat(inside.dimensions().first().lowerBound()).isEqualTo(1);
 		assertThat(inside.dimensions().first().upperBound()).isEqualTo(10);
 	}
@@ -1425,6 +1426,28 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var inside = data.variables().last();
 		assertThat(inside.name()).isEqualTo("#INSIDE");
+		assertThat(inside.dimensions().size()).isEqualTo(2);
+		assertThat(inside.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(inside.dimensions().first().upperBound()).isEqualTo(10);
+		assertThat(inside.dimensions().last().lowerBound()).isEqualTo(1);
+		assertThat(inside.dimensions().last().upperBound()).isEqualTo(5);
+	}
+
+	@Test
+	void addMultipleDimensionsForGroupArraysContainingGroupArray()
+	{
+		var data = assertParsesWithoutDiagnostics("""
+			define data
+			local
+			1 #myarraygroup (1:10)
+			2 #insidegrp (1:5)
+			3 #insidevar (A5) /* This is considered a second dimension, so (1:10,1:5)
+			end-define
+			""");
+		// TODO(array-initializer): Check values
+
+		var inside = data.variables().last();
+		assertThat(inside.name()).isEqualTo("#INSIDEVAR");
 		assertThat(inside.dimensions().size()).isEqualTo(2);
 		assertThat(inside.dimensions().first().lowerBound()).isEqualTo(1);
 		assertThat(inside.dimensions().first().upperBound()).isEqualTo(10);
