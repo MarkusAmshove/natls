@@ -239,6 +239,21 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void raiseADiagnosticForKeywordsUsedAsIdentifierButStillParseOn()
+	{
+		var defineData = assertDiagnostic("""
+			DEFINE DATA LOCAL
+			1 PROCESS
+			2 #VAR (A10)
+			END-DEFINE
+			""", ParserError.UNEXPECTED_TOKEN);
+
+		assertThat(defineData.variables().first().name()).isEqualTo("PROCESS");
+		assertThat(defineData.variables().last().name()).isEqualTo("#VAR");
+		assertThat(defineData.variables().last().qualifiedName()).isEqualTo("PROCESS.#VAR");
+	}
+
+	@Test
 	void addADiagnosticForMissingDataFormats()
 	{
 		var source = """

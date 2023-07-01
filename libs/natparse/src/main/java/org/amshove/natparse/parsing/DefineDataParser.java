@@ -1464,4 +1464,20 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			return constEncountered > 0 && nonConstEncountered > 0;
 		}
 	}
+
+	@Override
+	protected ITokenNode consumeMandatoryIdentifierTokenNode(BaseSyntaxNode node)
+	{
+		var currentToken = tokens.peek();
+		if (tokens.isAtEnd() || (currentToken.kind() != SyntaxKind.IDENTIFIER && !currentToken.kind().canBeIdentifier()))
+		{
+			// In case of DEFINE DATA we don't throw here to keep parsing a whole DEFINE DATA.
+			// These variables won't be resolvable though, because the original implementation
+			// that the StatementListParser uses is throwing, which is fine.
+			report(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens));
+		}
+
+		tokens.advance();
+		return new TokenNode(currentToken);
+	}
 }
