@@ -210,14 +210,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 
 		passDownArrayDimensions(scopeNode);
-		if (groupStack.size() > 1)
-		{
-			throw new NaturalParseException("More than one leftover group");
-		}
-		else
-		{
-			groupStack.clear();
-		}
+		groupStack.clear();
 
 		return scopeNode;
 	}
