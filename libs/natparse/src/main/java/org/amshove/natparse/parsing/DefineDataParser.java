@@ -194,6 +194,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 					addVariableToCurrentGroup(variable);
 				}
 
+				addDeclaredVariable(variable);
+
 				if (variable instanceof GroupNode groupNode)
 				{
 					groupStack.add(groupNode);
@@ -374,7 +376,6 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			skipToNextLineAsRecovery(e);
 		}
 
-		addDeclaredVariable(variable);
 		return variable;
 	}
 
