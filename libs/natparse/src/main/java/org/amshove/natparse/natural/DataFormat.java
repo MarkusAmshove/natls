@@ -77,4 +77,13 @@ public enum DataFormat
 			default -> throw new NaturalParseException(String.format("Can't determine DataFormat from format \"%s\"", source));
 		};
 	}
+
+	public boolean isNumericFamily()
+	{
+		return switch (this)
+		{
+			case NUMERIC, FLOAT, PACKED, INTEGER -> true;
+			default -> false;
+		};
+	}
 }

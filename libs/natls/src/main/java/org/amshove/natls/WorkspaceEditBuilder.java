@@ -5,10 +5,8 @@ import org.amshove.natls.languageserver.TextEdits;
 import org.amshove.natls.languageserver.UsingToAdd;
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natparse.IPosition;
-import org.amshove.natparse.natural.IHasDefineData;
-import org.amshove.natparse.natural.ISyntaxNode;
-import org.amshove.natparse.natural.ITokenNode;
-import org.amshove.natparse.natural.VariableScope;
+import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.project.NaturalFileType;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.WorkspaceEdit;
@@ -45,6 +43,18 @@ public class WorkspaceEditBuilder
 
 		var edit = new TextEdit();
 		edit.setRange(LspUtil.toRange(position));
+		edit.setNewText(newText);
+
+		edits.add(edit);
+		return this;
+	}
+
+	public WorkspaceEditBuilder changesText(LanguageServerFile file, Range range, String newText)
+	{
+		var edits = textEdits.computeIfAbsent(LspUtil.pathToUri(file.getPath()), u -> new ArrayList<>());
+
+		var edit = new TextEdit();
+		edit.setRange(range);
 		edit.setNewText(newText);
 
 		edits.add(edit);
@@ -96,10 +106,40 @@ public class WorkspaceEditBuilder
 		return this;
 	}
 
+	public WorkspaceEditBuilder addsSubroutine(LanguageServerFile file, String subroutineName, String subroutineSource)
+	{
+		if (!file.getType().canHaveBody())
+		{
+			throw new IllegalStateException("Module of type %s can not have subroutines".formatted(file.getType()));
+		}
+
+		var source = """
+			%n/***********************************************************************
+			DEFINE SUBROUTINE %s
+			/***********************************************************************
+			
+			%s
+			
+			END-SUBROUTINE%n
+			""".formatted(subroutineName, subroutineSource);
+
+		return changesText(file, findInsertionPositionForStatement(file), source);
+	}
+
 	public WorkspaceEdit build()
 	{
 		var edit = new WorkspaceEdit();
 		edit.setChanges(textEdits);
 		return edit;
+	}
+
+	private Range findInsertionPositionForStatement(LanguageServerFile file)
+	{
+		var withBody = (IModuleWithBody) file.module();
+		var lastNode = file.getType() == NaturalFileType.SUBROUTINE
+			? withBody.body().statements().first().descendants().last().position()
+			: withBody.body().statements().last().position();
+
+		return LspUtil.toRangeBefore(lastNode);
 	}
 }

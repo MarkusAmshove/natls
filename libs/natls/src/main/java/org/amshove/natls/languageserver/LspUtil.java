@@ -86,6 +86,14 @@ public class LspUtil
 		);
 	}
 
+	public static Range toRangeBefore(IPosition position)
+	{
+		return new Range(
+			new Position(position.line(), position.offsetInLine()),
+			new Position(position.line(), position.offsetInLine())
+		);
+	}
+
 	public static Range toRangeAfter(IPosition position)
 	{
 		return new Range(
