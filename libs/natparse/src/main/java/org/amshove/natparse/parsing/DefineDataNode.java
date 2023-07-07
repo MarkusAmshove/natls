@@ -94,6 +94,21 @@ class DefineDataNode extends BaseSyntaxNode implements IDefineData
 		return null;
 	}
 
+	@Nullable
+	@Override
+	public IScopeNode findFirstScopeNode(VariableScope scope)
+	{
+		for (var descendant : descendants())
+		{
+			if (descendant instanceof IScopeNode scopeNode && scopeNode.scope() == scope)
+			{
+				return scopeNode;
+			}
+		}
+
+		return null;
+	}
+
 	@Override
 	public ReadOnlyList<IUsingNode> usings()
 	{

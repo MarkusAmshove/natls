@@ -1,8 +1,8 @@
 package org.amshove.natls;
 
 import org.amshove.natls.languageserver.LspUtil;
-import org.amshove.natls.languageserver.TextEdits;
-import org.amshove.natls.languageserver.UsingToAdd;
+import org.amshove.natls.codemutation.TextEdits;
+import org.amshove.natls.codemutation.UsingToAdd;
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.natural.IHasDefineData;
