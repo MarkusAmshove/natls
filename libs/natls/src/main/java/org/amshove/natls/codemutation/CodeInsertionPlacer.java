@@ -49,9 +49,9 @@ public class CodeInsertionPlacer
 	{
 		var defineData = ((IHasDefineData) file.module()).defineData();
 		return findRangeOfFirstVariableWithScope(file, scope)
-			.map(r -> new CodeInsertion("", r))
-			.or(() -> findRangeOfFirstScope(file, scope).map(r -> new CodeInsertion("", moveOneDown(r))))
-			.orElse(new CodeInsertion("%s%n".formatted(scope.toString()), LspUtil.toSingleRange(defineData.descendants().get(0).position().line() + 1, 0)));
+			.map(r -> new CodeInsertion("", r, System.lineSeparator()))
+			.or(() -> findRangeOfFirstScope(file, scope).map(r -> new CodeInsertion("", moveOneDown(r), System.lineSeparator())))
+			.orElse(new CodeInsertion("%s%n".formatted(scope.toString()), LspUtil.toSingleRange(defineData.descendants().get(0).position().line() + 1, 0), System.lineSeparator()));
 	}
 
 	private static Optional<Range> findRangeOfFirstVariableWithScope(LanguageServerFile file, VariableScope scope)

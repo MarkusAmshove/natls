@@ -17,7 +17,7 @@ public class TextEdits
 		var variableInsert = rangeFinder.findRangeToInsertVariable(file, scope);
 		var edit = new TextEdit();
 		edit.setRange(variableInsert.range());
-		edit.setNewText("%s%d %s %s%n".formatted(variableInsert.insertionPrefix(), 1, variableName, variableType));
+		edit.setNewText(variableInsert.insertionText("%d %s %s".formatted(1, variableName, variableType)));
 		return edit;
 	}
 
