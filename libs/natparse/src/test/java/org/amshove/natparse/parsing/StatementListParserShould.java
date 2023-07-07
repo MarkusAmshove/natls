@@ -1181,7 +1181,8 @@ class StatementListParserShould extends StatementParseTest
 			READ WORK %s
 			END-WORK
 			""".formatted(statement), IReadWorkNode.class);
-		assertThat(work.workFileNumber().token().intValue()).isEqualTo(1);
+		assertThat(work.workFileNumber().token().intValue())
+			.isEqualTo(1);
 	}
 
 	@ParameterizedTest
@@ -1200,6 +1201,16 @@ class StatementListParserShould extends StatementParseTest
 			READ WORK %s
 			""".formatted(statement), IReadWorkNode.class);
 		assertThat(work.workFileNumber().token().intValue()).isEqualTo(1);
+	}
+
+	@Test
+	void parseReadWorkWithAdjustWithoutAnyKeywordBeforeOperand4()
+	{
+		// There was a bug where AND, ADJUST and OCCURRENCES where treated as variable references (operands)
+		// instead of keywords.
+		var readWork = assertParsesSingleStatement("READ WORK FILE 1 ONCE #VAR(*) AND ADJUST OCCURRENCES", IReadWorkNode.class);
+		assertThat(readWork.directDescendantsOfType(IVariableReferenceNode.class))
+			.hasSize(1);
 	}
 
 	@ParameterizedTest
