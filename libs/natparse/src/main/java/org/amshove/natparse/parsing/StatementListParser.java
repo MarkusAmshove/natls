@@ -3851,7 +3851,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			consumeOptionally(work, SyntaxKind.AND);
 			consumeOptionally(work, SyntaxKind.SELECT);
 
-			while (consumeEitherOptionally(work, SyntaxKind.OFFSET, SyntaxKind.FILLER))
+			while (consumeEitherOptionally(work, SyntaxKind.OFFSET, SyntaxKind.FILLER) && !peekSmart(2, SyntaxKind.ADJUST))
 			{
 				if (previousToken().kind() == SyntaxKind.OFFSET)
 				{
@@ -3862,20 +3862,27 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					consumeMandatory(work, SyntaxKind.OPERAND_SKIP);
 				}
 
-				consumeOperandNode(work);
+				if (!peekSmart(2, SyntaxKind.ADJUST))
+				{
+					consumeOperandNode(work);
+				}
 			}
-
-			consumeOptionally(work, SyntaxKind.AND);
-			consumeOptionally(work, SyntaxKind.ADJUST);
-			consumeOptionally(work, SyntaxKind.OCCURRENCES);
 		}
 
 		if (operandLoop)
 		{
-			while (isOperand() && !isStatementStart())
+			while (isOperand() && !isStatementStart() && !peekSmart(2, SyntaxKind.ADJUST))
 			{
 				consumeOperandNode(work);
 			}
+		}
+
+		if (isOperand() && peekSmart(2, SyntaxKind.ADJUST))
+		{
+			consumeVariableReferenceNode(work);
+			consumeOptionally(work, SyntaxKind.AND);
+			consumeMandatory(work, SyntaxKind.ADJUST);
+			consumeOptionally(work, SyntaxKind.OCCURRENCES);
 		}
 
 		if (hasNoBody)
