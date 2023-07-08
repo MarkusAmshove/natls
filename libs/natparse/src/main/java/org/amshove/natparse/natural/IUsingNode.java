@@ -13,6 +13,8 @@ public non-sealed interface IUsingNode extends IModuleReferencingNode, IParamete
 
 	IDefineData defineData();
 
+	VariableScope scope();
+
 	boolean isLocalUsing();
 
 	boolean isGlobalUsing();

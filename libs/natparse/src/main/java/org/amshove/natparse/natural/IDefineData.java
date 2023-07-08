@@ -35,4 +35,7 @@ public interface IDefineData extends ISyntaxNode
 
 	@Nullable
 	IScopeNode findFirstScopeNode(VariableScope scope);
+
+	@Nullable
+	ISyntaxNode findLastScopeNode(VariableScope scope);
 }

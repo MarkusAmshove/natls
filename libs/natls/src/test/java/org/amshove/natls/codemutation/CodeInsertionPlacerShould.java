@@ -8,7 +8,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.fail;
 
 class CodeInsertionPlacerShould extends EmptyProjectTest
 {
@@ -140,15 +139,126 @@ class CodeInsertionPlacerShould extends EmptyProjectTest
 	}
 
 	@Test
+	void findARangeForLocalUsingsAfterParameterUsing()
+	{
+		var file = createOrSaveLanguageServerFile("LIBONE", "PARAUSE.NSN", """
+		DEFINE DATA
+		PARAMETER USING PDA
+		END-DEFINE
+		END
+		""");
+
+		assertInsertion(
+			sut.findRangeToInsertUsing(file, VariableScope.LOCAL),
+			"",
+			2, 0,
+			2, 0,
+			System.lineSeparator()
+		);
+	}
+
+	@Test
 	void findARangeForLocalUsingsAfterParameter()
 	{
-		fail("Implement me");
+		var file = createOrSaveLanguageServerFile("LIBONE", "PARAUSE.NSN", """
+		DEFINE DATA
+		PARAMETER
+		1 #P-PARAM
+		2 #P-PARM2 (A1)
+		END-DEFINE
+		END
+		""");
+
+		assertInsertion(
+			sut.findRangeToInsertUsing(file, VariableScope.LOCAL),
+			"",
+			4, 0,
+			4, 0,
+			System.lineSeparator()
+		);
+	}
+
+	@Test
+	void findARangeForLocalVariablesAfterParameterUsing()
+	{
+		var file = createOrSaveLanguageServerFile("LIBONE", "PARAUSE.NSN", """
+		DEFINE DATA
+		PARAMETER USING PDAA
+		END-DEFINE
+		END
+		""");
+
+		assertInsertion(
+			sut.findRangeToInsertUsing(file, VariableScope.LOCAL),
+			"",
+			2, 0,
+			2, 0,
+			System.lineSeparator()
+		);
 	}
 
 	@Test
 	void findARangeForLocalVariablesAfterParameter()
 	{
-		fail("Implement me");
+		var file = createOrSaveLanguageServerFile("LIBONE", "PARAUSE.NSN", """
+		DEFINE DATA
+		PARAMETER USING PDAA
+		PARAMETER
+		1 #P-PARAM
+		2 #P-PARM2 (A1)
+		END-DEFINE
+		END
+		""");
+
+		assertInsertion(
+			sut.findRangeToInsertUsing(file, VariableScope.LOCAL),
+			"",
+			5, 0,
+			5, 0,
+			System.lineSeparator()
+		);
+	}
+
+	@Test
+	void findARangeForParameterUsingsBeforeLocal()
+	{
+		var file = createOrSaveLanguageServerFile("LIBONE", "PARAUSE.NSN", """
+		DEFINE DATA
+		LOCAL
+		1 #VAR
+		2 #VAR1 (A1)
+		END-DEFINE
+		END
+		""");
+
+		assertInsertion(
+			sut.findRangeToInsertUsing(file, VariableScope.LOCAL),
+			"",
+			1, 0,
+			1, 0,
+			System.lineSeparator()
+		);
+	}
+
+	@Test
+	void findARangeForParameterVariablesBeforeLocal()
+	{
+		var file = createOrSaveLanguageServerFile("LIBONE", "PARAUSE.NSN", """
+		DEFINE DATA
+		LOCAL
+		1 #VAR
+		2 #VAR1 (A1)
+		END-DEFINE
+		END
+		""");
+
+		assertInsertion(
+			sut.findRangeToInsertUsing(file, VariableScope.LOCAL),
+			"",
+			1, 0,
+			1, 0,
+			System.lineSeparator()
+		);
 	}
 
 	private void assertInsertion(CodeInsertion insertion, String prefix, int startLine, int offsetInStartLine, int endLine, int offsetInEndLine, String suffix)

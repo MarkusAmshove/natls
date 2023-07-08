@@ -2,15 +2,26 @@ package org.amshove.natls.codemutation;
 
 import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natls.project.LanguageServerFile;
+import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.*;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 
+import java.util.List;
 import java.util.Optional;
 
 public class CodeInsertionPlacer
 {
+	// reversed order of scope priority. last element in this list
+	// should be first in define data
+	private static final List<VariableScope> SCOPE_ORDERS = List.of(
+		VariableScope.INDEPENDENT,
+		VariableScope.LOCAL,
+		VariableScope.PARAMETER,
+		VariableScope.GLOBAL
+	);
+
 	public CodeInsertion findRangeToInsertUsing(LanguageServerFile file, VariableScope scope)
 	{
 		var defineData = ((IHasDefineData) file.module()).defineData();
@@ -41,17 +52,16 @@ public class CodeInsertionPlacer
 		}
 
 		var range = findRangeOfFirstScope(file, scope)
-			.orElse(LspUtil.toSingleRange(defineData.descendants().get(0).position().line() + 1, 0));
+			.orElse(findRangeForNewScope(file, scope));
 		return new CodeInsertion(range, System.lineSeparator());
 	}
 
 	public CodeInsertion findRangeToInsertVariable(LanguageServerFile file, VariableScope scope)
 	{
-		var defineData = ((IHasDefineData) file.module()).defineData();
 		return findRangeOfFirstVariableWithScope(file, scope)
 			.map(r -> new CodeInsertion("", r, System.lineSeparator()))
 			.or(() -> findRangeOfFirstScope(file, scope).map(r -> new CodeInsertion("", moveOneDown(r), System.lineSeparator())))
-			.orElse(new CodeInsertion("%s%n".formatted(scope.toString()), LspUtil.toSingleRange(defineData.descendants().get(0).position().line() + 1, 0), System.lineSeparator()));
+			.orElse(new CodeInsertion("%s%n".formatted(scope.toString()), findRangeForNewScope(file, scope), System.lineSeparator()));
 	}
 
 	private static Optional<Range> findRangeOfFirstVariableWithScope(LanguageServerFile file, VariableScope scope)
@@ -84,5 +94,35 @@ public class CodeInsertionPlacer
 			.filter(n -> n.scope() == scope && n.position().filePath().equals(file.getPath()))
 			.map(n -> LspUtil.toSingleRange(n.position().line(), 0))
 			.findFirst();
+	}
+
+	private static Range findRangeForNewScope(LanguageServerFile file, VariableScope scope)
+	{
+		var defineData = ((IHasDefineData) file.module()).defineData();
+		var ownScopeOrderFound = false;
+		for (var scopeOrder : SCOPE_ORDERS)
+		{
+			if (!ownScopeOrderFound && scopeOrder == scope)
+			{
+				ownScopeOrderFound = true;
+				continue;
+			}
+
+			if (ownScopeOrderFound)
+			{
+				var lastNodeWithScope = defineData.findLastScopeNode(scopeOrder);
+				if (lastNodeWithScope != null)
+				{
+					// position at the start of the latest node of this scope
+					var latestLeaf = NodeUtil.deepFindLeaf(lastNodeWithScope);
+					return LspUtil.toSingleRange(
+						latestLeaf.position().line() + 1,
+						0
+					);
+				}
+			}
+		}
+
+		return LspUtil.toSingleRange(defineData.descendants().get(0).position().line() + 1, 0);
 	}
 }

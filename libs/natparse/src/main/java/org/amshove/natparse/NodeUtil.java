@@ -234,4 +234,18 @@ public class NodeUtil
 
 		return result;
 	}
+
+	/**
+	 * Returns the leaf that is traversed as the deepest from the starting point.<br/>
+	 * This will return the last descendant of its descendant of its descendant ...
+	 */
+	public static <T extends ISyntaxNode> ISyntaxNode deepFindLeaf(T start)
+	{
+		if (start.descendants().isEmpty())
+		{
+			return start;
+		}
+
+		return deepFindLeaf(start.descendants().last());
+	}
 }
