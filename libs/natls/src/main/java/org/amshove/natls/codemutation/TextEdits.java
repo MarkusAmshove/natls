@@ -14,11 +14,8 @@ public class TextEdits
 
 	public static TextEdit addVariable(LanguageServerFile file, String variableName, String variableType, VariableScope scope)
 	{
-		var variableInsert = rangeFinder.findRangeToInsertVariable(file, scope);
-		var edit = new TextEdit();
-		edit.setRange(variableInsert.range());
-		edit.setNewText(variableInsert.insertionText("%d %s %s".formatted(1, variableName, variableType)));
-		return edit;
+		var variableInsert = rangeFinder.findInsertionPositionToInsertVariable(file, scope);
+		return variableInsert.toTextEdit("%d %s %s".formatted(1, variableName, variableType));
 	}
 
 	public static TextEdit addUsing(LanguageServerFile file, UsingToAdd neededUsing)
@@ -50,12 +47,8 @@ public class TextEdits
 
 	private static TextEdit createUsingInsert(UsingToAdd using, LanguageServerFile file)
 	{
-		var edit = new TextEdit();
-		var insertion = rangeFinder.findRangeToInsertUsing(file, using.scope());
-
-		edit.setRange(insertion.range());
-		edit.setNewText(insertion.insertionText("%s USING %s".formatted(using.scope(), using.name())));
-		return edit;
+		var insertion = rangeFinder.findInsertionPositionToInsertUsing(file, using.scope());
+		return insertion.toTextEdit("%s USING %s".formatted(using.scope(), using.name()));
 	}
 
 	private static boolean alreadyHasUsing(String using, LanguageServerFile file)

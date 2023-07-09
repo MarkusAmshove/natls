@@ -23,7 +23,7 @@ public class CodeInsertionPlacer
 		VariableScope.GLOBAL
 	);
 
-	public CodeInsertion findRangeToInsertUsing(LanguageServerFile file, VariableScope scope)
+	public CodeInsertion findInsertionPositionToInsertUsing(LanguageServerFile file, VariableScope scope)
 	{
 		var defineData = ((IHasDefineData) file.module()).defineData();
 		ReadOnlyList<IUsingNode> usings = scope == VariableScope.PARAMETER
@@ -57,7 +57,7 @@ public class CodeInsertionPlacer
 		return new CodeInsertion(range, System.lineSeparator());
 	}
 
-	public CodeInsertion findRangeToInsertVariable(LanguageServerFile file, VariableScope scope)
+	public CodeInsertion findInsertionPositionToInsertVariable(LanguageServerFile file, VariableScope scope)
 	{
 		return findRangeOfFirstVariableWithScope(file, scope)
 			.map(r -> new CodeInsertion("", r, System.lineSeparator()))

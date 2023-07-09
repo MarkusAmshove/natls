@@ -24,7 +24,7 @@ class CodeInsertionPlacerShould extends EmptyProjectTest
 		""");
 
 		assertInsertion(
-			sut.findRangeToInsertUsing(file, VariableScope.LOCAL),
+			sut.findInsertionPositionToInsertUsing(file, VariableScope.LOCAL),
 			"",
 			1, 0,
 			1, 0,
@@ -42,7 +42,7 @@ class CodeInsertionPlacerShould extends EmptyProjectTest
 		""");
 
 		assertInsertion(
-			sut.findRangeToInsertUsing(file, VariableScope.LOCAL),
+			sut.findInsertionPositionToInsertUsing(file, VariableScope.LOCAL),
 			System.lineSeparator(),
 			0, "DEFINE DATA ".length(),
 			0, "DEFINE DATA ".length(),
@@ -61,7 +61,7 @@ class CodeInsertionPlacerShould extends EmptyProjectTest
 		""");
 
 		assertInsertion(
-			sut.findRangeToInsertUsing(file, VariableScope.LOCAL),
+			sut.findInsertionPositionToInsertUsing(file, VariableScope.LOCAL),
 			"",
 			1, 0,
 			1, 0,
@@ -83,7 +83,7 @@ class CodeInsertionPlacerShould extends EmptyProjectTest
 		""");
 
 		assertInsertion(
-			sut.findRangeToInsertVariable(file, scope),
+			sut.findInsertionPositionToInsertVariable(file, scope),
 			"%s%n".formatted(scope),
 			1, 0,
 			1, 0,
@@ -106,7 +106,7 @@ class CodeInsertionPlacerShould extends EmptyProjectTest
 		""".formatted(scope));
 
 		assertInsertion(
-			sut.findRangeToInsertVariable(file, scope),
+			sut.findInsertionPositionToInsertVariable(file, scope),
 			"",
 			2, 0,
 			2, 0,
@@ -130,7 +130,7 @@ class CodeInsertionPlacerShould extends EmptyProjectTest
 		""".formatted(scope));
 
 		assertInsertion(
-			sut.findRangeToInsertVariable(file, scope),
+			sut.findInsertionPositionToInsertVariable(file, scope),
 			"",
 			2, 0,
 			2, 0,
@@ -149,7 +149,7 @@ class CodeInsertionPlacerShould extends EmptyProjectTest
 		""");
 
 		assertInsertion(
-			sut.findRangeToInsertUsing(file, VariableScope.LOCAL),
+			sut.findInsertionPositionToInsertUsing(file, VariableScope.LOCAL),
 			"",
 			2, 0,
 			2, 0,
@@ -170,7 +170,7 @@ class CodeInsertionPlacerShould extends EmptyProjectTest
 		""");
 
 		assertInsertion(
-			sut.findRangeToInsertUsing(file, VariableScope.LOCAL),
+			sut.findInsertionPositionToInsertUsing(file, VariableScope.LOCAL),
 			"",
 			4, 0,
 			4, 0,
@@ -189,7 +189,7 @@ class CodeInsertionPlacerShould extends EmptyProjectTest
 		""");
 
 		assertInsertion(
-			sut.findRangeToInsertUsing(file, VariableScope.LOCAL),
+			sut.findInsertionPositionToInsertUsing(file, VariableScope.LOCAL),
 			"",
 			2, 0,
 			2, 0,
@@ -211,7 +211,7 @@ class CodeInsertionPlacerShould extends EmptyProjectTest
 		""");
 
 		assertInsertion(
-			sut.findRangeToInsertUsing(file, VariableScope.LOCAL),
+			sut.findInsertionPositionToInsertUsing(file, VariableScope.LOCAL),
 			"",
 			5, 0,
 			5, 0,
@@ -232,7 +232,7 @@ class CodeInsertionPlacerShould extends EmptyProjectTest
 		""");
 
 		assertInsertion(
-			sut.findRangeToInsertUsing(file, VariableScope.LOCAL),
+			sut.findInsertionPositionToInsertUsing(file, VariableScope.LOCAL),
 			"",
 			1, 0,
 			1, 0,
@@ -253,7 +253,7 @@ class CodeInsertionPlacerShould extends EmptyProjectTest
 		""");
 
 		assertInsertion(
-			sut.findRangeToInsertUsing(file, VariableScope.LOCAL),
+			sut.findInsertionPositionToInsertUsing(file, VariableScope.LOCAL),
 			"",
 			1, 0,
 			1, 0,
