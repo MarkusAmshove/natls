@@ -31,6 +31,23 @@ public class TextEdits
 		return createUsingInsert(neededUsing, file);
 	}
 
+	public static TextEdit addSubroutine(LanguageServerFile file, String name, String source)
+	{
+
+		var subroutine = """
+			/***********************************************************************
+			DEFINE SUBROUTINE %s
+			/***********************************************************************
+
+			%s
+
+			END-SUBROUTINE
+			""".formatted(name, source);
+
+		var insertion = rangeFinder.findInsertionPositionForStatement(file);
+		return insertion.toTextEdit(subroutine);
+	}
+
 	private static TextEdit createUsingInsert(UsingToAdd using, LanguageServerFile file)
 	{
 		var edit = new TextEdit();

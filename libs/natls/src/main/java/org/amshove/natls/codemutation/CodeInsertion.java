@@ -1,6 +1,7 @@
 package org.amshove.natls.codemutation;
 
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.TextEdit;
 
 /**
  * Contains the {@code Range} where to insert code. Also contains a {@code insertionPrefix} if e.g. the scope needs to
@@ -34,5 +35,13 @@ public record CodeInsertion(String insertionPrefix, Range range, String insertio
 	public String insertionText(String code)
 	{
 		return String.format("%s%s%s", insertionPrefix, code, insertionSuffix);
+	}
+
+	public TextEdit toTextEdit(String code)
+	{
+		return new TextEdit(
+			range,
+			insertionText(code)
+		);
 	}
 }

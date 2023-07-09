@@ -17,7 +17,7 @@ import java.util.*;
 
 public class WorkspaceEditBuilder
 {
-	private Map<String, List<TextEdit>> textEdits = new HashMap<>();
+	private final Map<String, List<TextEdit>> textEdits = new HashMap<>();
 
 	public WorkspaceEditBuilder()
 	{
@@ -101,5 +101,18 @@ public class WorkspaceEditBuilder
 		var edit = new WorkspaceEdit();
 		edit.setChanges(textEdits);
 		return edit;
+	}
+
+	public WorkspaceEditBuilder addsSubroutine(LanguageServerFile file, String name, String source)
+	{
+		if (!file.getType().canHaveBody())
+		{
+			throw new IllegalStateException("Module of type %s can not have subroutines".formatted(file.getType()));
+		}
+
+		var edits = textEdits.computeIfAbsent(file.getUri(), u -> new ArrayList<>());
+		edits.add(TextEdits.addSubroutine(file, name, source));
+
+		return this;
 	}
 }
