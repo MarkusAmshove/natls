@@ -197,4 +197,12 @@ public class LspUtil
 			new Position(endLine, endColumn)
 		);
 	}
+
+	public static Range toRangeBefore(IPosition position)
+	{
+		return new Range(
+			new Position(position.line(), position.offsetInLine()),
+			new Position(position.line(), position.offsetInLine())
+		);
+	}
 }

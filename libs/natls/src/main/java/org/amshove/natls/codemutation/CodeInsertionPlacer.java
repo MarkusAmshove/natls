@@ -5,6 +5,7 @@ import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.project.NaturalFileType;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 
@@ -64,6 +65,26 @@ public class CodeInsertionPlacer
 			.orElse(new CodeInsertion("%s%n".formatted(scope.toString()), findRangeForNewScope(file, scope), System.lineSeparator()));
 	}
 
+	public CodeInsertion findInsertionPositionForStatement(LanguageServerFile file)
+	{
+		var withBody = (IModuleWithBody) file.module();
+
+		if (withBody.body().statements().isEmpty())
+		{
+			var lastNodeThatIsNotBodyNode = file.module().syntaxTree().descendants().stream()
+				.filter(n -> !(n instanceof IStatementListNode))
+				.reduce((p, n) -> n)
+				.orElseThrow();
+			return new CodeInsertion(System.lineSeparator(), LspUtil.toRangeAfter(NodeUtil.deepFindLeaf(lastNodeThatIsNotBodyNode).position()));
+		}
+
+		var lastNode = file.getType() == NaturalFileType.SUBROUTINE
+			? withBody.body().statements().first().descendants().last().position()
+			: withBody.body().statements().last().position();
+
+		return new CodeInsertion(LspUtil.toRangeBefore(lastNode), System.lineSeparator());
+	}
+
 	private static Optional<Range> findRangeOfFirstVariableWithScope(LanguageServerFile file, VariableScope scope)
 	{
 		var defineData = ((IHasDefineData) file.module()).defineData();
@@ -72,7 +93,7 @@ public class CodeInsertionPlacer
 			return defineData.variables().stream().filter(v -> v.scope() == scope)
 				.filter(v -> v.position().filePath().equals(file.getPath()))
 				.findFirst()
-				.map(v -> (ISyntaxNode) v.parent()) // Scope node
+				.map(ISyntaxNode::parent) // Scope node
 				.map(v -> LspUtil.toSingleRange(v.position().line() + 1, 0));
 		}
 
@@ -123,6 +144,6 @@ public class CodeInsertionPlacer
 			}
 		}
 
-		return LspUtil.toSingleRange(defineData.descendants().get(0).position().line() + 1, 0);
+		return LspUtil.toSingleRange(defineData.descendants().get(0).position().line() + 1, 0); // This should place it into the next line after DEFINE DATA
 	}
 }

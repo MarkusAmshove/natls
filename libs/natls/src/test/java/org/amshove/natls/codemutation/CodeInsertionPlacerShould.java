@@ -261,6 +261,60 @@ class CodeInsertionPlacerShould extends EmptyProjectTest
 		);
 	}
 
+	@Test
+	void findARangeForASubroutineInASubprogramWithEnd()
+	{
+		var file = createOrSaveLanguageServerFile("LIBONE", "SUBPROG.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+			END
+			""");
+
+		assertInsertion(
+			sut.findInsertionPositionForStatement(file),
+			"",
+			2, 0,
+			2, 0,
+			System.lineSeparator()
+		);
+	}
+
+	@Test
+	void findARangeForASubroutineInASubprogramWithEmptyBody()
+	{
+		var file = createOrSaveLanguageServerFile("LIBONE", "SUBPROG.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+			""");
+
+		assertInsertion(
+			sut.findInsertionPositionForStatement(file),
+			System.lineSeparator(),
+			1, "END-DEFINE".length(),
+			1, "END-DEFINE".length(),
+			""
+		);
+	}
+
+	@Test
+	void findARangeForASubroutineInAnExternalSubroutine()
+	{
+		var file = createOrSaveLanguageServerFile("LIBONE", "SUBR.NSS", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+			DEFINE SUBROUTINE SUBR
+			END-SUBROUTINE
+			""");
+
+		assertInsertion(
+			sut.findInsertionPositionForStatement(file),
+			"",
+			3, 0,
+			3, 0,
+			System.lineSeparator()
+		);
+	}
+
 	private void assertInsertion(CodeInsertion insertion, String prefix, int startLine, int offsetInStartLine, int endLine, int offsetInEndLine, String suffix)
 	{
 		var range = insertion.range();
