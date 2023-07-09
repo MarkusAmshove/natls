@@ -32,4 +32,10 @@ public interface IDefineData extends ISyntaxNode
 
 	@Nullable
 	IDdmField findDdmField(String symbolName);
+
+	@Nullable
+	IScopeNode findFirstScopeNode(VariableScope scope);
+
+	@Nullable
+	ISyntaxNode findLastScopeNode(VariableScope scope);
 }
