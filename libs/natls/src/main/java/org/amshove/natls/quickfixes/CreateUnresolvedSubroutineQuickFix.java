@@ -31,7 +31,7 @@ public class CreateUnresolvedSubroutineQuickFix extends AbstractQuickFix
 			return null;
 		}
 
-		return new CodeActionBuilder("Declare internal subroutine %s".formatted(perform.referencingToken().symbolName()), CodeActionKind.QuickFix)
+		return new CodeActionBuilder("Declare inline subroutine %s".formatted(perform.referencingToken().symbolName()), CodeActionKind.QuickFix)
 			.fixesDiagnostic(context.diagnostic())
 			.appliesWorkspaceEdit(
 				new WorkspaceEditBuilder()

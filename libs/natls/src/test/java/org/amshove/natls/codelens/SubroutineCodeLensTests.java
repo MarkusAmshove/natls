@@ -10,7 +10,7 @@ import java.util.Arrays;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-@DisplayName("CodeLens for internal subroutiens should")
+@DisplayName("CodeLens for inline subroutiens should")
 class SubroutineCodeLensTests extends CodeLensTest
 {
 	@Test

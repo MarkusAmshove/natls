@@ -33,7 +33,7 @@ class CreateUnresolvedSubroutineQuickFixShould extends CodeActionTest
 	@Test
 	void addASubroutine()
 	{
-		assertCodeActionWithTitle("Declare internal subroutine MY-SUB", "LIBONE", "SUB.NSN", """
+		assertCodeActionWithTitle("Declare inline subroutine MY-SUB", "LIBONE", "SUB.NSN", """
 			DEFINE DATA LOCAL
 			END-DEFINE
 			
@@ -63,7 +63,7 @@ class CreateUnresolvedSubroutineQuickFixShould extends CodeActionTest
 	@Test
 	void addASubroutineBeforeTheEndToken()
 	{
-		assertCodeActionWithTitle("Declare internal subroutine MY-SUB", "LIBONE", "SUB.NSN", """
+		assertCodeActionWithTitle("Declare inline subroutine MY-SUB", "LIBONE", "SUB.NSN", """
 			DEFINE DATA LOCAL
 			END-DEFINE
 			
@@ -97,7 +97,7 @@ class CreateUnresolvedSubroutineQuickFixShould extends CodeActionTest
 	@Test
 	void addASubroutineInAnExternalSubroutine()
 	{
-		assertCodeActionWithTitle("Declare internal subroutine MY-SUB", "LIBONE", "SUB.NSS", """
+		assertCodeActionWithTitle("Declare inline subroutine MY-SUB", "LIBONE", "SUB.NSS", """
 			DEFINE DATA LOCAL
 			END-DEFINE
 			DEFINE SUBROUTINE EXT

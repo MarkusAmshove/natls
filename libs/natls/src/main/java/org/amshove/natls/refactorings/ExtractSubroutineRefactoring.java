@@ -51,7 +51,7 @@ public class ExtractSubroutineRefactoring implements ICodeActionProvider
 		var wholeRange = extractWholeRange(enclosedStatements);
 
 		return List.of(
-			new CodeActionBuilder("Extract subroutine", CodeActionKind.RefactorExtract)
+			new CodeActionBuilder("Extract inline subroutine", CodeActionKind.RefactorExtract)
 				.appliesWorkspaceEdit(
 					new WorkspaceEditBuilder()
 						.addsSubroutine(context.file(), "EXTRACTED", extractLinesInSelection(context, wholeRange))
