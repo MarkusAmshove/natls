@@ -109,6 +109,16 @@ public class LspUtil
 		);
 	}
 
+	public static Range toRange(ISyntaxNode startNode, ISyntaxNode endNode)
+	{
+		var firstRange = toRange(startNode);
+		var secondRange = toRange(endNode);
+		return new Range(
+			new Position(firstRange.getStart().getLine(), firstRange.getStart().getCharacter()),
+			new Position(secondRange.getEnd().getLine(), secondRange.getEnd().getCharacter())
+		);
+	}
+
 	public static Location toLocation(ISyntaxNode node)
 	{
 		var position = node.position();

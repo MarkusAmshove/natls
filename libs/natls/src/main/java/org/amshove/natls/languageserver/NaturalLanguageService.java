@@ -525,14 +525,15 @@ public class NaturalLanguageService implements LanguageClientAware
 	{
 		var file = findNaturalFile(LspUtil.uriToPath(params.getTextDocument().getUri()));
 		var token = findTokenAtPosition(file, params.getRange().getStart());
-		var node = NodeUtil.findNodeAtPosition(params.getRange().getStart().getLine(), params.getRange().getStart().getCharacter(), file.module());
-		if (node == null)
+		var nodeAtStart = NodeUtil.findNodeAtPosition(params.getRange().getStart().getLine(), params.getRange().getStart().getCharacter(), file.module());
+		if (nodeAtStart == null)
 		{
 			return List.of();
 		}
+		var nodeAtEnd = NodeUtil.findNodeAtPosition(params.getRange().getEnd().getLine(), params.getRange().getEnd().getCharacter(), file.module());
 
 		var diagnosticsAtPosition = file.diagnosticsInRange(params.getRange());
-		var context = new RefactoringContext(params.getTextDocument().getUri(), file.module(), file, token, node, diagnosticsAtPosition);
+		var context = new RefactoringContext(params.getTextDocument().getUri(), file.module(), file, token, params.getRange(), nodeAtStart, nodeAtEnd, diagnosticsAtPosition);
 
 		return codeActionRegistry.createCodeActions(context);
 	}

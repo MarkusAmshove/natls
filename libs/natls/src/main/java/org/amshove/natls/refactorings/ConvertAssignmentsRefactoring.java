@@ -20,19 +20,19 @@ public class ConvertAssignmentsRefactoring implements ICodeActionProvider
 	{
 		// This will catch both ASSIGN and COMPUTE because of the way those are parsed currently.
 		// If this changes in the future, tests will catch that :-)
-		return (context.nodeAtPosition()instanceof IAssignStatementNode assign && !assign.isRounded());
+		return (context.nodeAtStartPosition()instanceof IAssignStatementNode assign && !assign.isRounded());
 	}
 
 	@Override
 	public List<CodeAction> createCodeAction(RefactoringContext context)
 	{
-		var targetAndOperand = extractTargetAndOperand(context.nodeAtPosition());
+		var targetAndOperand = extractTargetAndOperand(context.nodeAtStartPosition());
 		return List.of(
 			new CodeActionBuilder("Convert to assignment", CodeActionKind.RefactorRewrite)
 				.appliesWorkspaceEdit(
 					new WorkspaceEditBuilder()
 						.changesNode(
-							context.nodeAtPosition(),
+							context.nodeAtStartPosition(),
 							"%s := %s".formatted(targetAndOperand.targetSource, targetAndOperand.operandSource)
 						)
 				)

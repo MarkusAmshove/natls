@@ -115,4 +115,11 @@ public class WorkspaceEditBuilder
 
 		return this;
 	}
+
+	public WorkspaceEditBuilder changesRange(LanguageServerFile file, Range range, String source)
+	{
+		var edits = textEdits.computeIfAbsent(file.getUri(), u -> new ArrayList<>());
+		edits.add(new TextEdit(range, source));
+		return this;
+	}
 }
