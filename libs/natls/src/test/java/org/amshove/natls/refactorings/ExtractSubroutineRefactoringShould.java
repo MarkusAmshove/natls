@@ -98,6 +98,72 @@ class ExtractSubroutineRefactoringShould extends CodeActionTest
 				""");
 	}
 
+	@Test
+	void extractASubroutineFromMultipleStatementsWhenSelectingEmptyLines()
+	{
+		assertCodeActionWithTitle(
+			"Extract inline subroutine", "LIBONE", "SUBN.NSN",
+			"""
+				DEFINE DATA LOCAL
+				END-DEFINE
+				${
+				WRITE 'Hello'
+				WRITE 'World'
+				}$
+				END
+				"""
+		)
+			.resultsApplied("""
+				DEFINE DATA LOCAL
+				END-DEFINE
+
+				PERFORM EXTRACTED
+
+				/***********************************************************************
+				DEFINE SUBROUTINE EXTRACTED
+				/***********************************************************************
+
+				WRITE 'Hello'
+				WRITE 'World'
+
+
+				END-SUBROUTINE
+
+				END
+				""");
+	}
+
+	@Test
+	void provideNoRefactoringInDefineData()
+	{
+		assertNoCodeAction(
+			"LIBONE", "SUBN.NSN",
+			"""
+				DEFINE DATA
+				LOCAL
+				1 #V${}$AR (A10)
+				END-DEFINE
+				END
+				""",
+			"Extract inline subroutine"
+		);
+	}
+
+	@Test
+	void provideNoRefactoringInDataAreas()
+	{
+		assertNoCodeAction(
+			"LIBONE", "LDA.NSL",
+			"""
+				DEFINE DATA
+				LOCAL
+				1 #V${}$AR (A10)
+				END-DEFINE
+				""",
+			"Extract inline subroutine"
+		);
+	}
+
 	private static LspTestContext testContext;
 
 	@BeforeAll
