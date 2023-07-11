@@ -29,10 +29,7 @@ import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
-import org.amshove.natparse.natural.IModuleReferencingNode;
-import org.amshove.natparse.natural.IReferencableNode;
-import org.amshove.natparse.natural.ISymbolReferenceNode;
-import org.amshove.natparse.natural.IVariableReferenceNode;
+import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.natural.project.NaturalProject;
@@ -191,7 +188,8 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	private SyntaxToken findTokenAtPosition(LanguageServerFile file, Position position)
 	{
-		return NodeUtil.findTokenNodeAtPosition(file.getPath(), position.getLine(), position.getCharacter(), file.module().syntaxTree()).token();
+		var tokenNodeAtPosition = NodeUtil.findTokenNodeAtPosition(file.getPath(), position.getLine(), position.getCharacter(), file.module().syntaxTree());
+		return tokenNodeAtPosition != null ? tokenNodeAtPosition.token() : null;
 	}
 
 	public static LSConfiguration getConfig()
@@ -525,14 +523,15 @@ public class NaturalLanguageService implements LanguageClientAware
 	{
 		var file = findNaturalFile(LspUtil.uriToPath(params.getTextDocument().getUri()));
 		var token = findTokenAtPosition(file, params.getRange().getStart());
-		var node = NodeUtil.findNodeAtPosition(params.getRange().getStart().getLine(), params.getRange().getStart().getCharacter(), file.module());
-		if (node == null)
+		var nodeAtStart = NodeUtil.findNodeAtPosition(params.getRange().getStart().getLine(), params.getRange().getStart().getCharacter(), file.module());
+		if (nodeAtStart == null && params.getRange().getStart().equals(params.getRange().getEnd()))
 		{
 			return List.of();
 		}
+		var nodeAtEnd = NodeUtil.findNodeAtPosition(params.getRange().getEnd().getLine(), params.getRange().getEnd().getCharacter(), file.module());
 
 		var diagnosticsAtPosition = file.diagnosticsInRange(params.getRange());
-		var context = new RefactoringContext(params.getTextDocument().getUri(), file.module(), file, token, node, diagnosticsAtPosition);
+		var context = new RefactoringContext(params.getTextDocument().getUri(), file.module(), file, token, params.getRange(), nodeAtStart, nodeAtEnd, diagnosticsAtPosition);
 
 		return codeActionRegistry.createCodeActions(context);
 	}

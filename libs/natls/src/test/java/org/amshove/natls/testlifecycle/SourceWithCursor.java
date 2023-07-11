@@ -23,43 +23,82 @@ public record SourceWithCursor(String source, Range cursorPosition)
 		var resultingSource = new StringBuilder();
 		annotatedSource = annotatedSource.replaceAll("\\r\\n?", "\n"); // Test files have linux line ending in the repository. Java text blocks use the source line endings, not platform
 		var lines = annotatedSource.split("\\n");
-		Range cursorPosition = null; // TODO: Currently no multiline selection is handled
+		Range cursorPosition = null;
 		for (int i = 0, linesLength = lines.length; i < linesLength; i++)
 		{
+			if (i != 0)
+			{
+				resultingSource.append("\n");
+			}
+
 			String line = lines[i];
 			var startIndex = line.indexOf(CURSOR_START);
+			var endIndex = line.indexOf(CURSOR_END);
 			if (startIndex != -1)
 			{
-				if (cursorPosition != null)
+				if (cursorPosition != null || line.lastIndexOf(CURSOR_START) != startIndex)
 				{
-					throw new RuntimeException("Multiple cursor positions found!");
+					throw new SourceWithCursorExtractionException("Multiple cursor start positions found");
+				}
+				cursorPosition = new Range();
+				cursorPosition.setStart(new Position(i, startIndex));
+
+				if (endIndex != -1)
+				{
+					if (line.lastIndexOf(CURSOR_END) != endIndex)
+					{
+						throw new SourceWithCursorExtractionException("Multiple cursor end positions found");
+					}
+
+					resultingSource
+						.append(line, 0, startIndex);
+					resultingSource
+						.append(line, startIndex + CURSOR_START.length(), endIndex);
+					resultingSource
+						.append(line.substring(endIndex + CURSOR_END.length()));
+
+					cursorPosition.setEnd(new Position(i, endIndex - CURSOR_END.length()));
+				}
+				else
+				{
+					resultingSource
+						.append(line.substring(startIndex + CURSOR_START.length()));
 				}
 
-				var endIndex = line.indexOf(CURSOR_END);
-				if (endIndex == -1)
-				{
-					throw new RuntimeException("No end of cursor found in current line. Multiline selection is not handled yet.");
-				}
-
-				resultingSource
-					.append(line, 0, startIndex);
-				resultingSource
-					.append(line.substring(endIndex + CURSOR_END.length()))
-					.append("\n");
-				cursorPosition = new Range(
-					new Position(i, startIndex),
-					new Position(i, endIndex)
-				);
 			}
 			else
-			{
-				resultingSource.append(line).append("\n");
-			}
+				if (endIndex != -1)
+				{
+					if (cursorPosition == null)
+					{
+						throw new SourceWithCursorExtractionException("End position of cursor encountered before encountering start position");
+					}
+
+					if (cursorPosition.getEnd() != null || line.lastIndexOf(CURSOR_END) != endIndex)
+					{
+						throw new SourceWithCursorExtractionException("Multiple cursor end positions found");
+					}
+
+					resultingSource
+						.append(line, 0, endIndex)
+						.append(line.substring(endIndex + CURSOR_END.length()));
+
+					cursorPosition.setEnd(new Position(i, endIndex));
+				}
+				else
+				{
+					resultingSource.append(line);
+				}
 		}
 
 		if (cursorPosition == null)
 		{
-			throw new RuntimeException("No cursor position found");
+			throw new SourceWithCursorExtractionException("No cursor position found");
+		}
+
+		if (cursorPosition.getEnd() == null)
+		{
+			throw new SourceWithCursorExtractionException("No end position of cursor found");
 		}
 
 		return new SourceWithCursor(resultingSource.toString(), cursorPosition);

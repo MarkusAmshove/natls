@@ -264,4 +264,15 @@ public class NodeUtil
 
 		return deepFindLeaf(start.descendants().last());
 	}
+
+	public static ReadOnlyList<IStatementNode> findEnclosedStatements(Path path, IStatementListNode body, int startLine, int endLine)
+	{
+		var statements = new ArrayList<IStatementNode>();
+		for (var i = startLine; i <= endLine; i++)
+		{
+			findStatementInLine(path, i, body).ifPresent(statements::add);
+		}
+
+		return ReadOnlyList.from(statements);
+	}
 }

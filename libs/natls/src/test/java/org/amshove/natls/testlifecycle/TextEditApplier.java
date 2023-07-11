@@ -62,6 +62,23 @@ public class TextEditApplier
 			}
 		}
 
+		// A line that needs to be changed isn't present anymore.
+		// Put the new text before the last line
+		if (edit.getRange().getStart().getLine() >= lines.length)
+		{
+			var resultedLines = resultingSource.toString().split("\n");
+			var last = resultedLines[resultedLines.length - 1];
+			resultingSource = new StringBuilder();
+			for (int i = 0; i < resultedLines.length - 1; i++)
+			{
+				resultingSource
+					.append(resultedLines[i])
+					.append("\n");
+			}
+			resultingSource.append(edit.getNewText());
+			resultingSource.append(last).append("\n");
+		}
+
 		return resultingSource.toString();
 	}
 
