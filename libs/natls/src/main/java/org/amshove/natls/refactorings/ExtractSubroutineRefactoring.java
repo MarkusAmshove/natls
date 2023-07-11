@@ -54,8 +54,8 @@ public class ExtractSubroutineRefactoring implements ICodeActionProvider
 			new CodeActionBuilder("Extract inline subroutine", CodeActionKind.RefactorExtract)
 				.appliesWorkspaceEdit(
 					new WorkspaceEditBuilder()
-						.addsSubroutine(context.file(), "EXTRACTED", extractLinesInSelection(context, wholeRange))
 						.changesRange(context.file(), wholeRange, "PERFORM EXTRACTED")
+						.addsSubroutine(context.file(), "EXTRACTED", extractLinesInSelection(context, wholeRange))
 				)
 				.build()
 		);
