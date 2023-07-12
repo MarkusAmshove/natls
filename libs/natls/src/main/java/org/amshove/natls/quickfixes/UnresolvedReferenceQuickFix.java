@@ -38,20 +38,30 @@ public class UnresolvedReferenceQuickFix extends AbstractQuickFix
 
 		return Stream.concat(
 			createUsingImportCandidates(context, unresolvedReference),
-			Stream.of(createDeclareVariableEdit(context, unresolvedReference))
+			createDeclareVariableEdit(context, unresolvedReference)
 		)
 			.toList();
 	}
 
-	private CodeAction createDeclareVariableEdit(QuickFixContext context, String unresolvedReference)
+	private Stream<CodeAction> createDeclareVariableEdit(QuickFixContext context, String unresolvedReference)
 	{
-		return new CodeActionBuilder("Declare variable %s".formatted(unresolvedReference), CodeActionKind.QuickFix)
-			.fixesDiagnostic(context.diagnostic())
-			.appliesWorkspaceEdit(
-				new WorkspaceEditBuilder()
-					.addsVariable(context.file(), unresolvedReference, "(A) DYNAMIC", VariableScope.LOCAL)
-			)
-			.build();
+		var inferredType = "(A) DYNAMIC";
+		return Stream.of(
+			new CodeActionBuilder("Declare local variable %s".formatted(unresolvedReference), CodeActionKind.QuickFix)
+				.fixesDiagnostic(context.diagnostic())
+				.appliesWorkspaceEdit(
+					new WorkspaceEditBuilder()
+						.addsVariable(context.file(), unresolvedReference, inferredType, VariableScope.LOCAL)
+				)
+				.build(),
+			new CodeActionBuilder("Declare parameter %s".formatted(unresolvedReference), CodeActionKind.QuickFix)
+				.fixesDiagnostic(context.diagnostic())
+				.appliesWorkspaceEdit(
+					new WorkspaceEditBuilder()
+						.addsVariable(context.file(), unresolvedReference, inferredType, VariableScope.PARAMETER)
+				)
+				.build()
+		);
 	}
 
 	private Stream<CodeAction> createUsingImportCandidates(QuickFixContext context, String unresolvedReference)

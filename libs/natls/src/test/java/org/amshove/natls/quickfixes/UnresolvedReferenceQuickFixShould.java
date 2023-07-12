@@ -33,7 +33,7 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 	@Test
 	void addAVariableToDefineDataWhenNoVariablesArePresent()
 	{
-		assertCodeActionWithTitle("Declare variable #NAME", "LIBONE", "MEINS.NSN", """
+		assertCodeActionWithTitle("Declare local variable #NAME", "LIBONE", "MEINS.NSN", """
 			DEFINE DATA
 			END-DEFINE
 
@@ -55,9 +55,88 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 	}
 
 	@Test
+	void addAParameterToDefineDataWhenNoVariablesArePresent()
+	{
+		assertCodeActionWithTitle("Declare parameter #NAME", "LIBONE", "MEINS.NSN", """
+			DEFINE DATA
+			END-DEFINE
+
+			WRITE #N${}$AME
+
+			END
+			""")
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.resultsApplied("""
+				DEFINE DATA
+				PARAMETER
+				1 #NAME (A) DYNAMIC
+				END-DEFINE
+
+				WRITE #NAME
+
+				END
+				""");
+	}
+
+	@Test
+	void addAParameterToDefineDataWhenOtherVariablesArePresent()
+	{
+		assertCodeActionWithTitle("Declare parameter #NAME", "LIBONE", "MEINS.NSN", """
+			DEFINE DATA
+			LOCAL
+			1 #VAR1 (A10)
+			END-DEFINE
+
+			WRITE #N${}$AME
+
+			END
+			""")
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.resultsApplied("""
+				DEFINE DATA
+				PARAMETER
+				1 #NAME (A) DYNAMIC
+				LOCAL
+				1 #VAR1 (A10)
+				END-DEFINE
+
+				WRITE #NAME
+
+				END
+				""");
+	}
+
+	@Test
+	void addAParameterToDefineDataWhenOtherParametersArePresent()
+	{
+		assertCodeActionWithTitle("Declare parameter #NAME", "LIBONE", "MEINS.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #PARM1 (A10)
+			END-DEFINE
+
+			WRITE #N${}$AME
+
+			END
+			""")
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.resultsApplied("""
+				DEFINE DATA
+				PARAMETER
+				1 #PARM1 (A10)
+				1 #NAME (A) DYNAMIC
+				END-DEFINE
+
+				WRITE #NAME
+
+				END
+				""");
+	}
+
+	@Test
 	void addAVariableToDefineDataWhenNoVariablesButAScopeArePresent()
 	{
-		assertCodeActionWithTitle("Declare variable #NAME", "LIBONE", "MEINS.NSN", """
+		assertCodeActionWithTitle("Declare local variable #NAME", "LIBONE", "MEINS.NSN", """
 			DEFINE DATA
 			LOCAL
 			END-DEFINE
@@ -82,7 +161,7 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 	@Test
 	void addAVariableToDefineDataWhenAnotherVariableIsAlreadyPresent()
 	{
-		assertCodeActionWithTitle("Declare variable #NAME", "LIBONE", "MEINS.NSN", """
+		assertCodeActionWithTitle("Declare local variable #NAME", "LIBONE", "MEINS.NSN", """
 			DEFINE DATA
 			LOCAL
 			1 #ANOTHERVAR (A10)
@@ -175,7 +254,7 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 			WRITE #THE-VAR-I-NEED
 			""");
 
-		assertCodeActionWithTitle("Declare variable #THE-VAR-I-NEED", "LIBONE", "SUB.NSN", """
+		assertCodeActionWithTitle("Declare local variable #THE-VAR-I-NEED", "LIBONE", "SUB.NSN", """
 			DEFINE DATA
 			LOCAL
 			END-DEFINE
@@ -184,7 +263,7 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 			END
 			""")
 			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
-			.hasTitle("Declare variable #THE-VAR-I-NEED")
+			.hasTitle("Declare local variable #THE-VAR-I-NEED")
 			.resultsApplied("""
 				DEFINE DATA
 				LOCAL
