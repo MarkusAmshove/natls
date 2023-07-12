@@ -195,7 +195,7 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 			END-DEFINE
 			""");
 
-		assertCodeActionWithTitle("Add USING to DATAAREA (from LIBONE)", "LIBONE", "MEINS.NSN", """
+		assertCodeActionWithTitle("Add LOCAL USING to DATAAREA (from LIBONE)", "LIBONE", "MEINS.NSN", """
 			DEFINE DATA
 			LOCAL
 			END-DEFINE
@@ -227,7 +227,7 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 			END-DEFINE
 			""");
 
-		assertCodeActionWithTitle("Add USING to DATAAREA (from LIBONE)", "LIBONE", "MEINS.NSN", """
+		assertCodeActionWithTitle("Add LOCAL USING to DATAAREA (from LIBONE)", "LIBONE", "MEINS.NSN", """
 			DEFINE DATA
 			END-DEFINE
 
@@ -242,6 +242,90 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 				END-DEFINE
 
 				WRITE #IN-LDA
+
+				END
+				""");
+	}
+
+	@Test
+	void notRecommendAddingAUsingToAPdaIfDataAreaIsNotAPda()
+	{
+		createOrSaveFile("LIBONE", "PDAAA.NSL", """
+			DEFINE DATA
+			LOCAL
+			1 #IN-LDA (A5)
+			END-DEFINE
+			""");
+
+		assertNoCodeActionWithTitle("Add PARAMETER USING to PDAAA (from LIBONE)", "LIBONE", "MEINS.NSN", """
+			DEFINE DATA
+			END-DEFINE
+
+			WRITE #IN-${}$LDA
+
+			END
+			""");
+	}
+
+	@Test
+	void addAParameterUsingIfAnUnresolvedVariableCanBeFoundInAParameterDataAreaAndAScopeIsNotAlreadyPresent()
+	{
+		createOrSaveFile("LIBONE", "PDAAA.NSA", """
+			DEFINE DATA
+			PARAMETER
+			1 #IN-PDA (A5)
+			END-DEFINE
+			""");
+
+		assertCodeActionWithTitle("Add PARAMETER USING to PDAAA (from LIBONE)", "LIBONE", "MEINS.NSN", """
+			DEFINE DATA
+			END-DEFINE
+
+			WRITE #IN-${}$PDA
+
+			END
+			""")
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.resultsApplied("""
+				DEFINE DATA
+				PARAMETER USING PDAAA
+				END-DEFINE
+
+				WRITE #IN-PDA
+
+				END
+				""");
+	}
+
+	@Test
+	void addAParameterUsingIfAnUnresolvedVariableCanBeFoundInAParameterDataAreaAndAScopeIsAlreadyPresent()
+	{
+		createOrSaveFile("LIBONE", "PDAAA.NSA", """
+			DEFINE DATA
+			PARAMETER
+			1 #IN-PDA (A5)
+			END-DEFINE
+			""");
+
+		assertCodeActionWithTitle("Add PARAMETER USING to PDAAA (from LIBONE)", "LIBONE", "MEINS.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #P-PARM (A1)
+			END-DEFINE
+
+			WRITE #IN-${}$PDA
+
+			END
+			""")
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.resultsApplied("""
+				DEFINE DATA
+				PARAMETER USING PDAAA
+				PARAMETER
+				1 #P-PARM (A1)
+				END-DEFINE
+
+				WRITE #IN-PDA
 
 				END
 				""");
