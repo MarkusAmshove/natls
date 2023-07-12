@@ -45,7 +45,7 @@ public class UnresolvedReferenceQuickFix extends AbstractQuickFix
 
 	private CodeAction createDeclareVariableEdit(QuickFixContext context, String unresolvedReference)
 	{
-		return new CodeActionBuilder("Declare variable %s".formatted(unresolvedReference), CodeActionKind.QuickFix)
+		return new CodeActionBuilder("Declare local variable %s".formatted(unresolvedReference), CodeActionKind.QuickFix)
 			.fixesDiagnostic(context.diagnostic())
 			.appliesWorkspaceEdit(
 				new WorkspaceEditBuilder()
