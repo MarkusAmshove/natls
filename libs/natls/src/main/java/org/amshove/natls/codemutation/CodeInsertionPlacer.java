@@ -59,7 +59,10 @@ public class CodeInsertionPlacer
 
 	public CodeInsertion findInsertionPositionToInsertVariable(LanguageServerFile file, VariableScope scope)
 	{
-		return findRangeOfFirstVariableWithScope(file, scope)
+		var bestGuess = scope == VariableScope.PARAMETER
+			? findLastInsertionPositionForParameter(file)
+			: findFirstInsertionPositionForVariable(file, scope);
+		return bestGuess
 			.map(r -> new CodeInsertion("", r, System.lineSeparator()))
 			.or(() -> findRangeOfFirstScope(file, scope).map(r -> new CodeInsertion("", moveOneDown(r), System.lineSeparator())))
 			.orElse(new CodeInsertion("%s%n".formatted(scope.toString()), findRangeForNewScope(file, scope), System.lineSeparator()));
@@ -85,7 +88,21 @@ public class CodeInsertionPlacer
 		return new CodeInsertion(LspUtil.toRangeBefore(lastNode), System.lineSeparator());
 	}
 
-	private static Optional<Range> findRangeOfFirstVariableWithScope(LanguageServerFile file, VariableScope scope)
+	private static Optional<Range> findLastInsertionPositionForParameter(LanguageServerFile file)
+	{
+		var defineData = ((IHasDefineData) file.module()).defineData();
+		if (defineData.variables().hasItems())
+		{
+			return defineData.variables().stream().filter(v -> v.scope() == VariableScope.PARAMETER)
+				.filter(v -> v.position().filePath().equals(file.getPath()))
+				.reduce((p, n) -> n)
+				.map(v -> LspUtil.toSingleRange(v.position().line() + 1, 0));
+		}
+
+		return Optional.empty();
+	}
+
+	private static Optional<Range> findFirstInsertionPositionForVariable(LanguageServerFile file, VariableScope scope)
 	{
 		var defineData = ((IHasDefineData) file.module()).defineData();
 		if (defineData.variables().hasItems())
