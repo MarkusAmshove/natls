@@ -1216,14 +1216,17 @@ class StatementListParserShould extends StatementParseTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"VAR1 VAR2 VAR3",
-		"VAR1 VAR2 VAR3(1)",
-		"DATA VAR1 VAR2 VAR3",
-		"DATA VAR1 VAR2 VAR3(1)",
+		"#VAR1 #VAR2 #VAR3",
+		"#VAR1 #VAR2 #VAR3(1)",
+		"DATA #VAR1 #VAR2 #VAR3",
+		"DATA #VAR1 #VAR2 #VAR3(1)",
 	})
 	void parseGetTransactionStatements(String statement)
 	{
-		assertParsesSingleStatement("GET TRANSACTION %s".formatted(statement), IGetTransactionNode.class);
+		var get = assertParsesSingleStatement("GET TRANSACTION %s".formatted(statement), IGetTransactionNode.class);
+		assertThat(assertNodeType(get.operands().get(0), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
+		assertThat(assertNodeType(get.operands().get(1), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+		assertThat(assertNodeType(get.operands().get(2), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR3");
 	}
 
 	@Test
@@ -1231,6 +1234,12 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var get = assertParsesSingleStatement("GET SAME", IGetSameNode.class);
 		assertThat(get.label()).isEmpty();
+	}
+
+	@Test
+	void reportADiagnosticIfGetSameHasAnInvalidLabel()
+	{
+		assertDiagnostic("GET SAME (LABELNODOT)", ParserError.UNEXPECTED_TOKEN);
 	}
 
 	@Test
@@ -1277,6 +1286,7 @@ class StatementListParserShould extends StatementParseTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
+		"THE-VIEW *ISN(LABELNODOT)",
 		"THE-VIEW *ISN(LABEL.)",
 		"THE-VIEW *ISN (LABEL.)",
 		"THE-VIEW *ISN (0123)",
@@ -1303,6 +1313,12 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var get = assertParsesSingleStatement("GET %s".formatted(statement), IGetNode.class);
 		assertThat(get.viewReference().token().symbolName()).isEqualTo("THE-VIEW");
+	}
+
+	@Test
+	void reportADiagnosticIfGetHasNoView()
+	{
+		assertDiagnostic("GET *ISN", ParserError.UNEXPECTED_TOKEN);
 	}
 
 	@ParameterizedTest
