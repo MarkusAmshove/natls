@@ -1216,6 +1216,86 @@ class StatementListParserShould extends StatementParseTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
+		"VAR1 VAR2 VAR3",
+		"VAR1 VAR2 VAR3(1)",
+		"DATA VAR1 VAR2 VAR3",
+		"DATA VAR1 VAR2 VAR3(1)",
+	})
+	void parseGetTransactionStatements(String statement)
+	{
+		assertParsesSingleStatement("GET TRANSACTION %s".formatted(statement), IGetTransactionNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"",
+		"(LABEL.)",
+	})
+	void parseGetSameStatements(String statement)
+	{
+		assertParsesSingleStatement("GET SAME %s".formatted(statement), IGetSameNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"THE-VIEW *ISN",
+		"THE-VIEW #ISN",
+		"IN THE-VIEW *ISN",
+		"IN THE-VIEW #ISN",
+		"FILE THE-VIEW *ISN",
+		"FILE THE-VIEW #ISN",
+		"IN FILE THE-VIEW *ISN",
+		"IN FILE THE-VIEW #ISN",
+		"IN FILE THE-VIEW RECORD *ISN",
+		"IN FILE THE-VIEW RECORD #ISN",
+		"IN FILE THE-VIEW RECORDS *ISN",
+		"IN FILE THE-VIEW RECORDS #ISN",
+		"IN FILE THE-VIEW PASSWORD='pwd' CIPHER=123 RECORDS *ISN",
+		"IN FILE THE-VIEW PASSWORD='pwd' CIPHER=123 RECORDS #ISN",
+	})
+
+	void parseGetStatements(String statement)
+	{
+		var get = assertParsesSingleStatement("GET %s".formatted(statement), IGetNode.class);
+		assertThat(get.viewReference().token().symbolName()).isEqualTo("THE-VIEW");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"THE-VIEW *ISN(LABEL.)",
+		"THE-VIEW *ISN (LABEL.)",
+		"THE-VIEW *ISN (0123)",
+		"IN THE-VIEW *ISN(LABEL.)",
+		"IN THE-VIEW *ISN (LABEL.)",
+		"IN THE-VIEW *ISN (0123)",
+		"FILE THE-VIEW *ISN(LABEL.)",
+		"FILE THE-VIEW *ISN (LABEL.)",
+		"FILE THE-VIEW *ISN (0123)",
+		"IN FILE THE-VIEW *ISN(LABEL.)",
+		"IN FILE THE-VIEW *ISN (LABEL.)",
+		"IN FILE THE-VIEW *ISN (0123)",
+		"IN FILE THE-VIEW RECORD *ISN(LABEL.)",
+		"IN FILE THE-VIEW RECORD *ISN (LABEL.)",
+		"IN FILE THE-VIEW RECORD *ISN (0123)",
+		"IN FILE THE-VIEW RECORDS *ISN(LABEL.)",
+		"IN FILE THE-VIEW RECORDS *ISN (LABEL.)",
+		"IN FILE THE-VIEW RECORDS *ISN (0123)",
+		"IN FILE THE-VIEW PASSWORD='pwd' CIPHER=123 RECORDS *ISN(LABEL.)",
+		"IN FILE THE-VIEW PASSWORD='pwd' CIPHER=123 RECORDS *ISN (LABEL.)",
+		"IN FILE THE-VIEW PASSWORD='pwd' CIPHER=123 RECORDS *ISN (0123)",
+	})
+	void parseGetStatementsWithLabel(String statement)
+	{
+		var get = assertParsesSingleStatement("GET %s".formatted(statement), IGetNode.class);
+		assertThat(get.viewReference().token().symbolName()).isEqualTo("THE-VIEW");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
 		"#VAR1 TO #VAR2",
 		"#VAR1 (PM=I) TO #VAR2",
 		"#VAR1 (DF=I) TO #VAR2",
