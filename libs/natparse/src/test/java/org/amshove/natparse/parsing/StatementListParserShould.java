@@ -1227,6 +1227,9 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(assertNodeType(get.operands().get(0), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
 		assertThat(assertNodeType(get.operands().get(1), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
 		assertThat(assertNodeType(get.operands().get(2), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR3");
+		assertThat(assertNodeType(get.mutations().get(0), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
+		assertThat(assertNodeType(get.mutations().get(1), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+		assertThat(assertNodeType(get.mutations().get(2), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR3");
 	}
 
 	@Test
