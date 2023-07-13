@@ -4149,7 +4149,16 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		if (consumeOptionally(get, SyntaxKind.LPAREN))
 		{
-			var label = consumeMandatory(get, SyntaxKind.LABEL_IDENTIFIER);
+			SyntaxToken label;
+			if (peekKind(SyntaxKind.LABEL_IDENTIFIER))
+			{
+				label = consumeMandatory(get, SyntaxKind.LABEL_IDENTIFIER);
+			}
+			else
+			{
+				label = consumeLiteralNode(get, SyntaxKind.NUMBER_LITERAL).token();
+			}
+
 			get.setLabel(label);
 			consumeMandatory(get, SyntaxKind.RPAREN);
 		}

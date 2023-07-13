@@ -1226,15 +1226,27 @@ class StatementListParserShould extends StatementParseTest
 		assertParsesSingleStatement("GET TRANSACTION %s".formatted(statement), IGetTransactionNode.class);
 	}
 
-	@ParameterizedTest
-	@ValueSource(strings =
+	@Test
+	void parseGetSameStatement()
 	{
-		"",
-		"(LABEL.)",
-	})
-	void parseGetSameStatements(String statement)
+		var get = assertParsesSingleStatement("GET SAME", IGetSameNode.class);
+		assertThat(get.label()).isEmpty();
+	}
+
+	@Test
+	void parseGetSameStatementWithLabel()
 	{
-		assertParsesSingleStatement("GET SAME %s".formatted(statement), IGetSameNode.class);
+		var get = assertParsesSingleStatement("GET SAME (LABEL.)", IGetSameNode.class);
+		assertThat(get.label()).isNotEmpty();
+		assertThat(get.label()).map(SyntaxToken::symbolName).hasValue("LABEL.");
+	}
+
+	@Test
+	void parseGetSameStatementWithNumberLabel()
+	{
+		var get = assertParsesSingleStatement("GET SAME (0123)", IGetSameNode.class);
+		assertThat(get.label()).isNotEmpty();
+		assertThat(get.label()).map(SyntaxToken::symbolName).hasValue("0123");
 	}
 
 	@ParameterizedTest
