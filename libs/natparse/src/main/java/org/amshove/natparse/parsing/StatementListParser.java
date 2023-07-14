@@ -324,6 +324,19 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						}
 						statementList.addStatement(readStatement());
 						break;
+					case GET:
+						if (peek(1).kind() == SyntaxKind.TRANSACTION)
+						{
+							statementList.addStatement(getTransaction());
+							break;
+						}
+						if (peek(1).kind() == SyntaxKind.SAME)
+						{
+							statementList.addStatement(getSame());
+							break;
+						}
+						statementList.addStatement(getStatement());
+						break;
 					case PERFORM:
 						if (peek(1).kind() == SyntaxKind.BREAK)
 						{
@@ -353,9 +366,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case TERMINATE:
 						statementList.addStatement(terminate());
 						break;
-					case IF:
-						statementList.addStatement(ifStatement());
-						break;
 					case DECIDE:
 						if (peekKind(1, SyntaxKind.FOR))
 						{
@@ -365,9 +375,12 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(decideOn());
 						break;
 					// Below this line, add statements that can be used as keywords within other statements.
-					// Like FOR is a keyword in HISTOGRAM etc.
+					// Like FOR is a keyword in DECIDE and HISTOGRAM etc.
 					case FOR:
 						statementList.addStatement(forLoop());
+						break;
+					case IF:
+						statementList.addStatement(ifStatement());
 						break;
 					// SORT statement has to start with END-ALL, so because consumeMandatoryClosing()
 					// is checking for END-ALL, we have to parse it very late.
@@ -4111,6 +4124,61 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				consumeOperandNode(node);
 			}
 		}
+	}
+
+	private GetTransactionNode getTransaction() throws ParseError
+	{
+		var get = new GetTransactionNode();
+		consumeMandatory(get, SyntaxKind.GET);
+		consumeMandatory(get, SyntaxKind.TRANSACTION);
+		consumeOptionally(get, SyntaxKind.DATA);
+
+		while (isOperand() && !isStatementStart())
+		{
+			get.addOperand(consumeVariableReferenceNode(get));
+		}
+
+		return get;
+	}
+
+	private GetSameNode getSame() throws ParseError
+	{
+		var get = new GetSameNode();
+		consumeMandatory(get, SyntaxKind.GET);
+		consumeMandatory(get, SyntaxKind.SAME);
+
+		if (consumeOptionally(get, SyntaxKind.LPAREN))
+		{
+			SyntaxToken label;
+			if (peekKind(SyntaxKind.LABEL_IDENTIFIER))
+			{
+				label = consumeMandatory(get, SyntaxKind.LABEL_IDENTIFIER);
+			}
+			else
+			{
+				label = consumeLiteralNode(get, SyntaxKind.NUMBER_LITERAL).token();
+			}
+
+			get.setLabel(label);
+			consumeMandatory(get, SyntaxKind.RPAREN);
+		}
+
+		return get;
+	}
+
+	private GetNode getStatement() throws ParseError
+	{
+		var get = new GetNode();
+		consumeMandatory(get, SyntaxKind.GET);
+		consumeOptionally(get, SyntaxKind.IN);
+		consumeOptionally(get, SyntaxKind.FILE);
+
+		get.setView(consumeVariableReferenceNode(get));
+		consumePasswordAndCipher(get);
+		consumeAnyOptionally(get, List.of(SyntaxKind.RECORDS, SyntaxKind.RECORD));
+		consumeOperandNode(get);
+
+		return get;
 	}
 
 	private List<StatementNode> assignmentsOrIdentifierReference() throws ParseError

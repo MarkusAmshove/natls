@@ -1216,6 +1216,117 @@ class StatementListParserShould extends StatementParseTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
+		"#VAR1 #VAR2 #VAR3",
+		"#VAR1 #VAR2 #VAR3(1)",
+		"DATA #VAR1 #VAR2 #VAR3",
+		"DATA #VAR1 #VAR2 #VAR3(1)",
+	})
+	void parseGetTransactionStatements(String statement)
+	{
+		var get = assertParsesSingleStatement("GET TRANSACTION %s".formatted(statement), IGetTransactionNode.class);
+		assertThat(assertNodeType(get.operands().get(0), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
+		assertThat(assertNodeType(get.operands().get(1), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+		assertThat(assertNodeType(get.operands().get(2), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR3");
+		assertThat(assertNodeType(get.mutations().get(0), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
+		assertThat(assertNodeType(get.mutations().get(1), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+		assertThat(assertNodeType(get.mutations().get(2), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR3");
+	}
+
+	@Test
+	void parseGetSameStatement()
+	{
+		var get = assertParsesSingleStatement("GET SAME", IGetSameNode.class);
+		assertThat(get.label()).isEmpty();
+	}
+
+	@Test
+	void reportADiagnosticIfGetSameHasAnInvalidLabel()
+	{
+		assertDiagnostic("GET SAME (LABELNODOT)", ParserError.UNEXPECTED_TOKEN);
+	}
+
+	@Test
+	void parseGetSameStatementWithLabel()
+	{
+		var get = assertParsesSingleStatement("GET SAME (LABEL.)", IGetSameNode.class);
+		assertThat(get.label()).isNotEmpty();
+		assertThat(get.label()).map(SyntaxToken::symbolName).hasValue("LABEL.");
+	}
+
+	@Test
+	void parseGetSameStatementWithNumberLabel()
+	{
+		var get = assertParsesSingleStatement("GET SAME (0123)", IGetSameNode.class);
+		assertThat(get.label()).isNotEmpty();
+		assertThat(get.label()).map(SyntaxToken::symbolName).hasValue("0123");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"THE-VIEW *ISN",
+		"THE-VIEW #ISN",
+		"IN THE-VIEW *ISN",
+		"IN THE-VIEW #ISN",
+		"FILE THE-VIEW *ISN",
+		"FILE THE-VIEW #ISN",
+		"IN FILE THE-VIEW *ISN",
+		"IN FILE THE-VIEW #ISN",
+		"IN FILE THE-VIEW RECORD *ISN",
+		"IN FILE THE-VIEW RECORD #ISN",
+		"IN FILE THE-VIEW RECORDS *ISN",
+		"IN FILE THE-VIEW RECORDS #ISN",
+		"IN FILE THE-VIEW PASSWORD='pwd' CIPHER=123 RECORDS *ISN",
+		"IN FILE THE-VIEW PASSWORD='pwd' CIPHER=123 RECORDS #ISN",
+	})
+
+	void parseGetStatements(String statement)
+	{
+		var get = assertParsesSingleStatement("GET %s".formatted(statement), IGetNode.class);
+		assertThat(get.viewReference().token().symbolName()).isEqualTo("THE-VIEW");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"THE-VIEW *ISN(LABELNODOT)",
+		"THE-VIEW *ISN(LABEL.)",
+		"THE-VIEW *ISN (LABEL.)",
+		"THE-VIEW *ISN (0123)",
+		"IN THE-VIEW *ISN(LABEL.)",
+		"IN THE-VIEW *ISN (LABEL.)",
+		"IN THE-VIEW *ISN (0123)",
+		"FILE THE-VIEW *ISN(LABEL.)",
+		"FILE THE-VIEW *ISN (LABEL.)",
+		"FILE THE-VIEW *ISN (0123)",
+		"IN FILE THE-VIEW *ISN(LABEL.)",
+		"IN FILE THE-VIEW *ISN (LABEL.)",
+		"IN FILE THE-VIEW *ISN (0123)",
+		"IN FILE THE-VIEW RECORD *ISN(LABEL.)",
+		"IN FILE THE-VIEW RECORD *ISN (LABEL.)",
+		"IN FILE THE-VIEW RECORD *ISN (0123)",
+		"IN FILE THE-VIEW RECORDS *ISN(LABEL.)",
+		"IN FILE THE-VIEW RECORDS *ISN (LABEL.)",
+		"IN FILE THE-VIEW RECORDS *ISN (0123)",
+		"IN FILE THE-VIEW PASSWORD='pwd' CIPHER=123 RECORDS *ISN(LABEL.)",
+		"IN FILE THE-VIEW PASSWORD='pwd' CIPHER=123 RECORDS *ISN (LABEL.)",
+		"IN FILE THE-VIEW PASSWORD='pwd' CIPHER=123 RECORDS *ISN (0123)",
+	})
+	void parseGetStatementsWithLabel(String statement)
+	{
+		var get = assertParsesSingleStatement("GET %s".formatted(statement), IGetNode.class);
+		assertThat(get.viewReference().token().symbolName()).isEqualTo("THE-VIEW");
+	}
+
+	@Test
+	void reportADiagnosticIfGetHasNoView()
+	{
+		assertDiagnostic("GET *ISN", ParserError.UNEXPECTED_TOKEN);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
 		"#VAR1 TO #VAR2",
 		"#VAR1 (PM=I) TO #VAR2",
 		"#VAR1 (DF=I) TO #VAR2",
