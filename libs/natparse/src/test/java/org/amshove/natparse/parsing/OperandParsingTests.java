@@ -147,10 +147,10 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 			OTHERVAR
 			""");
 		var firstReference = assertNodeType(operand.get(0), IVariableReferenceNode.class);
-		assertThat(firstReference.referencingToken().symbolName()).isEqualTo("#THEVAR");
+		assertIsVariableReference(firstReference, "#THEVAR");
 
 		var secondReference = assertNodeType(operand.get(1), IVariableReferenceNode.class);
-		assertThat(secondReference.referencingToken().symbolName()).isEqualTo("OTHERVAR");
+		assertIsVariableReference(secondReference, "OTHERVAR");
 	}
 
 	@Test
@@ -159,7 +159,7 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		var operand = parseOperand("VAL(#THEVAR(1))");
 		var valNode = assertNodeType(operand, IValOperandNode.class);
 		var ref = assertNodeType(valNode.operand(), IVariableReferenceNode.class);
-		assertThat(ref.referencingToken().symbolName()).isEqualTo("#THEVAR");
+		assertIsVariableReference(ref, "#THEVAR");
 		assertThat(assertNodeType(ref.dimensions().first(), ILiteralNode.class).token().intValue()).isEqualTo(1);
 	}
 
@@ -177,7 +177,7 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	{
 		var operand = parseOperand("INT(#THEVAR(1))");
 		var valNode = assertNodeType(operand, IIntOperandNode.class);
-		assertThat(valNode.variable().referencingToken().symbolName()).isEqualTo("#THEVAR");
+		assertIsVariableReference(valNode.variable(), "#THEVAR");
 		assertThat(assertNodeType(valNode.variable().dimensions().first(), ILiteralNode.class).token().intValue()).isEqualTo(1);
 	}
 
@@ -186,7 +186,7 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	{
 		var operand = parseOperand("SUM(#THEVAR)");
 		var sumNode = assertNodeType(operand, ISumOperandNode.class);
-		assertThat(sumNode.variable().referencingToken().symbolName()).isEqualTo("#THEVAR");
+		assertIsVariableReference(sumNode.variable(), "#THEVAR");
 	}
 
 	@Test
@@ -195,7 +195,7 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		var operand = parseOperand("SUM(#THEVAR(1))");
 		var sumNode = assertNodeType(operand, ISumOperandNode.class);
 		var reference = assertNodeType(sumNode.variable(), IVariableReferenceNode.class);
-		assertThat(sumNode.variable().referencingToken().symbolName()).isEqualTo("#THEVAR");
+		assertIsVariableReference(sumNode.variable(), "#THEVAR");
 		assertThat(assertNodeType(reference.dimensions().first(), ILiteralNode.class).token().intValue()).isEqualTo(1);
 	}
 
@@ -204,7 +204,7 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	{
 		var operand = parseOperand("TOTAL(#THEVAR)");
 		var totalNode = assertNodeType(operand, ITotalOperandNode.class);
-		assertThat(totalNode.variable().referencingToken().symbolName()).isEqualTo("#THEVAR");
+		assertIsVariableReference(totalNode.variable(), "#THEVAR");
 	}
 
 	@Test
@@ -212,7 +212,7 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	{
 		var operand = parseOperand("COUNT(#THEVAR)");
 		var countNode = assertNodeType(operand, ICountOperandNode.class);
-		assertThat(countNode.variable().referencingToken().symbolName()).isEqualTo("#THEVAR");
+		assertIsVariableReference(countNode.variable(), "#THEVAR");
 	}
 
 	@Test
@@ -221,7 +221,7 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		var operand = parseOperand("COUNT(#THEVAR(1))");
 		var countNode = assertNodeType(operand, ICountOperandNode.class);
 		var reference = assertNodeType(countNode.variable(), IVariableReferenceNode.class);
-		assertThat(countNode.variable().referencingToken().symbolName()).isEqualTo("#THEVAR");
+		assertIsVariableReference(countNode.variable(), "#THEVAR");
 		assertThat(assertNodeType(reference.dimensions().first(), ILiteralNode.class).token().intValue()).isEqualTo(1);
 	}
 
@@ -231,7 +231,7 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		var operand = parseOperand("LOG(#THEVAR(1))");
 		var logNode = assertNodeType(operand, ILogOperandNode.class);
 		var reference = assertNodeType(logNode.parameter(), IVariableReferenceNode.class);
-		assertThat(reference.referencingToken().symbolName()).isEqualTo("#THEVAR");
+		assertIsVariableReference(reference, "#THEVAR");
 		assertThat(assertNodeType(reference.dimensions().first(), ILiteralNode.class).token().intValue()).isEqualTo(1);
 	}
 
@@ -249,7 +249,7 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		var operand = parseOperand("ABS(#THEVAR)");
 		var absNode = assertNodeType(operand, IAbsOperandNode.class);
 		var parameter = assertNodeType(absNode.parameter(), IVariableReferenceNode.class);
-		assertThat(parameter.referencingToken().symbolName()).isEqualTo("#THEVAR");
+		assertIsVariableReference(parameter, "#THEVAR");
 	}
 
 	@Test
@@ -258,7 +258,7 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		var operand = parseOperand("SGN(#THEVAR)");
 		var sgnNode = assertNodeType(operand, ISignOperandNode.class);
 		var parameter = assertNodeType(sgnNode.parameter(), IVariableReferenceNode.class);
-		assertThat(parameter.referencingToken().symbolName()).isEqualTo("#THEVAR");
+		assertIsVariableReference(parameter, "#THEVAR");
 	}
 
 	@Test
@@ -277,7 +277,7 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		var operand = parseOperand("FRAC(#THEVAR)");
 		var fracNode = assertNodeType(operand, IFracOperandNode.class);
 		var parameter = assertNodeType(fracNode.parameter(), IVariableReferenceNode.class);
-		assertThat(parameter.referencingToken().symbolName()).isEqualTo("#THEVAR");
+		assertIsVariableReference(parameter, "#THEVAR");
 	}
 
 	@Test
@@ -423,7 +423,7 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		var access = assertNodeType(operand, IVariableReferenceNode.class);
 		assertThat(access.dimensions()).hasSize(1);
 		var rangedAccess = assertNodeType(access.dimensions().first(), IRangedArrayAccessNode.class);
-		assertThat(assertNodeType(rangedAccess.lowerBound(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#LOW");
+		assertIsVariableReference(rangedAccess.lowerBound(), "#LOW");
 		assertThat(assertNodeType(rangedAccess.upperBound(), ILiteralNode.class).token().intValue()).isEqualTo(50);
 	}
 
@@ -435,7 +435,7 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(access.dimensions()).hasSize(1);
 		var rangedAccess = assertNodeType(access.dimensions().first(), IRangedArrayAccessNode.class);
 		assertThat(assertNodeType(rangedAccess.lowerBound(), ILiteralNode.class).token().intValue()).isEqualTo(5);
-		assertThat(assertNodeType(rangedAccess.upperBound(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#UP");
+		assertIsVariableReference(rangedAccess.upperBound(), "#UP");
 	}
 
 	@Test
@@ -485,7 +485,7 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		var operand = parseOperand("-#VAR");
 		var postfix = assertNodeType(operand, IPrefixUnaryArithmeticExpressionNode.class);
 		assertThat(postfix.postfixOperator()).isEqualTo(SyntaxKind.MINUS);
-		assertThat(assertNodeType(postfix.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+		assertIsVariableReference(postfix.operand(), "#VAR");
 	}
 
 	@Test
@@ -494,7 +494,7 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		var operand = parseOperand("+ #VAR");
 		var postfix = assertNodeType(operand, IPrefixUnaryArithmeticExpressionNode.class);
 		assertThat(postfix.postfixOperator()).isEqualTo(SyntaxKind.PLUS);
-		assertThat(assertNodeType(postfix.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+		assertIsVariableReference(postfix.operand(), "#VAR");
 	}
 
 	@Test

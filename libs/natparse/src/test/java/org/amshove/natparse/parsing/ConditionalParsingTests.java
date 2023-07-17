@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
@@ -47,7 +48,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	{
 		var criteria = assertParsesCriteria("#CONDITION", IUnaryLogicalCriteriaNode.class);
 		var reference = assertNodeType(criteria.node(), IVariableReferenceNode.class);
-		assertThat(reference.referencingToken().symbolName()).isEqualTo("#CONDITION");
+		assertIsVariableReference(reference, "#CONDITION");
 	}
 
 	@Test
@@ -200,7 +201,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	void parseASimpleThruExtendedRelationalExpression()
 	{
 		var criteria = assertParsesCriteria("#VAR = 1 THRU 10", IRangedExtendedRelationalCriteriaNode.class);
-		assertThat(assertNodeType(criteria.left(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+		assertIsVariableReference(criteria.left(), "#VAR");
 		assertThat(criteria.operator()).isEqualTo(ComparisonOperator.EQUAL);
 		assertThat(assertNodeType(criteria.lowerBound(), ILiteralNode.class).token().intValue()).isEqualTo(1);
 		assertThat(assertNodeType(criteria.upperBound(), ILiteralNode.class).token().intValue()).isEqualTo(10);
@@ -210,7 +211,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	void parseAThruExtendedRelationalExpressionWithArithmetic()
 	{
 		var criteria = assertParsesCriteria("#VAR = 1 THRU #VAR2 - 1", IRangedExtendedRelationalCriteriaNode.class);
-		assertThat(assertNodeType(criteria.left(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+		assertIsVariableReference(criteria.left(), "#VAR");
 		assertThat(criteria.operator()).isEqualTo(ComparisonOperator.EQUAL);
 		assertThat(assertNodeType(criteria.lowerBound(), ILiteralNode.class).token().intValue()).isEqualTo(1);
 		var arithmetic = assertNodeType(criteria.upperBound(), IArithmeticExpressionNode.class);
@@ -249,7 +250,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 		assertThat(criteria.excludedLowerBound()).isNotEmpty();
 		assertThat(criteria.excludedUpperBound()).isNotEmpty();
 		assertThat(assertNodeType(criteria.excludedLowerBound().get(), ILiteralNode.class).token().intValue()).isEqualTo(5);
-		assertThat(assertNodeType(criteria.excludedUpperBound().get(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+		assertIsVariableReference(criteria.excludedUpperBound().get(), "#VAR2");
 	}
 
 	@ParameterizedTest
@@ -261,13 +262,13 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	{
 		var criteria = assertParsesCriteria("SUBSTR(#VAR, 1, #MAX) %s SUBSTRING(#VAR, #MIN, #MAX)".formatted(operator), IRelationalCriteriaNode.class);
 		var firstSubstring = assertNodeType(criteria.left(), ISubstringOperandNode.class);
-		assertThat(assertNodeType(firstSubstring.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+		assertIsVariableReference(firstSubstring.operand(), "#VAR");
 		assertThat(assertNodeType(firstSubstring.startPosition().orElseThrow(), ILiteralNode.class).token().intValue()).isEqualTo(1);
-		assertThat(assertNodeType(firstSubstring.length().orElseThrow(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#MAX");
+		assertIsVariableReference(firstSubstring.length().orElseThrow(), "#MAX");
 		var secondSubstring = assertNodeType(criteria.right(), ISubstringOperandNode.class);
-		assertThat(assertNodeType(secondSubstring.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
-		assertThat(assertNodeType(secondSubstring.startPosition().orElseThrow(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#MIN");
-		assertThat(assertNodeType(secondSubstring.length().orElseThrow(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#MAX");
+		assertIsVariableReference(secondSubstring.operand(), "#VAR");
+		assertIsVariableReference(secondSubstring.startPosition().orElseThrow(), "#MIN");
+		assertIsVariableReference(secondSubstring.length().orElseThrow(), "#MAX");
 	}
 
 	@Test
@@ -429,7 +430,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	{
 		var criteria = assertParsesCriteria("#VAR IS (A10)", IIsConditionCriteriaNode.class);
 		assertThat(criteria.descendants()).hasSize(5);
-		assertThat(assertNodeType(criteria.left(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+		assertIsVariableReference(criteria.left(), "#VAR");
 		assertThat(criteria.checkedType().symbolName()).isEqualTo("A10");
 	}
 
@@ -458,7 +459,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	{
 		var criteria = assertParsesCriteria("#VAR %s SCAN #SCANVAR".formatted(operator), IRelationalCriteriaNode.class);
 		var scanOperand = assertNodeType(criteria.right(), IScanOperandNode.class);
-		assertThat(assertNodeType(scanOperand.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#SCANVAR");
+		assertIsVariableReference(scanOperand.operand(), "#SCANVAR");
 	}
 
 	@Test
@@ -510,7 +511,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	{
 		var criteria = assertParsesCriteria("#VAR = MASK #MASK", IRelationalCriteriaNode.class);
 		var mask = assertNodeType(criteria.right(), IVariableMaskOperandNode.class);
-		assertThat(mask.variableMask().referencingToken().symbolName()).isEqualTo("#MASK");
+		assertIsVariableReference(mask.variableMask(), "#MASK");
 	}
 
 	@Test
@@ -573,7 +574,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	{
 		var criteria = assertParsesCriteria("SUBSTR(#VAR,1,5) = 'Test'", IRelationalCriteriaNode.class);
 		var firstSubstring = assertNodeType(criteria.left(), ISubstringOperandNode.class);
-		assertThat(assertNodeType(firstSubstring.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+		assertIsVariableReference(firstSubstring.operand(), "#VAR");
 		assertThat(assertNodeType(firstSubstring.startPosition().orElseThrow(), ILiteralNode.class).token().intValue()).isEqualTo(1);
 		assertThat(assertNodeType(firstSubstring.length().orElseThrow(), ILiteralNode.class).token().intValue()).isEqualTo(5);
 	}

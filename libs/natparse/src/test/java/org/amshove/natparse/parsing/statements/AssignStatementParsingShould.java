@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 class AssignStatementParsingShould extends StatementParseTest
@@ -22,7 +23,7 @@ class AssignStatementParsingShould extends StatementParseTest
 			ASSIGN #VAR %s 5
 			""".formatted(operator), IAssignStatementNode.class);
 
-		assertThat(assertNodeType(assign.target(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+		assertIsVariableReference(assign.target(), "#VAR");
 		assertThat(assertNodeType(assign.operand(), ILiteralNode.class).token().intValue()).isEqualTo(5);
 		assertThat(assign.isRounded()).isFalse();
 	}
