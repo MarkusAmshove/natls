@@ -2,13 +2,12 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.ICallNode;
-import org.amshove.natparse.natural.IMutateVariables;
 import org.amshove.natparse.natural.IOperandNode;
 
 import java.util.ArrayList;
 import java.util.List;
 
-class CallNode extends StatementNode implements ICallNode, IMutateVariables
+class CallNode extends StatementNode implements ICallNode
 {
 	private IOperandNode calling;
 	private final List<IOperandNode> operands = new ArrayList<>();
