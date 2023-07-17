@@ -423,7 +423,6 @@ class StatementListParserShould extends StatementParseTest
 
 		assertThat(statements.size()).isEqualTo(2);
 		var perform = assertNodeType(statements.first(), IExternalPerformNode.class);
-		assertThat(assertNodeType(perform.providedParameter().last(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VARNEWLINE");
 		assertIsVariableReference(perform.providedParameter().last(), "#VARNEWLINE");
 	}
 
