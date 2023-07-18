@@ -48,15 +48,15 @@ class ResizeArrayNode extends StatementNode implements IResizeArrayNode
 	}
 
 	@Override
-    public ReadOnlyList<IOperandNode> mutations()
-    {
-        var mutations = new ArrayList<IOperandNode>();
-        mutations.add(arrayToResize);
+	public ReadOnlyList<IOperandNode> mutations()
+	{
+		var mutations = new ArrayList<IOperandNode>();
+		mutations.add(arrayToResize);
 		if (errorVariable != null)
 		{
 			mutations.add(errorVariable);
 		}
 
-        return ReadOnlyList.from(mutations);
-    }
+		return ReadOnlyList.from(mutations);
+	}
 }

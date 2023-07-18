@@ -48,15 +48,15 @@ class ReduceArrayNode extends StatementNode implements IReduceArrayNode
 	}
 
 	@Override
-    public ReadOnlyList<IOperandNode> mutations()
-    {
-        var mutations = new ArrayList<IOperandNode>();
-        mutations.add(arrayToReduce);
+	public ReadOnlyList<IOperandNode> mutations()
+	{
+		var mutations = new ArrayList<IOperandNode>();
+		mutations.add(arrayToReduce);
 		if (errorVariable != null)
 		{
 			mutations.add(errorVariable);
 		}
 
-        return ReadOnlyList.from(mutations);
-    }
+		return ReadOnlyList.from(mutations);
+	}
 }

@@ -47,15 +47,15 @@ class ExpandDynamicNode extends StatementNode implements IExpandDynamicNode
 	}
 
 	@Override
-    public ReadOnlyList<IOperandNode> mutations()
-    {
-        var mutations = new ArrayList<IOperandNode>();
-        mutations.add(variableToExpand);
+	public ReadOnlyList<IOperandNode> mutations()
+	{
+		var mutations = new ArrayList<IOperandNode>();
+		mutations.add(variableToExpand);
 		if (errorVariable != null)
 		{
 			mutations.add(errorVariable);
 		}
 
-        return ReadOnlyList.from(mutations);
-    }
+		return ReadOnlyList.from(mutations);
+	}
 }

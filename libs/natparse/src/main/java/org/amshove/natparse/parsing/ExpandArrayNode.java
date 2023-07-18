@@ -48,15 +48,15 @@ class ExpandArrayNode extends StatementNode implements IExpandArrayNode
 	}
 
 	@Override
-    public ReadOnlyList<IOperandNode> mutations()
-    {
-        var mutations = new ArrayList<IOperandNode>();
-        mutations.add(arrayToExpand);
+	public ReadOnlyList<IOperandNode> mutations()
+	{
+		var mutations = new ArrayList<IOperandNode>();
+		mutations.add(arrayToExpand);
 		if (errorVariable != null)
 		{
 			mutations.add(errorVariable);
 		}
 
-        return ReadOnlyList.from(mutations);
-    }
+		return ReadOnlyList.from(mutations);
+	}
 }
