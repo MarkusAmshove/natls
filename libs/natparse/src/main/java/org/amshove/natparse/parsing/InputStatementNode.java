@@ -27,4 +27,11 @@ class InputStatementNode extends StatementNode implements IInputStatementNode
 
 		operands.add(operand);
 	}
+
+	@Override
+	public ReadOnlyList<IOperandNode> mutations()
+	{
+		// Ideally, should check for (AD=M) on statement level and field level. For now, every var is mutable.
+		return ReadOnlyList.from(operands);
+	}
 }

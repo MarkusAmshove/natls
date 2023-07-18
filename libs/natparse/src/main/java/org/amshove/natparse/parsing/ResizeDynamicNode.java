@@ -1,5 +1,8 @@
 package org.amshove.natparse.parsing;
 
+import java.util.ArrayList;
+
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.IResizeDynamicNode;
 import org.amshove.natparse.natural.IVariableReferenceNode;
@@ -42,5 +45,18 @@ class ResizeDynamicNode extends StatementNode implements IResizeDynamicNode
 	void setErrorVariable(IVariableReferenceNode errorVariable)
 	{
 		this.errorVariable = errorVariable;
+	}
+
+	@Override
+	public ReadOnlyList<IOperandNode> mutations()
+	{
+		var mutations = new ArrayList<IOperandNode>();
+		mutations.add(variableToResize);
+		if (errorVariable != null)
+		{
+			mutations.add(errorVariable);
+		}
+
+		return ReadOnlyList.from(mutations);
 	}
 }

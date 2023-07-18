@@ -7,5 +7,4 @@ public interface IBlockNode extends ISyntaxNode
 	SyntaxToken parentblock();
 
 	SyntaxToken block();
-
 }

@@ -2,13 +2,12 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.ISeparateStatementNode;
-import org.amshove.natparse.natural.IMutateVariables;
 import org.amshove.natparse.ReadOnlyList;
 
 import java.util.ArrayList;
 import java.util.List;
 
-class SeparateStatementNode extends StatementNode implements ISeparateStatementNode, IMutateVariables
+class SeparateStatementNode extends StatementNode implements ISeparateStatementNode
 {
 	private final List<IOperandNode> targets = new ArrayList<>();
 

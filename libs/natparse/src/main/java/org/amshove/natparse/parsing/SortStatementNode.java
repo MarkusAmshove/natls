@@ -2,6 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.natural.ISortStatementNode;
 import org.amshove.natparse.natural.SortedOperand;
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.IOperandNode;
 
 import java.util.List;
@@ -32,5 +33,22 @@ class SortStatementNode extends StatementWithBodyNode implements ISortStatementN
 	void addUsing(IOperandNode using)
 	{
 		usings.add(using);
+	}
+
+	@Override
+	public ReadOnlyList<IOperandNode> mutations()
+	{
+		var mutations = new ArrayList<IOperandNode>();
+
+		for (SortedOperand sortedOperand : operands)
+		{
+			mutations.add(sortedOperand.operand());
+		}
+		if (usings != null)
+		{
+			mutations.addAll(usings);
+		}
+
+		return ReadOnlyList.from(mutations);
 	}
 }

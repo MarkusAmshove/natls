@@ -24,6 +24,7 @@ class CompressStatementParsingShould extends StatementParseTest
 
 		assertThat(assertNodeType(compress.intoTarget(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
 
+		assertIsVariableReference(compress.mutations().first(), "#VAR");
 		assertNodeOperand(compress, 0, ILiteralNode.class, "'Text'");
 	}
 

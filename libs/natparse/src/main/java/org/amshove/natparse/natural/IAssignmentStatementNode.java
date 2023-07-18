@@ -1,6 +1,6 @@
 package org.amshove.natparse.natural;
 
-public interface IAssignmentStatementNode extends IStatementNode, IMutateVariables
+public interface IAssignmentStatementNode extends IMutateVariables
 {
 	IOperandNode target();
 

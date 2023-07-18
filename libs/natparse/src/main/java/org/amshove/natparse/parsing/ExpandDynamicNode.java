@@ -1,5 +1,8 @@
 package org.amshove.natparse.parsing;
 
+import java.util.ArrayList;
+
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.IExpandDynamicNode;
 import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.IVariableReferenceNode;
@@ -42,4 +45,17 @@ class ExpandDynamicNode extends StatementNode implements IExpandDynamicNode
 	{
 		this.errorVariable = errorVariable;
 	}
+
+	@Override
+    public ReadOnlyList<IOperandNode> mutations()
+    {
+        var mutations = new ArrayList<IOperandNode>();
+        mutations.add(variableToExpand);
+		if (errorVariable != null)
+		{
+			mutations.add(errorVariable);
+		}
+
+        return ReadOnlyList.from(mutations);
+    }
 }
