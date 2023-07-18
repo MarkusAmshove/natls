@@ -704,7 +704,7 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var sort = assertParsesSingleStatement("""
 			END-ALL
-			SORT BY #VAR1 ASC #VAR2 DESC #VAR3 ASCENDING #VAR4 DESCENDING #VAR5
+			SORT BY #VAR1 ASC #VAR2 DESC #VAR3 ASCENDING #VAR4 DESCENDING #VAR5 USING #USING
 			WRITE 'Hey!'
 			END-SORT
 			""", ISortStatementNode.class);
@@ -720,6 +720,8 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(sort.operands().get(3).direction()).isEqualTo(SortDirection.DESCENDING);
 		assertThat(assertNodeType(sort.operands().get(4).operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR5");
 		assertThat(sort.operands().get(4).direction()).isEqualTo(SortDirection.ASCENDING);
+		assertIsVariableReference(sort.mutations().first(), "#VAR1");
+		assertIsVariableReference(sort.mutations().last(), "#USING");
 	}
 
 	@Test
@@ -733,6 +735,7 @@ class StatementListParserShould extends StatementParseTest
 
 		assertThat(forLoopNode.body().statements()).hasSize(1);
 		assertThat(forLoopNode.descendants()).hasSize(8);
+		assertIsVariableReference(forLoopNode.mutations().first(), "#I");
 	}
 
 	@Test
@@ -3034,6 +3037,7 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var expand = assertParsesSingleStatement("EXPAND %s ARRAY #ARR TO (1:10,*:*,5:*)".formatted(source), IExpandArrayNode.class);
 		assertThat(expand.arrayToExpand().referencingToken().symbolName()).isEqualTo("#ARR");
+		assertIsVariableReference(expand.mutations().first(), "#ARR");
 	}
 
 	@Test
@@ -3064,6 +3068,7 @@ class StatementListParserShould extends StatementParseTest
 		var expand = assertParsesSingleStatement("EXPAND %s #VAR TO 20".formatted(combination), IExpandDynamicNode.class);
 		assertThat(expand.variableToExpand().referencingToken().symbolName()).isEqualTo("#VAR");
 		assertThat(assertNodeType(expand.sizeToExpandTo(), ILiteralNode.class).token().intValue()).isEqualTo(20);
+		assertIsVariableReference(expand.mutations().first(), "#VAR");
 	}
 
 	@ParameterizedTest
@@ -3077,6 +3082,7 @@ class StatementListParserShould extends StatementParseTest
 		var expand = assertParsesSingleStatement("EXPAND %s #VAR TO #SIZE".formatted(combination), IExpandDynamicNode.class);
 		assertThat(expand.variableToExpand().referencingToken().symbolName()).isEqualTo("#VAR");
 		assertThat(assertNodeType(expand.sizeToExpandTo(), IVariableReferenceNode.class).token().symbolName()).isEqualTo("#SIZE");
+		assertIsVariableReference(expand.mutations().first(), "#VAR");
 	}
 
 	@Test
@@ -3084,6 +3090,8 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var stmt = assertParsesSingleStatement("RESIZE ARRAY #ARR TO (*) GIVING #ERR", IResizeArrayNode.class);
 		assertIsVariableReference(stmt.errorVariable(), "#ERR");
+		assertIsVariableReference(stmt.mutations().first(), "#ARR");
+		assertIsVariableReference(stmt.mutations().last(), "#ERR");
 	}
 
 	@Test
@@ -3112,6 +3120,8 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var stmt = assertParsesSingleStatement("REDUCE ARRAY #ARR TO 0 GIVING #ERR", IReduceArrayNode.class);
 		assertIsVariableReference(stmt.errorVariable(), "#ERR");
+		assertIsVariableReference(stmt.mutations().first(), "#ARR");
+		assertIsVariableReference(stmt.mutations().last(), "#ERR");
 	}
 
 	@Test
@@ -3119,6 +3129,8 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var stmt = assertParsesSingleStatement("REDUCE DYNAMIC #VAR TO 20 GIVING #ERR", IReduceDynamicNode.class);
 		assertIsVariableReference(stmt.errorVariable(), "#ERR");
+		assertIsVariableReference(stmt.mutations().first(), "#VAR");
+		assertIsVariableReference(stmt.mutations().last(), "#ERR");
 	}
 
 	@Test

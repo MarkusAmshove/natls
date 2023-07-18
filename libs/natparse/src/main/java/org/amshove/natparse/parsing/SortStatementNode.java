@@ -44,10 +44,8 @@ class SortStatementNode extends StatementWithBodyNode implements ISortStatementN
 		{
 			mutations.add(sortedOperand.operand());
 		}
-		if (usings != null)
-		{
-			mutations.addAll(usings);
-		}
+
+		mutations.addAll(usings);
 
 		return ReadOnlyList.from(mutations);
 	}
