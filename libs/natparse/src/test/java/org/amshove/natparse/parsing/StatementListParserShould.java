@@ -1368,7 +1368,6 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(assertNodeType(call.calling(), ILiteralNode.class).token().stringValue()).isEqualTo("PGM");
 		assertThat(call.body().statements()).hasSize(1);
 		assertIsVariableReference(call.operands().get(1), "#VAR2");
-		assertIsVariableReference(call.mutations().get(2), "#VAR3");
 	}
 
 	@ParameterizedTest
@@ -1393,7 +1392,6 @@ class StatementListParserShould extends StatementParseTest
 		var call = assertParsesSingleStatement("CALL 'PGM' USING #VAR1 #VAR2 #VAR3", ICallNode.class);
 		assertThat(assertNodeType(call.calling(), ILiteralNode.class).token().stringValue()).isEqualTo("PGM");
 		assertIsVariableReference(call.operands().get(1), "#VAR2");
-		assertIsVariableReference(call.mutations().get(2), "#VAR3");
 	}
 
 	@Test

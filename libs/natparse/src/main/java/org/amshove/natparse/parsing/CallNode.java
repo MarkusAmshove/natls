@@ -33,10 +33,4 @@ class CallNode extends StatementNode implements ICallNode
 	{
 		operands.add(operandNode);
 	}
-
-	@Override
-	public ReadOnlyList<IOperandNode> mutations()
-	{
-		return ReadOnlyList.from(operands);
-	}
 }
