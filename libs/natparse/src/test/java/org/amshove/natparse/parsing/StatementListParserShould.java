@@ -735,6 +735,7 @@ class StatementListParserShould extends StatementParseTest
 
 		assertThat(forLoopNode.body().statements()).hasSize(1);
 		assertThat(forLoopNode.descendants()).hasSize(8);
+		assertIsVariableReference(forLoopNode.loopControl(), "#I");
 		assertIsVariableReference(forLoopNode.mutations().first(), "#I");
 	}
 
@@ -1406,6 +1407,8 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var reset = assertParsesSingleStatement("RESET INITIAL #THEVAR #THEOTHERVAR", IResetStatementNode.class);
 		assertThat(reset.operands()).hasSize(2);
+		assertIsVariableReference(reset.mutations().first(), "#THEVAR");
+		assertIsVariableReference(reset.mutations().last(), "#THEOTHERVAR");
 	}
 
 	@Test
@@ -2735,6 +2738,7 @@ class StatementListParserShould extends StatementParseTest
 		var resize = assertParsesSingleStatement("RESIZE %s #VAR TO 20".formatted(combination), IResizeDynamicNode.class);
 		assertThat(resize.variableToResize().referencingToken().symbolName()).isEqualTo("#VAR");
 		assertThat(assertNodeType(resize.sizeToResizeTo(), ILiteralNode.class).token().intValue()).isEqualTo(20);
+		assertIsVariableReference(resize.mutations().first(), "#VAR");
 	}
 
 	@ParameterizedTest
@@ -3099,6 +3103,8 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var stmt = assertParsesSingleStatement("RESIZE DYNAMIC #VAR TO 20 GIVING #ERR", IResizeDynamicNode.class);
 		assertIsVariableReference(stmt.errorVariable(), "#ERR");
+		assertIsVariableReference(stmt.mutations().first(), "#VAR");
+		assertIsVariableReference(stmt.mutations().last(), "#ERR");
 	}
 
 	@Test
@@ -3106,6 +3112,8 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var stmt = assertParsesSingleStatement("EXPAND ARRAY #ARR TO (*) GIVING #ERR", IExpandArrayNode.class);
 		assertIsVariableReference(stmt.errorVariable(), "#ERR");
+		assertIsVariableReference(stmt.mutations().first(), "#ARR");
+		assertIsVariableReference(stmt.mutations().last(), "#ERR");
 	}
 
 	@Test
@@ -3113,6 +3121,8 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var stmt = assertParsesSingleStatement("EXPAND DYNAMIC #VAR TO 20 GIVING #ERR", IExpandDynamicNode.class);
 		assertIsVariableReference(stmt.errorVariable(), "#ERR");
+		assertIsVariableReference(stmt.mutations().first(), "#VAR");
+		assertIsVariableReference(stmt.mutations().last(), "#ERR");
 	}
 
 	@Test

@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 class InputStatementParsingShould extends StatementParseTest
@@ -18,6 +19,7 @@ class InputStatementParsingShould extends StatementParseTest
 	{
 		var input = assertParsesSingleStatement("INPUT #VAR", IInputStatementNode.class);
 		assertNodeOperand(input, 0, IVariableReferenceNode.class, "#VAR");
+		assertIsVariableReference(input.mutations().first(), "#VAR");
 	}
 
 	@Test
