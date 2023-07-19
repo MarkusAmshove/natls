@@ -40,5 +40,4 @@ class SeparateStatementNode extends StatementNode implements ISeparateStatementN
 	{
 		return ReadOnlyList.from(targets);
 	}
-
 }

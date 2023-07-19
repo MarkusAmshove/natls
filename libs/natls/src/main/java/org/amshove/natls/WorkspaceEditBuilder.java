@@ -75,11 +75,11 @@ public class WorkspaceEditBuilder
 		return this;
 	}
 
-	public WorkspaceEditBuilder addsUsing(LanguageServerFile file, String using)
+	public WorkspaceEditBuilder addsUsing(LanguageServerFile file, String using, VariableScope scope)
 	{
 		var edits = textEdits.computeIfAbsent(file.getUri(), u -> new ArrayList<>());
 
-		edits.add(TextEdits.addUsing(file, new UsingToAdd(using, VariableScope.LOCAL)));
+		edits.add(TextEdits.addUsing(file, new UsingToAdd(using, scope)));
 		return this;
 	}
 

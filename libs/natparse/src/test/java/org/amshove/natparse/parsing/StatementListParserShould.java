@@ -1220,6 +1220,193 @@ class StatementListParserShould extends StatementParseTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
+		"#VAR1 #VAR2 #VAR3",
+		"#VAR1 #VAR2 #VAR3(1)",
+		"DATA #VAR1 #VAR2 #VAR3",
+		"DATA #VAR1 #VAR2 #VAR3(1)",
+	})
+	void parseGetTransactionStatements(String statement)
+	{
+		var get = assertParsesSingleStatement("GET TRANSACTION %s".formatted(statement), IGetTransactionNode.class);
+		assertThat(assertNodeType(get.operands().get(0), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
+		assertThat(assertNodeType(get.operands().get(1), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+		assertThat(assertNodeType(get.operands().get(2), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR3");
+		assertThat(assertNodeType(get.mutations().get(0), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
+		assertThat(assertNodeType(get.mutations().get(1), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+		assertThat(assertNodeType(get.mutations().get(2), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR3");
+	}
+
+	@Test
+	void parseGetSameStatement()
+	{
+		var get = assertParsesSingleStatement("GET SAME", IGetSameNode.class);
+		assertThat(get.label()).isEmpty();
+	}
+
+	@Test
+	void reportADiagnosticIfGetSameHasAnInvalidLabel()
+	{
+		assertDiagnostic("GET SAME (LABELNODOT)", ParserError.UNEXPECTED_TOKEN);
+	}
+
+	@Test
+	void parseGetSameStatementWithLabel()
+	{
+		var get = assertParsesSingleStatement("GET SAME (LABEL.)", IGetSameNode.class);
+		assertThat(get.label()).isNotEmpty();
+		assertThat(get.label()).map(SyntaxToken::symbolName).hasValue("LABEL.");
+	}
+
+	@Test
+	void parseGetSameStatementWithNumberLabel()
+	{
+		var get = assertParsesSingleStatement("GET SAME (0123)", IGetSameNode.class);
+		assertThat(get.label()).isNotEmpty();
+		assertThat(get.label()).map(SyntaxToken::symbolName).hasValue("0123");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"THE-VIEW *ISN",
+		"THE-VIEW #ISN",
+		"IN THE-VIEW *ISN",
+		"IN THE-VIEW #ISN",
+		"FILE THE-VIEW *ISN",
+		"FILE THE-VIEW #ISN",
+		"IN FILE THE-VIEW *ISN",
+		"IN FILE THE-VIEW #ISN",
+		"IN FILE THE-VIEW RECORD *ISN",
+		"IN FILE THE-VIEW RECORD #ISN",
+		"IN FILE THE-VIEW RECORDS *ISN",
+		"IN FILE THE-VIEW RECORDS #ISN",
+		"IN FILE THE-VIEW PASSWORD='pwd' CIPHER=123 RECORDS *ISN",
+		"IN FILE THE-VIEW PASSWORD='pwd' CIPHER=123 RECORDS #ISN",
+	})
+
+	void parseGetStatements(String statement)
+	{
+		var get = assertParsesSingleStatement("GET %s".formatted(statement), IGetNode.class);
+		assertThat(get.viewReference().token().symbolName()).isEqualTo("THE-VIEW");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"THE-VIEW *ISN(LABELNODOT)",
+		"THE-VIEW *ISN(LABEL.)",
+		"THE-VIEW *ISN (LABEL.)",
+		"THE-VIEW *ISN (0123)",
+		"IN THE-VIEW *ISN(LABEL.)",
+		"IN THE-VIEW *ISN (LABEL.)",
+		"IN THE-VIEW *ISN (0123)",
+		"FILE THE-VIEW *ISN(LABEL.)",
+		"FILE THE-VIEW *ISN (LABEL.)",
+		"FILE THE-VIEW *ISN (0123)",
+		"IN FILE THE-VIEW *ISN(LABEL.)",
+		"IN FILE THE-VIEW *ISN (LABEL.)",
+		"IN FILE THE-VIEW *ISN (0123)",
+		"IN FILE THE-VIEW RECORD *ISN(LABEL.)",
+		"IN FILE THE-VIEW RECORD *ISN (LABEL.)",
+		"IN FILE THE-VIEW RECORD *ISN (0123)",
+		"IN FILE THE-VIEW RECORDS *ISN(LABEL.)",
+		"IN FILE THE-VIEW RECORDS *ISN (LABEL.)",
+		"IN FILE THE-VIEW RECORDS *ISN (0123)",
+		"IN FILE THE-VIEW PASSWORD='pwd' CIPHER=123 RECORDS *ISN(LABEL.)",
+		"IN FILE THE-VIEW PASSWORD='pwd' CIPHER=123 RECORDS *ISN (LABEL.)",
+		"IN FILE THE-VIEW PASSWORD='pwd' CIPHER=123 RECORDS *ISN (0123)",
+	})
+	void parseGetStatementsWithLabel(String statement)
+	{
+		var get = assertParsesSingleStatement("GET %s".formatted(statement), IGetNode.class);
+		assertThat(get.viewReference().token().symbolName()).isEqualTo("THE-VIEW");
+	}
+
+	@Test
+	void reportADiagnosticIfGetHasNoView()
+	{
+		assertDiagnostic("GET *ISN", ParserError.UNEXPECTED_TOKEN);
+	}
+
+	@Test
+	void parseCallFileStatement()
+	{
+		var call = assertParsesSingleStatement("""
+			CALL FILE 'PGM' #CF #RA
+				IGNORE
+			END-FILE""", ICallFileNode.class);
+		assertThat(call.calling().token().symbolName()).isEqualTo("'PGM'");
+		assertIsVariableReference(call.controlField(), "#CF");
+		assertIsVariableReference(call.recordArea(), "#RA");
+		assertThat(call.body().statements()).hasSize(1);
+	}
+
+	@Test
+	void reportADiagnosticIfNoOperandsFollowProgram()
+	{
+		assertDiagnostic("""
+			CALL FILE 'PGM'
+				IGNORE
+			END-FILE
+			""", ParserError.UNEXPECTED_TOKEN);
+	}
+
+	@Test
+	void parseCallLoopStatement()
+	{
+		var call = assertParsesSingleStatement("""
+			CALL LOOP 'PGM'
+				IGNORE
+			END-LOOP""", ICallLoopNode.class);
+		assertThat(assertNodeType(call.calling(), ILiteralNode.class).token().stringValue()).isEqualTo("PGM");
+		assertThat(call.body().statements()).hasSize(1);
+	}
+
+	@Test
+	void parseCallLoopStatementWithOperands()
+	{
+		var call = assertParsesSingleStatement("""
+			CALL LOOP 'PGM' #VAR1 #VAR2 #VAR3
+				IGNORE
+			END-LOOP""", ICallLoopNode.class);
+		assertThat(assertNodeType(call.calling(), ILiteralNode.class).token().stringValue()).isEqualTo("PGM");
+		assertThat(call.body().statements()).hasSize(1);
+		assertIsVariableReference(call.operands().get(1), "#VAR2");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"'CMULT'",
+		"'CMULT' #VAR1 #VAR2 #VAR3",
+		"'CMULT' USING #VAR1 #VAR2 #VAR3",
+		"INTERFACE4 'CMULT'",
+		"INTERFACE4 'CMULT' #VAR1 #VAR2 #VAR3",
+		"INTERFACE4 'CMULT' USING #VAR1 #VAR2 #VAR3",
+	})
+	void parseCall(String statement)
+	{
+		var call = assertParsesSingleStatement("CALL %s".formatted(statement), ICallNode.class);
+		assertThat(assertNodeType(call.calling(), ILiteralNode.class).token().stringValue()).isEqualTo("CMULT");
+	}
+
+	@Test
+	void parseCallStatementWithOperands()
+	{
+		var call = assertParsesSingleStatement("CALL 'PGM' USING #VAR1 #VAR2 #VAR3", ICallNode.class);
+		assertThat(assertNodeType(call.calling(), ILiteralNode.class).token().stringValue()).isEqualTo("PGM");
+		assertIsVariableReference(call.operands().get(1), "#VAR2");
+	}
+
+	@Test
+	void reportADiagnosticIfNoOperandsFollowingUsing()
+	{
+		assertDiagnostic("CALL 'PGM' USING IGNORE", ParserError.UNEXPECTED_TOKEN);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
 		"#VAR1 TO #VAR2",
 		"#VAR1 (PM=I) TO #VAR2",
 		"#VAR1 (DF=I) TO #VAR2",
@@ -1228,9 +1415,9 @@ class StatementListParserShould extends StatementParseTest
 	void parseMove(String statement)
 	{
 		var move = assertParsesSingleStatement("MOVE %s".formatted(statement), IMoveStatementNode.class);
-		assertThat(assertNodeType(move.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
+		assertIsVariableReference(move.operand(), "#VAR1");
 		assertThat(move.targets()).hasSize(1);
-		assertThat(assertNodeType(move.targets().first(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+		assertIsVariableReference(move.targets().first(), "#VAR2");
 	}
 
 	@ParameterizedTest
@@ -1244,7 +1431,7 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var move = assertParsesSingleStatement("MOVE %s".formatted(statement), IMoveStatementNode.class);
 		assertThat(move.targets()).hasSize(1);
-		assertThat(assertNodeType(move.targets().first(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+		assertIsVariableReference(move.targets().first(), "#VAR2");
 	}
 
 	@Test
@@ -1260,9 +1447,9 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var move = assertParsesSingleStatement("MOVE SUBSTRING(#VAR1,1,2) TO #VAR2", IMoveStatementNode.class);
 		var substringOperand = assertNodeType(move.operand(), ISubstringOperandNode.class);
-		assertThat(assertNodeType(substringOperand.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
+		assertIsVariableReference(substringOperand.operand(), "#VAR1");
 		assertThat(move.targets()).hasSize(1);
-		assertThat(assertNodeType(move.targets().first(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+		assertIsVariableReference(move.targets().first(), "#VAR2");
 	}
 
 	@Test
@@ -1270,10 +1457,10 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var move = assertParsesSingleStatement("MOVE SUBSTRING(#VAR1,1,2) TO SUBSTRING(#VAR2,5)", IMoveStatementNode.class);
 		var substringOperand = assertNodeType(move.operand(), ISubstringOperandNode.class);
-		assertThat(assertNodeType(substringOperand.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
+		assertIsVariableReference(substringOperand.operand(), "#VAR1");
 		assertThat(move.targets()).hasSize(1);
 		substringOperand = assertNodeType(move.targets().first(), ISubstringOperandNode.class);
-		assertThat(assertNodeType(substringOperand.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
+		assertIsVariableReference(substringOperand.operand(), "#VAR2");
 	}
 
 	@Test
@@ -1281,11 +1468,11 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var move = assertParsesSingleStatement("MOVE SUBSTRING(#VAR1,1,2) (PM=I) TO SUBSTRING(#VAR2,5) SUBSTRING(#VAR3,5) #VAR4", IMoveStatementNode.class);
 		var substringOperand = assertNodeType(move.operand(), ISubstringOperandNode.class);
-		assertThat(assertNodeType(substringOperand.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR1");
+		assertIsVariableReference(substringOperand.operand(), "#VAR1");
 		assertThat(move.targets()).hasSize(3);
 		substringOperand = assertNodeType(move.targets().first(), ISubstringOperandNode.class);
-		assertThat(assertNodeType(substringOperand.operand(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR2");
-		assertThat(assertNodeType(move.targets().last(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR4");
+		assertIsVariableReference(substringOperand.operand(), "#VAR2");
+		assertIsVariableReference(move.targets().last(), "#VAR4");
 	}
 
 	@Test

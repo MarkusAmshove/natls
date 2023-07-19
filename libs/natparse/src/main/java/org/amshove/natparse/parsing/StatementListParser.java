@@ -144,6 +144,14 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case BREAK:
 						statementList.addStatement(breakOf());
 						break;
+					case CALL:
+						switch (peek(1).kind())
+						{
+							case FILE -> statementList.addStatement(callFile());
+							case LOOP -> statementList.addStatement(callLoop());
+							default -> statementList.addStatement(callStatement());
+						}
+						break;
 					case CALLNAT:
 						statementList.addStatement(callnat());
 						break;
@@ -324,6 +332,19 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						}
 						statementList.addStatement(readStatement());
 						break;
+					case GET:
+						if (peek(1).kind() == SyntaxKind.TRANSACTION)
+						{
+							statementList.addStatement(getTransaction());
+							break;
+						}
+						if (peek(1).kind() == SyntaxKind.SAME)
+						{
+							statementList.addStatement(getSame());
+							break;
+						}
+						statementList.addStatement(getStatement());
+						break;
 					case PERFORM:
 						if (peek(1).kind() == SyntaxKind.BREAK)
 						{
@@ -353,9 +374,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case TERMINATE:
 						statementList.addStatement(terminate());
 						break;
-					case IF:
-						statementList.addStatement(ifStatement());
-						break;
 					case DECIDE:
 						if (peekKind(1, SyntaxKind.FOR))
 						{
@@ -365,9 +383,12 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(decideOn());
 						break;
 					// Below this line, add statements that can be used as keywords within other statements.
-					// Like FOR is a keyword in HISTOGRAM etc.
+					// Like FOR is a keyword in DECIDE and HISTOGRAM etc.
 					case FOR:
 						statementList.addStatement(forLoop());
+						break;
+					case IF:
+						statementList.addStatement(ifStatement());
 						break;
 					// SORT statement has to start with END-ALL, so because consumeMandatoryClosing()
 					// is checking for END-ALL, we have to parse it very late.
@@ -2715,6 +2736,68 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return endNode;
 	}
 
+	private CallFileNode callFile() throws ParseError
+	{
+		var call = new CallFileNode();
+		var opening = consumeMandatory(call, SyntaxKind.CALL);
+		consumeMandatory(call, SyntaxKind.FILE);
+		call.setCalling(consumeLiteralNode(call, SyntaxKind.STRING_LITERAL));
+		call.setControlField(consumeOperandNode(call));
+		call.setRecordArea(consumeOperandNode(call));
+
+		call.setBody(statementList(SyntaxKind.END_FILE));
+		consumeMandatoryClosing(call, SyntaxKind.END_FILE, opening);
+
+		return call;
+	}
+
+	private CallLoopNode callLoop() throws ParseError
+	{
+		var call = new CallLoopNode();
+		var opening = consumeMandatory(call, SyntaxKind.CALL);
+		consumeMandatory(call, SyntaxKind.LOOP);
+
+		var name = consumeOperandNode(call);
+		checkOperand(name, "The program to be called can only be a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+		checkLiteralTypeIfLiteral(name, SyntaxKind.STRING_LITERAL);
+		call.setCalling(name);
+
+		while (isOperand() && !isStatementStart())
+		{
+			call.addOperand(consumeOperandNode(call));
+		}
+
+		call.setBody(statementList(SyntaxKind.END_LOOP));
+		consumeMandatoryClosing(call, SyntaxKind.END_LOOP, opening);
+
+		return call;
+	}
+
+	private CallNode callStatement() throws ParseError
+	{
+		var call = new CallNode();
+		consumeMandatory(call, SyntaxKind.CALL);
+		consumeOptionally(call, SyntaxKind.INTERFACE4);
+
+		var name = consumeOperandNode(call);
+		checkOperand(name, "The program to be called can only be a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+		checkLiteralTypeIfLiteral(name, SyntaxKind.STRING_LITERAL);
+		call.setCalling(name);
+
+		// If USING specified, there must be at least one operand following
+		if (consumeOptionally(call, SyntaxKind.USING))
+		{
+			call.addOperand(consumeOperandNode(call));
+		}
+
+		while (isOperand() && !isStatementStart())
+		{
+			call.addOperand(consumeOperandNode(call));
+		}
+
+		return call;
+	}
+
 	private CallnatNode callnat() throws ParseError
 	{
 		var callnat = new CallnatNode();
@@ -4111,6 +4194,61 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				consumeOperandNode(node);
 			}
 		}
+	}
+
+	private GetTransactionNode getTransaction() throws ParseError
+	{
+		var get = new GetTransactionNode();
+		consumeMandatory(get, SyntaxKind.GET);
+		consumeMandatory(get, SyntaxKind.TRANSACTION);
+		consumeOptionally(get, SyntaxKind.DATA);
+
+		while (isOperand() && !isStatementStart())
+		{
+			get.addOperand(consumeVariableReferenceNode(get));
+		}
+
+		return get;
+	}
+
+	private GetSameNode getSame() throws ParseError
+	{
+		var get = new GetSameNode();
+		consumeMandatory(get, SyntaxKind.GET);
+		consumeMandatory(get, SyntaxKind.SAME);
+
+		if (consumeOptionally(get, SyntaxKind.LPAREN))
+		{
+			SyntaxToken label;
+			if (peekKind(SyntaxKind.LABEL_IDENTIFIER))
+			{
+				label = consumeMandatory(get, SyntaxKind.LABEL_IDENTIFIER);
+			}
+			else
+			{
+				label = consumeLiteralNode(get, SyntaxKind.NUMBER_LITERAL).token();
+			}
+
+			get.setLabel(label);
+			consumeMandatory(get, SyntaxKind.RPAREN);
+		}
+
+		return get;
+	}
+
+	private GetNode getStatement() throws ParseError
+	{
+		var get = new GetNode();
+		consumeMandatory(get, SyntaxKind.GET);
+		consumeOptionally(get, SyntaxKind.IN);
+		consumeOptionally(get, SyntaxKind.FILE);
+
+		get.setView(consumeVariableReferenceNode(get));
+		consumePasswordAndCipher(get);
+		consumeAnyOptionally(get, List.of(SyntaxKind.RECORDS, SyntaxKind.RECORD));
+		consumeOperandNode(get);
+
+		return get;
 	}
 
 	private List<StatementNode> assignmentsOrIdentifierReference() throws ParseError

@@ -114,23 +114,19 @@ class CodeInsertionPlacerShould extends EmptyProjectTest
 		);
 	}
 
-	@ParameterizedTest
-	@ValueSource(strings =
-	{
-		"LOCAL", "PARAMETER"
-	})
-	void findARangeToInsertAVariableWhenAnotherVariableIsPresent(VariableScope scope)
+	@Test
+	void findARangeToInsertAVariableWhenAnotherVariableIsPresent()
 	{
 		var file = createOrSaveLanguageServerFile("LIBONE", "PARAUSE.NSN", """
 		DEFINE DATA
-		%s
+		LOCAL
 		1 #VAR (A10)
 		END-DEFINE
 		END
-		""".formatted(scope));
+		""");
 
 		assertInsertion(
-			sut.findInsertionPositionToInsertVariable(file, scope),
+			sut.findInsertionPositionToInsertVariable(file, VariableScope.LOCAL),
 			"",
 			2, 0,
 			2, 0,
@@ -257,6 +253,27 @@ class CodeInsertionPlacerShould extends EmptyProjectTest
 			"",
 			1, 0,
 			1, 0,
+			System.lineSeparator()
+		);
+	}
+
+	@Test
+	void findARangeForParameterAfterOtherParameter()
+	{
+		var file = createOrSaveLanguageServerFile("LIBONE", "PARAUSE.NSN", """
+		DEFINE DATA
+		PARAMETER
+		1 #P-VAR1 (A1)
+		1 #P-VAR2 (A1)
+		END-DEFINE
+		END
+		""");
+
+		assertInsertion(
+			sut.findInsertionPositionToInsertVariable(file, VariableScope.PARAMETER),
+			"",
+			4, 0,
+			4, 0,
 			System.lineSeparator()
 		);
 	}
