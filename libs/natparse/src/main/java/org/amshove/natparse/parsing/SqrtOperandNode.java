@@ -1,9 +1,9 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.natural.ICountOperandNode;
+import org.amshove.natparse.natural.ISqrtOperandNode;
 import org.amshove.natparse.natural.IOperandNode;
 
-class CountOperandNode extends BaseSyntaxNode implements ICountOperandNode
+class SqrtOperandNode extends BaseSyntaxNode implements ISqrtOperandNode
 {
 	private IOperandNode parameter;
 

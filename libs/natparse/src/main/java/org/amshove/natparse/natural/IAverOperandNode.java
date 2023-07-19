@@ -1,6 +1,6 @@
 package org.amshove.natparse.natural;
 
-public interface IIntOperandNode extends IOperandNode
+public interface IAverOperandNode extends IOperandNode
 {
 	IOperandNode parameter(); // TODO: (type-check)
 }

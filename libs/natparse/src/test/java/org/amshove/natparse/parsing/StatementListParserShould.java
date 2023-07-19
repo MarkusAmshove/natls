@@ -1421,7 +1421,7 @@ class StatementListParserShould extends StatementParseTest
 	{
 		"OLD(#VAR1) INTO #VAR2",
 		"OLD(*ISN) TO #VAR2",
-		"SUM(#VAR1) INTO #VAR2"
+		"SUM(#VAR1) INTO #VAR2",
 	})
 	void parseMoveWithSystemFunctions(String statement)
 	{

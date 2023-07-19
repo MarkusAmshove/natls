@@ -5,16 +5,16 @@ import org.amshove.natparse.natural.IOperandNode;
 
 class OldOperandNode extends BaseSyntaxNode implements IOldOperandNode
 {
-	private IOperandNode operand;
+	private IOperandNode parameter;
 
 	@Override
-	public IOperandNode operand()
+	public IOperandNode parameter()
 	{
-		return operand;
+		return parameter;
 	}
 
-	void setOperand(IOperandNode operand)
+	void setParameter(IOperandNode parameter)
 	{
-		this.operand = operand;
+		this.parameter = parameter;
 	}
 }

@@ -1,9 +1,9 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.natural.ICountOperandNode;
+import org.amshove.natparse.natural.IMaxOperandNode;
 import org.amshove.natparse.natural.IOperandNode;
 
-class CountOperandNode extends BaseSyntaxNode implements ICountOperandNode
+class MaxOperandNode extends BaseSyntaxNode implements IMaxOperandNode
 {
 	private IOperandNode parameter;
 
