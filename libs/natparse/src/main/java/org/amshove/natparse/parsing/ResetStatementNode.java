@@ -21,4 +21,10 @@ class ResetStatementNode extends StatementNode implements IResetStatementNode
 	{
 		operands.add(operandNode);
 	}
+
+	@Override
+	public ReadOnlyList<IOperandNode> mutations()
+	{
+		return ReadOnlyList.from(operands);
+	}
 }
