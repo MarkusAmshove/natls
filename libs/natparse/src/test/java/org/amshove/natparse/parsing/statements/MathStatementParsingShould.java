@@ -4,6 +4,7 @@ import org.amshove.natparse.natural.*;
 import org.amshove.natparse.parsing.StatementParseTest;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 class MathStatementParsingShould extends StatementParseTest
@@ -39,7 +40,7 @@ class MathStatementParsingShould extends StatementParseTest
 			""", IAddStatementNode.class);
 
 		assertThat(add.isGiving()).isFalse();
-		assertThat(assertNodeType(add.target(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+		assertIsVariableReference(add.target(), "#VAR");
 		assertThat(assertNodeType(add.operands().first(), ILiteralNode.class).token().intValue()).isEqualTo(1);
 		assertThat(assertNodeType(add.operands().get(1), ILiteralNode.class).token().intValue()).isEqualTo(5);
 		var varOperand = assertIsVariableReference(add.operands().get(2), "#VAR2");
