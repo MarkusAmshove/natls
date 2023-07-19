@@ -33,10 +33,4 @@ class CallLoopNode extends StatementWithBodyNode implements ICallLoopNode
 	{
 		operands.add(operandNode);
 	}
-
-	@Override
-	public ReadOnlyList<IOperandNode> mutations()
-	{
-		return ReadOnlyList.from(operands);
-	}
 }
