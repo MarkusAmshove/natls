@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 class CompressStatementParsingShould extends StatementParseTest
@@ -22,7 +23,7 @@ class CompressStatementParsingShould extends StatementParseTest
 		assertThat(compress.isLeavingSpace()).isTrue();
 		assertThat(compress.isWithDelimiters()).isFalse();
 
-		assertThat(assertNodeType(compress.intoTarget(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+		assertIsVariableReference(compress.intoTarget(), "#VAR");
 
 		assertNodeOperand(compress, 0, ILiteralNode.class, "'Text'");
 	}
@@ -137,7 +138,7 @@ class CompressStatementParsingShould extends StatementParseTest
 
 		assertNodeOperand(compress, 0, IVariableReferenceNode.class, "#VAR");
 		assertNodeOperand(compress, 1, IVariableReferenceNode.class, "#VAR2");
-		assertThat(assertNodeType(compress.intoTarget(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR3");
+		assertIsVariableReference(compress.intoTarget(), "#VAR3");
 	}
 
 	@Test
