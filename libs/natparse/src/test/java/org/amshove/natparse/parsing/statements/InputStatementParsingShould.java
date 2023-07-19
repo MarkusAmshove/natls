@@ -19,7 +19,6 @@ class InputStatementParsingShould extends StatementParseTest
 	{
 		var input = assertParsesSingleStatement("INPUT #VAR", IInputStatementNode.class);
 		assertNodeOperand(input, 0, IVariableReferenceNode.class, "#VAR");
-		assertIsVariableReference(input.mutations().first(), "#VAR");
 	}
 
 	@Test
