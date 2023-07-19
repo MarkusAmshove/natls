@@ -161,6 +161,19 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		assertIsVariableReference(absNode.parameter(), "#THEVAR");
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"AVER(#THEVAR)", "NAVER(#THEVAR)"
+	})
+	void parseAver(String operandSource)
+	{
+		var operand = parseOperand(operandSource);
+		var averNode = assertNodeType(operand, IAverOperandNode.class);
+		var reference = assertNodeType(averNode.parameter(), IVariableReferenceNode.class);
+		assertIsVariableReference(reference, "#THEVAR");
+	}
+
 	@Test
 	void parseAtn()
 	{

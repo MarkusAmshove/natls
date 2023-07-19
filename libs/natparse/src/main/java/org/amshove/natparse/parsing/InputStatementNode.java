@@ -27,4 +27,10 @@ class InputStatementNode extends StatementNode implements IInputStatementNode
 
 		operands.add(operand);
 	}
+
+	@Override
+	public ReadOnlyList<IOperandNode> mutations()
+	{
+		return ReadOnlyList.from(operands);
+	}
 }

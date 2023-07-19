@@ -3227,6 +3227,7 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var expand = assertParsesSingleStatement("EXPAND %s ARRAY #ARR TO (1:10,*:*,5:*)".formatted(source), IExpandArrayNode.class);
 		assertIsVariableReference(expand.arrayToExpand(), "#ARR");
+		assertIsVariableReference(expand.mutations().first(), "#ARR");
 	}
 
 	@Test
