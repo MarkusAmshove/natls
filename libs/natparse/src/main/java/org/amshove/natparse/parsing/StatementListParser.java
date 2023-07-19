@@ -144,6 +144,14 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case BREAK:
 						statementList.addStatement(breakOf());
 						break;
+					case CALL:
+						switch (peek(1).kind())
+						{
+							case FILE -> statementList.addStatement(callFile());
+							case LOOP -> statementList.addStatement(callLoop());
+							default -> statementList.addStatement(callStatement());
+						}
+						break;
 					case CALLNAT:
 						statementList.addStatement(callnat());
 						break;
@@ -2726,6 +2734,68 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var endNode = new EndNode();
 		consumeMandatory(endNode, SyntaxKind.END);
 		return endNode;
+	}
+
+	private CallFileNode callFile() throws ParseError
+	{
+		var call = new CallFileNode();
+		var opening = consumeMandatory(call, SyntaxKind.CALL);
+		consumeMandatory(call, SyntaxKind.FILE);
+		call.setCalling(consumeLiteralNode(call, SyntaxKind.STRING_LITERAL));
+		call.setControlField(consumeOperandNode(call));
+		call.setRecordArea(consumeOperandNode(call));
+
+		call.setBody(statementList(SyntaxKind.END_FILE));
+		consumeMandatoryClosing(call, SyntaxKind.END_FILE, opening);
+
+		return call;
+	}
+
+	private CallLoopNode callLoop() throws ParseError
+	{
+		var call = new CallLoopNode();
+		var opening = consumeMandatory(call, SyntaxKind.CALL);
+		consumeMandatory(call, SyntaxKind.LOOP);
+
+		var name = consumeOperandNode(call);
+		checkOperand(name, "The program to be called can only be a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+		checkLiteralTypeIfLiteral(name, SyntaxKind.STRING_LITERAL);
+		call.setCalling(name);
+
+		while (isOperand() && !isStatementStart())
+		{
+			call.addOperand(consumeOperandNode(call));
+		}
+
+		call.setBody(statementList(SyntaxKind.END_LOOP));
+		consumeMandatoryClosing(call, SyntaxKind.END_LOOP, opening);
+
+		return call;
+	}
+
+	private CallNode callStatement() throws ParseError
+	{
+		var call = new CallNode();
+		consumeMandatory(call, SyntaxKind.CALL);
+		consumeOptionally(call, SyntaxKind.INTERFACE4);
+
+		var name = consumeOperandNode(call);
+		checkOperand(name, "The program to be called can only be a constant string or a variable reference.", AllowedOperand.LITERAL, AllowedOperand.VARIABLE_REFERENCE);
+		checkLiteralTypeIfLiteral(name, SyntaxKind.STRING_LITERAL);
+		call.setCalling(name);
+
+		// If USING specified, there must be at least one operand following
+		if (consumeOptionally(call, SyntaxKind.USING))
+		{
+			call.addOperand(consumeOperandNode(call));
+		}
+
+		while (isOperand() && !isStatementStart())
+		{
+			call.addOperand(consumeOperandNode(call));
+		}
+
+		return call;
 	}
 
 	private CallnatNode callnat() throws ParseError

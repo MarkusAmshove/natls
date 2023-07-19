@@ -2,13 +2,12 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.IGetTransactionNode;
-import org.amshove.natparse.natural.IMutateVariables;
 import org.amshove.natparse.ReadOnlyList;
 
 import java.util.ArrayList;
 import java.util.List;
 
-class GetTransactionNode extends StatementNode implements IGetTransactionNode, IMutateVariables
+class GetTransactionNode extends StatementNode implements IGetTransactionNode
 {
 	private final List<IOperandNode> operands = new ArrayList<>();
 
@@ -28,5 +27,4 @@ class GetTransactionNode extends StatementNode implements IGetTransactionNode, I
 	{
 		return ReadOnlyList.from(operands);
 	}
-
 }
