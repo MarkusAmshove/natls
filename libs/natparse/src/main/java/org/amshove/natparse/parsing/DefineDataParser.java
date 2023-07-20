@@ -1478,6 +1478,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 
 		tokens.advance();
-		return new TokenNode(currentToken);
+		var tokenNode = new TokenNode(currentToken.withKind(SyntaxKind.IDENTIFIER));
+		node.addNode(tokenNode);
+		return tokenNode;
 	}
 }
