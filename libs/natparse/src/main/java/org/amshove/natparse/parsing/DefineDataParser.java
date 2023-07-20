@@ -274,13 +274,17 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		if (defineDataModule != null)
 		{
 			using.setReferencingModule((NaturalModule) defineDataModule);
+			for (var diagnostic : ((NaturalModule) defineDataModule).diagnostics())
+			{
+				if (diagnostic instanceof ParserDiagnostic pd)
+				{
+					report(pd.relocate(identifierTokenNode.diagnosticPosition()));
+				}
+			}
 			using.setDefineData(defineDataModule.defineData());
 			for (var variable : defineDataModule.defineData().variables())
 			{
-				if (variable.level() == 1)
-				{
-					addDeclaredVariable((VariableNode) variable, using);
-				}
+				addDeclaredVariable((VariableNode) variable, using);
 			}
 
 			if (using.isParameterUsing()
