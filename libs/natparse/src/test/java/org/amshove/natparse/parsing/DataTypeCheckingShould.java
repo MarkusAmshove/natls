@@ -20,7 +20,7 @@ class DataTypeCheckingShould
 	{
 		var format = type(DataFormat.fromSource(type), 8);
 
-		assertThat(format.IsNumericFamily())
+		assertThat(format.isNumericFamily())
 			.as("%s is numeric family".formatted(format.toShortString()))
 			.isTrue();
 	}
@@ -34,7 +34,7 @@ class DataTypeCheckingShould
 	{
 		var format = type(DataFormat.fromSource(type), 8);
 
-		assertThat(format.IsNumericFamily())
+		assertThat(format.isNumericFamily())
 			.as("%s is numeric family".formatted(format.toShortString()))
 			.isFalse();
 	}
@@ -48,7 +48,7 @@ class DataTypeCheckingShould
 	{
 		var format = type(DataFormat.fromSource(type), 8);
 
-		assertThat(format.IsAlphaNumericFamily())
+		assertThat(format.isAlphaNumericFamily())
 			.as("%s is alphanumeric family".formatted(format.toShortString()))
 			.isTrue();
 	}
@@ -62,7 +62,7 @@ class DataTypeCheckingShould
 	{
 		var format = type(DataFormat.fromSource(type), 8);
 
-		assertThat(format.IsAlphaNumericFamily())
+		assertThat(format.isAlphaNumericFamily())
 			.as("%s is alphanumeric family".formatted(format.toShortString()))
 			.isFalse();
 	}

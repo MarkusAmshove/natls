@@ -16,12 +16,12 @@ public interface IDataType
 
 	boolean hasDynamicLength();
 
-	default boolean IsNumericFamily()
+	default boolean isNumericFamily()
 	{
 		return format() == NUMERIC || format() == PACKED || format() == FLOAT || format() == INTEGER;
 	}
 
-	default boolean IsAlphaNumericFamily()
+	default boolean isAlphaNumericFamily()
 	{
 		return format() == ALPHANUMERIC || format() == UNICODE || format() == BINARY;
 	}

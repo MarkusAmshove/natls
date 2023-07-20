@@ -213,16 +213,12 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			return;
 		}
 
-		if (checkAlphaSystemFunctions(node))
-		{
-			return;
-		}
-
+		checkAlphaSystemFunctions(node);
 	}
 
 	private boolean checkMathematicalSystemFunctions(ISyntaxNode node)
 	{
-		IDataType type = DataType.UNTYPED;
+		IDataType type = IDataType.UNTYPED;
 
 		// Used in processing loops
 		if (node instanceof IAverOperandNode averNode)
@@ -296,13 +292,13 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			type = inferDataType(tanNode.parameter());
 		}
 
-		if (type == DataType.UNTYPED)
+		if (type == IDataType.UNTYPED)
 		{
 			return false;
 		}
 		else
 		{
-			if (!type.IsNumericFamily())
+			if (!type.isNumericFamily())
 			{
 				report(ParserErrors.typeMismatch("Parameter must be of type N, P, I or F, but is %s".formatted(type.toShortString()), node));
 			}
@@ -313,7 +309,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 
 	private boolean checkAlphaSystemFunctions(ISyntaxNode node)
 	{
-		IDataType type = DataType.UNTYPED;
+		IDataType type;
 
 		if (node instanceof ISortKeyOperandNode sortKeyNode)
 		{
