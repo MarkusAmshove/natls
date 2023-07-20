@@ -22,7 +22,7 @@ public class ExtractConstantRefactoring implements ICodeActionProvider
 	public boolean isApplicable(RefactoringContext context)
 	{
 		return context.tokenUnderCursor().kind().isLiteralOrConst()
-			&& isNotInsideDefineData(context.nodeAtPosition());
+			&& isNotInsideDefineData(context.nodeAtStartPosition());
 	}
 
 	private boolean isNotInsideDefineData(ISyntaxNode node)

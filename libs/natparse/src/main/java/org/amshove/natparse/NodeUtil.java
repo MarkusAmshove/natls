@@ -160,6 +160,22 @@ public class NodeUtil
 		return null;
 	}
 
+	/**
+	 * Searches for a node of a given type. The start node itself is also checked.<br/>
+	 * If the node itself is not of the given type, the search will continue "upwards" through parents.
+	 */
+	@Nullable
+	public static <T extends ISyntaxNode> T findNodeOfTypeUpwards(ISyntaxNode start, Class<T> type)
+	{
+		if (type.isInstance(start))
+		{
+			return type.cast(start);
+		}
+
+		return findFirstParentOfType(start, type);
+	}
+
+	@Nullable
 	public static <T extends ISyntaxNode> T findFirstParentOfType(ISyntaxNode start, Class<T> type)
 	{
 		var current = (ISyntaxNode) start.parent();
@@ -233,5 +249,30 @@ public class NodeUtil
 		}
 
 		return result;
+	}
+
+	/**
+	 * Returns the leaf that is traversed as the deepest from the starting point.<br/>
+	 * This will return the last descendant of its descendant of its descendant ...
+	 */
+	public static <T extends ISyntaxNode> ISyntaxNode deepFindLeaf(T start)
+	{
+		if (start.descendants().isEmpty())
+		{
+			return start;
+		}
+
+		return deepFindLeaf(start.descendants().last());
+	}
+
+	public static ReadOnlyList<IStatementNode> findEnclosedStatements(Path path, IStatementListNode body, int startLine, int endLine)
+	{
+		var statements = new ArrayList<IStatementNode>();
+		for (var i = startLine; i <= endLine; i++)
+		{
+			findStatementInLine(path, i, body).ifPresent(statements::add);
+		}
+
+		return ReadOnlyList.from(statements);
 	}
 }

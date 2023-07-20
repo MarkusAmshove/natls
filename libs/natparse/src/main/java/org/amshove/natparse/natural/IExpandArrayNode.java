@@ -4,7 +4,7 @@ import org.amshove.natparse.ReadOnlyList;
 
 import javax.annotation.Nullable;
 
-public interface IExpandArrayNode extends IStatementNode
+public interface IExpandArrayNode extends IMutateVariables
 {
 	IVariableReferenceNode arrayToExpand();
 

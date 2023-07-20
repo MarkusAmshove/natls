@@ -3,7 +3,7 @@ package org.amshove.natparse.natural;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 
-public interface IMoveStatementNode extends IStatementNode, IMutateVariables
+public interface IMoveStatementNode extends IMutateVariables
 {
 	ReadOnlyList<IOperandNode> targets();
 

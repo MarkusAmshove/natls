@@ -12,6 +12,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -99,7 +100,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		moduleProvider.addModule("SUBPROG", subprogram);
 
 		var source = """
-			DEFINE DATA 
+			DEFINE DATA
 			LOCAL USING SUBPROG
 			END-DEFINE
 			""";

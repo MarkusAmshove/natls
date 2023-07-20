@@ -15,7 +15,7 @@ public record QuickFixContext(String fileUri, INaturalModule module, LanguageSer
 			context.module(),
 			context.file(),
 			context.tokenUnderCursor(),
-			context.nodeAtPosition(),
+			context.nodeAtStartPosition(),
 			diagnostic
 		);
 	}

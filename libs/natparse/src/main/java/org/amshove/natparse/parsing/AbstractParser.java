@@ -1110,6 +1110,48 @@ abstract class AbstractParser<T>
 	}
 
 	/**
+	 * Does a forward peek and tries to be smart about skipping stuff, e.g. ignoring array access. <br/>
+	 * If you have `#VAR(*) :=` and the current token is `#VAR` then this will return true for `peekSmart(1,
+	 * SyntaxKind.COLON_EQUALS)`, as it skips over the array access `(*)`
+	 */
+	protected boolean peekSmart(int offset, SyntaxKind kind)
+	{
+		var actualOffset = 0;
+		var skipped = 0;
+		while (!isAtEnd(actualOffset))
+		{
+			if (actualOffset - skipped == offset && peekKind(actualOffset, kind))
+			{
+				return true;
+			}
+
+			// Skip over array index access. Might collide with FUNC(<...>)
+			if (peekKind(actualOffset, SyntaxKind.IDENTIFIER) || peek(actualOffset).kind().canBeIdentifier())
+			{
+				actualOffset++;
+				if (peekKind(actualOffset, SyntaxKind.LPAREN))
+				{
+					actualOffset++;
+					skipped++;
+					// skip over everything in parens
+					while (!peekKind(actualOffset, SyntaxKind.RPAREN))
+					{
+						skipped++;
+						actualOffset++;
+					}
+					// skip the RPAREN
+					actualOffset++;
+					skipped++;
+				}
+			}
+
+			actualOffset++;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Does a forward peek in the same line until a given kind and checks if the other comes directly after.
 	 *
 	 * @param search The token to search for

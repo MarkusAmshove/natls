@@ -1,4 +1,4 @@
-package org.amshove.natls.languageserver;
+package org.amshove.natls.codemutation;
 
 import org.amshove.natparse.natural.VariableScope;
 
