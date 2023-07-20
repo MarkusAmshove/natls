@@ -149,7 +149,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		{
 			try
 			{
-				popGroupIfNecessary();
+				popGroupsIfNecessary();
 
 				if (peekKind(SyntaxKind.BLOCK))
 				{
@@ -1409,14 +1409,20 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 	}
 
-	private void popGroupIfNecessary()
+	private void popGroupsIfNecessary()
 	{
 		if (groupStack.isEmpty())
 		{
 			return;
 		}
 
-		if (peekKind(SyntaxKind.NUMBER_LITERAL) && peek().intValue() == groupStack.peek().level())
+		if (!peekKind(SyntaxKind.NUMBER_LITERAL))
+		{
+			return;
+		}
+
+		var newLevel = peek().intValue();
+		while (!groupStack.isEmpty() && newLevel <= groupStack.peek().level())
 		{
 			groupStack.pop();
 		}

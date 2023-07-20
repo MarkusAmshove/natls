@@ -1029,7 +1029,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			   01 #FIRSTVAR
 				 02 #FIRSTVAR-A (N2) INIT <5>
 				 02 #FIRSTVAR-B (P6) INIT <10>
-			  01 REDEFINE #FIRSTVAR
+			   01 REDEFINE #FIRSTVAR
 				 02 #FIRSTVAR-ALPHA (A6)
 			   END-DEFINE
 			""";
@@ -1040,6 +1040,26 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		var redefinition = assertNodeType(defineData.variables().get(3), IRedefinitionNode.class);
 		assertThat(redefinition.target()).isEqualTo(firstVar);
 		assertThat(redefinition.variables().first().qualifiedName()).isEqualTo("#FIRSTVAR.#FIRSTVAR-ALPHA");
+	}
+
+	@Test
+	void parseVariablesAfterNestedRedefines()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 #GRP
+			  2 #VAR1 (N8)
+			  2 REDEFINE #VAR1
+			    3 #VAR-A (A8)
+			    3 REDEFINE #VAR-A
+			      4 #VAR-R-1 (A8)
+			  2 #VAR-2 (A10)
+			  2 #VAR-3(L)
+			END-DEFINE
+			""");
+
+		assertThat(defineData.findVariable("#VAR-2")).as("#VAR-2 not found").isNotNull();
+		assertThat(defineData.findVariable("#VAR-3")).as("#VAR-3 not found").isNotNull();
 	}
 
 	@Test
