@@ -193,17 +193,152 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			&& typedVariableNode.type().initialValue() != null)
 		{
 			checkVariableInitType(typedVariableNode);
+			return;
 		}
 
 		if (node instanceof IVariableReferenceNode variableReference)
 		{
 			checkVariableReference(variableReference);
+			return;
 		}
 
 		if (node instanceof ISystemFunctionNode sysFuncNode)
 		{
 			checkSystemFunctionParameter(sysFuncNode);
+			return;
 		}
+
+		if (checkMathematicalSystemFunctions(node))
+		{
+			return;
+		}
+
+		if (checkAlphaSystemFunctions(node))
+		{
+			return;
+		}
+
+	}
+
+	private boolean checkMathematicalSystemFunctions(ISyntaxNode node)
+	{
+		IDataType type = DataType.UNTYPED;
+
+		// Used in processing loops
+		if (node instanceof IAverOperandNode averNode)
+		{
+			type = inferDataType(averNode.parameter());
+		}
+
+		if (node instanceof ISumOperandNode sumNode)
+		{
+			type = inferDataType(sumNode.parameter());
+		}
+
+		if (node instanceof ITotalOperandNode totalNode)
+		{
+			type = inferDataType(totalNode.parameter());
+		}
+
+		// Other mathematical system functions
+		if (node instanceof IAbsOperandNode absNode)
+		{
+			type = inferDataType(absNode.parameter());
+		}
+
+		if (node instanceof IExpOperandNode atnNode)
+		{
+			type = inferDataType(atnNode.parameter());
+		}
+
+		if (node instanceof ICosOperandNode cosNode)
+		{
+			type = inferDataType(cosNode.parameter());
+		}
+
+		if (node instanceof IExpOperandNode expNode)
+		{
+			type = inferDataType(expNode.parameter());
+		}
+
+		if (node instanceof IFracOperandNode fracNode)
+		{
+			type = inferDataType(fracNode.parameter());
+		}
+
+		if (node instanceof IIntOperandNode intNode)
+		{
+			type = inferDataType(intNode.parameter());
+		}
+
+		if (node instanceof ILogOperandNode logNode)
+		{
+			type = inferDataType(logNode.parameter());
+		}
+
+		if (node instanceof ISignOperandNode sgnNode)
+		{
+			type = inferDataType(sgnNode.parameter());
+		}
+
+		if (node instanceof ISinOperandNode sinNode)
+		{
+			type = inferDataType(sinNode.parameter());
+		}
+
+		if (node instanceof ISqrtOperandNode sqrtNode)
+		{
+			type = inferDataType(sqrtNode.parameter());
+		}
+
+		if (node instanceof ITanOperandNode tanNode)
+		{
+			type = inferDataType(tanNode.parameter());
+		}
+
+		if (type == DataType.UNTYPED)
+		{
+			return false;
+		}
+		else
+		{
+			if (!type.IsNumericFamily())
+			{
+				report(ParserErrors.typeMismatch("Parameter must be of type N, P, I or F, but is %s".formatted(type.toShortString()), node));
+			}
+		}
+
+		return true;
+	}
+
+	private boolean checkAlphaSystemFunctions(ISyntaxNode node)
+	{
+		IDataType type = DataType.UNTYPED;
+
+		if (node instanceof ISortKeyOperandNode sortKeyNode)
+		{
+			type = inferDataType(sortKeyNode.variable());
+			if (type.format() != DataFormat.ALPHANUMERIC || type.length() > 253 || type.hasDynamicLength())
+			{
+				report(ParserErrors.typeMismatch("Parameter must be of type A with a maximum length of 253, but is %s".formatted(type.toShortString()), node));
+			}
+		}
+
+		if (node instanceof IValOperandNode valNode)
+		{
+			type = inferDataType(valNode.parameter());
+			if (valNode.parameter() instanceof ILiteralNode)
+			{
+				return false;
+			}
+
+			if (type.format() != DataFormat.ALPHANUMERIC && type.format() != DataFormat.UNICODE)
+			{
+				report(ParserErrors.typeMismatch("Parameter must be of type A or U, but is %s".formatted(type.toShortString()), node));
+			}
+		}
+
+		return true;
 	}
 
 	private void checkSystemFunctionParameter(ISystemFunctionNode sysFuncNode)

@@ -724,13 +724,13 @@ abstract class AbstractParser<T>
 
 	private IOperandNode posOperand(BaseSyntaxNode node) throws ParseError
 	{
-		var posNode = new PosNode();
-		node.addNode(posNode);
-		consumeMandatory(posNode, SyntaxKind.POS);
-		consumeMandatory(posNode, SyntaxKind.LPAREN);
-		posNode.setPositionOf(consumeVariableReferenceNode(posNode));
-		consumeMandatory(posNode, SyntaxKind.RPAREN);
-		return posNode;
+		var posOperand = new PosOperandNode();
+		node.addNode(posOperand);
+		consumeMandatory(posOperand, SyntaxKind.POS);
+		consumeMandatory(posOperand, SyntaxKind.LPAREN);
+		posOperand.setPositionOf(consumeVariableReferenceNode(posOperand));
+		consumeMandatory(posOperand, SyntaxKind.RPAREN);
+		return posOperand;
 	}
 
 	private IOperandNode retOperand(BaseSyntaxNode node) throws ParseError

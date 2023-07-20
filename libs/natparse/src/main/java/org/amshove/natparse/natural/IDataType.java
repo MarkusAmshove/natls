@@ -16,6 +16,16 @@ public interface IDataType
 
 	boolean hasDynamicLength();
 
+	default boolean IsNumericFamily()
+	{
+		return format() == NUMERIC || format() == PACKED || format() == FLOAT || format() == INTEGER;
+	}
+
+	default boolean IsAlphaNumericFamily()
+	{
+		return format() == ALPHANUMERIC || format() == UNICODE || format() == BINARY;
+	}
+
 	/**
 	 * Determines if this type fits into the given type. Implicit conversion is taken into account.</br>
 	 * <strong>This does not compare by byte size</strong>

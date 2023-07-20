@@ -7,10 +7,66 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 class DataTypeCheckingShould
 {
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"F", "I", "N", "P"
+	})
+	void seeNumericFamily(String type)
+	{
+		var format = type(DataFormat.fromSource(type), 8);
+
+		assertThat(format.IsNumericFamily())
+			.as("%s is numeric family".formatted(format.toShortString()))
+			.isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"A", "B", "C", "D", "L", "T", "U"
+	})
+	void seeNotNumericFamily(String type)
+	{
+		var format = type(DataFormat.fromSource(type), 8);
+
+		assertThat(format.IsNumericFamily())
+			.as("%s is numeric family".formatted(format.toShortString()))
+			.isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"A", "B", "U"
+	})
+	void seeAlphanumericFamily(String type)
+	{
+		var format = type(DataFormat.fromSource(type), 8);
+
+		assertThat(format.IsAlphaNumericFamily())
+			.as("%s is alphanumeric family".formatted(format.toShortString()))
+			.isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"C", "D", "F", "I", "L", "N", "P"
+	})
+	void seeNotAlphanumericFamily(String type)
+	{
+		var format = type(DataFormat.fromSource(type), 8);
+
+		assertThat(format.IsAlphaNumericFamily())
+			.as("%s is alphanumeric family".formatted(format.toShortString()))
+			.isFalse();
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{

@@ -439,7 +439,7 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	void parsePosOperand()
 	{
 		var operand = parseOperand("POS(#VAR.#VAR2)");
-		assertThat(assertNodeType(operand, IPosNode.class).positionOf().token().symbolName()).isEqualTo("#VAR.#VAR2");
+		assertThat(assertNodeType(operand, IPosOperandNode.class).positionOf().token().symbolName()).isEqualTo("#VAR.#VAR2");
 	}
 
 	@Test
