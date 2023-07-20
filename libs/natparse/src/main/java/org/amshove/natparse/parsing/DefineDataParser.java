@@ -1237,6 +1237,11 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private void checkRedefineLength(IRedefinitionNode redefinitionNode)
 	{
+		if (redefinitionNode.isInView())
+		{
+			return;
+		}
+
 		var target = redefinitionNode.target();
 
 		if (target instanceof ITypedVariableNode typedTarget && typedTarget.type() == null)
