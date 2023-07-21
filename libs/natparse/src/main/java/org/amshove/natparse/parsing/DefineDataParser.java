@@ -551,6 +551,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			length = getLengthFromDataType(dataType + "." + number.source());
 		}
 		type.setLength(length);
+		typedVariable.setType(type);
 
 		if (!arrayConsumed && consumeOptionally(typedVariable, SyntaxKind.SLASH))
 		{
@@ -622,7 +623,6 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 		}
 
-		typedVariable.setType(type);
 		if (consumeOptionally(typedVariable, SyntaxKind.LPAREN))
 		{
 			// TODO(masks): Parse for real and add to variable
@@ -906,7 +906,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		{
 			var dimension = new ArrayDimension();
 			var lowerBound = extractArrayBound(new TokenNode(peek()), dimension);
-			var upperBound = ArrayDimension.UNBOUND_VALUE;
+			var upperBound = IArrayDimension.UNBOUND_VALUE;
 			consume(dimension);
 			if (consumeOptionally(dimension, SyntaxKind.COLON))
 			{
@@ -927,6 +927,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 			dimension.setLowerBound(lowerBound);
 			dimension.setUpperBound(upperBound);
+
 			variable.addDimension(dimension);
 			while (!isAtEnd() && !peekKind(SyntaxKind.COMMA) && !peekKind(SyntaxKind.RPAREN))
 			{
@@ -946,11 +947,11 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		if (token.token().kind().isIdentifier())
 		{
-			var isUnboundV = token.token().symbolName().equals("V"); // (1:V) is allowed in parameter scope, where V stands for unbound
+			var isUnboundV = token.token().symbolName().equals("V"); // (1:V) is allowed in parameter scope, where V stands for variable
 
 			if (currentScope.isParameter() && isUnboundV && !isVariableDeclared(token.token().symbolName()))
 			{
-				return ArrayDimension.UNBOUND_VALUE;
+				return ArrayDimension.VARIABLE_BOUND;
 			}
 
 			if (!isVariableDeclared(token.token().symbolName()))

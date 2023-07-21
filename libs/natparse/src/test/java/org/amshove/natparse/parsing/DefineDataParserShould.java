@@ -943,6 +943,35 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void parseTheUpperBoundOfVariableParameterDimensions()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA PARAMETER
+			1 #PARM (A10 / 1:V)
+			END-DEFINE
+			""");
+
+		var parameter = defineData.findVariable("#PARM");
+		assertThat(parameter).isNotNull();
+		assertThat(parameter.dimensions().first().upperBound()).isEqualTo(10);
+	}
+
+	@Test
+	void parseTheUpperBoundOfVariableParameterDimensionsInGroups()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA PARAMETER
+			1 #GRP (1:V)
+			2 #PARM (A10)
+			END-DEFINE
+			""");
+
+		var parameter = defineData.findVariable("#PARM");
+		assertThat(parameter).isNotNull();
+		assertThat(parameter.dimensions().first().upperBound()).isEqualTo(10);
+	}
+
+	@Test
 	void inheritArrayDimensionsInNestedRedefines()
 	{
 		var defineData = assertParsesWithoutDiagnostics("""
@@ -1299,7 +1328,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""");
 
 		var variable = findVariable(defineData, "#p-unbound-array", ITypedVariableNode.class);
-		assertThat(variable.dimensions().first().isUpperUnbound()).isTrue();
+		assertThat(variable.dimensions().first().upperBound()).isEqualTo(3);
 	}
 
 	@Test
