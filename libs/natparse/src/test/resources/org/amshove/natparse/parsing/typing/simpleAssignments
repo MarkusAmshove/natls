@@ -48,8 +48,8 @@ END-DEFINE
 #I1 := #B4
 #P1 := #B4
 #T := #B4
-#A20 := B5
-#U20 := B5
+#A20 := #B5
+#U20 := #B5
 #I1 := #B5 /* !{D:ERROR:NPP037}
 #P1 := #B5 /* !{D:ERROR:NPP037}
 #D := #B4 /* !{D:ERROR:NPP037}
