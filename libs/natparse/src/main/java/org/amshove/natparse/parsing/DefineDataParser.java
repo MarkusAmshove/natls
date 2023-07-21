@@ -415,26 +415,6 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			consumeMandatory(groupNode, SyntaxKind.RPAREN);
 		}
 
-		//		while (peekKind(SyntaxKind.NUMBER_LITERAL))
-		//		{
-		//			if (peek().intValue() <= groupNode.level())
-		//			{
-		//				break;
-		//			}
-		//
-		//
-		//			var nestedVariable = variable(groupNode.getDimensions());
-		//			groupNode.addVariable(nestedVariable);
-		//			addDeclaredVariable(nestedVariable); // we do this here and do the early return in `addDeclaredVariable` because it doesn't know its nested until added to a group
-		//
-		//			if (peek().line() == previousToken().line()
-		//				&& peek().kind() != SyntaxKind.NUMBER_LITERAL) // multiple variables declared in the same line...
-		//			{
-		//				// Error handling for trailing stuff that shouldn't be there
-		//				skipToNextLineReportingEveryToken();
-		//			}
-		//		}
-
 		return groupNode;
 	}
 
@@ -903,7 +883,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		{
 			var dimension = new ArrayDimension();
 			var lowerBound = extractArrayBound(new TokenNode(peek()), dimension);
-			var upperBound = IArrayDimension.UNBOUND_VALUE;
+			var upperBound = 0;
 			consume(dimension);
 			if (consumeOptionally(dimension, SyntaxKind.COLON))
 			{
@@ -971,7 +951,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 		}
 
-		return ArrayDimension.UNBOUND_VALUE;
+		return IArrayDimension.UNBOUND_VALUE;
 	}
 
 	private void checkBounds(IArrayDimension dimension)
