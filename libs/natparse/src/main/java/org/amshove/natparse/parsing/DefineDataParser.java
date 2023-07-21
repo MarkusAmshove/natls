@@ -928,13 +928,13 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 			if (currentScope.isParameter() && isUnboundV && !isVariableDeclared(token.token().symbolName()))
 			{
-				return ArrayDimension.VARIABLE_BOUND;
+				return IArrayDimension.VARIABLE_BOUND;
 			}
 
 			if (!isVariableDeclared(token.token().symbolName()))
 			{
 				report(ParserErrors.unresolvedReference(token));
-				return ArrayDimension.UNBOUND_VALUE;
+				return IArrayDimension.UNBOUND_VALUE;
 			}
 
 			var constReference = getDeclaredVariable(token);
