@@ -7,10 +7,7 @@ import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFileType;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 
 public class DefineDataParser extends AbstractParser<IDefineData>
 {
@@ -21,7 +18,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	 * addDeclaredVariable for error handling.
 	 */
 	private Map<String, VariableNode> declaredVariables;
-	private Stack<GroupNode> groupStack;
+	private Deque<GroupNode> groupStack;
 
 	private VariableScope currentScope;
 
@@ -37,7 +34,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	{
 		defineData = new DefineDataNode();
 		declaredVariables = new HashMap<>();
-		groupStack = new Stack<>();
+		groupStack = new ArrayDeque<>();
 
 		advanceToDefineData(tokens);
 		if (!isAtStartOfDefineData(tokens))
@@ -198,7 +195,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 				if (variable instanceof GroupNode groupNode)
 				{
-					groupStack.add(groupNode);
+					groupStack.addLast(groupNode);
 				}
 			}
 			catch (ParseError e)
@@ -1413,9 +1410,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			return;
 		}
 
-		if (groupStack.peek().level() == variable.level() - 1)
+		if (groupStack.peekLast().level() == variable.level() - 1)
 		{
-			groupStack.peek().addVariable(variable);
+			groupStack.peekLast().addVariable(variable);
 		}
 	}
 
@@ -1432,9 +1429,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 
 		var newLevel = peek().intValue();
-		while (!groupStack.isEmpty() && newLevel <= groupStack.peek().level())
+		while (!groupStack.isEmpty() && newLevel <= groupStack.peekLast().level())
 		{
-			groupStack.pop();
+			groupStack.removeLast();
 		}
 	}
 
@@ -1450,9 +1447,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			return null;
 		}
 
-		for (var i = groupStack.size() - 1; i >= 0; i--)
+		for (var group : groupStack)
 		{
-			if (groupStack.get(i)instanceof RedefinitionNode redefine)
+			if (group instanceof RedefinitionNode redefine)
 			{
 				return redefine;
 			}
@@ -1463,11 +1460,11 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private List<IArrayDimension> currentGroupsDimensions()
 	{
-		if (groupStack.empty())
+		if (groupStack.isEmpty())
 		{
 			return List.of();
 		}
-		return groupStack.peek().getDimensions();
+		return groupStack.peekLast().getDimensions();
 	}
 
 	private static class GroupConstStatistic
