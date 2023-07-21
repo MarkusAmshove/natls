@@ -1340,7 +1340,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 			else
 			{
-				totalOccurrences += dimension.occurerences();
+				totalOccurrences = totalOccurrences == 0 ? dimension.occurerences() : totalOccurrences * dimension.occurerences();
 			}
 		}
 
