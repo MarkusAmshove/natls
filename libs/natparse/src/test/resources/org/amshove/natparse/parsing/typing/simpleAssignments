@@ -27,6 +27,13 @@ END-DEFINE
 #I1 := 128 /* !{D:WARNING:NPP045}
 #I1 := 127
 #N1 := 'Hi' /* !{D:ERROR:NPP037}
+#N12 := #N1;
+/*#N12 := #U20;
+#N12 := #N1;
+#P12 := #P1;
+/* #P12 := #U20;
+#P12 := #T;
+#P12 := #D
 
 #N1 := #CONST-N1-I4 /* Should work, the constant *value* is N1
 

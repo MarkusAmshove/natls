@@ -31,26 +31,6 @@ public interface IDataType
 	}
 
 	/**
-	 * Determines if both types have the same family, e.g. N, I, P are all numeric.
-	 */
-	default boolean hasSameFamily(IDataType other)
-	{
-		var targetFormat = other.format();
-		return format() == targetFormat || switch (format())
-		{
-			case PACKED, FLOAT, INTEGER, NUMERIC -> targetFormat == PACKED
-				|| targetFormat == FLOAT
-				|| targetFormat == INTEGER
-				|| targetFormat == NUMERIC
-				|| targetFormat == BINARY;
-			case ALPHANUMERIC, UNICODE, BINARY -> targetFormat == ALPHANUMERIC
-				|| targetFormat == UNICODE
-				|| targetFormat == BINARY;
-			default -> false;
-		};
-	}
-
-	/**
 	 * Takes implicit conversion into account, e.g. N -> A
 	 */
 	default boolean hasCompatibleFormat(IDataType other)
@@ -60,17 +40,40 @@ public interface IDataType
 		{
 			case PACKED, FLOAT, INTEGER, NUMERIC -> targetFormat == ALPHANUMERIC
 				|| targetFormat == UNICODE
-				|| targetFormat == BINARY
-				|| targetFormat == TIME;
-			case TIME, DATE -> targetFormat == ALPHANUMERIC
-				|| targetFormat == NUMERIC
+				|| isShortBinary(other);
+			case TIME, DATE -> targetFormat == NUMERIC
 				|| targetFormat == PACKED
+				|| targetFormat == ALPHANUMERIC
+				|| targetFormat == UNICODE
+				|| isShortBinary(other)
 				|| targetFormat == INTEGER // this one can fail, but not for early times
+				|| targetFormat == DATE
 				|| targetFormat == TIME
-				|| targetFormat == DATE;
-			case LOGIC -> targetFormat == ALPHANUMERIC;
+				|| targetFormat == FLOAT;
+			case LOGIC -> targetFormat == ALPHANUMERIC
+				|| targetFormat == UNICODE;
 			case BINARY -> binaryCompatibility(other);
 			default -> false; // we don't know whats implicitly compatible yet
+		};
+	}
+
+	/**
+	 * Determines if both types have the same family, e.g. N, I, P are all numeric.
+	 */
+	default boolean hasSameFamily(IDataType other)
+	{
+		var targetFormat = other.format();
+		return format() == targetFormat || switch (format())
+		{
+			case PACKED, FLOAT, INTEGER, NUMERIC, TIME -> targetFormat == PACKED
+				|| targetFormat == FLOAT
+				|| targetFormat == INTEGER
+				|| targetFormat == NUMERIC
+				|| targetFormat == TIME;
+			case ALPHANUMERIC, UNICODE -> targetFormat == ALPHANUMERIC
+				|| targetFormat == UNICODE
+				|| targetFormat == BINARY;
+			default -> false;
 		};
 	}
 
@@ -143,28 +146,28 @@ public interface IDataType
 		return Integer.parseInt((Double.toString(length()).split("\\.")[1]));
 	}
 
-	/**
-	 * Returns true if the binary is compatible with target - otherwise false</br>
-	 * This depends on the length of the binary
-	 */
+	private boolean isShortBinary(IDataType other)
+	{
+		return format() == BINARY && length() < 5;
+	}
+
+	private boolean isLongBinary(IDataType other)
+	{
+		return format() == BINARY && length() > 4;
+	}
+
 	private boolean binaryCompatibility(IDataType other)
 	{
 		var targetFormat = other.format();
-		if (length() < 5)
+		return (isLongBinary(other) && switch (targetFormat)
 		{
-			return switch (targetFormat)
+			case ALPHANUMERIC, UNICODE -> true;
+			default -> false;
+		}) ||
+			(isShortBinary(other) && switch (targetFormat)
 			{
-				case NUMERIC, PACKED, ALPHANUMERIC, UNICODE, INTEGER, TIME, FLOAT -> true;
-				default -> false;
-			};
-		}
-		else
-		{
-			return switch (targetFormat)
-			{
-				case ALPHANUMERIC, UNICODE -> true;
-				default -> false;
-			};
-		}
+			case NUMERIC, PACKED, ALPHANUMERIC, UNICODE, INTEGER, TIME, FLOAT -> true;
+			default -> false;
+			});
 	}
 }
