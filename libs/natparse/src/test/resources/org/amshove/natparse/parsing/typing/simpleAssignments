@@ -4,6 +4,8 @@ DEFINE DATA LOCAL
 1 #I1 (I1)
 1 #A1 (A1)
 1 #P1 (P1)
+1 #B4 (B4)
+1 #B5 (B5)
 1 #T (T)
 1 #D (D)
 1 #A10 (A10)
@@ -42,11 +44,21 @@ END-DEFINE
 #D := 10 /* !{D:ERROR:NPP037}
 #D := #N1 /* !{D:ERROR:NPP037}
 
+#I1 := #B4
+#P1 := #B4
+#T := #B4
+#I1 := #B5 /* !{D:ERROR:NPP037}
+#P1 := #B5 /* !{D:ERROR:NPP037}
+#D := #B4 /* !{D:ERROR:NPP037}
+
 #A1 := TRUE /* Converted to single character
 #A1 := FALSE /* Converted to single character
 
 #N12 := *TIMX /* fine
 #P12 := *TIMX /* fine
+
+#D := #T
+#T := #D
 
 #A20 := 99999999999999999999 /* Results in a P11, not truncation needed to to A20
 

@@ -65,8 +65,11 @@ public interface IDataType
 			case TIME, DATE -> targetFormat == ALPHANUMERIC
 				|| targetFormat == NUMERIC
 				|| targetFormat == PACKED
-				|| targetFormat == INTEGER; // this one can fail, but not for early times
+				|| targetFormat == INTEGER // this one can fail, but not for early times
+				|| targetFormat == TIME
+				|| targetFormat == DATE;
 			case LOGIC -> targetFormat == ALPHANUMERIC;
+			case BINARY -> binaryCompatibility(other);
 			default -> false; // we don't know whats implicitly compatible yet
 		};
 	}
@@ -138,5 +141,30 @@ public interface IDataType
 	private int calculateDigitsAfterDecimalPoint()
 	{
 		return Integer.parseInt((Double.toString(length()).split("\\.")[1]));
+	}
+
+	/**
+	 * Returns true if the binary is compatible with target - otherwise false</br>
+	 * This depends on the length of the binary
+	 */
+	private boolean binaryCompatibility(IDataType other)
+	{
+		var targetFormat = other.format();
+		if (length() < 5)
+		{
+			return switch (targetFormat)
+			{
+				case NUMERIC, PACKED, ALPHANUMERIC, UNICODE, INTEGER, TIME, FLOAT -> true;
+				default -> false;
+			};
+		}
+		else
+		{
+			return switch (targetFormat)
+			{
+				case ALPHANUMERIC, UNICODE -> true;
+				default -> false;
+			};
+		}
 	}
 }
