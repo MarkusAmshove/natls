@@ -4,7 +4,6 @@ import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -238,6 +237,21 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		assertThat(variable.level()).isEqualTo(1);
 		assertThat(variable.type().format()).isEqualTo(DataFormat.ALPHANUMERIC);
 		assertThat(variable.type().length()).isEqualTo(10.0);
+	}
+
+	@Test
+	void raiseADiagnosticForKeywordsUsedAsIdentifierButStillParseOn()
+	{
+		var defineData = assertDiagnostic("""
+			DEFINE DATA LOCAL
+			1 PROCESS
+			2 #VAR (A10)
+			END-DEFINE
+			""", ParserError.UNEXPECTED_TOKEN);
+
+		assertThat(defineData.variables().first().name()).isEqualTo("PROCESS");
+		assertThat(defineData.variables().last().name()).isEqualTo("#VAR");
+		assertThat(defineData.variables().last().qualifiedName()).isEqualTo("PROCESS.#VAR");
 	}
 
 	@Test
@@ -929,6 +943,35 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void parseTheUpperBoundOfVariableParameterDimensions()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA PARAMETER
+			1 #PARM (A10 / 1:V)
+			END-DEFINE
+			""");
+
+		var parameter = defineData.findVariable("#PARM");
+		assertThat(parameter).isNotNull();
+		assertThat(parameter.dimensions().first().upperBound()).isEqualTo(10);
+	}
+
+	@Test
+	void parseTheUpperBoundOfVariableParameterDimensionsInGroups()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA PARAMETER
+			1 #GRP (1:V)
+			2 #PARM (A10)
+			END-DEFINE
+			""");
+
+		var parameter = defineData.findVariable("#PARM");
+		assertThat(parameter).isNotNull();
+		assertThat(parameter.dimensions().first().upperBound()).isEqualTo(10);
+	}
+
+	@Test
 	void inheritArrayDimensionsInNestedRedefines()
 	{
 		var defineData = assertParsesWithoutDiagnostics("""
@@ -1015,7 +1058,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			   01 #FIRSTVAR
 				 02 #FIRSTVAR-A (N2) INIT <5>
 				 02 #FIRSTVAR-B (P6) INIT <10>
-			  01 REDEFINE #FIRSTVAR
+			   01 REDEFINE #FIRSTVAR
 				 02 #FIRSTVAR-ALPHA (A6)
 			   END-DEFINE
 			""";
@@ -1029,6 +1072,42 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void parseVariablesAfterNestedRedefines()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 #GRP
+			  2 #VAR1 (N8)
+			  2 REDEFINE #VAR1
+			    3 #VAR-A (A8)
+			    3 REDEFINE #VAR-A
+			      4 #VAR-R-1 (A8)
+			  2 #VAR-2 (A10)
+			  2 #VAR-3(L)
+			END-DEFINE
+			""");
+
+		assertThat(defineData.findVariable("#VAR-2")).as("#VAR-2 not found").isNotNull();
+		assertThat(defineData.findVariable("#VAR-3")).as("#VAR-3 not found").isNotNull();
+	}
+
+	@Test
+	void allowToRedefineWithXArraysHavingConstBounds()
+	{
+		assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 DTAC
+			  2 VAR-MAX (I2) CONST<2>
+			  2 VAR
+				  3 VAR-1 (A8) CONST<'ABC'>
+				  3 VAR-2 (A8) CONST<'DEF'>
+			  2 REDEFINE VAR
+				3 PROCESS-ALL (A8/1:VAR-MAX)
+			END-DEFINE
+			""");
+	}
+
+	@Test
 	void redefineIndependentVariables()
 	{
 		var source = """
@@ -1036,7 +1115,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			   INDEPENDENT
 			   1 +MY-AIV (A10)
 			   1 REDEFINE +MY-AIV
-			   2 #INSIDE (A2)
+				   2 #INSIDE (A2)
 			   END-DEFINE
 			""";
 
@@ -1249,7 +1328,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""");
 
 		var variable = findVariable(defineData, "#p-unbound-array", ITypedVariableNode.class);
-		assertThat(variable.dimensions().first().isUpperUnbound()).isTrue();
+		assertThat(variable.dimensions().first().upperBound()).isEqualTo(3);
 	}
 
 	@Test
@@ -1393,6 +1472,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var inside = data.variables().last();
 		assertThat(inside.name()).isEqualTo("#INSIDE");
+		assertThat(inside.dimensions()).hasSize(1);
 		assertThat(inside.dimensions().first().lowerBound()).isEqualTo(1);
 		assertThat(inside.dimensions().first().upperBound()).isEqualTo(10);
 	}
@@ -1411,6 +1491,28 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var inside = data.variables().last();
 		assertThat(inside.name()).isEqualTo("#INSIDE");
+		assertThat(inside.dimensions().size()).isEqualTo(2);
+		assertThat(inside.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(inside.dimensions().first().upperBound()).isEqualTo(10);
+		assertThat(inside.dimensions().last().lowerBound()).isEqualTo(1);
+		assertThat(inside.dimensions().last().upperBound()).isEqualTo(5);
+	}
+
+	@Test
+	void addMultipleDimensionsForGroupArraysContainingGroupArray()
+	{
+		var data = assertParsesWithoutDiagnostics("""
+			define data
+			local
+			1 #myarraygroup (1:10)
+			2 #insidegrp (1:5)
+			3 #insidevar (A5) /* This is considered a second dimension, so (1:10,1:5)
+			end-define
+			""");
+		// TODO(array-initializer): Check values
+
+		var inside = data.variables().last();
+		assertThat(inside.name()).isEqualTo("#INSIDEVAR");
 		assertThat(inside.dimensions().size()).isEqualTo(2);
 		assertThat(inside.dimensions().first().lowerBound()).isEqualTo(1);
 		assertThat(inside.dimensions().first().upperBound()).isEqualTo(10);
@@ -1626,14 +1728,14 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			2 #bytes2 (A1/1:850)
 			2 redefine #bytes2
 			3 #bytes-str (A750)
-			3 #r1 (a1/101:450)
+			3 #r1 (a1/101:150)
 			1 redefine #grp
 			2 #var3 (A300)
 			end-define
 			""");
 	}
 
-	@Disabled("This should fail, but does not. Seems the nested REDEFINE for #bytes2 is not handled.")
+	@Test
 	void showADiagnosticForRedefinesWithGroupsInvolved()
 	{
 		assertDiagnostic(
@@ -1821,9 +1923,9 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			define data local
 			1 #var1 (A10)
 			1 redefine #var1
-			2 #thegroup
-			3 filler 5X
-			3 rest (a5)
+				2 #thegroup
+					3 filler 5X
+					3 rest (a5)
 			end-define
 			""");
 	}

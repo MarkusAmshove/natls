@@ -8,9 +8,7 @@ import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 
 import javax.annotation.Nonnull;
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 class VariableNode extends BaseSyntaxNode implements IVariableNode
@@ -85,7 +83,7 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 				return qualifiedName;
 			}
 
-			parent = ((ISyntaxNode) parent).parent();
+			parent = parent.parent();
 		}
 
 		throw new NaturalParseException("Could not determine qualified name");

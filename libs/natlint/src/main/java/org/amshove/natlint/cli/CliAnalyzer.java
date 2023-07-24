@@ -233,6 +233,8 @@ public class CliAnalyzer
 		{
 			fileStatusSink.printError(file.getPath(), MessageType.LEX_EXCEPTION, e);
 			exceptions.incrementAndGet();
+			System.out.println(file.getPath());
+			e.printStackTrace();
 			return null;
 		}
 	}
@@ -275,6 +277,8 @@ public class CliAnalyzer
 		{
 			fileStatusSink.printError(file.getPath(), MessageType.PARSE_EXCEPTION, e);
 			exceptions.incrementAndGet();
+			System.out.println(file.getPath());
+			e.printStackTrace();
 			return null;
 		}
 	}
@@ -301,6 +305,8 @@ public class CliAnalyzer
 		{
 			fileStatusSink.printError(file.getPath(), MessageType.LINT_EXCEPTION, e);
 			exceptions.incrementAndGet();
+			System.out.println(file.getPath());
+			e.printStackTrace();
 			return null;
 		}
 	}
