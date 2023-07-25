@@ -87,21 +87,33 @@ public class SyntaxToken implements IPosition
 
 	public String stringValue()
 	{
-		if (source.startsWith("H'"))
+		return switch (kind)
 		{
-			var hexLiteral = source.split("'")[1];
-			var stringLiteral = new StringBuilder(hexLiteral.length() / 2);
-			for (var i = 0; i < hexLiteral.length(); i += 2)
+			case HEX_LITERAL ->
 			{
-				var hexPart = i + 2 > hexLiteral.length()
-					? hexLiteral.charAt(i) + "0" // just to prevent an Exception. The lexer raises a diagnostic for this
-					: hexLiteral.substring(i, i + 2);
-				stringLiteral.append((char) Integer.parseInt(hexPart, 16));
-			}
+				var split = source.split("'");
 
-			return stringLiteral.toString();
-		}
-		return source.substring(1, source.length() - 1).replace("''", "'");
+				if (split.length < 2)
+				{
+					// Empty literal H''
+					yield "";
+				}
+
+				var hexLiteral = split[1];
+				var stringLiteral = new StringBuilder(hexLiteral.length() / 2);
+				for (var i = 0; i < hexLiteral.length(); i += 2)
+				{
+					var hexPart = i + 2 > hexLiteral.length()
+						? hexLiteral.charAt(i) + "0" // just to prevent an Exception. The lexer raises a diagnostic for this
+						: hexLiteral.substring(i, i + 2);
+					stringLiteral.append((char) Integer.parseInt(hexPart, 16));
+				}
+
+				yield stringLiteral.toString();
+			}
+			case DATE_LITERAL, TIME_LITERAL, EXTENDED_TIME_LITERAL -> source.substring(2, source.length() - 1);
+			default -> source.substring(1, source.length() - 1).replace("''", "'");
+		};
 	}
 
 	/**
