@@ -328,7 +328,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 				return false;
 			}
 
-			if (type.format() != DataFormat.ALPHANUMERIC && type.format() != DataFormat.UNICODE && type.format() != DataFormat.NONE)
+			if (type.format() != DataFormat.NONE && type.format() != DataFormat.ALPHANUMERIC && type.format() != DataFormat.UNICODE)
 			{
 				report(ParserErrors.typeMismatch("Parameter must be of type A or U, but is %s".formatted(type.toShortString()), node));
 			}
@@ -683,7 +683,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 
 	private IDataType inferDataType(IOperandNode operand)
 	{
-		if (operand instanceof IVariableReferenceNode variable && variable.reference()instanceof ITypedVariableNode typedRef)
+		if (operand instanceof IVariableReferenceNode variable && variable.reference()instanceof ITypedVariableNode typedRef && typedRef.type() != null)
 		{
 			return typedRef.type();
 		}
