@@ -382,6 +382,7 @@ public class Lexer
 					filePath
 				)
 			);
+			checkStringLiteralLength(previousUnsafe());
 			return;
 		}
 
@@ -1552,6 +1553,7 @@ public class Lexer
 		}
 
 		createAndAdd(SyntaxKind.DATE_LITERAL);
+		checkStringLiteralLength(previousUnsafe());
 	}
 
 	private void consumeExtendedTimeLiteral()
@@ -1565,6 +1567,7 @@ public class Lexer
 		}
 
 		createAndAdd(SyntaxKind.EXTENDED_TIME_LITERAL);
+		checkStringLiteralLength(previousUnsafe());
 	}
 
 	private void consumeTimeLiteral()
@@ -1578,6 +1581,7 @@ public class Lexer
 		}
 
 		createAndAdd(SyntaxKind.TIME_LITERAL);
+		checkStringLiteralLength(previousUnsafe());
 	}
 
 	private void consumeHexLiteral()
@@ -1591,6 +1595,7 @@ public class Lexer
 		}
 
 		createAndAdd(SyntaxKind.HEX_LITERAL);
+		checkStringLiteralLength(previousUnsafe());
 		var hexLiteralChars = previousUnsafe().source().length() - 3; // - H''
 		if (hexLiteralChars % 2 != 0)
 		{
@@ -1617,6 +1622,7 @@ public class Lexer
 
 			// We can still produce a valid token, although it is unterminated
 			createAndAdd(kindToCreate);
+			checkStringLiteralLength(previousUnsafe());
 			return false;
 		}
 
@@ -1669,6 +1675,7 @@ public class Lexer
 		// to be included.
 		scanner.advance();
 		createAndAdd(SyntaxKind.STRING_LITERAL);
+		checkStringLiteralLength(previousUnsafe());
 	}
 
 	private void createAndAdd(SyntaxKind kind)
@@ -1761,6 +1768,39 @@ public class Lexer
 		}
 	}
 
+	private void addDiagnostic(String message, LexerError error, SyntaxToken where)
+	{
+		if (relocatedDiagnosticPosition != null)
+		{
+			diagnostics.add(
+				LexerDiagnostic.create(
+					message,
+					where.offset(),
+					where.offsetInLine(),
+					where.line(),
+					where.length(),
+					where.filePath(),
+					relocatedDiagnosticPosition,
+					error
+				)
+			);
+		}
+		else
+		{
+			diagnostics.add(
+				LexerDiagnostic.create(
+					message,
+					where.offset(),
+					where.offsetInLine(),
+					where.line(),
+					where.length(),
+					where.filePath(),
+					error
+				)
+			);
+		}
+	}
+
 	private int findNextNonWhitespaceLookaheadOffset()
 	{
 		var start = 1;
@@ -1796,6 +1836,18 @@ public class Lexer
 		token.setDiagnosticPosition(relocatedDiagnosticPosition);
 		tokens.add(token);
 		scanner.reset();
+	}
+
+	private void checkStringLiteralLength(SyntaxToken token)
+	{
+		if (token.stringValue().length() == 0)
+		{
+			addDiagnostic(
+				"String literals in Natural can't be empty. Add a blank.",
+				LexerError.INVALID_STRING_LENGTH,
+				token
+			);
+		}
 	}
 
 	private boolean isValidAivStartAfterPlus(char character)
