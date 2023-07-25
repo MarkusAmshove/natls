@@ -328,7 +328,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 				return false;
 			}
 
-			if (type.format() != DataFormat.ALPHANUMERIC && type.format() != DataFormat.UNICODE)
+			if (type.format() != DataFormat.ALPHANUMERIC && type.format() != DataFormat.UNICODE && type.format() != DataFormat.NONE)
 			{
 				report(ParserErrors.typeMismatch("Parameter must be of type A or U, but is %s".formatted(type.toShortString()), node));
 			}
