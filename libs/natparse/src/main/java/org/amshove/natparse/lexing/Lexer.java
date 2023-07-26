@@ -11,6 +11,7 @@ import java.util.List;
 
 public class Lexer
 {
+	private final List<String> copyCodeParameter;
 	private SourceTextScanner scanner;
 	private List<SyntaxToken> tokens;
 	private List<SyntaxToken> comments;
@@ -37,6 +38,18 @@ public class Lexer
 	}
 
 	private LexerMode lexerMode = LexerMode.DEFAULT;
+
+	private static final List<String> NO_PARAMETER = List.of();
+
+	public Lexer()
+	{
+		this(NO_PARAMETER);
+	}
+
+	public Lexer(List<String> copyCodeParameter)
+	{
+		this.copyCodeParameter = copyCodeParameter;
+	}
 
 	public TokenList lex(String source, Path filePath)
 	{
@@ -277,8 +290,10 @@ public class Lexer
 					consumeIdentifierOrKeyword();
 					continue;
 				case '#':
-				case '&':
 					consumeIdentifier();
+					continue;
+				case '&':
+					consumeCopyCodeParameterIdentifierOrIdentifier();
 					continue;
 				case '0':
 				case '1':
@@ -914,6 +929,54 @@ public class Lexer
 		{
 			createAndAdd(SyntaxKind.IDENTIFIER);
 		}
+	}
+
+	private void consumeCopyCodeParameterIdentifierOrIdentifier()
+	{
+		scanner.start();
+		scanner.advance(); // &
+		var offset = 0;
+		while (!isWhitespace(offset) && Character.isDigit(scanner.peek(offset)))
+		{
+			offset++;
+		}
+
+		if (scanner.peek(offset) == '&') // all were digits and we end with &
+		{
+			scanner.advance(offset);
+			if (!copyCodeParameter.isEmpty())
+			{
+				var position = Integer.parseInt(scanner.lexemeText().substring(1));
+				if (copyCodeParameter.size() < position)
+				{
+					addDiagnostic("Copy code parameter with position %d not provided".formatted(position), LexerError.MISSING_COPYCODE_PARAMETER);
+					scanner.advance(); // &
+					createAndAdd(SyntaxKind.COPYCODE_PARAMETER);
+					return;
+				}
+				else
+				{
+					scanner.advance();
+					// @HACK
+					var anotherLexer = new Lexer();
+					anotherLexer.relocateDiagnosticPosition(this.relocatedDiagnosticPosition);
+					var theParameter = copyCodeParameter.get(position - 1);
+					var result = anotherLexer.lex(theParameter, filePath);
+					for (var resolvedParameterToken : result)
+					{
+						addToken(resolvedParameterToken);
+					}
+					scanner.reset();
+					return;
+				}
+			}
+			scanner.advance(); // &
+			createAndAdd(SyntaxKind.COPYCODE_PARAMETER);
+			return;
+		}
+
+		scanner.rollbackCurrentLexeme();
+		consumeIdentifier();
 	}
 
 	private boolean isValidIdentifierCharacter(char character)
@@ -1705,7 +1768,15 @@ public class Lexer
 	 */
 	private SyntaxToken previousUnsafe()
 	{
-		return tokens.get(tokens.size() - 1);
+		return previousUnsafe(1);
+	}
+
+	/**
+	 * Returns the previous consumed token at the given relative offset. <strong>Does not do a boundary check</strong>
+	 */
+	private SyntaxToken previousUnsafe(int offset)
+	{
+		return tokens.get(tokens.size() - offset);
 	}
 
 	private int getOffsetInLine()
@@ -1812,6 +1883,33 @@ public class Lexer
 		return start;
 	}
 
+	private void replacePreviousTokens(int fromOffset, SyntaxKind newKind, SyntaxToken newestToken)
+	{
+		var indexOfFirstTokenToRemove = tokens.size() - fromOffset;
+		var firstTokenToRemove = tokens.get(indexOfFirstTokenToRemove);
+
+		var newSource = new StringBuilder();
+		for (var i = indexOfFirstTokenToRemove; i < tokens.size(); i++)
+		{
+			newSource.append(tokens.get(i).source());
+		}
+
+		tokens.subList(indexOfFirstTokenToRemove, tokens.size()).clear();
+
+		newSource.append(newestToken.source());
+
+		tokens.add(
+			new SyntaxToken(
+				newKind,
+				firstTokenToRemove.offset(),
+				firstTokenToRemove.offsetInLine(),
+				firstTokenToRemove.line(),
+				newSource.toString(),
+				newestToken.filePath()
+			)
+		);
+	}
+
 	private void addToken(SyntaxToken token)
 	{
 		if (token.kind() == SyntaxKind.IDENTIFIER)
@@ -1820,6 +1918,16 @@ public class Lexer
 			{
 				addDiagnostic("Identifiers can not end with '.'", LexerError.INVALID_IDENTIFIER);
 			}
+		}
+
+		if (token.kind().canBeIdentifier() && (tokens.size() >= 2 && previousUnsafe().kind() == SyntaxKind.DOT && previousUnsafe(2).kind().canBeIdentifier()))
+		{
+			replacePreviousTokens(
+				2,
+				SyntaxKind.IDENTIFIER,
+				token
+			);
+			return;
 		}
 
 		var previous = previous();

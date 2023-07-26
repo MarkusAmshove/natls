@@ -2875,7 +2875,12 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				}
 
 				var includedSource = Files.readString(referencedModule.file().getPath());
-				var lexer = new Lexer();
+				var normalizedParameter = new ArrayList<String>(include.providedParameter().size());
+				for (var parameter : include.providedParameter())
+				{
+					normalizedParameter.add(((LiteralNode) parameter).token().stringValue());
+				}
+				var lexer = new Lexer(normalizedParameter);
 				lexer.relocateDiagnosticPosition(shouldRelocateDiagnostics() ? relocatedDiagnosticPosition : referencingToken);
 				var tokens = lexer.lex(includedSource, referencedModule.file().getPath());
 

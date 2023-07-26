@@ -294,4 +294,10 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 			SyntaxKind.RPAREN
 		);
 	}
+
+	@Test
+	void recognizeCopyCodeParameter()
+	{
+		assertTokens("&1& &2& &3& &10&", SyntaxKind.COPYCODE_PARAMETER, SyntaxKind.COPYCODE_PARAMETER, SyntaxKind.COPYCODE_PARAMETER, SyntaxKind.COPYCODE_PARAMETER);
+	}
 }

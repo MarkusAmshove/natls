@@ -23,7 +23,7 @@ class KeywordAsIdentifierAnalyzerShould extends AbstractAnalyzerTest
 	{
 		return Arrays.stream(SyntaxKind.values())
 			.filter(SyntaxKind::canBeIdentifier)
-			.filter(sk -> sk != SyntaxKind.IDENTIFIER)
+			.filter(sk -> sk != SyntaxKind.IDENTIFIER && sk != SyntaxKind.COPYCODE_PARAMETER)
 			.map(sk -> dynamicTest("%s should be discouraged as identifier".formatted(sk), () ->
 			{
 				testDiagnostics(
