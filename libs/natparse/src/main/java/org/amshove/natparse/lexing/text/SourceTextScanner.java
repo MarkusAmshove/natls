@@ -1,5 +1,7 @@
 package org.amshove.natparse.lexing.text;
 
+import java.util.List;
+
 public class SourceTextScanner
 {
 	public static final char END_CHARACTER = Character.MAX_VALUE;
@@ -10,7 +12,24 @@ public class SourceTextScanner
 
 	public SourceTextScanner(String source)
 	{
-		this.source = source.toCharArray();
+		this(source, List.of());
+	}
+
+	public SourceTextScanner(String source, List<String> copyCodeSubstitution)
+	{
+		if (!copyCodeSubstitution.isEmpty())
+		{
+			var newSource = source;
+			for (int i = 0; i < copyCodeSubstitution.size(); i++)
+			{
+				newSource = newSource.replace("&%d&".formatted(i + 1), copyCodeSubstitution.get(i));
+			}
+			this.source = newSource.toCharArray();
+		}
+		else
+		{
+			this.source = source.toCharArray();
+		}
 		currentOffset = 0;
 		reset();
 	}

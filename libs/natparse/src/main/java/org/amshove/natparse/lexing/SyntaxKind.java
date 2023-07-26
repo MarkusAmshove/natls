@@ -39,7 +39,6 @@ public enum SyntaxKind
 	EXTENDED_TIME_LITERAL(false, false, false),
 	IDENTIFIER(true, false, false),
 	LABEL_IDENTIFIER(false, false, false),
-	COPYCODE_PARAMETER(true, false, false),
 	COMMENT(false, false, false),
 	PERCENT(false, false, false),
 	QUESTIONMARK(false, false, false),
