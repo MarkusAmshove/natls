@@ -80,6 +80,16 @@ class LexerCopycodeParameterSubstitutionShould
 		assertThat(result.diagnostics().first().message()).isEqualTo("Copy code parameter with position 2 not provided");
 	}
 
+	@Test
+	void substituteStringLiterals()
+	{
+		var result = lex("&1&", "\"\"\"SOME TEXT\"\"\"");
+		assertThat(result.diagnostics()).isEmpty();
+		var token = result.advance();
+		assertThat(token.kind()).isEqualTo(SyntaxKind.STRING_LITERAL);
+		assertThat(token.source()).isEqualTo("\"\"\"SOME TEXT\"\"\"");
+	}
+
 	private TokenList lex(String source, String... substitutions)
 	{
 		var substitutionList = Arrays.stream(substitutions).toList();
