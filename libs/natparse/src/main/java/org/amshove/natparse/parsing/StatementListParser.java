@@ -23,6 +23,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private List<IReferencableNode> referencableNodes;
 
+	private Set<String> currentModuleCallStack = new HashSet<>();
+
 	public List<IReferencableNode> getReferencableNodes()
 	{
 		return referencableNodes;
@@ -2865,7 +2867,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var referencedModule = sideloadModule(referencingToken.symbolName(), previousTokenNode().token());
 		include.setReferencedModule((NaturalModule) referencedModule);
 
-		if (referencedModule != null)
+		if (referencedModule != null && currentModuleCallStack.add(referencingToken.symbolName()))
 		{
 			try
 			{
@@ -2891,6 +2893,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				}
 
 				var nestedParser = new StatementListParser(moduleProvider);
+				nestedParser.currentModuleCallStack.addAll(this.currentModuleCallStack);
 				nestedParser.relocateDiagnosticPosition(
 					shouldRelocateDiagnostics()
 						? relocatedDiagnosticPosition
@@ -2900,7 +2903,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 				for (var diagnostic : statementList.diagnostics())
 				{
-					if (ParserError.isUnresolvedError(diagnostic.id()))
+					if (!ParserError.isUnresolvedError(diagnostic.id()))
 					{
 						// Unresolved references will be resolved by the module including the copycode.
 						report(diagnostic);
@@ -2914,6 +2917,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						? relocatedDiagnosticPosition
 						: referencingToken
 				);
+				currentModuleCallStack.remove(referencingToken.symbolName());
 			}
 			catch (IOException e)
 			{
@@ -2922,6 +2926,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 		else
 		{
+			if (currentModuleCallStack.contains(referencingToken.symbolName()))
+			{
+				report(ParserErrors.cyclomaticInclude(referencingToken));
+			}
+
 			var unresolvedBody = new StatementListNode();
 			unresolvedBody.setParent(include);
 			include.setBody(

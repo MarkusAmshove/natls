@@ -84,4 +84,13 @@ class CopyCodesShould extends ParserIntegrationTest
 		assertThat(write.descendants()).as("WRITE statement should only have 2 nodes. The WRITE keyword and the string operand").hasSize(2);
 		assertThat(((ILiteralNode) write.descendants().last()).token().source()).isEqualTo("\"Text\"");
 	}
+
+	@Test
+	void raiseADiagnosticForCyclomaticCopycodes(@ProjectName("copycodetests") NaturalProject project)
+	{
+		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "INCLREC"), ISubprogram.class);
+		assertThat(subprogram.diagnostics()).hasSize(1);
+		assertThat(subprogram.diagnostics().first().id()).isEqualTo(ParserError.CYCLOMATIC_INCLUDE.id());
+		assertThat(subprogram.diagnostics().first().message()).isEqualTo("Cyclomatic INCLUDE found. RECCC is recursively included multiple times.");
+	}
 }

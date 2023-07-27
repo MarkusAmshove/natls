@@ -116,6 +116,7 @@ public class SyntaxToken implements IPosition
 			{
 				var quoteChar = source.substring(0, 1);
 				var escapedQuote = quoteChar + quoteChar;
+
 				yield source.substring(1, source.length() - 1).replace(escapedQuote, quoteChar);
 			}
 		};
