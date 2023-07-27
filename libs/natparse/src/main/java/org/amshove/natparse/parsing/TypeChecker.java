@@ -208,103 +208,31 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			return;
 		}
 
-		if (checkMathematicalSystemFunctions(node))
+		if (node instanceof IMathFunctionOperandNode function)
 		{
+			checkMathematicalSystemFunctions(function);
 			return;
 		}
 
 		checkAlphaSystemFunctions(node);
 	}
 
-	private boolean checkMathematicalSystemFunctions(ISyntaxNode node)
+	private void checkMathematicalSystemFunctions(IMathFunctionOperandNode operand)
 	{
-		IDataType type = IDataType.UNTYPED;
-
-		// Used in processing loops
-		if (node instanceof IAverOperandNode averNode)
-		{
-			type = inferDataType(averNode.parameter());
-		}
-
-		if (node instanceof ISumOperandNode sumNode)
-		{
-			type = inferDataType(sumNode.parameter());
-		}
-
-		if (node instanceof ITotalOperandNode totalNode)
-		{
-			type = inferDataType(totalNode.parameter());
-		}
-
-		// Other mathematical system functions
-		if (node instanceof IAbsOperandNode absNode)
-		{
-			type = inferDataType(absNode.parameter());
-		}
-
-		if (node instanceof IExpOperandNode atnNode)
-		{
-			type = inferDataType(atnNode.parameter());
-		}
-
-		if (node instanceof ICosOperandNode cosNode)
-		{
-			type = inferDataType(cosNode.parameter());
-		}
-
-		if (node instanceof IExpOperandNode expNode)
-		{
-			type = inferDataType(expNode.parameter());
-		}
-
-		if (node instanceof IFracOperandNode fracNode)
-		{
-			type = inferDataType(fracNode.parameter());
-		}
-
-		if (node instanceof IIntOperandNode intNode)
-		{
-			type = inferDataType(intNode.parameter());
-		}
-
-		if (node instanceof ILogOperandNode logNode)
-		{
-			type = inferDataType(logNode.parameter());
-		}
-
-		if (node instanceof ISignOperandNode sgnNode)
-		{
-			type = inferDataType(sgnNode.parameter());
-		}
-
-		if (node instanceof ISinOperandNode sinNode)
-		{
-			type = inferDataType(sinNode.parameter());
-		}
-
-		if (node instanceof ISqrtOperandNode sqrtNode)
-		{
-			type = inferDataType(sqrtNode.parameter());
-		}
-
-		if (node instanceof ITanOperandNode tanNode)
-		{
-			type = inferDataType(tanNode.parameter());
-		}
-
+		var type = inferDataType(operand.parameter());
 		if (type == IDataType.UNTYPED)
 		{
-			return false;
+			return;
 		}
 		else
 		{
 			if (!type.isNumericFamily())
 			{
-				report(ParserErrors.typeMismatch("Parameter must be of type N, P, I or F, but is %s".formatted(type.toShortString()), node));
+				report(ParserErrors.typeMismatch("Parameter must be of type N, P, I or F, but is %s".formatted(type.toShortString()), operand));
 			}
 		}
 
-		return true;
+		return;
 	}
 
 	private boolean checkAlphaSystemFunctions(ISyntaxNode node)

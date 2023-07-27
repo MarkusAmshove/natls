@@ -1,6 +1,4 @@
 package org.amshove.natparse.natural;
 
-public interface ISumOperandNode extends IOperandNode
-{
-	IOperandNode parameter();
-}
+public interface ISumOperandNode extends IMathFunctionOperandNode
+{}

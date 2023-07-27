@@ -1,9 +1,9 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.natural.IMinOperandNode;
+import org.amshove.natparse.natural.IMathFunctionOperandNode;
 import org.amshove.natparse.natural.IOperandNode;
 
-class MinOperandNode extends BaseSyntaxNode implements IMinOperandNode
+class MinOperandNode extends BaseSyntaxNode implements IMathFunctionOperandNode
 {
 	private IOperandNode parameter;
 
