@@ -112,7 +112,12 @@ public class SyntaxToken implements IPosition
 				yield stringLiteral.toString();
 			}
 			case DATE_LITERAL, TIME_LITERAL, EXTENDED_TIME_LITERAL -> source.substring(2, source.length() - 1);
-			default -> source.substring(1, source.length() - 1).replace("''", "'");
+			default ->
+			{
+				var quoteChar = source.substring(0, 1);
+				var escapedQuote = quoteChar + quoteChar;
+				yield source.substring(1, source.length() - 1).replace(escapedQuote, quoteChar);
+			}
 		};
 	}
 

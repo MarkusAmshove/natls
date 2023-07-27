@@ -82,6 +82,6 @@ class CopyCodesShould extends ParserIntegrationTest
 		var secondInclude = (IIncludeNode) firstInclude.body().statements().first();
 		var write = (IWriteNode) secondInclude.body().statements().first();
 		assertThat(write.descendants()).as("WRITE statement should only have 2 nodes. The WRITE keyword and the string operand").hasSize(2);
-		assertThat(((ILiteralNode) write.descendants().last()).token().source()).isEqualTo("\"\"\"Text\"\"\"");
+		assertThat(((ILiteralNode) write.descendants().last()).token().source()).isEqualTo("\"Text\"");
 	}
 }

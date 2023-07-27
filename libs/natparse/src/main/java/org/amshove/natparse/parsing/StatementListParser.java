@@ -2879,7 +2879,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				for (var parameter : include.providedParameter())
 				{
 					var token = ((LiteralNode) parameter).token();
-					normalizedParameter.add(shouldRelocateDiagnostics() ? token.source() : token.stringValue());
+					normalizedParameter.add(token.stringValue());
 				}
 				var lexer = new Lexer(normalizedParameter);
 				lexer.relocateDiagnosticPosition(shouldRelocateDiagnostics() ? relocatedDiagnosticPosition : referencingToken);
