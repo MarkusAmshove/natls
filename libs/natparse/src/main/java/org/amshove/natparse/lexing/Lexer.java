@@ -341,7 +341,6 @@ public class Lexer
 			if (scanner.peek(offset) == '&') // all were digits and we end with ampersand, so this is a copycode parameter
 			{
 				scanner.advance(offset);
-				offset++;
 				var position = Integer.parseInt(scanner.lexemeText().substring(1));
 				addDiagnostic("Copy code parameter with position %d not provided".formatted(position), LexerError.MISSING_COPYCODE_PARAMETER);
 			}

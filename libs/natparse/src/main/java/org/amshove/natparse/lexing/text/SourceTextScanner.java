@@ -20,7 +20,7 @@ public class SourceTextScanner
 		if (!copyCodeSubstitution.isEmpty())
 		{
 			var newSource = source;
-			// TODO: faster? https://stackoverflow.com/a/1326962
+			// faster? https://stackoverflow.com/a/1326962
 			for (int i = 0; i < copyCodeSubstitution.size(); i++)
 			{
 				newSource = newSource.replace("&%d&".formatted(i + 1), copyCodeSubstitution.get(i));
