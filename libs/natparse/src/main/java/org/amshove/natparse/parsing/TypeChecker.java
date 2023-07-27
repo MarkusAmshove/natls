@@ -220,19 +220,10 @@ final class TypeChecker implements ISyntaxNodeVisitor
 	private void checkMathematicalSystemFunctions(IMathFunctionOperandNode operand)
 	{
 		var type = inferDataType(operand.parameter());
-		if (type == IDataType.UNTYPED)
+		if (type != IDataType.UNTYPED && !type.isNumericFamily())
 		{
-			return;
+			report(ParserErrors.typeMismatch("Parameter must be of type N, P, I or F, but is %s".formatted(type.toShortString()), operand));
 		}
-		else
-		{
-			if (!type.isNumericFamily())
-			{
-				report(ParserErrors.typeMismatch("Parameter must be of type N, P, I or F, but is %s".formatted(type.toShortString()), operand));
-			}
-		}
-
-		return;
 	}
 
 	private boolean checkAlphaSystemFunctions(ISyntaxNode node)
