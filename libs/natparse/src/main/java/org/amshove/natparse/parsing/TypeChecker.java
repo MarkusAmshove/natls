@@ -208,6 +208,11 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			return;
 		}
 
+		if (node instanceof IProcessingLoopFunctionNode function)
+		{
+			checkProcessingLoopFunctions(function);
+		}
+
 		if (node instanceof IMathFunctionOperandNode function)
 		{
 			checkMathematicalSystemFunctions(function);
@@ -217,10 +222,19 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		checkAlphaSystemFunctions(node);
 	}
 
+	private void checkProcessingLoopFunctions(IProcessingLoopFunctionNode operand)
+	{
+		var type = inferDataType(operand.parameter());
+		if (operand.parameter() instanceof ILiteralNode || type.format() == DataFormat.NONE)
+		{
+			report(ParserErrors.typeMismatch("Parameter must be a typed variable of any format, but is %s".formatted(type.toShortString()), operand));
+		}
+	}
+
 	private void checkMathematicalSystemFunctions(IMathFunctionOperandNode operand)
 	{
 		var type = inferDataType(operand.parameter());
-		if (type != IDataType.UNTYPED && !type.isNumericFamily())
+		if (type.format() != DataFormat.NONE && !type.isNumericFamily())
 		{
 			report(ParserErrors.typeMismatch("Parameter must be of type N, P, I or F, but is %s".formatted(type.toShortString()), operand));
 		}

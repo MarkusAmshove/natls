@@ -640,7 +640,7 @@ abstract class AbstractParser<T>
 		node.addNode(countOperand);
 		consumeAnyMandatory(countOperand, List.of(SyntaxKind.COUNT, SyntaxKind.NCOUNT));
 		consumeMandatory(countOperand, SyntaxKind.LPAREN);
-		countOperand.setParameter(consumeVariableReferenceNode(countOperand));
+		countOperand.setParameter(consumeOperandNode(countOperand));
 		consumeMandatory(countOperand, SyntaxKind.RPAREN);
 		return countOperand;
 	}
@@ -706,7 +706,7 @@ abstract class AbstractParser<T>
 		node.addNode(minOperand);
 		consumeAnyMandatory(minOperand, List.of(SyntaxKind.MIN, SyntaxKind.NMIN));
 		consumeMandatory(minOperand, SyntaxKind.LPAREN);
-		minOperand.setParameter(consumeVariableReferenceNode(minOperand));
+		minOperand.setParameter(consumeOperandNode(minOperand));
 		consumeMandatory(minOperand, SyntaxKind.RPAREN);
 		return minOperand;
 	}

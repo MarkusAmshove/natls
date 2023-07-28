@@ -1,9 +1,9 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.natural.IMathFunctionOperandNode;
 import org.amshove.natparse.natural.IOperandNode;
+import org.amshove.natparse.natural.IProcessingLoopFunctionNode;
 
-class CountOperandNode extends BaseSyntaxNode implements IMathFunctionOperandNode
+class CountOperandNode extends BaseSyntaxNode implements IProcessingLoopFunctionNode
 {
 	private IOperandNode parameter;
 
