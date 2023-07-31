@@ -11,6 +11,7 @@ import java.util.List;
 
 public class Lexer
 {
+	private final List<String> copyCodeParameter;
 	private SourceTextScanner scanner;
 	private List<SyntaxToken> tokens;
 	private List<SyntaxToken> comments;
@@ -38,13 +39,25 @@ public class Lexer
 
 	private LexerMode lexerMode = LexerMode.DEFAULT;
 
+	private static final List<String> NO_PARAMETER = List.of();
+
+	public Lexer()
+	{
+		this(NO_PARAMETER);
+	}
+
+	public Lexer(List<String> copyCodeParameter)
+	{
+		this.copyCodeParameter = copyCodeParameter;
+	}
+
 	public TokenList lex(String source, Path filePath)
 	{
 		this.filePath = filePath;
 		tokens = new ArrayList<>();
 		diagnostics = new ArrayList<>();
 		comments = new ArrayList<>();
-		scanner = new SourceTextScanner(source);
+		scanner = new SourceTextScanner(source, copyCodeParameter);
 		sourceHeader = new NaturalHeader(NaturalProgrammingMode.UNKNOWN, 0);
 		line = 0;
 		currentLineStartOffset = 0;
@@ -277,8 +290,10 @@ public class Lexer
 					consumeIdentifierOrKeyword();
 					continue;
 				case '#':
-				case '&':
 					consumeIdentifier();
+					continue;
+				case '&':
+					consumeIdentifierOrCopyCodeParameter();
 					continue;
 				case '0':
 				case '1':
@@ -308,6 +323,34 @@ public class Lexer
 			}
 		}
 		return TokenList.fromTokensAndDiagnostics(filePath, tokens, diagnostics, comments, sourceHeader);
+	}
+
+	private void consumeIdentifierOrCopyCodeParameter()
+	{
+		// This checks for left over parameter, e.g. if a user didn't provide a parameter
+		if (!copyCodeParameter.isEmpty())
+		{
+			scanner.start();
+			scanner.advance(); // &
+			var offset = 0;
+			while (!isWhitespace(offset) && Character.isDigit(scanner.peek(offset)))
+			{
+				offset++;
+			}
+
+			if (scanner.peek(offset) == '&') // all were digits and we end with ampersand, so this is a copycode parameter
+			{
+				scanner.advance(offset);
+				var position = Integer.parseInt(scanner.lexemeText().substring(1));
+				addDiagnostic("Copy code parameter with position %d not provided".formatted(position), LexerError.MISSING_COPYCODE_PARAMETER);
+			}
+
+			// We roll this all back, because this was just for better error messages.
+			// The &n& will be added as an IDENTIFIER so that copy codes get analyzed correctly.
+			scanner.rollbackCurrentLexeme();
+		}
+
+		consumeIdentifier();
 	}
 
 	private boolean previousWasNoLiteralOrIdentifier()
@@ -1705,7 +1748,15 @@ public class Lexer
 	 */
 	private SyntaxToken previousUnsafe()
 	{
-		return tokens.get(tokens.size() - 1);
+		return previousUnsafe(1);
+	}
+
+	/**
+	 * Returns the previous consumed token at the given relative offset. <strong>Does not do a boundary check</strong>
+	 */
+	private SyntaxToken previousUnsafe(int offset)
+	{
+		return tokens.get(tokens.size() - offset);
 	}
 
 	private int getOffsetInLine()
