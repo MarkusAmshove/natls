@@ -171,7 +171,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 					var currentRedefineNode = currentRedefine(variable);
 					if (currentRedefineNode != null)
 					{
-						if (mightBeFillerBytes(peek(1), peek(2)))
+						while (mightBeFillerBytes(peek(1), peek(2)))
 						{
 							parseRedefineFiller(currentRedefineNode);
 						}
@@ -451,6 +451,11 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private boolean mightBeFillerBytes(SyntaxToken fillerToken, SyntaxToken maybeFillerBytes)
 	{
+		if (fillerToken == null || maybeFillerBytes == null)
+		{
+			return false;
+		}
+
 		return maybeFillerBytes.kind() == SyntaxKind.OPERAND_SKIP
 			// This happens when it's e.g.
 			// 2 FILLER 5

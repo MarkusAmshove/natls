@@ -1,14 +1,13 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.natural.ISubprogram;
-import org.amshove.natparse.natural.ISubroutineNode;
+import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.testhelpers.ProjectName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-public class CopyCodesShould extends ParserIntegrationTest
+class CopyCodesShould extends ParserIntegrationTest
 {
 	@Test
 	void notReportDiagnosticsForUnresolvedReferences(@ProjectName("copycodetests") NaturalProject project)
@@ -64,5 +63,34 @@ public class CopyCodesShould extends ParserIntegrationTest
 			assertThat(diagnostic.line()).as("Line mismatch for: " + diagnostic.message()).isEqualTo(6);
 			assertThat(diagnostic.offsetInLine()).isEqualTo(8);
 		}
+	}
+
+	@Test
+	void correctlyIncludeStringLiterals(@ProjectName("copycodetests") NaturalProject project)
+	{
+		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "INCLSTR"), ISubprogram.class);
+		var include = (IIncludeNode) subprogram.body().statements().first();
+		var write = (IWriteNode) include.body().statements().first();
+		assertThat(((ILiteralNode) write.descendants().last()).token().source()).isEqualTo("\"\"\"Text\"\"\"");
+	}
+
+	@Test
+	void correctlyIncludeStringLiteralsOnNestedLevels(@ProjectName("copycodetests") NaturalProject project)
+	{
+		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "WRITNEST"), ISubprogram.class);
+		var firstInclude = (IIncludeNode) subprogram.body().statements().first();
+		var secondInclude = (IIncludeNode) firstInclude.body().statements().first();
+		var write = (IWriteNode) secondInclude.body().statements().first();
+		assertThat(write.descendants()).as("WRITE statement should only have 2 nodes. The WRITE keyword and the string operand").hasSize(2);
+		assertThat(((ILiteralNode) write.descendants().last()).token().source()).isEqualTo("\"Text\"");
+	}
+
+	@Test
+	void raiseADiagnosticForCyclomaticCopycodes(@ProjectName("copycodetests") NaturalProject project)
+	{
+		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "INCLREC"), ISubprogram.class);
+		assertThat(subprogram.diagnostics()).hasSize(1);
+		assertThat(subprogram.diagnostics().first().id()).isEqualTo(ParserError.CYCLOMATIC_INCLUDE.id());
+		assertThat(subprogram.diagnostics().first().message()).isEqualTo("Cyclomatic INCLUDE found. RECCC is recursively included multiple times.");
 	}
 }

@@ -11,9 +11,11 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 class NaturalParserShould extends ParserIntegrationTest
 {
 	@Test
-	void notReportDiagnosticsForUnresolvedCopyCodeVariables(@ProjectName("copycodetests") NaturalProject project)
+	void reportDiagnosticsForUnresolvedCopyCodeVariables(@ProjectName("copycodetests") NaturalProject project)
 	{
-		assertParsesWithoutAnyDiagnostics(project.findModule("LIBONE", "SUBPROG3"));
+		var result = parse(project.findModule("LIBONE", "SUBPROG3"));
+		assertThat(result.diagnostics()).hasSize(1);
+		assertThat(result.diagnostics().first().id()).isEqualTo(ParserError.UNRESOLVED_REFERENCE.id());
 	}
 
 	@Test

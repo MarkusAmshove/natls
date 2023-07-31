@@ -926,6 +926,28 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void parseSubsequentRedefineFiller()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA
+			LOCAL
+			1 #LONG-VAR  (A100)
+			1 REDEFINE #LONG-VAR
+			  2 FILLER            20X
+			  2 FILLER            60X
+			  2 #REST             (A20)
+			1 #VAR-AFTER            (A30)
+			END-DEFINE
+			WRITE #VAR-AFTER
+			END
+			""");
+
+		assertThat(defineData.findVariable("#LONG-VAR")).as("#LONG-VAR not found").isNotNull();
+		assertThat(defineData.findVariable("#REST")).as("#REST not found").isNotNull();
+		assertThat(defineData.findVariable("#VAR-AFTER")).as("#VAR-AFTER not found").isNotNull();
+	}
+
+	@Test
 	void notReportALengthDiagnosticForNestedRedefineVariables()
 	{
 		assertParsesWithoutDiagnostics("""

@@ -578,4 +578,13 @@ class ParserErrors
 			ParserError.GROUP_HAS_MIXED_CONST
 		);
 	}
+
+	public static IDiagnostic cyclomaticInclude(SyntaxToken referencingToken)
+	{
+		return ParserDiagnostic.create(
+			"Cyclomatic INCLUDE found. %s is recursively included multiple times.".formatted(referencingToken.symbolName()),
+			referencingToken,
+			ParserError.CYCLOMATIC_INCLUDE
+		);
+	}
 }

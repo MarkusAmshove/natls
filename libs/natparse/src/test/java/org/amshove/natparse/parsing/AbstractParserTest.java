@@ -134,6 +134,13 @@ public abstract class AbstractParserTest<NodeType>
 		return module;
 	}
 
+	protected NaturalModule newEmptyCopyCode()
+	{
+		var file = new NaturalFile("THECC", Path.of(""), NaturalFileType.COPYCODE);
+		var module = new NaturalModule(file);
+		return module;
+	}
+
 	protected IVariableReferenceNode assertIsVariableReference(IOperandNode operand, String name)
 	{
 		assertThat(operand).as("Expected a variable reference, but operand is null").isNotNull();
