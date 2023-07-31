@@ -666,6 +666,7 @@ class StatementListParserShould extends StatementParseTest
 		"AND SORT THEM BY #VAR1 #VAR2",
 		"#LABEL. SORT THEM BY #VAR1 #VAR2",
 		"AND #LABEL. SORT THEM BY #VAR1 #VAR2",
+		"AND #LABEL. SORT #VAR1 #VAR2",
 		"SORT BY #VAR1 USING KEY",
 		"SORT BY #VAR1 USING KEYS",
 		"SORT BY #VAR1 USING #KEY1",
