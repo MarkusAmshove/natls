@@ -1302,7 +1302,10 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				var groupLength = 0;
 				for (var member : groupNode.variables())
 				{
-					groupLength += calculateVariableLengthInBytes(member);
+					if (!member.isInView())
+					{
+						groupLength += calculateVariableLengthInBytes(member);
+					}
 				}
 
 				return groupLength;

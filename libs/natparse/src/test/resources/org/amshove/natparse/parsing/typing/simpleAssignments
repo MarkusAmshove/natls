@@ -12,6 +12,7 @@ DEFINE DATA LOCAL
 1 #P12 (P12)
 1 #I4 (I4)
 1 #A20 (A20)
+1 #A19 (A19)
 1 THEVIEW VIEW OF THE-DDM
 2 #TYPED-IN-VIEW
 END-DEFINE
@@ -49,5 +50,6 @@ END-DEFINE
 #P12 := *TIMX /* fine
 
 #A20 := 99999999999999999999 /* Results in a P11, not truncation needed to to A20
+#A19 := 9999999999999999999  /* Borderline for Long
 
 END
