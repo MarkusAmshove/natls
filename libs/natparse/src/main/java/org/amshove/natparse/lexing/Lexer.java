@@ -727,6 +727,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.CURRENT_UNIT);
 			return;
 		}
+		if (scanner.advanceIfIgnoreCase("CURSOR"))
+		{
+			createAndAdd(SyntaxKind.CURSOR);
+			return;
+		}
 		if (scanner.advanceIfIgnoreCase("CURS-COL"))
 		{
 			createAndAdd(SyntaxKind.CURS_COL);
