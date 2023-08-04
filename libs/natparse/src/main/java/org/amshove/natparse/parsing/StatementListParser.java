@@ -2605,6 +2605,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var sort = new SortStatementNode();
 		consumeMandatory(sort, SyntaxKind.END_ALL);
 		consumeOptionally(sort, SyntaxKind.AND);
+		consumeOptionally(sort, SyntaxKind.LABEL_IDENTIFIER);
 		var opening = consumeMandatory(sort, SyntaxKind.SORT);
 		consumeAnyOptionally(sort, List.of(SyntaxKind.THEM, SyntaxKind.RECORDS, SyntaxKind.RECORD));
 		consumeOptionally(sort, SyntaxKind.BY);
