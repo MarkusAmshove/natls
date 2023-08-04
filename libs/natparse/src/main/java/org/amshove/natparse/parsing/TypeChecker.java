@@ -320,7 +320,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			for (var value : branch.values())
 			{
 				var inferredType = inferDataType(value);
-				if (inferredType.format() != DataFormat.NONE && !inferredType.hasSameFamily(typedTarget.type()))
+				if (inferredType.format() != DataFormat.NONE && !inferredType.hasCompatibleFormat(typedTarget.type()))
 				{
 					report(
 						ParserErrors.typeMismatch(

@@ -40,7 +40,7 @@ class LiteralTypeInferenceShould
 			"200,B2",
 			"12345,B2",
 			"2147483647,B4",
-			"2147483648,B10",
+			"2147483648,P10",
 		}
 	)
 	void inferTheCorrectTypeBasedOnTargetTypeForBinary(String source, String targetType)

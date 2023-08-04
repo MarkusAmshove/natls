@@ -174,8 +174,11 @@ class DataTypeCheckingShould
 	@ParameterizedTest
 	@CsvSource(
 		{
-			"N,N", "N,I", "N,F", "N,P", "N,B",
-			"A,U", "A,B", "A,A"
+			"N,N", "N,I", "N,F", "N,P", "N,T",
+			"P,N", "P,I", "P,F", "P,P", "P,T",
+			"T,N", "T,I", "T,F", "T,P", "T,T",
+			"A,A", "A,U", "A,B", "B,B",
+			"U,A", "U,B", "U,U"
 		}
 	)
 	void recognizeDataFormatsAsTheSameFamily(String firstFormat, String secondFormat)
@@ -186,11 +189,11 @@ class DataTypeCheckingShould
 	@ParameterizedTest
 	@CsvSource(
 		{
-			"N,A", "N,U", "N,L", "N,C", "N,D", "N,T",
+			"N,A", "N,U", "N,L", "N,C", "N,D",
 			"A,L", "A,C", "A,D", "A,F", "A,I", "A,P", "A,T",
-			"I,A", "I,U", "I,L", "I,C", "I,D", "I,T",
-			"P,A", "P,U", "P,L", "P,C", "P,D", "P,T",
-			"F,A", "F,U", "F,L", "F,C", "F,D", "F,T",
+			"I,A", "I,U", "I,L", "I,C", "I,D",
+			"P,A", "P,U", "P,L", "P,C", "P,D",
+			"F,A", "F,U", "F,L", "F,C", "F,D",
 			"L,B", "L,D", "L,T", "L,U", "L,A", "L,P"
 		}
 	)
