@@ -147,6 +147,11 @@ public class BuiltInFunctionTable
 				If you want to get all line numbers, including the `INCLUDE`s, use `*LINEX` instead.
 				""", INTEGER, 4.0),
 			unmodifiableVariable(SyntaxKind.ERROR_LINE, "Returns the line of the statement that raised an error", NUMERIC, 4),
+			unmodifiableVariable(SyntaxKind.CURSOR, """
+				Position of cursor on input screen at time ENTER or function key is pressed.
+
+				Note: It is recommended that the system variables *CURS-LINE and *CURS-COL be used instead of the *CURSOR command.
+				""", NUMERIC, 6),
 			unmodifiableVariable(SyntaxKind.CURS_FIELD, """
 				Returns the identification of the field in which the cursor is positioned" +
 				Can only be used together withe the `POS` function.

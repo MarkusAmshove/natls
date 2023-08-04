@@ -1,11 +1,17 @@
 DEFINE DATA LOCAL
 1 #CONST-N1-I4 (I4) CONST<1>
 1 #N1 (N1)
-1 #I1 (I1)
-1 #A1 (A1)
 1 #P1 (P1)
-1 #T (T)
+1 #A1 (A1)
+1 #U1 (U1)
+1 #B4 (B4)
+1 #B5 (B5)
+1 #I1 (I1)
+1 #L (L)
+1 #C (C)
 1 #D (D)
+1 #T (T)
+1 #F (F4)
 1 #A10 (A10)
 1 #ARR (N10/*)
 1 #N12 (N12)
@@ -15,6 +21,7 @@ DEFINE DATA LOCAL
 1 #A19 (A19)
 1 #FLOAT (F8)
 1 #DECIMAL (P9,2)
+1 #U20 (U20)
 1 THEVIEW VIEW OF THE-DDM
 2 #TYPED-IN-VIEW
 END-DEFINE
@@ -22,11 +29,241 @@ END-DEFINE
 /* NPP037: Type mismatch
 /* NPP045: Literal value truncation
 
+/* Format N
+#N1 := #N1
+#N1 := #P1
+#N1 := 1
+#N1 := #A1  /* !{D:ERROR:NPP037}
+#N1 := #U1  /* !{D:ERROR:NPP037}
+#N1 := 'X'  /* !{D:ERROR:NPP037}
+#N1 := #B4
+#N1 := #B5  /* !{D:ERROR:NPP037}
+#N1 := #I1
+#N1 := #L   /* !{D:ERROR:NPP037}
+#N1 := TRUE /* !{D:ERROR:NPP037}
+#N1 := #C   /* !{D:ERROR:NPP037}
+#N1 := #D
+#N1 := #T
+#N1 := #F
+#N1 := *ISN
+#N1 := *PROGRAM /* !{D:ERROR:NPP037}
+
+/* Format P
+#P1 := #N1
+#P1 := #P1
+#P1 := 1
+#P1 := #A1  /* !{D:ERROR:NPP037}
+#P1 := #U1  /* !{D:ERROR:NPP037}
+#P1 := 'X'  /* !{D:ERROR:NPP037}
+#P1 := #B4
+#P1 := #B5  /* !{D:ERROR:NPP037}
+#P1 := #I1
+#P1 := #L   /* !{D:ERROR:NPP037}
+#P1 := TRUE /* !{D:ERROR:NPP037}
+#P1 := #C   /* !{D:ERROR:NPP037}
+#P1 := #D
+#P1 := #T
+#P1 := #F
+#P1 := *ISN
+#P1 := *PROGRAM /* !{D:ERROR:NPP037}
+
+/* Format A
+#A1 := #N1
+#A1 := #P1
+#A1 := 1
+#A1 := #A1
+#A1 := #U1
+#A1 := 'X'
+#A1 := #B4
+#A1 := #B5
+#A1 := #I1
+#A1 := #L
+#A1 := TRUE
+#A1 := #C   /* !{D:ERROR:NPP037}
+#A1 := #D
+#A1 := #T
+#A1 := #F
+#A1 := *ISN
+#A1 := *PROGRAM
+
+/* Format U
+#U1 := #N1
+#U1 := #P1
+#U1 := 1
+#U1 := #A1
+#U1 := #U1
+#U1 := 'X'
+#U1 := #B4
+#U1 := #B5
+#U1 := #I1
+#U1 := #L
+#U1 := TRUE
+#U1 := #C   /* !{D:ERROR:NPP037}
+#U1 := #D
+#U1 := #T
+#U1 := #F
+#U1 := *ISN
+#U1 := *PROGRAM
+
+/* Format Bn (n<5)
+#B4 := #N1
+#B4 := #P1
+#B4 := 1
+#B4 := #A1
+#B4 := #U1
+#B4 := 'X'
+#B4 := #B4
+#B4 := #B5
+#B4 := #I1
+#B4 := #L   /* !{D:ERROR:NPP037}
+#B4 := TRUE /* !{D:ERROR:NPP037}
+#B4 := #C   /* !{D:ERROR:NPP037}
+#B4 := #D
+#B4 := #T
+#B4 := #F
+#B4 := *ISN
+#B4 := *PROGRAM
+
+/* Format Bn (n>4)
+#B5 := #N1  /* !{D:ERROR:NPP037}
+#B5 := #P1  /* !{D:ERROR:NPP037}
+#B5 := 1    /* !{D:ERROR:NPP037}
+#B5 := #A1
+#B5 := #U1
+#B5 := 'X'
+#B5 := #B4
+#B5 := #B5
+#B5 := #I1  /* !{D:ERROR:NPP037}
+#B5 := #L   /* !{D:ERROR:NPP037}
+#B5 := TRUE /* !{D:ERROR:NPP037}
+#B5 := #C   /* !{D:ERROR:NPP037}
+#B5 := #D   /* !{D:ERROR:NPP037}
+#B5 := #T   /* !{D:ERROR:NPP037}
+#B5 := #F   /* !{D:ERROR:NPP037}
+#B5 := *ISN /* !{D:ERROR:NPP037}
+#B5 := *PROGRAM
+
+/* Format I
+#I1 := #N1
+#I1 := #P1
+#I1 := 1
+#I1 := #A1  /* !{D:ERROR:NPP037}
+#I1 := #U1  /* !{D:ERROR:NPP037}
+#I1 := 'X'  /* !{D:ERROR:NPP037}
+#I1 := #B4
+#I1 := #B5  /* !{D:ERROR:NPP037}
+#I1 := #I1
+#I1 := #L   /* !{D:ERROR:NPP037}
+#I1 := TRUE /* !{D:ERROR:NPP037}
+#I1 := #C   /* !{D:ERROR:NPP037}
+#I1 := #D
+#I1 := #T
+#I1 := #F
+#I1 := *ISN
+#I1 := *PROGRAM /* !{D:ERROR:NPP037}
+
+/* Format L
+#L := #N1   /* !{D:ERROR:NPP037}
+#L := #P1   /* !{D:ERROR:NPP037}
+#L := 1     /* !{D:ERROR:NPP037}
+#L := #A1   /* !{D:ERROR:NPP037}
+#L := #U1   /* !{D:ERROR:NPP037}
+#L := 'X'   /* !{D:ERROR:NPP037}
+#L := #B4   /* !{D:ERROR:NPP037}
+#L := #B5   /* !{D:ERROR:NPP037}
+#L := #I1   /* !{D:ERROR:NPP037}
+#L := #L
+#L := TRUE
+#L := FALSE
+#L := #C    /* !{D:ERROR:NPP037}
+#L := #D    /* !{D:ERROR:NPP037}
+#L := #T    /* !{D:ERROR:NPP037}
+#L := #F    /* !{D:ERROR:NPP037}
+#L := *ISN  /* !{D:ERROR:NPP037}
+#L := *PROGRAM  /* !{D:ERROR:NPP037}
+
+/* Format C
+#C := #N1   /* !{D:ERROR:NPP037}
+#C := #P1   /* !{D:ERROR:NPP037}
+#C := 1     /* !{D:ERROR:NPP037}
+#C := #A1   /* !{D:ERROR:NPP037}
+#C := #U1   /* !{D:ERROR:NPP037}
+#C := 'X'   /* !{D:ERROR:NPP037}
+#C := #B4   /* !{D:ERROR:NPP037}
+#C := #B5   /* !{D:ERROR:NPP037}
+#C := #I1   /* !{D:ERROR:NPP037}
+#C := #L    /* !{D:ERROR:NPP037}
+#C := TRUE  /* !{D:ERROR:NPP037}
+#C := #C
+#C := (AD=P)
+#C := (CD=RE)
+#C := #D    /* !{D:ERROR:NPP037}
+#C := #T    /* !{D:ERROR:NPP037}
+#C := #F    /* !{D:ERROR:NPP037}
+#C := *ISN  /* !{D:ERROR:NPP037}
+#C := *PROGRAM  /* !{D:ERROR:NPP037}
+
+/* Format D
+#D := #N1   /* !{D:ERROR:NPP037}
+#D := #P1   /* !{D:ERROR:NPP037}
+#D := 1     /* !{D:ERROR:NPP037}
+#D := #A1   /* !{D:ERROR:NPP037}
+#D := #U1   /* !{D:ERROR:NPP037}
+#D := 'X'   /* !{D:ERROR:NPP037}
+#D := #B4   /* !{D:ERROR:NPP037}
+#D := #B5   /* !{D:ERROR:NPP037}
+#D := #I1   /* !{D:ERROR:NPP037}
+#D := #L    /* !{D:ERROR:NPP037}
+#D := TRUE  /* !{D:ERROR:NPP037}
+#D := #C    /* !{D:ERROR:NPP037}
+#D := #D
+#D := #T
+#D := #F    /* !{D:ERROR:NPP037}
+#D := *ISN  /* !{D:ERROR:NPP037}
+#D := *PROGRAM  /* !{D:ERROR:NPP037}
+
+/* Format T
+#T := #N1
+#T := #P1
+#T := 1
+#T := #A1  /* !{D:ERROR:NPP037}
+#T := #U1  /* !{D:ERROR:NPP037}
+#T := 'X'  /* !{D:ERROR:NPP037}
+#T := #B4
+#T := #B5  /* !{D:ERROR:NPP037}
+#T := #I1
+#T := #L   /* !{D:ERROR:NPP037}
+#T := TRUE /* !{D:ERROR:NPP037}
+#T := #C   /* !{D:ERROR:NPP037}
+#T := #D
+#T := #T
+#T := #F
+#T := *ISN
+#T := *PROGRAM /* !{D:ERROR:NPP037}
+
+/* Format F
+#F := #N1
+#F := #P1
+#F := 1
+#F := #A1  /* !{D:ERROR:NPP037}
+#F := #U1  /* !{D:ERROR:NPP037}
+#F := 'X'  /* !{D:ERROR:NPP037}
+#F := #B4
+#F := #B5  /* !{D:ERROR:NPP037}
+#F := #I1
+#F := #L   /* !{D:ERROR:NPP037}
+#F := TRUE /* !{D:ERROR:NPP037}
+#F := #C   /* !{D:ERROR:NPP037}
+#F := #D
+#F := #T
+#F := #F
+#F := *ISN
+#F := *PROGRAM /* !{D:ERROR:NPP037}
+
 #N1 := 23 /* !{D:WARNING:NPP045}
 #N1 := 2
 #I1 := 128 /* !{D:WARNING:NPP045}
 #I1 := 127
-#N1 := 'Hi' /* !{D:ERROR:NPP037}
 
 #N1 := #CONST-N1-I4 /* Should work, the constant *value* is N1
 
@@ -44,6 +281,15 @@ END-DEFINE
 #T := #N1 /* Implicit conversion
 #D := 10 /* !{D:ERROR:NPP037}
 #D := #N1 /* !{D:ERROR:NPP037}
+
+#I1 := #B4
+#P1 := #B4
+#T := #B4
+#A20 := #B5
+#U20 := #B5
+#I1 := #B5 /* !{D:ERROR:NPP037}
+#P1 := #B5 /* !{D:ERROR:NPP037}
+#D := #B4 /* !{D:ERROR:NPP037}
 
 #A1 := TRUE /* Converted to single character
 #A1 := FALSE /* Converted to single character
