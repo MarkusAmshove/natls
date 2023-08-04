@@ -3,7 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.natural.IMathFunctionOperandNode;
 import org.amshove.natparse.natural.IOperandNode;
 
-class TotalOperandNode extends BaseSyntaxNode implements IMathFunctionOperandNode
+class MathFunctionOperandNode extends BaseSyntaxNode implements IMathFunctionOperandNode
 {
 	private IOperandNode parameter;
 

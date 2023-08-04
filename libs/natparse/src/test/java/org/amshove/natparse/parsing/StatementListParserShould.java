@@ -1425,7 +1425,7 @@ class StatementListParserShould extends StatementParseTest
 	{
 		"OLD(#VAR1) INTO #VAR2",
 		"OLD(*ISN) TO #VAR2",
-		"SUM(#VAR1) INTO #VAR2"
+		"SUM(#VAR1) INTO #VAR2",
 	})
 	void parseMoveWithSystemFunctions(String statement)
 	{
@@ -3227,6 +3227,7 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var expand = assertParsesSingleStatement("EXPAND %s ARRAY #ARR TO (1:10,*:*,5:*)".formatted(source), IExpandArrayNode.class);
 		assertIsVariableReference(expand.arrayToExpand(), "#ARR");
+		assertIsVariableReference(expand.mutations().first(), "#ARR");
 	}
 
 	@Test

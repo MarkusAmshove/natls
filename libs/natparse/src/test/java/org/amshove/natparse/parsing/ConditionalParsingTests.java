@@ -550,16 +550,16 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	void parseRelationalCriteriaWithAbs()
 	{
 		var criteria = assertParsesCriteria("ABS(#VAR1) = ABS(#VAR2)", IRelationalCriteriaNode.class);
-		assertNodeType(criteria.left(), IAbsOperandNode.class);
-		assertNodeType(criteria.right(), IAbsOperandNode.class);
+		assertNodeType(criteria.left(), IMathFunctionOperandNode.class);
+		assertNodeType(criteria.right(), IMathFunctionOperandNode.class);
 	}
 
 	@Test
 	void parseRelationalCriteriaWithFrac()
 	{
 		var criteria = assertParsesCriteria("FRAC(#VAR1) <> ABS(0)", IRelationalCriteriaNode.class);
-		assertNodeType(criteria.left(), IFracOperandNode.class);
-		assertNodeType(criteria.right(), IAbsOperandNode.class);
+		assertNodeType(criteria.left(), IMathFunctionOperandNode.class);
+		assertNodeType(criteria.right(), IMathFunctionOperandNode.class);
 	}
 
 	@Test

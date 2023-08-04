@@ -1,9 +1,9 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.natural.IPosNode;
+import org.amshove.natparse.natural.IPosOperandNode;
 import org.amshove.natparse.natural.IVariableReferenceNode;
 
-class PosNode extends BaseSyntaxNode implements IPosNode
+class PosOperandNode extends BaseSyntaxNode implements IPosOperandNode
 {
 	private IVariableReferenceNode positionOf;
 

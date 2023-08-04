@@ -1,6 +1,4 @@
 package org.amshove.natparse.natural;
 
-public interface ICountOperandNode extends IOperandNode
-{
-	IVariableReferenceNode variable();
-}
+public interface ICountOperandNode extends IMathFunctionOperandNode
+{}
