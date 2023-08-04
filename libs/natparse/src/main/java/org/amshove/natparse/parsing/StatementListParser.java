@@ -3138,19 +3138,19 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			return specifiedCriteria(lhs);
 		}
 
-		if (CONDITIONAL_OPERATOR_START.contains(peek().kind()))
-		{
-			return relationalCriteria(lhs);
-		}
-
-		if (lhs instanceof IFunctionCallNode || lhs instanceof IVariableReferenceNode)
+		if (lhs instanceof ILiteralNode literalNode && (literalNode.token().kind() == SyntaxKind.TRUE || literalNode.token().kind() == SyntaxKind.FALSE))
 		{
 			var unary = new UnaryLogicalCriteriaNode();
 			unary.setNode(lhs);
 			return unary;
 		}
 
-		if (lhs instanceof ILiteralNode literalNode && (literalNode.token().kind() == SyntaxKind.TRUE || literalNode.token().kind() == SyntaxKind.FALSE))
+		if (CONDITIONAL_OPERATOR_START.contains(peek().kind()))
+		{
+			return relationalCriteria(lhs);
+		}
+
+		if (lhs instanceof IFunctionCallNode || lhs instanceof IVariableReferenceNode)
 		{
 			var unary = new UnaryLogicalCriteriaNode();
 			unary.setNode(lhs);
