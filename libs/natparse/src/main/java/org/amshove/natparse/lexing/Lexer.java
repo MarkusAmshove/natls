@@ -1632,6 +1632,38 @@ public class Lexer
 		checkStringLiteralLength(previousUnsafe());
 	}
 
+	private void concatStringOrHexLiteral()
+	{
+		if(scanner.peek(findNextNonWhitespaceLookaheadOffset()) != '-')
+		{
+			return;
+		}
+
+		var lookaheadIndex = findNextNonWhitespaceLookaheadOffset();
+		var isStrLiteral = scanner.peek(lookaheadIndex) == '\'' || scanner.peek(lookaheadIndex) == '"';
+		var isHexLiteral = scanner.peek(lookaheadIndex) == 'H' && scanner.peek(lookaheadIndex + 1) == '\'' || scanner.peek(lookaheadIndex + 1) == '"';
+		if (!isStrLiteral && !isHexLiteral)
+		{
+			return;
+		}
+
+		// hmm, somehow the intermediate sqs or dqs must be removed when building the resulting string. Since we are using scanner.LexemeText(), this seems
+		// not to possible using the current solution?
+		scanner.advance(-1);
+
+		if (isHexLiteral)
+		{
+			lookaheadIndex++;
+		}
+		advanceBy(lookaheadIndex);
+
+		while (!scanner.isAtEnd() && (scanner.peek() != '\'' || scanner.peek() != '"'))
+		{
+
+		}
+
+	}
+
 	private void consumeHexLiteral()
 	{
 		scanner.start();
@@ -1722,6 +1754,7 @@ public class Lexer
 		// it needs to be consumed
 		// to be included.
 		scanner.advance();
+		concatStringOrHexLiteral();
 		createAndAdd(SyntaxKind.STRING_LITERAL);
 		checkStringLiteralLength(previousUnsafe());
 	}
