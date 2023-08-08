@@ -149,4 +149,31 @@ class ExternalModuleHoverShould extends HoveringTest
 			PARAMETER 1 P-PARAM (A10)
 			```""");
 	}
+
+	@Test
+	void hoverThePassedParameterInsteadOfTheModuleWhenHoveringAParameter()
+	{
+		createOrSaveFile("LIBONE", "EXTERN.NSS", """
+			/* MODULE DOCUMENTATION
+			DEFINE DATA
+			PARAMETER 1 #EXTSUB-PARAM (A10) /* Parameter documentation
+			END-DEFINE
+			DEFINE SUBROUTINE THE-EXTERNAL-SUB
+			IGNORE
+			END-SUBROUTINE
+			""");
+
+		assertHover("""
+			DEFINE DATA
+			LOCAL
+			1 #LOCALVAR (A10)
+			END-DEFINE
+
+			PERFORM THE-EXTERNAL-SUB #LOCAL${}$VAR
+			END
+			""", """
+			```natural
+			LOCAL 1 #LOCALVAR (A10)
+			```""");
+	}
 }
