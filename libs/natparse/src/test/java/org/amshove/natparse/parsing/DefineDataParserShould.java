@@ -2,6 +2,10 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.ddm.FieldType;
+import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
+import org.amshove.natparse.natural.ddm.IDdmField;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
@@ -17,6 +21,8 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class DefineDataParserShould extends AbstractParserTest<IDefineData>
 {
@@ -2046,6 +2052,30 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""");
 	}
 
+	@Test
+	void loadVariableTypesFromDdms()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+			2 A-DDM-FIELD
+			2 A-MULTIPLE-FIELD
+			END-DEFINE
+			""");
+
+		var ddmFieldVar = assertNodeType(defineData.findVariable("A-DDM-FIELD"), ITypedVariableNode.class);
+		assertThat(ddmFieldVar.type().format()).isEqualTo(DataFormat.ALPHANUMERIC);
+		assertThat(ddmFieldVar.type().length()).isEqualTo(10.0);
+
+		var ddmMultipleValueField = assertNodeType(defineData.findVariable("A-MULTIPLE-FIELD"), ITypedVariableNode.class);
+		assertThat(ddmMultipleValueField.type().format()).isEqualTo(DataFormat.NUMERIC);
+		assertThat(ddmMultipleValueField.type().length()).isEqualTo(7.2);
+		assertThat(ddmMultipleValueField.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(ddmMultipleValueField.dimensions().first().isUpperUnbound()).isTrue();
+	}
+
 	private <T extends IParameterDefinitionNode> void assertParameter(IParameterDefinitionNode node, Class<T> parameterType, String identifier)
 	{
 		var typedNode = assertNodeType(node, parameterType);
@@ -2089,5 +2119,24 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		}
 
 		return assertNodeType(variable.get(), expectedType);
+	}
+
+	private IDataDefinitionModule myDdm()
+	{
+		var ddm = mock(IDataDefinitionModule.class);
+
+		var aField = mock(IDdmField.class);
+		when(ddm.findField("A-DDM-FIELD")).thenReturn(aField);
+		when(aField.fieldType()).thenReturn(FieldType.NONE);
+		when(aField.format()).thenReturn(DataFormat.ALPHANUMERIC);
+		when(aField.length()).thenReturn(10.0);
+
+		var aMultipleField = mock(IDdmField.class);
+		when(ddm.findField("A-MULTIPLE-FIELD")).thenReturn(aMultipleField);
+		when(aMultipleField.fieldType()).thenReturn(FieldType.MULTIPLE);
+		when(aMultipleField.format()).thenReturn(DataFormat.NUMERIC);
+		when(aMultipleField.length()).thenReturn(7.2);
+
+		return ddm;
 	}
 }

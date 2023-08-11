@@ -5,6 +5,7 @@ import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IArrayDimension;
 import org.amshove.natparse.natural.ITokenNode;
+import org.amshove.natparse.natural.ddm.FieldType;
 
 import java.util.Map;
 
@@ -12,6 +13,7 @@ class ViewParser extends AbstractParser<ViewNode>
 {
 
 	private final Map<String, VariableNode> declaredVariables;
+	private ViewNode view;
 
 	ViewParser(IModuleProvider moduleProvider, Map<String, VariableNode> declaredVariables)
 	{
@@ -31,7 +33,7 @@ class ViewParser extends AbstractParser<ViewNode>
 			var identifierNode = consumeMandatoryIdentifierTokenNode(viewVariable);
 			viewVariable.setDeclaration(identifierNode);
 
-			var view = new ViewNode(viewVariable);
+			view = new ViewNode(viewVariable);
 
 			consumeMandatory(view, SyntaxKind.VIEW);
 			consumeOptionally(view, SyntaxKind.OF);
@@ -98,7 +100,7 @@ class ViewParser extends AbstractParser<ViewNode>
 			if (peek().kind() == SyntaxKind.NUMBER_LITERAL || (peek().kind().isIdentifier() && isVariableDeclared(peek().symbolName())))
 			{
 				addArrayDimensions(variable);
-				var typedDdmArrayVariable = typedVariableFromDdm(variable);
+				var typedDdmArrayVariable = customTypedVariableFromDdm(variable);
 				consumeMandatory(typedDdmArrayVariable, SyntaxKind.RPAREN);
 				return typedDdmArrayVariable;
 			}
@@ -212,11 +214,54 @@ class ViewParser extends AbstractParser<ViewNode>
 		return group;
 	}
 
-	private VariableNode typedVariableFromDdm(VariableNode variable)
+	// This is used when there is a type specified in the view.
+	// Type is checked against DDM.
+	private VariableNode customTypedVariableFromDdm(VariableNode variable)
 	{
 		var typedVariable = new TypedVariableNode(variable);
 
 		checkVariableTypeAgainstDdm(typedVariable);
+		return typedVariable;
+	}
+
+	// This is used when there is no type specified in the view.
+	// Type is loaded from DDM.
+	private VariableNode typedVariableFromDdm(VariableNode variable)
+	{
+		// unresolved
+		if (view.ddm() == null)
+		{
+			// TODO: unresolved error?
+			return variable;
+		}
+
+		var typedVariable = new TypedVariableNode(variable);
+		var ddmField = view.ddm().findField(variable.name());
+
+		if (ddmField == null)
+		{
+			// TODO: unresolved error
+			return variable;
+		}
+
+		if (ddmField.fieldType() == FieldType.GROUP)
+		{
+			return typedVariable;
+		}
+
+		var type = new VariableType();
+		type.setFormat(ddmField.format());
+		type.setLength(ddmField.length());
+		typedVariable.setType(type);
+
+		if (ddmField.fieldType() == FieldType.MULTIPLE || ddmField.fieldType() == FieldType.PERIODIC)
+		{
+			var dimension = new ArrayDimension();
+			dimension.setLowerBound(1);
+			dimension.setUpperBound(IArrayDimension.UNBOUND_VALUE);
+			typedVariable.addDimension(dimension);
+		}
+
 		return typedVariable;
 	}
 
