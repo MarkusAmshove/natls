@@ -242,4 +242,14 @@ class LexerForStringsShould extends AbstractLexerTest
 			assertedDiagnostic(2, 2, 0, 11, LexerError.UNTERMINATED_STRING)
 		);
 	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"''", "\"\"", "T''", "H''", "D''", "E''"
+	})
+	void reportADiagnosticForEmptyStringLiterals(String literal)
+	{
+		assertDiagnostic(literal, assertedDiagnostic(0, 0, 0, literal.length(), LexerError.INVALID_STRING_LENGTH));
+	}
 }

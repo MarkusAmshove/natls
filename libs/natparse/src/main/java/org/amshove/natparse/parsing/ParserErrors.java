@@ -192,12 +192,12 @@ class ParserErrors
 	{
 		return ParserDiagnostic.create(
 			"No target for REDEFINE found. The redefined variable must be declared beforehand",
-			redefinitionNode.identifierNode(),
+			redefinitionNode.identifierNode() != null ? redefinitionNode.identifierNode() : redefinitionNode,
 			ParserError.NO_TARGET_VARIABLE_FOR_REDEFINE_FOUND
 		);
 	}
 
-	public static ParserDiagnostic redefinitionLengthIsTooLong(RedefinitionNode node, double redefinitionLength, double maxLength)
+	public static ParserDiagnostic redefinitionLengthIsTooLong(IRedefinitionNode node, double redefinitionLength, double maxLength)
 	{
 		return ParserDiagnostic.create(
 			"Length of redefinition (%s bytes) exceeds target length (%s bytes) of %s".formatted(DataFormat.formatLength(redefinitionLength), DataFormat.formatLength(maxLength), node.declaration().source()),
@@ -576,6 +576,15 @@ class ParserErrors
 			"A group can not have a mix of CONST and non-CONST variables. Either make all CONST or none.",
 			variable,
 			ParserError.GROUP_HAS_MIXED_CONST
+		);
+	}
+
+	public static IDiagnostic cyclomaticInclude(SyntaxToken referencingToken)
+	{
+		return ParserDiagnostic.create(
+			"Cyclomatic INCLUDE found. %s is recursively included multiple times.".formatted(referencingToken.symbolName()),
+			referencingToken,
+			ParserError.CYCLOMATIC_INCLUDE
 		);
 	}
 }

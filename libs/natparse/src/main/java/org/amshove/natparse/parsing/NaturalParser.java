@@ -161,7 +161,7 @@ public class NaturalParser
 			}
 		}
 
-		if (naturalModule.body() != null)
+		if (naturalModule.body() != null && naturalModule.file().getFiletype() != NaturalFileType.COPYCODE)
 		{
 			var typer = new TypeChecker();
 			for (var diagnostic : typer.check(naturalModule.body()))

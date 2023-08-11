@@ -11,6 +11,7 @@ import java.util.List;
 
 public class Lexer
 {
+	private final List<String> copyCodeParameter;
 	private SourceTextScanner scanner;
 	private List<SyntaxToken> tokens;
 	private List<SyntaxToken> comments;
@@ -38,13 +39,25 @@ public class Lexer
 
 	private LexerMode lexerMode = LexerMode.DEFAULT;
 
+	private static final List<String> NO_PARAMETER = List.of();
+
+	public Lexer()
+	{
+		this(NO_PARAMETER);
+	}
+
+	public Lexer(List<String> copyCodeParameter)
+	{
+		this.copyCodeParameter = copyCodeParameter;
+	}
+
 	public TokenList lex(String source, Path filePath)
 	{
 		this.filePath = filePath;
 		tokens = new ArrayList<>();
 		diagnostics = new ArrayList<>();
 		comments = new ArrayList<>();
-		scanner = new SourceTextScanner(source);
+		scanner = new SourceTextScanner(source, copyCodeParameter);
 		sourceHeader = new NaturalHeader(NaturalProgrammingMode.UNKNOWN, 0);
 		line = 0;
 		currentLineStartOffset = 0;
@@ -277,8 +290,10 @@ public class Lexer
 					consumeIdentifierOrKeyword();
 					continue;
 				case '#':
-				case '&':
 					consumeIdentifier();
+					continue;
+				case '&':
+					consumeIdentifierOrCopyCodeParameter();
 					continue;
 				case '0':
 				case '1':
@@ -308,6 +323,34 @@ public class Lexer
 			}
 		}
 		return TokenList.fromTokensAndDiagnostics(filePath, tokens, diagnostics, comments, sourceHeader);
+	}
+
+	private void consumeIdentifierOrCopyCodeParameter()
+	{
+		// This checks for left over parameter, e.g. if a user didn't provide a parameter
+		if (!copyCodeParameter.isEmpty())
+		{
+			scanner.start();
+			scanner.advance(); // &
+			var offset = 0;
+			while (!isWhitespace(offset) && Character.isDigit(scanner.peek(offset)))
+			{
+				offset++;
+			}
+
+			if (scanner.peek(offset) == '&') // all were digits and we end with ampersand, so this is a copycode parameter
+			{
+				scanner.advance(offset);
+				var position = Integer.parseInt(scanner.lexemeText().substring(1));
+				addDiagnostic("Copy code parameter with position %d not provided".formatted(position), LexerError.MISSING_COPYCODE_PARAMETER);
+			}
+
+			// We roll this all back, because this was just for better error messages.
+			// The &n& will be added as an IDENTIFIER so that copy codes get analyzed correctly.
+			scanner.rollbackCurrentLexeme();
+		}
+
+		consumeIdentifier();
 	}
 
 	private boolean previousWasNoLiteralOrIdentifier()
@@ -382,6 +425,7 @@ public class Lexer
 					filePath
 				)
 			);
+			checkStringLiteralLength(previousUnsafe());
 			return;
 		}
 
@@ -681,6 +725,11 @@ public class Lexer
 		if (scanner.advanceIfIgnoreCase("CURRENT-UNIT"))
 		{
 			createAndAdd(SyntaxKind.CURRENT_UNIT);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("CURSOR"))
+		{
+			createAndAdd(SyntaxKind.CURSOR);
 			return;
 		}
 		if (scanner.advanceIfIgnoreCase("CURS-COL"))
@@ -1552,6 +1601,7 @@ public class Lexer
 		}
 
 		createAndAdd(SyntaxKind.DATE_LITERAL);
+		checkStringLiteralLength(previousUnsafe());
 	}
 
 	private void consumeExtendedTimeLiteral()
@@ -1565,6 +1615,7 @@ public class Lexer
 		}
 
 		createAndAdd(SyntaxKind.EXTENDED_TIME_LITERAL);
+		checkStringLiteralLength(previousUnsafe());
 	}
 
 	private void consumeTimeLiteral()
@@ -1578,6 +1629,7 @@ public class Lexer
 		}
 
 		createAndAdd(SyntaxKind.TIME_LITERAL);
+		checkStringLiteralLength(previousUnsafe());
 	}
 
 	private void consumeHexLiteral()
@@ -1591,6 +1643,7 @@ public class Lexer
 		}
 
 		createAndAdd(SyntaxKind.HEX_LITERAL);
+		checkStringLiteralLength(previousUnsafe());
 		var hexLiteralChars = previousUnsafe().source().length() - 3; // - H''
 		if (hexLiteralChars % 2 != 0)
 		{
@@ -1617,6 +1670,7 @@ public class Lexer
 
 			// We can still produce a valid token, although it is unterminated
 			createAndAdd(kindToCreate);
+			checkStringLiteralLength(previousUnsafe());
 			return false;
 		}
 
@@ -1669,6 +1723,7 @@ public class Lexer
 		// to be included.
 		scanner.advance();
 		createAndAdd(SyntaxKind.STRING_LITERAL);
+		checkStringLiteralLength(previousUnsafe());
 	}
 
 	private void createAndAdd(SyntaxKind kind)
@@ -1698,7 +1753,15 @@ public class Lexer
 	 */
 	private SyntaxToken previousUnsafe()
 	{
-		return tokens.get(tokens.size() - 1);
+		return previousUnsafe(1);
+	}
+
+	/**
+	 * Returns the previous consumed token at the given relative offset. <strong>Does not do a boundary check</strong>
+	 */
+	private SyntaxToken previousUnsafe(int offset)
+	{
+		return tokens.get(tokens.size() - offset);
 	}
 
 	private int getOffsetInLine()
@@ -1761,6 +1824,39 @@ public class Lexer
 		}
 	}
 
+	private void addDiagnostic(String message, LexerError error, SyntaxToken where)
+	{
+		if (relocatedDiagnosticPosition != null)
+		{
+			diagnostics.add(
+				LexerDiagnostic.create(
+					message,
+					where.offset(),
+					where.offsetInLine(),
+					where.line(),
+					where.length(),
+					where.filePath(),
+					relocatedDiagnosticPosition,
+					error
+				)
+			);
+		}
+		else
+		{
+			diagnostics.add(
+				LexerDiagnostic.create(
+					message,
+					where.offset(),
+					where.offsetInLine(),
+					where.line(),
+					where.length(),
+					where.filePath(),
+					error
+				)
+			);
+		}
+	}
+
 	private int findNextNonWhitespaceLookaheadOffset()
 	{
 		var start = 1;
@@ -1796,6 +1892,18 @@ public class Lexer
 		token.setDiagnosticPosition(relocatedDiagnosticPosition);
 		tokens.add(token);
 		scanner.reset();
+	}
+
+	private void checkStringLiteralLength(SyntaxToken token)
+	{
+		if (token.stringValue().length() == 0)
+		{
+			addDiagnostic(
+				"String literals in Natural can't be empty. Add a blank.",
+				LexerError.INVALID_STRING_LENGTH,
+				token
+			);
+		}
 	}
 
 	private boolean isValidAivStartAfterPlus(char character)

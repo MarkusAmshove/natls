@@ -9,10 +9,7 @@ import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFileType;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 abstract class AbstractParser<T>
 {
@@ -519,53 +516,53 @@ abstract class AbstractParser<T>
 		}
 		if (peekKind(1, SyntaxKind.LPAREN))
 		{
-			if (peek().kind() == SyntaxKind.VAL)
+			switch (peek().kind())
 			{
-				return valOperand(node);
-			}
-			if (peek().kind() == SyntaxKind.INT)
-			{
-				return intOperand(node);
-			}
-			if (peek().kind() == SyntaxKind.SUM)
-			{
-				return sumOperand(node);
-			}
-			if (peek().kind() == SyntaxKind.TOTAL)
-			{
-				return totalOperand(node);
-			}
-			if (peek().kind() == SyntaxKind.COUNT)
-			{
-				return countOperand(node);
-			}
-			if (peek().kind() == SyntaxKind.LOG)
-			{
-				return logOperand(node);
-			}
-			if (peek().kind() == SyntaxKind.OLD)
-			{
-				return oldOperand(node);
-			}
-			if (peek().kind() == SyntaxKind.ABS)
-			{
-				return absOperand(node);
-			}
-			if (peek().kind() == SyntaxKind.SGN)
-			{
-				return sgnOperand(node);
-			}
-			if (peek().kind() == SyntaxKind.POS)
-			{
-				return posOperand(node);
-			}
-			if (peek().kind() == SyntaxKind.FRAC)
-			{
-				return fracOperand(node);
-			}
-			if (peek().kind() == SyntaxKind.RET)
-			{
-				return retOperand(node);
+				case ABS:
+					return absOperand(node);
+				case ATN:
+					return atnOperand(node);
+				case AVER, NAVER:
+					return averOperand(node);
+				case COS:
+					return cosOperand(node);
+				case COUNT, NCOUNT:
+					return countOperand(node);
+				case EXP:
+					return expOperand(node);
+				case FRAC:
+					return fracOperand(node);
+				case INT:
+					return intOperand(node);
+				case LOG:
+					return logOperand(node);
+				case MAX:
+					return maxOperand(node);
+				case MIN, NMIN:
+					return minOperand(node);
+				case OLD:
+					return oldOperand(node);
+				case POS:
+					return posOperand(node);
+				case RET:
+					return retOperand(node);
+				case SGN:
+					return sgnOperand(node);
+				case SIN:
+					return sinOperand(node);
+				case SORTKEY:
+					return sortKeyOperand(node);
+				case SQRT:
+					return sqrtOperand(node);
+				case SUM:
+					return sumOperand(node);
+				case TAN:
+					return tanOperand(node);
+				case TOTAL:
+					return totalOperand(node);
+				case VAL:
+					return valOperand(node);
+				default:
 			}
 		}
 		if (peek().kind() == SyntaxKind.LABEL_IDENTIFIER)
@@ -590,94 +587,6 @@ abstract class AbstractParser<T>
 		return unary;
 	}
 
-	private IOperandNode posOperand(BaseSyntaxNode node) throws ParseError
-	{
-		var posNode = new PosNode();
-		node.addNode(posNode);
-		consumeMandatory(posNode, SyntaxKind.POS);
-		consumeMandatory(posNode, SyntaxKind.LPAREN);
-		posNode.setPositionOf(consumeVariableReferenceNode(posNode));
-		consumeMandatory(posNode, SyntaxKind.RPAREN);
-		return posNode;
-	}
-
-	private IOperandNode valOperand(BaseSyntaxNode node) throws ParseError
-	{
-		var valOperand = new ValOperandNode();
-		node.addNode(valOperand);
-		consumeMandatory(valOperand, SyntaxKind.VAL);
-		consumeMandatory(valOperand, SyntaxKind.LPAREN);
-		valOperand.setVariable(consumeOperandNode(valOperand));
-		consumeMandatory(valOperand, SyntaxKind.RPAREN);
-		return valOperand;
-	}
-
-	private IOperandNode intOperand(BaseSyntaxNode node) throws ParseError
-	{
-		var intOperand = new IntOperandNode();
-		node.addNode(intOperand);
-		consumeMandatory(intOperand, SyntaxKind.INT);
-		consumeMandatory(intOperand, SyntaxKind.LPAREN);
-		intOperand.setVariable(consumeVariableReferenceNode(intOperand));
-		consumeMandatory(intOperand, SyntaxKind.RPAREN);
-		return intOperand;
-	}
-
-	private IOperandNode sumOperand(BaseSyntaxNode node) throws ParseError
-	{
-		var sumOperand = new SumOperandNode();
-		node.addNode(sumOperand);
-		consumeMandatory(sumOperand, SyntaxKind.SUM);
-		consumeMandatory(sumOperand, SyntaxKind.LPAREN);
-		sumOperand.setVariable(consumeVariableReferenceNode(sumOperand));
-		consumeMandatory(sumOperand, SyntaxKind.RPAREN);
-		return sumOperand;
-	}
-
-	private IOperandNode totalOperand(BaseSyntaxNode node) throws ParseError
-	{
-		var totalOperand = new TotalOperandNode();
-		node.addNode(totalOperand);
-		consumeMandatory(totalOperand, SyntaxKind.TOTAL);
-		consumeMandatory(totalOperand, SyntaxKind.LPAREN);
-		totalOperand.setVariable(consumeVariableReferenceNode(totalOperand));
-		consumeMandatory(totalOperand, SyntaxKind.RPAREN);
-		return totalOperand;
-	}
-
-	private IOperandNode countOperand(BaseSyntaxNode node) throws ParseError
-	{
-		var countOperand = new CountOperandNode();
-		node.addNode(countOperand);
-		consumeMandatory(countOperand, SyntaxKind.COUNT);
-		consumeMandatory(countOperand, SyntaxKind.LPAREN);
-		countOperand.setVariable(consumeVariableReferenceNode(countOperand));
-		consumeMandatory(countOperand, SyntaxKind.RPAREN);
-		return countOperand;
-	}
-
-	private IOperandNode logOperand(BaseSyntaxNode node) throws ParseError
-	{
-		var logOperand = new LogOperandNode();
-		node.addNode(logOperand);
-		consumeMandatory(logOperand, SyntaxKind.LOG);
-		consumeMandatory(logOperand, SyntaxKind.LPAREN);
-		logOperand.setParameter(consumeOperandNode(logOperand));
-		consumeMandatory(logOperand, SyntaxKind.RPAREN);
-		return logOperand;
-	}
-
-	private IOperandNode oldOperand(BaseSyntaxNode node) throws ParseError
-	{
-		var oldOperand = new OldOperandNode();
-		node.addNode(oldOperand);
-		consumeMandatory(oldOperand, SyntaxKind.OLD);
-		consumeMandatory(oldOperand, SyntaxKind.LPAREN);
-		oldOperand.setOperand(consumeOperandNode(oldOperand));
-		consumeMandatory(oldOperand, SyntaxKind.RPAREN);
-		return oldOperand;
-	}
-
 	private IOperandNode absOperand(BaseSyntaxNode node) throws ParseError
 	{
 		var absOperand = new AbsOperandNode();
@@ -689,15 +598,59 @@ abstract class AbstractParser<T>
 		return absOperand;
 	}
 
-	private IOperandNode sgnOperand(BaseSyntaxNode node) throws ParseError
+	private IOperandNode atnOperand(BaseSyntaxNode node) throws ParseError
 	{
-		var sgnOperand = new SignOperandNode();
-		node.addNode(sgnOperand);
-		consumeMandatory(sgnOperand, SyntaxKind.SGN);
-		consumeMandatory(sgnOperand, SyntaxKind.LPAREN);
-		sgnOperand.setParameter(consumeOperandNode(sgnOperand));
-		consumeMandatory(sgnOperand, SyntaxKind.RPAREN);
-		return sgnOperand;
+		var atnOperand = new AtnOperandNode();
+		node.addNode(atnOperand);
+		consumeMandatory(atnOperand, SyntaxKind.ATN);
+		consumeMandatory(atnOperand, SyntaxKind.LPAREN);
+		atnOperand.setParameter(consumeOperandNode(atnOperand));
+		consumeMandatory(atnOperand, SyntaxKind.RPAREN);
+		return atnOperand;
+	}
+
+	private IOperandNode averOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var averOperand = new AverOperandNode();
+		node.addNode(averOperand);
+		consumeAnyMandatory(averOperand, List.of(SyntaxKind.AVER, SyntaxKind.NAVER));
+		consumeMandatory(averOperand, SyntaxKind.LPAREN);
+		averOperand.setParameter(consumeVariableReferenceNode(averOperand));
+		consumeMandatory(averOperand, SyntaxKind.RPAREN);
+		return averOperand;
+	}
+
+	private IOperandNode cosOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var cosOperand = new CosOperandNode();
+		node.addNode(cosOperand);
+		consumeMandatory(cosOperand, SyntaxKind.COS);
+		consumeMandatory(cosOperand, SyntaxKind.LPAREN);
+		cosOperand.setParameter(consumeOperandNode(cosOperand));
+		consumeMandatory(cosOperand, SyntaxKind.RPAREN);
+		return cosOperand;
+	}
+
+	private IOperandNode countOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var countOperand = new CountOperandNode();
+		node.addNode(countOperand);
+		consumeAnyMandatory(countOperand, List.of(SyntaxKind.COUNT, SyntaxKind.NCOUNT));
+		consumeMandatory(countOperand, SyntaxKind.LPAREN);
+		countOperand.setParameter(consumeOperandNode(countOperand));
+		consumeMandatory(countOperand, SyntaxKind.RPAREN);
+		return countOperand;
+	}
+
+	private IOperandNode expOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var expOperand = new ExpOperandNode();
+		node.addNode(expOperand);
+		consumeMandatory(expOperand, SyntaxKind.EXP);
+		consumeMandatory(expOperand, SyntaxKind.LPAREN);
+		expOperand.setParameter(consumeOperandNode(expOperand));
+		consumeMandatory(expOperand, SyntaxKind.RPAREN);
+		return expOperand;
 	}
 
 	private IOperandNode fracOperand(BaseSyntaxNode node) throws ParseError
@@ -711,6 +664,72 @@ abstract class AbstractParser<T>
 		return fracOperand;
 	}
 
+	private IOperandNode intOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var intOperand = new IntOperandNode();
+		node.addNode(intOperand);
+		consumeMandatory(intOperand, SyntaxKind.INT);
+		consumeMandatory(intOperand, SyntaxKind.LPAREN);
+		intOperand.setParameter(consumeVariableReferenceNode(intOperand));
+		consumeMandatory(intOperand, SyntaxKind.RPAREN);
+		return intOperand;
+	}
+
+	private IOperandNode logOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var logOperand = new LogOperandNode();
+		node.addNode(logOperand);
+		consumeMandatory(logOperand, SyntaxKind.LOG);
+		consumeMandatory(logOperand, SyntaxKind.LPAREN);
+		logOperand.setParameter(consumeOperandNode(logOperand));
+		consumeMandatory(logOperand, SyntaxKind.RPAREN);
+		return logOperand;
+	}
+
+	private IOperandNode maxOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var maxOperand = new MaxOperandNode();
+		node.addNode(maxOperand);
+		consumeMandatory(maxOperand, SyntaxKind.MAX);
+		consumeMandatory(maxOperand, SyntaxKind.LPAREN);
+		maxOperand.setParameter(consumeOperandNode(maxOperand));
+		consumeMandatory(maxOperand, SyntaxKind.RPAREN);
+		return maxOperand;
+	}
+
+	private IOperandNode minOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var minOperand = new MinOperandNode();
+		node.addNode(minOperand);
+		consumeAnyMandatory(minOperand, List.of(SyntaxKind.MIN, SyntaxKind.NMIN));
+		consumeMandatory(minOperand, SyntaxKind.LPAREN);
+		minOperand.setParameter(consumeOperandNode(minOperand));
+		consumeMandatory(minOperand, SyntaxKind.RPAREN);
+		return minOperand;
+	}
+
+	private IOperandNode oldOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var oldOperand = new OldOperandNode();
+		node.addNode(oldOperand);
+		consumeMandatory(oldOperand, SyntaxKind.OLD);
+		consumeMandatory(oldOperand, SyntaxKind.LPAREN);
+		oldOperand.setParameter(consumeOperandNode(oldOperand));
+		consumeMandatory(oldOperand, SyntaxKind.RPAREN);
+		return oldOperand;
+	}
+
+	private IOperandNode posOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var posOperand = new PosOperandNode();
+		node.addNode(posOperand);
+		consumeMandatory(posOperand, SyntaxKind.POS);
+		consumeMandatory(posOperand, SyntaxKind.LPAREN);
+		posOperand.setPositionOf(consumeVariableReferenceNode(posOperand));
+		consumeMandatory(posOperand, SyntaxKind.RPAREN);
+		return posOperand;
+	}
+
 	private IOperandNode retOperand(BaseSyntaxNode node) throws ParseError
 	{
 		var retOperand = new RetOperandNode();
@@ -720,6 +739,94 @@ abstract class AbstractParser<T>
 		retOperand.setParameter(consumeLiteralNode(retOperand));
 		consumeMandatory(retOperand, SyntaxKind.RPAREN);
 		return retOperand;
+	}
+
+	private IOperandNode sgnOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var sgnOperand = new SignOperandNode();
+		node.addNode(sgnOperand);
+		consumeMandatory(sgnOperand, SyntaxKind.SGN);
+		consumeMandatory(sgnOperand, SyntaxKind.LPAREN);
+		sgnOperand.setParameter(consumeOperandNode(sgnOperand));
+		consumeMandatory(sgnOperand, SyntaxKind.RPAREN);
+		return sgnOperand;
+	}
+
+	private IOperandNode sinOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var sinOperand = new SinOperandNode();
+		node.addNode(sinOperand);
+		consumeMandatory(sinOperand, SyntaxKind.SIN);
+		consumeMandatory(sinOperand, SyntaxKind.LPAREN);
+		sinOperand.setParameter(consumeOperandNode(sinOperand));
+		consumeMandatory(sinOperand, SyntaxKind.RPAREN);
+		return sinOperand;
+	}
+
+	private IOperandNode sortKeyOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var sortkeyOperand = new SortKeyOperandNode();
+		node.addNode(sortkeyOperand);
+		consumeMandatory(sortkeyOperand, SyntaxKind.SORTKEY);
+		consumeMandatory(sortkeyOperand, SyntaxKind.LPAREN);
+		sortkeyOperand.setVariable(consumeVariableReferenceNode(sortkeyOperand));
+		consumeMandatory(sortkeyOperand, SyntaxKind.RPAREN);
+		return sortkeyOperand;
+	}
+
+	private IOperandNode sqrtOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var sqrtOperand = new SqrtOperandNode();
+		node.addNode(sqrtOperand);
+		consumeMandatory(sqrtOperand, SyntaxKind.SQRT);
+		consumeMandatory(sqrtOperand, SyntaxKind.LPAREN);
+		sqrtOperand.setParameter(consumeOperandNode(sqrtOperand));
+		consumeMandatory(sqrtOperand, SyntaxKind.RPAREN);
+		return sqrtOperand;
+	}
+
+	private IOperandNode tanOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var tanOperand = new TanOperandNode();
+		node.addNode(tanOperand);
+		consumeMandatory(tanOperand, SyntaxKind.TAN);
+		consumeMandatory(tanOperand, SyntaxKind.LPAREN);
+		tanOperand.setParameter(consumeOperandNode(tanOperand));
+		consumeMandatory(tanOperand, SyntaxKind.RPAREN);
+		return tanOperand;
+	}
+
+	private IOperandNode sumOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var sumOperand = new SumOperandNode();
+		node.addNode(sumOperand);
+		consumeMandatory(sumOperand, SyntaxKind.SUM);
+		consumeMandatory(sumOperand, SyntaxKind.LPAREN);
+		sumOperand.setParameter(consumeVariableReferenceNode(sumOperand));
+		consumeMandatory(sumOperand, SyntaxKind.RPAREN);
+		return sumOperand;
+	}
+
+	private IOperandNode totalOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var totalOperand = new TotalOperandNode();
+		node.addNode(totalOperand);
+		consumeMandatory(totalOperand, SyntaxKind.TOTAL);
+		consumeMandatory(totalOperand, SyntaxKind.LPAREN);
+		totalOperand.setParameter(consumeVariableReferenceNode(totalOperand));
+		consumeMandatory(totalOperand, SyntaxKind.RPAREN);
+		return totalOperand;
+	}
+
+	private IOperandNode valOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var valOperand = new ValOperandNode();
+		node.addNode(valOperand);
+		consumeMandatory(valOperand, SyntaxKind.VAL);
+		consumeMandatory(valOperand, SyntaxKind.LPAREN);
+		valOperand.setParameter(consumeOperandNode(valOperand));
+		consumeMandatory(valOperand, SyntaxKind.RPAREN);
+		return valOperand;
 	}
 
 	private IOperandNode consumeLabelIdentifier(BaseSyntaxNode node) throws ParseError

@@ -664,6 +664,9 @@ class StatementListParserShould extends StatementParseTest
 		"SORT RECORD #VAR1",
 		"SORT RECORDS BY #VAR1",
 		"AND SORT THEM BY #VAR1 #VAR2",
+		"#LABEL. SORT THEM BY #VAR1 #VAR2",
+		"AND #LABEL. SORT THEM BY #VAR1 #VAR2",
+		"AND #LABEL. SORT #VAR1 #VAR2",
 		"SORT BY #VAR1 USING KEY",
 		"SORT BY #VAR1 USING KEYS",
 		"SORT BY #VAR1 USING #KEY1",
@@ -1425,7 +1428,7 @@ class StatementListParserShould extends StatementParseTest
 	{
 		"OLD(#VAR1) INTO #VAR2",
 		"OLD(*ISN) TO #VAR2",
-		"SUM(#VAR1) INTO #VAR2"
+		"SUM(#VAR1) INTO #VAR2",
 	})
 	void parseMoveWithSystemFunctions(String statement)
 	{
@@ -3227,6 +3230,7 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var expand = assertParsesSingleStatement("EXPAND %s ARRAY #ARR TO (1:10,*:*,5:*)".formatted(source), IExpandArrayNode.class);
 		assertIsVariableReference(expand.arrayToExpand(), "#ARR");
+		assertIsVariableReference(expand.mutations().first(), "#ARR");
 	}
 
 	@Test

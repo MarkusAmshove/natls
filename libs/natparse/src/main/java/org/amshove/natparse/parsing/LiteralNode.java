@@ -50,7 +50,7 @@ class LiteralNode extends TokenNode implements ILiteralNode
 		}
 
 		var numericLiteralLength = getNumericLiteralLength(token.source());
-		return new LiteralType(DataFormat.NUMERIC, Math.round((numericLiteralLength + 1) / 2.0));
+		return new LiteralType(DataFormat.PACKED, Math.round((numericLiteralLength + 1) / 2.0));
 	}
 
 	private double getNumericLiteralLength(String source)
@@ -67,12 +67,19 @@ class LiteralNode extends TokenNode implements ILiteralNode
 
 	private double getIntegerLiteralLength(String source)
 	{
+		if (source.contains("E+") || source.contains("E-"))
+		{
+			// Internally convert Float to Long, then let the rest of existing code take care of the length.
+			// Should really use BigInteger, but for now long is fine.
+			source = Long.toString((long) Float.parseFloat(source));
+		}
+
 		if (source.contains(".") || source.contains(","))
 		{
 			return getNumericLiteralLength(source);
 		}
 
-		if (source.length() > LONG_MAX_VALUE_LENGTH)
+		if (source.length() >= LONG_MAX_VALUE_LENGTH)
 		{
 			return getByteSizeBigInteger(source);
 		}

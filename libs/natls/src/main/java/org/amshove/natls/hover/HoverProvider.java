@@ -21,6 +21,14 @@ public class HoverProvider
 
 	public Hover createHover(HoverContext context)
 	{
+		// This should always come first, as this is essentially hovering a leaf node which is a variable.
+		// If this comes after other possible hovers then hovering e.g. a CALLNAT parameter always returns
+		// the module documentation instead of the passed parameter.
+		if (context.nodeToHover()instanceof ISymbolReferenceNode symbolReferenceNode && symbolReferenceNode.reference()instanceof IVariableNode variableNode)
+		{
+			return hoverVariable(variableNode, context);
+		}
+
 		if (context.nodeToHover() instanceof IDefineWorkFileNode
 			|| context.nodeToHover().parent() instanceof IDefineWorkFileNode)
 		{
@@ -66,14 +74,6 @@ public class HoverProvider
 		if (context.nodeToHover().parent()instanceof IVariableNode variableNode)
 		{
 			return hoverVariable(variableNode, context);
-		}
-
-		if (context.nodeToHover()instanceof ISymbolReferenceNode symbolReferenceNode)
-		{
-			if (symbolReferenceNode.reference()instanceof IVariableNode variableNode)
-			{
-				return hoverVariable(variableNode, context);
-			}
 		}
 
 		return EMPTY_HOVER;

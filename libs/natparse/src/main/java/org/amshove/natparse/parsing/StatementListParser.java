@@ -23,6 +23,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private List<IReferencableNode> referencableNodes;
 
+	private Set<String> currentModuleCallStack = new HashSet<>();
+
 	public List<IReferencableNode> getReferencableNodes()
 	{
 		return referencableNodes;
@@ -2603,6 +2605,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var sort = new SortStatementNode();
 		consumeMandatory(sort, SyntaxKind.END_ALL);
 		consumeOptionally(sort, SyntaxKind.AND);
+		consumeOptionally(sort, SyntaxKind.LABEL_IDENTIFIER);
 		var opening = consumeMandatory(sort, SyntaxKind.SORT);
 		consumeAnyOptionally(sort, List.of(SyntaxKind.THEM, SyntaxKind.RECORDS, SyntaxKind.RECORD));
 		consumeOptionally(sort, SyntaxKind.BY);
@@ -2865,7 +2868,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var referencedModule = sideloadModule(referencingToken.symbolName(), previousTokenNode().token());
 		include.setReferencedModule((NaturalModule) referencedModule);
 
-		if (referencedModule != null)
+		if (referencedModule != null && currentModuleCallStack.add(referencingToken.symbolName()))
 		{
 			try
 			{
@@ -2875,7 +2878,13 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				}
 
 				var includedSource = Files.readString(referencedModule.file().getPath());
-				var lexer = new Lexer();
+				var normalizedParameter = new ArrayList<String>(include.providedParameter().size());
+				for (var parameter : include.providedParameter())
+				{
+					var token = ((LiteralNode) parameter).token();
+					normalizedParameter.add(token.stringValue());
+				}
+				var lexer = new Lexer(normalizedParameter);
 				lexer.relocateDiagnosticPosition(shouldRelocateDiagnostics() ? relocatedDiagnosticPosition : referencingToken);
 				var tokens = lexer.lex(includedSource, referencedModule.file().getPath());
 
@@ -2885,6 +2894,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				}
 
 				var nestedParser = new StatementListParser(moduleProvider);
+				nestedParser.currentModuleCallStack.addAll(this.currentModuleCallStack);
 				nestedParser.relocateDiagnosticPosition(
 					shouldRelocateDiagnostics()
 						? relocatedDiagnosticPosition
@@ -2894,7 +2904,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 				for (var diagnostic : statementList.diagnostics())
 				{
-					if (ParserError.isUnresolvedError(diagnostic.id()))
+					if (!ParserError.isUnresolvedError(diagnostic.id()))
 					{
 						// Unresolved references will be resolved by the module including the copycode.
 						report(diagnostic);
@@ -2908,6 +2918,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						? relocatedDiagnosticPosition
 						: referencingToken
 				);
+				currentModuleCallStack.remove(referencingToken.symbolName());
 			}
 			catch (IOException e)
 			{
@@ -2916,6 +2927,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 		else
 		{
+			if (currentModuleCallStack.contains(referencingToken.symbolName()))
+			{
+				report(ParserErrors.cyclomaticInclude(referencingToken));
+			}
+
 			var unresolvedBody = new StatementListNode();
 			unresolvedBody.setParent(include);
 			include.setBody(
@@ -3122,19 +3138,19 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			return specifiedCriteria(lhs);
 		}
 
-		if (CONDITIONAL_OPERATOR_START.contains(peek().kind()))
-		{
-			return relationalCriteria(lhs);
-		}
-
-		if (lhs instanceof IFunctionCallNode || lhs instanceof IVariableReferenceNode)
+		if (lhs instanceof ILiteralNode literalNode && (literalNode.token().kind() == SyntaxKind.TRUE || literalNode.token().kind() == SyntaxKind.FALSE))
 		{
 			var unary = new UnaryLogicalCriteriaNode();
 			unary.setNode(lhs);
 			return unary;
 		}
 
-		if (lhs instanceof ILiteralNode literalNode && (literalNode.token().kind() == SyntaxKind.TRUE || literalNode.token().kind() == SyntaxKind.FALSE))
+		if (CONDITIONAL_OPERATOR_START.contains(peek().kind()))
+		{
+			return relationalCriteria(lhs);
+		}
+
+		if (lhs instanceof IFunctionCallNode || lhs instanceof IVariableReferenceNode)
 		{
 			var unary = new UnaryLogicalCriteriaNode();
 			unary.setNode(lhs);

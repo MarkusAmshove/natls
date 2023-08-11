@@ -193,17 +193,81 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			&& typedVariableNode.type().initialValue() != null)
 		{
 			checkVariableInitType(typedVariableNode);
+			return;
 		}
 
 		if (node instanceof IVariableReferenceNode variableReference)
 		{
 			checkVariableReference(variableReference);
+			return;
 		}
 
 		if (node instanceof ISystemFunctionNode sysFuncNode)
 		{
 			checkSystemFunctionParameter(sysFuncNode);
+			return;
 		}
+
+		if (node instanceof IProcessingLoopFunctionNode function)
+		{
+			checkProcessingLoopFunctions(function);
+		}
+
+		if (node instanceof IMathFunctionOperandNode function)
+		{
+			checkMathematicalSystemFunctions(function);
+			return;
+		}
+
+		checkAlphaSystemFunctions(node);
+	}
+
+	private void checkProcessingLoopFunctions(IProcessingLoopFunctionNode operand)
+	{
+		var type = inferDataType(operand.parameter());
+		if (operand.parameter() instanceof ILiteralNode || type.format() == DataFormat.NONE)
+		{
+			report(ParserErrors.typeMismatch("Parameter must be a typed variable of any format, but is %s".formatted(type.toShortString()), operand));
+		}
+	}
+
+	private void checkMathematicalSystemFunctions(IMathFunctionOperandNode operand)
+	{
+		var type = inferDataType(operand.parameter());
+		if (type.format() != DataFormat.NONE && !type.isNumericFamily())
+		{
+			report(ParserErrors.typeMismatch("Parameter must be of type N, P, I or F, but is %s".formatted(type.toShortString()), operand));
+		}
+	}
+
+	private boolean checkAlphaSystemFunctions(ISyntaxNode node)
+	{
+		IDataType type;
+
+		if (node instanceof ISortKeyOperandNode sortKeyNode)
+		{
+			type = inferDataType(sortKeyNode.variable());
+			if (type.format() != DataFormat.ALPHANUMERIC || type.length() > 253 || type.hasDynamicLength())
+			{
+				report(ParserErrors.typeMismatch("Parameter must be of type A with a maximum length of 253, but is %s".formatted(type.toShortString()), node));
+			}
+		}
+
+		if (node instanceof IValOperandNode valNode)
+		{
+			type = inferDataType(valNode.parameter());
+			if (valNode.parameter() instanceof ILiteralNode)
+			{
+				return false;
+			}
+
+			if (type.format() != DataFormat.NONE && type.format() != DataFormat.ALPHANUMERIC && type.format() != DataFormat.UNICODE)
+			{
+				report(ParserErrors.typeMismatch("Parameter must be of type A or U, but is %s".formatted(type.toShortString()), node));
+			}
+		}
+
+		return true;
 	}
 
 	private void checkSystemFunctionParameter(ISystemFunctionNode sysFuncNode)
@@ -256,7 +320,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			for (var value : branch.values())
 			{
 				var inferredType = inferDataType(value);
-				if (inferredType.format() != DataFormat.NONE && !inferredType.hasSameFamily(typedTarget.type()))
+				if (inferredType.format() != DataFormat.NONE && !inferredType.hasCompatibleFormat(typedTarget.type()))
 				{
 					report(
 						ParserErrors.typeMismatch(
@@ -552,7 +616,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 
 	private IDataType inferDataType(IOperandNode operand)
 	{
-		if (operand instanceof IVariableReferenceNode variable && variable.reference()instanceof ITypedVariableNode typedRef)
+		if (operand instanceof IVariableReferenceNode variable && variable.reference()instanceof ITypedVariableNode typedRef && typedRef.type() != null)
 		{
 			return typedRef.type();
 		}
