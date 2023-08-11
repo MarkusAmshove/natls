@@ -215,6 +215,15 @@ class ParserErrors
 		);
 	}
 
+	public static ParserDiagnostic unresolvedDdmField(ITokenNode node)
+	{
+		return ParserDiagnostic.create(
+			"Unresolved DDM field: %s".formatted(node.token().source()),
+			node.token(),
+			ParserError.UNRESOLVED_REFERENCE
+		);
+	}
+
 	public static ParserDiagnostic arrayDimensionMustBeConstOrInitialized(ITokenNode token)
 	{
 		return ParserDiagnostic.create(

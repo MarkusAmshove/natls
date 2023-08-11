@@ -240,7 +240,7 @@ class ViewParser extends AbstractParser<ViewNode>
 
 		if (ddmField == null)
 		{
-			// TODO: unresolved error
+			report(ParserErrors.unresolvedDdmField(variable.identifierNode()));
 			return variable;
 		}
 
