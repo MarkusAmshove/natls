@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 
-public class DdmParserShould
+class DdmParserShould
 {
 	@Test
 	void parseTheMetadataLine()
