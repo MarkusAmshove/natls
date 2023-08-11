@@ -240,8 +240,17 @@ class ViewParser extends AbstractParser<ViewNode>
 
 		if (ddmField == null)
 		{
-			report(ParserErrors.unresolvedDdmField(variable.identifierNode()));
-			return variable;
+			if (!variable.name().startsWith("C*"))
+			{
+				report(ParserErrors.unresolvedDdmField(variable.identifierNode()));
+				return variable;
+			}
+
+			var countType = new VariableType();
+			countType.setLength(4);
+			countType.setFormat(DataFormat.INTEGER);
+			typedVariable.setType(countType);
+			return typedVariable;
 		}
 
 		if (ddmField.fieldType() == FieldType.GROUP)

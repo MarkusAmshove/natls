@@ -5,7 +5,6 @@ import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.ddm.FieldType;
 import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
 import org.amshove.natparse.natural.ddm.IDdmField;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
@@ -2062,6 +2061,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			1 MY-VIEW VIEW OF MY-DDM
 			2 A-DDM-FIELD
 			2 A-MULTIPLE-FIELD
+			2 C*A-MULTIPLE-FIELD
 			END-DEFINE
 			""");
 
@@ -2074,6 +2074,10 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		assertThat(ddmMultipleValueField.type().length()).isEqualTo(7.2);
 		assertThat(ddmMultipleValueField.dimensions().first().lowerBound()).isEqualTo(1);
 		assertThat(ddmMultipleValueField.dimensions().first().isUpperUnbound()).isTrue();
+
+		var countField = assertNodeType(defineData.findVariable("C*A-MULTIPLE-FIELD"), ITypedVariableNode.class);
+		assertThat(countField.type().format()).isEqualTo(DataFormat.INTEGER);
+		assertThat(countField.type().length()).isEqualTo(4);
 	}
 
 	private <T extends IParameterDefinitionNode> void assertParameter(IParameterDefinitionNode node, Class<T> parameterType, String identifier)
