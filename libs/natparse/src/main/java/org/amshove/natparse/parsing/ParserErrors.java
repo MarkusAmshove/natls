@@ -217,8 +217,13 @@ class ParserErrors
 
 	public static ParserDiagnostic unresolvedDdmField(ITokenNode node)
 	{
+		return unresolvedDdmField(node, node.token().symbolName());
+	}
+
+	public static ParserDiagnostic unresolvedDdmField(ITokenNode node, String fieldName)
+	{
 		return ParserDiagnostic.create(
-			"Unresolved DDM field: %s".formatted(node.token().source()),
+			"Unresolved DDM field: %s".formatted(fieldName),
 			node.token(),
 			ParserError.UNRESOLVED_REFERENCE
 		);

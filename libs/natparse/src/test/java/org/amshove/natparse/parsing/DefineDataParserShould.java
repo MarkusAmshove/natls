@@ -2119,6 +2119,19 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""", ParserError.UNRESOLVED_REFERENCE);
 	}
 
+	@Test
+	void reportADiagnosticForUnresolvedCountFields()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		assertDiagnostic("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+			2 C*UNRESOLVED-FIELD
+			END-DEFINE
+			""", ParserError.UNRESOLVED_REFERENCE);
+	}
+
 	private <T extends IParameterDefinitionNode> void assertParameter(IParameterDefinitionNode node, Class<T> parameterType, String identifier)
 	{
 		var typedNode = assertNodeType(node, parameterType);

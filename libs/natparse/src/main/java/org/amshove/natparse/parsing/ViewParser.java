@@ -239,21 +239,28 @@ class ViewParser extends AbstractParser<ViewNode>
 		}
 
 		var typedVariable = new TypedVariableNode(variable);
-		var ddmField = view.ddm().findField(variable.name());
+
+		var isCountVariable = variable.name().startsWith("C*");
+		var fieldName = isCountVariable ? variable.name().substring(2) : variable.name();
+		var ddmField = view.ddm().findField(fieldName);
 
 		if (ddmField == null)
 		{
-			if (!variable.name().startsWith("C*"))
+			if (!isCountVariable)
 			{
 				report(ParserErrors.unresolvedDdmField(variable.identifierNode()));
-				return variable;
+			}
+			else
+			{
+				report(ParserErrors.unresolvedDdmField(variable.identifierNode(), fieldName));
 			}
 
-			var countType = new VariableType();
-			countType.setLength(4);
-			countType.setFormat(DataFormat.INTEGER);
-			typedVariable.setType(countType);
-			return typedVariable;
+			return variable;
+		}
+
+		if (isCountVariable)
+		{
+			return typedCountVariable(typedVariable);
 		}
 
 		if (ddmField.fieldType() == FieldType.GROUP)
@@ -274,6 +281,15 @@ class ViewParser extends AbstractParser<ViewNode>
 			typedVariable.addDimension(dimension);
 		}
 
+		return typedVariable;
+	}
+
+	private TypedVariableNode typedCountVariable(TypedVariableNode typedVariable)
+	{
+		var countType = new VariableType();
+		countType.setLength(4);
+		countType.setFormat(DataFormat.INTEGER);
+		typedVariable.setType(countType);
 		return typedVariable;
 	}
 
