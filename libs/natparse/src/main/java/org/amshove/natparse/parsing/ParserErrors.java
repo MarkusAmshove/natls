@@ -330,6 +330,15 @@ class ParserErrors
 		);
 	}
 
+	public static IDiagnostic unresolvedDdm(SyntaxToken token)
+	{
+		return ParserDiagnostic.create(
+			"Could not resolve DDM %s".formatted(token.symbolName()),
+			token,
+			ParserError.UNRESOLVED_IMPORT
+		);
+	}
+
 	public static IDiagnostic unresolvedExternalModule(SyntaxToken token)
 	{
 		return ParserDiagnostic.create(

@@ -45,6 +45,10 @@ class ViewParser extends AbstractParser<ViewNode>
 			{
 				var ddm = moduleProvider.findDdm(targetDdm.symbolName());
 				view.setDdm(ddm);
+				if (ddm == null && !targetDdm.symbolName().startsWith("&"))
+				{
+					report(ParserErrors.unresolvedDdm(targetDdm));
+				}
 			}
 
 			while (peekKind(SyntaxKind.NUMBER_LITERAL) && peek().intValue() > view.level())
@@ -206,7 +210,7 @@ class ViewParser extends AbstractParser<ViewNode>
 			group.addVariable(nestedVariable);
 		}
 
-		if (group.variables().size() == 0)
+		if (group.variables().isEmpty())
 		{
 			report(ParserErrors.emptyGroupVariable(group));
 		}
@@ -228,10 +232,9 @@ class ViewParser extends AbstractParser<ViewNode>
 	// Type is loaded from DDM.
 	private VariableNode typedVariableFromDdm(VariableNode variable)
 	{
-		// unresolved
+		// unresolved DDM
 		if (view.ddm() == null)
 		{
-			// TODO: unresolved error?
 			return variable;
 		}
 
