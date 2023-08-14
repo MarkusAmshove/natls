@@ -315,6 +315,11 @@ class ViewParser extends AbstractParser<ViewNode>
 
 	private void checkVariableTypeAgainstDdm(TypedVariableNode typed)
 	{
+		if (view.ddm() == null)
+		{
+			return;
+		}
+
 		var ddmField = view.ddm().findField(typed.name());
 		if (ddmField == null)
 		{
@@ -332,11 +337,9 @@ class ViewParser extends AbstractParser<ViewNode>
 			return;
 		}
 
-		if (
-			(ddmField.format() == DataFormat.LOGIC && typed.type().format() == DataFormat.LOGIC)
+		if ((ddmField.format() == DataFormat.LOGIC && typed.type().format() == DataFormat.LOGIC)
 			|| (ddmField.format() == DataFormat.DATE && typed.type().format() == DataFormat.DATE)
-			|| (ddmField.format() == DataFormat.TIME && typed.type().format() == DataFormat.TIME)
-		)
+			|| (ddmField.format() == DataFormat.TIME && typed.type().format() == DataFormat.TIME))
 		{
 			// It would complain about length 0 (Natural) vs length 1 (Adabas)
 			return;
