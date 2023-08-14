@@ -2102,7 +2102,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		assertThat(ddmMultipleValueField.type().format()).isEqualTo(DataFormat.NUMERIC);
 		assertThat(ddmMultipleValueField.type().length()).isEqualTo(7.2);
 		assertThat(ddmMultipleValueField.dimensions().first().lowerBound()).isEqualTo(1);
-		assertThat(ddmMultipleValueField.dimensions().first().isUpperUnbound()).isTrue();
+		assertThat(ddmMultipleValueField.dimensions().first().upperBound()).isEqualTo(199);
 
 		var countField = assertNodeType(defineData.findVariable("C*A-MULTIPLE-FIELD"), ITypedVariableNode.class);
 		assertThat(countField.type().format()).isEqualTo(DataFormat.INTEGER);
@@ -2112,7 +2112,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		assertThat(periodicMember.type().format()).isEqualTo(DataFormat.ALPHANUMERIC);
 		assertThat(periodicMember.type().length()).isEqualTo(5.0);
 		assertThat(periodicMember.dimensions().first().lowerBound()).isEqualTo(1);
-		assertThat(periodicMember.dimensions().first().isUpperUnbound()).isTrue();
+		assertThat(periodicMember.dimensions().first().upperBound()).isEqualTo(199);
 	}
 
 	@Test

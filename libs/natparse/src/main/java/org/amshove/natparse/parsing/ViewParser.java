@@ -286,7 +286,7 @@ class ViewParser extends AbstractParser<ViewNode>
 				{
 					var dimension = new ArrayDimension();
 					dimension.setLowerBound(1);
-					dimension.setUpperBound(IArrayDimension.UNBOUND_VALUE);
+					dimension.setUpperBound(199);
 					typedVariable.addDimension(dimension);
 					break;
 				}
@@ -297,7 +297,7 @@ class ViewParser extends AbstractParser<ViewNode>
 		{
 			var dimension = new ArrayDimension();
 			dimension.setLowerBound(1);
-			dimension.setUpperBound(IArrayDimension.UNBOUND_VALUE);
+			dimension.setUpperBound(199);
 			typedVariable.addDimension(dimension);
 		}
 
