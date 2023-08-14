@@ -13,7 +13,7 @@ class GroupField extends DdmField implements IGroupField
 	GroupField(DdmField field)
 	{
 		super(field);
-		if (field.fieldType() != FieldType.GROUP)
+		if (field.fieldType() != FieldType.GROUP && field.fieldType() != FieldType.PERIODIC)
 		{
 			throw new NaturalParseException(String.format("Cannot promote field of type %s to GroupField", field.fieldType()));
 		}

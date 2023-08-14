@@ -1,10 +1,12 @@
 package org.amshove.natparse.parsing;
 
+import com.google.common.collect.ImmutableList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.ddm.FieldType;
 import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
 import org.amshove.natparse.natural.ddm.IDdmField;
+import org.amshove.natparse.natural.ddm.IGroupField;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
@@ -2088,6 +2090,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			2 A-DDM-FIELD
 			2 A-MULTIPLE-FIELD
 			2 C*A-MULTIPLE-FIELD
+			2 A-PERIODIC-MEMBER
 			END-DEFINE
 			""");
 
@@ -2104,6 +2107,36 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		var countField = assertNodeType(defineData.findVariable("C*A-MULTIPLE-FIELD"), ITypedVariableNode.class);
 		assertThat(countField.type().format()).isEqualTo(DataFormat.INTEGER);
 		assertThat(countField.type().length()).isEqualTo(4);
+
+		var periodicMember = assertNodeType(defineData.findVariable("A-PERIODIC-MEMBER"), ITypedVariableNode.class);
+		assertThat(periodicMember.type().format()).isEqualTo(DataFormat.ALPHANUMERIC);
+		assertThat(periodicMember.type().length()).isEqualTo(5.0);
+		assertThat(periodicMember.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(periodicMember.dimensions().first().isUpperUnbound()).isTrue();
+	}
+
+	@Test
+	void useArrayDimensionsOfGroupsWhenPeriodicGroupIsExplicitlySpecified()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+				2 A-PERIODIC-GROUP (1:10)
+					3 A-PERIODIC-MEMBER
+			END-DEFINE
+			""");
+
+		var periodicGroup = assertNodeType(defineData.findVariable("A-PERIODIC-GROUP"), IGroupNode.class);
+		assertThat(periodicGroup.dimensions()).hasSize(1);
+		assertThat(periodicGroup.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(periodicGroup.dimensions().first().upperBound()).isEqualTo(10);
+
+		var periodicMember = assertNodeType(defineData.findVariable("A-PERIODIC-MEMBER"), ITypedVariableNode.class);
+		assertThat(periodicMember.dimensions()).hasSize(1);
+		assertThat(periodicMember.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(periodicMember.dimensions().first().upperBound()).isEqualTo(10);
 	}
 
 	@Test
@@ -2183,15 +2216,38 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var aField = mock(IDdmField.class);
 		when(ddm.findField("A-DDM-FIELD")).thenReturn(aField);
+		when(aField.level()).thenReturn(1);
 		when(aField.fieldType()).thenReturn(FieldType.NONE);
 		when(aField.format()).thenReturn(DataFormat.ALPHANUMERIC);
 		when(aField.length()).thenReturn(10.0);
 
 		var aMultipleField = mock(IDdmField.class);
 		when(ddm.findField("A-MULTIPLE-FIELD")).thenReturn(aMultipleField);
+		when(aMultipleField.level()).thenReturn(1);
 		when(aMultipleField.fieldType()).thenReturn(FieldType.MULTIPLE);
 		when(aMultipleField.format()).thenReturn(DataFormat.NUMERIC);
 		when(aMultipleField.length()).thenReturn(7.2);
+
+		var aPeriodicMember = mock(IDdmField.class);
+		when(ddm.findField("A-PERIODIC-MEMBER")).thenReturn(aPeriodicMember);
+		when(aPeriodicMember.level()).thenReturn(2);
+		when(aPeriodicMember.format()).thenReturn(DataFormat.ALPHANUMERIC);
+		when(aPeriodicMember.length()).thenReturn(5.0);
+
+		var periodicGroup = mock(IGroupField.class);
+		when(ddm.findField("A-PERIODIC-GROUP")).thenReturn(periodicGroup);
+		when(periodicGroup.level()).thenReturn(1);
+		when(periodicGroup.fieldType()).thenReturn(FieldType.PERIODIC);
+		when(periodicGroup.members()).thenReturn(ImmutableList.of(aPeriodicMember));
+
+		when(ddm.fields()).thenReturn(
+			ImmutableList.of(
+				aField,
+				aMultipleField,
+				aPeriodicMember,
+				periodicGroup
+			)
+		);
 
 		return ddm;
 	}

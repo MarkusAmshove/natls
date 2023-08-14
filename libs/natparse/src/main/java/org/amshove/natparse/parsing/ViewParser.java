@@ -6,6 +6,7 @@ import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IArrayDimension;
 import org.amshove.natparse.natural.ITokenNode;
 import org.amshove.natparse.natural.ddm.FieldType;
+import org.amshove.natparse.natural.ddm.IGroupField;
 
 import java.util.Map;
 
@@ -55,7 +56,7 @@ class ViewParser extends AbstractParser<ViewNode>
 			{
 				try
 				{
-					view.addVariable(variable());
+					view.addVariable(variable(null));
 				}
 				catch (ParseError e)
 				{
@@ -75,7 +76,7 @@ class ViewParser extends AbstractParser<ViewNode>
 		}
 	}
 
-	private VariableNode variable() throws ParseError
+	private VariableNode variable(GroupNode enclosingGroup) throws ParseError
 	{
 		var variable = new VariableNode();
 		var level = consumeMandatory(variable, SyntaxKind.NUMBER_LITERAL);
@@ -117,7 +118,7 @@ class ViewParser extends AbstractParser<ViewNode>
 			return group(variable);
 		}
 
-		return typedVariableFromDdm(variable);
+		return typedVariableFromDdm(variable, enclosingGroup);
 	}
 
 	private TypedVariableNode typedVariable(VariableNode variable) throws ParseError
@@ -206,7 +207,7 @@ class ViewParser extends AbstractParser<ViewNode>
 				}
 			}
 
-			var nestedVariable = variable();
+			var nestedVariable = variable(group);
 			group.addVariable(nestedVariable);
 		}
 
@@ -230,7 +231,7 @@ class ViewParser extends AbstractParser<ViewNode>
 
 	// This is used when there is no type specified in the view.
 	// Type is loaded from DDM.
-	private VariableNode typedVariableFromDdm(VariableNode variable)
+	private VariableNode typedVariableFromDdm(VariableNode variable, GroupNode enclosingGroup)
 	{
 		// unresolved DDM
 		if (view.ddm() == null)
@@ -272,6 +273,25 @@ class ViewParser extends AbstractParser<ViewNode>
 		type.setFormat(ddmField.format());
 		type.setLength(ddmField.length());
 		typedVariable.setType(type);
+
+		if (ddmField.level() > 1
+			// if the user specified the periodic group explicitly, the dimensions will be passed down. No need to add the periodic dimension
+			&& (enclosingGroup == null || !enclosingGroup.isArray()))
+		{
+			for (var field : view.ddm().fields())
+			{
+				if (field instanceof IGroupField group
+					&& group.fieldType() == FieldType.PERIODIC
+					&& group.members().contains(ddmField))
+				{
+					var dimension = new ArrayDimension();
+					dimension.setLowerBound(1);
+					dimension.setUpperBound(IArrayDimension.UNBOUND_VALUE);
+					typedVariable.addDimension(dimension);
+					break;
+				}
+			}
+		}
 
 		if (ddmField.fieldType() == FieldType.MULTIPLE || ddmField.fieldType() == FieldType.PERIODIC)
 		{

@@ -48,12 +48,12 @@ class DdmParserShould
 		assertThat(ddm.name()).isEqualTo("COMPLETE-DDM");
 		assertThat(ddm.fileNumber()).isEqualTo("100");
 		assertThat(ddm.databaseNumber()).isEqualTo("000");
-		assertThat(ddm.defaultSequence()).isEqualTo("");
+		assertThat(ddm.defaultSequence()).isEmpty();
 		assertThat(ddm.type()).isEqualTo(DdmType.ADABAS);
 
 		var fields = ddm.fields();
 
-		assertThat(ddm.fields().size()).isEqualTo(11);
+		assertThat(ddm.fields()).hasSize(12);
 		var topLevelFields = fields.stream().map(IDdmField::name).collect(Collectors.toList());
 
 		assertThat(topLevelFields)
@@ -80,6 +80,14 @@ class DdmParserShould
 		var nestedGroup = assertIsGroupField(findGroupMember(topLevelGroupField, "TOP-LEVEL-GROUP-GROUP"));
 		assertThat(nestedGroup.level()).isEqualTo(2);
 		assertGroupHasMember(nestedGroup, "TOP-LEVEL-GROUP-GROUP-CHILD");
+
+		var periodicGroup = assertIsPeriodicGroupField(findField(ddm, "PERIODIC-GROUP"));
+		assertThat(periodicGroup.fieldType()).isEqualTo(FieldType.PERIODIC);
+		assertGroupHasMember(periodicGroup, "PERIODIC-MEMBER");
+		var periodicMember = findGroupMember(periodicGroup, "PERIODIC-MEMBER");
+		assertThat(periodicMember.level()).isEqualTo(2);
+		assertThat(periodicMember.format()).isEqualTo(DataFormat.NUMERIC);
+		assertThat(periodicMember.length()).isEqualTo(2.0);
 
 		var aSuperdescriptor = assertIsSuperdescriptor(findField(ddm, "A-SUPERDESCRIPTOR"));
 		assertThat(aSuperdescriptor.fields()).hasSize(2);
@@ -173,6 +181,13 @@ class DdmParserShould
 	private IGroupField assertIsGroupField(IDdmField field)
 	{
 		assertThat(field.fieldType()).isEqualTo(FieldType.GROUP);
+		assertThat(field).isInstanceOf(IGroupField.class);
+		return (IGroupField) field;
+	}
+
+	private IGroupField assertIsPeriodicGroupField(IDdmField field)
+	{
+		assertThat(field.fieldType()).isEqualTo(FieldType.PERIODIC);
 		assertThat(field).isInstanceOf(IGroupField.class);
 		return (IGroupField) field;
 	}
