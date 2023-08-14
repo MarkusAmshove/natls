@@ -21,6 +21,7 @@ public non-sealed interface IVariableNode extends IReferencableNode, IParameterD
 
 	default boolean isArray()
 	{
-		return dimensions() != null && dimensions().size() > 0;
+		var dimensions = dimensions();
+		return dimensions != null && !dimensions.isEmpty();
 	}
 }

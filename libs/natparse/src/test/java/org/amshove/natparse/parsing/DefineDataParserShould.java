@@ -1,12 +1,9 @@
 package org.amshove.natparse.parsing;
 
-import com.google.common.collect.ImmutableList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
-import org.amshove.natparse.natural.ddm.FieldType;
 import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
-import org.amshove.natparse.natural.ddm.IDdmField;
-import org.amshove.natparse.natural.ddm.IGroupField;
+import org.amshove.natparse.parsing.ddm.DdmParser;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
@@ -22,8 +19,6 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class DefineDataParserShould extends AbstractParserTest<IDefineData>
 {
@@ -1315,12 +1310,14 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	@Test
 	void parseAViewWithRedefinition()
 	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
 		var source = """
 			DEFINE DATA
 			LOCAL
 			1 MY-VIEW VIEW MY-DDM
-			2 DDM-FIELD
-			2 REDEFINE DDM-FIELD
+			2 A-DDM-FIELD /* A10
+			2 REDEFINE A-DDM-FIELD
 			3 FILLER 5X
 			3 #REST (A5)
 			END-DEFINE
@@ -1330,9 +1327,32 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		var view = assertNodeType(defineData.variables().first(), IViewNode.class);
 		assertThat(view.variables().size()).isEqualTo(2);
 		var redefined = assertNodeType(view.variables().get(1), IRedefinitionNode.class);
-		assertThat(redefined.declaration().symbolName()).isEqualTo("DDM-FIELD");
+		assertThat(redefined.declaration().symbolName()).isEqualTo("A-DDM-FIELD");
 		assertThat(redefined.fillerBytes()).isEqualTo(5);
 		assertThat(assertNodeType(redefined.variables().first(), ITypedVariableNode.class).declaration().symbolName()).isEqualTo("#REST");
+	}
+
+	@Test
+	void allowToRedefineSuperDescriptors()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		var source = """
+			DEFINE DATA
+			LOCAL
+			1 MY-VIEW VIEW MY-DDM
+			2 A-SUPERDESCRIPTOR /* A25
+			2 REDEFINE A-SUPERDESCRIPTOR
+			3 #A-DDM-FIELD (A10)
+			3 #REST (A15)
+			END-DEFINE
+			""";
+
+		var defineData = assertParsesWithoutDiagnostics(source);
+
+		var superdescriptor = assertNodeType(defineData.findVariable("A-SUPERDESCRIPTOR"), ITypedVariableNode.class);
+		assertThat(superdescriptor.type().format()).isEqualTo(DataFormat.ALPHANUMERIC);
+		assertThat(superdescriptor.type().length()).isEqualTo(25.0);
 	}
 
 	@Test
@@ -2212,43 +2232,21 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 	private IDataDefinitionModule myDdm()
 	{
-		var ddm = mock(IDataDefinitionModule.class);
+		return new DdmParser().parseDdm("""
+DB: 000 FILE: 100  - MY-DDM                      DEFAULT SEQUENCE:
+TYPE: ADABAS
 
-		var aField = mock(IDdmField.class);
-		when(ddm.findField("A-DDM-FIELD")).thenReturn(aField);
-		when(aField.level()).thenReturn(1);
-		when(aField.fieldType()).thenReturn(FieldType.NONE);
-		when(aField.format()).thenReturn(DataFormat.ALPHANUMERIC);
-		when(aField.length()).thenReturn(10.0);
-
-		var aMultipleField = mock(IDdmField.class);
-		when(ddm.findField("A-MULTIPLE-FIELD")).thenReturn(aMultipleField);
-		when(aMultipleField.level()).thenReturn(1);
-		when(aMultipleField.fieldType()).thenReturn(FieldType.MULTIPLE);
-		when(aMultipleField.format()).thenReturn(DataFormat.NUMERIC);
-		when(aMultipleField.length()).thenReturn(7.2);
-
-		var aPeriodicMember = mock(IDdmField.class);
-		when(ddm.findField("A-PERIODIC-MEMBER")).thenReturn(aPeriodicMember);
-		when(aPeriodicMember.level()).thenReturn(2);
-		when(aPeriodicMember.format()).thenReturn(DataFormat.ALPHANUMERIC);
-		when(aPeriodicMember.length()).thenReturn(5.0);
-
-		var periodicGroup = mock(IGroupField.class);
-		when(ddm.findField("A-PERIODIC-GROUP")).thenReturn(periodicGroup);
-		when(periodicGroup.level()).thenReturn(1);
-		when(periodicGroup.fieldType()).thenReturn(FieldType.PERIODIC);
-		when(periodicGroup.members()).thenReturn(ImmutableList.of(aPeriodicMember));
-
-		when(ddm.fields()).thenReturn(
-			ImmutableList.of(
-				aField,
-				aMultipleField,
-				aPeriodicMember,
-				periodicGroup
-			)
-		);
-
-		return ddm;
+T L DB Name                              F Leng  S D Remark
+- - -- --------------------------------  - ----  - - ------------------------
+  1 AA A-DDM-FIELD                       A   10  N
+  1 AB ANOTHER-DDM-FIELD                 A   15  N
+M 1 AC A-MULTIPLE-FIELD                  N  7,2  N
+P 1 BA A-PERIODIC-GROUP
+  2 BB A-PERIODIC-MEMBER                 A    5  N
+  1 AG A-SUPERDESCRIPTOR                 A   25  N S
+*      -------- SOURCE FIELD(S) -------
+*      A-DDM-FIELD   (1-10)
+*      ANOTHER-DDM-FIELD (1-15)
+			""");
 	}
 }
