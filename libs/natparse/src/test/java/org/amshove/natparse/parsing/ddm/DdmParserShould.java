@@ -145,6 +145,33 @@ class DdmParserShould
 	}
 
 	@Test
+	void parseASuperdescriptorThatIsAlsoAPeriodicGroup()
+	{
+		var ddm = new DdmParser().parseDdm("""
+DB: 000 FILE: 100  - MY-DDM                      DEFAULT SEQUENCE:
+TYPE: ADABAS
+
+T L DB Name                              F Leng  S D Remark
+- - -- --------------------------------  - ----  - - ------------------------
+  1 AA A-DDM-FIELD                       A   10  N
+  1 AB ANOTHER-DDM-FIELD                 A   15  N
+M 1 AC A-MULTIPLE-FIELD                  N  7,2  N
+P 1 BA A-PERIODIC-GROUP
+  2 BB A-PERIODIC-MEMBER                 A    5  N
+P 1 AG A-SUPERDESCRIPTOR                 A   25  N S
+*      -------- SOURCE FIELD(S) -------
+*      A-DDM-FIELD   (1-10)
+*      ANOTHER-DDM-FIELD (1-15)
+			""");
+
+		var descriptor = findField(ddm, "A-SUPERDESCRIPTOR");
+		assertThat(descriptor.format()).isEqualTo(DataFormat.ALPHANUMERIC);
+		assertThat(descriptor.length()).isEqualTo(25);
+		assertThat(descriptor.descriptor()).isEqualTo(DescriptorType.SUPERDESCRIPTOR);
+		assertThat(descriptor.fieldType()).isEqualTo(FieldType.PERIODIC);
+	}
+
+	@Test
 	void throwAnExceptionIfNoMatchingFieldToReferenceIsFound()
 	{
 		assertThatExceptionOfType(NaturalParseException.class)
