@@ -315,7 +315,42 @@ class ViewParser extends AbstractParser<ViewNode>
 
 	private void checkVariableTypeAgainstDdm(TypedVariableNode typed)
 	{
-		// TODO
+		var ddmField = view.ddm().findField(typed.name());
+		if (ddmField == null)
+		{
+			return;
+		}
+
+		if (ddmField.format() == null || ddmField.format() == DataFormat.NONE)
+		{
+			return;
+		}
+
+		if (typed.type() == null)
+		{
+			// TODO: only dimensions specified?
+			return;
+		}
+
+		if (
+			(ddmField.format() == DataFormat.LOGIC && typed.type().format() == DataFormat.LOGIC)
+			|| (ddmField.format() == DataFormat.DATE && typed.type().format() == DataFormat.DATE)
+			|| (ddmField.format() == DataFormat.TIME && typed.type().format() == DataFormat.TIME)
+		)
+		{
+			// It would complain about length 0 (Natural) vs length 1 (Adabas)
+			return;
+		}
+
+		if (ddmField.format() != typed.type().format())
+		{
+			report(ParserErrors.typeMismatch("Type mismatch: Variable has format %s but DDM field has format %s".formatted(typed.type().format(), ddmField.format()), typed));
+		}
+
+		if (ddmField.length() != typed.type().length())
+		{
+			report(ParserErrors.typeMismatch("Type mismatch: Variable (format %s) has length %f but DDM field (format %s) has length %f".formatted(typed.type().format(), typed.type().length(), ddmField.format(), ddmField.length()), typed));
+		}
 	}
 
 	private double getLengthFromDataType(String dataType)
