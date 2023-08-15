@@ -105,7 +105,7 @@ class ViewParser extends AbstractParser<ViewNode>
 			if (peek().kind() == SyntaxKind.NUMBER_LITERAL || (peek().kind().isIdentifier() && isVariableDeclared(peek().symbolName())))
 			{
 				addArrayDimensions(variable);
-				var typedDdmArrayVariable = customTypedVariableFromDdm(variable);
+				var typedDdmArrayVariable = typedVariableFromDdm(variable, enclosingGroup);
 				consumeMandatory(typedDdmArrayVariable, SyntaxKind.RPAREN);
 				return typedDdmArrayVariable;
 			}
@@ -219,16 +219,6 @@ class ViewParser extends AbstractParser<ViewNode>
 		return group;
 	}
 
-	// This is used when there is a type specified in the view.
-	// Type is checked against DDM.
-	private VariableNode customTypedVariableFromDdm(VariableNode variable)
-	{
-		var typedVariable = new TypedVariableNode(variable);
-
-		checkVariableTypeAgainstDdm(typedVariable);
-		return typedVariable;
-	}
-
 	// This is used when there is no type specified in the view.
 	// Type is loaded from DDM.
 	private VariableNode typedVariableFromDdm(VariableNode variable, GroupNode enclosingGroup)
@@ -275,6 +265,8 @@ class ViewParser extends AbstractParser<ViewNode>
 		typedVariable.setType(type);
 
 		if (ddmField.level() > 1
+			// if the variable already has a dimension explicitly specified we don't need to take it from the group
+			&& typedVariable.dimensions.isEmpty()
 			// if the user specified the periodic group explicitly, the dimensions will be passed down. No need to add the periodic dimension
 			&& (enclosingGroup == null || !enclosingGroup.isArray()))
 		{
@@ -293,7 +285,8 @@ class ViewParser extends AbstractParser<ViewNode>
 			}
 		}
 
-		if (ddmField.fieldType() == FieldType.MULTIPLE || ddmField.fieldType() == FieldType.PERIODIC)
+		if (typedVariable.dimensions.isEmpty() && // no dimensions explicitly given
+			(ddmField.fieldType() == FieldType.MULTIPLE || ddmField.fieldType() == FieldType.PERIODIC))
 		{
 			var dimension = new ArrayDimension();
 			dimension.setLowerBound(1);

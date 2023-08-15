@@ -1280,7 +1280,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var view = findVariable(defineData, "MY-VIEW", IViewNode.class);
 		assertThat(view.variables().size()).isEqualTo(1);
-		var theArray = assertNodeType(view.variables().first(), ITypedVariableNode.class);
+		var theArray = assertNodeType(view.variables().first(), VariableNode.class);
 		assertThat(theArray.name()).isEqualTo("ARRAY-INSIDE");
 		assertThat(theArray.dimensions().first().lowerBound()).isEqualTo(1);
 		assertThat(theArray.dimensions().first().upperBound()).isEqualTo(8);
@@ -1301,7 +1301,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var view = assertNodeType(defineData.variables().first(), IViewNode.class);
 		assertThat(view.variables().size()).isEqualTo(1);
-		var theArray = assertNodeType(view.variables().first(), TypedVariableNode.class);
+		var theArray = assertNodeType(view.variables().first(), VariableNode.class);
 		assertThat(theArray.name()).isEqualTo("DDM-FIELD");
 		assertThat(theArray.dimensions().first().lowerBound()).isEqualTo(1);
 		assertThat(theArray.dimensions().first().upperBound()).isEqualTo(10);
@@ -2157,6 +2157,44 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		assertThat(periodicMember.dimensions()).hasSize(1);
 		assertThat(periodicMember.dimensions().first().lowerBound()).isEqualTo(1);
 		assertThat(periodicMember.dimensions().first().upperBound()).isEqualTo(10);
+	}
+
+	@Test
+	void useArrayDimensionsOfPeriodicMembersWhenExplicitlySpecified()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+				2 A-PERIODIC-MEMBER (1)
+			END-DEFINE
+			""");
+
+		var periodicMember = assertNodeType(defineData.findVariable("A-PERIODIC-MEMBER"), ITypedVariableNode.class);
+		assertThat(periodicMember.dimensions()).hasSize(1);
+		assertThat(periodicMember.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(periodicMember.dimensions().first().upperBound()).isEqualTo(1);
+	}
+
+	@Test
+	void useArrayDimensionsOfMultipleValueFieldsWhenExplicitlySpecifiedButWithoutType()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+				2 A-MULTIPLE-FIELD (1:10)
+			END-DEFINE
+			""");
+
+		var field = assertNodeType(defineData.findVariable("A-MULTIPLE-FIELD"), ITypedVariableNode.class);
+		assertThat(field.type().format()).isEqualTo(DataFormat.NUMERIC);
+		assertThat(field.type().length()).isEqualTo(7.2);
+		assertThat(field.dimensions()).hasSize(1);
+		assertThat(field.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(field.dimensions().first().upperBound()).isEqualTo(10);
 	}
 
 	@Test
