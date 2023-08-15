@@ -2223,6 +2223,58 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""", ParserError.UNRESOLVED_REFERENCE);
 	}
 
+	@Test
+	void reportADiagnosticIfASpecifiedVariableTypeDiffersFromTheDdmInFormat()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		assertDiagnostic("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+			2 A-DDM-FIELD (N10)
+			END-DEFINE
+			""", ParserError.TYPE_MISMATCH);
+	}
+
+	@Test
+	void reportADiagnosticIfASpecifiedVariableTypeDiffersFromTheDdmInLength()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		assertDiagnostic("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+			2 A-DDM-FIELD (A8)
+			END-DEFINE
+			""", ParserError.TYPE_MISMATCH);
+	}
+
+	@Test
+	void notReportADiagnosticIfASpecifiedVariableTypeDiffersInLengthSpecificationForDateVariables()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+			2 DATE-FIELD (D)
+			END-DEFINE
+			""");
+	}
+
+	@Test
+	void notReportADiagnosticIfASpecifiedVariableTypeDiffersInLengthSpecificationForLogicalVariables()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+			2 BOOL-FIELD (L)
+			END-DEFINE
+			""");
+	}
+
 	private <T extends IParameterDefinitionNode> void assertParameter(IParameterDefinitionNode node, Class<T> parameterType, String identifier)
 	{
 		var typedNode = assertNodeType(node, parameterType);
@@ -2281,6 +2333,8 @@ T L DB Name                              F Leng  S D Remark
 M 1 AC A-MULTIPLE-FIELD                  N  7,2  N
 P 1 BA A-PERIODIC-GROUP
   2 BB A-PERIODIC-MEMBER                 A    5  N
+  1 CA DATE-FIELD                        D    6  N
+  1 CB BOOL-FIELD                        L    1  N
   1 AG A-SUPERDESCRIPTOR                 A   25  N S
 *      -------- SOURCE FIELD(S) -------
 *      A-DDM-FIELD   (1-10)
