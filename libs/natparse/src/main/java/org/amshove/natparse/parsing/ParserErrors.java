@@ -215,6 +215,20 @@ class ParserErrors
 		);
 	}
 
+	public static ParserDiagnostic unresolvedDdmField(ITokenNode node)
+	{
+		return unresolvedDdmField(node, node.token().symbolName());
+	}
+
+	public static ParserDiagnostic unresolvedDdmField(ITokenNode node, String fieldName)
+	{
+		return ParserDiagnostic.create(
+			"Unresolved DDM field: %s".formatted(fieldName),
+			node.token(),
+			ParserError.UNRESOLVED_REFERENCE
+		);
+	}
+
 	public static ParserDiagnostic arrayDimensionMustBeConstOrInitialized(ITokenNode token)
 	{
 		return ParserDiagnostic.create(
@@ -318,6 +332,15 @@ class ParserErrors
 			"Invalid length: Length for %s can not be specified".formatted(DataFormat.formatLength(typeNode.type().length())),
 			typeNode.identifierNode(),
 			ParserError.INVALID_LENGTH_FOR_DATA_TYPE
+		);
+	}
+
+	public static IDiagnostic unresolvedDdm(SyntaxToken token)
+	{
+		return ParserDiagnostic.create(
+			"Could not resolve DDM %s".formatted(token.symbolName()),
+			token,
+			ParserError.UNRESOLVED_IMPORT
 		);
 	}
 

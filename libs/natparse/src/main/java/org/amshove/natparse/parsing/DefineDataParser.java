@@ -1224,11 +1224,6 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private void checkRedefineLength(IRedefinitionNode redefinitionNode)
 	{
-		if (redefinitionNode.isInView())
-		{
-			return;
-		}
-
 		var target = redefinitionNode.target();
 
 		if (target instanceof ITypedVariableNode typedTarget && typedTarget.type() == null)
@@ -1302,10 +1297,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				var groupLength = 0;
 				for (var member : groupNode.variables())
 				{
-					if (!member.isInView())
-					{
-						groupLength += calculateVariableLengthInBytes(member);
-					}
+					groupLength += calculateVariableLengthInBytes(member);
 				}
 
 				return groupLength;

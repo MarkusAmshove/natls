@@ -2,6 +2,8 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
+import org.amshove.natparse.parsing.ddm.DdmParser;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
@@ -1278,7 +1280,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var view = findVariable(defineData, "MY-VIEW", IViewNode.class);
 		assertThat(view.variables().size()).isEqualTo(1);
-		var theArray = assertNodeType(view.variables().first(), ITypedVariableNode.class);
+		var theArray = assertNodeType(view.variables().first(), VariableNode.class);
 		assertThat(theArray.name()).isEqualTo("ARRAY-INSIDE");
 		assertThat(theArray.dimensions().first().lowerBound()).isEqualTo(1);
 		assertThat(theArray.dimensions().first().upperBound()).isEqualTo(8);
@@ -1299,7 +1301,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var view = assertNodeType(defineData.variables().first(), IViewNode.class);
 		assertThat(view.variables().size()).isEqualTo(1);
-		var theArray = assertNodeType(view.variables().first(), TypedVariableNode.class);
+		var theArray = assertNodeType(view.variables().first(), VariableNode.class);
 		assertThat(theArray.name()).isEqualTo("DDM-FIELD");
 		assertThat(theArray.dimensions().first().lowerBound()).isEqualTo(1);
 		assertThat(theArray.dimensions().first().upperBound()).isEqualTo(10);
@@ -1308,12 +1310,14 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	@Test
 	void parseAViewWithRedefinition()
 	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
 		var source = """
 			DEFINE DATA
 			LOCAL
 			1 MY-VIEW VIEW MY-DDM
-			2 DDM-FIELD
-			2 REDEFINE DDM-FIELD
+			2 A-DDM-FIELD /* A10
+			2 REDEFINE A-DDM-FIELD
 			3 FILLER 5X
 			3 #REST (A5)
 			END-DEFINE
@@ -1323,9 +1327,32 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		var view = assertNodeType(defineData.variables().first(), IViewNode.class);
 		assertThat(view.variables().size()).isEqualTo(2);
 		var redefined = assertNodeType(view.variables().get(1), IRedefinitionNode.class);
-		assertThat(redefined.declaration().symbolName()).isEqualTo("DDM-FIELD");
+		assertThat(redefined.declaration().symbolName()).isEqualTo("A-DDM-FIELD");
 		assertThat(redefined.fillerBytes()).isEqualTo(5);
 		assertThat(assertNodeType(redefined.variables().first(), ITypedVariableNode.class).declaration().symbolName()).isEqualTo("#REST");
+	}
+
+	@Test
+	void allowToRedefineSuperDescriptors()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		var source = """
+			DEFINE DATA
+			LOCAL
+			1 MY-VIEW VIEW MY-DDM
+			2 A-SUPERDESCRIPTOR /* A25
+			2 REDEFINE A-SUPERDESCRIPTOR
+			3 #A-DDM-FIELD (A10)
+			3 #REST (A15)
+			END-DEFINE
+			""";
+
+		var defineData = assertParsesWithoutDiagnostics(source);
+
+		var superdescriptor = assertNodeType(defineData.findVariable("A-SUPERDESCRIPTOR"), ITypedVariableNode.class);
+		assertThat(superdescriptor.type().format()).isEqualTo(DataFormat.ALPHANUMERIC);
+		assertThat(superdescriptor.type().length()).isEqualTo(25.0);
 	}
 
 	@Test
@@ -2046,6 +2073,208 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""");
 	}
 
+	@Test
+	void reportADiagnosticForAnUnresolvableDdm()
+	{
+		useStubModuleProvider();
+		assertDiagnostic("""
+			DEFINE DATA
+			LOCAL
+			1 AVIEW VIEW OF UNRESOLVED
+			2 DDM-VAR
+			END-DEFINE
+			""", ParserError.UNRESOLVED_IMPORT);
+	}
+
+	@Test
+	void notReportADiagnosticForAnUnresolvableDdmCopycodeParameter()
+	{
+		useStubModuleProvider();
+		assertParsesWithoutDiagnostics("""
+			DEFINE DATA
+			LOCAL
+			1 AVIEW VIEW OF &1&
+			2 DDM-VAR
+			END-DEFINE
+			""");
+	}
+
+	@Test
+	void loadVariableTypesFromDdms()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+			2 A-DDM-FIELD
+			2 A-MULTIPLE-FIELD
+			2 C*A-MULTIPLE-FIELD
+			2 A-PERIODIC-MEMBER
+			END-DEFINE
+			""");
+
+		var ddmFieldVar = assertNodeType(defineData.findVariable("A-DDM-FIELD"), ITypedVariableNode.class);
+		assertThat(ddmFieldVar.type().format()).isEqualTo(DataFormat.ALPHANUMERIC);
+		assertThat(ddmFieldVar.type().length()).isEqualTo(10.0);
+
+		var ddmMultipleValueField = assertNodeType(defineData.findVariable("A-MULTIPLE-FIELD"), ITypedVariableNode.class);
+		assertThat(ddmMultipleValueField.type().format()).isEqualTo(DataFormat.NUMERIC);
+		assertThat(ddmMultipleValueField.type().length()).isEqualTo(7.2);
+		assertThat(ddmMultipleValueField.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(ddmMultipleValueField.dimensions().first().upperBound()).isEqualTo(199);
+
+		var countField = assertNodeType(defineData.findVariable("C*A-MULTIPLE-FIELD"), ITypedVariableNode.class);
+		assertThat(countField.type().format()).isEqualTo(DataFormat.INTEGER);
+		assertThat(countField.type().length()).isEqualTo(4);
+
+		var periodicMember = assertNodeType(defineData.findVariable("A-PERIODIC-MEMBER"), ITypedVariableNode.class);
+		assertThat(periodicMember.type().format()).isEqualTo(DataFormat.ALPHANUMERIC);
+		assertThat(periodicMember.type().length()).isEqualTo(5.0);
+		assertThat(periodicMember.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(periodicMember.dimensions().first().upperBound()).isEqualTo(199);
+	}
+
+	@Test
+	void useArrayDimensionsOfGroupsWhenPeriodicGroupIsExplicitlySpecified()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+				2 A-PERIODIC-GROUP (1:10)
+					3 A-PERIODIC-MEMBER
+			END-DEFINE
+			""");
+
+		var periodicGroup = assertNodeType(defineData.findVariable("A-PERIODIC-GROUP"), IGroupNode.class);
+		assertThat(periodicGroup.dimensions()).hasSize(1);
+		assertThat(periodicGroup.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(periodicGroup.dimensions().first().upperBound()).isEqualTo(10);
+
+		var periodicMember = assertNodeType(defineData.findVariable("A-PERIODIC-MEMBER"), ITypedVariableNode.class);
+		assertThat(periodicMember.dimensions()).hasSize(1);
+		assertThat(periodicMember.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(periodicMember.dimensions().first().upperBound()).isEqualTo(10);
+	}
+
+	@Test
+	void useArrayDimensionsOfPeriodicMembersWhenExplicitlySpecified()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+				2 A-PERIODIC-MEMBER (1)
+			END-DEFINE
+			""");
+
+		var periodicMember = assertNodeType(defineData.findVariable("A-PERIODIC-MEMBER"), ITypedVariableNode.class);
+		assertThat(periodicMember.dimensions()).hasSize(1);
+		assertThat(periodicMember.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(periodicMember.dimensions().first().upperBound()).isEqualTo(1);
+	}
+
+	@Test
+	void useArrayDimensionsOfMultipleValueFieldsWhenExplicitlySpecifiedButWithoutType()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+				2 A-MULTIPLE-FIELD (1:10)
+			END-DEFINE
+			""");
+
+		var field = assertNodeType(defineData.findVariable("A-MULTIPLE-FIELD"), ITypedVariableNode.class);
+		assertThat(field.type().format()).isEqualTo(DataFormat.NUMERIC);
+		assertThat(field.type().length()).isEqualTo(7.2);
+		assertThat(field.dimensions()).hasSize(1);
+		assertThat(field.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(field.dimensions().first().upperBound()).isEqualTo(10);
+	}
+
+	@Test
+	void reportADiagnosticForUnresolvedDdmFields()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		assertDiagnostic("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+			2 UNRESOLVED-FIELD
+			END-DEFINE
+			""", ParserError.UNRESOLVED_REFERENCE);
+	}
+
+	@Test
+	void reportADiagnosticForUnresolvedCountFields()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		assertDiagnostic("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+			2 C*UNRESOLVED-FIELD
+			END-DEFINE
+			""", ParserError.UNRESOLVED_REFERENCE);
+	}
+
+	@Test
+	void reportADiagnosticIfASpecifiedVariableTypeDiffersFromTheDdmInFormat()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		assertDiagnostic("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+			2 A-DDM-FIELD (N10)
+			END-DEFINE
+			""", ParserError.TYPE_MISMATCH);
+	}
+
+	@Test
+	void reportADiagnosticIfASpecifiedVariableTypeDiffersFromTheDdmInLength()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		assertDiagnostic("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+			2 A-DDM-FIELD (A8)
+			END-DEFINE
+			""", ParserError.TYPE_MISMATCH);
+	}
+
+	@Test
+	void notReportADiagnosticIfASpecifiedVariableTypeDiffersInLengthSpecificationForDateVariables()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+			2 DATE-FIELD (D)
+			END-DEFINE
+			""");
+	}
+
+	@Test
+	void notReportADiagnosticIfASpecifiedVariableTypeDiffersInLengthSpecificationForLogicalVariables()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+			2 BOOL-FIELD (L)
+			END-DEFINE
+			""");
+	}
+
 	private <T extends IParameterDefinitionNode> void assertParameter(IParameterDefinitionNode node, Class<T> parameterType, String identifier)
 	{
 		var typedNode = assertNodeType(node, parameterType);
@@ -2089,5 +2318,27 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		}
 
 		return assertNodeType(variable.get(), expectedType);
+	}
+
+	private IDataDefinitionModule myDdm()
+	{
+		return new DdmParser().parseDdm("""
+DB: 000 FILE: 100  - MY-DDM                      DEFAULT SEQUENCE:
+TYPE: ADABAS
+
+T L DB Name                              F Leng  S D Remark
+- - -- --------------------------------  - ----  - - ------------------------
+  1 AA A-DDM-FIELD                       A   10  N
+  1 AB ANOTHER-DDM-FIELD                 A   15  N
+M 1 AC A-MULTIPLE-FIELD                  N  7,2  N
+P 1 BA A-PERIODIC-GROUP
+  2 BB A-PERIODIC-MEMBER                 A    5  N
+  1 CA DATE-FIELD                        D    6  N
+  1 CB BOOL-FIELD                        L    1  N
+  1 AG A-SUPERDESCRIPTOR                 A   25  N S
+*      -------- SOURCE FIELD(S) -------
+*      A-DDM-FIELD   (1-10)
+*      ANOTHER-DDM-FIELD (1-15)
+			""");
 	}
 }

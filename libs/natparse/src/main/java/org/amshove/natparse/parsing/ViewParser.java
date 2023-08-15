@@ -5,6 +5,8 @@ import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IArrayDimension;
 import org.amshove.natparse.natural.ITokenNode;
+import org.amshove.natparse.natural.ddm.FieldType;
+import org.amshove.natparse.natural.ddm.IGroupField;
 
 import java.util.Map;
 
@@ -12,6 +14,7 @@ class ViewParser extends AbstractParser<ViewNode>
 {
 
 	private final Map<String, VariableNode> declaredVariables;
+	private ViewNode view;
 
 	ViewParser(IModuleProvider moduleProvider, Map<String, VariableNode> declaredVariables)
 	{
@@ -31,7 +34,7 @@ class ViewParser extends AbstractParser<ViewNode>
 			var identifierNode = consumeMandatoryIdentifierTokenNode(viewVariable);
 			viewVariable.setDeclaration(identifierNode);
 
-			var view = new ViewNode(viewVariable);
+			view = new ViewNode(viewVariable);
 
 			consumeMandatory(view, SyntaxKind.VIEW);
 			consumeOptionally(view, SyntaxKind.OF);
@@ -43,13 +46,17 @@ class ViewParser extends AbstractParser<ViewNode>
 			{
 				var ddm = moduleProvider.findDdm(targetDdm.symbolName());
 				view.setDdm(ddm);
+				if (ddm == null && !targetDdm.symbolName().startsWith("&"))
+				{
+					report(ParserErrors.unresolvedDdm(targetDdm));
+				}
 			}
 
 			while (peekKind(SyntaxKind.NUMBER_LITERAL) && peek().intValue() > view.level())
 			{
 				try
 				{
-					view.addVariable(variable());
+					view.addVariable(variable(null));
 				}
 				catch (ParseError e)
 				{
@@ -69,7 +76,7 @@ class ViewParser extends AbstractParser<ViewNode>
 		}
 	}
 
-	private VariableNode variable() throws ParseError
+	private VariableNode variable(GroupNode enclosingGroup) throws ParseError
 	{
 		var variable = new VariableNode();
 		var level = consumeMandatory(variable, SyntaxKind.NUMBER_LITERAL);
@@ -98,7 +105,7 @@ class ViewParser extends AbstractParser<ViewNode>
 			if (peek().kind() == SyntaxKind.NUMBER_LITERAL || (peek().kind().isIdentifier() && isVariableDeclared(peek().symbolName())))
 			{
 				addArrayDimensions(variable);
-				var typedDdmArrayVariable = typedVariableFromDdm(variable);
+				var typedDdmArrayVariable = typedVariableFromDdm(variable, enclosingGroup);
 				consumeMandatory(typedDdmArrayVariable, SyntaxKind.RPAREN);
 				return typedDdmArrayVariable;
 			}
@@ -111,7 +118,7 @@ class ViewParser extends AbstractParser<ViewNode>
 			return group(variable);
 		}
 
-		return typedVariableFromDdm(variable);
+		return typedVariableFromDdm(variable, enclosingGroup);
 	}
 
 	private TypedVariableNode typedVariable(VariableNode variable) throws ParseError
@@ -200,11 +207,11 @@ class ViewParser extends AbstractParser<ViewNode>
 				}
 			}
 
-			var nestedVariable = variable();
+			var nestedVariable = variable(group);
 			group.addVariable(nestedVariable);
 		}
 
-		if (group.variables().size() == 0)
+		if (group.variables().isEmpty())
 		{
 			report(ParserErrors.emptyGroupVariable(group));
 		}
@@ -212,17 +219,133 @@ class ViewParser extends AbstractParser<ViewNode>
 		return group;
 	}
 
-	private VariableNode typedVariableFromDdm(VariableNode variable)
+	// This is used when there is no type specified in the view.
+	// Type is loaded from DDM.
+	private VariableNode typedVariableFromDdm(VariableNode variable, GroupNode enclosingGroup)
 	{
+		// unresolved DDM
+		if (view.ddm() == null)
+		{
+			return variable;
+		}
+
 		var typedVariable = new TypedVariableNode(variable);
 
-		checkVariableTypeAgainstDdm(typedVariable);
+		var isCountVariable = variable.name().startsWith("C*");
+		var fieldName = isCountVariable ? variable.name().substring(2) : variable.name();
+		var ddmField = view.ddm().findField(fieldName);
+
+		if (ddmField == null)
+		{
+			if (!isCountVariable)
+			{
+				report(ParserErrors.unresolvedDdmField(variable.identifierNode()));
+			}
+			else
+			{
+				report(ParserErrors.unresolvedDdmField(variable.identifierNode(), fieldName));
+			}
+
+			return variable;
+		}
+
+		if (isCountVariable)
+		{
+			return typedCountVariable(typedVariable);
+		}
+
+		if (ddmField.fieldType() == FieldType.GROUP)
+		{
+			return typedVariable;
+		}
+
+		var type = new VariableType();
+		type.setFormat(ddmField.format());
+		type.setLength(ddmField.length());
+		typedVariable.setType(type);
+
+		if (ddmField.level() > 1
+			// if the variable already has a dimension explicitly specified we don't need to take it from the group
+			&& typedVariable.dimensions.isEmpty()
+			// if the user specified the periodic group explicitly, the dimensions will be passed down. No need to add the periodic dimension
+			&& (enclosingGroup == null || !enclosingGroup.isArray()))
+		{
+			for (var field : view.ddm().fields())
+			{
+				if (field instanceof IGroupField group
+					&& group.fieldType() == FieldType.PERIODIC
+					&& group.members().contains(ddmField))
+				{
+					var dimension = new ArrayDimension();
+					dimension.setLowerBound(1);
+					dimension.setUpperBound(199);
+					typedVariable.addDimension(dimension);
+					break;
+				}
+			}
+		}
+
+		if (typedVariable.dimensions.isEmpty() && // no dimensions explicitly given
+			(ddmField.fieldType() == FieldType.MULTIPLE || ddmField.fieldType() == FieldType.PERIODIC))
+		{
+			var dimension = new ArrayDimension();
+			dimension.setLowerBound(1);
+			dimension.setUpperBound(199);
+			typedVariable.addDimension(dimension);
+		}
+
+		return typedVariable;
+	}
+
+	private TypedVariableNode typedCountVariable(TypedVariableNode typedVariable)
+	{
+		var countType = new VariableType();
+		countType.setLength(4);
+		countType.setFormat(DataFormat.INTEGER);
+		typedVariable.setType(countType);
 		return typedVariable;
 	}
 
 	private void checkVariableTypeAgainstDdm(TypedVariableNode typed)
 	{
-		// TODO
+		if (view.ddm() == null)
+		{
+			return;
+		}
+
+		var ddmField = view.ddm().findField(typed.name());
+		if (ddmField == null)
+		{
+			return;
+		}
+
+		if (ddmField.format() == null || ddmField.format() == DataFormat.NONE)
+		{
+			return;
+		}
+
+		if (typed.type() == null)
+		{
+			return;
+		}
+
+		if ((ddmField.format() == DataFormat.LOGIC && typed.type().format() == DataFormat.LOGIC)
+			|| (ddmField.format() == DataFormat.DATE && typed.type().format() == DataFormat.DATE)
+			|| (ddmField.format() == DataFormat.TIME && typed.type().format() == DataFormat.TIME))
+		{
+			// It would complain about length 0 (Natural) vs length 1 (Adabas)
+			return;
+		}
+
+		if (ddmField.format() != typed.type().format())
+		{
+			report(ParserErrors.typeMismatch("Type mismatch: Variable has format %s but DDM field has format %s".formatted(typed.type().format(), ddmField.format()), typed));
+		}
+
+		if (ddmField.length() != typed.type().length())
+		{
+			report(ParserErrors.typeMismatch("Type mismatch: Variable (format %s) has length %f but DDM field (format %s) has length %f".formatted(typed.type().format(), typed.type().length(), ddmField.format(), ddmField.length()), typed));
+		}
 	}
 
 	private double getLengthFromDataType(String dataType)
