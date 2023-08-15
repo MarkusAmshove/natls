@@ -326,7 +326,6 @@ class ViewParser extends AbstractParser<ViewNode>
 
 		if (typed.type() == null)
 		{
-			// TODO: only dimensions specified?
 			return;
 		}
 
