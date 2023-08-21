@@ -3667,6 +3667,18 @@ class StatementListParserShould extends StatementParseTest
 			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
 	}
 
+	@Test
+	void parseOptions()
+	{
+		assertParsesWithoutDiagnostics("OPTIONS TQMARK=OFF");
+	}
+
+	@Test
+	void parseMultipleOptions()
+	{
+		assertParsesWithoutDiagnostics("OPTIONS TQMARK=OFF TQMARK=ON SOME=THING");
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
