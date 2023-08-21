@@ -5,11 +5,11 @@ This document tracks the implementation status of Natural statements.
 Legend:
 
 
-:x: - not implemented (47)
+:x: - not implemented (46)
 
 :white_check_mark: - implemented or reporting (57)
 
-partial - partially implemented to prevent false positives (13)
+partial - partially implemented to prevent false positives (14)
 
 
 | Statement | Status             |
@@ -71,7 +71,7 @@ partial - partially implemented to prevent false positives (13)
 | IF SELECTION | :white_check_mark: |
 | IGNORE | :white_check_mark: |
 | INCLUDE | :white_check_mark: |
-| INPUT | partial          |
+| INPUT | partial            |
 | INSERT (SQL) | partial            |
 | INTERFACE | :x:                |
 | LIMIT | :white_check_mark: |
@@ -81,7 +81,7 @@ partial - partially implemented to prevent false positives (13)
 | NEWPAGE | :white_check_mark: |
 | ON ERROR | :white_check_mark: |
 | OPEN CONVERSATION | :x:                |
-| OPTIONS | :x:                |
+| OPTIONS | :partial:          |
 | PARSE XML | :x:                |
 | PASSW | :x:                |
 | PERFORM | :white_check_mark: |

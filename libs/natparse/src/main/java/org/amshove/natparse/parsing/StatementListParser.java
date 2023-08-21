@@ -199,6 +199,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case INPUT:
 						statementList.addStatement(inputStatement());
 						break;
+					case OPTIONS:
+						statementList.addStatement(options());
+						break;
 					case SELECT:
 						statementList.addStatement(select());
 						break;
@@ -466,6 +469,21 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode options() throws ParseError
+	{
+		var options = new OptionsStatementNode();
+		consumeMandatory(options, SyntaxKind.OPTIONS);
+		while (peekKind(1, SyntaxKind.EQUALS_SIGN))
+		{
+			// Currently consume anything in the form of A = B. There doesn't seem to be a good documentation about possible options
+			consumeMandatoryIdentifierTokenNode(options);
+			consumeMandatory(options, SyntaxKind.EQUALS_SIGN);
+			consume(options);
+		}
+
+		return options;
 	}
 
 	private StatementNode onError() throws ParseError
