@@ -6,4 +6,9 @@ public class BuildFileParserException extends RuntimeException
 	{
 		super(cause);
 	}
+
+	public BuildFileParserException(String message)
+	{
+		super(message);
+	}
 }
