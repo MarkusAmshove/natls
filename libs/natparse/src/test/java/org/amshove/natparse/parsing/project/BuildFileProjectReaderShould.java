@@ -47,7 +47,9 @@ class BuildFileProjectReaderShould
 
 		var naturalProject = createProject(fileSystem);
 		var naturalLibrary = naturalProject.getLibraries().get(0);
-		assertThat(naturalLibrary.getSourcePath()).isEqualTo(sourceDirectory("MYLIB"));
+
+		var sourceDirectory = Paths.get(BUILD_FILE_PATH.getParent().toString(), "Natural-Libraries", "MYLIB");
+		assertThat(naturalLibrary.getSourcePath()).isEqualTo(sourceDirectory);
 	}
 
 	@Test
@@ -77,7 +79,7 @@ class BuildFileProjectReaderShould
 	}
 
 	@Test
-	void linkStepLibsWithSystemLibrary()
+	void linkLibsWithSystemLibrary()
 	{
 		var fileSystem = new BuildFileBuilder(BUILD_FILE_PATH)
 			.addLibrary("SYSTEM")
@@ -89,6 +91,23 @@ class BuildFileProjectReaderShould
 		var naturalLibrary = assertHasLibrary(naturalProject, "MYLIB");
 		assertThat(naturalLibrary.getStepLibs().size()).isEqualTo(2);
 		assertThat(naturalLibrary.getStepLibs().get(1).getName()).isEqualTo("SYSTEM");
+	}
+
+	@Test
+	void notLinkLibrariesWithThemself()
+	{
+		var fileSystem = new BuildFileBuilder(BUILD_FILE_PATH)
+			.addLibrary("SYSTEM")
+			.addLibrary("MYLIB", "MYLIB")
+			.toFileSystem();
+
+		var project = createProject(fileSystem);
+		var myLib = assertHasLibrary(project, "MYLIB");
+		assertThat(myLib.getStepLibs()).as("Only one step lib to SYSTEM is expected").hasSize(1);
+		assertThat(myLib.getStepLibs().get(0).getName()).isEqualTo("SYSTEM");
+
+		var system = assertHasLibrary(project, "SYSTEM");
+		assertThat(system.getStepLibs()).as("SYSTEM shouldn't reference itself").isEmpty();
 	}
 
 	@Test
@@ -110,11 +129,6 @@ class BuildFileProjectReaderShould
 		var sysRpc = assertHasLibrary(project, "SYSRPC");
 		assertThat(sysRpc.getSourcePath()).isEqualTo(PROJECT_ROOT.resolve("include").resolve("SYSRPC"));
 		assertThat(myLib.getStepLibs()).contains(sysRpc);
-	}
-
-	private Path sourceDirectory(String name)
-	{
-		return Paths.get(BUILD_FILE_PATH.getParent().toString(), "Natural-Libraries", name);
 	}
 
 	private NaturalProject createProject(IFilesystem fileSystem)

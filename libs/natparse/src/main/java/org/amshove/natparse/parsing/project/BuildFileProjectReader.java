@@ -34,15 +34,15 @@ public class BuildFileProjectReader
 		var sourceDirectories = getSourceDirectories(buildfilePath);
 		var includeDirectories = getIncludeDirectories(buildfilePath);
 
-		removeSystemLibraries(xmlLibraryDefinitions, sourceDirectories, includeDirectories);
+		removeLibrariesWithoutSourceFolders(xmlLibraryDefinitions, sourceDirectories, includeDirectories);
 		addSourcePaths(xmlLibraryDefinitions, sourceDirectories);
 
 		var actualLibraries = mapXmlLibraries(xmlLibraryDefinitions);
-		addIncludeLibraries(actualLibraries, xmlLibraryDefinitions, includeDirectories);
+		addLibrariesFromIncludeDirectory(actualLibraries, xmlLibraryDefinitions, includeDirectories);
 		return new NaturalProject(buildfilePath.getParent(), List.copyOf(actualLibraries.values()));
 	}
 
-	private void addIncludeLibraries(Map<String, NaturalLibrary> naturalLibraries, List<XmlNaturalLibrary> xmlLibraries, List<Path> includePaths)
+	private void addLibrariesFromIncludeDirectory(Map<String, NaturalLibrary> naturalLibraries, List<XmlNaturalLibrary> xmlLibraries, List<Path> includePaths)
 	{
 		if (includePaths.isEmpty())
 		{
@@ -83,7 +83,7 @@ public class BuildFileProjectReader
 		}
 	}
 
-	private void removeSystemLibraries(List<XmlNaturalLibrary> naturalLibraries, List<Path> sourceDirectories, List<Path> includeDirectories)
+	private void removeLibrariesWithoutSourceFolders(List<XmlNaturalLibrary> naturalLibraries, List<Path> sourceDirectories, List<Path> includeDirectories)
 	{
 		var nonSystemLibraries = Stream.concat(sourceDirectories.stream(), includeDirectories.stream())
 			.map(p -> p.toFile().getName())
@@ -113,6 +113,7 @@ public class BuildFileProjectReader
 	private Map<String, NaturalLibrary> mapXmlLibraries(List<XmlNaturalLibrary> libraries)
 	{
 		var libraryMap = libraries.stream().collect(Collectors.toMap(XmlNaturalLibrary::getName, this::mapXmlLibrary));
+		var systemLib = libraryMap.get("SYSTEM");
 
 		for (var library : libraries)
 		{
@@ -120,13 +121,16 @@ public class BuildFileProjectReader
 
 			for (var stepLib : library.getSteplibs())
 			{
-				theLibrary
-					.addStepLib(libraryMap.get(stepLib));
+				if (libraryMap.containsKey(stepLib))
+				{
+					theLibrary
+						.addStepLib(libraryMap.get(stepLib));
+				}
 			}
 
-			if (libraryMap.containsKey("SYSTEM"))
+			if (!library.getName().equals("SYSTEM") && systemLib != null)
 			{
-				theLibrary.addStepLib(libraryMap.get("SYSTEM"));
+				theLibrary.addStepLib(systemLib);
 			}
 		}
 
