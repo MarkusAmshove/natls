@@ -22,6 +22,17 @@ public enum VariableScope
 		};
 	}
 
+	public SyntaxKind toSyntaxKind()
+	{
+		return switch (this)
+		{
+			case LOCAL -> SyntaxKind.LOCAL;
+			case PARAMETER -> SyntaxKind.PARAMETER;
+			case GLOBAL -> SyntaxKind.GLOBAL;
+			case INDEPENDENT -> SyntaxKind.INDEPENDENT;
+		};
+	}
+
 	public boolean isLocal()
 	{
 		return this == LOCAL;

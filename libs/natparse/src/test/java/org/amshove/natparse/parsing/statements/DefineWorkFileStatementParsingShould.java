@@ -55,7 +55,7 @@ class DefineWorkFileStatementParsingShould extends StatementParseTest
 			DEFINE WORK FILE 1 #PATH
 			""", IDefineWorkFileNode.class);
 
-		assertThat(assertNodeType(define.path(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#PATH");
+		assertIsVariableReference(define.path(), "#PATH");
 	}
 
 	@Test
@@ -98,7 +98,7 @@ class DefineWorkFileStatementParsingShould extends StatementParseTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"DEFAULT", "TRANSFER", "SAG", "ASCII", "ASCII-COMPRESSED", "ENTIRECONNECTION", "UNFORMATTED", "PORTABLE", "CSV"
+		"DEFAULT", "TRANSFER", "SAG", "ASCII", "ASCII-COMPRESSED", "ENTIRECONNECTION", "FORMATTED", "UNFORMATTED", "PORTABLE", "CSV"
 	})
 	void notRaiseADiagnosticForAllowedWorkfileTypes(String type)
 	{

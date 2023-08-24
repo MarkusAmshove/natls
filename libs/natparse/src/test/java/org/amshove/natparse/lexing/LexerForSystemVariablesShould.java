@@ -1,8 +1,6 @@
 package org.amshove.natparse.lexing;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 class LexerForSystemVariablesShould extends AbstractLexerTest
 {
@@ -55,9 +53,21 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 	}
 
 	@Test
+	void lexGroup()
+	{
+		assertTokens("*GROUP", token(SyntaxKind.SV_GROUP, "*GROUP"));
+	}
+
+	@Test
 	void lexUser()
 	{
 		assertTokens("*USER", token(SyntaxKind.SV_USER, "*USER"));
+	}
+
+	@Test
+	void lexUserName()
+	{
+		assertTokens("*USER-NAME", token(SyntaxKind.USER_NAME, "*USER-NAME"));
 	}
 
 	@Test
@@ -151,6 +161,12 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 	}
 
 	@Test
+	void lexCursor()
+	{
+		assertTokens("*CURSOR", token(SyntaxKind.CURSOR, "*CURSOR"));
+	}
+
+	@Test
 	void lexCursLine()
 	{
 		assertTokens("*CURS-LINE", token(SyntaxKind.CURS_LINE, "*CURS-LINE"));
@@ -160,6 +176,18 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 	void lexCursCol()
 	{
 		assertTokens("*CURS-COL", token(SyntaxKind.CURS_COL, "*CURS-COL"));
+	}
+
+	@Test
+	void lexParseCol()
+	{
+		assertTokens("*PARSE-COL", token(SyntaxKind.PARSE_COL, "*PARSE-COL"));
+	}
+
+	@Test
+	void lexParseRow()
+	{
+		assertTokens("*PARSE-ROW", token(SyntaxKind.PARSE_ROW, "*PARSE-ROW"));
 	}
 
 	@Test
@@ -211,6 +239,12 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 	}
 
 	@Test
+	void lexApplicName()
+	{
+		assertTokens("*APPLIC-NAME", token(SyntaxKind.APPLIC_NAME, "*APPLIC-NAME"));
+	}
+
+	@Test
 	void lexStartup()
 	{
 		assertTokens("*STARTUP", token(SyntaxKind.STARTUP, "*STARTUP"));
@@ -229,9 +263,21 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 	}
 
 	@Test
+	void lexPid()
+	{
+		assertTokens("*PID", token(SyntaxKind.PID, "*PID"));
+	}
+
+	@Test
 	void lexWindowPs()
 	{
 		assertTokens("*WINDOW-PS", token(SyntaxKind.WINDOW_PS, "*WINDOW-PS"));
+	}
+
+	@Test
+	void lexWindowPos()
+	{
+		assertTokens("*WINDOW-POS", token(SyntaxKind.WINDOW_POS, "*WINDOW-POS"));
 	}
 
 	@Test
@@ -322,6 +368,18 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 	void lexLineSize()
 	{
 		assertTokens("*LINESIZE", token(SyntaxKind.LINESIZE, "*LINESIZE"));
+	}
+
+	@Test
+	void lexNetUser()
+	{
+		assertTokens("*NET-USER", token(SyntaxKind.NET_USER, "*NET-USER"));
+	}
+
+	@Test
+	void lexHostName()
+	{
+		assertTokens("*HOSTNAME", token(SyntaxKind.HOSTNAME, "*HOSTNAME"));
 	}
 
 	@Test

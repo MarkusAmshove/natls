@@ -57,13 +57,13 @@ class CompressRefactoringsShould extends CodeActionTest
 			"LIBONE",
 			"SUBN.NSN",
 			"""
-				    DEFINE DATA
-				    LOCAL
-				    1 #VAR (A10)
-				    1 #TEXT (A) DYNAMIC
-				    END-DEFINE
-					COM${}$PRESS #VAR INTO #TEXT
-				    END
+				DEFINE DATA
+				LOCAL
+				1 #VAR (A10)
+				1 #TEXT (A) DYNAMIC
+				END-DEFINE
+				COM${}$PRESS #VAR INTO #TEXT
+				END
 				"""
 		)
 			.resultsApplied(
@@ -73,18 +73,9 @@ class CompressRefactoringsShould extends CodeActionTest
 					1 #VAR (A10)
 					1 #TEXT (A) DYNAMIC
 					END-DEFINE
-					COMPRESS #VAR INTO #TEXT
-					END
-				""",
-				"""
-					DEFINE DATA
-					LOCAL
-					1 #VAR (A10)
-					1 #TEXT (A) DYNAMIC
-					END-DEFINE
 					COMPRESS FULL #VAR INTO #TEXT
 					END
-				"""
+					"""
 			);
 	}
 
@@ -96,13 +87,13 @@ class CompressRefactoringsShould extends CodeActionTest
 			"LIBONE",
 			"SUBN.NSN",
 			"""
-				    DEFINE DATA
-				    LOCAL
-				    1 #VAR (A10)
-				    1 #TEXT (A) DYNAMIC
-				    END-DEFINE
-					COM${}$PRESS #VAR INTO #TEXT
-				    END
+				DEFINE DATA
+				LOCAL
+				1 #VAR (A10)
+				1 #TEXT (A) DYNAMIC
+				END-DEFINE
+				COM${}$PRESS #VAR INTO #TEXT
+				END
 				"""
 		);
 	}
@@ -134,13 +125,13 @@ class CompressRefactoringsShould extends CodeActionTest
 			"LIBONE",
 			"SUBN.NSN",
 			"""
-				    DEFINE DATA
-				    LOCAL
-				    1 #VAR (A10)
-				    1 #TEXT (A) DYNAMIC
-				    END-DEFINE
-					COM${}$PRESS #VAR INTO #TEXT
-				    END
+				DEFINE DATA
+				LOCAL
+				1 #VAR (A10)
+				1 #TEXT (A) DYNAMIC
+				END-DEFINE
+				COM${}$PRESS #VAR INTO #TEXT
+				END
 				"""
 		)
 			.resultsApplied(
@@ -150,18 +141,9 @@ class CompressRefactoringsShould extends CodeActionTest
 					1 #VAR (A10)
 					1 #TEXT (A) DYNAMIC
 					END-DEFINE
-					COMPRESS #VAR INTO #TEXT
-					END
-				""",
-				"""
-					DEFINE DATA
-					LOCAL
-					1 #VAR (A10)
-					1 #TEXT (A) DYNAMIC
-					END-DEFINE
 					COMPRESS NUMERIC #VAR INTO #TEXT
 					END
-				"""
+					"""
 			);
 	}
 
@@ -173,33 +155,24 @@ class CompressRefactoringsShould extends CodeActionTest
 			"LIBONE",
 			"SUBN.NSN",
 			"""
-				    DEFINE DATA
-				    LOCAL
-				    1 #VAR (A10)
-				    1 #TEXT (A) DYNAMIC
-				    END-DEFINE
-					COM${}$PRESS FULL #VAR INTO #TEXT
-				    END
+				DEFINE DATA
+				LOCAL
+				1 #VAR (A10)
+				1 #TEXT (A) DYNAMIC
+				END-DEFINE
+				COM${}$PRESS FULL #VAR INTO #TEXT
+				END
 				"""
 		)
 			.resultsApplied(
 				"""
-						DEFINE DATA
-						LOCAL
-						1 #VAR (A10)
-						1 #TEXT (A) DYNAMIC
-						END-DEFINE
-						COMPRESS FULL #VAR INTO #TEXT
-						END
-					""",
-				"""
-						DEFINE DATA
-						LOCAL
-						1 #VAR (A10)
-						1 #TEXT (A) DYNAMIC
-						END-DEFINE
-						COMPRESS NUMERIC FULL #VAR INTO #TEXT
-						END
+					DEFINE DATA
+					LOCAL
+					1 #VAR (A10)
+					1 #TEXT (A) DYNAMIC
+					END-DEFINE
+					COMPRESS NUMERIC FULL #VAR INTO #TEXT
+					END
 					"""
 			);
 	}
@@ -212,33 +185,24 @@ class CompressRefactoringsShould extends CodeActionTest
 			"LIBONE",
 			"SUBN.NSN",
 			"""
-				    DEFINE DATA
-				    LOCAL
-				    1 #VAR (A10)
-				    1 #TEXT (A) DYNAMIC
-				    END-DEFINE
-					COM${}$PRESS NUMERIC #VAR INTO #TEXT
-				    END
+				DEFINE DATA
+				LOCAL
+				1 #VAR (A10)
+				1 #TEXT (A) DYNAMIC
+				END-DEFINE
+				COM${}$PRESS NUMERIC #VAR INTO #TEXT
+				END
 				"""
 		)
 			.resultsApplied(
 				"""
-						DEFINE DATA
-						LOCAL
-						1 #VAR (A10)
-						1 #TEXT (A) DYNAMIC
-						END-DEFINE
-						COMPRESS NUMERIC #VAR INTO #TEXT
-						END
-					""",
-				"""
-						DEFINE DATA
-						LOCAL
-						1 #VAR (A10)
-						1 #TEXT (A) DYNAMIC
-						END-DEFINE
-						COMPRESS NUMERIC FULL #VAR INTO #TEXT
-						END
+					DEFINE DATA
+					LOCAL
+					1 #VAR (A10)
+					1 #TEXT (A) DYNAMIC
+					END-DEFINE
+					COMPRESS NUMERIC FULL #VAR INTO #TEXT
+					END
 					"""
 			);
 	}
@@ -251,13 +215,13 @@ class CompressRefactoringsShould extends CodeActionTest
 			"LIBONE",
 			"SUBN.NSN",
 			"""
-				    DEFINE DATA
-				    LOCAL
-				    1 #VAR (A10)
-				    1 #TEXT (A) DYNAMIC
-				    END-DEFINE
-					COM${}$PRESS #VAR INTO #TEXT
-				    END
+				DEFINE DATA
+				LOCAL
+				1 #VAR (A10)
+				1 #TEXT (A) DYNAMIC
+				END-DEFINE
+				COM${}$PRESS #VAR INTO #TEXT
+				END
 				"""
 		);
 	}
@@ -289,33 +253,24 @@ class CompressRefactoringsShould extends CodeActionTest
 			"LIBONE",
 			"SUBN.NSN",
 			"""
-				    DEFINE DATA
-				    LOCAL
-				    1 #VAR (A10)
-				    1 #TEXT (A) DYNAMIC
-				    END-DEFINE
-					COM${}$PRESS #VAR INTO #TEXT
-				    END
+				DEFINE DATA
+				LOCAL
+				1 #VAR (A10)
+				1 #TEXT (A) DYNAMIC
+				END-DEFINE
+				COM${}$PRESS #VAR INTO #TEXT
+				END
 				"""
 		)
 			.resultsApplied(
 				"""
-						DEFINE DATA
-						LOCAL
-						1 #VAR (A10)
-						1 #TEXT (A) DYNAMIC
-						END-DEFINE
-						COMPRESS #VAR INTO #TEXT
-						END
-					""",
-				"""
-						DEFINE DATA
-						LOCAL
-						1 #VAR (A10)
-						1 #TEXT (A) DYNAMIC
-						END-DEFINE
-						COMPRESS #VAR INTO #TEXT WITH DELIMITERS ';'
-						END
+					DEFINE DATA
+					LOCAL
+					1 #VAR (A10)
+					1 #TEXT (A) DYNAMIC
+					END-DEFINE
+					COMPRESS #VAR INTO #TEXT WITH DELIMITERS ';'
+					END
 					"""
 			);
 	}
@@ -328,13 +283,13 @@ class CompressRefactoringsShould extends CodeActionTest
 			"LIBONE",
 			"SUBN.NSN",
 			"""
-				    DEFINE DATA
-				    LOCAL
-				    1 #VAR (A10)
-				    1 #TEXT (A) DYNAMIC
-				    END-DEFINE
-					COM${}$PRESS #VAR INTO #TEXT
-				    END
+				DEFINE DATA
+				LOCAL
+				1 #VAR (A10)
+				1 #TEXT (A) DYNAMIC
+				END-DEFINE
+				COM${}$PRESS #VAR INTO #TEXT
+				END
 				"""
 		);
 	}
@@ -385,33 +340,24 @@ class CompressRefactoringsShould extends CodeActionTest
 			"LIBONE",
 			"SUBN.NSN",
 			"""
-				    DEFINE DATA
-				    LOCAL
-				    1 #VAR (A10)
-				    1 #TEXT (A) DYNAMIC
-				    END-DEFINE
-					COM${}$PRESS #VAR INTO #TEXT
-				    END
+				DEFINE DATA
+				LOCAL
+				1 #VAR (A10)
+				1 #TEXT (A) DYNAMIC
+				END-DEFINE
+				COM${}$PRESS #VAR INTO #TEXT
+				END
 				"""
 		)
 			.resultsApplied(
 				"""
-						DEFINE DATA
-						LOCAL
-						1 #VAR (A10)
-						1 #TEXT (A) DYNAMIC
-						END-DEFINE
-						COMPRESS #VAR INTO #TEXT
-						END
-					""",
-				"""
-						DEFINE DATA
-						LOCAL
-						1 #VAR (A10)
-						1 #TEXT (A) DYNAMIC
-						END-DEFINE
-						COMPRESS #VAR INTO #TEXT LEAVING NO SPACE
-						END
+					DEFINE DATA
+					LOCAL
+					1 #VAR (A10)
+					1 #TEXT (A) DYNAMIC
+					END-DEFINE
+					COMPRESS #VAR INTO #TEXT LEAVING NO SPACE
+					END
 					"""
 			);
 	}
@@ -462,33 +408,24 @@ class CompressRefactoringsShould extends CodeActionTest
 			"LIBONE",
 			"SUBN.NSN",
 			"""
-				    DEFINE DATA
-				    LOCAL
-				    1 #VAR (A10)
-				    1 #TEXT (A) DYNAMIC
-				    END-DEFINE
-					COM${}$PRESS #VAR INTO #TEXT
-				    END
+				DEFINE DATA
+				LOCAL
+				1 #VAR (A10)
+				1 #TEXT (A) DYNAMIC
+				END-DEFINE
+				COM${}$PRESS #VAR INTO #TEXT
+				END
 				"""
 		)
 			.resultsApplied(
 				"""
-						DEFINE DATA
-						LOCAL
-						1 #VAR (A10)
-						1 #TEXT (A) DYNAMIC
-						END-DEFINE
-						COMPRESS #VAR INTO #TEXT
-						END
-					""",
-				"""
-						DEFINE DATA
-						LOCAL
-						1 #VAR (A10)
-						1 #TEXT (A) DYNAMIC
-						END-DEFINE
-						COMPRESS #VAR INTO #TEXT WITH ALL DELIMITERS ';'
-						END
+					DEFINE DATA
+					LOCAL
+					1 #VAR (A10)
+					1 #TEXT (A) DYNAMIC
+					END-DEFINE
+					COMPRESS #VAR INTO #TEXT WITH ALL DELIMITERS ';'
+					END
 					"""
 			);
 	}
@@ -501,13 +438,13 @@ class CompressRefactoringsShould extends CodeActionTest
 			"LIBONE",
 			"SUBN.NSN",
 			"""
-				    DEFINE DATA
-				    LOCAL
-				    1 #VAR (A10)
-				    1 #TEXT (A) DYNAMIC
-				    END-DEFINE
-					COM${}$PRESS #VAR INTO #TEXT WITH DELIMITERS ';'
-				    END
+				DEFINE DATA
+				LOCAL
+				1 #VAR (A10)
+				1 #TEXT (A) DYNAMIC
+				END-DEFINE
+				COM${}$PRESS #VAR INTO #TEXT WITH DELIMITERS ';'
+				END
 				"""
 		);
 	}
@@ -520,33 +457,24 @@ class CompressRefactoringsShould extends CodeActionTest
 			"LIBONE",
 			"SUBN.NSN",
 			"""
-				    DEFINE DATA
-				    LOCAL
-				    1 #VAR (A10)
-				    1 #TEXT (A) DYNAMIC
-				    END-DEFINE
-					COM${}$PRESS #VAR INTO #TEXT WITH DELIMITERS ';'
-				    END
+				DEFINE DATA
+				LOCAL
+				1 #VAR (A10)
+				1 #TEXT (A) DYNAMIC
+				END-DEFINE
+				COM${}$PRESS #VAR INTO #TEXT WITH DELIMITERS ';'
+				END
 				"""
 		)
 			.resultsApplied(
 				"""
-						DEFINE DATA
-						LOCAL
-						1 #VAR (A10)
-						1 #TEXT (A) DYNAMIC
-						END-DEFINE
-						COMPRESS #VAR INTO #TEXT WITH DELIMITERS ';'
-						END
-					""",
-				"""
-						DEFINE DATA
-						LOCAL
-						1 #VAR (A10)
-						1 #TEXT (A) DYNAMIC
-						END-DEFINE
-						COMPRESS #VAR INTO #TEXT WITH ALL DELIMITERS ';'
-						END
+					DEFINE DATA
+					LOCAL
+					1 #VAR (A10)
+					1 #TEXT (A) DYNAMIC
+					END-DEFINE
+					COMPRESS #VAR INTO #TEXT WITH ALL DELIMITERS ';'
+					END
 					"""
 			);
 	}
@@ -562,7 +490,7 @@ class CompressRefactoringsShould extends CodeActionTest
 			END-DEFINE
 			COM${}$PRESS #VAR INTO #TEXT
 			END
-		""";
+			""";
 		var library = "LIBONE";
 		var module = "SUBN.NSN";
 

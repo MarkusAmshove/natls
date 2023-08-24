@@ -2,7 +2,9 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxToken;
+import org.amshove.natparse.natural.IDataType;
 import org.amshove.natparse.natural.IOperandNode;
+import org.amshove.natparse.natural.ITypedVariableNode;
 import org.amshove.natparse.natural.IVariableReferenceNode;
 
 import java.util.ArrayList;
@@ -26,5 +28,16 @@ class VariableReferenceNode extends SymbolReferenceNode implements IVariableRefe
 	public ReadOnlyList<IOperandNode> dimensions()
 	{
 		return ReadOnlyList.from(dimensions);
+	}
+
+	@Override
+	public IDataType inferType()
+	{
+		if (reference() == null || !(reference()instanceof ITypedVariableNode typedRef) || typedRef.type() == null)
+		{
+			return IDataType.UNTYPED;
+		}
+
+		return typedRef.type();
 	}
 }

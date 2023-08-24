@@ -1,5 +1,9 @@
 package org.amshove.natparse.parsing;
 
+import java.util.ArrayList;
+
+import org.amshove.natparse.ReadOnlyList;
+import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.IResizeDynamicNode;
 import org.amshove.natparse.natural.IVariableReferenceNode;
 
@@ -8,7 +12,7 @@ class ResizeDynamicNode extends StatementNode implements IResizeDynamicNode
 	private IVariableReferenceNode variableToResize;
 	private IVariableReferenceNode errorVariable;
 
-	private int sizeToResizeTo;
+	private IOperandNode sizeToResizeTo;
 
 	@Override
 	public IVariableReferenceNode variableToResize()
@@ -17,7 +21,7 @@ class ResizeDynamicNode extends StatementNode implements IResizeDynamicNode
 	}
 
 	@Override
-	public int sizeToResizeTo()
+	public IOperandNode sizeToResizeTo()
 	{
 		return sizeToResizeTo;
 	}
@@ -33,7 +37,7 @@ class ResizeDynamicNode extends StatementNode implements IResizeDynamicNode
 		this.variableToResize = variableToResize;
 	}
 
-	void setSizeToResizeTo(int sizeToResizeTo)
+	void setSizeToResizeTo(IOperandNode sizeToResizeTo)
 	{
 		this.sizeToResizeTo = sizeToResizeTo;
 	}
@@ -41,5 +45,18 @@ class ResizeDynamicNode extends StatementNode implements IResizeDynamicNode
 	void setErrorVariable(IVariableReferenceNode errorVariable)
 	{
 		this.errorVariable = errorVariable;
+	}
+
+	@Override
+	public ReadOnlyList<IOperandNode> mutations()
+	{
+		var mutations = new ArrayList<IOperandNode>();
+		mutations.add(variableToResize);
+		if (errorVariable != null)
+		{
+			mutations.add(errorVariable);
+		}
+
+		return ReadOnlyList.from(mutations);
 	}
 }

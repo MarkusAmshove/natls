@@ -1,14 +1,21 @@
 package org.amshove.natparse.lexing;
 
 import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
-public class LexerForKeywordsShould extends AbstractLexerTest
+class LexerForKeywordsShould extends AbstractLexerTest
 {
+
+	@Test
+	void recognizeKeywordsWhenACommentDirectlyFollows()
+	{
+		assertTokens("END-SUBROUTINE/* Comment", token(SyntaxKind.END_SUBROUTINE));
+	}
 
 	@TestFactory
 	Iterable<DynamicTest> lexKCheckReservedKeywords()
@@ -22,6 +29,7 @@ public class LexerForKeywordsShould extends AbstractLexerTest
 			keywordTest("AD", SyntaxKind.AD),
 			keywordTest("CD", SyntaxKind.CD),
 			keywordTest("ADD", SyntaxKind.ADD),
+			keywordTest("ADJUST", SyntaxKind.ADJUST),
 			keywordTest("AFTER", SyntaxKind.AFTER),
 			keywordTest("AL", SyntaxKind.AL),
 			keywordTest("ALARM", SyntaxKind.ALARM),
@@ -104,7 +112,6 @@ public class LexerForKeywordsShould extends AbstractLexerTest
 			keywordTest("CS", SyntaxKind.CS),
 			keywordTest("CURRENT", SyntaxKind.CURRENT),
 			keywordTest("CURSOR", SyntaxKind.CURSOR),
-			keywordTest("CV", SyntaxKind.CV),
 			keywordTest("DATA", SyntaxKind.DATA),
 			keywordTest("DATAAREA", SyntaxKind.DATAAREA),
 			keywordTest("DATE", SyntaxKind.DATE),
@@ -354,6 +361,7 @@ public class LexerForKeywordsShould extends AbstractLexerTest
 			keywordTest("MICROSECOND", SyntaxKind.MICROSECOND),
 			keywordTest("MIN", SyntaxKind.MIN),
 			keywordTest("MINUTE", SyntaxKind.MINUTE),
+			keywordTest("MODE", SyntaxKind.MODE),
 			keywordTest("MODAL", SyntaxKind.MODAL),
 			keywordTest("MODIFIED", SyntaxKind.MODIFIED),
 			keywordTest("MODULE", SyntaxKind.MODULE),
@@ -410,6 +418,7 @@ public class LexerForKeywordsShould extends AbstractLexerTest
 			keywordTest("OUTPUT", SyntaxKind.OUTPUT),
 			keywordTest("PACKAGESET", SyntaxKind.PACKAGESET),
 			keywordTest("PAGE", SyntaxKind.PAGE),
+			keywordTest("PAGES", SyntaxKind.PAGES),
 			keywordTest("PARAMETER", SyntaxKind.PARAMETER),
 			keywordTest("PARAMETERS", SyntaxKind.PARAMETERS),
 			keywordTest("PARENT", SyntaxKind.PARENT),
@@ -514,6 +523,7 @@ public class LexerForKeywordsShould extends AbstractLexerTest
 			keywordTest("SF", SyntaxKind.SF),
 			keywordTest("SG", SyntaxKind.SG),
 			keywordTest("SGN", SyntaxKind.SGN),
+			keywordTest("SHARED", SyntaxKind.SHARED),
 			keywordTest("SHORT", SyntaxKind.SHORT),
 			keywordTest("SHOW", SyntaxKind.SHOW),
 			keywordTest("SIN", SyntaxKind.SIN),
@@ -620,106 +630,6 @@ public class LexerForKeywordsShould extends AbstractLexerTest
 			keywordTest("ZP", SyntaxKind.ZP)
 		);
 	}
-
-	// keywordTest("PF1", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF2", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF3", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF4", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF5", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF6", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF7", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF8", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF9", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF10", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF11", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF12", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF13", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF14", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF15", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF16", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF17", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF18", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF19", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF20", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF21", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF22", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF23", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF24", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF25", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF26", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF27", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF28", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF29", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF30", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF31", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF32", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF33", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF34", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF35", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF36", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF37", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF38", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF39", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF40", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF41", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF42", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF43", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF44", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF45", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF46", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF47", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF48", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF49", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF50", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF51", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF52", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF53", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF54", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF55", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF56", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF57", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF58", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF59", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF60", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF61", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF62", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF63", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF64", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF65", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF66", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF67", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF68", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF69", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF70", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF71", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF72", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF73", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF74", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF75", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF76", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF77", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF78", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF79", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF80", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF81", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF82", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF83", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF84", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF85", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF86", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF87", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF88", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF89", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF90", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF91", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF92", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF93", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF94", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF95", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF96", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF97", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF98", SyntaxKind.IDENTIFIER_OR_KEYWORD),
-	// keywordTest("PF99", SyntaxKind.IDENTIFIER_OR_KEYWORD),
 
 	private DynamicTest keywordTest(String keyword, SyntaxKind expectedKind)
 	{

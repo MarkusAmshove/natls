@@ -7,7 +7,7 @@ import org.amshove.natls.testlifecycle.LspTestContext;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class CodeConsistencyQuickfixShould extends CodeActionTest
+class CodeConsistencyQuickfixShould extends CodeActionTest
 {
 
 	private static LspTestContext testContext;
@@ -33,7 +33,12 @@ public class CodeConsistencyQuickfixShould extends CodeActionTest
 	@Test
 	void changeOccurrenceToOcc()
 	{
-		var result = receiveCodeActions("LIBONE", "SUB.NSN", """
+		assertCodeActionWithTitle(
+			"Replace *OCCURRENCE with *OCC",
+			"LIBONE",
+			"SUB.NSN",
+
+			"""
 			DEFINE DATA LOCAL
 			1 #ARR (A2/*)
 			1 #I-ARR (I4)
@@ -42,12 +47,9 @@ public class CodeConsistencyQuickfixShould extends CodeActionTest
 			#I-ARR := *OCCURRE${}$NCE(#ARR)
 						
 			END
-			""");
-
-		assertContainsCodeAction("Replace *OCCURRENCE with *OCC", result.codeActions());
-
-		assertSingleCodeAction(result.codeActions())
-			.resultsApplied(result.savedSource(), """
+			"""
+		)
+			.resultsApplied("""
 				DEFINE DATA LOCAL
 				1 #ARR (A2/*)
 				1 #I-ARR (I4)

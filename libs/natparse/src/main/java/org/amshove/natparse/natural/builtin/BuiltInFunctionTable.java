@@ -17,6 +17,15 @@ public class BuiltInFunctionTable
 	{
 		TABLE = Map.ofEntries(
 			unmodifiableVariable(SyntaxKind.APPLIC_ID, "Returns the ID of the current library", ALPHANUMERIC, 8.0),
+			unmodifiableVariable(SyntaxKind.APPLIC_NAME, """
+				If Natural Security is installed, the variable contains the
+				name of library to which the user is logged on.
+
+				If the user is logged on via a special link and nothing is stated to the contrary,
+				it contains the link name instead.
+
+				If Natural Security is not installed, variable contains the name 'SYSTEM'.
+				""", ALPHANUMERIC, 32.0),
 			unmodifiableVariable(SyntaxKind.INIT_ID, "Returns the ID of the device that Natural invoked", ALPHANUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.SV_TIME, "Returns the current time of the day as A10 in format HH:II:SS.T", ALPHANUMERIC, 10.0),
 			unmodifiableVariable(SyntaxKind.TIMX, "Returns the current time of the day as builtin time format", TIME, 0.0),
@@ -51,13 +60,23 @@ public class BuiltInFunctionTable
 			unmodifiableVariable(SyntaxKind.DATJ, "Returns the current date in the format `YYJJJ` (Julian date)", ALPHANUMERIC, 5.0),
 			unmodifiableVariable(SyntaxKind.DAT4J, "Returns the current date in the format `YYYYJJJ` (Julian date)", ALPHANUMERIC, 7.0),
 			unmodifiableVariable(SyntaxKind.DATX, "Returns the current date as internal date for mat", DATE, 0.0),
-			unmodifiableVariable(SyntaxKind.DATN, "Returns the current date in the format `YYYYMMDD`", ALPHANUMERIC, 10.0),
+			unmodifiableVariable(SyntaxKind.DATN, "Returns the current date in the format `YYYYMMDD`", NUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.DATU, "Returns the current date in the format `MM/DD/YY`", ALPHANUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.DAT4U, "Returns the current date in the format `MM/DD/YYYY`", ALPHANUMERIC, 10.0),
 			unmodifiableVariable(SyntaxKind.DATV, "Returns the current date in the format `DD-MON-YY`, where MON is the name of the month", ALPHANUMERIC, 11.0),
 			unmodifiableVariable(SyntaxKind.DATVS, "Returns the current date in the format `DDMONYYYY`, where MON is the name of the month", ALPHANUMERIC, 9.0),
 			unmodifiableVariable(SyntaxKind.LINESIZE, "Returns the physical line size of the I/O device Natural was started with. For vertical look at `*PAGESIZE`", NUMERIC, 7.0),
 			unmodifiableVariable(SyntaxKind.PAGESIZE, "Returns the physical page size of the I/O device Natural was started with. For horizontal look at `*LINESIZE`", NUMERIC, 7.0),
+			unmodifiableVariable(SyntaxKind.NET_USER, """
+				Contains the complete user ID of an authenticated client request.
+				The ID consists of the domain name and the actual user ID.
+
+				The default value is the value of *USER.
+				When a NaturalX server receives an authenticated request,
+				the user ID of this request is passed to the server and placed
+				into *NET-USER. After the request, *NET-USER is reset to the value of *USER.
+				""", ALPHANUMERIC, 253.0),
+			unmodifiableVariable(SyntaxKind.HOSTNAME, "Name of the machine Natural runs on", ALPHANUMERIC, 64.0),
 			unmodifiableVariable(SyntaxKind.MACHINE_CLASS, """
 				Returns the name of the machine class Natural was started on
 
@@ -75,6 +94,7 @@ public class BuiltInFunctionTable
 			unmodifiableVariable(SyntaxKind.LINE_COUNT, "Returns the line number of the current pages's line.", PACKED, 5.0),
 			unmodifiableVariable(SyntaxKind.WINDOW_LS, "Returns the line size of the logical window (without the frame)", NUMERIC, 3.0),
 			unmodifiableVariable(SyntaxKind.WINDOW_PS, "Returns the page size of the logical window (without the frame)", NUMERIC, 3.0),
+			unmodifiableVariable(SyntaxKind.WINDOW_POS, "Returns the position of the upper left corner of the window (from `DEFINE WINDOW`)", NUMERIC, 6.0),
 			unmodifiableVariable(SyntaxKind.LIBRARY_ID, "Returns the ID the the current library. This returns the same as *APPLIC-ID", ALPHANUMERIC, 8.0),
 			unmodifiableVariable(SyntaxKind.TRANSLATE, """
 				Converts the characters passed as first argument into either `LOWER` or `UPPER` case.
@@ -127,6 +147,11 @@ public class BuiltInFunctionTable
 				If you want to get all line numbers, including the `INCLUDE`s, use `*LINEX` instead.
 				""", INTEGER, 4.0),
 			unmodifiableVariable(SyntaxKind.ERROR_LINE, "Returns the line of the statement that raised an error", NUMERIC, 4),
+			unmodifiableVariable(SyntaxKind.CURSOR, """
+				Position of cursor on input screen at time ENTER or function key is pressed.
+
+				Note: It is recommended that the system variables *CURS-LINE and *CURS-COL be used instead of the *CURSOR command.
+				""", NUMERIC, 6),
 			unmodifiableVariable(SyntaxKind.CURS_FIELD, """
 				Returns the identification of the field in which the cursor is positioned" +
 				Can only be used together withe the `POS` function.
@@ -149,6 +174,8 @@ public class BuiltInFunctionTable
 			modifiableVariable(SyntaxKind.CURS_COL, """
 				Get or set the number of the column where the current cursor is located
 				""", PACKED, 3),
+			unmodifiableVariable(SyntaxKind.PARSE_COL, "Column where the parser is currently working at", INTEGER, 4),
+			unmodifiableVariable(SyntaxKind.PARSE_ROW, "Row where the parser is currently working at", INTEGER, 4),
 			unmodifiableVariable(SyntaxKind.DEVICE, """
 				Returns the type or mode of the device from which Natural was started.
 
@@ -216,6 +243,8 @@ public class BuiltInFunctionTable
 				More in depth information can be retrieved with a combination of `MACHINE-CLASS`, `*HARDWARE` and `*OS`.
 				""", ALPHANUMERIC, 8),
 			unmodifiableVariable(SyntaxKind.PROGRAM, "Returns the name of the current Natural object", ALPHANUMERIC, 8),
+			unmodifiableVariable(SyntaxKind.SV_GROUP, "Returns Group ID or user's own ID taken from Natural Security logon", ALPHANUMERIC, 8),
+			unmodifiableVariable(SyntaxKind.USER_NAME, "Returns the user name of the current user, as taken from Natural Security", ALPHANUMERIC, 32),
 			unmodifiableVariable(SyntaxKind.SV_USER, "Returns the user id of the current user, as taken from Natural Security", ALPHANUMERIC, 8),
 			unmodifiableVariable(SyntaxKind.INIT_USER, """
 				Returns the value of the profile parameter `USER`.
@@ -241,6 +270,7 @@ public class BuiltInFunctionTable
 
 				- If a page break occurs, the value changes to `ENTR`.
 				""", ALPHANUMERIC, 4),
+			unmodifiableVariable(SyntaxKind.PID, "Returns the current process ID as a string", ALPHANUMERIC, 32),
 			function(SyntaxKind.SV_ISN, """
 				Gets or sets the internal sequence number of the current Adabas record initiated by `FIND` or `READ`.
 
@@ -387,14 +417,17 @@ public class BuiltInFunctionTable
 
 	private static Map.Entry<SyntaxKind, SystemVariableDefinition> variable(SyntaxKind kind, String documentation, DataFormat format, double length, boolean modifiable)
 	{
-		var name = kind.toString().replace("_", "-");
-		return Map.entry(kind, new SystemVariableDefinition("*%s".formatted(name), documentation, new DataType(format, length), modifiable));
+		return Map.entry(kind, new SystemVariableDefinition("*%s".formatted(getName(kind)), documentation, new DataType(format, length), modifiable));
 	}
 
 	private static Map.Entry<SyntaxKind, SystemFunctionDefinition> function(SyntaxKind kind, String documentation, DataFormat format, double length, BuiltInFunctionParameter... parameter)
 	{
-		var name = kind.toString().replace("_", "-");
-		return Map.entry(kind, new SystemFunctionDefinition("*%s".formatted(name), documentation, new DataType(format, length), Arrays.asList(parameter)));
+		return Map.entry(kind, new SystemFunctionDefinition("*%s".formatted(getName(kind)), documentation, new DataType(format, length), Arrays.asList(parameter)));
+	}
+
+	private static String getName(SyntaxKind kind)
+	{
+		return kind.toString().replace("_", "-").replace("SV-", "");
 	}
 
 	private BuiltInFunctionTable()

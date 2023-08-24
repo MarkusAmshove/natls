@@ -274,6 +274,55 @@ class DefinitionEndpointTests extends LanguageServerTest
 		);
 	}
 
+	@Test
+	void definitionShouldNotBreakAfterOrEquals()
+	{
+		assertSingleDefinitionInSameModule(
+			"""
+				DEFINE DATA LOCAL
+				1 #VAR (A10)
+				END-DEFINE
+
+				IF 5 = 5 OR = 6 OR = 8
+				WRITE #V${}$AR
+				END-IF
+
+				END
+				""",
+			1, 2
+		);
+	}
+
+	@Test
+	void nodesFromAnIncludedCopycodeShouldNotBeConsidered()
+	{
+		createOrSaveFile("LIBONE", "CC.NSC", """
+			IGNORE
+			IGNORE
+			IGNORE
+			IGNORE
+			IGNORE
+			IGNORE
+			#CC-VAR := 'H' /* Same line number and column as #MOD-VAR := ...
+			""");
+		var definitions = getDefinitions("""
+			DEFINE DATA LOCAL
+			1 #MOD-VAR (A10)
+			1 #CC-VAR (A10)
+			END-DEFINE
+			INCLUDE CC
+			IGNORE
+			#M${}$OD-VAR := 'A' /* Same line number and column as #CC-VAR := ...
+			END
+			""");
+
+		assertThat(definitions).hasSize(1);
+		var definition = definitions.get(0);
+		assertThat(definition.getRange().getStart().getLine())
+			.as("Line 1 (zero based) is #MOD-VAR and expected, whereas line 2 would be #CC-VAR and the bug that we try to fix")
+			.isEqualTo(1); // #MOD-VAR in Define Data
+	}
+
 	@Override
 	protected LspTestContext getContext()
 	{

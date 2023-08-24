@@ -32,7 +32,7 @@ public class CreateRedefineRefactoringShould extends CodeActionTest
 	@Test
 	void beApplicableWhenHoveringALocalVariable()
 	{
-		assertSingleCodeAction(
+		assertCodeActionWithTitle(
 			"Redefine #MY-VAR",
 			"LIBONE",
 			"SUBN.NSN",
@@ -99,7 +99,7 @@ public class CreateRedefineRefactoringShould extends CodeActionTest
 	@Test
 	void addARedefinitionWithOneVariableOfSameType()
 	{
-		assertSingleCodeAction(
+		assertCodeActionWithTitle(
 			"Redefine #MY-VAR",
 			"LIBONE",
 			"SUBN.NSN",

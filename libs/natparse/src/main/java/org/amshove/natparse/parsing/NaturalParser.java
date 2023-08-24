@@ -2,6 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
+import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFile;
@@ -56,13 +57,44 @@ public class NaturalParser
 		if (file.getFiletype() == NaturalFileType.FUNCTION) // skip over DEFINE FUNCTION
 		{
 			// TODO: Implement proper when implementing different NaturalModules
-			while (!(tokens.peek().kind() == SyntaxKind.DEFINE && tokens.peek(1).kind() == SyntaxKind.DATA))
+			while (!tokens.isAtEnd())
 			{
+				if (tokens.peek().kind() == SyntaxKind.DEFINE && tokens.peek(1).kind() == SyntaxKind.DATA)
+				{
+					break;
+				}
+				if (tokens.peek().kind() == SyntaxKind.RETURNS)
+				{
+					tokens.advance(); // RETURNS
+					if (tokens.peek().kind() == SyntaxKind.LPAREN)
+					{
+						tokens.advance(); // (
+						var typeTokenSource = tokens.advance().source();
+						if (tokens.peek().kind() == SyntaxKind.COMMA || tokens.peek().kind() == SyntaxKind.DOT)
+						{
+							typeTokenSource += tokens.advance().source(); // decimal
+							typeTokenSource += tokens.advance().source(); // next number
+						}
+						var type = DataType.fromString(typeTokenSource);
+						tokens.advance(); // )
+						if (tokens.peek().kind() == SyntaxKind.DYNAMIC)
+						{
+							type = DataType.ofDynamicLength(type.format());
+						}
+						naturalModule.setReturnType(type);
+					}
+					advanceToDefineData(tokens);
+					break;
+				}
+
 				tokens.advance();
 			}
 		}
 
-		if (tokens.peek().kind() == SyntaxKind.DEFINE && tokens.peek(1).kind() == SyntaxKind.DATA)
+		// Try to advance to DEFINE DATA.
+		// If the module contains a DEFINE DATA, the TokenLists offset will be set to the start of DEFINE DATA.
+		// This was introduced to temporarily skip over INCLUDE and OPTION before DEFINE DATA
+		if (advanceToDefineData(tokens))
 		{
 			topLevelNodes.add(parseDefineData(tokens, moduleProvider, naturalModule));
 		}
@@ -75,6 +107,24 @@ public class NaturalParser
 		naturalModule.setSyntaxTree(SyntaxTree.create(ReadOnlyList.from(topLevelNodes)));
 
 		return naturalModule;
+	}
+
+	private boolean advanceToDefineData(TokenList tokens)
+	{
+		SyntaxToken current;
+		SyntaxToken next;
+		for (var offset = 0; offset < tokens.size(); offset++)
+		{
+			current = tokens.peek(offset);
+			next = tokens.peek(offset + 1);
+			if (current != null && next != null && current.kind() == SyntaxKind.DEFINE && next.kind() == SyntaxKind.DATA)
+			{
+				tokens.advanceBy(offset);
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private IDefineData parseDefineData(TokenList tokens, IModuleProvider moduleProvider, NaturalModule naturalModule)
@@ -111,7 +161,7 @@ public class NaturalParser
 			}
 		}
 
-		if (naturalModule.body() != null)
+		if (naturalModule.body() != null && naturalModule.file().getFiletype() != NaturalFileType.COPYCODE)
 		{
 			var typer = new TypeChecker();
 			for (var diagnostic : typer.check(naturalModule.body()))

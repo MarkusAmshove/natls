@@ -33,22 +33,16 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 	@Test
 	void addAVariableToDefineDataWhenNoVariablesArePresent()
 	{
-		var result = receiveCodeActions("LIBONE", "MEINS.NSN", """
+		assertCodeActionWithTitle("Declare local variable #NAME", "LIBONE", "MEINS.NSN", """
 			DEFINE DATA
 			END-DEFINE
 
 			WRITE #N${}$AME
 
 			END
-			""");
-
-		var actions = result.codeActions();
-
-		assertContainsCodeAction("Declare variable #NAME", actions);
-
-		assertSingleCodeAction(actions)
+			""")
 			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
-			.resultsApplied(result.savedSource(), """
+			.resultsApplied("""
 				DEFINE DATA
 				LOCAL
 				1 #NAME (A) DYNAMIC
@@ -61,9 +55,88 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 	}
 
 	@Test
+	void addAParameterToDefineDataWhenNoVariablesArePresent()
+	{
+		assertCodeActionWithTitle("Declare parameter #NAME", "LIBONE", "MEINS.NSN", """
+			DEFINE DATA
+			END-DEFINE
+
+			WRITE #N${}$AME
+
+			END
+			""")
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.resultsApplied("""
+				DEFINE DATA
+				PARAMETER
+				1 #NAME (A) DYNAMIC
+				END-DEFINE
+
+				WRITE #NAME
+
+				END
+				""");
+	}
+
+	@Test
+	void addAParameterToDefineDataWhenOtherVariablesArePresent()
+	{
+		assertCodeActionWithTitle("Declare parameter #NAME", "LIBONE", "MEINS.NSN", """
+			DEFINE DATA
+			LOCAL
+			1 #VAR1 (A10)
+			END-DEFINE
+
+			WRITE #N${}$AME
+
+			END
+			""")
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.resultsApplied("""
+				DEFINE DATA
+				PARAMETER
+				1 #NAME (A) DYNAMIC
+				LOCAL
+				1 #VAR1 (A10)
+				END-DEFINE
+
+				WRITE #NAME
+
+				END
+				""");
+	}
+
+	@Test
+	void addAParameterToDefineDataWhenOtherParametersArePresent()
+	{
+		assertCodeActionWithTitle("Declare parameter #NAME", "LIBONE", "MEINS.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #PARM1 (A10)
+			END-DEFINE
+
+			WRITE #N${}$AME
+
+			END
+			""")
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.resultsApplied("""
+				DEFINE DATA
+				PARAMETER
+				1 #PARM1 (A10)
+				1 #NAME (A) DYNAMIC
+				END-DEFINE
+
+				WRITE #NAME
+
+				END
+				""");
+	}
+
+	@Test
 	void addAVariableToDefineDataWhenNoVariablesButAScopeArePresent()
 	{
-		var result = receiveCodeActions("LIBONE", "MEINS.NSN", """
+		assertCodeActionWithTitle("Declare local variable #NAME", "LIBONE", "MEINS.NSN", """
 			DEFINE DATA
 			LOCAL
 			END-DEFINE
@@ -71,15 +144,9 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 			WRITE #N${}$AME
 
 			END
-			""");
-
-		var actions = result.codeActions();
-
-		assertContainsCodeAction("Declare variable #NAME", actions);
-
-		assertSingleCodeAction(actions)
+			""")
 			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
-			.resultsApplied(result.savedSource(), """
+			.resultsApplied("""
 				DEFINE DATA
 				LOCAL
 				1 #NAME (A) DYNAMIC
@@ -94,7 +161,7 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 	@Test
 	void addAVariableToDefineDataWhenAnotherVariableIsAlreadyPresent()
 	{
-		var result = receiveCodeActions("LIBONE", "MEINS.NSN", """
+		assertCodeActionWithTitle("Declare local variable #NAME", "LIBONE", "MEINS.NSN", """
 			DEFINE DATA
 			LOCAL
 			1 #ANOTHERVAR (A10)
@@ -103,15 +170,9 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 			WRITE #N${}$AME
 
 			END
-			""");
-
-		var actions = result.codeActions();
-
-		assertContainsCodeAction("Declare variable #NAME", actions);
-
-		assertSingleCodeAction(actions)
+			""")
 			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
-			.resultsApplied(result.savedSource(), """
+			.resultsApplied("""
 				DEFINE DATA
 				LOCAL
 				1 #NAME (A) DYNAMIC
@@ -134,7 +195,7 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 			END-DEFINE
 			""");
 
-		var result = receiveCodeActions("LIBONE", "MEINS.NSN", """
+		assertCodeActionWithTitle("Add LOCAL USING to DATAAREA (from LIBONE)", "LIBONE", "MEINS.NSN", """
 			DEFINE DATA
 			LOCAL
 			END-DEFINE
@@ -142,15 +203,9 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 			WRITE #IN-L${}$DA
 
 			END
-			""");
-
-		var actions = result.codeActions();
-
-		assertContainsCodeAction("Add USING to DATAAREA (from LIBONE)", actions);
-
-		assertCodeAction(actions.get(0))
+			""")
 			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
-			.resultsApplied(result.savedSource(), """
+			.resultsApplied("""
 				DEFINE DATA
 				LOCAL USING DATAAREA
 				LOCAL
@@ -172,27 +227,105 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 			END-DEFINE
 			""");
 
-		var result = receiveCodeActions("LIBONE", "MEINS.NSN", """
+		assertCodeActionWithTitle("Add LOCAL USING to DATAAREA (from LIBONE)", "LIBONE", "MEINS.NSN", """
 			DEFINE DATA
 			END-DEFINE
 
 			WRITE #IN-L${}$DA
 
 			END
-			""");
-
-		var actions = result.codeActions();
-
-		assertContainsCodeAction("Add USING to DATAAREA (from LIBONE)", actions);
-
-		assertCodeAction(actions.get(0))
+			""")
 			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
-			.resultsApplied(result.savedSource(), """
+			.resultsApplied("""
 				DEFINE DATA
 				LOCAL USING DATAAREA
 				END-DEFINE
 
 				WRITE #IN-LDA
+
+				END
+				""");
+	}
+
+	@Test
+	void notRecommendAddingAUsingToAPdaIfDataAreaIsNotAPda()
+	{
+		createOrSaveFile("LIBONE", "PDAAA.NSL", """
+			DEFINE DATA
+			LOCAL
+			1 #IN-LDA (A5)
+			END-DEFINE
+			""");
+
+		assertNoCodeActionWithTitle("Add PARAMETER USING to PDAAA (from LIBONE)", "LIBONE", "MEINS.NSN", """
+			DEFINE DATA
+			END-DEFINE
+
+			WRITE #IN-${}$LDA
+
+			END
+			""");
+	}
+
+	@Test
+	void addAParameterUsingIfAnUnresolvedVariableCanBeFoundInAParameterDataAreaAndAScopeIsNotAlreadyPresent()
+	{
+		createOrSaveFile("LIBONE", "PDAAA.NSA", """
+			DEFINE DATA
+			PARAMETER
+			1 #IN-PDA (A5)
+			END-DEFINE
+			""");
+
+		assertCodeActionWithTitle("Add PARAMETER USING to PDAAA (from LIBONE)", "LIBONE", "MEINS.NSN", """
+			DEFINE DATA
+			END-DEFINE
+
+			WRITE #IN-${}$PDA
+
+			END
+			""")
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.resultsApplied("""
+				DEFINE DATA
+				PARAMETER USING PDAAA
+				END-DEFINE
+
+				WRITE #IN-PDA
+
+				END
+				""");
+	}
+
+	@Test
+	void addAParameterUsingIfAnUnresolvedVariableCanBeFoundInAParameterDataAreaAndAScopeIsAlreadyPresent()
+	{
+		createOrSaveFile("LIBONE", "PDAAA.NSA", """
+			DEFINE DATA
+			PARAMETER
+			1 #IN-PDA (A5)
+			END-DEFINE
+			""");
+
+		assertCodeActionWithTitle("Add PARAMETER USING to PDAAA (from LIBONE)", "LIBONE", "MEINS.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #P-PARM (A1)
+			END-DEFINE
+
+			WRITE #IN-${}$PDA
+
+			END
+			""")
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.resultsApplied("""
+				DEFINE DATA
+				PARAMETER USING PDAAA
+				PARAMETER
+				1 #P-PARM (A1)
+				END-DEFINE
+
+				WRITE #IN-PDA
 
 				END
 				""");
@@ -205,19 +338,17 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 			WRITE #THE-VAR-I-NEED
 			""");
 
-		var result = receiveCodeActions("LIBONE", "SUB.NSN", """
+		assertCodeActionWithTitle("Declare local variable #THE-VAR-I-NEED", "LIBONE", "SUB.NSN", """
 			DEFINE DATA
 			LOCAL
 			END-DEFINE
 			   
 			INCLUDE TH${}$ECC
 			END
-			""");
-
-		assertCodeAction(result.codeActions().get(0))
+			""")
 			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
-			.hasTitle("Declare variable #THE-VAR-I-NEED")
-			.resultsApplied(result.savedSource(), """
+			.hasTitle("Declare local variable #THE-VAR-I-NEED")
+			.resultsApplied("""
 				DEFINE DATA
 				LOCAL
 				1 #THE-VAR-I-NEED (A) DYNAMIC

@@ -13,13 +13,13 @@ public class CreateRedefineRefactoring implements ICodeActionProvider
 	@Override
 	public boolean isApplicable(RefactoringContext context)
 	{
-		return context.nodeAtPosition()instanceof ITypedVariableNode typedVariableNode && typedVariableNode.scope().isLocal();
+		return context.nodeAtStartPosition()instanceof ITypedVariableNode typedVariableNode && typedVariableNode.scope().isLocal();
 	}
 
 	@Override
 	public List<CodeAction> createCodeAction(RefactoringContext context)
 	{
-		var typedVariable = ((ITypedVariableNode) context.nodeAtPosition());
+		var typedVariable = ((ITypedVariableNode) context.nodeAtStartPosition());
 
 		var textEdit = new TextEdit();
 		var insertText = "%d REDEFINE %s".formatted(typedVariable.level(), typedVariable.name());

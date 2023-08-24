@@ -49,6 +49,12 @@ class UsingNode extends BaseSyntaxNode implements IUsingNode
 		return defineData;
 	}
 
+	@Override
+	public VariableScope scope()
+	{
+		return scope;
+	}
+
 	void setUsingTarget(SyntaxToken using)
 	{
 		this.using = using;

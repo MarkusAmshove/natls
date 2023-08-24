@@ -2,8 +2,11 @@ package org.amshove.natls.testlifecycle;
 
 import org.eclipse.lsp4j.TextEdit;
 
+import java.util.List;
+
 public class TextEditApplier
 {
+	private int deletedLines = 0;
 
 	public String apply(TextEdit edit, String source)
 	{
@@ -11,9 +14,9 @@ public class TextEditApplier
 		var lines = source.split("\n");
 		var resultingSource = new StringBuilder();
 
-		var startLine = edit.getRange().getStart().getLine();
+		var startLine = edit.getRange().getStart().getLine() - deletedLines;
 		var startLineOffset = edit.getRange().getStart().getCharacter();
-		var endLine = edit.getRange().getEnd().getLine();
+		var endLine = edit.getRange().getEnd().getLine() - deletedLines;
 		var endLineOffset = edit.getRange().getEnd().getCharacter();
 
 		for (var lineNumber = 0; lineNumber < lines.length; lineNumber++)
@@ -35,6 +38,15 @@ public class TextEditApplier
 
 				if (lineNumber == startLine && charIndex == startLineOffset)
 				{
+					if (edit.getNewText().isEmpty())
+					{
+						deletedLines++;
+					}
+					if (edit.getNewText().contains("\n"))
+					{
+						deletedLines--;
+					}
+
 					resultingSource.append(edit.getNewText());
 				}
 
@@ -50,6 +62,34 @@ public class TextEditApplier
 			}
 		}
 
+		// A line that needs to be changed isn't present anymore.
+		// Put the new text before the last line
+		if (edit.getRange().getStart().getLine() >= lines.length)
+		{
+			var resultedLines = resultingSource.toString().split("\n");
+			var last = resultedLines[resultedLines.length - 1];
+			resultingSource = new StringBuilder();
+			for (int i = 0; i < resultedLines.length - 1; i++)
+			{
+				resultingSource
+					.append(resultedLines[i])
+					.append("\n");
+			}
+			resultingSource.append(edit.getNewText());
+			resultingSource.append(last).append("\n");
+		}
+
 		return resultingSource.toString();
+	}
+
+	public String applyAll(List<? extends TextEdit> edits, String source)
+	{
+		var editedSource = source;
+		for (var edit : edits)
+		{
+			editedSource = apply(edit, editedSource);
+		}
+
+		return editedSource;
 	}
 }

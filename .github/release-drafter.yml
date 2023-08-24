@@ -17,6 +17,9 @@ categories:
   - title: '🪲 Bugfixes'
     labels:
       - 'bug🪲'
+  - title: '📖 Documentation'
+    labels:
+      - 'documentation'
   - title: '🧰 Maintenance'
     collapse-after: 3
     labels:

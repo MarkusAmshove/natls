@@ -61,7 +61,7 @@ class LexerForStringsShould extends AbstractLexerTest
 	@Test
 	void lexHexStrings()
 	{
-		assertTokens("H'00'", token(SyntaxKind.STRING_LITERAL, "H'00'"));
+		assertTokens("H'00'", token(SyntaxKind.HEX_LITERAL, "H'00'"));
 	}
 
 	@Test
@@ -187,5 +187,69 @@ class LexerForStringsShould extends AbstractLexerTest
 		assertThat(hello.source()).isEqualTo("'HelloWorldYay'");
 		var write = tokens.advance();
 		assertThat(write.line()).isEqualTo(3);
+	}
+
+	@Test
+	void lexDateStringLiterals()
+	{
+		assertTokens(
+			"D'1990-01-01'",
+			token(SyntaxKind.DATE_LITERAL, "D'1990-01-01'")
+		);
+	}
+
+	@Test
+	void reportADiagnosticForUnterminatedDateLiterals()
+	{
+		assertDiagnostic(
+			"#D'1990-01-01",
+			assertedDiagnostic(2, 2, 0, 11, LexerError.UNTERMINATED_STRING)
+		);
+	}
+
+	@Test
+	void lexTimeStringLiterals()
+	{
+		assertTokens(
+			"T'09:10:12'",
+			token(SyntaxKind.TIME_LITERAL, "T'09:10:12'")
+		);
+	}
+
+	@Test
+	void reportADiagnosticForUnterminatedTimeLiterals()
+	{
+		assertDiagnostic(
+			"#T'09:10:12",
+			assertedDiagnostic(2, 2, 0, 9, LexerError.UNTERMINATED_STRING)
+		);
+	}
+
+	@Test
+	void lexExtendedTimeStringLiterals()
+	{
+		assertTokens(
+			"E'2010-05-05 09:10:12'",
+			token(SyntaxKind.EXTENDED_TIME_LITERAL, "E'2010-05-05 09:10:12'")
+		);
+	}
+
+	@Test
+	void reportADiagnosticForUnterminatedExtendedTimeLiterals()
+	{
+		assertDiagnostic(
+			"#E'2010-05-05",
+			assertedDiagnostic(2, 2, 0, 11, LexerError.UNTERMINATED_STRING)
+		);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"''", "\"\"", "T''", "H''", "D''", "E''"
+	})
+	void reportADiagnosticForEmptyStringLiterals(String literal)
+	{
+		assertDiagnostic(literal, assertedDiagnostic(0, 0, 0, literal.length(), LexerError.INVALID_STRING_LENGTH));
 	}
 }

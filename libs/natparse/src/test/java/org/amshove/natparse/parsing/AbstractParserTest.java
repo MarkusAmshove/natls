@@ -78,7 +78,7 @@ public abstract class AbstractParserTest<NodeType>
 	protected void assertDiagnosticsContain(ReadOnlyList<IDiagnostic> diagnostics, ParserError expectedError)
 	{
 		assertThat(diagnostics.size())
-			.as("Expected to get at least one diagnostic, but found none")
+			.as("Expected to get at least one diagnostic of type <%s>, but found none".formatted(expectedError.name()))
 			.isGreaterThan(0);
 		assertThat(diagnostics)
 			.as("Diagnostic %s(%s) not found".formatted(expectedError.name(), expectedError.id()))
@@ -126,8 +126,24 @@ public abstract class AbstractParserTest<NodeType>
 		return module;
 	}
 
+	protected NaturalModule newEmptySubprogram()
+	{
+		var file = new NaturalFile("SUBPROG", Path.of(""), NaturalFileType.SUBPROGRAM);
+		var module = new NaturalModule(file);
+		module.setDefineData(new DefineDataNode());
+		return module;
+	}
+
+	protected NaturalModule newEmptyCopyCode()
+	{
+		var file = new NaturalFile("THECC", Path.of(""), NaturalFileType.COPYCODE);
+		var module = new NaturalModule(file);
+		return module;
+	}
+
 	protected IVariableReferenceNode assertIsVariableReference(IOperandNode operand, String name)
 	{
+		assertThat(operand).as("Expected a variable reference, but operand is null").isNotNull();
 		var variable = assertNodeType(operand, IVariableReferenceNode.class);
 		assertThat(variable.referencingToken().symbolName()).isEqualTo(name);
 		return variable;

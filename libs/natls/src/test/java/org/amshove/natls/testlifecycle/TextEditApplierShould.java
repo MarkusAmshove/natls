@@ -3,13 +3,20 @@ package org.amshove.natls.testlifecycle;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 class TextEditApplierShould
 {
-	private final TextEditApplier sut = new TextEditApplier();
+	private TextEditApplier sut;
+
+	@BeforeEach
+	void setup()
+	{
+		sut = new TextEditApplier();
+	}
 
 	@Test
 	void applyAnInsertEdit()

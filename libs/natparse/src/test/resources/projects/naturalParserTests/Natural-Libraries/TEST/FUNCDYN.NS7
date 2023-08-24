@@ -1,0 +1,17 @@
+* >Natural Source Header 000000
+* :Mode S
+* :CP
+* <Natural Source Header
+DEFINE FUNCTION FUNC
+
+  RETURNS (A) DYNAMIC
+
+  DEFINE DATA
+  LOCAL
+  END-DEFINE
+
+FUNC := 'A'
+
+END-FUNCTION
+
+END

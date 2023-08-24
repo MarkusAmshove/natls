@@ -14,6 +14,7 @@ import org.amshove.natparse.parsing.ParserError;
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionKind;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Stream;
@@ -26,26 +27,42 @@ public class UnresolvedReferenceQuickFix extends AbstractQuickFix
 		registerMultipleQuickFixes(ParserError.UNRESOLVED_REFERENCE.id(), this::fixUnresolvedReference);
 	}
 
+	@Override
+	protected boolean canFixInForeignFiles()
+	{
+		return true;
+	}
+
 	private List<CodeAction> fixUnresolvedReference(QuickFixContext context)
 	{
 		var unresolvedReference = context.diagnostic().getMessage().replace("Unresolved reference:", "").trim().toUpperCase();
 
 		return Stream.concat(
 			createUsingImportCandidates(context, unresolvedReference),
-			Stream.of(createDeclareVariableEdit(context, unresolvedReference))
+			createDeclareVariableEdit(context, unresolvedReference)
 		)
 			.toList();
 	}
 
-	private CodeAction createDeclareVariableEdit(QuickFixContext context, String unresolvedReference)
+	private Stream<CodeAction> createDeclareVariableEdit(QuickFixContext context, String unresolvedReference)
 	{
-		return new CodeActionBuilder("Declare variable %s".formatted(unresolvedReference), CodeActionKind.QuickFix)
-			.fixesDiagnostic(context.diagnostic())
-			.appliesWorkspaceEdit(
-				new WorkspaceEditBuilder()
-					.addsVariable(context.file(), unresolvedReference, "(A) DYNAMIC", VariableScope.LOCAL)
-			)
-			.build();
+		var inferredType = "(A) DYNAMIC";
+		return Stream.of(
+			new CodeActionBuilder("Declare local variable %s".formatted(unresolvedReference), CodeActionKind.QuickFix)
+				.fixesDiagnostic(context.diagnostic())
+				.appliesWorkspaceEdit(
+					new WorkspaceEditBuilder()
+						.addsVariable(context.file(), unresolvedReference, inferredType, VariableScope.LOCAL)
+				)
+				.build(),
+			new CodeActionBuilder("Declare parameter %s".formatted(unresolvedReference), CodeActionKind.QuickFix)
+				.fixesDiagnostic(context.diagnostic())
+				.appliesWorkspaceEdit(
+					new WorkspaceEditBuilder()
+						.addsVariable(context.file(), unresolvedReference, inferredType, VariableScope.PARAMETER)
+				)
+				.build()
+		);
 	}
 
 	private Stream<CodeAction> createUsingImportCandidates(QuickFixContext context, String unresolvedReference)
@@ -56,14 +73,35 @@ public class UnresolvedReferenceQuickFix extends AbstractQuickFix
 		residingLibrary.getStepLibs().stream().map(l -> findVariableCandidatesInLibrary(unresolvedReference, l)).forEach(candidates::addAll);
 
 		return candidates.stream()
-			.map(
-				c -> new CodeActionBuilder("Add USING to %s (from %s)".formatted(c.module.name(), c.module.file().getLibrary().getName()), CodeActionKind.QuickFix)
-					.fixesDiagnostic(context.diagnostic())
-					.appliesWorkspaceEdit(
-						new WorkspaceEditBuilder()
-							.addsUsing(context.file(), c.module.name())
-					)
-					.build()
+			.flatMap(
+				c ->
+				{
+					var codeActions = new ArrayList<CodeAction>();
+					codeActions.add(
+						new CodeActionBuilder("Add LOCAL USING to %s (from %s)".formatted(c.module.name(), c.module.file().getLibrary().getName()), CodeActionKind.QuickFix)
+							.fixesDiagnostic(context.diagnostic())
+							.appliesWorkspaceEdit(
+								new WorkspaceEditBuilder()
+									.addsUsing(context.file(), c.module.name(), VariableScope.LOCAL)
+							)
+							.build()
+					);
+
+					if (c.module.file().getFiletype() == NaturalFileType.PDA)
+					{
+						codeActions.add(
+							new CodeActionBuilder("Add PARAMETER USING to %s (from %s)".formatted(c.module.name(), c.module.file().getLibrary().getName()), CodeActionKind.QuickFix)
+								.fixesDiagnostic(context.diagnostic())
+								.appliesWorkspaceEdit(
+									new WorkspaceEditBuilder()
+										.addsUsing(context.file(), c.module.name(), VariableScope.PARAMETER)
+								)
+								.build()
+						);
+					}
+
+					return codeActions.stream();
+				}
 			);
 	}
 

@@ -4,10 +4,8 @@ import org.amshove.natparse.infrastructure.IFilesystem;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -18,6 +16,7 @@ class BuildFileBuilder
 	private final Path buildFilePath;
 	private final IFilesystem fileSystem;
 	private final Set<Path> sourceFolders = new HashSet<>();
+	private final Set<Path> includeSourceFolders = new HashSet<>();
 
 	BuildFileBuilder(Path buildFilePath)
 	{
@@ -32,14 +31,23 @@ class BuildFileBuilder
 		xml.append("<LibrarySteplib>\n");
 		xml.append("<LibrarySteplibName>").append(name).append("</LibrarySteplibName>\n");
 
-		var joinedSteplibs = Arrays.stream(steplibs)
-			.collect(Collectors.joining(";"));
+		var joinedSteplibs = String.join(";", steplibs);
 
 		xml.append("<LibrarySteplibExtensions>").append(joinedSteplibs).append("</LibrarySteplibExtensions>\n");
 		xml.append("</LibrarySteplib>\n");
 
 		addSourceFolder(name);
 
+		return this;
+	}
+
+	BuildFileBuilder addIncludeLibrary(String libName)
+	{
+		var includePath = buildFilePath.getParent().resolve("include");
+		when(fileSystem.exists(includePath)).thenReturn(true);
+		when(fileSystem.exists(includePath.resolve(libName))).thenReturn(true);
+		includeSourceFolders.add(includePath.resolve(libName));
+		when(fileSystem.listDirectories(includePath)).thenReturn(includeSourceFolders.stream().toList());
 		return this;
 	}
 

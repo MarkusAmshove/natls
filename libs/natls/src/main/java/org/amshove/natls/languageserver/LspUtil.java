@@ -1,5 +1,6 @@
 package org.amshove.natls.languageserver;
 
+import org.amshove.natls.DiagnosticOriginalUri;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.lexing.SyntaxToken;
@@ -44,7 +45,8 @@ public class LspUtil
 
 	public static Diagnostic toLspDiagnostic(String sourceTool, IDiagnostic diagnostic)
 	{
-		return new Diagnostic(
+		var positions = new DiagnosticOriginalUri(pathToUri(diagnostic.originalPosition().filePath()));
+		var lspDiagnostic = new Diagnostic(
 			new Range(
 				new Position(diagnostic.line(), diagnostic.offsetInLine()),
 				new Position(diagnostic.line(), diagnostic.offsetInLine() + diagnostic.length())
@@ -54,6 +56,8 @@ public class LspUtil
 			sourceTool,
 			diagnostic.id()
 		);
+		lspDiagnostic.setData(positions);
+		return lspDiagnostic;
 	}
 
 	private static DiagnosticSeverity mapSeverity(IDiagnostic diagnostic)
@@ -102,6 +106,16 @@ public class LspUtil
 		return new Range(
 			new Position(firstNode.position().line(), firstNode.position().offsetInLine()),
 			new Position(lastNode.position().line(), lastNode.position().offsetInLine() + lastNode.position().length())
+		);
+	}
+
+	public static Range toRange(ISyntaxNode startNode, ISyntaxNode endNode)
+	{
+		var firstRange = toRange(startNode);
+		var secondRange = toRange(endNode);
+		return new Range(
+			new Position(firstRange.getStart().getLine(), firstRange.getStart().getCharacter()),
+			new Position(secondRange.getEnd().getLine(), secondRange.getEnd().getCharacter())
 		);
 	}
 
@@ -191,6 +205,14 @@ public class LspUtil
 		return new Range(
 			new Position(startLine, startColumn),
 			new Position(endLine, endColumn)
+		);
+	}
+
+	public static Range toRangeBefore(IPosition position)
+	{
+		return new Range(
+			new Position(position.line(), position.offsetInLine()),
+			new Position(position.line(), position.offsetInLine())
 		);
 	}
 }

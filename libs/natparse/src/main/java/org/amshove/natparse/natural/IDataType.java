@@ -1,8 +1,11 @@
 package org.amshove.natparse.natural;
 
+import static org.amshove.natparse.natural.DataFormat.*;
+
 public interface IDataType
 {
 	int ONE_GIGABYTE = 1073741824;
+	IDataType UNTYPED = new Untyped();
 
 	DataFormat format();
 
@@ -13,18 +16,75 @@ public interface IDataType
 
 	boolean hasDynamicLength();
 
+	default boolean isNumericFamily()
+	{
+		return format() == NUMERIC || format() == PACKED || format() == FLOAT || format() == INTEGER;
+	}
+
+	default boolean isAlphaNumericFamily()
+	{
+		return format() == ALPHANUMERIC || format() == UNICODE || format() == BINARY;
+	}
+
+	/**
+	 * Determines if this type fits into the given type. Implicit conversion is taken into account.</br>
+	 * <strong>This does not compare by byte size</strong>
+	 */
 	default boolean fitsInto(IDataType target)
 	{
-		var bytesFit = this.byteSize() <= target.byteSize();
+		var ourLength = this.hasDynamicLength() ? ONE_GIGABYTE : byteSize();
+		var theirLength = target.hasDynamicLength() ? ONE_GIGABYTE : target.byteSize();
+		var lengthFits = ourLength <= theirLength;
+		var formatIsCompatible = hasCompatibleFormat(target);
+
+		return lengthFits && formatIsCompatible;
+	}
+
+	/**
+	 * Determines if both types have the same family, e.g. N, I, P are all numeric.
+	 */
+	default boolean hasSameFamily(IDataType target)
+	{
 		var targetFormat = target.format();
-		var ourFormat = format();
-		var formatIsCompatible = ourFormat == targetFormat || switch (ourFormat)
+		return format() == targetFormat || switch (format())
 		{
-			case PACKED, FLOAT, INTEGER, NUMERIC -> targetFormat == DataFormat.ALPHANUMERIC || targetFormat == DataFormat.UNICODE;
+			case PACKED, FLOAT, INTEGER, NUMERIC, TIME -> targetFormat == PACKED
+				|| targetFormat == FLOAT
+				|| targetFormat == INTEGER
+				|| targetFormat == NUMERIC
+				|| targetFormat == TIME;
+			case ALPHANUMERIC, UNICODE -> targetFormat == ALPHANUMERIC
+				|| targetFormat == UNICODE
+				|| targetFormat == BINARY;
+			default -> false;
+		};
+	}
+
+	/**
+	 * Takes implicit conversion into account, e.g. N -> A
+	 */
+	default boolean hasCompatibleFormat(IDataType target)
+	{
+		var targetFormat = target.format();
+		return hasSameFamily(target) || switch (format())
+		{
+			case PACKED, FLOAT, INTEGER, NUMERIC -> targetFormat == ALPHANUMERIC
+				|| targetFormat == UNICODE
+				|| isShortBinary(target);
+			case TIME, DATE -> targetFormat == NUMERIC
+				|| targetFormat == PACKED
+				|| targetFormat == ALPHANUMERIC
+				|| targetFormat == UNICODE
+				|| isShortBinary(target)
+				|| targetFormat == INTEGER // this one can fail, but not for early times
+				|| targetFormat == DATE
+				|| targetFormat == TIME
+				|| targetFormat == FLOAT;
+			case LOGIC -> targetFormat == ALPHANUMERIC
+				|| targetFormat == UNICODE;
+			case BINARY -> binaryCompatibility(target);
 			default -> false; // we don't know whats implicitly compatible yet
 		};
-
-		return bytesFit && formatIsCompatible;
 	}
 
 	default String toShortString()
@@ -32,9 +92,9 @@ public interface IDataType
 		var details = "";
 
 		details += "(%s".formatted(format().identifier());
-		if (length() > 0.0)
+		if (length() > 0.0 && !hasDynamicLength())
 		{
-			details += "%s".formatted(DataFormat.formatLength(length()));
+			details += "%s".formatted(formatLength(length()));
 		}
 		details += ")";
 
@@ -78,7 +138,7 @@ public interface IDataType
 		return calculateNumericSize();
 	}
 
-	private int calculateNumericSize()
+	default int calculateNumericSize()
 	{
 		var digitsBeforeDecimalPoint = (int) length();
 		var digitsAfterDecimalPoint = calculateDigitsAfterDecimalPoint();
@@ -86,7 +146,7 @@ public interface IDataType
 		return Math.max(1, digitsBeforeDecimalPoint + digitsAfterDecimalPoint);
 	}
 
-	private int calculatePackedSize()
+	default int calculatePackedSize()
 	{
 		return Math.max(1, (int) (Math.round((calculateNumericSize() + 1) / 2.0)));
 	}
@@ -94,5 +154,35 @@ public interface IDataType
 	private int calculateDigitsAfterDecimalPoint()
 	{
 		return Integer.parseInt((Double.toString(length()).split("\\.")[1]));
+	}
+
+	private boolean isShortBinary()
+	{
+		return format() == BINARY && length() < 5;
+	}
+
+	private boolean isShortBinary(IDataType target)
+	{
+		return target.format() == BINARY && target.length() < 5;
+	}
+
+	private boolean isLongBinary()
+	{
+		return format() == BINARY && length() > 4;
+	}
+
+	private boolean binaryCompatibility(IDataType target)
+	{
+		var targetFormat = target.format();
+		return (isLongBinary() && switch (targetFormat)
+		{
+			case ALPHANUMERIC, UNICODE -> true;
+			default -> false;
+		}) ||
+			(isShortBinary() && switch (targetFormat)
+			{
+			case NUMERIC, PACKED, ALPHANUMERIC, UNICODE, INTEGER, TIME, FLOAT -> true;
+			default -> false;
+			});
 	}
 }

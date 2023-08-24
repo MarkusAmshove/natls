@@ -12,7 +12,7 @@ class CompressNumericQuickFixShould extends CodeActionTest
 	@Test
 	void addsNumericToACompressWhichUsesFloatingNumberTypes()
 	{
-		var result = receiveCodeActions("LIBONE", "SUBMOD.NSN", """
+		assertCodeActionWithTitle("Add NUMERIC to COMPRESS", "LIBONE", "SUBMOD.NSN", """
 			DEFINE DATA
 			LOCAL
 			1 #VAR (N12,7)
@@ -20,14 +20,8 @@ class CompressNumericQuickFixShould extends CodeActionTest
 			END-DEFINE
 			COM${}$PRESS #VAR INTO #TEXT
 			END
-			"""); // 1
-
-		var actions = result.codeActions(); // 2
-
-		assertContainsCodeAction("Add NUMERIC to COMPRESS", actions); // 3
-
-		assertSingleCodeAction(actions) // 4
-			.resultsApplied(result.savedSource(), """
+			""")
+			.resultsApplied("""
 			DEFINE DATA
 			LOCAL
 			1 #VAR (N12,7)
@@ -35,7 +29,7 @@ class CompressNumericQuickFixShould extends CodeActionTest
 			END-DEFINE
 			COMPRESS NUMERIC #VAR INTO #TEXT
 			END
-			"""); // 5
+			""");
 	}
 
 	private static LspTestContext testContext;

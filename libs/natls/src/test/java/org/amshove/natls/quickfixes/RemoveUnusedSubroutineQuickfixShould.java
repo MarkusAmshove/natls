@@ -35,7 +35,7 @@ public class RemoveUnusedSubroutineQuickfixShould extends CodeActionTest
 	@Test
 	void recognizeTheQuickfix()
 	{
-		var result = receiveCodeActions("LIBONE", "MEINS.NSN", """
+		assertCodeActionWithTitle("Remove unused subroutine", "LIBONE", "MEINS.NSN", """
 		DEFINE DATA
 		LOCAL
 		END-DEFINE
@@ -47,16 +47,8 @@ public class RemoveUnusedSubroutineQuickfixShould extends CodeActionTest
 		END-SUBROUTINE
 
 		END
-		""");
-
-		var actions = result.codeActions();
-
-		assertContainsCodeAction("Remove unused subroutine", actions);
-
-		assertSingleCodeAction(actions)
-			.deletesLines(4, 8)
-			.fixes(UnusedLocalSubroutineAnalyzer.UNUSED_SUBROUTINE.getId())
-			.resultsApplied(result.savedSource(), """
+		""")
+			.resultsApplied("""
 				DEFINE DATA
 				LOCAL
 				END-DEFINE
@@ -64,6 +56,7 @@ public class RemoveUnusedSubroutineQuickfixShould extends CodeActionTest
 
 
 				END
-				""");
+				""").deletesLines(4, 8)
+			.fixes(UnusedLocalSubroutineAnalyzer.UNUSED_SUBROUTINE.getId());
 	}
 }

@@ -1,8 +1,8 @@
 package org.amshove.natls;
 
 import org.amshove.natls.languageserver.LspUtil;
-import org.amshove.natls.languageserver.TextEdits;
-import org.amshove.natls.languageserver.UsingToAdd;
+import org.amshove.natls.codemutation.TextEdits;
+import org.amshove.natls.codemutation.UsingToAdd;
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.natural.IHasDefineData;
@@ -17,7 +17,7 @@ import java.util.*;
 
 public class WorkspaceEditBuilder
 {
-	private Map<String, List<TextEdit>> textEdits = new HashMap<>();
+	private final Map<String, List<TextEdit>> textEdits = new HashMap<>();
 
 	public WorkspaceEditBuilder()
 	{
@@ -75,11 +75,11 @@ public class WorkspaceEditBuilder
 		return this;
 	}
 
-	public WorkspaceEditBuilder addsUsing(LanguageServerFile file, String using)
+	public WorkspaceEditBuilder addsUsing(LanguageServerFile file, String using, VariableScope scope)
 	{
 		var edits = textEdits.computeIfAbsent(file.getUri(), u -> new ArrayList<>());
 
-		edits.add(TextEdits.addUsing(file, new UsingToAdd(using, VariableScope.LOCAL)));
+		edits.add(TextEdits.addUsing(file, new UsingToAdd(using, scope)));
 		return this;
 	}
 
@@ -101,5 +101,25 @@ public class WorkspaceEditBuilder
 		var edit = new WorkspaceEdit();
 		edit.setChanges(textEdits);
 		return edit;
+	}
+
+	public WorkspaceEditBuilder addsSubroutine(LanguageServerFile file, String name, String source)
+	{
+		if (!file.getType().canHaveBody())
+		{
+			throw new IllegalStateException("Module of type %s can not have subroutines".formatted(file.getType()));
+		}
+
+		var edits = textEdits.computeIfAbsent(file.getUri(), u -> new ArrayList<>());
+		edits.add(TextEdits.addSubroutine(file, name, source));
+
+		return this;
+	}
+
+	public WorkspaceEditBuilder changesRange(LanguageServerFile file, Range range, String source)
+	{
+		var edits = textEdits.computeIfAbsent(file.getUri(), u -> new ArrayList<>());
+		edits.add(new TextEdit(range, source));
+		return this;
 	}
 }

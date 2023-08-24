@@ -9,13 +9,14 @@ import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.natural.project.NaturalHeader;
 import org.amshove.natparse.natural.project.NaturalProgrammingMode;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class NaturalModule
 	// TODO: Clean up once new subclasses happen. Remove public then
-	implements IExternalSubroutine, IGlobalDataArea, ILocalDataArea, IParameterDataArea, IProgram, ISubprogram
+	implements IExternalSubroutine, IGlobalDataArea, ILocalDataArea, IParameterDataArea, IProgram, ISubprogram, IFunction
 {
 	private final NaturalFile file;
 	private IDefineData defineData;
@@ -26,6 +27,7 @@ public class NaturalModule
 	private ISyntaxTree tree;
 	private ReadOnlyList<SyntaxToken> comments;
 	private NaturalHeader sourceHeader;
+	private IDataType returnType;
 
 	public NaturalModule(NaturalFile file)
 	{
@@ -137,7 +139,7 @@ public class NaturalModule
 		referencableNodes.addAll(nodes);
 	}
 
-	void setComments(ReadOnlyList<SyntaxToken> comments)
+	public void setComments(ReadOnlyList<SyntaxToken> comments)
 	{
 		this.comments = comments;
 	}
@@ -159,7 +161,9 @@ public class NaturalModule
 			return "";
 		}
 
-		var firstLineOfCode = syntaxTree().descendants().first().diagnosticPosition().line();
+		var firstLineOfCode = syntaxTree() != null
+			? syntaxTree().descendants().first().diagnosticPosition().line()
+			: defineData.descendants().first().diagnosticPosition().line();
 
 		return comments.stream()
 			.takeWhile(t -> t.line() < firstLineOfCode)
@@ -194,5 +198,17 @@ public class NaturalModule
 	public NaturalProgrammingMode programmingMode()
 	{
 		return sourceHeader != null ? sourceHeader.getProgrammingMode() : NaturalProgrammingMode.UNKNOWN;
+	}
+
+	@Nullable
+	@Override
+	public IDataType returnType()
+	{
+		return returnType;
+	}
+
+	void setReturnType(IDataType type)
+	{
+		returnType = type;
 	}
 }

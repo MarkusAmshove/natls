@@ -95,6 +95,7 @@ public class CliAnalyzer
 	private final AtomicInteger totalDiagnostics = new AtomicInteger();
 	private final AtomicInteger exceptions = new AtomicInteger();
 	private final AtomicLong linesOfCode = new AtomicLong();
+	private long maxMemoryInBytes = 0L;
 
 	private int analyze(Path projectFilePath)
 	{
@@ -161,6 +162,11 @@ public class CliAnalyzer
 				diagnosticSink.printDiagnostics(filesChecked.get(), file.getPath(), allDiagnosticsInFile);
 				fileStatusSink.printStatus(file.getPath(), MessageType.SUCCESS);
 			});
+			var currentMemory = Runtime.getRuntime().totalMemory();
+			if (currentMemory > maxMemoryInBytes)
+			{
+				maxMemoryInBytes = currentMemory;
+			}
 		}
 
 		var endCheck = System.currentTimeMillis();
@@ -192,6 +198,7 @@ public class CliAnalyzer
 		System.out.println("Slowest lexed module: " + slowestLexedModule);
 		System.out.println("Slowest parsed module: " + slowestParsedModule);
 		System.out.println("Slowest linted module: " + (disableLinting ? "disabled" : slowestLintedModule));
+		System.out.printf("Peak memory usage: %.2f Mib%n", maxMemoryInBytes / 1024.0 / 1024.0);
 
 		System.out.println();
 
@@ -226,6 +233,8 @@ public class CliAnalyzer
 		{
 			fileStatusSink.printError(file.getPath(), MessageType.LEX_EXCEPTION, e);
 			exceptions.incrementAndGet();
+			System.out.println(file.getPath());
+			e.printStackTrace();
 			return null;
 		}
 	}
@@ -268,6 +277,8 @@ public class CliAnalyzer
 		{
 			fileStatusSink.printError(file.getPath(), MessageType.PARSE_EXCEPTION, e);
 			exceptions.incrementAndGet();
+			System.out.println(file.getPath());
+			e.printStackTrace();
 			return null;
 		}
 	}
@@ -294,6 +305,8 @@ public class CliAnalyzer
 		{
 			fileStatusSink.printError(file.getPath(), MessageType.LINT_EXCEPTION, e);
 			exceptions.incrementAndGet();
+			System.out.println(file.getPath());
+			e.printStackTrace();
 			return null;
 		}
 	}

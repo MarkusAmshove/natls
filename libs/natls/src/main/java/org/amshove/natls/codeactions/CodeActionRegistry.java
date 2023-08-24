@@ -2,6 +2,8 @@ package org.amshove.natls.codeactions;
 
 import org.eclipse.lsp4j.CodeAction;
 import org.reflections.Reflections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -11,6 +13,7 @@ public enum CodeActionRegistry
 {
 	INSTANCE;
 
+	private static final Logger log = LoggerFactory.getLogger(CodeActionRegistry.class);
 	private final List<ICodeActionProvider> codeActionProviders;
 
 	CodeActionRegistry()
@@ -65,9 +68,17 @@ public enum CodeActionRegistry
 		var codeActions = new ArrayList<CodeAction>();
 		for (var codeActionProvider : codeActionProviders)
 		{
-			if (codeActionProvider.isApplicable(context))
+			try
 			{
-				codeActions.addAll(codeActionProvider.createCodeAction(context));
+				if (codeActionProvider.isApplicable(context))
+				{
+					codeActions.addAll(codeActionProvider.createCodeAction(context));
+				}
+			}
+			catch (Exception e)
+			{
+				// skip this one
+				log.error("Could not use provider %s".formatted(codeActionProvider.getClass().getSimpleName()), e);
 			}
 		}
 

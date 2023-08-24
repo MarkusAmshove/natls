@@ -4,15 +4,17 @@ This document tracks the implementation status of Natural statements.
 
 Legend:
 
-:x: - not implemented (64)
 
-:white_check_mark: - implemented or reporting (51)
+:x: - not implemented (46)
 
-partial - partially implemented to prevent false positives (7)
+:white_check_mark: - implemented or reporting (57)
+
+partial - partially implemented to prevent false positives (14)
+
 
 | Statement | Status             |
 | --- |--------------------|
-| ACCEPT/REJECT | :x:                |
+| ACCEPT/REJECT | :white_check_mark: |
 | ADD | :white_check_mark: |
 | ASSIGN | :white_check_mark: |
 | AT BREAK | :white_check_mark: |
@@ -33,20 +35,21 @@ partial - partially implemented to prevent false positives (7)
 | CLOSE WORK FILE | :white_check_mark: |
 | COMMIT (SQL) | :x:                |
 | COMPRESS | :white_check_mark: |
+| COMPOSE | :white_check_mark: |
 | COMPUTE | :white_check_mark: |
 | CREATE OBJECT | :x:                |
 | DECIDE FOR | :white_check_mark: |
-| DECIDE ON | :x:                |
+| DECIDE ON | :white_check_mark: |
 | DEFINE CLASS | :x:                |
 | DEFINE DATA | :white_check_mark: |
 | DEFINE FUNCTION | partial            |
 | DEFINE PRINTER | :white_check_mark: |
 | DEFINE PROTOTYPE | partial            |
 | DEFINE SUBROUTINE | :white_check_mark: |
-| DEFINE WINDOW | partial            |
+| DEFINE WINDOW | :white_check_mark: |
 | DEFINE WORK FILE | :white_check_mark: |
 | DELETE | :x:                |
-| DELETE (SQL) | :x:                |
+| DELETE (SQL) | partial            |
 | DISPLAY | :x:                |
 | DIVIDE | :white_check_mark: |
 | DOWNLOAD PC FILE | :white_check_mark: |
@@ -68,27 +71,26 @@ partial - partially implemented to prevent false positives (7)
 | IF SELECTION | :white_check_mark: |
 | IGNORE | :white_check_mark: |
 | INCLUDE | :white_check_mark: |
-| INPUT | :x:                |
-| INSERT (SQL) | :x:                |
+| INPUT | partial            |
+| INSERT (SQL) | partial            |
 | INTERFACE | :x:                |
-| LIMIT | :x:                |
+| LIMIT | :white_check_mark: |
 | METHOD | :x:                |
-| MOVE | :x:                |
-| MOVE INDEXED | :x:                |
+| MOVE | :white_check_mark: |
 | MULTIPLY | :white_check_mark: |
 | NEWPAGE | :white_check_mark: |
-| ON ERROR | :x:                |
+| ON ERROR | :white_check_mark: |
 | OPEN CONVERSATION | :x:                |
-| OPTIONS | :x:                |
+| OPTIONS | :partial:          |
 | PARSE XML | :x:                |
 | PASSW | :x:                |
 | PERFORM | :white_check_mark: |
-| PERFORM BREAK PROCESSING | :x:                |
-| PRINT | :x:                |
+| PERFORM BREAK PROCESSING | :white_check_mark: |
+| PRINT | partial            |
 | PROCESS | :x:                |
 | PROCESS COMMAND | :x:                |
 | PROCESS PAGE | :x:                |
-| PROCESS SQL (SQL) | :x:                |
+| PROCESS SQL (SQL) | partial            |
 | PROPERTY | :x:                |
 | READ | :x:                |
 | READ RESULT SET (SQL) | :x:                |
@@ -96,18 +98,17 @@ partial - partially implemented to prevent false positives (7)
 | READLOB | :x:                |
 | REDUCE | :white_check_mark: |
 | REINPUT | :x:                |
-| REJECT | :x:                |
 | RELEASE | :x:                |
-| REPEAT | :x:                |
+| REPEAT | :white_check_mark: |
 | REQUEST DOCUMENT | :x:                |
 | RESET | :white_check_mark: |
 | RESIZE | :white_check_mark: |
 | RETRY | :x:                |
 | ROLLBACK (SQL) | :x:                |
 | RUN | :x:                |
-| SELECT (SQL) | :white_check_mark: |
+| SELECT (SQL) | partial            |
 | SEND METHOD | :x:                |
-| SEPARATE | :x:                |
+| SEPARATE | :white_check_mark: |
 | SET CONTROL | :x:                |
 | SET GLOBALS | :x:                |
 | SET KEY | :white_check_mark: |
@@ -122,7 +123,7 @@ partial - partially implemented to prevent false positives (7)
 | SUSPEND IDENTICAL SUPPRESS | :x:                |
 | TERMINATE | :white_check_mark: |
 | UPDATE | :x:                |
-| UPDATE (SQL) | :x:                |
+| UPDATE (SQL) | partial            |
 | UPDATELOB | :x:                |
 | UPLOAD PC FILE | :x:                |
 | WRITE | partial            |
@@ -134,7 +135,8 @@ partial - partially implemented to prevent false positives (7)
 
 These are not planned to be implemented, because they're reporting mode only.
 
-- `LOOP`
 - `DO/DOEND`
+- `LOOP`
+- `MOVE INDEXED`
 - `OBTAIN`
 - `REDEFINE`

@@ -2,6 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.ReadOnlyList;
+import org.amshove.natparse.natural.IStatementVisitor;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.ISyntaxNodeVisitor;
 
@@ -60,12 +61,12 @@ class BaseSyntaxNode implements ISyntaxNode
 	}
 
 	@Override
-	public void accept(ISyntaxNodeVisitor visitor)
+	public void acceptNodeVisitor(ISyntaxNodeVisitor visitor)
 	{
 		visitor.visit(this);
 		for (var node : nodes)
 		{
-			node.accept(visitor);
+			node.acceptNodeVisitor(visitor);
 		}
 	}
 
@@ -117,5 +118,11 @@ class BaseSyntaxNode implements ISyntaxNode
 		var oldIndex = nodes.indexOf(oldChild);
 		nodes.set(oldIndex, newChild);
 		newChild.setParent(this);
+	}
+
+	@Override
+	public void acceptStatementVisitor(IStatementVisitor visitor)
+	{
+		// do nothing
 	}
 }

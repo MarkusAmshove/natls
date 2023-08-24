@@ -1,6 +1,7 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.IDiagnostic;
+import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
@@ -18,7 +19,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 
 	public ReadOnlyList<IDiagnostic> check(ISyntaxTree tree)
 	{
-		tree.accept(this);
+		tree.acceptNodeVisitor(this);
 
 		return ReadOnlyList.from(diagnostics);
 	}
@@ -28,7 +29,14 @@ final class TypeChecker implements ISyntaxNodeVisitor
 	{
 		try
 		{
-			checkNode(node);
+			if (node instanceof IStatementNode statementNode)
+			{
+				checkStatement(statementNode);
+			}
+			else
+			{
+				checkNode(node);
+			}
 		}
 		catch (Exception e)
 		{
@@ -45,33 +53,283 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		}
 	}
 
-	private void checkNode(ISyntaxNode node)
+	private void checkStatement(IStatementNode statement)
 	{
-		if (node instanceof IMutateVariables mutator)
+		if (statement instanceof IMutateVariables mutator)
 		{
 			ensureMutable(mutator);
 		}
 
-		if (node instanceof IDivideStatementNode divide)
+		if (statement instanceof IAssignmentStatementNode assignment)
+		{
+			checkAssign(assignment);
+			return;
+		}
+
+		if (statement instanceof IDivideStatementNode divide)
 		{
 			checkDivide(divide);
+			return;
 		}
 
-		if (node instanceof IWriteWorkNode writeWork)
+		if (statement instanceof IWriteWorkNode writeWork)
 		{
 			checkWriteWork(writeWork);
+			return;
 		}
 
+		if (statement instanceof IDecideOnNode decideOn)
+		{
+			checkDecideOnBranches(decideOn);
+		}
+	}
+
+	private void checkAssign(IAssignmentStatementNode assignment)
+	{
+		if (!(assignment.target()instanceof IVariableReferenceNode targetRef
+			&& targetRef.reference()instanceof ITypedVariableNode typedTarget
+			&& typedTarget.type() != null))
+		{
+			return;
+		}
+
+		if (assignment.operand() instanceof IArithmeticExpressionNode)
+		{
+			return;
+		}
+
+		var targetType = assignment.target()instanceof ITypeInferable inferableTarget
+			? inferableTarget.inferType()
+			: null;
+
+		var operandType = assignment.operand()instanceof ITypeInferable inferableOperand
+			? inferableOperand.inferType()
+			: null;
+
+		if (targetType == null || operandType == null || targetType == IDataType.UNTYPED || operandType == IDataType.UNTYPED)
+		{
+			return;
+		}
+
+		if (assignment.operand()instanceof ILiteralNode literal)
+		{
+			operandType = literal.reInferType(targetType);
+		}
+
+		if (assignment.operand()instanceof IVariableReferenceNode refOperand
+			&& refOperand.reference()instanceof ITypedVariableNode refVariable
+			&& refVariable.type() != null
+			&& refVariable.type().isConstant()
+			&& refVariable.type().initialValue() != null
+			&& refVariable.type().initialValue().kind().isLiteralOrConst())
+		{
+			operandType = new LiteralNode(refVariable.type().initialValue()).reInferType(targetType);
+		}
+
+		if (assignment.operand() instanceof ILiteralNode)
+		// Only do this for literals
+		// #N5 := #N10 is legal compiler wise, but might result in a runtime error
+		{
+			checkTypeCompatibleOrTruncation(operandType, targetType, assignment.operand());
+			return;
+		}
+
+		checkTypeConvertable(operandType, targetType, assignment.operand());
+	}
+
+	private void checkTypeConvertable(IDataType operandType, IDataType targetType, ISyntaxNode location)
+	{
+		if (!operandType.hasSameFamily(targetType) && !operandType.hasCompatibleFormat(targetType))
+		{
+			report(
+				ParserErrors.typeMismatch(
+					"Type mismatch: Inferred type %s is not implicitly convertable to target type %s".formatted(
+						operandType.toShortString(),
+						targetType.toShortString()
+					),
+					location
+				)
+			);
+		}
+	}
+
+	private void checkTypeCompatibleOrTruncation(IDataType operandType, IDataType targetType, ISyntaxNode location)
+	{
+		if (operandType.fitsInto(targetType))
+		{
+			return;
+		}
+
+		if (operandType.hasCompatibleFormat(targetType))
+		{
+			report(
+				ParserErrors.valueTruncation(
+					"Value is truncated from %s to %s at runtime. Extend the target variable or remove the truncated parts from this literal.".formatted(
+						operandType.toShortString(),
+						targetType.toShortString()
+					),
+					location
+				)
+			);
+		}
+		else
+		{
+			report(
+				ParserErrors.typeMismatch(
+					"Type mismatch: Inferred type %s is not compatible with target type %s".formatted(
+						operandType.toShortString(),
+						targetType.toShortString()
+					),
+					location
+				)
+			);
+		}
+	}
+
+	private void checkNode(ISyntaxNode node)
+	{
 		if (node instanceof ITypedVariableNode typedVariableNode
 			&& typedVariableNode.type() != null
 			&& typedVariableNode.type().initialValue() != null)
 		{
-			checkAlphanumericInitLength(typedVariableNode);
+			checkVariableInitType(typedVariableNode);
+			return;
 		}
 
 		if (node instanceof IVariableReferenceNode variableReference)
 		{
 			checkVariableReference(variableReference);
+			return;
+		}
+
+		if (node instanceof ISystemFunctionNode sysFuncNode)
+		{
+			checkSystemFunctionParameter(sysFuncNode);
+			return;
+		}
+
+		if (node instanceof IProcessingLoopFunctionNode function)
+		{
+			checkProcessingLoopFunctions(function);
+		}
+
+		if (node instanceof IMathFunctionOperandNode function)
+		{
+			checkMathematicalSystemFunctions(function);
+			return;
+		}
+
+		checkAlphaSystemFunctions(node);
+	}
+
+	private void checkProcessingLoopFunctions(IProcessingLoopFunctionNode operand)
+	{
+		var type = inferDataType(operand.parameter());
+		if (operand.parameter() instanceof ILiteralNode || type.format() == DataFormat.NONE)
+		{
+			report(ParserErrors.typeMismatch("Parameter must be a typed variable of any format, but is %s".formatted(type.toShortString()), operand));
+		}
+	}
+
+	private void checkMathematicalSystemFunctions(IMathFunctionOperandNode operand)
+	{
+		var type = inferDataType(operand.parameter());
+		if (type.format() != DataFormat.NONE && !type.isNumericFamily())
+		{
+			report(ParserErrors.typeMismatch("Parameter must be of type N, P, I or F, but is %s".formatted(type.toShortString()), operand));
+		}
+	}
+
+	private boolean checkAlphaSystemFunctions(ISyntaxNode node)
+	{
+		IDataType type;
+
+		if (node instanceof ISortKeyOperandNode sortKeyNode)
+		{
+			type = inferDataType(sortKeyNode.variable());
+			if (type.format() != DataFormat.ALPHANUMERIC || type.length() > 253 || type.hasDynamicLength())
+			{
+				report(ParserErrors.typeMismatch("Parameter must be of type A with a maximum length of 253, but is %s".formatted(type.toShortString()), node));
+			}
+		}
+
+		if (node instanceof IValOperandNode valNode)
+		{
+			type = inferDataType(valNode.parameter());
+			if (valNode.parameter() instanceof ILiteralNode)
+			{
+				return false;
+			}
+
+			if (type.format() != DataFormat.NONE && type.format() != DataFormat.ALPHANUMERIC && type.format() != DataFormat.UNICODE)
+			{
+				report(ParserErrors.typeMismatch("Parameter must be of type A or U, but is %s".formatted(type.toShortString()), node));
+			}
+		}
+
+		return true;
+	}
+
+	private void checkSystemFunctionParameter(ISystemFunctionNode sysFuncNode)
+	{
+		if (sysFuncNode.systemFunction() == SyntaxKind.SV_LENGTH)
+		{
+			for (var parameter : sysFuncNode.parameter())
+			{
+				var type = inferDataType(parameter);
+				if (type == null)
+				{
+					continue;
+				}
+
+				if (type.format() != DataFormat.ALPHANUMERIC && type.format() != DataFormat.UNICODE && type.format() != DataFormat.BINARY)
+				{
+					report(ParserErrors.typeMismatch("Parameter to *LENGTH must be of type A, B or U but is %s".formatted(type.toShortString()), parameter));
+				}
+
+				if (!type.hasDynamicLength())
+				{
+					report(ParserErrors.typeMismatch("Parameter to *LENGTH must have dynamic length (e.g. A DYNAMIC) but is %s".formatted(type.toShortString()), parameter));
+				}
+			}
+		}
+
+		if (sysFuncNode.systemFunction() == SyntaxKind.TRIM && sysFuncNode.parameter().hasItems())
+		{
+			var parameter = sysFuncNode.parameter().first();
+
+			var type = inferDataType(parameter);
+			if (type != null && type.format() != DataFormat.NONE && type.format() != DataFormat.ALPHANUMERIC && type.format() != DataFormat.UNICODE && type.format() != DataFormat.BINARY)
+			{
+				report(ParserErrors.typeMismatch("Parameter to *TRIM must be of type A, B or U but is %s".formatted(type.toShortString()), parameter));
+			}
+		}
+	}
+
+	private void checkDecideOnBranches(IDecideOnNode decideOn)
+	{
+		if (!(decideOn.operand()instanceof IVariableReferenceNode target)
+			|| !(target.reference()instanceof ITypedVariableNode typedTarget)
+			|| typedTarget.type() == null)
+		{
+			return;
+		}
+
+		for (var branch : decideOn.branches())
+		{
+			for (var value : branch.values())
+			{
+				var inferredType = inferDataType(value);
+				if (inferredType.format() != DataFormat.NONE && !inferredType.hasCompatibleFormat(typedTarget.type()))
+				{
+					report(
+						ParserErrors.typeMismatch(
+							"Inferred format %s is not compatible with %s (%s)".formatted(inferredType.format(), typedTarget.declaration().symbolName(), typedTarget.type().format()),
+							value
+						)
+					);
+				}
+			}
 		}
 	}
 
@@ -79,6 +337,12 @@ final class TypeChecker implements ISyntaxNodeVisitor
 	{
 		if (!(variableReference.reference()instanceof IVariableNode target))
 		{
+			return;
+		}
+
+		if (NodeUtil.findFirstParentOfType(variableReference, IFindNode.class) != null)
+		{
+			// Can't correctly type check DDM fields yet, because DDM fields don't have their type loaded
 			return;
 		}
 
@@ -196,24 +460,31 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		}
 	}
 
-	private void checkAlphanumericInitLength(ITypedVariableNode typedVariable)
+	private void checkVariableInitType(ITypedVariableNode typedVariable)
 	{
-		if (typedVariable.type().hasDynamicLength())
+		if (typedVariable.type().hasDynamicLength() || typedVariable.type().initialValue() == null || !typedVariable.type().initialValue().kind().isLiteralOrConst())
 		{
 			return;
 		}
 
-		if (typedVariable.type().format() == DataFormat.ALPHANUMERIC
-			&& typedVariable.type().initialValue().kind() == SyntaxKind.STRING_LITERAL
-			&& typedVariable.type().initialValue().stringValue().length() > typedVariable.type().length()) // TODO: The initializer has to be a IOperandNode
+		var literalInitializer = new LiteralNode(typedVariable.type().initialValue());
+		var inferredInitialType = literalInitializer.reInferType(typedVariable.type());
+
+		if (inferredInitialType.format() == typedVariable.type().format() && !inferredInitialType.fitsInto(typedVariable.type()))
 		{
+			// This check is special for initializers, because the Natural compiler only treats same types which don't fit as errors.
+			// Others are happily truncated ¯\_()_/¯
 			report(
 				ParserErrors.typeMismatch(
-					"Initializer literal length %d is longer than data type length %d"
-						.formatted(typedVariable.type().initialValue().stringValue().length(), (int) typedVariable.type().length()),
-					typedVariable.identifierNode()
+					"Type mismatch: Initializer %s (inferred %s) does not fit into %s"
+						.formatted(typedVariable.type().initialValue().source(), inferredInitialType.toShortString(), typedVariable.type().toShortString()),
+					literalInitializer
 				)
 			);
+		}
+		else
+		{
+			checkTypeCompatibleOrTruncation(inferredInitialType, typedVariable.type(), literalInitializer);
 		}
 	}
 
@@ -250,7 +521,16 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			return;
 		}
 
-		report(ParserErrors.referenceNotMutable("Operand is not modifiable by statement", operand));
+		if (operand instanceof ISubstringOperandNode substring)
+		{
+			ensureMutable(substring.operand());
+			return;
+		}
+
+		if (operand instanceof ILiteralNode)
+		{
+			report(ParserErrors.referenceNotMutable("Operand is not modifiable by statement", operand));
+		}
 	}
 
 	private void ensureMutable(IVariableReferenceNode variableReference)
@@ -333,4 +613,30 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			&& (lowerLiteral.token().kind() == SyntaxKind.ASTERISK
 				|| upperLiteral.token().kind() == SyntaxKind.ASTERISK);
 	}
+
+	private IDataType inferDataType(IOperandNode operand)
+	{
+		if (operand instanceof IVariableReferenceNode variable && variable.reference()instanceof ITypedVariableNode typedRef && typedRef.type() != null)
+		{
+			return typedRef.type();
+		}
+
+		if (operand instanceof ILiteralNode literal)
+		{
+			return literal.inferType();
+		}
+
+		if (operand instanceof ISystemFunctionNode sysFunction)
+		{
+			return BuiltInFunctionTable.getDefinition(sysFunction.systemFunction()).type();
+		}
+
+		if (operand instanceof ISystemVariableNode sysVar)
+		{
+			return BuiltInFunctionTable.getDefinition(sysVar.systemVariable()).type();
+		}
+
+		return new DataType(DataFormat.NONE, IDataType.ONE_GIGABYTE); // couldn't infer, don't raise something yet
+	}
+
 }

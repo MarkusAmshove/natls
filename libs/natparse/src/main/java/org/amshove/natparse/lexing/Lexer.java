@@ -11,6 +11,7 @@ import java.util.List;
 
 public class Lexer
 {
+	private final List<String> copyCodeParameter;
 	private SourceTextScanner scanner;
 	private List<SyntaxToken> tokens;
 	private List<SyntaxToken> comments;
@@ -20,7 +21,7 @@ public class Lexer
 	private NaturalHeader sourceHeader;
 	private IPosition relocatedDiagnosticPosition;
 
-	private boolean inParens;
+	private int parensLevel;
 	private boolean inSourceHeader;
 	private boolean sourceHeaderDone;
 	private SyntaxToken lastBeforeOpenParens;
@@ -38,13 +39,25 @@ public class Lexer
 
 	private LexerMode lexerMode = LexerMode.DEFAULT;
 
+	private static final List<String> NO_PARAMETER = List.of();
+
+	public Lexer()
+	{
+		this(NO_PARAMETER);
+	}
+
+	public Lexer(List<String> copyCodeParameter)
+	{
+		this.copyCodeParameter = copyCodeParameter;
+	}
+
 	public TokenList lex(String source, Path filePath)
 	{
 		this.filePath = filePath;
 		tokens = new ArrayList<>();
 		diagnostics = new ArrayList<>();
 		comments = new ArrayList<>();
-		scanner = new SourceTextScanner(source);
+		scanner = new SourceTextScanner(source, copyCodeParameter);
 		sourceHeader = new NaturalHeader(NaturalProgrammingMode.UNKNOWN, 0);
 		line = 0;
 		currentLineStartOffset = 0;
@@ -72,7 +85,7 @@ public class Lexer
 					consumeNewLine();
 					continue;
 				case '(':
-					inParens = true;
+					parensLevel++;
 					lastBeforeOpenParens = previous();
 					if (lexerMode == LexerMode.IN_DEFINE_DATA && previous().kind() != SyntaxKind.LESSER_SIGN)
 					{
@@ -81,7 +94,7 @@ public class Lexer
 					createAndAddCurrentSingleToken(SyntaxKind.LPAREN);
 					continue;
 				case ')':
-					inParens = false;
+					parensLevel--;
 					if (lexerMode == LexerMode.IN_DATA_TYPE)
 					{
 						lexerMode = LexerMode.IN_DEFINE_DATA;
@@ -158,6 +171,14 @@ public class Lexer
 					}
 					createAndAddCurrentSingleToken(SyntaxKind.CARET);
 					continue;
+				case '!':
+					if (tryCreateIfFollowedBy('!', SyntaxKind.SQL_CONCAT))
+					{
+						continue;
+					}
+					// Single ! is likely to be the ID (Input delimiter char, in most cases this could be comma instead)
+					createAndAddCurrentSingleToken(SyntaxKind.COMMA);
+					continue;
 				case '%':
 					createAndAddCurrentSingleToken(SyntaxKind.PERCENT);
 					continue;
@@ -174,7 +195,18 @@ public class Lexer
 				case 'H':
 					if (scanner.peek(1) == '\'')
 					{
-						consumeHexString();
+						consumeHexLiteral();
+					}
+					else
+					{
+						consumeIdentifierOrKeyword();
+					}
+					continue;
+				case 't':
+				case 'T':
+					if (scanner.peek(1) == '\'')
+					{
+						consumeTimeLiteral();
 					}
 					else
 					{
@@ -187,10 +219,30 @@ public class Lexer
 				case 'B':
 				case 'c':
 				case 'C':
+					consumeIdentifierOrKeyword();
+					continue;
 				case 'd':
 				case 'D':
+					if (scanner.peek(1) == '\'')
+					{
+						consumeDateLiteral();
+					}
+					else
+					{
+						consumeIdentifierOrKeyword();
+					}
+					continue;
 				case 'e':
 				case 'E':
+					if (scanner.peek(1) == '\'')
+					{
+						consumeExtendedTimeLiteral();
+					}
+					else
+					{
+						consumeIdentifierOrKeyword();
+					}
+					continue;
 				case 'f':
 				case 'F':
 				case 'g':
@@ -217,8 +269,6 @@ public class Lexer
 				case 'R':
 				case 's':
 				case 'S':
-				case 't':
-				case 'T':
 				case 'u':
 				case 'U':
 				case 'v':
@@ -240,8 +290,10 @@ public class Lexer
 					consumeIdentifierOrKeyword();
 					continue;
 				case '#':
-				case '&':
 					consumeIdentifier();
+					continue;
+				case '&':
+					consumeIdentifierOrCopyCodeParameter();
 					continue;
 				case '0':
 				case '1':
@@ -271,6 +323,34 @@ public class Lexer
 			}
 		}
 		return TokenList.fromTokensAndDiagnostics(filePath, tokens, diagnostics, comments, sourceHeader);
+	}
+
+	private void consumeIdentifierOrCopyCodeParameter()
+	{
+		// This checks for left over parameter, e.g. if a user didn't provide a parameter
+		if (!copyCodeParameter.isEmpty())
+		{
+			scanner.start();
+			scanner.advance(); // &
+			var offset = 0;
+			while (!isWhitespace(offset) && Character.isDigit(scanner.peek(offset)))
+			{
+				offset++;
+			}
+
+			if (scanner.peek(offset) == '&') // all were digits and we end with ampersand, so this is a copycode parameter
+			{
+				scanner.advance(offset);
+				var position = Integer.parseInt(scanner.lexemeText().substring(1));
+				addDiagnostic("Copy code parameter with position %d not provided".formatted(position), LexerError.MISSING_COPYCODE_PARAMETER);
+			}
+
+			// We roll this all back, because this was just for better error messages.
+			// The &n& will be added as an IDENTIFIER so that copy codes get analyzed correctly.
+			scanner.rollbackCurrentLexeme();
+		}
+
+		consumeIdentifier();
 	}
 
 	private boolean previousWasNoLiteralOrIdentifier()
@@ -345,6 +425,7 @@ public class Lexer
 					filePath
 				)
 			);
+			checkStringLiteralLength(previousUnsafe());
 			return;
 		}
 
@@ -373,6 +454,10 @@ public class Lexer
 			case 'D':
 			case 'e':
 			case 'E':
+			case 'g':
+			case 'G':
+			case 'h':
+			case 'H':
 			case 'i':
 			case 'I':
 			case 'l':
@@ -612,6 +697,16 @@ public class Lexer
 			createAndAdd(SyntaxKind.UBOUND);
 			return;
 		}
+		if (scanner.advanceIfIgnoreCase("GROUP"))
+		{
+			createAndAdd(SyntaxKind.SV_GROUP);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("USER-NAME"))
+		{
+			createAndAdd(SyntaxKind.USER_NAME);
+			return;
+		}
 		if (scanner.advanceIfIgnoreCase("USER"))
 		{
 			createAndAdd(SyntaxKind.SV_USER);
@@ -632,6 +727,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.CURRENT_UNIT);
 			return;
 		}
+		if (scanner.advanceIfIgnoreCase("CURSOR"))
+		{
+			createAndAdd(SyntaxKind.CURSOR);
+			return;
+		}
 		if (scanner.advanceIfIgnoreCase("CURS-COL"))
 		{
 			createAndAdd(SyntaxKind.CURS_COL);
@@ -645,6 +745,16 @@ public class Lexer
 		if (scanner.advanceIfIgnoreCase("CURS-FIELD"))
 		{
 			createAndAdd(SyntaxKind.CURS_FIELD);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("PARSE-COL"))
+		{
+			createAndAdd(SyntaxKind.PARSE_COL);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("PARSE-ROW"))
+		{
+			createAndAdd(SyntaxKind.PARSE_ROW);
 			return;
 		}
 		if (scanner.advanceIfIgnoreCase("INIT-USER"))
@@ -707,6 +817,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.APPLIC_ID);
 			return;
 		}
+		if (scanner.advanceIfIgnoreCase("APPLIC-NAME"))
+		{
+			createAndAdd(SyntaxKind.APPLIC_NAME);
+			return;
+		}
 		if (scanner.advanceIfIgnoreCase("SERVER-TYPE"))
 		{
 			createAndAdd(SyntaxKind.SERVER_TYPE);
@@ -732,6 +847,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.WINDOW_PS);
 			return;
 		}
+		if (scanner.advanceIfIgnoreCase("WINDOW-POS"))
+		{
+			createAndAdd(SyntaxKind.WINDOW_POS);
+			return;
+		}
 		if (scanner.advanceIfIgnoreCase("WINDOW-LS"))
 		{
 			createAndAdd(SyntaxKind.WINDOW_LS);
@@ -740,6 +860,21 @@ public class Lexer
 		if (scanner.advanceIfIgnoreCase("TRANSLATE"))
 		{
 			createAndAdd(SyntaxKind.TRANSLATE);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("PID"))
+		{
+			createAndAdd(SyntaxKind.PID);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("NET-USER"))
+		{
+			createAndAdd(SyntaxKind.NET_USER);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("HOSTNAME"))
+		{
+			createAndAdd(SyntaxKind.HOSTNAME);
 			return;
 		}
 		if (scanner.advanceIfIgnoreCase("MACHINE-CLASS"))
@@ -838,7 +973,7 @@ public class Lexer
 
 	private void consumeIdentifierOrKeyword()
 	{
-		if (inParens && scanner.peek(2) == '=')
+		if (isInParens() && scanner.peek(2) == '=')
 		{
 			var attributeLookahead = scanner.peekText(3);
 			var previous = previous();
@@ -850,10 +985,12 @@ public class Lexer
 				case "CV=" -> controlVariableAttribute();
 				case "DF=" -> dateFormatAttribute();
 				case "DY=" -> dynamicAttribute();
-				case "EM=" -> editorMask();
+				case "ES=" -> emptyLineSuppression();
+				case "EM=" -> editMask();
 				case "IP=" -> inputPromptAttribute();
 				case "IS=" -> identicalSuppressAttribute();
 				case "NL=" -> numericLengthAttribute();
+				case "SB=" -> selectionBoxAttribute();
 				case "SG=" -> signPosition();
 				case "ZP=" -> zeroPrintingAttribute();
 			}
@@ -864,7 +1001,7 @@ public class Lexer
 			}
 		}
 
-		if (inParens && tokens.size() > 2)
+		if (isInParens() && tokens.size() > 2)
 		{
 			var prevLastToken = tokens.get(tokens.size() - 2).kind();
 
@@ -911,6 +1048,17 @@ public class Lexer
 					break;
 			}
 
+			if (isInParens() && scanner.peek(-1) == '.' && (scanner.peek() == '/' || scanner.peek() == ')'))
+			{
+				createAndAdd(SyntaxKind.LABEL_IDENTIFIER);
+				if (scanner.peekText("/*")) // Otherwise it'll be confused with a comment
+				{
+					createAndAddCurrentSingleToken(SyntaxKind.SLASH);
+					createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
+				}
+				return;
+			}
+
 			if (scanner.peek() == '/' && lexerMode == LexerMode.IN_DATA_TYPE)
 			{
 				// Slash is a valid character for identifiers, if we're lexing a datatype we can be pretty confident about the slash being for array dimensions
@@ -918,10 +1066,19 @@ public class Lexer
 			}
 
 			if (scanner.peek() == '/')
-			{ // TODO: this does not work for "KEYWORD/*", eg. END-SUBROUTINE/* bla bla
+			{
+				var possibleKeyword = KeywordTable.getKeyword(scanner.lexemeText());
+				var asteriskFollows = scanner.peek(1) == '*';
+				if (possibleKeyword != null && asteriskFollows)
+				{
+					// We just assume that something like END-SUBROUTINE/* is meant as END-SUBROUTINE plus comment
+					createAndAdd(possibleKeyword);
+					return;
+				}
+
 				kindHint = SyntaxKind.IDENTIFIER;
 
-				if (scanner.peek(1) == '*' && tokens.get(tokens.size() - 1).kind() == SyntaxKind.INCLUDE)
+				if (asteriskFollows && tokens.get(tokens.size() - 1).kind() == SyntaxKind.INCLUDE)
 				{
 					// The slash belongs to a comment, and we aren't parsing an array definition.
 					// TODO(lexermode): This should no longer be needed when the array definition is
@@ -985,14 +1142,13 @@ public class Lexer
 			kindHint = SyntaxKind.IDENTIFIER;
 		}
 
-		var lexeme = scanner.lexemeText();
-
 		if (kindHint != null)
 		{
 			createAndAdd(kindHint);
 			return;
 		}
 
+		var lexeme = scanner.lexemeText();
 		var kind = KeywordTable.getKeyword(lexeme);
 		if (kind != null)
 		{
@@ -1012,13 +1168,24 @@ public class Lexer
 		createAndAdd(SyntaxKind.CV);
 	}
 
-	private void editorMask()
+	private void editMask()
 	{
 		scanner.start();
 		scanner.advance(3); // EM=
 		var isInString = false;
-		while (!scanner.isAtEnd() && scanner.peek() != ')')
+		var nestedParens = 0;
+		while (!scanner.isAtEnd() && !(scanner.peek() == ')' && nestedParens == 0) || isInString)
 		{
+			if (scanner.peek() == '(')
+			{
+				nestedParens++;
+			}
+
+			if (scanner.peek() == ')')
+			{
+				nestedParens--;
+			}
+
 			if (scanner.peek() == '\'' || scanner.peek() == '"')
 			{
 				isInString = !isInString;
@@ -1127,6 +1294,14 @@ public class Lexer
 		createAndAdd(SyntaxKind.NL);
 	}
 
+	private void selectionBoxAttribute()
+	{
+		scanner.start();
+		scanner.advance(3); // SB=
+		// we intentionally don't consume more, because the variables should be a list of IDENTIFIERs
+		createAndAdd(SyntaxKind.SB);
+	}
+
 	private void signPosition()
 	{
 		scanner.start();
@@ -1150,6 +1325,19 @@ public class Lexer
 		}
 
 		createAndAdd(SyntaxKind.DY);
+	}
+
+	private void emptyLineSuppression()
+	{
+		scanner.start();
+		scanner.advance(3); // ES=
+
+		while (!scanner.isAtEnd() && isNoWhitespace() && scanner.peek() != ')')
+		{
+			scanner.advance();
+		}
+
+		createAndAdd(SyntaxKind.ES);
 	}
 
 	private void colorDefinition()
@@ -1352,7 +1540,7 @@ public class Lexer
 		scanner.start();
 		while (Character.isDigit(scanner.peek())
 			|| scanner.peek() == '.'
-			|| (scanner.peek() == ',' && !(inParens && tokenBeforeLParenWas(SyntaxKind.IDENTIFIER))) // added to disambiguate between array access #ARR(1,1,1) and floating point numbers
+			|| (scanner.peek() == ',' && !(isInParens() && tokenBeforeLParenWas(SyntaxKind.IDENTIFIER))) // added to disambiguate between array access #ARR(1,1,1) and floating point numbers
 		)
 		{
 			if (scanner.peek() == ',' && !Character.isDigit(scanner.peek(1)))
@@ -1399,13 +1587,72 @@ public class Lexer
 
 	private boolean tokenBeforeLParenWas(SyntaxKind kind)
 	{
-		return inParens && lastBeforeOpenParens != null && lastBeforeOpenParens.kind() == kind;
+		return isInParens() && lastBeforeOpenParens != null && lastBeforeOpenParens.kind() == kind;
 	}
 
-	private void consumeHexString()
+	private void consumeDateLiteral()
+	{
+		scanner.start();
+		scanner.advance(2); // D'
+
+		if (!consumeStringToEnd(SyntaxKind.DATE_LITERAL))
+		{
+			return;
+		}
+
+		createAndAdd(SyntaxKind.DATE_LITERAL);
+		checkStringLiteralLength(previousUnsafe());
+	}
+
+	private void consumeExtendedTimeLiteral()
+	{
+		scanner.start();
+		scanner.advance(2); // E'
+
+		if (!consumeStringToEnd(SyntaxKind.EXTENDED_TIME_LITERAL))
+		{
+			return;
+		}
+
+		createAndAdd(SyntaxKind.EXTENDED_TIME_LITERAL);
+		checkStringLiteralLength(previousUnsafe());
+	}
+
+	private void consumeTimeLiteral()
+	{
+		scanner.start();
+		scanner.advance(2); // T'
+
+		if (!consumeStringToEnd(SyntaxKind.TIME_LITERAL))
+		{
+			return;
+		}
+
+		createAndAdd(SyntaxKind.TIME_LITERAL);
+		checkStringLiteralLength(previousUnsafe());
+	}
+
+	private void consumeHexLiteral()
 	{
 		scanner.start();
 		scanner.advance(2); // H and '
+
+		if (!consumeStringToEnd(SyntaxKind.HEX_LITERAL))
+		{
+			return;
+		}
+
+		createAndAdd(SyntaxKind.HEX_LITERAL);
+		checkStringLiteralLength(previousUnsafe());
+		var hexLiteralChars = previousUnsafe().source().length() - 3; // - H''
+		if (hexLiteralChars % 2 != 0)
+		{
+			addDiagnostic("Invalid HEX literal. Number of characters must be even but was %d.".formatted(hexLiteralChars), LexerError.UNKNOWN_CHARACTER);
+		}
+	}
+
+	private boolean consumeStringToEnd(SyntaxKind kindToCreate)
+	{
 		while (scanner.peek() != '\'' && !scanner.isAtEnd() && !isLineEnd())
 		{
 			scanner.advance();
@@ -1422,20 +1669,13 @@ public class Lexer
 			addDiagnostic("Unterminated String literal, expecting closing [']", LexerError.UNTERMINATED_STRING);
 
 			// We can still produce a valid token, although it is unterminated
-			createAndAdd(SyntaxKind.STRING_LITERAL);
-			return;
+			createAndAdd(kindToCreate);
+			checkStringLiteralLength(previousUnsafe());
+			return false;
 		}
 
-		// We don't evaluate the content. Is it worth it? We could convert it to the
-		// actual characters.
-
-		scanner.advance();
-		createAndAdd(SyntaxKind.STRING_LITERAL);
-		var hexLiteralChars = previousUnsafe().source().length() - 3; // - H''
-		if (hexLiteralChars % 2 != 0)
-		{
-			addDiagnostic("Invalid HEX literal. Number of characters must be even but was %d.".formatted(hexLiteralChars), LexerError.UNKNOWN_CHARACTER);
-		}
+		scanner.advance(); // closing '
+		return true;
 	}
 
 	private void consumeString(char c)
@@ -1483,6 +1723,7 @@ public class Lexer
 		// to be included.
 		scanner.advance();
 		createAndAdd(SyntaxKind.STRING_LITERAL);
+		checkStringLiteralLength(previousUnsafe());
 	}
 
 	private void createAndAdd(SyntaxKind kind)
@@ -1512,7 +1753,15 @@ public class Lexer
 	 */
 	private SyntaxToken previousUnsafe()
 	{
-		return tokens.get(tokens.size() - 1);
+		return previousUnsafe(1);
+	}
+
+	/**
+	 * Returns the previous consumed token at the given relative offset. <strong>Does not do a boundary check</strong>
+	 */
+	private SyntaxToken previousUnsafe(int offset)
+	{
+		return tokens.get(tokens.size() - offset);
 	}
 
 	private int getOffsetInLine()
@@ -1575,6 +1824,39 @@ public class Lexer
 		}
 	}
 
+	private void addDiagnostic(String message, LexerError error, SyntaxToken where)
+	{
+		if (relocatedDiagnosticPosition != null)
+		{
+			diagnostics.add(
+				LexerDiagnostic.create(
+					message,
+					where.offset(),
+					where.offsetInLine(),
+					where.line(),
+					where.length(),
+					where.filePath(),
+					relocatedDiagnosticPosition,
+					error
+				)
+			);
+		}
+		else
+		{
+			diagnostics.add(
+				LexerDiagnostic.create(
+					message,
+					where.offset(),
+					where.offsetInLine(),
+					where.line(),
+					where.length(),
+					where.filePath(),
+					error
+				)
+			);
+		}
+	}
+
 	private int findNextNonWhitespaceLookaheadOffset()
 	{
 		var start = 1;
@@ -1612,9 +1894,26 @@ public class Lexer
 		scanner.reset();
 	}
 
+	private void checkStringLiteralLength(SyntaxToken token)
+	{
+		if (token.stringValue().length() == 0)
+		{
+			addDiagnostic(
+				"String literals in Natural can't be empty. Add a blank.",
+				LexerError.INVALID_STRING_LENGTH,
+				token
+			);
+		}
+	}
+
 	private boolean isValidAivStartAfterPlus(char character)
 	{
 		// Every identifier name is allowed after the AIV plus, except for numbers
 		return isValidIdentifierCharacter(character) && !Character.isDigit(character);
+	}
+
+	private boolean isInParens()
+	{
+		return parensLevel > 0;
 	}
 }

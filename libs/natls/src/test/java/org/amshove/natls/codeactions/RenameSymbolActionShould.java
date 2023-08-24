@@ -1,11 +1,14 @@
 package org.amshove.natls.codeactions;
 
 import org.amshove.natls.testlifecycle.*;
+import org.eclipse.lsp4j.PrepareRenameParams;
 import org.eclipse.lsp4j.RenameParams;
+import org.eclipse.lsp4j.jsonrpc.ResponseErrorException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.*;
 
-public class RenameSymbolActionShould extends LanguageServerTest
+class RenameSymbolActionShould extends LanguageServerTest
 {
 	private static LspTestContext testContext;
 
@@ -22,6 +25,19 @@ public class RenameSymbolActionShould extends LanguageServerTest
 	}
 
 	@Test
+	void notBeAbleToRenameKeywords()
+	{
+		var source = SourceWithCursor.fromSourceWithCursor("""
+			D${}$EFINE DATA LOCAL
+			END-DEFINE
+			END
+			""");
+
+		var file = createOrSaveFile("LIBONE", "RENAM.NSN", source);
+		assertNoRename(new RenameParams(file, source.toSinglePosition(), ""));
+	}
+
+	@Test
 	void renameALocalVariableThroughItsDeclaration()
 	{
 		var source = SourceWithCursor.fromSourceWithCursor("""
@@ -33,9 +49,7 @@ public class RenameSymbolActionShould extends LanguageServerTest
 			""");
 
 		var file = createOrSaveFile("LIBONE", "RENAM.NSN", source);
-		var edit = testContext.languageService().rename(new RenameParams(file, source.toSinglePosition(), "#NEWVAR"));
-
-		WorkspaceEditAssertion.assertThatEdit(edit)
+		assertRename(new RenameParams(file, source.toSinglePosition(), "#NEWVAR"))
 			.changesText(1, "1 #MYVAR (N2)", "1 #NEWVAR (N2)", file)
 			.changesText(3, "WRITE #MYVAR", "WRITE #NEWVAR", file);
 	}
@@ -52,9 +66,7 @@ public class RenameSymbolActionShould extends LanguageServerTest
 			""");
 
 		var file = createOrSaveFile("LIBONE", "RENAM.NSN", source);
-		var edit = testContext.languageService().rename(new RenameParams(file, source.toSinglePosition(), "#NEWVAR"));
-
-		WorkspaceEditAssertion.assertThatEdit(edit)
+		assertRename(new RenameParams(file, source.toSinglePosition(), "#NEWVAR"))
 			.changesText(1, "1 #MYVAR (N2)", "1 #NEWVAR (N2)", file)
 			.changesText(3, "WRITE #MYVAR", "WRITE #NEWVAR", file);
 	}
@@ -80,9 +92,7 @@ public class RenameSymbolActionShould extends LanguageServerTest
 		var ldaFile = createOrSaveFile("LIBONE", "MYLDA.NSL", dataArea);
 		var moduleFile = createOrSaveFile("LIBONE", "LDATEST.NSN", module);
 
-		var edit = testContext.languageService().rename(new RenameParams(moduleFile, module.toSinglePosition(), "#STILLLDA"));
-
-		WorkspaceEditAssertion.assertThatEdit(edit)
+		assertRename(new RenameParams(moduleFile, module.toSinglePosition(), "#STILLLDA"))
 			.changesText(2, "1 #INLDA (A2)", "1 #STILLLDA (A2)", ldaFile)
 			.changesText(3, "WRITE #INLDA", "WRITE #STILLLDA", moduleFile);
 	}
@@ -101,9 +111,7 @@ public class RenameSymbolActionShould extends LanguageServerTest
 			""");
 
 		var file = createOrSaveFile("LIBONE", "RENAMSUB.NSN", source);
-		var edit = testContext.languageService().rename(new RenameParams(file, source.toSinglePosition(), "NEW-SUBROUTINE"));
-
-		WorkspaceEditAssertion.assertThatEdit(edit)
+		assertRename(new RenameParams(file, source.toSinglePosition(), "NEW-SUBROUTINE"))
 			.changesText(2, "DEFINE SUBROUTINE MY-ROUTINE", "DEFINE SUBROUTINE NEW-SUBROUTINE", file)
 			.changesText(5, "PERFORM MY-ROUTINE", "PERFORM NEW-SUBROUTINE", file);
 	}
@@ -122,9 +130,7 @@ public class RenameSymbolActionShould extends LanguageServerTest
 			""");
 
 		var file = createOrSaveFile("LIBONE", "RENAMSUB.NSN", source);
-		var edit = testContext.languageService().rename(new RenameParams(file, source.toSinglePosition(), "NEW-SUBROUTINE"));
-
-		WorkspaceEditAssertion.assertThatEdit(edit)
+		assertRename(new RenameParams(file, source.toSinglePosition(), "NEW-SUBROUTINE"))
 			.changesText(2, "DEFINE SUBROUTINE MY-ROUTINE", "DEFINE SUBROUTINE NEW-SUBROUTINE", file)
 			.changesText(5, "PERFORM MY-ROUTINE", "PERFORM NEW-SUBROUTINE", file);
 	}
@@ -144,11 +150,43 @@ public class RenameSymbolActionShould extends LanguageServerTest
 			""");
 
 		var file = createOrSaveFile("LIBONE", "RENAMEINBODY.NSN", source);
-		var edit = testContext.languageService().rename(new RenameParams(file, source.toSinglePosition(), "#NEW-VAR"));
-
-		WorkspaceEditAssertion.assertThatEdit(edit)
+		assertRename(new RenameParams(file, source.toSinglePosition(), "#NEW-VAR"))
 			.changesText(1, "1 #MYVAR (A5)", "1 #NEW-VAR (A5)", file)
 			.changesText(4, "    WRITE #MYVAR", "    WRITE #NEW-VAR", file);
+	}
+
+	@Test
+	void renameAVariableFromItsAssignmentTargetPosition()
+	{
+		var source = SourceWithCursor.fromSourceWithCursor("""
+			DEFINE DATA LOCAL
+			1 #VAR (A10)
+			END-DEFINE
+			#V${}$AR := 'Hi'
+			END
+			""");
+
+		var file = createOrSaveFile("LIBONE", "RENAMEAS.NSN", source);
+		assertRename(new RenameParams(file, source.toSinglePosition(), "NEW-VARIABLE"))
+			.changesText(1, "1 #VAR (A10)", "1 NEW-VARIABLE (A10)", file)
+			.changesText(3, "#VAR := 'Hi'", "NEW-VARIABLE := 'Hi'", file);
+	}
+
+	@Test
+	void renameAVariableFromItsAssignTargetPosition()
+	{
+		var source = SourceWithCursor.fromSourceWithCursor("""
+			DEFINE DATA LOCAL
+			1 #VAR (A10)
+			END-DEFINE
+			ASSIGN #V${}$AR = 'Hi'
+			END
+			""");
+
+		var file = createOrSaveFile("LIBONE", "RENAMEAS.NSN", source);
+		assertRename(new RenameParams(file, source.toSinglePosition(), "NEW-VARIABLE"))
+			.changesText(1, "1 #VAR (A10)", "1 NEW-VARIABLE (A10)", file)
+			.changesText(3, "ASSIGN #VAR = 'Hi'", "ASSIGN NEW-VARIABLE = 'Hi'", file);
 	}
 
 	@Test
@@ -164,10 +202,48 @@ public class RenameSymbolActionShould extends LanguageServerTest
 			""");
 
 		var file = createOrSaveFile("LIBONE", "RENAM.NSN", source);
-		var edit = testContext.languageService().rename(new RenameParams(file, source.toSinglePosition(), "#NEWVAR"));
-
-		WorkspaceEditAssertion.assertThatEdit(edit)
+		assertRename(new RenameParams(file, source.toSinglePosition(), "#NEWVAR"))
 			.changesText(2, "2 #MYVAR (N2)", "2 #NEWVAR (N2)", file)
 			.changesText(4, "WRITE #GROUP.#MYVAR", "WRITE #GROUP.#NEWVAR", file);
+	}
+
+	@Test
+	void renameAVariableFromItsDecideOnBranch()
+	{
+		var source = SourceWithCursor.fromSourceWithCursor("""
+			DEFINE DATA LOCAL
+			1 #VAR1 (A10)
+			1 #VAR2 (A10)
+			END-DEFINE
+			DECIDE ON FIRST VALUE OF #VAR1
+			VALUE #VA${}$R2
+			NONE IGNORE
+			END-DECIDE
+			END
+			""");
+
+		var file = createOrSaveFile("LIBONE", "RENAM.NSN", source);
+		assertRename(new RenameParams(file, source.toSinglePosition(), "#NEWVAR"))
+			.changesText(2, "1 #VAR2 (A10)", "1 #NEWVAR (A10)", file)
+			.changesText(5, "VALUE #VAR2", "VALUE #NEWVAR", file);
+	}
+
+	private WorkspaceEditAssertion assertRename(RenameParams params)
+	{
+		var prepareParams = new PrepareRenameParams(params.getTextDocument(), params.getPosition());
+		var prepareResponse = testContext.languageService().prepareRename(prepareParams);
+		assertThat(prepareResponse).isNotNull(); // prepareRename throws if it can't rename, so this is just for sanity
+		return WorkspaceEditAssertion.assertThatEdit(testContext.languageService().rename(params));
+	}
+
+	private void assertNoRename(RenameParams params)
+	{
+		assertThatThrownBy(() ->
+		{
+			var prepareParams = new PrepareRenameParams(params.getTextDocument(), params.getPosition());
+			testContext.languageService().prepareRename(prepareParams);
+		})
+			.isInstanceOf(ResponseErrorException.class)
+			.message().startsWith("Can't rename");
 	}
 }

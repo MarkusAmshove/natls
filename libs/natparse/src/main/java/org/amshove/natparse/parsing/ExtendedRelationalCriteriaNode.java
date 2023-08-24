@@ -19,6 +19,7 @@ class ExtendedRelationalCriteriaNode extends BaseSyntaxNode implements IExtended
 		left = relationalCriteriaNode.left();
 
 		var right = new ExtendedRelationalCriteriaPartNode();
+		right.copyFrom(relationalCriteriaNode);
 		right.setComparisonToken(relationalCriteriaNode.comparisonToken());
 		right.setRhs(relationalCriteriaNode.right());
 		addRight(right);

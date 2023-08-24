@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 class CompressStatementParsingShould extends StatementParseTest
@@ -22,8 +23,9 @@ class CompressStatementParsingShould extends StatementParseTest
 		assertThat(compress.isLeavingSpace()).isTrue();
 		assertThat(compress.isWithDelimiters()).isFalse();
 
-		assertThat(assertNodeType(compress.intoTarget(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR");
+		assertIsVariableReference(compress.intoTarget(), "#VAR");
 
+		assertIsVariableReference(compress.mutations().first(), "#VAR");
 		assertNodeOperand(compress, 0, ILiteralNode.class, "'Text'");
 	}
 
@@ -66,7 +68,7 @@ class CompressStatementParsingShould extends StatementParseTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"WITH DELIMITERS", "WITH ALL DELIMITERS", "WITH DELIMITER", "WITH ALL DELIMITER"
+		"WITH DELIMITERS", "WITH ALL DELIMITERS", "WITH DELIMITER", "WITH ALL DELIMITER", "WITH"
 	})
 	void parseWithDelimiters(String permutation)
 	{
@@ -81,6 +83,14 @@ class CompressStatementParsingShould extends StatementParseTest
 		assertThat(compress.isWithDelimiters()).isTrue();
 		assertThat(compress.isWithAllDelimiters()).isTrue();
 		assertThat(assertNodeType(compress.delimiter(), ILiteralNode.class).token().stringValue()).isEqualTo(";");
+	}
+
+	@Test
+	void parseDelimiterWithHexLiteral()
+	{
+		var compress = assertParsesSingleStatement("COMPRESS #VARS(*) INTO #VAR WITH DELIMITER H'0A'", ICompressStatementNode.class);
+		assertThat(compress.isWithDelimiters()).isTrue();
+		assertThat(assertNodeType(compress.delimiter(), ILiteralNode.class).token().source()).isEqualTo("H'0A'");
 	}
 
 	@Test
@@ -129,7 +139,7 @@ class CompressStatementParsingShould extends StatementParseTest
 
 		assertNodeOperand(compress, 0, IVariableReferenceNode.class, "#VAR");
 		assertNodeOperand(compress, 1, IVariableReferenceNode.class, "#VAR2");
-		assertThat(assertNodeType(compress.intoTarget(), IVariableReferenceNode.class).referencingToken().symbolName()).isEqualTo("#VAR3");
+		assertIsVariableReference(compress.intoTarget(), "#VAR3");
 	}
 
 	@Test

@@ -1,15 +1,20 @@
 package org.amshove.natls.codeactions;
 
 import org.amshove.natlint.api.DiagnosticDescription;
+import org.amshove.natls.project.LanguageServerFile;
+import org.amshove.natparse.ReadOnlyList;
 import org.eclipse.lsp4j.CodeAction;
+import org.eclipse.lsp4j.Diagnostic;
 
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public abstract class AbstractQuickFix implements ICodeActionProvider
 {
 	private final Map<String, List<Function<QuickFixContext, CodeAction>>> quickfixes = new HashMap<>();
 	private final Map<String, List<Function<QuickFixContext, List<CodeAction>>>> multiQuickfixes = new HashMap<>();
+	private final Map<String, List<BiFunction<LanguageServerFile, ReadOnlyList<Diagnostic>, CodeAction>>> fixAllFixes = new HashMap<>();
 
 	protected abstract void registerQuickfixes();
 
@@ -35,6 +40,17 @@ public abstract class AbstractQuickFix implements ICodeActionProvider
 		multiQuickfixes.get(diagnosticId).add(quickFixer);
 	}
 
+	protected void registerFixAll(String diagnosticId, BiFunction<LanguageServerFile, ReadOnlyList<Diagnostic>, CodeAction> allFixer)
+	{
+		fixAllFixes.putIfAbsent(diagnosticId, new ArrayList<>());
+		fixAllFixes.get(diagnosticId).add(allFixer);
+	}
+
+	protected boolean canFixInForeignFiles()
+	{
+		return false;
+	}
+
 	@Override
 	public boolean isApplicable(RefactoringContext context)
 	{
@@ -44,20 +60,44 @@ public abstract class AbstractQuickFix implements ICodeActionProvider
 	@Override
 	public List<CodeAction> createCodeAction(RefactoringContext context)
 	{
-		var singleSourceCodeActions = context.diagnosticsAtPosition().stream()
+		var diagnosticsAtPositionInFile = canFixInForeignFiles()
+			? context.diagnosticsAtPosition()
+			: context.diagnosticsAtPosition().stream().filter(d -> context.file().containsDiagnostic(d)).toList();
+
+		var singleSourceCodeActions = diagnosticsAtPositionInFile.stream()
 			.filter(d -> d.getCode() != null && d.getCode().isLeft() && quickfixes.containsKey(d.getCode().getLeft()))
 			.flatMap(d -> quickfixes.get(d.getCode().getLeft()).stream().map(qf -> qf.apply(QuickFixContext.fromCodeActionContext(context, d))))
 			.toList();
 
-		var multiSourceCodeActions = context.diagnosticsAtPosition().stream()
+		var multiSourceCodeActions = diagnosticsAtPositionInFile.stream()
 			.filter(d -> d.getCode() != null && d.getCode().isLeft() && multiQuickfixes.containsKey(d.getCode().getLeft()))
 			.flatMap(d -> multiQuickfixes.get(d.getCode().getLeft()).stream().map(qf -> qf.apply(QuickFixContext.fromCodeActionContext(context, d))))
 			.flatMap(Collection::stream)
 			.toList();
 
-		var codeactions = new ArrayList<CodeAction>();
-		codeactions.addAll(singleSourceCodeActions);
-		codeactions.addAll(multiSourceCodeActions);
-		return codeactions;
+		var codeActions = new ArrayList<CodeAction>();
+		codeActions.addAll(singleSourceCodeActions);
+		codeActions.addAll(multiSourceCodeActions);
+
+		var handledFixAllIds = new HashSet<String>();
+		for (var diagnostic : diagnosticsAtPositionInFile)
+		{
+			var diagnosticId = diagnostic.getCode().getLeft();
+			if (handledFixAllIds.contains(diagnosticId) || !context.file().containsDiagnostic(diagnostic))
+			{
+				continue;
+			}
+
+			if (fixAllFixes.containsKey(diagnosticId))
+			{
+				for (var fixAllFixer : fixAllFixes.get(diagnosticId))
+				{
+					codeActions.add(fixAllFixer.apply(context.file(), context.file().diagnosticsInFileOfType(diagnosticId)));
+				}
+				handledFixAllIds.add(diagnosticId);
+			}
+		}
+
+		return codeActions;
 	}
 }

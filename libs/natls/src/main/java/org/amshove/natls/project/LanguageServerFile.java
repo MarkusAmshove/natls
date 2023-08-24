@@ -1,6 +1,7 @@
 package org.amshove.natls.project;
 
 import org.amshove.natlint.linter.NaturalLinter;
+import org.amshove.natls.DiagnosticOriginalUri;
 import org.amshove.natls.DiagnosticTool;
 import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natls.progress.IProgressMonitor;
@@ -106,12 +107,11 @@ public class LanguageServerFile implements IModuleProvider
 
 	public void open()
 	{
-		if (module == null)
-		{
-			parse();
-		}
+		// Always reparse on open. In the past, some files weren't analyzed correctly because
+		// they've been parsed on another path. This resulted in diagnostics not showing up.
+		parse(ParseStrategy.WITHOUT_CALLERS);
 
-		if (!hasBeenAnalyzed)
+		if (!hasBeenAnalyzed || allDiagnostics().isEmpty())
 		{
 			analyze();
 		}
@@ -126,6 +126,8 @@ public class LanguageServerFile implements IModuleProvider
 	public void changed(String newSource)
 	{
 		clearDiagnosticsByTool(DiagnosticTool.CATALOG);
+		clearDiagnosticsByTool(DiagnosticTool.NATLINT);
+		clearDiagnosticsByTool(DiagnosticTool.NATPARSE);
 		parseAndAnalyze(newSource, ParseStrategy.WITH_CALLERS);
 	}
 
@@ -359,6 +361,7 @@ public class LanguageServerFile implements IModuleProvider
 			var definedata = defineDataParser.parse(tokens);
 			var module = new NaturalModule(file);
 			module.setDefineData(definedata.result());
+			module.setComments(tokens.comments());
 			this.module = module;
 		}
 		catch (Exception e)
@@ -509,5 +512,21 @@ public class LanguageServerFile implements IModuleProvider
 		}
 
 		return tokens.stream();
+	}
+
+	public ReadOnlyList<Diagnostic> diagnosticsInFileOfType(String id)
+	{
+		return ReadOnlyList.from(allDiagnostics().stream().filter(d -> d.getCode().getLeft().equals(id)).filter(this::containsDiagnostic).toList());
+	}
+
+	public boolean containsDiagnostic(Diagnostic diagnostic)
+	{
+		if (diagnostic.getData()instanceof DiagnosticOriginalUri originalUri)
+		{
+			return originalUri.getUri().equals(getUri());
+		}
+
+		// Diagnostics raised by the language server, not parser or linter
+		return false;
 	}
 }

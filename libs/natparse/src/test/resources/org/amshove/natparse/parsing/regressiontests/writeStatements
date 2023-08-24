@@ -1,0 +1,16 @@
+DEFINE DATA
+LOCAL
+END-DEFINE
+
+/* These should all not raise any diagnostics, because no variables are referenced
+WRITE NOTITLE NOHDR USING FORM 'DAFORM'
+WRITE NOTITLE NOHDR USING MAP 'DAMAP'
+WRITE NOTITLE NOHDR USING MAP 'DAMAP' NO PARAMETER
+WRITE (4) 'HI'
+WRITE TITLE LEFT JUSTIFIED UNDERLINED 'Hi' SKIP 2 LINES
+WRITE 'Hi' (I)
+
+
+WRITE 5 /* !{D:ERROR:NPP003} only string literals allowed in write
+
+END
