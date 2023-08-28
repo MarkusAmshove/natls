@@ -438,6 +438,22 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void allowMixedStringConcatInitialValuesForAlphanumericFields()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			define data local
+			1 #ALPH (A5) INIT <'Hello'
+			- H'0A'
+			- 'World'>
+			end-define
+			""");
+
+		var typedVar = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
+		var stringConcat = assertNodeType(typedVar.type().initialValue(), IStringConcatOperandNode.class);
+		assertThat(stringConcat.stringValue()).isEqualTo("Hello\nWorld");
+	}
+
+	@Test
 	void allowNumericConstValuesForAlphanumericFields()
 	{
 		assertParsesWithoutDiagnostics("""
