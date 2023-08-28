@@ -2899,8 +2899,10 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				var normalizedParameter = new ArrayList<String>(include.providedParameter().size());
 				for (var parameter : include.providedParameter())
 				{
-					var token = ((LiteralNode) parameter).token();
-					normalizedParameter.add(token.stringValue());
+					var value = parameter instanceof LiteralNode literal
+						? literal.token().stringValue()
+						: ((StringConcatOperandNode) parameter).stringValue();
+					normalizedParameter.add(value);
 				}
 				var lexer = new Lexer(normalizedParameter);
 				lexer.relocateDiagnosticPosition(shouldRelocateDiagnostics() ? relocatedDiagnosticPosition : referencingToken);
