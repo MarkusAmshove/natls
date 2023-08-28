@@ -330,7 +330,8 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""");
 
 		var variable = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
-		assertThat(variable.type().initialValue().source()).isEqualTo("'hello'");
+		var stringConcant = assertNodeType(variable.type().initialValue(), ILiteralNode.class);
+		assertThat(stringConcant.token().stringValue()).isEqualTo("hello");
 	}
 
 	@Test
@@ -345,7 +346,8 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""");
 
 		var variable = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
-		assertThat(variable.type().initialValue().source()).isEqualTo("'hello world!'");
+		var stringConcant = assertNodeType(variable.type().initialValue(), IStringConcatOperandNode.class);
+		assertThat(stringConcant.stringValue()).isEqualTo("hello world!");
 	}
 
 	@Test
@@ -358,8 +360,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""");
 
 		var variable = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
-		assertThat(variable.type().initialValue().source()).isEqualTo("*DATN");
-		var systemVar = variable.findDescendantOfType(ISystemVariableNode.class);
+		var systemVar = assertNodeType(variable.type().initialValue(), ISystemVariableNode.class);
 		assertThat(systemVar).isNotNull();
 		assertThat(systemVar.systemVariable()).isEqualTo(SyntaxKind.DATN);
 	}
@@ -375,7 +376,8 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var variable = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
 		assertThat(variable.type().isConstant()).isTrue();
-		assertThat(variable.type().initialValue().source()).isEqualTo("'hello'");
+		var literal = assertNodeType(variable.type().initialValue(), ILiteralNode.class);
+		assertThat(literal.token().stringValue()).isEqualTo("hello");
 	}
 
 	@Test
@@ -389,7 +391,8 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var variable = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
 		assertThat(variable.type().isConstant()).isTrue();
-		assertThat(variable.type().initialValue().source()).isEqualTo("'hello'");
+		var literal = assertNodeType(variable.type().initialValue(), ILiteralNode.class);
+		assertThat(literal.token().stringValue()).isEqualTo("hello");
 	}
 
 	@ParameterizedTest

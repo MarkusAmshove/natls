@@ -80,23 +80,6 @@ class LexerForStringsShould extends AbstractLexerTest
 		);
 	}
 
-	@Test
-	void lexConcatenatedString()
-	{
-		assertTokens(
-			"""
-				INPUT
-				'Hello'
-				 - ' World'
-						-'!'
-				 WRITE
-				""",
-			token(SyntaxKind.INPUT),
-			token(SyntaxKind.STRING_LITERAL, "'Hello World!'"),
-			token(SyntaxKind.WRITE)
-		);
-	}
-
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
@@ -154,39 +137,6 @@ class LexerForStringsShould extends AbstractLexerTest
 	{
 		var token = lexSingle("H'31323'");
 		assertThat(token.stringValue()).isEqualTo("120"); // the 3, which is supposed to be 33, is treated as 03
-	}
-
-	@Test
-	void correctlyAdvanceTheLinesOnStringMultilineConcat()
-	{
-		var tokens = lexSource("""
-			'Hello' -
-				'World'
-			WRITE
-			""");
-
-		var hello = tokens.advance();
-		assertThat(hello.line()).isEqualTo(0);
-		assertThat(hello.source()).isEqualTo("'HelloWorld'");
-		var write = tokens.advance();
-		assertThat(write.line()).isEqualTo(2);
-	}
-
-	@Test
-	void correctlyAdvanceTheLinesOnMultipleStringMultilineConcat()
-	{
-		var tokens = lexSource("""
-			'Hello' -
-				'World' -
-				'Yay'
-			WRITE
-			""");
-
-		var hello = tokens.advance();
-		assertThat(hello.line()).isEqualTo(0);
-		assertThat(hello.source()).isEqualTo("'HelloWorldYay'");
-		var write = tokens.advance();
-		assertThat(write.line()).isEqualTo(3);
 	}
 
 	@Test

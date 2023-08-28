@@ -120,10 +120,10 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			&& refOperand.reference()instanceof ITypedVariableNode refVariable
 			&& refVariable.type() != null
 			&& refVariable.type().isConstant()
-			&& refVariable.type().initialValue() != null
-			&& refVariable.type().initialValue().kind().isLiteralOrConst())
+			&& refVariable.type().initialValue() != null)
+
 		{
-			operandType = new LiteralNode(refVariable.type().initialValue()).reInferType(targetType);
+			operandType = inferDataType(refVariable.type().initialValue());
 		}
 
 		if (assignment.operand() instanceof ILiteralNode)
@@ -462,29 +462,35 @@ final class TypeChecker implements ISyntaxNodeVisitor
 
 	private void checkVariableInitType(ITypedVariableNode typedVariable)
 	{
-		if (typedVariable.type().hasDynamicLength() || typedVariable.type().initialValue() == null || !typedVariable.type().initialValue().kind().isLiteralOrConst())
+		var initialNode = typedVariable.type().initialValue();
+		if (typedVariable.type().hasDynamicLength() || initialNode == null ||
+			!(initialNode instanceof ILiteralNode || initialNode instanceof IStringConcatOperandNode))
 		{
 			return;
 		}
 
-		var literalInitializer = new LiteralNode(typedVariable.type().initialValue());
-		var inferredInitialType = literalInitializer.reInferType(typedVariable.type());
+		var inferredInitialType = initialNode instanceof ILiteralNode literal
+			? new LiteralNode(literal.token()).reInferType(typedVariable.type())
+			: ((IStringConcatOperandNode) initialNode).inferType();
 
 		if (inferredInitialType.format() == typedVariable.type().format() && !inferredInitialType.fitsInto(typedVariable.type()))
 		{
 			// This check is special for initializers, because the Natural compiler only treats same types which don't fit as errors.
 			// Others are happily truncated ¯\_()_/¯
+			var initialSource = initialNode instanceof ILiteralNode literal
+				? literal.token().source()
+				: "'%s'".formatted(((IStringConcatOperandNode) initialNode).stringValue());
 			report(
 				ParserErrors.typeMismatch(
 					"Type mismatch: Initializer %s (inferred %s) does not fit into %s"
-						.formatted(typedVariable.type().initialValue().source(), inferredInitialType.toShortString(), typedVariable.type().toShortString()),
-					literalInitializer
+						.formatted(initialSource, inferredInitialType.toShortString(), typedVariable.type().toShortString()),
+					initialNode
 				)
 			);
 		}
 		else
 		{
-			checkTypeCompatibleOrTruncation(inferredInitialType, typedVariable.type(), literalInitializer);
+			checkTypeCompatibleOrTruncation(inferredInitialType, typedVariable.type(), initialNode);
 		}
 	}
 
@@ -624,6 +630,11 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		if (operand instanceof ILiteralNode literal)
 		{
 			return literal.inferType();
+		}
+
+		if (operand instanceof IStringConcatOperandNode stringConcat)
+		{
+			return stringConcat.inferType();
 		}
 
 		if (operand instanceof ISystemFunctionNode sysFunction)
