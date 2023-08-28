@@ -470,7 +470,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		}
 
 		var inferredInitialType = initialNode instanceof ILiteralNode literal
-			? new LiteralNode(literal.token()).reInferType(typedVariable.type())
+			? literal.reInferType(typedVariable.type())
 			: ((IStringConcatOperandNode) initialNode).inferType();
 
 		if (inferredInitialType.format() == typedVariable.type().format() && !inferredInitialType.fitsInto(typedVariable.type()))
