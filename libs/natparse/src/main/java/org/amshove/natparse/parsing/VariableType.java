@@ -1,7 +1,7 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.DataFormat;
+import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.IVariableType;
 
 class VariableType implements IVariableType
@@ -10,7 +10,7 @@ class VariableType implements IVariableType
 	private boolean hasDynamicLength;
 	private DataFormat format;
 	private double length;
-	private SyntaxToken initialValue;
+	private IOperandNode initialValue;
 	private boolean isConstant = false;
 
 	@Override
@@ -32,7 +32,7 @@ class VariableType implements IVariableType
 	}
 
 	@Override
-	public SyntaxToken initialValue()
+	public IOperandNode initialValue()
 	{
 		return initialValue;
 	}
@@ -58,9 +58,9 @@ class VariableType implements IVariableType
 		this.length = length;
 	}
 
-	void setInitialValue(SyntaxToken token)
+	void setInitialValue(IOperandNode node)
 	{
-		initialValue = token;
+		initialValue = node;
 	}
 
 	void setConstant()

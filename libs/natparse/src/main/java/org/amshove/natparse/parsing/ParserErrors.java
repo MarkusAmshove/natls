@@ -16,6 +16,15 @@ import java.util.stream.Collectors;
 
 class ParserErrors
 {
+	private static SyntaxKind getKindFromInitialValue(IOperandNode node)
+	{
+		if (node instanceof IStringConcatOperandNode)
+		{
+			return SyntaxKind.STRING_LITERAL;
+		}
+		return ((ITokenNode) node).token().kind();
+	}
+
 	private static String formatTokenKind(SyntaxToken token)
 	{
 		if (token == null || token.kind() == null)
@@ -99,7 +108,7 @@ class ParserErrors
 	public static ParserDiagnostic initValueMismatch(TypedVariableNode variable, SyntaxKind expectedKind)
 	{
 		return ParserDiagnostic.create(
-			"Type mismatch on initial value. Got <%s> but expected <%s>".formatted(variable.type().initialValue().kind(), expectedKind),
+			"Type mismatch on initial value. Got <%s> but expected <%s>".formatted(getKindFromInitialValue(variable.type().initialValue()), expectedKind),
 			variable.identifierNode(),
 			ParserError.INITIAL_VALUE_TYPE_MISMATCH
 		);
@@ -113,7 +122,7 @@ class ParserErrors
 		}
 
 		return ParserDiagnostic.create(
-			"Type mismatch on initial value. Got <%s> but expected one of <%s>".formatted(variable.type().initialValue().kind(), Arrays.stream(expectedKinds).map(Enum::toString).collect(Collectors.joining(","))),
+			"Type mismatch on initial value. Got <%s> but expected one of <%s>".formatted(getKindFromInitialValue(variable.type().initialValue()), Arrays.stream(expectedKinds).map(Enum::toString).collect(Collectors.joining(","))),
 			variable.identifierNode(),
 			ParserError.INITIAL_VALUE_TYPE_MISMATCH
 		);

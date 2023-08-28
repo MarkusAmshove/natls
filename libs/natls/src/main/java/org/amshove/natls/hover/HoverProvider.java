@@ -248,9 +248,12 @@ public class HoverProvider
 			declaration += " %s".formatted(typedVariableNode.type().toShortString());
 			if (typedVariableNode.type().initialValue() != null)
 			{
+				var initValue = typedVariableNode.type().initialValue()instanceof ITokenNode tokenNode
+					? tokenNode.token().source()
+					: ((IStringConcatOperandNode) typedVariableNode.type().initialValue()).stringValue();
 				declaration += " %s<%s>".formatted(
 					typedVariableNode.type().isConstant() ? "CONST" : "INIT",
-					typedVariableNode.type().initialValue().source()
+					initValue
 				);
 			}
 		}

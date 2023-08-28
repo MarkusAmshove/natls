@@ -241,7 +241,7 @@ abstract class AbstractParser<T>
 		return previousToken();
 	}
 
-	protected ILiteralNode consumeLiteralNode(BaseSyntaxNode node) throws ParseError
+	protected IOperandNode consumeLiteralNode(BaseSyntaxNode node) throws ParseError
 	{
 		if (peekKind(SyntaxKind.LPAREN))
 		{
@@ -257,6 +257,7 @@ abstract class AbstractParser<T>
 			return attribute;
 		}
 
+		// negative numeric literals like `-1`
 		if (peekKind(SyntaxKind.MINUS) && peekKind(1, SyntaxKind.NUMBER_LITERAL))
 		{
 			var combinedLiteral = peek().combine(peek(1), SyntaxKind.NUMBER_LITERAL);
@@ -267,24 +268,67 @@ abstract class AbstractParser<T>
 			return literal;
 		}
 
+		if (peekKind(SyntaxKind.STRING_LITERAL) && peekKind(1, SyntaxKind.MINUS))
+		{
+			return consumeStringConcat(node);
+		}
+
+		return consumeSingleLiteral(node);
+	}
+
+	private ILiteralNode consumeSingleLiteral(BaseSyntaxNode node) throws ParseError
+	{
 		var literal = consumeAny(List.of(SyntaxKind.NUMBER_LITERAL, SyntaxKind.STRING_LITERAL, SyntaxKind.HEX_LITERAL, SyntaxKind.TRUE, SyntaxKind.FALSE, SyntaxKind.ASTERISK, SyntaxKind.DATE_LITERAL, SyntaxKind.TIME_LITERAL, SyntaxKind.EXTENDED_TIME_LITERAL));
 		var literalNode = new LiteralNode(literal);
 		node.addNode(literalNode);
 		return literalNode;
 	}
 
-	protected ILiteralNode consumeLiteralNode(BaseSyntaxNode node, SyntaxKind literalKind) throws ParseError
+	protected ILiteralNode consumeNonConcatLiteralNode(BaseSyntaxNode node) throws ParseError
+	{
+		return ((ILiteralNode) consumeLiteralNode(node));
+	}
+
+	protected ILiteralNode consumeNonConcatLiteralNode(BaseSyntaxNode node, SyntaxKind literalKind) throws ParseError
+	{
+		return ((ILiteralNode) consumeLiteralNode(node, literalKind));
+	}
+
+	private IOperandNode consumeStringConcat(BaseSyntaxNode node) throws ParseError
+	{
+		var stringConcat = new StringConcatOperandNode();
+		node.addNode(stringConcat);
+		while (peek().kind().isLiteralOrConst())
+		{
+			stringConcat.addLiteral(consumeSingleLiteral(stringConcat));
+			if (peekKind(SyntaxKind.MINUS))
+			{
+				consumeMandatory(stringConcat, SyntaxKind.MINUS);
+			}
+			else
+			{
+				break;
+			}
+		}
+		return stringConcat;
+	}
+
+	protected IOperandNode consumeLiteralNode(BaseSyntaxNode node, SyntaxKind literalKind) throws ParseError
 	{
 		var literal = consumeLiteralNode(node);
-		if (literal.token().kind() != literalKind)
+		var gottenKind = literal instanceof ITokenNode tokenNode
+			? tokenNode.token().kind()
+			: SyntaxKind.STRING_LITERAL; // string concat
+
+		if (gottenKind != literalKind)
 		{
-			report(ParserErrors.unexpectedTokenUnsafe(literalKind, literal.token()));
+			report(ParserErrors.unexpectedTokenUnsafe(literalKind, previousToken()));
 		}
 
 		return literal;
 	}
 
-	protected SyntaxToken consumeLiteral(BaseSyntaxNode node) throws ParseError
+	protected SyntaxToken consumeLiteralToken(BaseSyntaxNode node) throws ParseError
 	{
 		if (peek().kind().isSystemVariable())
 		{
@@ -736,7 +780,7 @@ abstract class AbstractParser<T>
 		node.addNode(retOperand);
 		consumeMandatory(retOperand, SyntaxKind.RET);
 		consumeMandatory(retOperand, SyntaxKind.LPAREN);
-		retOperand.setParameter(consumeLiteralNode(retOperand));
+		retOperand.setParameter(consumeNonConcatLiteralNode(retOperand));
 		consumeMandatory(retOperand, SyntaxKind.RPAREN);
 		return retOperand;
 	}

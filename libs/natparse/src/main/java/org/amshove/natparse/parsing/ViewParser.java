@@ -431,7 +431,7 @@ class ViewParser extends AbstractParser<ViewNode>
 				var referenceNode = new SymbolReferenceNode(token.token());
 				typedNode.addReference(referenceNode);
 				dimension.addNode(referenceNode);
-				return typedNode.type().initialValue().intValue();
+				return ((ITokenNode) typedNode.type().initialValue()).token().intValue();
 			}
 		}
 
