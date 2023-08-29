@@ -429,26 +429,12 @@ class ViewParser extends AbstractParser<ViewNode>
 				dimension.addNode(referenceNode);
 				return typedNode.type().initialValue() != null && typedNode.type().initialValue()instanceof ITokenNode tokenNode
 					? tokenNode.token().intValue()
-					: ArrayDimension.UNBOUND_VALUE;
+					: IArrayDimension.UNBOUND_VALUE;
 			}
 		}
 
-		return ArrayDimension.UNBOUND_VALUE;
+		return IArrayDimension.UNBOUND_VALUE;
 	}
-
-	private void checkBounds(IArrayDimension dimension)
-	{
-		if (dimension.lowerBound() < 0)
-		{
-			report(ParserErrors.invalidArrayBound(dimension, dimension.lowerBound()));
-		}
-		if (dimension.upperBound() < 0)
-		{
-			report(ParserErrors.invalidArrayBound(dimension, dimension.upperBound()));
-		}
-	}
-
-	// TODO: Try to generify bound detection with workarounds once tests are green
 
 	/**
 	 * Workaround when the lower bound of an array was consumed as identifier, because apparently / is a valid character
