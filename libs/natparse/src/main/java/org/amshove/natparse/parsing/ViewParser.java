@@ -422,16 +422,14 @@ class ViewParser extends AbstractParser<ViewNode>
 			}
 
 			var constReference = getDeclaredVariable(token);
-			if (!(constReference instanceof TypedVariableNode typedNode) || typedNode.type().initialValue() == null)
-			{
-				report(ParserErrors.arrayDimensionMustBeConstOrInitialized(token));
-			}
-			else
+			if (constReference instanceof TypedVariableNode typedNode)
 			{
 				var referenceNode = new SymbolReferenceNode(token.token());
 				typedNode.addReference(referenceNode);
 				dimension.addNode(referenceNode);
-				return ((ITokenNode) typedNode.type().initialValue()).token().intValue();
+				return typedNode.type().initialValue() != null && typedNode.type().initialValue()instanceof ITokenNode tokenNode
+					? tokenNode.token().intValue()
+					: ArrayDimension.UNBOUND_VALUE;
 			}
 		}
 

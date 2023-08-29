@@ -773,7 +773,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	{
 		"(A1/#length)",
 		"(A1 /#length)",
-		//		TODO(lexermode): "(A1/ #length)"
+		"(A1/ #length)",
 		"(A1 / #length)"
 	})
 	void parseAnArrayThatHasAConstReferenceAsDimensionAndArrayHasConstElements(String variable)
@@ -784,6 +784,31 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			1 #myarray %s const<'a','b'>
 			end-define
 			""".formatted(variable));
+	}
+
+	@Test
+	void raiseADiagnosticForArrayBoundsThatAreNeitherConstNorInit()
+	{
+		assertDiagnostic("""
+			define data local
+			1 #num (i4)
+			1 #array (n12/#num)
+			end-define
+			""", ParserError.ARRAY_DIMENSION_MUST_BE_CONST_OR_INIT);
+	}
+
+	@Test
+	void notRaiseADiagnosticForArrayBoundsThatAreNeitherConstNorInitInViews()
+	{
+		// For Arrays in views it is okay if the dimension is not CONST or INIT
+		// according to the compiler.
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 #num (i4)
+			1 myview view of myddm
+			2 #arrayfield (n12/#num)
+			end-define
+			""");
 	}
 
 	@Test
