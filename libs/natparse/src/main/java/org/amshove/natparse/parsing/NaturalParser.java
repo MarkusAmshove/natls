@@ -54,6 +54,7 @@ public class NaturalParser
 			return naturalModule;
 		}
 
+		VariableNode functionReturnVariable = null;
 		if (file.getFiletype() == NaturalFileType.FUNCTION) // skip over DEFINE FUNCTION
 		{
 			// TODO: Implement proper when implementing different NaturalModules
@@ -63,8 +64,15 @@ public class NaturalParser
 				{
 					break;
 				}
-				if (tokens.peek().kind() == SyntaxKind.RETURNS)
+
+				if (tokens.peek(1).kind() == SyntaxKind.RETURNS)
 				{
+					var functionName = tokens.advance();
+					functionReturnVariable = new VariableNode();
+					functionReturnVariable.setLevel(1);
+					functionReturnVariable.setScope(VariableScope.LOCAL);
+					functionReturnVariable.setDeclaration(new TokenNode(functionName));
+
 					tokens.advance(); // RETURNS
 					if (tokens.peek().kind() == SyntaxKind.LPAREN)
 					{
@@ -82,6 +90,9 @@ public class NaturalParser
 							type = DataType.ofDynamicLength(type.format());
 						}
 						naturalModule.setReturnType(type);
+						var typedReturnVariable = new TypedVariableNode(functionReturnVariable);
+						typedReturnVariable.setType(new VariableType(type));
+						functionReturnVariable = typedReturnVariable;
 					}
 					advanceToDefineData(tokens);
 					break;
@@ -97,6 +108,10 @@ public class NaturalParser
 		if (advanceToDefineData(tokens))
 		{
 			topLevelNodes.add(parseDefineData(tokens, moduleProvider, naturalModule));
+			if (file.getFiletype() == NaturalFileType.FUNCTION && naturalModule.defineData() != null && functionReturnVariable != null)
+			{
+				((DefineDataNode) naturalModule.defineData()).addNode(functionReturnVariable);
+			}
 		}
 
 		if (file.getFiletype().canHaveBody())

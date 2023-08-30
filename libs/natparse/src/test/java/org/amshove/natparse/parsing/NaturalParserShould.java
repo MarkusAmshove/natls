@@ -2,6 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IFunction;
+import org.amshove.natparse.natural.ITypedVariableNode;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.testhelpers.ProjectName;
 import org.junit.jupiter.api.Test;
@@ -66,6 +67,21 @@ class NaturalParserShould extends ParserIntegrationTest
 		var function = (IFunction) module;
 		assertThat(function.returnType().format()).isEqualTo(DataFormat.NUMERIC);
 		assertThat(function.returnType().length()).isEqualTo(12.7);
+	}
+
+	@Test
+	void addTheFunctionAsVariableToItsDefineData(@ProjectName("naturalParserTests") NaturalProject project)
+	{
+		var module = parse(project.findModule("TEST", "FUNCSET"));
+		assertThat(module).isInstanceOf(IFunction.class);
+		var function = (IFunction) module;
+		assertThat(function.returnType().format()).isEqualTo(DataFormat.NUMERIC);
+		assertThat(function.returnType().length()).isEqualTo(12.7);
+		var variable = (ITypedVariableNode) function.defineData().findVariable("FUNCSET");
+		assertThat(variable).as("Function name as variable not found").isNotNull();
+		assertThat(variable.type().format()).isEqualTo(DataFormat.NUMERIC);
+		assertThat(variable.type().length()).isEqualTo(12.7);
+
 	}
 
 	@Test
