@@ -1,6 +1,7 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.natural.DataFormat;
+import org.amshove.natparse.natural.IDataType;
 import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.IVariableType;
 
@@ -12,6 +13,16 @@ class VariableType implements IVariableType
 	private double length;
 	private IOperandNode initialValue;
 	private boolean isConstant = false;
+
+	VariableType()
+	{}
+
+	VariableType(IDataType other)
+	{
+		format = other.format();
+		length = other.length();
+		hasDynamicLength = other.hasDynamicLength();
+	}
 
 	@Override
 	public DataFormat format()

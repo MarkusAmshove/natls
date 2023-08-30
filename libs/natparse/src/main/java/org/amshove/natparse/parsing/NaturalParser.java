@@ -54,6 +54,7 @@ public class NaturalParser
 			return naturalModule;
 		}
 
+		VariableNode functionReturnVariable = null;
 		if (file.getFiletype() == NaturalFileType.FUNCTION) // skip over DEFINE FUNCTION
 		{
 			// TODO: Implement proper when implementing different NaturalModules
@@ -63,8 +64,15 @@ public class NaturalParser
 				{
 					break;
 				}
-				if (tokens.peek().kind() == SyntaxKind.RETURNS)
+
+				if (tokens.peek(1).kind() == SyntaxKind.RETURNS)
 				{
+					var functionName = tokens.advance();
+					functionReturnVariable = new VariableNode();
+					functionReturnVariable.setLevel(1);
+					functionReturnVariable.setScope(VariableScope.LOCAL);
+					functionReturnVariable.setDeclaration(new TokenNode(functionName));
+
 					tokens.advance(); // RETURNS
 					if (tokens.peek().kind() == SyntaxKind.LPAREN)
 					{
@@ -76,12 +84,37 @@ public class NaturalParser
 							typeTokenSource += tokens.advance().source(); // next number
 						}
 						var type = DataType.fromString(typeTokenSource);
+						var typedReturnVariable = new TypedVariableNode(functionReturnVariable);
+
+						if (typeTokenSource.contains("/") || tokens.peek().kind() == SyntaxKind.SLASH)
+						{
+							var firstDimension = new ArrayDimension();
+							// Parsing array dimensions is currently too tightly coupled into DefineDataParser
+							// so we do a rudimentary implementation to revisit later.
+							firstDimension.setLowerBound(IArrayDimension.UNBOUND_VALUE);
+							firstDimension.setUpperBound(IArrayDimension.UNBOUND_VALUE);
+							typedReturnVariable.addDimension(firstDimension);
+							while (tokens.peek().kind() != SyntaxKind.RPAREN && !tokens.isAtEnd())
+							{
+								if (tokens.peek().kind() == SyntaxKind.COMMA)
+								{
+									var nextDimension = new ArrayDimension();
+									nextDimension.setLowerBound(IArrayDimension.UNBOUND_VALUE);
+									nextDimension.setUpperBound(IArrayDimension.UNBOUND_VALUE);
+									typedReturnVariable.addDimension(nextDimension);
+								}
+								tokens.advance();
+							}
+						}
+
 						tokens.advance(); // )
 						if (tokens.peek().kind() == SyntaxKind.DYNAMIC)
 						{
 							type = DataType.ofDynamicLength(type.format());
 						}
 						naturalModule.setReturnType(type);
+						typedReturnVariable.setType(new VariableType(type));
+						functionReturnVariable = typedReturnVariable;
 					}
 					advanceToDefineData(tokens);
 					break;
@@ -97,6 +130,10 @@ public class NaturalParser
 		if (advanceToDefineData(tokens))
 		{
 			topLevelNodes.add(parseDefineData(tokens, moduleProvider, naturalModule));
+			if (file.getFiletype() == NaturalFileType.FUNCTION && naturalModule.defineData() != null && functionReturnVariable != null)
+			{
+				((DefineDataNode) naturalModule.defineData()).addNode(functionReturnVariable);
+			}
 		}
 
 		if (file.getFiletype().canHaveBody())

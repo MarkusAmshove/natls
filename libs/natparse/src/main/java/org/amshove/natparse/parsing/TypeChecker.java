@@ -81,6 +81,37 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		if (statement instanceof IDecideOnNode decideOn)
 		{
 			checkDecideOnBranches(decideOn);
+			return;
+		}
+
+		if (statement instanceof ICompressStatementNode compress)
+		{
+			checkCompress(compress);
+		}
+	}
+
+	private void checkCompress(ICompressStatementNode compress)
+	{
+		for (var operand : compress.operands())
+		{
+			var operandType = inferDataType(operand);
+			if (operandType.format() == DataFormat.LOGIC || operandType.format() == DataFormat.CONTROL)
+			{
+				report(ParserErrors.typeMismatch("COMPRESS operand can't be of type %s".formatted(operandType.format().identifier()), operand));
+			}
+		}
+
+		var targetType = inferDataType(compress.intoTarget());
+		if (targetType.format() != DataFormat.ALPHANUMERIC
+			&& targetType.format() != DataFormat.BINARY
+			&& targetType.format() != DataFormat.UNICODE)
+		{
+			report(
+				ParserErrors.typeMismatch(
+					"COMPRESS target needs to have type A, B or U but got %s".formatted(targetType.toShortString()),
+					compress.intoTarget()
+				)
+			);
 		}
 	}
 
@@ -645,6 +676,11 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		if (operand instanceof ISystemVariableNode sysVar)
 		{
 			return BuiltInFunctionTable.getDefinition(sysVar.systemVariable()).type();
+		}
+
+		if (operand instanceof ISubstringOperandNode substr)
+		{
+			return inferDataType(substr.operand());
 		}
 
 		return new DataType(DataFormat.NONE, IDataType.ONE_GIGABYTE); // couldn't infer, don't raise something yet
