@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
+@SuppressWarnings("DataFlowIssue")
 class NaturalParserShould extends ParserIntegrationTest
 {
 	@Test
@@ -81,7 +82,28 @@ class NaturalParserShould extends ParserIntegrationTest
 		assertThat(variable).as("Function name as variable not found").isNotNull();
 		assertThat(variable.type().format()).isEqualTo(DataFormat.NUMERIC);
 		assertThat(variable.type().length()).isEqualTo(12.7);
+	}
 
+	@Test
+	void parseTheFunctionReturnDimensions(@ProjectName("naturalParserTests") NaturalProject project)
+	{
+		var module = parse(project.findModule("TEST", "FUNC1DIM"));
+		assertThat(module).isInstanceOf(IFunction.class);
+		var function = (IFunction) module;
+		var variable = (ITypedVariableNode) function.defineData().findVariable("FUNC1DIM");
+		assertThat(variable).as("Function name as variable not found").isNotNull();
+		assertThat(variable.dimensions()).hasSize(1);
+	}
+
+	@Test
+	void parseTheFunctionReturnDimensionsForMultipleDimensions(@ProjectName("naturalParserTests") NaturalProject project)
+	{
+		var module = parse(project.findModule("TEST", "FUNC2DIM"));
+		assertThat(module).isInstanceOf(IFunction.class);
+		var function = (IFunction) module;
+		var variable = (ITypedVariableNode) function.defineData().findVariable("FUNC2DIM");
+		assertThat(variable).as("Function name as variable not found").isNotNull();
+		assertThat(variable.dimensions()).hasSize(2);
 	}
 
 	@Test

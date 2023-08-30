@@ -84,13 +84,35 @@ public class NaturalParser
 							typeTokenSource += tokens.advance().source(); // next number
 						}
 						var type = DataType.fromString(typeTokenSource);
+						var typedReturnVariable = new TypedVariableNode(functionReturnVariable);
+
+						if (typeTokenSource.contains("/") || tokens.peek().kind() == SyntaxKind.SLASH)
+						{
+							var firstDimension = new ArrayDimension();
+							// Parsing array dimensions is currently too tightly coupled into DefineDataParser
+							// so we do a rudimentary implementation to revisit later.
+							firstDimension.setLowerBound(IArrayDimension.UNBOUND_VALUE);
+							firstDimension.setUpperBound(IArrayDimension.UNBOUND_VALUE);
+							typedReturnVariable.addDimension(firstDimension);
+							while (tokens.peek().kind() != SyntaxKind.RPAREN && !tokens.isAtEnd())
+							{
+								if (tokens.peek().kind() == SyntaxKind.COMMA)
+								{
+									var nextDimension = new ArrayDimension();
+									nextDimension.setLowerBound(IArrayDimension.UNBOUND_VALUE);
+									nextDimension.setUpperBound(IArrayDimension.UNBOUND_VALUE);
+									typedReturnVariable.addDimension(nextDimension);
+								}
+								tokens.advance();
+							}
+						}
+
 						tokens.advance(); // )
 						if (tokens.peek().kind() == SyntaxKind.DYNAMIC)
 						{
 							type = DataType.ofDynamicLength(type.format());
 						}
 						naturalModule.setReturnType(type);
-						var typedReturnVariable = new TypedVariableNode(functionReturnVariable);
 						typedReturnVariable.setType(new VariableType(type));
 						functionReturnVariable = typedReturnVariable;
 					}
