@@ -68,6 +68,37 @@ class ExtractSubroutineRefactoringShould extends CodeActionTest
 	}
 
 	@Test
+	void notForgetToExtractArrayAccesses()
+	{
+		assertCodeActionWithTitle(
+			"Extract inline subroutine", "LIBONE", "SUBN.NSN",
+			"""
+				DEFINE DATA LOCAL
+				1 #ARR (A10/*)
+				END-DEFINE
+				#A${R}$R(2) := #ARR(1)
+				END
+				"""
+		)
+			.resultsApplied("""
+				DEFINE DATA LOCAL
+				1 #ARR (A10/*)
+				END-DEFINE
+				PERFORM EXTRACTED
+				/***********************************************************************
+				DEFINE SUBROUTINE EXTRACTED
+				/***********************************************************************
+
+				#ARR(2) := #ARR(1)
+
+
+				END-SUBROUTINE
+
+				END
+				""");
+	}
+
+	@Test
 	void extractASubroutineFromMultipleStatements()
 	{
 		assertCodeActionWithTitle(

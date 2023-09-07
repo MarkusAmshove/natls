@@ -3,6 +3,7 @@ package org.amshove.natls.languageserver;
 import org.amshove.natls.DiagnosticOriginalUri;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.IPosition;
+import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.ISyntaxNode;
@@ -102,7 +103,7 @@ public class LspUtil
 	public static Range toRange(ISyntaxNode node)
 	{
 		var firstNode = node.descendants().first();
-		var lastNode = node.descendants().last();
+		var lastNode = NodeUtil.deepFindLeaf(node.descendants().last());
 		return new Range(
 			new Position(firstNode.position().line(), firstNode.position().offsetInLine()),
 			new Position(lastNode.position().line(), lastNode.position().offsetInLine() + lastNode.position().length())
