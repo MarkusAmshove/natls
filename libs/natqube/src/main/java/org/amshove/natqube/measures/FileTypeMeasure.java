@@ -30,8 +30,6 @@ public class FileTypeMeasure implements INaturalFileMeasurer
 			case FUNCTION -> NaturalMetrics.NUMBER_OF_FUNCTIONS;
 		};
 
-		LOGGER.error("Saving metric {} for {}", metric.key(), inputFile.filename());
-
 		context
 			.<Integer> newMeasure()
 			.on(inputFile)
