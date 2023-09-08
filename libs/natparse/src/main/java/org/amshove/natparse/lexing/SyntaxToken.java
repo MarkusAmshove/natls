@@ -74,7 +74,6 @@ public class SyntaxToken implements IPosition
 		this.diagnosticPosition = diagnosticPosition;
 	}
 
-	// TODO: Introduce `LiteralToken`?
 	public int intValue()
 	{
 		if (kind.isSystemVariable())

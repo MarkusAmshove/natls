@@ -75,6 +75,16 @@ class CopyCodesShould extends ParserIntegrationTest
 	}
 
 	@Test
+	void correctlyIncludeStringConcatLiterals(@ProjectName("copycodetests") NaturalProject project)
+	{
+		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "INCLMSTR"), ISubprogram.class);
+		var include = (IIncludeNode) subprogram.body().statements().first();
+		var write = (IWriteNode) include.body().statements().first();
+		assertThat(((VariableReferenceNode) write.descendants().get(write.descendants().size() - 2)).token().source()).isEqualTo("#VAR1");
+		assertThat(((VariableReferenceNode) write.descendants().last()).token().source()).isEqualTo("#VAR2");
+	}
+
+	@Test
 	void correctlyIncludeStringLiteralsOnNestedLevels(@ProjectName("copycodetests") NaturalProject project)
 	{
 		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "WRITNEST"), ISubprogram.class);

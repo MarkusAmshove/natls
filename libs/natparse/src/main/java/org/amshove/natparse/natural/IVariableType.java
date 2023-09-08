@@ -1,7 +1,5 @@
 package org.amshove.natparse.natural;
 
-import org.amshove.natparse.lexing.SyntaxToken;
-
 public interface IVariableType extends IDataType
 {
 	/**
@@ -9,7 +7,7 @@ public interface IVariableType extends IDataType
 	 * 
 	 * @see IVariableType#isConstant()
 	 */
-	SyntaxToken initialValue();
+	IOperandNode initialValue();
 
 	boolean isConstant();
 }

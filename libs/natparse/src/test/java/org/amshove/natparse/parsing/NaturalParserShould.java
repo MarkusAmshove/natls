@@ -2,12 +2,14 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IFunction;
+import org.amshove.natparse.natural.ITypedVariableNode;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.testhelpers.ProjectName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
+@SuppressWarnings("DataFlowIssue")
 class NaturalParserShould extends ParserIntegrationTest
 {
 	@Test
@@ -66,6 +68,42 @@ class NaturalParserShould extends ParserIntegrationTest
 		var function = (IFunction) module;
 		assertThat(function.returnType().format()).isEqualTo(DataFormat.NUMERIC);
 		assertThat(function.returnType().length()).isEqualTo(12.7);
+	}
+
+	@Test
+	void addTheFunctionAsVariableToItsDefineData(@ProjectName("naturalParserTests") NaturalProject project)
+	{
+		var module = parse(project.findModule("TEST", "FUNCSET"));
+		assertThat(module).isInstanceOf(IFunction.class);
+		var function = (IFunction) module;
+		assertThat(function.returnType().format()).isEqualTo(DataFormat.NUMERIC);
+		assertThat(function.returnType().length()).isEqualTo(12.7);
+		var variable = (ITypedVariableNode) function.defineData().findVariable("FUNCSET");
+		assertThat(variable).as("Function name as variable not found").isNotNull();
+		assertThat(variable.type().format()).isEqualTo(DataFormat.NUMERIC);
+		assertThat(variable.type().length()).isEqualTo(12.7);
+	}
+
+	@Test
+	void parseTheFunctionReturnDimensions(@ProjectName("naturalParserTests") NaturalProject project)
+	{
+		var module = parse(project.findModule("TEST", "FUNC1DIM"));
+		assertThat(module).isInstanceOf(IFunction.class);
+		var function = (IFunction) module;
+		var variable = (ITypedVariableNode) function.defineData().findVariable("FUNC1DIM");
+		assertThat(variable).as("Function name as variable not found").isNotNull();
+		assertThat(variable.dimensions()).hasSize(1);
+	}
+
+	@Test
+	void parseTheFunctionReturnDimensionsForMultipleDimensions(@ProjectName("naturalParserTests") NaturalProject project)
+	{
+		var module = parse(project.findModule("TEST", "FUNC2DIM"));
+		assertThat(module).isInstanceOf(IFunction.class);
+		var function = (IFunction) module;
+		var variable = (ITypedVariableNode) function.defineData().findVariable("FUNC2DIM");
+		assertThat(variable).as("Function name as variable not found").isNotNull();
+		assertThat(variable.dimensions()).hasSize(2);
 	}
 
 	@Test

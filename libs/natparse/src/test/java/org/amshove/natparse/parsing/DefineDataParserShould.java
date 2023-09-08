@@ -330,7 +330,8 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""");
 
 		var variable = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
-		assertThat(variable.type().initialValue().source()).isEqualTo("'hello'");
+		var stringConcant = assertNodeType(variable.type().initialValue(), ILiteralNode.class);
+		assertThat(stringConcant.token().stringValue()).isEqualTo("hello");
 	}
 
 	@Test
@@ -345,7 +346,8 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""");
 
 		var variable = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
-		assertThat(variable.type().initialValue().source()).isEqualTo("'hello world!'");
+		var stringConcant = assertNodeType(variable.type().initialValue(), IStringConcatOperandNode.class);
+		assertThat(stringConcant.stringValue()).isEqualTo("hello world!");
 	}
 
 	@Test
@@ -358,8 +360,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""");
 
 		var variable = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
-		assertThat(variable.type().initialValue().source()).isEqualTo("*DATN");
-		var systemVar = variable.findDescendantOfType(ISystemVariableNode.class);
+		var systemVar = assertNodeType(variable.type().initialValue(), ISystemVariableNode.class);
 		assertThat(systemVar).isNotNull();
 		assertThat(systemVar.systemVariable()).isEqualTo(SyntaxKind.DATN);
 	}
@@ -375,7 +376,8 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var variable = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
 		assertThat(variable.type().isConstant()).isTrue();
-		assertThat(variable.type().initialValue().source()).isEqualTo("'hello'");
+		var literal = assertNodeType(variable.type().initialValue(), ILiteralNode.class);
+		assertThat(literal.token().stringValue()).isEqualTo("hello");
 	}
 
 	@Test
@@ -389,7 +391,8 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var variable = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
 		assertThat(variable.type().isConstant()).isTrue();
-		assertThat(variable.type().initialValue().source()).isEqualTo("'hello'");
+		var literal = assertNodeType(variable.type().initialValue(), ILiteralNode.class);
+		assertThat(literal.token().stringValue()).isEqualTo("hello");
 	}
 
 	@ParameterizedTest
@@ -432,6 +435,22 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			1 #ALPH (A5) INIT <H'0A'>
 			end-define
 			""");
+	}
+
+	@Test
+	void allowMixedStringConcatInitialValuesForAlphanumericFields()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			define data local
+			1 #ALPH (A5) INIT <'Hello'
+			- H'0A'
+			- 'World'>
+			end-define
+			""");
+
+		var typedVar = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
+		var stringConcat = assertNodeType(typedVar.type().initialValue(), IStringConcatOperandNode.class);
+		assertThat(stringConcat.stringValue()).isEqualTo("Hello\nWorld");
 	}
 
 	@Test
@@ -754,7 +773,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	{
 		"(A1/#length)",
 		"(A1 /#length)",
-		//		TODO(lexermode): "(A1/ #length)"
+		"(A1/ #length)",
 		"(A1 / #length)"
 	})
 	void parseAnArrayThatHasAConstReferenceAsDimensionAndArrayHasConstElements(String variable)
@@ -765,6 +784,31 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			1 #myarray %s const<'a','b'>
 			end-define
 			""".formatted(variable));
+	}
+
+	@Test
+	void raiseADiagnosticForArrayBoundsThatAreNeitherConstNorInit()
+	{
+		assertDiagnostic("""
+			define data local
+			1 #num (i4)
+			1 #array (n12/#num)
+			end-define
+			""", ParserError.ARRAY_DIMENSION_MUST_BE_CONST_OR_INIT);
+	}
+
+	@Test
+	void notRaiseADiagnosticForArrayBoundsThatAreNeitherConstNorInitInViews()
+	{
+		// For Arrays in views it is okay if the dimension is not CONST or INIT
+		// according to the compiler.
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 #num (i4)
+			1 myview view of myddm
+			2 #arrayfield (n12/#num)
+			end-define
+			""");
 	}
 
 	@Test

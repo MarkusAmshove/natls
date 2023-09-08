@@ -87,7 +87,7 @@ public class Lexer
 				case '(':
 					parensLevel++;
 					lastBeforeOpenParens = previous();
-					if (lexerMode == LexerMode.IN_DEFINE_DATA && previous().kind() != SyntaxKind.LESSER_SIGN)
+					if (lexerMode == LexerMode.IN_DEFINE_DATA && lastBeforeOpenParens != null && lastBeforeOpenParens.kind() != SyntaxKind.LESSER_SIGN)
 					{
 						lexerMode = LexerMode.IN_DATA_TYPE;
 					}
@@ -127,7 +127,7 @@ public class Lexer
 					}
 					continue;
 				case '-':
-					consumeMinusOrStringConcat();
+					createAndAddCurrentSingleToken(SyntaxKind.MINUS);
 					continue;
 				case '*':
 					consumeAsteriskOrSystemVariable();
@@ -375,61 +375,6 @@ public class Lexer
 	public void relocateDiagnosticPosition(IPosition diagnosticPosition)
 	{
 		this.relocatedDiagnosticPosition = diagnosticPosition;
-	}
-
-	private void advanceBy(int offset)
-	{
-		for (var i = 0; i < offset; i++)
-		{
-			if (scanner.peek() == '\n')
-			{
-				consumeNewLine();
-			}
-			else
-			{
-				scanner.advance();
-			}
-		}
-	}
-
-	private void consumeMinusOrStringConcat()
-	{
-		var lookaheadIndex = findNextNonWhitespaceLookaheadOffset();
-		var lookahead = scanner.peek(lookaheadIndex);
-		var previousToken = previous();
-		var isStringConcatenation = previousToken != null && previousToken.kind() == SyntaxKind.STRING_LITERAL
-			&& (lookahead == '\'' || lookahead == '"');
-		if (isStringConcatenation)
-		{
-			var previousString = previousUnsafe();
-			var previousStringIndex = tokens.size() - 1;
-			advanceBy(lookaheadIndex);
-			consumeString(lookahead);
-			var currentString = previousUnsafe();
-			if (scanner.peek() == '\n')
-			{
-				consumeNewLine();
-			}
-			var currentStringIndex = tokens.size() - 1;
-			if (currentStringIndex >= previousStringIndex)
-			{
-				tokens.subList(previousStringIndex, currentStringIndex + 1).clear();
-			}
-			addToken(
-				SyntaxTokenFactory.create(
-					SyntaxKind.STRING_LITERAL,
-					previousString.offset(),
-					previousString.offsetInLine(),
-					previousString.line(),
-					"'" + previousString.stringValue() + currentString.stringValue() + "'",
-					filePath
-				)
-			);
-			checkStringLiteralLength(previousUnsafe());
-			return;
-		}
-
-		createAndAddCurrentSingleToken(SyntaxKind.MINUS);
 	}
 
 	private void consumeAsteriskOrSystemVariable()
@@ -1857,17 +1802,6 @@ public class Lexer
 		}
 	}
 
-	private int findNextNonWhitespaceLookaheadOffset()
-	{
-		var start = 1;
-		while (!scanner.isAtEnd() && isWhitespace(start))
-		{
-			start++;
-		}
-
-		return start;
-	}
-
 	private void addToken(SyntaxToken token)
 	{
 		if (token.kind() == SyntaxKind.IDENTIFIER)
@@ -1896,7 +1830,7 @@ public class Lexer
 
 	private void checkStringLiteralLength(SyntaxToken token)
 	{
-		if (token.stringValue().length() == 0)
+		if (token.stringValue().isEmpty())
 		{
 			addDiagnostic(
 				"String literals in Natural can't be empty. Add a blank.",

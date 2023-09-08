@@ -567,7 +567,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 		else
 		{
-			var windowName = consumeLiteralNode(setWindow, SyntaxKind.STRING_LITERAL);
+			var windowName = consumeNonConcatLiteralNode(setWindow, SyntaxKind.STRING_LITERAL);
 			setWindow.setWindow(windowName.token());
 		}
 
@@ -580,7 +580,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(writeWork, SyntaxKind.WRITE);
 		consumeMandatory(writeWork, SyntaxKind.WORK);
 		consumeOptionally(writeWork, SyntaxKind.FILE);
-		writeWork.setNumber(consumeLiteralNode(writeWork, SyntaxKind.NUMBER_LITERAL));
+		writeWork.setNumber(consumeNonConcatLiteralNode(writeWork, SyntaxKind.NUMBER_LITERAL));
 		writeWork.setVariable(consumeOptionally(writeWork, SyntaxKind.VARIABLE));
 		while (!isAtEnd() && isOperand())
 		{
@@ -596,7 +596,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeAnyMandatory(writePc, List.of(SyntaxKind.WRITE, SyntaxKind.DOWNLOAD));
 		consumeMandatory(writePc, SyntaxKind.PC);
 		consumeOptionally(writePc, SyntaxKind.FILE);
-		writePc.setNumber(consumeLiteralNode(writePc, SyntaxKind.NUMBER_LITERAL));
+		writePc.setNumber(consumeNonConcatLiteralNode(writePc, SyntaxKind.NUMBER_LITERAL));
 		if (consumeOptionally(writePc, SyntaxKind.COMMAND))
 		{
 			writePc.setOperand(consumeOperandNode(writePc));
@@ -618,7 +618,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(closePc, SyntaxKind.PC);
 		consumeOptionally(closePc, SyntaxKind.FILE);
 
-		var number = consumeLiteralNode(closePc, SyntaxKind.NUMBER_LITERAL);
+		var number = consumeNonConcatLiteralNode(closePc, SyntaxKind.NUMBER_LITERAL);
 		closePc.setNumber(number);
 
 		return closePc;
@@ -631,7 +631,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(closeWork, SyntaxKind.WORK);
 		consumeOptionally(closeWork, SyntaxKind.FILE);
 
-		var number = consumeLiteralNode(closeWork, SyntaxKind.NUMBER_LITERAL);
+		var number = consumeNonConcatLiteralNode(closeWork, SyntaxKind.NUMBER_LITERAL);
 		closeWork.setNumber(number);
 
 		return closeWork;
@@ -761,7 +761,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(work, SyntaxKind.WORK);
 		consumeMandatory(work, SyntaxKind.FILE);
 
-		var number = consumeLiteralNode(work, SyntaxKind.NUMBER_LITERAL);
+		var number = consumeNonConcatLiteralNode(work, SyntaxKind.NUMBER_LITERAL);
 		checkNumericRange(number, 1, 32);
 		work.setNumber(number);
 
@@ -2327,7 +2327,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		var limit = new LimitNode();
 		consumeMandatory(limit, SyntaxKind.LIMIT);
-		limit.setLimit(consumeLiteralNode(limit, SyntaxKind.NUMBER_LITERAL));
+		limit.setLimit(consumeNonConcatLiteralNode(limit, SyntaxKind.NUMBER_LITERAL));
 		return limit;
 	}
 
@@ -2437,7 +2437,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			if (peekKind(SyntaxKind.NUMBER_LITERAL))
 			{
-				var literal = consumeLiteralNode(closePrinter, SyntaxKind.NUMBER_LITERAL);
+				var literal = consumeNonConcatLiteralNode(closePrinter, SyntaxKind.NUMBER_LITERAL);
 				closePrinter.setPrinter(literal.token());
 			}
 			if (peekKind(SyntaxKind.IDENTIFIER))
@@ -2470,7 +2470,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			printer.setName(name);
 			consumeMandatory(printer, SyntaxKind.EQUALS_SIGN);
 		}
-		var printerNumber = consumeLiteralNode(printer, SyntaxKind.NUMBER_LITERAL);
+		var printerNumber = consumeNonConcatLiteralNode(printer, SyntaxKind.NUMBER_LITERAL);
 		if (printerNumber.token().kind() == SyntaxKind.NUMBER_LITERAL)
 		{
 			printer.setPrinterNumber(printerNumber.token().intValue());
@@ -2503,7 +2503,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			if (consumeOptionally(printer, SyntaxKind.PROFILE))
 			{
-				var literal = consumeLiteralNode(printer, SyntaxKind.STRING_LITERAL);
+				var literal = consumeNonConcatLiteralNode(printer, SyntaxKind.STRING_LITERAL);
 				checkStringLength(literal.token(), literal.token().stringValue(), 8);
 			}
 
@@ -2762,7 +2762,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var call = new CallFileNode();
 		var opening = consumeMandatory(call, SyntaxKind.CALL);
 		consumeMandatory(call, SyntaxKind.FILE);
-		call.setCalling(consumeLiteralNode(call, SyntaxKind.STRING_LITERAL));
+		call.setCalling(consumeNonConcatLiteralNode(call, SyntaxKind.STRING_LITERAL));
 		call.setControlField(consumeOperandNode(call));
 		call.setRecordArea(consumeOperandNode(call));
 
@@ -2899,8 +2899,10 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				var normalizedParameter = new ArrayList<String>(include.providedParameter().size());
 				for (var parameter : include.providedParameter())
 				{
-					var token = ((LiteralNode) parameter).token();
-					normalizedParameter.add(token.stringValue());
+					var value = parameter instanceof LiteralNode literal
+						? literal.token().stringValue()
+						: ((StringConcatOperandNode) parameter).stringValue();
+					normalizedParameter.add(value);
 				}
 				var lexer = new Lexer(normalizedParameter);
 				lexer.relocateDiagnosticPosition(shouldRelocateDiagnostics() ? relocatedDiagnosticPosition : referencingToken);
@@ -3866,7 +3868,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		if (consumeOptionally(find, SyntaxKind.LIMIT))
 		{
-			consumeLiteral(find);
+			consumeLiteralToken(find);
 		}
 
 		if (peekKind(SyntaxKind.STRING_LITERAL))
@@ -3950,7 +3952,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var opening = consumeMandatory(work, SyntaxKind.READ);
 		consumeMandatory(work, SyntaxKind.WORK);
 		consumeOptionally(work, SyntaxKind.FILE);
-		var number = consumeLiteralNode(work, SyntaxKind.NUMBER_LITERAL);
+		var number = consumeNonConcatLiteralNode(work, SyntaxKind.NUMBER_LITERAL);
 		checkNumericRange(number, 1, 32);
 		work.setWorkFileNumber(number);
 		var hasNoBody = consumeOptionally(work, SyntaxKind.ONCE);
@@ -4260,7 +4262,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			}
 			else
 			{
-				label = consumeLiteralNode(get, SyntaxKind.NUMBER_LITERAL).token();
+				label = consumeNonConcatLiteralNode(get, SyntaxKind.NUMBER_LITERAL).token();
 			}
 
 			get.setLabel(label);

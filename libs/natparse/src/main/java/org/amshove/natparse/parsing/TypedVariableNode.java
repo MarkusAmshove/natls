@@ -13,6 +13,7 @@ class TypedVariableNode extends VariableNode implements ITypedVariableNode
 	{
 		setLevel(variable.level());
 		setDeclaration(variable.identifierNode());
+		setScope(variable.scope());
 		for (var dimension : variable.dimensions())
 		{
 			addDimension((ArrayDimension) dimension);

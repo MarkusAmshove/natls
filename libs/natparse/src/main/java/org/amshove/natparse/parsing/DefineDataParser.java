@@ -584,7 +584,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 			else
 			{
-				if (typedVariable.dimensions().size() > 0)
+				if (!typedVariable.dimensions().isEmpty())
 				{
 					consumeArrayInitializer(typedVariable);
 				}
@@ -593,12 +593,12 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 					consumeMandatory(typedVariable, SyntaxKind.LESSER_SIGN);
 					if (peek().kind().isSystemVariable())
 					{
-						type.setInitialValue(consumeSystemVariableNode(typedVariable).token());
+						type.setInitialValue(consumeSystemVariableNode(typedVariable));
 					}
 					else
 					{
 						var literal = consumeLiteralNode(typedVariable);
-						type.setInitialValue(literal.token());
+						type.setInitialValue(literal);
 					}
 					consumeMandatory(typedVariable, SyntaxKind.GREATER_SIGN);
 				}
@@ -811,18 +811,20 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		if (variable.type().initialValue() != null)
 		{
+			var initialValueKind = inferInitialValueKind(variable.type().initialValue());
+
 			switch (variable.type().format())
 			{
 				case ALPHANUMERIC:
-					if (variable.type().initialValue().kind().isBoolean())
+					if (initialValueKind.isBoolean())
 					{
 						break;
 					}
-					expectInitialValueType(variable, SyntaxKind.STRING_LITERAL, SyntaxKind.NUMBER_LITERAL, SyntaxKind.HEX_LITERAL);
+					expectInitialValueType(variable, initialValueKind, SyntaxKind.STRING_LITERAL, SyntaxKind.NUMBER_LITERAL, SyntaxKind.HEX_LITERAL);
 					break;
 
 				case DATE:
-					expectInitialValueType(variable, SyntaxKind.DATE_LITERAL);
+					expectInitialValueType(variable, initialValueKind, SyntaxKind.DATE_LITERAL);
 					break;
 
 				case BINARY:
@@ -837,12 +839,11 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				case NUMERIC:
 				case PACKED:
 				case INTEGER:
-					expectInitialValueType(variable, SyntaxKind.NUMBER_LITERAL);
+					expectInitialValueType(variable, initialValueKind, SyntaxKind.NUMBER_LITERAL);
 					break;
 
 				case LOGIC:
-					var initialValueType = variable.type().initialValue().kind();
-					if (initialValueType != SyntaxKind.TRUE && initialValueType != SyntaxKind.FALSE)
+					if (initialValueKind != SyntaxKind.TRUE && initialValueKind != SyntaxKind.FALSE)
 					{
 						report(ParserErrors.initValueMismatch(variable, SyntaxKind.TRUE, SyntaxKind.FALSE));
 					}
@@ -851,17 +852,27 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 	}
 
-	private void expectInitialValueType(TypedVariableNode variableNode, SyntaxKind... expectedKinds)
+	private SyntaxKind inferInitialValueKind(IOperandNode initialValueNode)
+	{
+		if (initialValueNode instanceof ITokenNode tokenNode)
+		{
+			return tokenNode.token().kind();
+		}
+
+		return SyntaxKind.STRING_LITERAL; // concat
+	}
+
+	private void expectInitialValueType(TypedVariableNode variableNode, SyntaxKind initialValueKind, SyntaxKind... expectedKinds)
 	{
 		for (var expectedKind : expectedKinds)
 		{
-			if (variableNode.type().initialValue().kind() == expectedKind)
+			if (initialValueKind == expectedKind)
 			{
 				return;
 			}
 		}
 
-		if (!variableNode.type().initialValue().kind().isSystemVariable()) // TODO(system-variables): Check type
+		if (!initialValueKind.isSystemVariable())
 		{
 			report(ParserErrors.initValueMismatch(variableNode, expectedKinds));
 		}
@@ -952,7 +963,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				var referenceNode = new SymbolReferenceNode(token.token());
 				typedNode.addReference(referenceNode);
 				dimension.addNode(referenceNode);
-				return typedNode.type().initialValue().intValue();
+				return ((ILiteralNode) typedNode.type().initialValue()).token().intValue();
 			}
 		}
 
