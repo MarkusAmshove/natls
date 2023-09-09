@@ -719,6 +719,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		{
 			switch (variable.type().format())
 			{
+				case ALPHANUMERIC, BINARY, UNICODE ->
+				{}
 				case CONTROL, DATE, FLOAT, INTEGER, LOGIC, NUMERIC, PACKED, TIME, NONE -> report(ParserErrors.dynamicVariableLengthNotAllowed(variable));
 			}
 
@@ -762,6 +764,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 						report(ParserErrors.invalidLengthForDataTypeRange(variable, 1, 29));
 					}
 				}
+				default ->
+				{}
 			}
 		}
 
@@ -776,6 +780,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 						report(ParserErrors.dataTypeNeedsLength(variable));
 					}
 				}
+				case CONTROL, DATE, LOGIC, TIME, NONE ->
+				{}
 				case FLOAT, INTEGER, NUMERIC, PACKED -> report(ParserErrors.dataTypeNeedsLength(variable));
 			}
 		}
@@ -795,6 +801,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 					expectInitialValueType(variable, initialValueKind, SyntaxKind.STRING_LITERAL, SyntaxKind.NUMBER_LITERAL, SyntaxKind.HEX_LITERAL);
 				}
 				case DATE -> expectInitialValueType(variable, initialValueKind, SyntaxKind.DATE_LITERAL);
+				case BINARY, CONTROL, TIME, UNICODE, NONE ->
+				{}
 				case FLOAT, NUMERIC, PACKED, INTEGER -> expectInitialValueType(variable, initialValueKind, SyntaxKind.NUMBER_LITERAL);
 				case LOGIC ->
 				{
