@@ -454,6 +454,21 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void allowMixedStringConcatInitialValuesStartingWithHex()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			define data local
+			1 alfa (a29) init<H'0A'
+			-'Test'>
+			end-define
+			""");
+
+		var variable = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
+		var concat = assertNodeType(variable.type().initialValue(), IStringConcatOperandNode.class);
+		assertThat(concat.stringValue()).isEqualTo("\nTest");
+	}
+
+	@Test
 	void allowNumericConstValuesForAlphanumericFields()
 	{
 		assertParsesWithoutDiagnostics("""
@@ -529,6 +544,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var scopeNode = defineData.findDescendantOfType(IScopeNode.class);
 		assertThat(scopeNode).isNotNull();
+		assert scopeNode != null;
 		assertThat(scopeNode.descendants().size()).isEqualTo(3); // LOCAL + Group + Typed
 
 		var group = assertNodeType(defineData.variables().first(), IGroupNode.class);
@@ -675,6 +691,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""");
 	}
 
+	@Test
 	void parseAnArrayWithWhitespaceAfterTheSlash()
 	{
 		assertParsesWithoutDiagnostics("""
@@ -907,6 +924,8 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		var length = assertNodeType(defineData.variables().first(), IReferencableNode.class);
 		var myArray = assertNodeType(defineData.variables().last(), ITypedVariableNode.class);
 		var referenceNode = myArray.dimensions().first().findDescendantOfType(ISymbolReferenceNode.class);
+		assertThat(referenceNode).as("No reference found").isNotNull();
+		assert referenceNode != null;
 
 		assertThat(length.references().first()).isEqualTo(referenceNode);
 		assertThat(referenceNode.reference()).isEqualTo(length);
@@ -1021,6 +1040,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var parameter = defineData.findVariable("#PARM");
 		assertThat(parameter).isNotNull();
+		assert parameter != null;
 		assertThat(parameter.dimensions().first().upperBound()).isEqualTo(10);
 	}
 
@@ -1036,6 +1056,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var parameter = defineData.findVariable("#PARM");
 		assertThat(parameter).isNotNull();
+		assert parameter != null;
 		assertThat(parameter.dimensions().first().upperBound()).isEqualTo(10);
 	}
 
@@ -1204,13 +1225,13 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	void notRaiseADiagnosticIfRedefineHasSmallerOrEqualLength(String varFormat, String redefVarFormat)
 	{
 		var source = """
-			DEFINE DATA
-			LOCAL
-			1 #FIELD (%s)
-			1 REDEFINE #FIELD
-			  2 #REDEF-FIELD (%s)
-		    END-DEFINE
-			""".formatted(varFormat, redefVarFormat);
+            DEFINE DATA
+            LOCAL
+            1 #FIELD (%s)
+            1 REDEFINE #FIELD
+             2 #REDEF-FIELD (%s)
+            END-DEFINE
+            """.formatted(varFormat, redefVarFormat);
 
 		assertParsesWithoutDiagnostics(source);
 	}
@@ -1224,13 +1245,13 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	void raiseADiagnosticIfRedefineHasGreaterLength(String varFormat, String redefVarFormat)
 	{
 		var source = """
-			DEFINE DATA
-			LOCAL
-			1 #FIELD (%s)
-			1 REDEFINE #FIELD
-			 2 #REDEF-FIELD (%s)
-			END-DEFINE
-		 """.formatted(varFormat, redefVarFormat);
+            DEFINE DATA
+            LOCAL
+            1 #FIELD (%s)
+            1 REDEFINE #FIELD
+             2 #REDEF-FIELD (%s)
+            END-DEFINE
+         """.formatted(varFormat, redefVarFormat);
 
 		assertDiagnostic(source, ParserError.REDEFINE_LENGTH_EXCEEDS_TARGET_LENGTH);
 	}
