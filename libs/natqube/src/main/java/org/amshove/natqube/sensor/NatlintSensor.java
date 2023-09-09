@@ -4,6 +4,7 @@ import org.amshove.natlint.linter.NaturalLinter;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.lexing.Lexer;
+import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
 import org.amshove.natparse.parsing.NaturalParser;
 import org.amshove.natparse.parsing.project.BuildFileProjectReader;
@@ -29,6 +30,10 @@ public class NatlintSensor implements Sensor
 
 		this.config = config;
 	}
+
+	private long saveIssuesMaxTime = Long.MIN_VALUE;
+	private NaturalFile saveIssuesMaxFile = null;
+	private long longestSingleIssueSave = Long.MIN_VALUE;
 
 	@Override
 	public void describe(SensorDescriptor descriptor)
@@ -73,6 +78,7 @@ public class NatlintSensor implements Sensor
 
 					fileTypeMeasurer.measure(context, naturalFile, inputFile);
 
+					var saveIssuesStart = System.currentTimeMillis();
 					for (var diagnostic : lexResult.diagnostics())
 					{
 						saveDiagnosticAsIssue(context, inputFile, diagnostic);
@@ -85,6 +91,13 @@ public class NatlintSensor implements Sensor
 					{
 						saveDiagnosticAsIssue(context, inputFile, diagnostic);
 					}
+					var saveIssuesDuration = System.currentTimeMillis() - saveIssuesStart;
+
+					if (saveIssuesDuration > saveIssuesMaxTime)
+					{
+						saveIssuesMaxTime = saveIssuesDuration;
+						saveIssuesMaxFile = naturalFile;
+					}
 				}
 				catch (Exception e)
 				{
@@ -94,6 +107,9 @@ public class NatlintSensor implements Sensor
 		}
 		var analysisEnd = System.currentTimeMillis();
 		LOGGER.error("Analysis ended after %dms".formatted(analysisEnd - analysisStart));
+
+		LOGGER.error("Longest save issues: %dms, %s".formatted(saveIssuesMaxTime, saveIssuesMaxFile.getPath()));
+		LOGGER.error("Longest single issue save: %dms".formatted(longestSingleIssueSave));
 	}
 
 	private void saveDiagnosticAsIssue(SensorContext context, InputFile inputFile, IDiagnostic diagnostic)
@@ -105,8 +121,14 @@ public class NatlintSensor implements Sensor
 				.at(inputFile.newRange(diagnostic.line() + 1, diagnostic.offsetInLine(), diagnostic.line() + 1, diagnostic.endOffset()))
 				.message(diagnostic.message())
 		);
+		var saveStart = System.currentTimeMillis();
 		issue
 			.forRule(RuleKey.of(NaturalRuleRepository.REPOSITORY, diagnostic.id()))
 			.save();
+		var saveDuration = System.currentTimeMillis() - saveStart;
+		if (saveDuration > longestSingleIssueSave)
+		{
+			longestSingleIssueSave = saveDuration;
+		}
 	}
 }
