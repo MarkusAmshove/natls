@@ -991,6 +991,21 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void parseFillerInRedefinesInViews()
+	{
+		assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 MYVIEW VIEW OF MYDDM
+				 2 ANARRAY (A61/1:1)
+				 2 REDEFINE ANARRAY
+					  3 INREDEFINE (1:1)
+						   4 #INGRP (A1)
+						   4 FILLER 56X
+			END-DEFINE
+			""");
+	}
+
+	@Test
 	void raiseADiagnosticIfAFillerIsUsedOutsideOfRedefine()
 	{
 		assertDiagnostic("""

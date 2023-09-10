@@ -15,6 +15,7 @@ class ViewParser extends AbstractParser<ViewNode>
 
 	private final Map<String, VariableNode> declaredVariables;
 	private ViewNode view;
+	private RedefinitionNode currentRedefine;
 
 	ViewParser(IModuleProvider moduleProvider, Map<String, VariableNode> declaredVariables)
 	{
@@ -185,6 +186,12 @@ class ViewParser extends AbstractParser<ViewNode>
 			? (RedefinitionNode) variable
 			: new GroupNode(variable);
 
+		var previousRedefine = currentRedefine;
+		if (variable instanceof RedefinitionNode)
+		{
+			currentRedefine = (RedefinitionNode) variable;
+		}
+
 		if (previousToken().kind() == SyntaxKind.LPAREN)
 		{
 			addArrayDimensions(group);
@@ -195,14 +202,15 @@ class ViewParser extends AbstractParser<ViewNode>
 		{
 			if (peek().intValue() <= group.level())
 			{
+				currentRedefine = previousRedefine;
 				break;
 			}
 
-			if (peekKind(1, SyntaxKind.FILLER) && group instanceof RedefinitionNode)
+			if (peekKind(1, SyntaxKind.FILLER) && currentRedefine != null)
 			{
 				if (mightBeFillerBytes(peek(1), peek(2)))
 				{
-					parseRedefineFiller((RedefinitionNode) group);
+					parseRedefineFiller(currentRedefine);
 					continue;
 				}
 			}
