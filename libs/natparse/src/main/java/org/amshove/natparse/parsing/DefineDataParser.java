@@ -166,7 +166,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 					checkIndependentVariable(variable);
 				}
 
-				if (peekKind(1, SyntaxKind.FILLER))
+				if (peekKind(1, SyntaxKind.FILLER) && peekKind(2, SyntaxKind.OPERAND_SKIP))
 				{
 					var currentRedefineNode = currentRedefine(variable);
 					if (currentRedefineNode != null)
@@ -178,7 +178,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 					}
 					else
 					{
-						// TODO: Diagnostic: Filler can only be used on redefines
+						report(ParserErrors.unexpectedToken(peek(1), "FILLER can only be used in redefinitions"));
 					}
 				}
 

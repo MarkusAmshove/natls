@@ -991,6 +991,34 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void raiseADiagnosticIfAFillerIsUsedOutsideOfRedefine()
+	{
+		assertDiagnostic("""
+			   DEFINE DATA
+			   LOCAL
+			   1 #GRP
+				2 FILLER 50X
+				2 #SUBSTR (A10)
+			   END-DEFINE
+			""", ParserError.UNEXPECTED_TOKEN);
+	}
+
+	@Test
+	void notRaiseADiagnosticIfAVariableWithNameFillerIsUsedOutsideOfRedefine()
+	{
+		var data = assertParsesWithoutDiagnostics("""
+			   DEFINE DATA
+			   LOCAL
+			   1 #GRP
+				2 FILLER (A5)
+				2 #SUBSTR (A10)
+			   END-DEFINE
+			""");
+
+		assertThat(data.findVariable("FILLER")).isNotNull();
+	}
+
+	@Test
 	void parseSubsequentRedefineFiller()
 	{
 		var defineData = assertParsesWithoutDiagnostics("""
