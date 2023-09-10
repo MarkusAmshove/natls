@@ -187,9 +187,9 @@ class ViewParser extends AbstractParser<ViewNode>
 			: new GroupNode(variable);
 
 		var previousRedefine = currentRedefine;
-		if (variable instanceof RedefinitionNode)
+		if (variable instanceof RedefinitionNode redefine)
 		{
-			currentRedefine = (RedefinitionNode) variable;
+			currentRedefine = redefine;
 		}
 
 		if (previousToken().kind() == SyntaxKind.LPAREN)
