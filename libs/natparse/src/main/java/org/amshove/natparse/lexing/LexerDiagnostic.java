@@ -1,8 +1,6 @@
 package org.amshove.natparse.lexing;
 
-import org.amshove.natparse.DiagnosticSeverity;
-import org.amshove.natparse.IDiagnostic;
-import org.amshove.natparse.IPosition;
+import org.amshove.natparse.*;
 
 import java.nio.file.Path;
 import java.util.Objects;
@@ -152,6 +150,12 @@ class LexerDiagnostic implements IDiagnostic
 	public IPosition originalPosition()
 	{
 		return originalPosition != null ? originalPosition : this;
+	}
+
+	@Override
+	public ReadOnlyList<AdditionalDiagnosticInfo> additionalInfo()
+	{
+		return ReadOnlyList.empty();
 	}
 
 	@Override

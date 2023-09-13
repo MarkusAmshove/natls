@@ -1,8 +1,6 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.DiagnosticSeverity;
-import org.amshove.natparse.IDiagnostic;
-import org.amshove.natparse.IPosition;
+import org.amshove.natparse.*;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.ISyntaxNode;
 
@@ -151,6 +149,12 @@ public class ParserDiagnostic implements IDiagnostic
 	public IPosition originalPosition()
 	{
 		return originalPosition != null ? originalPosition : this;
+	}
+
+	@Override
+	public ReadOnlyList<AdditionalDiagnosticInfo> additionalInfo()
+	{
+		return ReadOnlyList.empty();
 	}
 
 	@Override

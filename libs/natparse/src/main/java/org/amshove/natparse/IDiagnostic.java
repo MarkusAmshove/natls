@@ -20,6 +20,8 @@ public interface IDiagnostic extends IPosition
 	 */
 	IPosition originalPosition();
 
+	ReadOnlyList<AdditionalDiagnosticInfo> additionalInfo();
+
 	boolean hasOriginalPosition();
 
 	default String toVerboseString()
