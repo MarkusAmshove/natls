@@ -104,7 +104,7 @@ public class CompressAnalyzer extends AbstractAnalyzer
 							diagnostic = COMPRESS_SHOULD_HAVE_NUMERIC.createDiagnostic(compress);
 						}
 
-						diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("This operand is numeric", operand.position()));
+						diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("This operand has type %s".formatted(typedVariable.formatTypeForDisplay()), operand.position()));
 					}
 				}
 			}

@@ -5,6 +5,8 @@ import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.ISyntaxNode;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ParserDiagnostic implements IDiagnostic
 {
@@ -18,6 +20,7 @@ public class ParserDiagnostic implements IDiagnostic
 	private final DiagnosticSeverity severity;
 	private final ParserError error;
 	private final IPosition originalPosition;
+	private final List<AdditionalDiagnosticInfo> additionalInfos = new ArrayList<>();
 
 	private ParserDiagnostic(String message, int offset, int offsetInLine, int line, int length, Path filePath, ParserError error)
 	{
@@ -154,12 +157,17 @@ public class ParserDiagnostic implements IDiagnostic
 	@Override
 	public ReadOnlyList<AdditionalDiagnosticInfo> additionalInfo()
 	{
-		return ReadOnlyList.empty();
+		return ReadOnlyList.from(additionalInfos);
 	}
 
 	@Override
 	public boolean hasOriginalPosition()
 	{
 		return originalPosition != null;
+	}
+
+	void addAdditionalInfo(AdditionalDiagnosticInfo additionalInfo)
+	{
+		additionalInfos.add(additionalInfo);
 	}
 }

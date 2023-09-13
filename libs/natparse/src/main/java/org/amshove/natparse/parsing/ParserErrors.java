@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.AdditionalDiagnosticInfo;
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.SyntaxKind;
@@ -217,11 +218,18 @@ class ParserErrors
 
 	public static ParserDiagnostic unresolvedReference(ITokenNode node)
 	{
-		return ParserDiagnostic.create(
+		var diagnostic = ParserDiagnostic.create(
 			"Unresolved reference: %s".formatted(node.token().source()),
 			node.token(),
 			ParserError.UNRESOLVED_REFERENCE
 		);
+
+		if (!node.diagnosticPosition().isSamePositionAs(node.position()))
+		{
+			diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("Used here", node.position()));
+		}
+
+		return diagnostic;
 	}
 
 	public static ParserDiagnostic unresolvedDdmField(ITokenNode node)

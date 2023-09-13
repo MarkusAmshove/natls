@@ -51,11 +51,12 @@ public class AnsiDiagnosticSink implements IDiagnosticSink
 
 				for (var additionalDiagnosticInfo : diagnostic.additionalInfo())
 				{
+					System.out.println("_".repeat(ADDITIONAL_INFO_INDENT.length() + 1));
 					System.out.println(indented("|"));
 					System.out.println(indented("= ") + pathWithLineInformation(additionalDiagnosticInfo.position()));
 					System.out.println(indented(readDiagnosticSourceLine(diagnostic, additionalDiagnosticInfo.position())));
 					System.out.println(indented(squiggle(additionalDiagnosticInfo.position(), diagnostic.severity())));
-					System.out.println(indented(message(diagnostic, additionalDiagnosticInfo.position(), additionalDiagnosticInfo.message())));
+					System.out.println(indented(message(diagnostic, additionalDiagnosticInfo.position(), additionalDiagnosticInfo.message(), true)));
 				}
 
 				System.out.println();
@@ -94,10 +95,10 @@ public class AnsiDiagnosticSink implements IDiagnosticSink
 
 	private String message(IDiagnostic diagnostic, String diagnosticMessage)
 	{
-		return message(diagnostic, diagnostic, diagnosticMessage);
+		return message(diagnostic, diagnostic, diagnosticMessage, false);
 	}
 
-	private String message(IDiagnostic diagnostic, IPosition position, String diagnosticMessage)
+	private String message(IDiagnostic diagnostic, IPosition position, String diagnosticMessage, boolean isAdditionalInfo)
 	{
 		var offsetInLine = position.offsetInLine();
 		var severity = diagnostic.severity();
@@ -110,10 +111,16 @@ public class AnsiDiagnosticSink implements IDiagnosticSink
 		message.append(System.lineSeparator());
 		message.append(" ".repeat(offsetInLine));
 		message.append(colored("= ", severity));
-		message.append(colored(diagnostic.severity().toString(), severity));
-		message.append(colored(": ", severity));
+		if (!isAdditionalInfo)
+		{
+			message.append(colored(diagnostic.severity().toString(), severity));
+			message.append(colored(": ", severity));
+		}
 		message.append(colored(splitMessage(diagnosticMessage, offsetInLine), severity));
-		message.append(colored(" [%s]".formatted(diagnostic.id()), severity));
+		if (!isAdditionalInfo)
+		{
+			message.append(colored(" [%s]".formatted(diagnostic.id()), severity));
+		}
 		return message.toString();
 	}
 
