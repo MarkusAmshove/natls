@@ -1249,7 +1249,7 @@ class StatementListParserShould extends StatementParseTest
 	@Test
 	void reportADiagnosticIfGetSameHasAnInvalidLabel()
 	{
-		assertDiagnostic("GET SAME (LABELNODOT)", ParserError.UNEXPECTED_TOKEN);
+		assertDiagnostic("GET SAME (LABELNODOT)", ParserError.UNEXPECTED_TOKEN_EXPECTED_OPERAND);
 	}
 
 	@Test
@@ -1351,7 +1351,7 @@ class StatementListParserShould extends StatementParseTest
 			CALL FILE 'PGM'
 				IGNORE
 			END-FILE
-			""", ParserError.UNEXPECTED_TOKEN);
+			""", ParserError.UNEXPECTED_TOKEN_EXPECTED_OPERAND);
 	}
 
 	@Test
@@ -1404,7 +1404,7 @@ class StatementListParserShould extends StatementParseTest
 	@Test
 	void reportADiagnosticIfNoOperandsFollowingUsing()
 	{
-		assertDiagnostic("CALL 'PGM' USING IGNORE", ParserError.UNEXPECTED_TOKEN);
+		assertDiagnostic("CALL 'PGM' USING IGNORE", ParserError.UNEXPECTED_TOKEN_EXPECTED_OPERAND);
 	}
 
 	@ParameterizedTest

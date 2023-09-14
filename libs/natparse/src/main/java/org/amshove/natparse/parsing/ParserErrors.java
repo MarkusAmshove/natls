@@ -628,4 +628,13 @@ class ParserErrors
 			ParserError.UNEXPECTED_TOKEN_EXPECTED_IDENTIFIER
 		);
 	}
+
+	public static IDiagnostic operandExpected(SyntaxToken token)
+	{
+		return ParserDiagnostic.create(
+			"Expected operand, but got %s".formatted(token.kind()),
+			token,
+			ParserError.UNEXPECTED_TOKEN_EXPECTED_OPERAND
+		);
+	}
 }
