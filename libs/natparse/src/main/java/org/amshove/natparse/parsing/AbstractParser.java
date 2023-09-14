@@ -269,10 +269,18 @@ abstract class AbstractParser<T>
 		return consumeSingleLiteral(node);
 	}
 
+	private static final Set<SyntaxKind> LITERAL_KINDS = Set.of(SyntaxKind.NUMBER_LITERAL, SyntaxKind.STRING_LITERAL, SyntaxKind.HEX_LITERAL, SyntaxKind.TRUE, SyntaxKind.FALSE, SyntaxKind.ASTERISK, SyntaxKind.DATE_LITERAL, SyntaxKind.TIME_LITERAL, SyntaxKind.EXTENDED_TIME_LITERAL);
+
 	private ILiteralNode consumeSingleLiteral(BaseSyntaxNode node) throws ParseError
 	{
-		var literal = consumeAny(List.of(SyntaxKind.NUMBER_LITERAL, SyntaxKind.STRING_LITERAL, SyntaxKind.HEX_LITERAL, SyntaxKind.TRUE, SyntaxKind.FALSE, SyntaxKind.ASTERISK, SyntaxKind.DATE_LITERAL, SyntaxKind.TIME_LITERAL, SyntaxKind.EXTENDED_TIME_LITERAL));
-		var literalNode = new LiteralNode(literal);
+		if (!LITERAL_KINDS.contains(peekKind()))
+		{
+			report(ParserErrors.operandExpected(peek()));
+			throw new ParseError(peek());
+		}
+
+		var literalToken = tokens.advance();
+		var literalNode = new LiteralNode(literalToken);
 		node.addNode(literalNode);
 		return literalNode;
 	}
@@ -365,7 +373,7 @@ abstract class AbstractParser<T>
 		var currentToken = tokens.peek();
 		if (tokens.isAtEnd() || (currentToken.kind() != SyntaxKind.IDENTIFIER && !currentToken.kind().canBeIdentifier()))
 		{
-			diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens));
+			diagnostics.add(ParserErrors.unexpectedTokenWhenIdentifierWasExpected(currentToken));
 			throw new ParseError(peek());
 		}
 
