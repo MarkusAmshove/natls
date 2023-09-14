@@ -3,6 +3,8 @@ package org.amshove.natparse.lexing;
 import org.amshove.natparse.*;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 class LexerDiagnostic implements IDiagnostic
@@ -17,6 +19,7 @@ class LexerDiagnostic implements IDiagnostic
 	private final String message;
 	private final DiagnosticSeverity severity;
 	private final IPosition originalPosition;
+	private final List<AdditionalDiagnosticInfo> additionalInfos = new ArrayList<>();
 
 	private LexerDiagnostic(String message, int offset, int offsetInLine, int currentLine, int length, Path filePath, LexerError error)
 	{
@@ -155,12 +158,17 @@ class LexerDiagnostic implements IDiagnostic
 	@Override
 	public ReadOnlyList<AdditionalDiagnosticInfo> additionalInfo()
 	{
-		return ReadOnlyList.empty();
+		return ReadOnlyList.from(additionalInfos);
 	}
 
 	@Override
 	public boolean hasOriginalPosition()
 	{
 		return originalPosition != null;
+	}
+
+	void addAdditionalInfo(AdditionalDiagnosticInfo info)
+	{
+		additionalInfos.add(info);
 	}
 }
