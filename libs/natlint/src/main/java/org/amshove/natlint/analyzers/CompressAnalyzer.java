@@ -74,7 +74,9 @@ public class CompressAnalyzer extends AbstractAnalyzer
 				&& workfileNode.path()instanceof IVariableReferenceNode pathReference
 				&& pathReference.reference() == variableReference.reference())
 			{
-				context.report(COMPRESS_SHOULD_HAVE_LEAVING_NO.createFormattedDiagnostic(variableReference.referencingToken(), variableReference.referencingToken().source()));
+				var diagnostic = COMPRESS_SHOULD_HAVE_LEAVING_NO.createFormattedDiagnostic(variableReference.referencingToken(), variableReference.referencingToken().source());
+				diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("Variable is used here as work file path", pathReference.position()));
+				context.report(diagnostic);
 			}
 		}
 	}

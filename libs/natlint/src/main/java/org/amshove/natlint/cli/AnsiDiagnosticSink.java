@@ -20,7 +20,7 @@ public class AnsiDiagnosticSink implements IDiagnosticSink
 		DiagnosticSeverity.INFO, "34"
 	);
 
-	private static final String ADDITIONAL_INFO_INDENT = "  ";
+	private static final String ADDITIONAL_INFO_INDENT = "       ";
 
 	private static final Comparator<IDiagnostic> byLineNumber = Comparator.comparingInt(IPosition::line);
 	private static final ActualFilesystem filesystem = new ActualFilesystem();
@@ -51,8 +51,6 @@ public class AnsiDiagnosticSink implements IDiagnosticSink
 
 				for (var additionalDiagnosticInfo : diagnostic.additionalInfo())
 				{
-					System.out.println("_".repeat(ADDITIONAL_INFO_INDENT.length() + 1));
-					System.out.println(indented("|"));
 					System.out.println(indented("= ") + pathWithLineInformation(additionalDiagnosticInfo.position()));
 					System.out.println(indented(readDiagnosticSourceLine(diagnostic, additionalDiagnosticInfo.position())));
 					System.out.println(indented(squiggle(additionalDiagnosticInfo.position(), diagnostic.severity())));
