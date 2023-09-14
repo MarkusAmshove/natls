@@ -249,7 +249,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			1 PROCESS
 			2 #VAR (A10)
 			END-DEFINE
-			""", ParserError.UNEXPECTED_TOKEN);
+			""", ParserError.UNEXPECTED_TOKEN_EXPECTED_IDENTIFIER);
 
 		assertThat(defineData.variables().first().name()).isEqualTo("PROCESS");
 		assertThat(defineData.variables().last().name()).isEqualTo("#VAR");

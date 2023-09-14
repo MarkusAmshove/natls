@@ -1,0 +1,6 @@
+name: Identifier expected
+priority: BLOCKER
+tags: compile-time
+type: BUG
+description:
+Expected an identifier but got something else.
