@@ -1443,7 +1443,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			// In case of DEFINE DATA we don't throw here to keep parsing a whole DEFINE DATA.
 			// These variables won't be resolvable though, because the original implementation
 			// that the StatementListParser uses is throwing, which is fine.
-			report(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens));
+			report(ParserErrors.unexpectedTokenWhenIdentifierWasExpected(currentToken));
 		}
 
 		tokens.advance();

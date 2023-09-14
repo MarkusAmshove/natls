@@ -365,7 +365,7 @@ abstract class AbstractParser<T>
 		var currentToken = tokens.peek();
 		if (tokens.isAtEnd() || (currentToken.kind() != SyntaxKind.IDENTIFIER && !currentToken.kind().canBeIdentifier()))
 		{
-			diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens));
+			diagnostics.add(ParserErrors.unexpectedTokenWhenIdentifierWasExpected(currentToken));
 			throw new ParseError(peek());
 		}
 

@@ -166,7 +166,7 @@ class StatementListParserShould extends StatementParseTest
 	@Test
 	void raiseADiagnosticWhenNoCopycodeIsPassed()
 	{
-		assertDiagnostic("INCLUDE 1", ParserError.UNEXPECTED_TOKEN);
+		assertDiagnostic("INCLUDE 1", ParserError.UNEXPECTED_TOKEN_EXPECTED_IDENTIFIER);
 	}
 
 	@Test
@@ -1328,7 +1328,7 @@ class StatementListParserShould extends StatementParseTest
 	@Test
 	void reportADiagnosticIfGetHasNoView()
 	{
-		assertDiagnostic("GET *ISN", ParserError.UNEXPECTED_TOKEN);
+		assertDiagnostic("GET *ISN", ParserError.UNEXPECTED_TOKEN_EXPECTED_IDENTIFIER);
 	}
 
 	@Test

@@ -619,4 +619,13 @@ class ParserErrors
 			ParserError.CYCLOMATIC_INCLUDE
 		);
 	}
+
+	public static IDiagnostic unexpectedTokenWhenIdentifierWasExpected(SyntaxToken token)
+	{
+		return ParserDiagnostic.create(
+			"Identifier expected, but got %s".formatted(token.kind()),
+			token,
+			ParserError.UNEXPECTED_TOKEN_EXPECTED_IDENTIFIER
+		);
+	}
 }
