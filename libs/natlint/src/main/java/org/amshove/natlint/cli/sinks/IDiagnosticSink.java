@@ -1,4 +1,4 @@
-package org.amshove.natlint.cli;
+package org.amshove.natlint.cli.sinks;
 
 import org.amshove.natparse.IDiagnostic;
 

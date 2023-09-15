@@ -1,4 +1,9 @@
-package org.amshove.natlint.cli;
+package org.amshove.natlint.cli.sinks;
+
+import com.google.common.io.CharSink;
+import com.google.common.io.FileWriteMode;
+import com.google.common.io.Files;
+import org.amshove.natparse.IDiagnostic;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -6,12 +11,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
-
-import org.amshove.natparse.IDiagnostic;
-
-import com.google.common.io.CharSink;
-import com.google.common.io.FileWriteMode;
-import com.google.common.io.Files;
 
 public class FileStatusSink
 {
