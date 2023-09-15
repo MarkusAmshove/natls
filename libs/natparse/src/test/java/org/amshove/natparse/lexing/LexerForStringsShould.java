@@ -65,6 +65,15 @@ class LexerForStringsShould extends AbstractLexerTest
 	}
 
 	@Test
+	void reportADiagnosticForUnterminatedHexLiterals()
+	{
+		assertDiagnostic(
+			"H'00",
+			assertedDiagnostic(0, 0, 0, 4, LexerError.UNTERMINATED_STRING)
+		);
+	}
+
+	@Test
 	void correctlyParseTimeFormats()
 	{
 		assertTokens(
