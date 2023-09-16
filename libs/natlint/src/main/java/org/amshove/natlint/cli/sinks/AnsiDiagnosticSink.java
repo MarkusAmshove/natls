@@ -167,13 +167,6 @@ public class AnsiDiagnosticSink implements IDiagnosticSink
 		return coloredLine.toString();
 	}
 
-	private String squiggle(IDiagnostic diagnostic)
-	{
-		var offsetInLine = diagnostic.originalPosition().isSamePositionAs(diagnostic) ? diagnostic.offsetInLine() : diagnostic.offsetInLine() + diagnostic.originalPosition().offsetInLine() + 2;
-		return " ".repeat(Math.max(0, offsetInLine)) +
-			colored("~".repeat(Math.max(0, diagnostic.originalPosition().length())), diagnostic.severity());
-	}
-
 	private String squiggle(IPosition position, DiagnosticSeverity severity)
 	{
 		return " ".repeat(Math.max(0, position.offsetInLine())) +
