@@ -1,7 +1,6 @@
 package org.amshove.natlint.api;
 
 import org.amshove.natparse.DiagnosticSeverity;
-import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.ModuleLevelPosition;
 import org.amshove.natparse.lexing.SyntaxToken;
