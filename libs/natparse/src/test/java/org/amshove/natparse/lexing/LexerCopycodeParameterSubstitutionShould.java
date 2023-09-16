@@ -1,5 +1,6 @@
 package org.amshove.natparse.lexing;
 
+import org.amshove.natparse.IDiagnostic;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
@@ -92,6 +93,25 @@ class LexerCopycodeParameterSubstitutionShould
 		var token = result.advance();
 		assertThat(token.kind()).isEqualTo(SyntaxKind.STRING_LITERAL);
 		assertThat(token.source()).isEqualTo("\"\"\"SOME TEXT\"\"\"");
+	}
+
+	@Test
+	void addADiagnosticToIncludePositionWithPositionInCopyCodeAsAdditionalInfo()
+	{
+		var lexer = new Lexer(List.of("'Hi"));
+		var includePosition = new PlainPosition(0, 0, 0, 0, Path.of(""));
+		lexer.relocateDiagnosticPosition(includePosition);
+
+		var copyCodePath = Path.of("original.nsn");
+		var result = lexer.lex("WRITE &1&", copyCodePath);
+
+		assertThat(result.diagnostics()).hasSize(1);
+		var diagnostic = result.diagnostics().first();
+		assertThat(diagnostic.id()).isEqualTo(LexerError.UNTERMINATED_STRING.id());
+
+		assertThat(diagnostic.isSamePositionAs(includePosition)).as("Diagnostic main position should be INCLUDE position").isTrue();
+
+		assertThat(diagnostic.additionalInfo().first().position().filePath()).isEqualTo(copyCodePath);
 	}
 
 	private TokenList lex(String source, String... substitutions)
