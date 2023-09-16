@@ -46,17 +46,17 @@ public class ParserDiagnostic implements IDiagnostic
 
 	public static ParserDiagnostic create(String message, ISyntaxNode node, ParserError error)
 	{
-		return create(message, node.diagnosticPosition(), error);
+		return create(message, node.position(), error);
 	}
 
 	public static ParserDiagnostic create(String message, ISyntaxNode node, ParserError error, DiagnosticSeverity severity)
 	{
-		return create(message, node.diagnosticPosition(), error, severity);
+		return create(message, node.position(), error, severity);
 	}
 
 	public static ParserDiagnostic create(String message, SyntaxToken token, ParserError error)
 	{
-		return create(message, token.diagnosticPosition(), error);
+		return create(message, (IPosition) token, error);
 	}
 
 	public static ParserDiagnostic create(String message, IPosition diagnosticPosition, ParserError error)
@@ -123,9 +123,9 @@ public class ParserDiagnostic implements IDiagnostic
 		return severity;
 	}
 
-	IDiagnostic relocate(IPosition relocatedDiagnosticPosition)
+	ParserDiagnostic relocate(IPosition relocatedDiagnosticPosition)
 	{
-		return new ParserDiagnostic(
+		var newDiagnostic = new ParserDiagnostic(
 			message,
 			relocatedDiagnosticPosition.offset(),
 			relocatedDiagnosticPosition.offsetInLine(),
@@ -134,6 +134,9 @@ public class ParserDiagnostic implements IDiagnostic
 			relocatedDiagnosticPosition.filePath(),
 			error
 		);
+
+		newDiagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("Occurred here", this));
+		return newDiagnostic;
 	}
 
 	@Override
