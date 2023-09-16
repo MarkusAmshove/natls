@@ -18,15 +18,9 @@ class LexerDiagnostic implements IDiagnostic
 	private final LexerError error;
 	private final String message;
 	private final DiagnosticSeverity severity;
-	private final IPosition originalPosition;
 	private final List<AdditionalDiagnosticInfo> additionalInfos = new ArrayList<>();
 
 	private LexerDiagnostic(String message, int offset, int offsetInLine, int currentLine, int length, Path filePath, LexerError error)
-	{
-		this(message, offset, offsetInLine, currentLine, length, filePath, null, error);
-	}
-
-	private LexerDiagnostic(String message, int offset, int offsetInLine, int currentLine, int length, Path filePath, IPosition originalPosition, LexerError error)
 	{
 		this.message = message;
 		this.offset = offset;
@@ -36,7 +30,6 @@ class LexerDiagnostic implements IDiagnostic
 		this.error = error;
 		this.id = error.id();
 		this.filePath = filePath;
-		this.originalPosition = originalPosition;
 		severity = DiagnosticSeverity.ERROR;
 	}
 
@@ -62,20 +55,6 @@ class LexerDiagnostic implements IDiagnostic
 			currentLine,
 			length,
 			filePath,
-			error
-		);
-	}
-
-	static LexerDiagnostic create(String message, int offset, int offsetInLine, int currentLine, int length, Path filePath, IPosition originalPosition, LexerError error)
-	{
-		return new LexerDiagnostic(
-			message,
-			offset,
-			offsetInLine,
-			currentLine,
-			length,
-			filePath,
-			originalPosition,
 			error
 		);
 	}
@@ -150,21 +129,9 @@ class LexerDiagnostic implements IDiagnostic
 	}
 
 	@Override
-	public IPosition originalPosition()
-	{
-		return originalPosition != null ? originalPosition : this;
-	}
-
-	@Override
 	public ReadOnlyList<AdditionalDiagnosticInfo> additionalInfo()
 	{
 		return ReadOnlyList.from(additionalInfos);
-	}
-
-	@Override
-	public boolean hasOriginalPosition()
-	{
-		return originalPosition != null;
 	}
 
 	void addAdditionalInfo(AdditionalDiagnosticInfo info)

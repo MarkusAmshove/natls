@@ -4,6 +4,7 @@ import org.amshove.natlint.api.IAnalyzeContext;
 import org.amshove.natlint.api.IDiagnosticReporter;
 import org.amshove.natlint.api.LinterDiagnostic;
 import org.amshove.natlint.editorconfig.EditorConfig;
+import org.amshove.natparse.AdditionalDiagnosticInfo;
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.project.NaturalFile;
@@ -48,7 +49,22 @@ class AnalyzeContext implements IAnalyzeContext
 		}
 
 		var newSeverityName = editorConfig
-			.getProperty(diagnostic.originalPosition().filePath(), "natls.%s.severity".formatted(diagnostic.id()), diagnostic.severity().toString());
+			.getProperty(diagnostic.filePath(), "natls.%s.severity".formatted(diagnostic.id()), diagnostic.severity().toString());
+
+		for (var info : diagnostic.additionalInfo())
+		{
+			if (info.position().filePath().equals(diagnostic.filePath()))
+			{
+				continue;
+			}
+
+			newSeverityName = editorConfig
+				.getProperty(
+					info.position().filePath(),
+					"natls.%s.severity".formatted(diagnostic.id()),
+					diagnostic.severity().toString()
+				);
+		}
 
 		if (newSeverityName.equals("none"))
 		{

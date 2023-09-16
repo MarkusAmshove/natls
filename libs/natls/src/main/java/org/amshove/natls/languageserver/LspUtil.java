@@ -47,7 +47,7 @@ public class LspUtil
 
 	public static Diagnostic toLspDiagnostic(String sourceTool, IDiagnostic diagnostic)
 	{
-		var positions = new DiagnosticOriginalUri(pathToUri(diagnostic.originalPosition().filePath()));
+		var positions = new DiagnosticOriginalUri(pathToUri(diagnostic.filePath()));
 		var lspDiagnostic = new Diagnostic(
 			new Range(
 				new Position(diagnostic.line(), diagnostic.offsetInLine()),
