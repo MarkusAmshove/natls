@@ -98,7 +98,7 @@ class LexerCopycodeParameterSubstitutionShould
 	@Test
 	void addADiagnosticToIncludePositionWithPositionInCopyCodeAsAdditionalInfo()
 	{
-		var lexer = new Lexer(List.of("'Hi"));
+		var lexer = new Lexer(List.of("''"));
 		var includePosition = new PlainPosition(0, 0, 0, 0, Path.of(""));
 		lexer.relocateDiagnosticPosition(includePosition);
 
@@ -107,7 +107,7 @@ class LexerCopycodeParameterSubstitutionShould
 
 		assertThat(result.diagnostics()).hasSize(1);
 		var diagnostic = result.diagnostics().first();
-		assertThat(diagnostic.id()).isEqualTo(LexerError.UNTERMINATED_STRING.id());
+		assertThat(diagnostic.id()).isEqualTo(LexerError.INVALID_STRING_LENGTH.id());
 
 		assertThat(diagnostic.isSamePositionAs(includePosition)).as("Diagnostic main position should be INCLUDE position").isTrue();
 
