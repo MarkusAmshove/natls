@@ -1,7 +1,8 @@
 package org.amshove.natlint.cli;
 
 import org.amshove.natlint.api.LinterDiagnostic;
-import org.amshove.natlint.cli.FileStatusSink.MessageType;
+import org.amshove.natlint.cli.sinks.FileStatusSink;
+import org.amshove.natlint.cli.sinks.FileStatusSink.MessageType;
 import org.amshove.natparse.DiagnosticSeverity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -40,7 +41,7 @@ class FileStatusSinkShould
 		var sut = new FileStatusSink(sinkFile);
 		sut.printError(natFile, MessageType.LINT_EXCEPTION, ex);
 
-		assertThat(sut.isEnabled).isTrue();
+		assertThat(sut.isEnabled()).isTrue();
 		assertThat(Files.lines(sinkFile).count()).isEqualTo(2);
 		assertThat(Files.lines(sinkFile).toList().get(1)).contains(errorMessage);
 	}

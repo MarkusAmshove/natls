@@ -1,4 +1,4 @@
-package org.amshove.natlint.cli;
+package org.amshove.natlint.cli.sinks;
 
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.IDiagnostic;
@@ -19,6 +19,8 @@ public class AnsiDiagnosticSink implements IDiagnosticSink
 		DiagnosticSeverity.WARNING, "33",
 		DiagnosticSeverity.INFO, "34"
 	);
+
+	private static final String ADDITIONAL_INFO_INDENT = "       ";
 
 	private static final Comparator<IDiagnostic> byLineNumber = Comparator.comparingInt(IPosition::line);
 	private static final ActualFilesystem filesystem = new ActualFilesystem();
@@ -43,9 +45,18 @@ public class AnsiDiagnosticSink implements IDiagnosticSink
 				System.out.println(pathWithLineInformation(diagnostic));
 
 				System.out.println();
-				System.out.println(readDiagnosticSourceLine(diagnostic));
-				System.out.println(squiggle(diagnostic));
+				System.out.println(readDiagnosticSourceLine(diagnostic, diagnostic));
+				System.out.println(squiggle(diagnostic, diagnostic.severity()));
 				System.out.println(message(diagnostic));
+
+				for (var additionalDiagnosticInfo : diagnostic.additionalInfo())
+				{
+					System.out.println(indented("= ") + pathWithLineInformation(additionalDiagnosticInfo.position()));
+					System.out.println(indented(readDiagnosticSourceLine(diagnostic, additionalDiagnosticInfo.position())));
+					System.out.println(indented(squiggle(additionalDiagnosticInfo.position(), diagnostic.severity())));
+					System.out.println(indented(message(diagnostic, additionalDiagnosticInfo.position(), additionalDiagnosticInfo.message(), true)));
+				}
+
 				System.out.println();
 
 				printed++;
@@ -58,9 +69,36 @@ public class AnsiDiagnosticSink implements IDiagnosticSink
 		}
 	}
 
+	private String indented(String message)
+	{
+		var result = new StringBuilder();
+		var lines = message.split("\n");
+		var remainingLines = lines.length;
+		for (var l : lines)
+		{
+			result.append(ADDITIONAL_INFO_INDENT).append(l);
+			if (remainingLines > 1)
+			{
+				result.append(System.lineSeparator());
+			}
+			remainingLines--;
+		}
+		return result.toString();
+	}
+
 	private String message(IDiagnostic diagnostic)
 	{
-		var offsetInLine = diagnostic.originalPosition().isSamePositionAs(diagnostic) ? diagnostic.offsetInLine() : diagnostic.offsetInLine() + diagnostic.originalPosition().offsetInLine() + 2;
+		return message(diagnostic, diagnostic.message());
+	}
+
+	private String message(IDiagnostic diagnostic, String diagnosticMessage)
+	{
+		return message(diagnostic, diagnostic, diagnosticMessage, false);
+	}
+
+	private String message(IDiagnostic diagnostic, IPosition position, String diagnosticMessage, boolean isAdditionalInfo)
+	{
+		var offsetInLine = position.offsetInLine();
 		var severity = diagnostic.severity();
 		var message = new StringBuilder();
 		message.append(" ".repeat(offsetInLine));
@@ -71,10 +109,16 @@ public class AnsiDiagnosticSink implements IDiagnosticSink
 		message.append(System.lineSeparator());
 		message.append(" ".repeat(offsetInLine));
 		message.append(colored("= ", severity));
-		message.append(colored(diagnostic.severity().toString(), severity));
-		message.append(colored(": ", severity));
-		message.append(colored(splitMessage(diagnostic.message(), offsetInLine), severity));
-		message.append(colored(" [%s]".formatted(diagnostic.id()), severity));
+		if (!isAdditionalInfo)
+		{
+			message.append(colored(diagnostic.severity().toString(), severity));
+			message.append(colored(": ", severity));
+		}
+		message.append(colored(splitMessage(diagnosticMessage, offsetInLine), severity));
+		if (!isAdditionalInfo)
+		{
+			message.append(colored(" [%s]".formatted(diagnostic.id()), severity));
+		}
 		return message.toString();
 	}
 
@@ -84,31 +128,9 @@ public class AnsiDiagnosticSink implements IDiagnosticSink
 		return Arrays.stream(splitMessage).collect(Collectors.joining("\n" + " ".repeat(offset)));
 	}
 
-	private String readDiagnosticSourceLine(IDiagnostic diagnostic)
+	private String readDiagnosticSourceLine(IDiagnostic diagnostic, IPosition position)
 	{
-		var diagnosticLocationLine = readSourcePosition(diagnostic, diagnostic.severity());
-		if (!diagnostic.originalPosition().filePath().equals(diagnostic.filePath()))
-		{
-			var originalLocationLine = readSourcePosition(diagnostic.originalPosition(), diagnostic.severity());
-			return new StringBuilder()
-				.append(diagnosticLocationLine)
-				.append("\n")
-				.append(" ".repeat(diagnostic.offsetInLine()))
-				.append(colored("^\n", diagnostic.severity()))
-				.append(" ".repeat(diagnostic.offsetInLine()))
-				.append(colored("|\n", diagnostic.severity()))
-				.append(" ".repeat(diagnostic.offsetInLine()))
-				.append(pathWithLineInformation(diagnostic.originalPosition()))
-				.append("\n")
-				.append(" ".repeat(diagnostic.offsetInLine()))
-				.append(colored("|\n", diagnostic.severity()))
-				.append(" ".repeat(diagnostic.offsetInLine()))
-				.append(colored("= ", diagnostic.severity()))
-				.append(originalLocationLine)
-				.toString();
-		}
-
-		return diagnosticLocationLine;
+		return readSourcePosition(position, diagnostic.severity());
 	}
 
 	private String readSourcePosition(IPosition position, DiagnosticSeverity severity)
@@ -145,11 +167,10 @@ public class AnsiDiagnosticSink implements IDiagnosticSink
 		return coloredLine.toString();
 	}
 
-	private String squiggle(IDiagnostic diagnostic)
+	private String squiggle(IPosition position, DiagnosticSeverity severity)
 	{
-		var offsetInLine = diagnostic.originalPosition().isSamePositionAs(diagnostic) ? diagnostic.offsetInLine() : diagnostic.offsetInLine() + diagnostic.originalPosition().offsetInLine() + 2;
-		return " ".repeat(Math.max(0, offsetInLine)) +
-			colored("~".repeat(Math.max(0, diagnostic.originalPosition().length())), diagnostic.severity());
+		return " ".repeat(Math.max(0, position.offsetInLine())) +
+			colored("~".repeat(Math.max(0, position.length())), severity);
 	}
 
 	private String colored(String message, DiagnosticSeverity severity)

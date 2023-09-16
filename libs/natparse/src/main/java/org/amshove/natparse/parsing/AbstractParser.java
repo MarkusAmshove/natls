@@ -58,7 +58,12 @@ abstract class AbstractParser<T>
 			&& !(referableName.startsWith("USR") && referableName.endsWith("N"))
 			&& !referableName.equals("SHCMD"))
 		{
-			report(ParserErrors.unresolvedExternalModule(moduleIdentifierToken));
+			var diagnostic = ParserErrors.unresolvedExternalModule(moduleIdentifierToken);
+			if (!moduleIdentifierToken.filePath().equals(tokens.filePath()))
+			{
+				diagnostic = diagnostic.relocate(moduleIdentifierToken.diagnosticPosition());
+			}
+			report(diagnostic);
 		}
 
 		return module;
@@ -203,7 +208,7 @@ abstract class AbstractParser<T>
 		var tokenConsumed = consumeOptionally(node, kind);
 		if (!tokenConsumed)
 		{
-			diagnostics.add(ParserErrors.unexpectedToken(kind, tokens));
+			report(ParserErrors.unexpectedToken(kind, tokens));
 		}
 
 		return tokenConsumed;
@@ -216,7 +221,7 @@ abstract class AbstractParser<T>
 			return previousToken();
 		}
 
-		diagnostics.add(ParserErrors.unexpectedToken(kind, tokens));
+		report(ParserErrors.unexpectedToken(kind, tokens));
 		throw new ParseError(peek());
 	}
 
@@ -229,7 +234,7 @@ abstract class AbstractParser<T>
 
 		if (!consumeOptionally(node, closingTokenType))
 		{
-			diagnostics.add(ParserErrors.missingClosingToken(closingTokenType, openingToken));
+			report(ParserErrors.missingClosingToken(closingTokenType, openingToken));
 			throw new ParseError(peek());
 		}
 	}
@@ -373,7 +378,7 @@ abstract class AbstractParser<T>
 		var currentToken = tokens.peek();
 		if (tokens.isAtEnd() || (currentToken.kind() != SyntaxKind.IDENTIFIER && !currentToken.kind().canBeIdentifier()))
 		{
-			diagnostics.add(ParserErrors.unexpectedTokenWhenIdentifierWasExpected(currentToken));
+			report(ParserErrors.unexpectedTokenWhenIdentifierWasExpected(currentToken));
 			throw new ParseError(peek());
 		}
 
@@ -386,7 +391,7 @@ abstract class AbstractParser<T>
 	{
 		if (tokens.isAtEnd() || !acceptedKinds.contains(tokens.peek().kind()))
 		{
-			diagnostics.add(ParserErrors.unexpectedToken(acceptedKinds, tokens));
+			report(ParserErrors.unexpectedToken(acceptedKinds, tokens));
 			throw new ParseError(peek());
 		}
 
@@ -1083,7 +1088,7 @@ abstract class AbstractParser<T>
 			}
 		}
 
-		diagnostics.add(ParserErrors.unexpectedToken(acceptedKinds, tokens));
+		report(ParserErrors.unexpectedToken(acceptedKinds, tokens));
 		throw new ParseError(peek());
 	}
 

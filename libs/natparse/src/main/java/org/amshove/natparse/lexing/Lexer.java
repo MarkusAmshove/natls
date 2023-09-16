@@ -1,5 +1,6 @@
 package org.amshove.natparse.lexing;
 
+import org.amshove.natparse.AdditionalDiagnosticInfo;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.lexing.text.SourceTextScanner;
 import org.amshove.natparse.natural.project.NaturalHeader;
@@ -328,7 +329,7 @@ public class Lexer
 	private void consumeIdentifierOrCopyCodeParameter()
 	{
 		// This checks for left over parameter, e.g. if a user didn't provide a parameter
-		if (!copyCodeParameter.isEmpty())
+		if (scanner.peek() == '&')
 		{
 			scanner.start();
 			scanner.advance(); // &
@@ -342,7 +343,13 @@ public class Lexer
 			{
 				scanner.advance(offset);
 				var position = Integer.parseInt(scanner.lexemeText().substring(1));
-				addDiagnostic("Copy code parameter with position %d not provided".formatted(position), LexerError.MISSING_COPYCODE_PARAMETER);
+				scanner.advance(); // to include the closing in error position
+
+				// only raise the diagnostic for the including side
+				if (relocatedDiagnosticPosition != null)
+				{
+					addDiagnostic("Copy code parameter with position %d not provided".formatted(position), "Parameter is used here", LexerError.MISSING_COPYCODE_PARAMETER);
+				}
 			}
 
 			// We roll this all back, because this was just for better error messages.
@@ -1592,7 +1599,7 @@ public class Lexer
 		var hexLiteralChars = previousUnsafe().source().length() - 3; // - H''
 		if (hexLiteralChars % 2 != 0)
 		{
-			addDiagnostic("Invalid HEX literal. Number of characters must be even but was %d.".formatted(hexLiteralChars), LexerError.UNKNOWN_CHARACTER);
+			addDiagnostic("Invalid HEX literal. Number of characters must be even but was %d.".formatted(hexLiteralChars), "Literal defined here", LexerError.UNKNOWN_CHARACTER);
 		}
 	}
 
@@ -1611,7 +1618,7 @@ public class Lexer
 				scanner.advance();
 			}
 
-			addDiagnostic("Unterminated String literal, expecting closing [']", LexerError.UNTERMINATED_STRING);
+			addDiagnostic("Unterminated String literal, expecting closing [']", "Literal declared here", LexerError.UNTERMINATED_STRING);
 
 			// We can still produce a valid token, although it is unterminated
 			createAndAdd(kindToCreate);
@@ -1655,6 +1662,7 @@ public class Lexer
 
 			addDiagnostic(
 				"Unterminated String literal, expecting closing [%c]".formatted(c),
+				"Literal declared here",
 				LexerError.UNTERMINATED_STRING
 			);
 
@@ -1736,22 +1744,34 @@ public class Lexer
 		return false;
 	}
 
-	private void addDiagnostic(String message, LexerError error)
+	private void addDiagnostic(String message, String additionalMessage, LexerError error)
 	{
 		if (relocatedDiagnosticPosition != null)
 		{
-			diagnostics.add(
-				LexerDiagnostic.create(
-					message,
-					scanner.lexemeStart(),
-					getOffsetInLine(),
-					line,
-					scanner.lexemeLength(),
-					filePath,
-					relocatedDiagnosticPosition,
-					error
+			var diagnostic = LexerDiagnostic.create(
+				message,
+				relocatedDiagnosticPosition.offset(),
+				relocatedDiagnosticPosition.offsetInLine(),
+				relocatedDiagnosticPosition.line(),
+				relocatedDiagnosticPosition.length(),
+				relocatedDiagnosticPosition.filePath(),
+				error
+			);
+
+			diagnostic.addAdditionalInfo(
+				new AdditionalDiagnosticInfo(
+					additionalMessage,
+					new PlainPosition(
+						scanner.lexemeStart(),
+						getOffsetInLine(),
+						line,
+						scanner.lexemeLength(),
+						filePath
+					)
 				)
 			);
+
+			diagnostics.add(diagnostic);
 		}
 		else
 		{
@@ -1769,22 +1789,34 @@ public class Lexer
 		}
 	}
 
-	private void addDiagnostic(String message, LexerError error, SyntaxToken where)
+	private void addDiagnostic(String message, String additionalMessage, LexerError error, SyntaxToken where)
 	{
 		if (relocatedDiagnosticPosition != null)
 		{
-			diagnostics.add(
-				LexerDiagnostic.create(
-					message,
-					where.offset(),
-					where.offsetInLine(),
-					where.line(),
-					where.length(),
-					where.filePath(),
-					relocatedDiagnosticPosition,
-					error
+			var diagnostic = LexerDiagnostic.create(
+				message,
+				relocatedDiagnosticPosition.offset(),
+				relocatedDiagnosticPosition.offsetInLine(),
+				relocatedDiagnosticPosition.line(),
+				relocatedDiagnosticPosition.length(),
+				relocatedDiagnosticPosition.filePath(),
+				error
+			);
+
+			diagnostic.addAdditionalInfo(
+				new AdditionalDiagnosticInfo(
+					additionalMessage,
+					new PlainPosition(
+						where.offset(),
+						where.offsetInLine(),
+						where.line(),
+						where.length(),
+						where.filePath()
+					)
 				)
 			);
+
+			diagnostics.add(diagnostic);
 		}
 		else
 		{
@@ -1808,7 +1840,7 @@ public class Lexer
 		{
 			if (token.source().endsWith("."))
 			{
-				addDiagnostic("Identifiers can not end with '.'", LexerError.INVALID_IDENTIFIER);
+				addDiagnostic("Identifiers can not end with '.'", "Identifier defined here", LexerError.INVALID_IDENTIFIER);
 			}
 		}
 
@@ -1834,6 +1866,7 @@ public class Lexer
 		{
 			addDiagnostic(
 				"String literals in Natural can't be empty. Add a blank.",
+				"Literal is used here",
 				LexerError.INVALID_STRING_LENGTH,
 				token
 			);

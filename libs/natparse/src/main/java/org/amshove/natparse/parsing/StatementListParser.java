@@ -52,6 +52,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			// If diagnostics should be relocated, we're a copycode. So let the includer resolve it themselves.
 			resolveUnresolvedExternalPerforms();
 		}
+
 		return statementList;
 	}
 
