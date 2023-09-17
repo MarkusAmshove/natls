@@ -1,5 +1,6 @@
 plugins {
-    id 'com.github.johnrengelman.shadow' version '7.1.0'
+    id 'maven-publish'
+    id 'com.github.johnrengelman.shadow' version '5.2.0' // do not update unless https://github.com/johnrengelman/shadow/issues/651 is fixed
 }
 
 dependencies {
@@ -30,5 +31,23 @@ jar {
                 'Implementation-Title': project.name,
                 'Implementation-Version': project.version
         )
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = "https://maven.pkg.github.com/markusamshove/natls"
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
     }
 }
