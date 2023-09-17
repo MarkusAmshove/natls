@@ -301,9 +301,12 @@ public class NaturalParser
 
 			if (unresolvedReference.token().kind() == SyntaxKind.IDENTIFIER)
 			{
-				// We don't handle IDENTIFIER_OR_KEYWORD because we can't be sure if it a variable.
-				// As long as IDENTIFIER_OR_KEYWORD exists as a SyntaxKind, we only report a diagnostic if we're sure that its meant to be a reference.
-				module.addDiagnostic(ParserErrors.unresolvedReference(unresolvedReference));
+				var diagnostic = ParserErrors.unresolvedReference(unresolvedReference);
+				if (!diagnostic.filePath().equals(module.file().getPath()))
+				{
+					diagnostic = diagnostic.relocate(unresolvedReference.diagnosticPosition());
+				}
+				module.addDiagnostic(diagnostic);
 			}
 		}
 	}

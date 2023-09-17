@@ -12,6 +12,7 @@ import org.eclipse.lsp4j.*;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 
 public class LspUtil
 {
@@ -46,7 +47,7 @@ public class LspUtil
 
 	public static Diagnostic toLspDiagnostic(String sourceTool, IDiagnostic diagnostic)
 	{
-		var positions = new DiagnosticOriginalUri(pathToUri(diagnostic.originalPosition().filePath()));
+		var positions = new DiagnosticOriginalUri(pathToUri(diagnostic.filePath()));
 		var lspDiagnostic = new Diagnostic(
 			new Range(
 				new Position(diagnostic.line(), diagnostic.offsetInLine()),
@@ -57,6 +58,18 @@ public class LspUtil
 			sourceTool,
 			diagnostic.id()
 		);
+
+		var additionalInfo = diagnostic.additionalInfo();
+		if (!additionalInfo.isEmpty())
+		{
+			var related = new ArrayList<DiagnosticRelatedInformation>();
+			lspDiagnostic.setRelatedInformation(related);
+			for (var info : additionalInfo)
+			{
+				related.add(new DiagnosticRelatedInformation(toLocation(info.position()), info.message()));
+			}
+		}
+
 		lspDiagnostic.setData(positions);
 		return lspDiagnostic;
 	}

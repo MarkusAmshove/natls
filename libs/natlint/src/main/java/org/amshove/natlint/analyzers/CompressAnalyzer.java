@@ -1,9 +1,7 @@
 package org.amshove.natlint.analyzers;
 
-import org.amshove.natlint.api.AbstractAnalyzer;
-import org.amshove.natlint.api.DiagnosticDescription;
-import org.amshove.natlint.api.IAnalyzeContext;
-import org.amshove.natlint.api.ILinterContext;
+import org.amshove.natlint.api.*;
+import org.amshove.natparse.AdditionalDiagnosticInfo;
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
@@ -76,7 +74,9 @@ public class CompressAnalyzer extends AbstractAnalyzer
 				&& workfileNode.path()instanceof IVariableReferenceNode pathReference
 				&& pathReference.reference() == variableReference.reference())
 			{
-				context.report(COMPRESS_SHOULD_HAVE_LEAVING_NO.createFormattedDiagnostic(variableReference.referencingToken(), variableReference.referencingToken().source()));
+				var diagnostic = COMPRESS_SHOULD_HAVE_LEAVING_NO.createFormattedDiagnostic(variableReference.referencingToken(), variableReference.referencingToken().source());
+				diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("Variable is used here as work file path", pathReference.position()));
+				context.report(diagnostic);
 			}
 		}
 	}
@@ -91,6 +91,7 @@ public class CompressAnalyzer extends AbstractAnalyzer
 
 	private static void checkIfNumericShouldBeApplied(IAnalyzeContext context, ICompressStatementNode compress)
 	{
+		LinterDiagnostic diagnostic = null;
 		for (var operand : compress.operands())
 		{
 			if (operand instanceof IVariableReferenceNode reference)
@@ -100,11 +101,20 @@ public class CompressAnalyzer extends AbstractAnalyzer
 				{
 					if (typedVariable.type().length() % 1 != 0 || typedVariable.type().format() == DataFormat.FLOAT)
 					{
-						context.report(COMPRESS_SHOULD_HAVE_NUMERIC.createDiagnostic(compress));
-						return;
+						if (diagnostic == null)
+						{
+							diagnostic = COMPRESS_SHOULD_HAVE_NUMERIC.createDiagnostic(compress);
+						}
+
+						diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("This operand has type %s".formatted(typedVariable.formatTypeForDisplay()), operand.position()));
 					}
 				}
 			}
+		}
+
+		if (diagnostic != null)
+		{
+			context.report(diagnostic);
 		}
 	}
 }

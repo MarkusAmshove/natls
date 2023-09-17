@@ -1,6 +1,7 @@
 package org.amshove.natlint.cli;
 
 import org.amshove.natlint.cli.git.GitStatusPredicateParser;
+import org.amshove.natlint.cli.sinks.FileStatusSink;
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.natural.project.NaturalFile;

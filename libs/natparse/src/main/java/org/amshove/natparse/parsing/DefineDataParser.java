@@ -112,7 +112,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		{
 			return;
 		}
-		if (groupNode.variables().size() == 0)
+		if (groupNode.variables().isEmpty())
 		{
 			report(ParserErrors.emptyGroupVariable(groupNode));
 		}
@@ -151,7 +151,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				if (peekKind(SyntaxKind.BLOCK))
 				{
 					/*var block = */
-					block(); // TODO: Maybe do something with block
+					scopeNode.addNode(block());
 				}
 
 				var variable = variable(currentGroupsDimensions());
@@ -166,7 +166,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 					checkIndependentVariable(variable);
 				}
 
-				if (peekKind(1, SyntaxKind.FILLER))
+				if (peekKind(1, SyntaxKind.FILLER) && peekKind(2, SyntaxKind.OPERAND_SKIP))
 				{
 					var currentRedefineNode = currentRedefine(variable);
 					if (currentRedefineNode != null)
@@ -178,7 +178,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 					}
 					else
 					{
-						// TODO: Diagnostic: Filler can only be used on redefines
+						report(ParserErrors.unexpectedToken(peek(1), "FILLER can only be used in redefinitions"));
 					}
 				}
 
@@ -719,21 +719,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		{
 			switch (variable.type().format())
 			{
-				case ALPHANUMERIC:
-				case BINARY:
-				case UNICODE:
-					break;
-
-				case CONTROL:
-				case DATE:
-				case FLOAT:
-				case INTEGER:
-				case LOGIC:
-				case NUMERIC:
-				case PACKED:
-				case TIME:
-				case NONE:
-					report(ParserErrors.dynamicVariableLengthNotAllowed(variable));
+				case ALPHANUMERIC, BINARY, UNICODE ->
+				{}
+				case CONTROL, DATE, FLOAT, INTEGER, LOGIC, NUMERIC, PACKED, TIME, NONE -> report(ParserErrors.dynamicVariableLengthNotAllowed(variable));
 			}
 
 			if (variableLength > 0.0)
@@ -785,27 +773,16 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		{
 			switch (variable.type().format())
 			{
-				case ALPHANUMERIC:
-				case BINARY:
-				case UNICODE:
+				case ALPHANUMERIC, BINARY, UNICODE ->
+				{
 					if (!variable.type().hasDynamicLength())
 					{
 						report(ParserErrors.dataTypeNeedsLength(variable));
 					}
-					break;
-
-				case CONTROL:
-				case DATE:
-				case LOGIC:
-				case TIME:
-				case NONE:
-					break;
-
-				case FLOAT:
-				case INTEGER:
-				case NUMERIC:
-				case PACKED:
-					report(ParserErrors.dataTypeNeedsLength(variable));
+				}
+				case CONTROL, DATE, LOGIC, TIME, NONE ->
+				{}
+				case FLOAT, INTEGER, NUMERIC, PACKED -> report(ParserErrors.dataTypeNeedsLength(variable));
 			}
 		}
 
@@ -815,39 +792,25 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 			switch (variable.type().format())
 			{
-				case ALPHANUMERIC:
+				case ALPHANUMERIC ->
+				{
 					if (initialValueKind.isBoolean())
 					{
 						break;
 					}
 					expectInitialValueType(variable, initialValueKind, SyntaxKind.STRING_LITERAL, SyntaxKind.NUMBER_LITERAL, SyntaxKind.HEX_LITERAL);
-					break;
-
-				case DATE:
-					expectInitialValueType(variable, initialValueKind, SyntaxKind.DATE_LITERAL);
-					break;
-
-				case BINARY:
-				case CONTROL:
-				case TIME:
-				case UNICODE:
-				case NONE:
-					// TODO: Unsure about these at the moment
-					break;
-
-				case FLOAT:
-				case NUMERIC:
-				case PACKED:
-				case INTEGER:
-					expectInitialValueType(variable, initialValueKind, SyntaxKind.NUMBER_LITERAL);
-					break;
-
-				case LOGIC:
+				}
+				case DATE -> expectInitialValueType(variable, initialValueKind, SyntaxKind.DATE_LITERAL);
+				case BINARY, CONTROL, TIME, UNICODE, NONE ->
+				{}
+				case FLOAT, NUMERIC, PACKED, INTEGER -> expectInitialValueType(variable, initialValueKind, SyntaxKind.NUMBER_LITERAL);
+				case LOGIC ->
+				{
 					if (initialValueKind != SyntaxKind.TRUE && initialValueKind != SyntaxKind.FALSE)
 					{
 						report(ParserErrors.initValueMismatch(variable, SyntaxKind.TRUE, SyntaxKind.FALSE));
 					}
-					break;
+				}
 			}
 		}
 	}
@@ -942,12 +905,12 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		{
 			var isUnboundV = token.token().symbolName().equals("V"); // (1:V) is allowed in parameter scope, where V stands for variable
 
-			if (currentScope.isParameter() && isUnboundV && !isVariableDeclared(token.token().symbolName()))
+			if (currentScope.isParameter() && isUnboundV && isVariableUndeclared(token.token().symbolName()))
 			{
 				return IArrayDimension.VARIABLE_BOUND;
 			}
 
-			if (!isVariableDeclared(token.token().symbolName()))
+			if (isVariableUndeclared(token.token().symbolName()))
 			{
 				report(ParserErrors.unresolvedReference(token));
 				return IArrayDimension.UNBOUND_VALUE;
@@ -1335,9 +1298,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		return (target.type().byteSize()) * totalOccurrences;
 	}
 
-	private boolean isVariableDeclared(String potentialVariableName)
+	private boolean isVariableUndeclared(String potentialVariableName)
 	{
-		return declaredVariables.containsKey(potentialVariableName.toUpperCase());
+		return !declaredVariables.containsKey(potentialVariableName.toUpperCase());
 	}
 
 	private VariableNode getDeclaredVariable(ITokenNode tokenNode)
@@ -1401,9 +1364,10 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			return;
 		}
 
-		if (groupStack.peekLast().level() == variable.level() - 1)
+		var last = groupStack.peekLast();
+		if (last.level() == variable.level() - 1)
 		{
-			groupStack.peekLast().addVariable(variable);
+			last.addVariable(variable);
 		}
 	}
 
@@ -1469,6 +1433,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 	}
 
+	@SuppressWarnings("ClassEscapesDefinedScope")
 	@Override
 	protected ITokenNode consumeMandatoryIdentifierTokenNode(BaseSyntaxNode node)
 	{
@@ -1478,7 +1443,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			// In case of DEFINE DATA we don't throw here to keep parsing a whole DEFINE DATA.
 			// These variables won't be resolvable though, because the original implementation
 			// that the StatementListParser uses is throwing, which is fine.
-			report(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens));
+			report(ParserErrors.unexpectedTokenWhenIdentifierWasExpected(currentToken));
 		}
 
 		tokens.advance();

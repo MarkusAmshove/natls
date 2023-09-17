@@ -1,0 +1,6 @@
+name: Operand expected
+priority: BLOCKER
+tags: compile-time
+type: BUG
+description:
+Expected an operand.

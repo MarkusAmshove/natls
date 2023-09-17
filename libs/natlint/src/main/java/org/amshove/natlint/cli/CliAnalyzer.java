@@ -1,7 +1,9 @@
 package org.amshove.natlint.cli;
 
 import org.amshove.natlint.api.LinterDiagnostic;
-import org.amshove.natlint.cli.FileStatusSink.MessageType;
+import org.amshove.natlint.cli.sinks.FileStatusSink;
+import org.amshove.natlint.cli.sinks.FileStatusSink.MessageType;
+import org.amshove.natlint.cli.sinks.IDiagnosticSink;
 import org.amshove.natlint.editorconfig.EditorConfigParser;
 import org.amshove.natlint.linter.LinterContext;
 import org.amshove.natlint.linter.NaturalLinter;
