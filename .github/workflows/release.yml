@@ -26,7 +26,7 @@ jobs:
       - uses: release-drafter/release-drafter@v5
         id: create_version
 
-  release:
+  release-docker:
     needs: [ release-drafter ]
     name: Release Artifacts
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
