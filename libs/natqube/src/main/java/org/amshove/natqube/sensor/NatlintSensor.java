@@ -2,6 +2,7 @@ package org.amshove.natqube.sensor;
 
 import org.amshove.natlint.linter.NaturalLinter;
 import org.amshove.natparse.IDiagnostic;
+import org.amshove.natparse.IPosition;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.natural.project.NaturalFile;
@@ -14,16 +15,20 @@ import org.amshove.natqube.rules.NaturalRuleRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.api.batch.fs.InputFile;
+import org.sonar.api.batch.fs.TextRange;
 import org.sonar.api.batch.sensor.Sensor;
 import org.sonar.api.batch.sensor.SensorContext;
 import org.sonar.api.batch.sensor.SensorDescriptor;
 import org.sonar.api.config.Configuration;
 import org.sonar.api.rule.RuleKey;
 
+import java.nio.file.Path;
+
 public class NatlintSensor implements Sensor
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NatlintSensor.class);
 	private final Configuration config;
+	private SensorContext sensorContext;
 
 	public NatlintSensor(Configuration config)
 	{
@@ -45,6 +50,7 @@ public class NatlintSensor implements Sensor
 	@Override
 	public void execute(SensorContext context)
 	{
+		sensorContext = context;
 		var filesystem = new ActualFilesystem();
 		LOGGER.error("Finding project file");
 		var buildfilePath = filesystem.findNaturalProjectFile(context.fileSystem().baseDir().toPath()).get();
@@ -70,7 +76,7 @@ public class NatlintSensor implements Sensor
 					var parseResult = new NaturalParser().parse(naturalFile, lexResult);
 					var lintResult = new NaturalLinter().lint(parseResult);
 
-					var inputFile = context.fileSystem().inputFile(f -> f.uri().equals(naturalFile.getPath().toUri()));
+					var inputFile = findInputFile(naturalFile.getPath());
 					if (inputFile == null)
 					{
 						throw new RuntimeException("Couldn't find input file for natural file");
@@ -118,9 +124,19 @@ public class NatlintSensor implements Sensor
 		issue.at(
 			issue.newLocation()
 				.on(inputFile)
-				.at(inputFile.newRange(diagnostic.line() + 1, diagnostic.offsetInLine(), diagnostic.line() + 1, diagnostic.endOffset()))
+				.at(textRange(inputFile, diagnostic))
 				.message(diagnostic.message())
 		);
+		for (var info : diagnostic.additionalInfo())
+		{
+			var sonarFile = findInputFile(info.position().filePath());
+			issue.addLocation(
+				issue.newLocation()
+					.on(sonarFile)
+					.at(textRange(sonarFile, info.position()))
+					.message(info.message())
+			);
+		}
 		var saveStart = System.currentTimeMillis();
 		issue
 			.forRule(RuleKey.of(NaturalRuleRepository.REPOSITORY, diagnostic.id()))
@@ -130,5 +146,15 @@ public class NatlintSensor implements Sensor
 		{
 			longestSingleIssueSave = saveDuration;
 		}
+	}
+
+	private InputFile findInputFile(Path filePath)
+	{
+		return sensorContext.fileSystem().inputFile(f -> f.uri().equals(filePath.toUri()));
+	}
+
+	private TextRange textRange(InputFile file, IPosition position)
+	{
+		return file.newRange(position.line() + 1, position.offsetInLine(), position.line() + 1, position.endOffset());
 	}
 }
