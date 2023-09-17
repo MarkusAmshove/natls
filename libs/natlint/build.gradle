@@ -1,6 +1,6 @@
 plugins {
     id 'maven-publish'
-    id 'com.github.johnrengelman.shadow' version '5.2.0'
+    id 'com.github.johnrengelman.shadow' version '5.2.0' // do not update unless https://github.com/johnrengelman/shadow/issues/651 is fixed
 }
 
 dependencies {
