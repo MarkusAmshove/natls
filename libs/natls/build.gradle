@@ -10,12 +10,17 @@ dependencies {
     implementation project(':natlint')
 
     testImplementation project(':testhelpers')
+    testImplementation libraries.slf4j_nop
 }
 
 shadowJar {
     archiveBaseName.set('natls')
     archiveClassifier.set('')
     archiveVersion.set('')
+}
+
+configurations.testImplementation {
+    exclude group: 'org.slf4j', module: libraries.slf4j_utillogging.split(':')[1]
 }
 
 jar {
