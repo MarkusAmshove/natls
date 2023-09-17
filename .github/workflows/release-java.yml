@@ -21,9 +21,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Publish package
-        uses: gradle/gradle-build-action@749f47bda3e44aa060e82d7b3ef7e40d953bd629
-        with:
-          arguments: publish
+      - name: Build
+        run: ./gradlew publish -Pversion=0.15
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
