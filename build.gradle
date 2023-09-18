@@ -45,7 +45,7 @@ allprojects {
 	apply plugin: 'java-library'
 	apply plugin: 'jacoco'
 
-	group = 'org.amshove'
+	group = 'org.amshove.natural'
 
 	java {
 		toolchain {
