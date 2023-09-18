@@ -641,6 +641,14 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void doParsePossibleNumberedLabelReferencesAsArrayIndex()
+	{
+		var operand = parseOperand("#ARR(0123)");
+		var reference = assertIsVariableReference(operand, "#ARR");
+		assertThat(reference.dimensions()).isNotEmpty();
+	}
+
+	@Test
 	void parseHexLiterals()
 	{
 		var operand = parseOperand("H'AA'");

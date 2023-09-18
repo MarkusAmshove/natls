@@ -852,12 +852,13 @@ public class Lexer
 
 	private boolean consumeNumberedLabel()
 	{
-		if (previous() != null && previous().kind() == SyntaxKind.IDENTIFIER)
+		var previous = previous();
+		if (previous != null && previous.kind() == SyntaxKind.IDENTIFIER)
 		{
 			return false;
 		}
 
-		var i = 1;
+		var i = 1; // Skip '(', then check if next 4 are digits
 		while (!scanner.isAtEnd() && Character.isDigit(scanner.peek(i)) && i < 5)
 		{
 			i++;
