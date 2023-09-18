@@ -27,7 +27,7 @@ public interface IDataType
 	}
 
 	/**
-	 * Determines if this type fits into the given type. Implicit conversion is taken into account.</br>
+	 * Determines if this type fits into the given type. Implicit conversion is taken into account.<br/>
 	 * <strong>This does not compare by byte size</strong>
 	 */
 	default boolean fitsInto(IDataType target)

@@ -32,7 +32,7 @@ public interface IArrayDimension extends ISyntaxNode
 	}
 
 	/**
-	 * This indicates that the upper bound is V for PDAs, not that the upper bound is a variable.</br>
+	 * This indicates that the upper bound is V for PDAs, not that the upper bound is a variable.<br/>
 	 * <a href=
 	 * "https://documentation.softwareag.com/natural/nat912win/sm/defineda_array.htm#Variable_Arrays_in_a_Parameter_Data_Area">Documentation</a>
 	 */
