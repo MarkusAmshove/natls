@@ -91,7 +91,7 @@ public class TokenList implements Iterable<SyntaxToken>
 	}
 
 	/**
-	 * Peeks the token kinds of the following tokens and returns true if they're in the given order.</br>
+	 * Peeks the token kinds of the following tokens and returns true if they're in the given order.<br/>
 	 * Returns false if either the order or the amount of following tokens doesn't match.
 	 */
 	public boolean peekKinds(SyntaxKind... kinds)

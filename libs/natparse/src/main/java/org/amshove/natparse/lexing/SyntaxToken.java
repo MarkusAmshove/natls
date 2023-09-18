@@ -135,8 +135,8 @@ public class SyntaxToken implements IPosition
 	}
 
 	/**
-	 * Returns the token source as symbol name (all uppercase) trimmed to the given length.</br>
-	 * This is useful to compare e.g. subroutine names which only have 32 significant characters.</br>
+	 * Returns the token source as symbol name (all uppercase) trimmed to the given length.<br/>
+	 * This is useful to compare e.g. subroutine names which only have 32 significant characters.<br/>
 	 * The resulting name will not contain trailing space.
 	 */
 	public String trimmedSymbolName(int maxLength)

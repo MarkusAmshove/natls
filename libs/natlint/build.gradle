@@ -21,27 +21,54 @@ shadowJar {
 jar {
     manifest {
         attributes(
-                'Main-Class': 'org.amshove.natlint.App',
-                'Implementation-Title': project.name,
-                'Implementation-Version': project.version
+            'Main-Class': 'org.amshove.natlint.App',
+            'Implementation-Title': project.name,
+            'Implementation-Version': project.version
         )
     }
 }
 
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
 publishing {
     publications {
-        maven(MavenPublication) {
+        mavenNatlint(MavenPublication) {
             from components.java
-        }
-    }
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = "https://maven.pkg.github.com/markusamshove/natls"
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
+            pom {
+                name = project.name
+                description = 'Static code analysis for Software AGs Natural language'
+                url = 'https://github.com/MarkusAmshove/natls'
+                scm {
+                    connection = 'scm:git:https://github.com/MarkusAmshove/natls.git'
+                    developerConnection = 'scm:git:git@github.com:MarkusAmshove/natls.git'
+                    url = 'https://github.com/MarkusAmshove/natls'
+                }
+
+                licenses {
+                    license {
+                        name = 'MIT'
+                        url = 'https://github.com/MarkusAmshove/natls/blob/main/LICENSE'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'markusamshove'
+                        name = 'Markus Amshove'
+                    }
+                }
             }
         }
     }
 }
+
+signing {
+    def signingKey = findProperty("signingKey")
+    def signingPassword = findProperty("signingPassword")
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign publishing.publications.mavenNatlint
+}
+
