@@ -378,9 +378,17 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
-	void parseNumberWithParam()
+	void parseNumberWithLabel()
 	{
 		var operand = parseOperand("*NUMBER(R1.)");
+		var number = assertNodeType(operand, ISystemFunctionNode.class);
+		assertThat(number.parameter()).hasSize(1);
+	}
+
+	@Test
+	void parseNumberWithNumberedLabel()
+	{
+		var operand = parseOperand("*NUMBER(0123)");
 		var number = assertNodeType(operand, ISystemFunctionNode.class);
 		assertThat(number.parameter()).hasSize(1);
 	}

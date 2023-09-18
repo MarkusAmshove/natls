@@ -86,14 +86,21 @@ public class Lexer
 					consumeNewLine();
 					continue;
 				case '(':
-					parensLevel++;
-					lastBeforeOpenParens = previous();
-					if (lexerMode == LexerMode.IN_DEFINE_DATA && lastBeforeOpenParens != null && lastBeforeOpenParens.kind() != SyntaxKind.LESSER_SIGN)
+					if (consumeNumberedLabel())
 					{
-						lexerMode = LexerMode.IN_DATA_TYPE;
+						continue;
 					}
-					createAndAddCurrentSingleToken(SyntaxKind.LPAREN);
-					continue;
+					else
+					{
+						parensLevel++;
+						lastBeforeOpenParens = previous();
+						if (lexerMode == LexerMode.IN_DEFINE_DATA && lastBeforeOpenParens != null && lastBeforeOpenParens.kind() != SyntaxKind.LESSER_SIGN)
+						{
+							lexerMode = LexerMode.IN_DATA_TYPE;
+						}
+						createAndAddCurrentSingleToken(SyntaxKind.LPAREN);
+						continue;
+					}
 				case ')':
 					parensLevel--;
 					if (lexerMode == LexerMode.IN_DATA_TYPE)
@@ -841,6 +848,32 @@ public class Lexer
 		}
 		scanner.rollbackCurrentLexeme();
 		createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
+	}
+
+	private boolean consumeNumberedLabel()
+	{
+		if (previous() != null && previous().kind() == SyntaxKind.IDENTIFIER)
+		{
+			return false;
+		}
+
+		var i = 1;
+		while (!scanner.isAtEnd() && Character.isDigit(scanner.peek(i)) && i < 5)
+		{
+			i++;
+		}
+		if (i == 5 && scanner.peek(i) == ')')
+		{
+			createAndAddCurrentSingleToken(SyntaxKind.LPAREN);
+			scanner.start();
+			scanner.advance(4);
+			createAndAdd(SyntaxKind.LABEL_IDENTIFIER);
+			createAndAddCurrentSingleToken(SyntaxKind.RPAREN);
+			return true;
+		}
+
+		scanner.reset();
+		return false;
 	}
 
 	private void consumeIdentifier()

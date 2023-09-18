@@ -2262,6 +2262,13 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(escape.label()).map(SyntaxToken::symbolName).hasValue("RD.");
 	}
 
+	@Test
+	void parseEscapeNumberedLabel()
+	{
+		var escape = assertParsesSingleStatement("ESCAPE BOTTOM (0123)", IEscapeNode.class);
+		assertThat(escape.label()).map(SyntaxToken::symbolName).hasValue("0123");
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
