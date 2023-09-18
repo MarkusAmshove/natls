@@ -4085,7 +4085,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				consumeReadCondition(read, readSeq);
 				break;
 			case LOGICAL:
-				consumeAnyOptionally(read, List.of(SyntaxKind.IN, SyntaxKind.LOGICAL));
+				consumeOptionally(read, SyntaxKind.IN);
+				consumeOptionally(read, SyntaxKind.LOGICAL);
 				if (consumeAnyOptionally(read, READ_SEQUENCES) && (previousToken().kind() == SyntaxKind.VARIABLE || previousToken().kind() == SyntaxKind.DYNAMIC))
 				{
 					consumeOperandNode(read);
