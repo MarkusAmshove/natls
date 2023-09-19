@@ -859,10 +859,11 @@ public class Lexer
 		}
 
 		var i = 1; // Skip '(', then check if next 4 are digits
-		while (!scanner.isAtEnd() && Character.isDigit(scanner.peek(i)) && i < 5)
+		while (i < 5 && !scanner.willPassEnd(i) && Character.isDigit(scanner.peek(i)))
 		{
 			i++;
 		}
+
 		if (i == 5 && scanner.peek(i) == ')')
 		{
 			createAndAddCurrentSingleToken(SyntaxKind.LPAREN);
