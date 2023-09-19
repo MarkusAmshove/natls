@@ -378,9 +378,17 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
-	void parseNumberWithParam()
+	void parseNumberWithLabel()
 	{
 		var operand = parseOperand("*NUMBER(R1.)");
+		var number = assertNodeType(operand, ISystemFunctionNode.class);
+		assertThat(number.parameter()).hasSize(1);
+	}
+
+	@Test
+	void parseNumberWithNumberedLabel()
+	{
+		var operand = parseOperand("*NUMBER(0123)");
 		var number = assertNodeType(operand, ISystemFunctionNode.class);
 		assertThat(number.parameter()).hasSize(1);
 	}
@@ -630,6 +638,14 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 		var operand = parseOperand("#ARR(R1.)");
 		var reference = assertIsVariableReference(operand, "#ARR");
 		assertThat(reference.dimensions()).isEmpty();
+	}
+
+	@Test
+	void doParsePossibleNumberedLabelReferencesAsArrayIndex()
+	{
+		var operand = parseOperand("#ARR(0123)");
+		var reference = assertIsVariableReference(operand, "#ARR");
+		assertThat(reference.dimensions()).isNotEmpty();
 	}
 
 	@Test
