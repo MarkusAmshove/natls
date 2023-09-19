@@ -15,7 +15,7 @@ public enum ComparisonOperator
 
 	/**
 	 * Maps a single SyntaxKind to a comparison operator.<br/>
-	 * If multiple SyntaxKinds can result in the same comparison (e.g. GREATER vs GREATER THAN), this returns null.</br>
+	 * If multiple SyntaxKinds can result in the same comparison (e.g. GREATER vs GREATER THAN), this returns null.<br/>
 	 * Nullable because it's used in the hot path.
 	 */
 	public static @Nullable ComparisonOperator ofSyntaxKind(SyntaxKind kind)

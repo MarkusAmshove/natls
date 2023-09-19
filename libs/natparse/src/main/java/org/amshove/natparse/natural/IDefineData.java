@@ -16,8 +16,8 @@ public interface IDefineData extends ISyntaxNode
 	ReadOnlyList<IUsingNode> globalUsings();
 
 	/**
-	 * Returns all {@link IParameterDefinitionNode} in order they've been declared.</br>
-	 * This includes `PARAMETER 1...` and `PARAMETER USING ...` in order. </br>
+	 * Returns all {@link IParameterDefinitionNode} in order they've been declared.<br/>
+	 * This includes `PARAMETER 1...` and `PARAMETER USING ...` in order. <br/>
 	 *
 	 * `USING`s are not "exploded", which means the variables from within the `USING` are not included.
 	 *
