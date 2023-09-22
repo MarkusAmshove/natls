@@ -1523,6 +1523,21 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void parseMoveEditedWithEditorMaskContainingRParenInString()
+	{
+		var result = assertParsesWithoutDiagnostics("""
+			MOVE EDITED #V1 (EM=D')') TO #V2
+			IF #V1 = #V2
+			IGNORE
+			END-IF
+			""");
+
+		assertThat(result.statements()).hasSize(2);
+		assertNodeType(result.statements().first(), IMoveStatementNode.class);
+		assertNodeType(result.statements().last(), IIfStatementNode.class);
+	}
+
+	@Test
 	void parseMoveEditedUsingMask()
 	{
 		var move = assertParsesSingleStatement("MOVE EDITED #VAR1 TO #VAR2 (EM=XX)", IMoveStatementNode.class);
