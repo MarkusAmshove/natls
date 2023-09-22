@@ -168,11 +168,15 @@ public class LanguageServerFile implements IModuleProvider
 
 	private boolean hasToReparseCallers(String newSource)
 	{
+		var tooManyCallers = incomingReferences.size() > 20;
+		if (!tooManyCallers && module.file().getFiletype() == NaturalFileType.COPYCODE)
+		{
+			return true;
+		}
+
 		var newDefineDataHash = hashDefineData(newSource);
 		var defineDataChanged = !Arrays.equals(newDefineDataHash, defineDataHash);
 		defineDataHash = newDefineDataHash;
-		var tooManyCallers = incomingReferences.size() > 20;
-		// TODO: Add trace log?
 
 		return !tooManyCallers && defineDataChanged;
 	}

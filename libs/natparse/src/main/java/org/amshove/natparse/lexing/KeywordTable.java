@@ -16,6 +16,7 @@ public class KeywordTable
 			case "activation" -> SyntaxKind.ACTIVATION;
 			case "ad" -> SyntaxKind.AD;
 			case "add" -> SyntaxKind.ADD;
+			case "adjust" -> SyntaxKind.ADJUST;
 			case "after" -> SyntaxKind.AFTER;
 			case "al" -> SyntaxKind.AL;
 			case "alarm" -> SyntaxKind.ALARM;
@@ -349,6 +350,7 @@ public class KeywordTable
 			case "min" -> SyntaxKind.MIN;
 			case "minute" -> SyntaxKind.MINUTE;
 			case "modal" -> SyntaxKind.MODAL;
+			case "mode" -> SyntaxKind.MODE;
 			case "modified" -> SyntaxKind.MODIFIED;
 			case "module" -> SyntaxKind.MODULE;
 			case "month" -> SyntaxKind.MONTH;
@@ -405,6 +407,7 @@ public class KeywordTable
 			case "output" -> SyntaxKind.OUTPUT;
 			case "packageset" -> SyntaxKind.PACKAGESET;
 			case "page" -> SyntaxKind.PAGE;
+			case "pages" -> SyntaxKind.PAGES;
 			case "parameter" -> SyntaxKind.PARAMETER;
 			case "parameters" -> SyntaxKind.PARAMETERS;
 			case "parent" -> SyntaxKind.PARENT;
@@ -509,6 +512,7 @@ public class KeywordTable
 			case "sf" -> SyntaxKind.SF;
 			case "sg" -> SyntaxKind.SG;
 			case "sgn" -> SyntaxKind.SGN;
+			case "shared" -> SyntaxKind.SHARED;
 			case "short" -> SyntaxKind.SHORT;
 			case "show" -> SyntaxKind.SHOW;
 			case "sin" -> SyntaxKind.SIN;

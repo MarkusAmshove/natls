@@ -1,10 +1,10 @@
 package org.amshove.natparse.lexing;
 
-import org.amshove.natparse.DiagnosticSeverity;
-import org.amshove.natparse.IDiagnostic;
-import org.amshove.natparse.IPosition;
+import org.amshove.natparse.*;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 class LexerDiagnostic implements IDiagnostic
@@ -18,14 +18,9 @@ class LexerDiagnostic implements IDiagnostic
 	private final LexerError error;
 	private final String message;
 	private final DiagnosticSeverity severity;
-	private final IPosition originalPosition;
+	private final List<AdditionalDiagnosticInfo> additionalInfos = new ArrayList<>();
 
 	private LexerDiagnostic(String message, int offset, int offsetInLine, int currentLine, int length, Path filePath, LexerError error)
-	{
-		this(message, offset, offsetInLine, currentLine, length, filePath, null, error);
-	}
-
-	private LexerDiagnostic(String message, int offset, int offsetInLine, int currentLine, int length, Path filePath, IPosition originalPosition, LexerError error)
 	{
 		this.message = message;
 		this.offset = offset;
@@ -35,7 +30,6 @@ class LexerDiagnostic implements IDiagnostic
 		this.error = error;
 		this.id = error.id();
 		this.filePath = filePath;
-		this.originalPosition = originalPosition;
 		severity = DiagnosticSeverity.ERROR;
 	}
 
@@ -61,20 +55,6 @@ class LexerDiagnostic implements IDiagnostic
 			currentLine,
 			length,
 			filePath,
-			error
-		);
-	}
-
-	static LexerDiagnostic create(String message, int offset, int offsetInLine, int currentLine, int length, Path filePath, IPosition originalPosition, LexerError error)
-	{
-		return new LexerDiagnostic(
-			message,
-			offset,
-			offsetInLine,
-			currentLine,
-			length,
-			filePath,
-			originalPosition,
 			error
 		);
 	}
@@ -149,14 +129,13 @@ class LexerDiagnostic implements IDiagnostic
 	}
 
 	@Override
-	public IPosition originalPosition()
+	public ReadOnlyList<AdditionalDiagnosticInfo> additionalInfo()
 	{
-		return originalPosition != null ? originalPosition : this;
+		return ReadOnlyList.from(additionalInfos);
 	}
 
-	@Override
-	public boolean hasOriginalPosition()
+	void addAdditionalInfo(AdditionalDiagnosticInfo info)
 	{
-		return originalPosition != null;
+		additionalInfos.add(info);
 	}
 }

@@ -77,7 +77,8 @@ public class DdmParser
 			}
 
 			var field = parseField(scanner);
-			if (field.fieldType() == FieldType.GROUP)
+			if ((field.fieldType() == FieldType.GROUP || field.fieldType() == FieldType.PERIODIC)
+				&& field.descriptor() != DescriptorType.SUPERDESCRIPTOR)
 			{
 				var groupField = new GroupField(field);
 				scanner.advance();

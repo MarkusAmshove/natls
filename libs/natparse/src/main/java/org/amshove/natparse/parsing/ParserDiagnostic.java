@@ -1,12 +1,12 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.DiagnosticSeverity;
-import org.amshove.natparse.IDiagnostic;
-import org.amshove.natparse.IPosition;
+import org.amshove.natparse.*;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.ISyntaxNode;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ParserDiagnostic implements IDiagnostic
 {
@@ -19,19 +19,14 @@ public class ParserDiagnostic implements IDiagnostic
 	private final String id;
 	private final DiagnosticSeverity severity;
 	private final ParserError error;
-	private final IPosition originalPosition;
+	private final List<AdditionalDiagnosticInfo> additionalInfos = new ArrayList<>();
 
 	private ParserDiagnostic(String message, int offset, int offsetInLine, int line, int length, Path filePath, ParserError error)
 	{
-		this(message, offset, offsetInLine, line, length, filePath, null, error, DiagnosticSeverity.ERROR);
+		this(message, offset, offsetInLine, line, length, filePath, error, DiagnosticSeverity.ERROR);
 	}
 
 	private ParserDiagnostic(String message, int offset, int offsetInLine, int line, int length, Path filePath, ParserError error, DiagnosticSeverity severity)
-	{
-		this(message, offset, offsetInLine, line, length, filePath, null, error, severity);
-	}
-
-	private ParserDiagnostic(String message, int offset, int offsetInLine, int line, int length, Path filePath, IPosition originalPosition, ParserError error, DiagnosticSeverity severity)
 	{
 		this.message = message;
 		this.offset = offset;
@@ -42,7 +37,6 @@ public class ParserDiagnostic implements IDiagnostic
 		this.filePath = filePath;
 		this.severity = severity;
 		this.error = error;
-		this.originalPosition = originalPosition;
 	}
 
 	public static ParserDiagnostic create(String message, int offset, int offsetInLine, int line, int length, Path filePath, ParserError error)
@@ -52,20 +46,25 @@ public class ParserDiagnostic implements IDiagnostic
 
 	public static ParserDiagnostic create(String message, ISyntaxNode node, ParserError error)
 	{
-		return create(message, node.diagnosticPosition(), node.position(), error);
+		return create(message, node.position(), error);
+	}
+
+	public static ParserDiagnostic create(String message, ISyntaxNode node, ParserError error, DiagnosticSeverity severity)
+	{
+		return create(message, node.position(), error, severity);
 	}
 
 	public static ParserDiagnostic create(String message, SyntaxToken token, ParserError error)
 	{
-		return create(message, token.diagnosticPosition(), token, error);
+		return create(message, (IPosition) token, error);
 	}
 
-	public static ParserDiagnostic create(String message, IPosition diagnosticPosition, IPosition originalPosition, ParserError error)
+	public static ParserDiagnostic create(String message, IPosition diagnosticPosition, ParserError error)
 	{
-		return new ParserDiagnostic(message, diagnosticPosition.offset(), diagnosticPosition.offsetInLine(), diagnosticPosition.line(), diagnosticPosition.length(), diagnosticPosition.filePath(), originalPosition, error, DiagnosticSeverity.ERROR);
+		return new ParserDiagnostic(message, diagnosticPosition.offset(), diagnosticPosition.offsetInLine(), diagnosticPosition.line(), diagnosticPosition.length(), diagnosticPosition.filePath(), error, DiagnosticSeverity.ERROR);
 	}
 
-	public static IDiagnostic create(String message, IPosition diagnosticPosition, ParserError error, DiagnosticSeverity severity)
+	public static ParserDiagnostic create(String message, IPosition diagnosticPosition, ParserError error, DiagnosticSeverity severity)
 	{
 		return new ParserDiagnostic(message, diagnosticPosition.offset(), diagnosticPosition.offsetInLine(), diagnosticPosition.line(), diagnosticPosition.length(), diagnosticPosition.filePath(), error, severity);
 	}
@@ -124,9 +123,9 @@ public class ParserDiagnostic implements IDiagnostic
 		return severity;
 	}
 
-	IDiagnostic relocate(IPosition relocatedDiagnosticPosition)
+	ParserDiagnostic relocate(IPosition relocatedDiagnosticPosition)
 	{
-		return new ParserDiagnostic(
+		var newDiagnostic = new ParserDiagnostic(
 			message,
 			relocatedDiagnosticPosition.offset(),
 			relocatedDiagnosticPosition.offsetInLine(),
@@ -135,17 +134,19 @@ public class ParserDiagnostic implements IDiagnostic
 			relocatedDiagnosticPosition.filePath(),
 			error
 		);
+
+		newDiagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("Occurred here", this));
+		return newDiagnostic;
 	}
 
 	@Override
-	public IPosition originalPosition()
+	public ReadOnlyList<AdditionalDiagnosticInfo> additionalInfo()
 	{
-		return originalPosition != null ? originalPosition : this;
+		return ReadOnlyList.from(additionalInfos);
 	}
 
-	@Override
-	public boolean hasOriginalPosition()
+	void addAdditionalInfo(AdditionalDiagnosticInfo additionalInfo)
 	{
-		return originalPosition != null;
+		additionalInfos.add(additionalInfo);
 	}
 }

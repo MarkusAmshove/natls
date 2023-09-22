@@ -17,16 +17,35 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up JDK 11
+      - name: Set up JDK
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: 17
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: Check Formatting
         run: ./gradlew spotlessCheck
+
+  javadoc:
+    name: Validate Javadoc
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 17
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Check Formatting
+        run: ./gradlew javadoc
 
   build:
     name: Build on ${{ matrix.os }}
@@ -42,10 +61,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up JDK 11
+      - name: Set up JDK
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: 17
 
       - name: Cache SonarCloud packages
         uses: actions/cache@v2

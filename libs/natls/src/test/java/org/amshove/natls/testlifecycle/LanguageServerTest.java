@@ -1,5 +1,10 @@
 package org.amshove.natls.testlifecycle;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import org.amshove.natls.config.LSConfiguration;
+import org.amshove.natls.project.LanguageServerFile;
+import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -17,6 +22,11 @@ public abstract class LanguageServerTest
 
 	protected abstract LspTestContext getContext();
 
+	protected LanguageServerFile findLanguageServerFile(TextDocumentIdentifier identifier)
+	{
+		return getContext().languageService().findNaturalFile(identifier);
+	}
+
 	protected TextDocumentIdentifier textDocumentIdentifier(String library, String name)
 	{
 		var uri = getContext().languageService().findNaturalFile(library, name).getUri();
@@ -28,14 +38,18 @@ public abstract class LanguageServerTest
 		return createOrSaveFile(libraryName, name, source.source());
 	}
 
-	protected TextDocumentIdentifier createOrSaveFileWithCursor(String libraryName, String name, String sourceWithCursor)
-	{
-		return createOrSaveFile(libraryName, name, SourceWithCursor.fromSourceWithCursor(sourceWithCursor));
-	}
-
 	protected void configureEditorConfig(String editorConfig)
 	{
 		getContext().languageService().loadEditorConfig(createFileRelativeToProjectRoot(".editorconfig", editorConfig));
+	}
+
+	protected void configureLSConfig(LSConfiguration config)
+	{
+		var gson = new Gson();
+		var jsonObj = new JsonObject();
+		var jsonConfig = gson.toJsonTree(config);
+		jsonObj.add("natls", jsonConfig);
+		getContext().workspaceService().didChangeConfiguration(new DidChangeConfigurationParams(jsonObj));
 	}
 
 	private Path createFileRelativeToProjectRoot(String relativePath, String content)
@@ -50,6 +64,11 @@ public abstract class LanguageServerTest
 		{
 			throw new UncheckedIOException(e);
 		}
+	}
+
+	protected LanguageServerFile createOrSaveLanguageServerFile(String libraryName, String name, String source)
+	{
+		return findLanguageServerFile(createOrSaveFile(libraryName, name, source));
 	}
 
 	protected TextDocumentIdentifier createOrSaveFile(String libraryName, String name, String source)

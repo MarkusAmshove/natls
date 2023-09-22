@@ -1,0 +1,30 @@
+name: Literal value truncated at runtime
+priority: MINOR
+tags: pitfall,confusing
+type: CODE_SMELL
+description:
+The value of this literal is truncated at runtime. This will raise unexpected results.
+
+== Non compliant
+
+``
+DEFINE DATA LOCAL
+1 #VAR (A1)
+END-DEFINE
+
+#VAR := 'Hi'
+WRITE #VAR
+END
+``
+
+== Compliant
+
+``
+DEFINE DATA LOCAL
+1 #VAR (A1)
+END-DEFINE
+
+#VAR := 'H'
+WRITE #VAR
+END
+``

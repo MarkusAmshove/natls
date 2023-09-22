@@ -48,6 +48,7 @@ public enum SyntaxKind
 
 	// System variables and functions
 	APPLIC_ID(false, true, false),
+	APPLIC_NAME(false, true, false),
 	INIT_ID(false, true, false),
 	SV_TIME(false, true, false),
 	TIMX(false, true, false),
@@ -82,6 +83,8 @@ public enum SyntaxKind
 	LINEX(false, true, false),
 	LINE_COUNT(false, true, true),
 	LINESIZE(false, true, false),
+	NET_USER(false, true, false),
+	HOSTNAME(false, true, false),
 	MACHINE_CLASS(false, true, false),
 	PAGESIZE(false, true, false),
 	SV_ISN(false, true, true),
@@ -99,6 +102,8 @@ public enum SyntaxKind
 	CURS_LINE(false, true, false),
 	CURS_COL(false, true, false),
 	CURS_FIELD(false, true, false),
+	PARSE_COL(false, true, false),
+	PARSE_ROW(false, true, false),
 	SV_DATA(false, true, false),
 	SV_LEVEL(false, true, false),
 	SV_NUMBER(false, true, true),
@@ -108,6 +113,8 @@ public enum SyntaxKind
 	PF_KEY(false, true, false),
 	INIT_PROGRAM(false, true, false),
 	INIT_USER(false, true, false),
+	SV_GROUP(false, true, false),
+	USER_NAME(false, true, false),
 	SV_USER(false, true, false),
 	COUNTER(false, true, true),
 	COM(false, true, false),
@@ -132,7 +139,7 @@ public enum SyntaxKind
 	ATN(false, false, false),
 	AVER(false, false, false),
 	BACKOUT(false, false, false),
-	BEFORE(true, false, false), // TODO: Should be false, but is currently used by NatUnit
+	BEFORE(false, false, false),
 	BREAK(false, false, false),
 	BROWSE(false, false, false),
 	CALL(false, false, false),
@@ -304,6 +311,7 @@ public enum SyntaxKind
 	ACTIVATION(true, false, false),
 	AD(true, false, false), // Attribute Definition
 	CD(true, false, false), // Color Definition
+	ADJUST(true, false, false),
 	AFTER(true, false, false),
 	AL(true, false, false),
 	ALARM(true, false, false),
@@ -362,7 +370,7 @@ public enum SyntaxKind
 	COUPLED(true, false, false),
 	CS(true, false, false),
 	CURRENT(true, false, false),
-	CURSOR(true, false, false),
+	CURSOR(true, true, false),
 	CV(false, false, false),
 	DATA(true, false, false),
 	DATAAREA(true, false, false),
@@ -539,6 +547,7 @@ public enum SyntaxKind
 	MICROSECOND(true, false, false),
 	MINUTE(true, false, false),
 	MODAL(true, false, false),
+	MODE(true, false, false),
 	MODIFIED(true, false, false),
 	MODULE(true, false, false),
 	MONTH(true, false, false),
@@ -582,6 +591,7 @@ public enum SyntaxKind
 	OUTPUT(true, false, false),
 	PACKAGESET(true, false, false),
 	PAGE(true, false, false),
+	PAGES(true, false, false),
 	PARAMETER(true, false, false),
 	PARAMETERS(true, false, false),
 	PARENT(true, false, false),
@@ -656,6 +666,7 @@ public enum SyntaxKind
 	SB(false, false, false),
 	SF(true, false, false),
 	SG(true, false, false),
+	SHARED(true, false, false),
 	SHORT(true, false, false),
 	SINGLE(true, false, false),
 	SIZE(true, false, false),
@@ -772,6 +783,6 @@ public enum SyntaxKind
 
 	public boolean isAttribute()
 	{
-		return this == AD || this == DY || this == CD || this == EM || this == NL || this == AL || this == DF || this == IP || this == IS || this == CV || this == ZP || this == SG || this == ES || this == SB;
+		return this == AD || this == DY || this == CD || this == EM || this == NL || this == AL || this == DF || this == PM || this == IP || this == IS || this == CV || this == ZP || this == SG || this == ES || this == SB;
 	}
 }

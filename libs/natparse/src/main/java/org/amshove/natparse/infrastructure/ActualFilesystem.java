@@ -27,6 +27,12 @@ public class ActualFilesystem implements IFilesystem
 		}
 	}
 
+	@Override
+	public boolean exists(Path path)
+	{
+		return path.toFile().exists();
+	}
+
 	public List<Path> listDirectories(Path path)
 	{
 		try (var files = Files.list(path))

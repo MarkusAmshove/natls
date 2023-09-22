@@ -2,6 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
+import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFile;
@@ -53,18 +54,86 @@ public class NaturalParser
 			return naturalModule;
 		}
 
+		VariableNode functionReturnVariable = null;
 		if (file.getFiletype() == NaturalFileType.FUNCTION) // skip over DEFINE FUNCTION
 		{
 			// TODO: Implement proper when implementing different NaturalModules
-			while (!(tokens.peek().kind() == SyntaxKind.DEFINE && tokens.peek(1).kind() == SyntaxKind.DATA))
+			while (!tokens.isAtEnd())
 			{
+				if (tokens.peek().kind() == SyntaxKind.DEFINE && tokens.peek(1).kind() == SyntaxKind.DATA)
+				{
+					break;
+				}
+
+				if (tokens.peek(1).kind() == SyntaxKind.RETURNS)
+				{
+					var functionName = tokens.advance();
+					functionReturnVariable = new VariableNode();
+					functionReturnVariable.setLevel(1);
+					functionReturnVariable.setScope(VariableScope.LOCAL);
+					functionReturnVariable.setDeclaration(new TokenNode(functionName));
+
+					tokens.advance(); // RETURNS
+					if (tokens.peek().kind() == SyntaxKind.LPAREN)
+					{
+						tokens.advance(); // (
+						var typeTokenSource = tokens.advance().source();
+						if (tokens.peek().kind() == SyntaxKind.COMMA || tokens.peek().kind() == SyntaxKind.DOT)
+						{
+							typeTokenSource += tokens.advance().source(); // decimal
+							typeTokenSource += tokens.advance().source(); // next number
+						}
+						var type = DataType.fromString(typeTokenSource);
+						var typedReturnVariable = new TypedVariableNode(functionReturnVariable);
+
+						if (typeTokenSource.contains("/") || tokens.peek().kind() == SyntaxKind.SLASH)
+						{
+							var firstDimension = new ArrayDimension();
+							// Parsing array dimensions is currently too tightly coupled into DefineDataParser
+							// so we do a rudimentary implementation to revisit later.
+							firstDimension.setLowerBound(IArrayDimension.UNBOUND_VALUE);
+							firstDimension.setUpperBound(IArrayDimension.UNBOUND_VALUE);
+							typedReturnVariable.addDimension(firstDimension);
+							while (tokens.peek().kind() != SyntaxKind.RPAREN && !tokens.isAtEnd())
+							{
+								if (tokens.peek().kind() == SyntaxKind.COMMA)
+								{
+									var nextDimension = new ArrayDimension();
+									nextDimension.setLowerBound(IArrayDimension.UNBOUND_VALUE);
+									nextDimension.setUpperBound(IArrayDimension.UNBOUND_VALUE);
+									typedReturnVariable.addDimension(nextDimension);
+								}
+								tokens.advance();
+							}
+						}
+
+						tokens.advance(); // )
+						if (tokens.peek().kind() == SyntaxKind.DYNAMIC)
+						{
+							type = DataType.ofDynamicLength(type.format());
+						}
+						naturalModule.setReturnType(type);
+						typedReturnVariable.setType(new VariableType(type));
+						functionReturnVariable = typedReturnVariable;
+					}
+					advanceToDefineData(tokens);
+					break;
+				}
+
 				tokens.advance();
 			}
 		}
 
-		if (tokens.peek().kind() == SyntaxKind.DEFINE && tokens.peek(1).kind() == SyntaxKind.DATA)
+		// Try to advance to DEFINE DATA.
+		// If the module contains a DEFINE DATA, the TokenLists offset will be set to the start of DEFINE DATA.
+		// This was introduced to temporarily skip over INCLUDE and OPTION before DEFINE DATA
+		if (advanceToDefineData(tokens))
 		{
 			topLevelNodes.add(parseDefineData(tokens, moduleProvider, naturalModule));
+			if (file.getFiletype() == NaturalFileType.FUNCTION && naturalModule.defineData() != null && functionReturnVariable != null)
+			{
+				((DefineDataNode) naturalModule.defineData()).addNode(functionReturnVariable);
+			}
 		}
 
 		if (file.getFiletype().canHaveBody())
@@ -75,6 +144,24 @@ public class NaturalParser
 		naturalModule.setSyntaxTree(SyntaxTree.create(ReadOnlyList.from(topLevelNodes)));
 
 		return naturalModule;
+	}
+
+	private boolean advanceToDefineData(TokenList tokens)
+	{
+		SyntaxToken current;
+		SyntaxToken next;
+		for (var offset = 0; offset < tokens.size(); offset++)
+		{
+			current = tokens.peek(offset);
+			next = tokens.peek(offset + 1);
+			if (current != null && next != null && current.kind() == SyntaxKind.DEFINE && next.kind() == SyntaxKind.DATA)
+			{
+				tokens.advanceBy(offset);
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private IDefineData parseDefineData(TokenList tokens, IModuleProvider moduleProvider, NaturalModule naturalModule)
@@ -111,7 +198,7 @@ public class NaturalParser
 			}
 		}
 
-		if (naturalModule.body() != null)
+		if (naturalModule.body() != null && naturalModule.file().getFiletype() != NaturalFileType.COPYCODE)
 		{
 			var typer = new TypeChecker();
 			for (var diagnostic : typer.check(naturalModule.body()))
@@ -214,9 +301,12 @@ public class NaturalParser
 
 			if (unresolvedReference.token().kind() == SyntaxKind.IDENTIFIER)
 			{
-				// We don't handle IDENTIFIER_OR_KEYWORD because we can't be sure if it a variable.
-				// As long as IDENTIFIER_OR_KEYWORD exists as a SyntaxKind, we only report a diagnostic if we're sure that its meant to be a reference.
-				module.addDiagnostic(ParserErrors.unresolvedReference(unresolvedReference));
+				var diagnostic = ParserErrors.unresolvedReference(unresolvedReference);
+				if (!diagnostic.filePath().equals(module.file().getPath()))
+				{
+					diagnostic = diagnostic.relocate(unresolvedReference.diagnosticPosition());
+				}
+				module.addDiagnostic(diagnostic);
 			}
 		}
 	}

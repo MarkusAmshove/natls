@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Cache of module references base on the {@linkplain ModuleReferenceParser}.</br>
- * This is built during indexing phase of a project.</br>
+ * Cache of module references base on the {@linkplain ModuleReferenceParser}.<br/>
+ * This is built during indexing phase of a project.<br/>
  * Entries will be evicted one a module gets parsed, as the referencing will then be done by the actual
  * {@linkplain org.amshove.natparse.parsing.NaturalParser}
  */
@@ -40,7 +40,7 @@ public class ModuleReferenceCache
 	}
 
 	/**
-	 * Evicts all cache entries pointing to the given file.</br>
+	 * Evicts all cache entries pointing to the given file.<br/>
 	 */
 	public static synchronized void evictMyReferences(LanguageServerFile callingFile)
 	{

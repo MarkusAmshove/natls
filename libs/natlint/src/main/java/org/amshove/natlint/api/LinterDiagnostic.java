@@ -1,11 +1,11 @@
 package org.amshove.natlint.api;
 
-import org.amshove.natparse.DiagnosticSeverity;
-import org.amshove.natparse.IDiagnostic;
-import org.amshove.natparse.IPosition;
+import org.amshove.natparse.*;
 import org.checkerframework.dataflow.qual.Pure;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LinterDiagnostic implements IDiagnostic
 {
@@ -14,6 +14,7 @@ public class LinterDiagnostic implements IDiagnostic
 	private final DiagnosticSeverity severity;
 	private final String message;
 	private final IPosition originalPosition;
+	private final List<AdditionalDiagnosticInfo> additionalInfos;
 
 	public LinterDiagnostic(String id, IPosition position, DiagnosticSeverity severity, String message)
 	{
@@ -22,11 +23,21 @@ public class LinterDiagnostic implements IDiagnostic
 
 	public LinterDiagnostic(String id, IPosition position, IPosition originalPosition, DiagnosticSeverity severity, String message)
 	{
+		this(id, position, originalPosition, severity, message, new ArrayList<>());
+		if (originalPosition != null && !originalPosition.isSamePositionAs(position))
+		{
+			additionalInfos.add(new AdditionalDiagnosticInfo("Occurred here", originalPosition));
+		}
+	}
+
+	public LinterDiagnostic(String id, IPosition position, IPosition originalPosition, DiagnosticSeverity severity, String message, List<AdditionalDiagnosticInfo> additionalInfos)
+	{
 		this.id = id;
 		this.position = position;
 		this.severity = severity;
 		this.message = message;
 		this.originalPosition = originalPosition;
+		this.additionalInfos = additionalInfos;
 	}
 
 	@Override
@@ -48,9 +59,9 @@ public class LinterDiagnostic implements IDiagnostic
 	}
 
 	@Override
-	public IPosition originalPosition()
+	public ReadOnlyList<AdditionalDiagnosticInfo> additionalInfo()
 	{
-		return originalPosition != null ? originalPosition : this;
+		return ReadOnlyList.from(additionalInfos);
 	}
 
 	@Override
@@ -94,12 +105,6 @@ public class LinterDiagnostic implements IDiagnostic
 			'}';
 	}
 
-	@Override
-	public boolean hasOriginalPosition()
-	{
-		return originalPosition != null;
-	}
-
 	@Pure
 	public LinterDiagnostic withSeverity(DiagnosticSeverity newSeverity)
 	{
@@ -108,7 +113,13 @@ public class LinterDiagnostic implements IDiagnostic
 			position,
 			originalPosition,
 			newSeverity,
-			message
+			message,
+			additionalInfos
 		);
+	}
+
+	public void addAdditionalInfo(AdditionalDiagnosticInfo info)
+	{
+		additionalInfos.add(info);
 	}
 }

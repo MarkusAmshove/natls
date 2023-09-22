@@ -26,9 +26,9 @@ jobs:
       - uses: release-drafter/release-drafter@v5
         id: create_version
 
-  release:
+  release-docker:
     needs: [ release-drafter ]
-    name: Release Artifacts
+    name: Release Docker Images
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
 
@@ -37,10 +37,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up JDK 11
+      - name: Set up JDK
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: 17
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -85,3 +85,38 @@ jobs:
           tag: ${{ needs.release_drafter.outputs.version }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
+  release-maven-central:
+    name: Release to Maven Central
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Publish with Gradle
+        env:
+          ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
+          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.PGP_SECRET }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.PGP_PASSPHRASE }}
+        run: ./gradlew publishToSonatype --no-daemon
+
+  create-issue:
+    name: Create after Release issue
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: JasonEtco/create-an-issue@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          filename: .github/after-release-issue.md

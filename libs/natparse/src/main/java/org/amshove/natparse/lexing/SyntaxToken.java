@@ -74,7 +74,6 @@ public class SyntaxToken implements IPosition
 		this.diagnosticPosition = diagnosticPosition;
 	}
 
-	// TODO: Introduce `LiteralToken`?
 	public int intValue()
 	{
 		if (kind.isSystemVariable())
@@ -87,21 +86,39 @@ public class SyntaxToken implements IPosition
 
 	public String stringValue()
 	{
-		if (source.startsWith("H'"))
+		return switch (kind)
 		{
-			var hexLiteral = source.split("'")[1];
-			var stringLiteral = new StringBuilder(hexLiteral.length() / 2);
-			for (var i = 0; i < hexLiteral.length(); i += 2)
+			case HEX_LITERAL ->
 			{
-				var hexPart = i + 2 > hexLiteral.length()
-					? hexLiteral.charAt(i) + "0" // just to prevent an Exception. The lexer raises a diagnostic for this
-					: hexLiteral.substring(i, i + 2);
-				stringLiteral.append((char) Integer.parseInt(hexPart, 16));
-			}
+				var split = source.split("'");
 
-			return stringLiteral.toString();
-		}
-		return source.substring(1, source.length() - 1).replace("''", "'");
+				if (split.length < 2)
+				{
+					// Empty literal H''
+					yield "";
+				}
+
+				var hexLiteral = split[1];
+				var stringLiteral = new StringBuilder(hexLiteral.length() / 2);
+				for (var i = 0; i < hexLiteral.length(); i += 2)
+				{
+					var hexPart = i + 2 > hexLiteral.length()
+						? hexLiteral.charAt(i) + "0" // just to prevent an Exception. The lexer raises a diagnostic for this
+						: hexLiteral.substring(i, i + 2);
+					stringLiteral.append((char) Integer.parseInt(hexPart, 16));
+				}
+
+				yield stringLiteral.toString();
+			}
+			case DATE_LITERAL, TIME_LITERAL, EXTENDED_TIME_LITERAL -> source.substring(2, source.length() - 1);
+			default ->
+			{
+				var quoteChar = source.substring(0, 1);
+				var escapedQuote = quoteChar + quoteChar;
+
+				yield source.substring(1, source.length() - 1).replace(escapedQuote, quoteChar);
+			}
+		};
 	}
 
 	/**
@@ -118,8 +135,8 @@ public class SyntaxToken implements IPosition
 	}
 
 	/**
-	 * Returns the token source as symbol name (all uppercase) trimmed to the given length.</br>
-	 * This is useful to compare e.g. subroutine names which only have 32 significant characters.</br>
+	 * Returns the token source as symbol name (all uppercase) trimmed to the given length.<br/>
+	 * This is useful to compare e.g. subroutine names which only have 32 significant characters.<br/>
 	 * The resulting name will not contain trailing space.
 	 */
 	public String trimmedSymbolName(int maxLength)

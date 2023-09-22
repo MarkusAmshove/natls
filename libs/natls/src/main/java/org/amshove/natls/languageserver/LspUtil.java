@@ -3,6 +3,7 @@ package org.amshove.natls.languageserver;
 import org.amshove.natls.DiagnosticOriginalUri;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.IPosition;
+import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.ISyntaxNode;
@@ -11,6 +12,7 @@ import org.eclipse.lsp4j.*;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 
 public class LspUtil
 {
@@ -45,7 +47,7 @@ public class LspUtil
 
 	public static Diagnostic toLspDiagnostic(String sourceTool, IDiagnostic diagnostic)
 	{
-		var positions = new DiagnosticOriginalUri(pathToUri(diagnostic.originalPosition().filePath()));
+		var positions = new DiagnosticOriginalUri(pathToUri(diagnostic.filePath()));
 		var lspDiagnostic = new Diagnostic(
 			new Range(
 				new Position(diagnostic.line(), diagnostic.offsetInLine()),
@@ -56,6 +58,18 @@ public class LspUtil
 			sourceTool,
 			diagnostic.id()
 		);
+
+		var additionalInfo = diagnostic.additionalInfo();
+		if (!additionalInfo.isEmpty())
+		{
+			var related = new ArrayList<DiagnosticRelatedInformation>();
+			lspDiagnostic.setRelatedInformation(related);
+			for (var info : additionalInfo)
+			{
+				related.add(new DiagnosticRelatedInformation(toLocation(info.position()), info.message()));
+			}
+		}
+
 		lspDiagnostic.setData(positions);
 		return lspDiagnostic;
 	}
@@ -102,10 +116,20 @@ public class LspUtil
 	public static Range toRange(ISyntaxNode node)
 	{
 		var firstNode = node.descendants().first();
-		var lastNode = node.descendants().last();
+		var lastNode = NodeUtil.deepFindLeaf(node.descendants().last());
 		return new Range(
 			new Position(firstNode.position().line(), firstNode.position().offsetInLine()),
 			new Position(lastNode.position().line(), lastNode.position().offsetInLine() + lastNode.position().length())
+		);
+	}
+
+	public static Range toRange(ISyntaxNode startNode, ISyntaxNode endNode)
+	{
+		var firstRange = toRange(startNode);
+		var secondRange = toRange(endNode);
+		return new Range(
+			new Position(firstRange.getStart().getLine(), firstRange.getStart().getCharacter()),
+			new Position(secondRange.getEnd().getLine(), secondRange.getEnd().getCharacter())
 		);
 	}
 
@@ -195,6 +219,14 @@ public class LspUtil
 		return new Range(
 			new Position(startLine, startColumn),
 			new Position(endLine, endColumn)
+		);
+	}
+
+	public static Range toRangeBefore(IPosition position)
+	{
+		return new Range(
+			new Position(position.line(), position.offsetInLine()),
+			new Position(position.line(), position.offsetInLine())
 		);
 	}
 }

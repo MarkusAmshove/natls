@@ -158,6 +158,8 @@ To do this, simply add the `natqube.jar` that comes out of `gradlew shadowJar` i
 
 ## Configuration
 
+Some behavior of the Language Server (`natls`) can be controlled via settings that the Language Client sets. See [Language Server Configuration](docs/lsp-config.md) for settings.
+
 The code analysis of `natlint` (and therefore `natqube` and `natls`) can be configured through an `.editorconfig` ([editorconfig.org](https://editorconfig.org/)) file.
 
 This makes it possible to configure the severity of diagnostics and pass analyzer specific settings.

@@ -4,6 +4,7 @@ import org.amshove.natls.testlifecycle.EmptyProjectTest;
 import org.amshove.natls.testlifecycle.SourceWithCursor;
 import org.eclipse.lsp4j.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -20,9 +21,15 @@ public abstract class CompletionTest extends EmptyProjectTest
 			var identifier = createOrSaveFile(libName, fileName, cursor);
 			var params = new CompletionParams(identifier, cursor.toSinglePosition());
 			params.setContext(new CompletionContext(CompletionTriggerKind.Invoked));
-			return new CompletionAssertion(
-				getContext().documentService().completion(params).get(1, TimeUnit.MINUTES).getLeft()
-			);
+			var completions = getContext().documentService().completion(params).get(1, TimeUnit.MINUTES).getLeft();
+
+			var resolvedCompletes = new ArrayList<CompletionItem>();
+			for (var unresolved : completions)
+			{
+				var resolved = getContext().languageService().resolveComplete(unresolved);
+				resolvedCompletes.add(resolved);
+			}
+			return new CompletionAssertion(resolvedCompletes);
 		}
 		catch (Exception e)
 		{

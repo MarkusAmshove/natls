@@ -1,20 +1,20 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.natural.IIntOperandNode;
-import org.amshove.natparse.natural.IVariableReferenceNode;
+import org.amshove.natparse.natural.IMathFunctionOperandNode;
+import org.amshove.natparse.natural.IOperandNode;
 
-class IntOperandNode extends BaseSyntaxNode implements IIntOperandNode
+class IntOperandNode extends BaseSyntaxNode implements IMathFunctionOperandNode
 {
-	private IVariableReferenceNode variable;
+	private IOperandNode parameter;
 
 	@Override
-	public IVariableReferenceNode variable()
+	public IOperandNode parameter()
 	{
-		return variable;
+		return parameter;
 	}
 
-	void setVariable(IVariableReferenceNode variable)
+	void setParameter(IOperandNode parameter)
 	{
-		this.variable = variable;
+		this.parameter = parameter;
 	}
 }

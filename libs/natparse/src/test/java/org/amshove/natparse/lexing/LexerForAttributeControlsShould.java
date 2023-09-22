@@ -16,7 +16,7 @@ class LexerForAttributeControlsShould extends AbstractLexerTest
 	@TestFactory
 	Stream<DynamicTest> recognizeAttributes()
 	{
-		var attributes = List.of(SyntaxKind.AD, SyntaxKind.DY, SyntaxKind.CD, SyntaxKind.EM, SyntaxKind.NL, SyntaxKind.AL, SyntaxKind.DF, SyntaxKind.IP, SyntaxKind.IS, SyntaxKind.CV, SyntaxKind.ZP, SyntaxKind.SG, SyntaxKind.ES, SyntaxKind.SG, SyntaxKind.SB);
+		var attributes = List.of(SyntaxKind.AD, SyntaxKind.DY, SyntaxKind.CD, SyntaxKind.EM, SyntaxKind.NL, SyntaxKind.AL, SyntaxKind.DF, SyntaxKind.PM, SyntaxKind.IP, SyntaxKind.IS, SyntaxKind.CV, SyntaxKind.ZP, SyntaxKind.SG, SyntaxKind.ES, SyntaxKind.SG, SyntaxKind.SB);
 
 		var shouldBeAttributes = attributes.stream()
 			.map(a -> dynamicTest("%s should be attribute".formatted(a), () -> assertThat(a.isAttribute()).isTrue()));
@@ -275,6 +275,37 @@ class LexerForAttributeControlsShould extends AbstractLexerTest
 			"(ES=ON)",
 			token(SyntaxKind.LPAREN),
 			token(SyntaxKind.ES, "ES=ON"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
+	void consumeMultipleAttributesWithStringLiteralInOne()
+	{
+		assertTokens(
+			"(EM=99')' CD=YE)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.EM, "EM=99')'"),
+			token(SyntaxKind.CD, "CD=YE"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
+	void recognizeASecondAttributeAfterCVWhenCVHadAnArrayIndexer()
+	{
+		// the ) from A(1) terminated the `inParens` state from the Lexer
+		// which resulted DY to not be treated as an attribute, because the Lexer
+		// thought it is not in parens anymore.
+		assertTokens(
+			"(CV=A(1) DY='3'2'4)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.CV),
+			token(SyntaxKind.IDENTIFIER),
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.NUMBER_LITERAL),
+			token(SyntaxKind.RPAREN),
+			token(SyntaxKind.DY, "DY='3'2'4"),
 			token(SyntaxKind.RPAREN)
 		);
 	}

@@ -1,20 +1,19 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.natural.IFindNode;
-import org.amshove.natparse.natural.ISymbolReferenceNode;
+import org.amshove.natparse.natural.IVariableReferenceNode;
 
 class FindNode extends StatementWithBodyNode implements IFindNode
 {
-	private SymbolReferenceNode view;
+	private IVariableReferenceNode view;
 
-	void setView(SymbolReferenceNode view)
+	void setView(IVariableReferenceNode view)
 	{
-		addNode(view);
 		this.view = view;
 	}
 
 	@Override
-	public ISymbolReferenceNode viewReference()
+	public IVariableReferenceNode viewReference()
 	{
 		return view;
 	}

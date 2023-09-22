@@ -48,7 +48,22 @@ class AnalyzeContext implements IAnalyzeContext
 		}
 
 		var newSeverityName = editorConfig
-			.getProperty(diagnostic.originalPosition().filePath(), "natls.%s.severity".formatted(diagnostic.id()), diagnostic.severity().toString());
+			.getProperty(diagnostic.filePath(), "natls.%s.severity".formatted(diagnostic.id()), diagnostic.severity().toString());
+
+		for (var info : diagnostic.additionalInfo())
+		{
+			if (info.position().filePath().equals(diagnostic.filePath()))
+			{
+				continue;
+			}
+
+			newSeverityName = editorConfig
+				.getProperty(
+					info.position().filePath(),
+					"natls.%s.severity".formatted(diagnostic.id()),
+					diagnostic.severity().toString()
+				);
+		}
 
 		if (newSeverityName.equals("none"))
 		{

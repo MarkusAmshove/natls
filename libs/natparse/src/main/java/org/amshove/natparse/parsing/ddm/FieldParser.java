@@ -47,10 +47,10 @@ class FieldParser
 		var descriptorType = parseDescriptorType(fieldLine);
 		var remark = parseRemark(fieldLine);
 
-		var length = fieldType == FieldType.GROUP || fieldType == FieldType.PERIODIC
+		var length = descriptorType == DescriptorType.NONE && (fieldType == FieldType.GROUP || fieldType == FieldType.PERIODIC)
 			? 0
 			: parseLength(scanner);
-		var dataFormat = fieldType == FieldType.GROUP || fieldType == FieldType.PERIODIC
+		var dataFormat = descriptorType == DescriptorType.NONE && (fieldType == FieldType.GROUP || fieldType == FieldType.PERIODIC)
 			? DataFormat.NONE
 			: parseFormat(fieldLine);
 

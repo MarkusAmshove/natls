@@ -7,11 +7,9 @@ import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.project.NaturalFileType;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 abstract class AbstractParser<T>
 {
@@ -26,11 +24,6 @@ abstract class AbstractParser<T>
 	protected static final Set<SyntaxKind> END_KINDS_THAT_END_ALL_ENDS = Set.of(SyntaxKind.END_REPEAT, SyntaxKind.END_FOR, SyntaxKind.END_FILE, SyntaxKind.END_LOOP, SyntaxKind.END_SORT, SyntaxKind.END_WORK, SyntaxKind.END_READ, SyntaxKind.END_FIND, SyntaxKind.END_HISTOGRAM);
 
 	public AbstractParser(IModuleProvider moduleProvider)
-	{
-		this.moduleProvider = moduleProvider;
-	}
-
-	void setModuleProvider(IModuleProvider moduleProvider)
 	{
 		this.moduleProvider = moduleProvider;
 	}
@@ -65,18 +58,38 @@ abstract class AbstractParser<T>
 			&& !(referableName.startsWith("USR") && referableName.endsWith("N"))
 			&& !referableName.equals("SHCMD"))
 		{
-			report(ParserErrors.unresolvedExternalModule(moduleIdentifierToken));
+			var diagnostic = ParserErrors.unresolvedExternalModule(moduleIdentifierToken);
+			if (!moduleIdentifierToken.filePath().equals(tokens.filePath()))
+			{
+				diagnostic = diagnostic.relocate(moduleIdentifierToken.diagnosticPosition());
+			}
+			report(diagnostic);
 		}
 
 		return module;
 	}
 
+	private static final Set<NaturalFileType> TYPES_FOR_USINGS = Set.of(NaturalFileType.GDA, NaturalFileType.LDA, NaturalFileType.PDA);
+
 	protected IHasDefineData sideloadDefineData(TokenNode importNode)
 	{
-		if (sideloadModule(importNode.token().symbolName(), importNode.token())instanceof IHasDefineData hasDefineData)
+		var module = sideloadModule(importNode.token().symbolName(), importNode.token());
+		if (module instanceof IHasDefineData hasDefineData
+			&& TYPES_FOR_USINGS.contains(module.file().getFiletype()))
 		{
 			return hasDefineData;
 		}
+		else
+			if (module != null)
+			{
+				report(
+					ParserErrors.invalidModuleType(
+						"Only data areas can be imported via USING. This is a %s."
+							.formatted(module.file().getFiletype()),
+						importNode.token()
+					)
+				);
+			}
 
 		return null;
 	}
@@ -195,7 +208,7 @@ abstract class AbstractParser<T>
 		var tokenConsumed = consumeOptionally(node, kind);
 		if (!tokenConsumed)
 		{
-			diagnostics.add(ParserErrors.unexpectedToken(kind, tokens));
+			report(ParserErrors.unexpectedToken(kind, tokens));
 		}
 
 		return tokenConsumed;
@@ -208,27 +221,25 @@ abstract class AbstractParser<T>
 			return previousToken();
 		}
 
-		diagnostics.add(ParserErrors.unexpectedToken(kind, tokens));
+		report(ParserErrors.unexpectedToken(kind, tokens));
 		throw new ParseError(peek());
 	}
 
-	protected SyntaxToken consumeMandatoryClosing(BaseSyntaxNode node, SyntaxKind closingTokenType, SyntaxToken openingToken) throws ParseError
+	protected void consumeMandatoryClosing(BaseSyntaxNode node, SyntaxKind closingTokenType, SyntaxToken openingToken) throws ParseError
 	{
 		if (peekKind(SyntaxKind.END_ALL) && END_KINDS_THAT_END_ALL_ENDS.contains(closingTokenType)) // sort
 		{
-			return peek();
+			return;
 		}
 
 		if (!consumeOptionally(node, closingTokenType))
 		{
-			diagnostics.add(ParserErrors.missingClosingToken(closingTokenType, openingToken));
+			report(ParserErrors.missingClosingToken(closingTokenType, openingToken));
 			throw new ParseError(peek());
 		}
-
-		return previousToken();
 	}
 
-	protected ILiteralNode consumeLiteralNode(BaseSyntaxNode node) throws ParseError
+	protected IOperandNode consumeLiteralNode(BaseSyntaxNode node) throws ParseError
 	{
 		if (peekKind(SyntaxKind.LPAREN))
 		{
@@ -244,6 +255,7 @@ abstract class AbstractParser<T>
 			return attribute;
 		}
 
+		// negative numeric literals like `-1`
 		if (peekKind(SyntaxKind.MINUS) && peekKind(1, SyntaxKind.NUMBER_LITERAL))
 		{
 			var combinedLiteral = peek().combine(peek(1), SyntaxKind.NUMBER_LITERAL);
@@ -254,48 +266,97 @@ abstract class AbstractParser<T>
 			return literal;
 		}
 
-		var literal = consumeAny(List.of(SyntaxKind.NUMBER_LITERAL, SyntaxKind.STRING_LITERAL, SyntaxKind.HEX_LITERAL, SyntaxKind.TRUE, SyntaxKind.FALSE, SyntaxKind.ASTERISK, SyntaxKind.DATE_LITERAL, SyntaxKind.TIME_LITERAL, SyntaxKind.EXTENDED_TIME_LITERAL));
-		var literalNode = new LiteralNode(literal);
+		if (peekAny(List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.HEX_LITERAL)) && peekKind(1, SyntaxKind.MINUS))
+		{
+			return consumeStringConcat(node);
+		}
+
+		return consumeSingleLiteral(node);
+	}
+
+	private static final Set<SyntaxKind> LITERAL_KINDS = Set.of(SyntaxKind.NUMBER_LITERAL, SyntaxKind.STRING_LITERAL, SyntaxKind.HEX_LITERAL, SyntaxKind.TRUE, SyntaxKind.FALSE, SyntaxKind.ASTERISK, SyntaxKind.DATE_LITERAL, SyntaxKind.TIME_LITERAL, SyntaxKind.EXTENDED_TIME_LITERAL);
+
+	private ILiteralNode consumeSingleLiteral(BaseSyntaxNode node) throws ParseError
+	{
+		if (!LITERAL_KINDS.contains(peekKind()))
+		{
+			report(ParserErrors.operandExpected(peek()));
+			throw new ParseError(peek());
+		}
+
+		var literalToken = tokens.advance();
+		var literalNode = new LiteralNode(literalToken);
 		node.addNode(literalNode);
 		return literalNode;
 	}
 
-	protected ILiteralNode consumeLiteralNode(BaseSyntaxNode node, SyntaxKind literalKind) throws ParseError
+	protected ILiteralNode consumeNonConcatLiteralNode(BaseSyntaxNode node) throws ParseError
+	{
+		return ((ILiteralNode) consumeLiteralNode(node));
+	}
+
+	protected ILiteralNode consumeNonConcatLiteralNode(BaseSyntaxNode node, SyntaxKind literalKind) throws ParseError
+	{
+		return ((ILiteralNode) consumeLiteralNode(node, literalKind));
+	}
+
+	private IOperandNode consumeStringConcat(BaseSyntaxNode node) throws ParseError
+	{
+		var stringConcat = new StringConcatOperandNode();
+		node.addNode(stringConcat);
+		while (peek().kind().isLiteralOrConst())
+		{
+			stringConcat.addLiteral(consumeSingleLiteral(stringConcat));
+			if (peekKind(SyntaxKind.MINUS))
+			{
+				consumeMandatory(stringConcat, SyntaxKind.MINUS);
+			}
+			else
+			{
+				break;
+			}
+		}
+		return stringConcat;
+	}
+
+	protected IOperandNode consumeLiteralNode(BaseSyntaxNode node, SyntaxKind literalKind) throws ParseError
 	{
 		var literal = consumeLiteralNode(node);
-		if (literal.token().kind() != literalKind)
+		var gottenKind = literal instanceof ITokenNode tokenNode
+			? tokenNode.token().kind()
+			: SyntaxKind.STRING_LITERAL; // string concat
+
+		if (gottenKind != literalKind)
 		{
-			report(ParserErrors.unexpectedTokenUnsafe(literalKind, literal.token()));
+			report(ParserErrors.unexpectedTokenUnsafe(literalKind, previousToken()));
 		}
 
 		return literal;
 	}
 
-	protected SyntaxToken consumeLiteral(BaseSyntaxNode node) throws ParseError
+	protected void consumeLiteralToken(BaseSyntaxNode node) throws ParseError
 	{
 		if (peek().kind().isSystemVariable())
 		{
 			var systemVariable = peek();
 			node.addNode(new SystemVariableNode(systemVariable));
 			discard();
-			return systemVariable;
+			return;
 		}
 
 		if (peek().kind() == SyntaxKind.LPAREN) // Attributes
 		{
-			var lparen = peek(); // TODO(attributes): This is not correct but good for now.
 			while (!isAtEnd() && peek().kind() != SyntaxKind.RPAREN && peek().kind() != SyntaxKind.END_DEFINE)
 			{
 				consume(node);
 			}
 			consumeMandatory(node, SyntaxKind.RPAREN);
-			return lparen;
+			return;
 		}
 
 		var literal = consumeAny(List.of(SyntaxKind.NUMBER_LITERAL, SyntaxKind.STRING_LITERAL, SyntaxKind.HEX_LITERAL, SyntaxKind.TRUE, SyntaxKind.FALSE, SyntaxKind.DATE_LITERAL, SyntaxKind.TIME_LITERAL, SyntaxKind.EXTENDED_TIME_LITERAL));
 		previousNode = new TokenNode(literal);
 		node.addNode(previousNode);
-		return literal;
 	}
 
 	protected ITokenNode consumeMandatoryIdentifierTokenNode(BaseSyntaxNode node) throws ParseError
@@ -317,7 +378,7 @@ abstract class AbstractParser<T>
 		var currentToken = tokens.peek();
 		if (tokens.isAtEnd() || (currentToken.kind() != SyntaxKind.IDENTIFIER && !currentToken.kind().canBeIdentifier()))
 		{
-			diagnostics.add(ParserErrors.unexpectedToken(SyntaxKind.IDENTIFIER, tokens));
+			report(ParserErrors.unexpectedTokenWhenIdentifierWasExpected(currentToken));
 			throw new ParseError(peek());
 		}
 
@@ -330,7 +391,7 @@ abstract class AbstractParser<T>
 	{
 		if (tokens.isAtEnd() || !acceptedKinds.contains(tokens.peek().kind()))
 		{
-			diagnostics.add(ParserErrors.unexpectedToken(acceptedKinds, tokens));
+			report(ParserErrors.unexpectedToken(acceptedKinds, tokens));
 			throw new ParseError(peek());
 		}
 
@@ -503,53 +564,53 @@ abstract class AbstractParser<T>
 		}
 		if (peekKind(1, SyntaxKind.LPAREN))
 		{
-			if (peek().kind() == SyntaxKind.VAL)
+			switch (peek().kind())
 			{
-				return valOperand(node);
-			}
-			if (peek().kind() == SyntaxKind.INT)
-			{
-				return intOperand(node);
-			}
-			if (peek().kind() == SyntaxKind.SUM)
-			{
-				return sumOperand(node);
-			}
-			if (peek().kind() == SyntaxKind.TOTAL)
-			{
-				return totalOperand(node);
-			}
-			if (peek().kind() == SyntaxKind.COUNT)
-			{
-				return countOperand(node);
-			}
-			if (peek().kind() == SyntaxKind.LOG)
-			{
-				return logOperand(node);
-			}
-			if (peek().kind() == SyntaxKind.OLD)
-			{
-				return oldOperand(node);
-			}
-			if (peek().kind() == SyntaxKind.ABS)
-			{
-				return absOperand(node);
-			}
-			if (peek().kind() == SyntaxKind.SGN)
-			{
-				return sgnOperand(node);
-			}
-			if (peek().kind() == SyntaxKind.POS)
-			{
-				return posOperand(node);
-			}
-			if (peek().kind() == SyntaxKind.FRAC)
-			{
-				return fracOperand(node);
-			}
-			if (peek().kind() == SyntaxKind.RET)
-			{
-				return retOperand(node);
+				case ABS:
+					return absOperand(node);
+				case ATN:
+					return atnOperand(node);
+				case AVER, NAVER:
+					return averOperand(node);
+				case COS:
+					return cosOperand(node);
+				case COUNT, NCOUNT:
+					return countOperand(node);
+				case EXP:
+					return expOperand(node);
+				case FRAC:
+					return fracOperand(node);
+				case INT:
+					return intOperand(node);
+				case LOG:
+					return logOperand(node);
+				case MAX:
+					return maxOperand(node);
+				case MIN, NMIN:
+					return minOperand(node);
+				case OLD:
+					return oldOperand(node);
+				case POS:
+					return posOperand(node);
+				case RET:
+					return retOperand(node);
+				case SGN:
+					return sgnOperand(node);
+				case SIN:
+					return sinOperand(node);
+				case SORTKEY:
+					return sortKeyOperand(node);
+				case SQRT:
+					return sqrtOperand(node);
+				case SUM:
+					return sumOperand(node);
+				case TAN:
+					return tanOperand(node);
+				case TOTAL:
+					return totalOperand(node);
+				case VAL:
+					return valOperand(node);
+				default:
 			}
 		}
 		if (peek().kind() == SyntaxKind.LABEL_IDENTIFIER)
@@ -574,94 +635,6 @@ abstract class AbstractParser<T>
 		return unary;
 	}
 
-	private IOperandNode posOperand(BaseSyntaxNode node) throws ParseError
-	{
-		var posNode = new PosNode();
-		node.addNode(posNode);
-		consumeMandatory(posNode, SyntaxKind.POS);
-		consumeMandatory(posNode, SyntaxKind.LPAREN);
-		posNode.setPositionOf(consumeVariableReferenceNode(posNode));
-		consumeMandatory(posNode, SyntaxKind.RPAREN);
-		return posNode;
-	}
-
-	private IOperandNode valOperand(BaseSyntaxNode node) throws ParseError
-	{
-		var valOperand = new ValOperandNode();
-		node.addNode(valOperand);
-		consumeMandatory(valOperand, SyntaxKind.VAL);
-		consumeMandatory(valOperand, SyntaxKind.LPAREN);
-		valOperand.setVariable(consumeOperandNode(valOperand));
-		consumeMandatory(valOperand, SyntaxKind.RPAREN);
-		return valOperand;
-	}
-
-	private IOperandNode intOperand(BaseSyntaxNode node) throws ParseError
-	{
-		var intOperand = new IntOperandNode();
-		node.addNode(intOperand);
-		consumeMandatory(intOperand, SyntaxKind.INT);
-		consumeMandatory(intOperand, SyntaxKind.LPAREN);
-		intOperand.setVariable(consumeVariableReferenceNode(intOperand));
-		consumeMandatory(intOperand, SyntaxKind.RPAREN);
-		return intOperand;
-	}
-
-	private IOperandNode sumOperand(BaseSyntaxNode node) throws ParseError
-	{
-		var sumOperand = new SumOperandNode();
-		node.addNode(sumOperand);
-		consumeMandatory(sumOperand, SyntaxKind.SUM);
-		consumeMandatory(sumOperand, SyntaxKind.LPAREN);
-		sumOperand.setVariable(consumeVariableReferenceNode(sumOperand));
-		consumeMandatory(sumOperand, SyntaxKind.RPAREN);
-		return sumOperand;
-	}
-
-	private IOperandNode totalOperand(BaseSyntaxNode node) throws ParseError
-	{
-		var totalOperand = new TotalOperandNode();
-		node.addNode(totalOperand);
-		consumeMandatory(totalOperand, SyntaxKind.TOTAL);
-		consumeMandatory(totalOperand, SyntaxKind.LPAREN);
-		totalOperand.setVariable(consumeVariableReferenceNode(totalOperand));
-		consumeMandatory(totalOperand, SyntaxKind.RPAREN);
-		return totalOperand;
-	}
-
-	private IOperandNode countOperand(BaseSyntaxNode node) throws ParseError
-	{
-		var countOperand = new CountOperandNode();
-		node.addNode(countOperand);
-		consumeMandatory(countOperand, SyntaxKind.COUNT);
-		consumeMandatory(countOperand, SyntaxKind.LPAREN);
-		countOperand.setVariable(consumeVariableReferenceNode(countOperand));
-		consumeMandatory(countOperand, SyntaxKind.RPAREN);
-		return countOperand;
-	}
-
-	private IOperandNode logOperand(BaseSyntaxNode node) throws ParseError
-	{
-		var logOperand = new LogOperandNode();
-		node.addNode(logOperand);
-		consumeMandatory(logOperand, SyntaxKind.LOG);
-		consumeMandatory(logOperand, SyntaxKind.LPAREN);
-		logOperand.setParameter(consumeOperandNode(logOperand));
-		consumeMandatory(logOperand, SyntaxKind.RPAREN);
-		return logOperand;
-	}
-
-	private IOperandNode oldOperand(BaseSyntaxNode node) throws ParseError
-	{
-		var oldOperand = new OldOperandNode();
-		node.addNode(oldOperand);
-		consumeMandatory(oldOperand, SyntaxKind.OLD);
-		consumeMandatory(oldOperand, SyntaxKind.LPAREN);
-		oldOperand.setVariable(consumeVariableReferenceNode(oldOperand));
-		consumeMandatory(oldOperand, SyntaxKind.RPAREN);
-		return oldOperand;
-	}
-
 	private IOperandNode absOperand(BaseSyntaxNode node) throws ParseError
 	{
 		var absOperand = new AbsOperandNode();
@@ -673,15 +646,59 @@ abstract class AbstractParser<T>
 		return absOperand;
 	}
 
-	private IOperandNode sgnOperand(BaseSyntaxNode node) throws ParseError
+	private IOperandNode atnOperand(BaseSyntaxNode node) throws ParseError
 	{
-		var sgnOperand = new SignOperandNode();
-		node.addNode(sgnOperand);
-		consumeMandatory(sgnOperand, SyntaxKind.SGN);
-		consumeMandatory(sgnOperand, SyntaxKind.LPAREN);
-		sgnOperand.setParameter(consumeOperandNode(sgnOperand));
-		consumeMandatory(sgnOperand, SyntaxKind.RPAREN);
-		return sgnOperand;
+		var atnOperand = new AtnOperandNode();
+		node.addNode(atnOperand);
+		consumeMandatory(atnOperand, SyntaxKind.ATN);
+		consumeMandatory(atnOperand, SyntaxKind.LPAREN);
+		atnOperand.setParameter(consumeOperandNode(atnOperand));
+		consumeMandatory(atnOperand, SyntaxKind.RPAREN);
+		return atnOperand;
+	}
+
+	private IOperandNode averOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var averOperand = new AverOperandNode();
+		node.addNode(averOperand);
+		consumeAnyMandatory(averOperand, List.of(SyntaxKind.AVER, SyntaxKind.NAVER));
+		consumeMandatory(averOperand, SyntaxKind.LPAREN);
+		averOperand.setParameter(consumeVariableReferenceNode(averOperand));
+		consumeMandatory(averOperand, SyntaxKind.RPAREN);
+		return averOperand;
+	}
+
+	private IOperandNode cosOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var cosOperand = new CosOperandNode();
+		node.addNode(cosOperand);
+		consumeMandatory(cosOperand, SyntaxKind.COS);
+		consumeMandatory(cosOperand, SyntaxKind.LPAREN);
+		cosOperand.setParameter(consumeOperandNode(cosOperand));
+		consumeMandatory(cosOperand, SyntaxKind.RPAREN);
+		return cosOperand;
+	}
+
+	private IOperandNode countOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var countOperand = new CountOperandNode();
+		node.addNode(countOperand);
+		consumeAnyMandatory(countOperand, List.of(SyntaxKind.COUNT, SyntaxKind.NCOUNT));
+		consumeMandatory(countOperand, SyntaxKind.LPAREN);
+		countOperand.setParameter(consumeOperandNode(countOperand));
+		consumeMandatory(countOperand, SyntaxKind.RPAREN);
+		return countOperand;
+	}
+
+	private IOperandNode expOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var expOperand = new ExpOperandNode();
+		node.addNode(expOperand);
+		consumeMandatory(expOperand, SyntaxKind.EXP);
+		consumeMandatory(expOperand, SyntaxKind.LPAREN);
+		expOperand.setParameter(consumeOperandNode(expOperand));
+		consumeMandatory(expOperand, SyntaxKind.RPAREN);
+		return expOperand;
 	}
 
 	private IOperandNode fracOperand(BaseSyntaxNode node) throws ParseError
@@ -695,15 +712,169 @@ abstract class AbstractParser<T>
 		return fracOperand;
 	}
 
+	private IOperandNode intOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var intOperand = new IntOperandNode();
+		node.addNode(intOperand);
+		consumeMandatory(intOperand, SyntaxKind.INT);
+		consumeMandatory(intOperand, SyntaxKind.LPAREN);
+		intOperand.setParameter(consumeVariableReferenceNode(intOperand));
+		consumeMandatory(intOperand, SyntaxKind.RPAREN);
+		return intOperand;
+	}
+
+	private IOperandNode logOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var logOperand = new LogOperandNode();
+		node.addNode(logOperand);
+		consumeMandatory(logOperand, SyntaxKind.LOG);
+		consumeMandatory(logOperand, SyntaxKind.LPAREN);
+		logOperand.setParameter(consumeOperandNode(logOperand));
+		consumeMandatory(logOperand, SyntaxKind.RPAREN);
+		return logOperand;
+	}
+
+	private IOperandNode maxOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var maxOperand = new MaxOperandNode();
+		node.addNode(maxOperand);
+		consumeMandatory(maxOperand, SyntaxKind.MAX);
+		consumeMandatory(maxOperand, SyntaxKind.LPAREN);
+		maxOperand.setParameter(consumeOperandNode(maxOperand));
+		consumeMandatory(maxOperand, SyntaxKind.RPAREN);
+		return maxOperand;
+	}
+
+	private IOperandNode minOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var minOperand = new MinOperandNode();
+		node.addNode(minOperand);
+		consumeAnyMandatory(minOperand, List.of(SyntaxKind.MIN, SyntaxKind.NMIN));
+		consumeMandatory(minOperand, SyntaxKind.LPAREN);
+		minOperand.setParameter(consumeOperandNode(minOperand));
+		consumeMandatory(minOperand, SyntaxKind.RPAREN);
+		return minOperand;
+	}
+
+	private IOperandNode oldOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var oldOperand = new OldOperandNode();
+		node.addNode(oldOperand);
+		consumeMandatory(oldOperand, SyntaxKind.OLD);
+		consumeMandatory(oldOperand, SyntaxKind.LPAREN);
+		oldOperand.setParameter(consumeOperandNode(oldOperand));
+		consumeMandatory(oldOperand, SyntaxKind.RPAREN);
+		return oldOperand;
+	}
+
+	private IOperandNode posOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var posOperand = new PosOperandNode();
+		node.addNode(posOperand);
+		consumeMandatory(posOperand, SyntaxKind.POS);
+		consumeMandatory(posOperand, SyntaxKind.LPAREN);
+		posOperand.setPositionOf(consumeVariableReferenceNode(posOperand));
+		consumeMandatory(posOperand, SyntaxKind.RPAREN);
+		return posOperand;
+	}
+
 	private IOperandNode retOperand(BaseSyntaxNode node) throws ParseError
 	{
 		var retOperand = new RetOperandNode();
 		node.addNode(retOperand);
 		consumeMandatory(retOperand, SyntaxKind.RET);
 		consumeMandatory(retOperand, SyntaxKind.LPAREN);
-		retOperand.setParameter(consumeLiteralNode(retOperand));
+		retOperand.setParameter(consumeNonConcatLiteralNode(retOperand));
 		consumeMandatory(retOperand, SyntaxKind.RPAREN);
 		return retOperand;
+	}
+
+	private IOperandNode sgnOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var sgnOperand = new SignOperandNode();
+		node.addNode(sgnOperand);
+		consumeMandatory(sgnOperand, SyntaxKind.SGN);
+		consumeMandatory(sgnOperand, SyntaxKind.LPAREN);
+		sgnOperand.setParameter(consumeOperandNode(sgnOperand));
+		consumeMandatory(sgnOperand, SyntaxKind.RPAREN);
+		return sgnOperand;
+	}
+
+	private IOperandNode sinOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var sinOperand = new SinOperandNode();
+		node.addNode(sinOperand);
+		consumeMandatory(sinOperand, SyntaxKind.SIN);
+		consumeMandatory(sinOperand, SyntaxKind.LPAREN);
+		sinOperand.setParameter(consumeOperandNode(sinOperand));
+		consumeMandatory(sinOperand, SyntaxKind.RPAREN);
+		return sinOperand;
+	}
+
+	private IOperandNode sortKeyOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var sortkeyOperand = new SortKeyOperandNode();
+		node.addNode(sortkeyOperand);
+		consumeMandatory(sortkeyOperand, SyntaxKind.SORTKEY);
+		consumeMandatory(sortkeyOperand, SyntaxKind.LPAREN);
+		sortkeyOperand.setVariable(consumeVariableReferenceNode(sortkeyOperand));
+		consumeMandatory(sortkeyOperand, SyntaxKind.RPAREN);
+		return sortkeyOperand;
+	}
+
+	private IOperandNode sqrtOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var sqrtOperand = new SqrtOperandNode();
+		node.addNode(sqrtOperand);
+		consumeMandatory(sqrtOperand, SyntaxKind.SQRT);
+		consumeMandatory(sqrtOperand, SyntaxKind.LPAREN);
+		sqrtOperand.setParameter(consumeOperandNode(sqrtOperand));
+		consumeMandatory(sqrtOperand, SyntaxKind.RPAREN);
+		return sqrtOperand;
+	}
+
+	private IOperandNode tanOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var tanOperand = new TanOperandNode();
+		node.addNode(tanOperand);
+		consumeMandatory(tanOperand, SyntaxKind.TAN);
+		consumeMandatory(tanOperand, SyntaxKind.LPAREN);
+		tanOperand.setParameter(consumeOperandNode(tanOperand));
+		consumeMandatory(tanOperand, SyntaxKind.RPAREN);
+		return tanOperand;
+	}
+
+	private IOperandNode sumOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var sumOperand = new SumOperandNode();
+		node.addNode(sumOperand);
+		consumeMandatory(sumOperand, SyntaxKind.SUM);
+		consumeMandatory(sumOperand, SyntaxKind.LPAREN);
+		sumOperand.setParameter(consumeVariableReferenceNode(sumOperand));
+		consumeMandatory(sumOperand, SyntaxKind.RPAREN);
+		return sumOperand;
+	}
+
+	private IOperandNode totalOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var totalOperand = new TotalOperandNode();
+		node.addNode(totalOperand);
+		consumeMandatory(totalOperand, SyntaxKind.TOTAL);
+		consumeMandatory(totalOperand, SyntaxKind.LPAREN);
+		totalOperand.setParameter(consumeVariableReferenceNode(totalOperand));
+		consumeMandatory(totalOperand, SyntaxKind.RPAREN);
+		return totalOperand;
+	}
+
+	private IOperandNode valOperand(BaseSyntaxNode node) throws ParseError
+	{
+		var valOperand = new ValOperandNode();
+		node.addNode(valOperand);
+		consumeMandatory(valOperand, SyntaxKind.VAL);
+		consumeMandatory(valOperand, SyntaxKind.LPAREN);
+		valOperand.setParameter(consumeOperandNode(valOperand));
+		consumeMandatory(valOperand, SyntaxKind.RPAREN);
+		return valOperand;
 	}
 
 	private IOperandNode consumeLabelIdentifier(BaseSyntaxNode node) throws ParseError
@@ -830,23 +1001,20 @@ abstract class AbstractParser<T>
 		previousNode = reference;
 		node.addNode(reference);
 
-		if (peekKind(SyntaxKind.LPAREN) && !getKind(1).isAttribute() && !peekKind(1, SyntaxKind.LABEL_IDENTIFIER))
+		if (peekKind(SyntaxKind.LPAREN) && !getKind(1).isAttribute())
 		{
 			consumeMandatory(reference, SyntaxKind.LPAREN);
-			reference.addDimension(consumeArrayAccess(reference));
-			while (peekKind(SyntaxKind.COMMA))
+			var isArrayRef = consumeOptionally(reference, SyntaxKind.LABEL_IDENTIFIER) && consumeOptionally(reference, SyntaxKind.SLASH);
+			// If just RPAREN left, then this was just a LABEL_IDENTIFIER and thus not an array.
+			isArrayRef = isArrayRef || !peekKind(SyntaxKind.RPAREN);
+			if (isArrayRef)
 			{
-				consume(reference);
 				reference.addDimension(consumeArrayAccess(reference));
-			}
-			consumeMandatory(reference, SyntaxKind.RPAREN);
-		}
-
-		if (peekKind(SyntaxKind.LPAREN) && peekKind(1, SyntaxKind.LABEL_IDENTIFIER))
-		{
-			while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
-			{
-				consume(reference);
+				while (peekKind(SyntaxKind.COMMA))
+				{
+					consume(reference);
+					reference.addDimension(consumeArrayAccess(reference));
+				}
 			}
 			consumeMandatory(reference, SyntaxKind.RPAREN);
 		}
@@ -910,7 +1078,7 @@ abstract class AbstractParser<T>
 		return false;
 	}
 
-	protected SyntaxToken consumeAnyMandatory(BaseSyntaxNode node, List<SyntaxKind> acceptedKinds) throws ParseError
+	protected SyntaxToken consumeAnyMandatory(BaseSyntaxNode node, Collection<SyntaxKind> acceptedKinds) throws ParseError
 	{
 		for (SyntaxKind acceptedKind : acceptedKinds)
 		{
@@ -920,7 +1088,7 @@ abstract class AbstractParser<T>
 			}
 		}
 
-		diagnostics.add(ParserErrors.unexpectedToken(acceptedKinds, tokens));
+		report(ParserErrors.unexpectedToken(acceptedKinds, tokens));
 		throw new ParseError(peek());
 	}
 
@@ -945,6 +1113,7 @@ abstract class AbstractParser<T>
 		// we don't do anything special yet, need some experience on where attribute definitions are allowed
 		// this was built for CALLNAT, where a variable reference as parameter can have attribute definitions (only AD)
 		// might be reusable for WRITE, DISPLAY, etc. for all kind of operands, but has to be fleshed out then
+		// At that point, we could also add something similar for EM=
 		consumeMandatory(node, SyntaxKind.LPAREN);
 		while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
 		{
@@ -1013,6 +1182,11 @@ abstract class AbstractParser<T>
 	protected void rollbackOnce()
 	{
 		tokens.rollback(1);
+	}
+
+	protected void rollback(int offset)
+	{
+		tokens.rollback(offset);
 	}
 
 	protected SyntaxToken peekNextLine()
@@ -1085,6 +1259,48 @@ abstract class AbstractParser<T>
 			}
 
 			offset++;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Does a forward peek and tries to be smart about skipping stuff, e.g. ignoring array access. <br/>
+	 * If you have `#VAR(*) :=` and the current token is `#VAR` then this will return true for `peekSmart(1,
+	 * SyntaxKind.COLON_EQUALS)`, as it skips over the array access `(*)`
+	 */
+	protected boolean peekSmart(int offset, SyntaxKind kind)
+	{
+		var actualOffset = 0;
+		var skipped = 0;
+		while (!isAtEnd(actualOffset))
+		{
+			if (actualOffset - skipped == offset && peekKind(actualOffset, kind))
+			{
+				return true;
+			}
+
+			// Skip over array index access. Might collide with FUNC(<...>)
+			if (peekKind(actualOffset, SyntaxKind.IDENTIFIER) || peek(actualOffset).kind().canBeIdentifier())
+			{
+				actualOffset++;
+				if (peekKind(actualOffset, SyntaxKind.LPAREN))
+				{
+					actualOffset++;
+					skipped++;
+					// skip over everything in parens
+					while (!peekKind(actualOffset, SyntaxKind.RPAREN))
+					{
+						skipped++;
+						actualOffset++;
+					}
+					// skip the RPAREN
+					actualOffset++;
+					skipped++;
+				}
+			}
+
+			actualOffset++;
 		}
 
 		return false;

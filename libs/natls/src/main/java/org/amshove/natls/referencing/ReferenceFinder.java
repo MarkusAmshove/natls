@@ -23,7 +23,7 @@ public class ReferenceFinder
 		// Reparse all callers to get parameter and data area references
 		file.reparseCallers(monitor);
 
-		var tokenNode = NodeUtil.findTokenNodeAtPosition(position.getLine(), position.getCharacter(), file.module().syntaxTree());
+		var tokenNode = NodeUtil.findTokenNodeAtPosition(file.getPath(), position.getLine(), position.getCharacter(), file.module().syntaxTree());
 
 		var node = NodeUtil.findNodeAtPosition(position.getLine(), position.getCharacter(), file.module());
 		if (node instanceof ITokenNode && node.parent() instanceof ISubroutineNode)

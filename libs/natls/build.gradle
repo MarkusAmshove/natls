@@ -1,5 +1,5 @@
 plugins {
-    id 'com.github.johnrengelman.shadow' version '7.1.0'
+    id 'com.github.johnrengelman.shadow' version '5.2.0' // do not update unless https://github.com/johnrengelman/shadow/issues/651 is fixed
 }
 
 dependencies {
@@ -10,6 +10,7 @@ dependencies {
     implementation project(':natlint')
 
     testImplementation project(':testhelpers')
+    testImplementation libraries.slf4j_nop
 }
 
 shadowJar {
@@ -18,12 +19,17 @@ shadowJar {
     archiveVersion.set('')
 }
 
+configurations.testImplementation {
+    exclude group: 'org.slf4j', module: libraries.slf4j_utillogging.split(':')[1]
+}
+
 jar {
     manifest {
         attributes(
-                'Main-Class': 'org.amshove.natls.App',
-                'Implementation-Title': project.name,
-                'Implementation-Version': project.version
+            'Main-Class': 'org.amshove.natls.App',
+            'Implementation-Title': project.name,
+            'Implementation-Version': project.version
         )
     }
 }
+

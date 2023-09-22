@@ -9,6 +9,8 @@ public interface IFilesystem
 {
 	String readFile(Path path);
 
+	boolean exists(Path path);
+
 	List<Path> listDirectories(Path path);
 
 	Stream<Path> streamFilesRecursively(Path startPath);

@@ -7,9 +7,7 @@ import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFileType;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DefineDataParser extends AbstractParser<IDefineData>
 {
@@ -20,10 +18,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	 * addDeclaredVariable for error handling.
 	 */
 	private Map<String, VariableNode> declaredVariables;
+	private Deque<GroupNode> groupStack;
 
 	private VariableScope currentScope;
-
-	private RedefinitionNode currentRedefineNode;
 
 	private DefineDataNode defineData;
 
@@ -37,6 +34,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 	{
 		defineData = new DefineDataNode();
 		declaredVariables = new HashMap<>();
+		groupStack = new ArrayDeque<>();
 
 		advanceToDefineData(tokens);
 		if (!isAtStartOfDefineData(tokens))
@@ -86,7 +84,38 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			// it's okay, we're done here.
 		}
 
+		for (var variable : defineData.variables())
+		{
+			if (variable instanceof GroupNode groupNode)
+			{
+				checkGroupIsNotEmpty(groupNode);
+				if (groupNode.level() == 1 && !(groupNode instanceof IRedefinitionNode))
+				{
+					ensureAllConstOrNoneConst(groupNode.variables(), new GroupConstStatistic());
+				}
+			}
+
+			if (variable instanceof RedefinitionNode redefinitionNode)
+			{
+				addTargetToRedefine(redefinitionNode);
+				checkRedefineLength(redefinitionNode);
+			}
+
+		}
+
 		return defineData;
+	}
+
+	private void checkGroupIsNotEmpty(GroupNode groupNode)
+	{
+		if (groupNode instanceof ViewNode)
+		{
+			return;
+		}
+		if (groupNode.variables().isEmpty())
+		{
+			report(ParserErrors.emptyGroupVariable(groupNode));
+		}
 	}
 
 	private BaseSyntaxNode dataDefinition() throws ParseError
@@ -117,13 +146,15 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		{
 			try
 			{
+				popGroupsIfNecessary();
+
 				if (peekKind(SyntaxKind.BLOCK))
 				{
 					/*var block = */
-					block(); // TODO: Maybe do something with block
+					scopeNode.addNode(block());
 				}
 
-				var variable = variable();
+				var variable = variable(currentGroupsDimensions());
 				variable.setScope(currentScope);
 				for (var dimension : variable.dimensions())
 				{
@@ -135,13 +166,37 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 					checkIndependentVariable(variable);
 				}
 
-				if (variable instanceof RedefinitionNode redefinitionNode)
+				if (peekKind(1, SyntaxKind.FILLER) && peekKind(2, SyntaxKind.OPERAND_SKIP))
 				{
-					addTargetToRedefine(scopeNode, redefinitionNode);
+					var currentRedefineNode = currentRedefine(variable);
+					if (currentRedefineNode != null)
+					{
+						while (mightBeFillerBytes(peek(1), peek(2)))
+						{
+							parseRedefineFiller(currentRedefineNode);
+						}
+					}
+					else
+					{
+						report(ParserErrors.unexpectedToken(peek(1), "FILLER can only be used in redefinitions"));
+					}
 				}
 
-				scopeNode.addVariable(variable);
+				if (variable.level() == 1)
+				{
+					scopeNode.addVariable(variable);
+				}
+				else
+				{
+					addVariableToCurrentGroup(variable);
+				}
+
 				addDeclaredVariable(variable);
+
+				if (variable instanceof GroupNode groupNode)
+				{
+					groupStack.addLast(groupNode);
+				}
 			}
 			catch (ParseError e)
 			{
@@ -154,6 +209,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 
 		passDownArrayDimensions(scopeNode);
+		groupStack.clear();
 
 		return scopeNode;
 	}
@@ -215,13 +271,17 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		if (defineDataModule != null)
 		{
 			using.setReferencingModule((NaturalModule) defineDataModule);
+			for (var diagnostic : ((NaturalModule) defineDataModule).diagnostics())
+			{
+				if (diagnostic instanceof ParserDiagnostic pd)
+				{
+					report(pd.relocate(identifierTokenNode.diagnosticPosition()));
+				}
+			}
 			using.setDefineData(defineDataModule.defineData());
 			for (var variable : defineDataModule.defineData().variables())
 			{
-				if (variable.level() == 1)
-				{
-					addDeclaredVariable((VariableNode) variable);
-				}
+				addDeclaredVariable((VariableNode) variable, using);
 			}
 
 			if (using.isParameterUsing()
@@ -265,11 +325,6 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 
 		return block;
-	}
-
-	private VariableNode variable() throws ParseError
-	{
-		return variable(List.of());
 	}
 
 	private VariableNode variable(List<IArrayDimension> inheritedDimensions) throws ParseError
@@ -339,15 +394,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private GroupNode groupVariable(VariableNode variable) throws ParseError
 	{
-		var groupNode = variable instanceof RedefinitionNode
-			? (RedefinitionNode) variable
+		var groupNode = variable instanceof RedefinitionNode redefine
+			? redefine
 			: new GroupNode(variable);
-
-		var previousRedefine = currentRedefineNode;
-		if (groupNode instanceof RedefinitionNode redefine)
-		{
-			currentRedefineNode = redefine;
-		}
 
 		if (variable.dimensions().hasItems())
 		{
@@ -366,45 +415,47 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			consumeMandatory(groupNode, SyntaxKind.RPAREN);
 		}
 
-		while (peekKind(SyntaxKind.NUMBER_LITERAL))
+		return groupNode;
+	}
+
+	private void ensureAllConstOrNoneConst(Iterable<IVariableNode> variables, GroupConstStatistic statistic)
+	{
+		for (var variable : variables)
 		{
-			if (peek().intValue() <= groupNode.level())
+			if (variable instanceof IGroupNode nestedGroup && !(variable instanceof IRedefinitionNode))
 			{
-				break;
+				ensureAllConstOrNoneConst(nestedGroup.variables(), statistic);
+				continue;
 			}
 
-			if (peek(1).kind() == SyntaxKind.FILLER && currentRedefineNode != null)
+			if (variable instanceof ITypedVariableNode typedVar
+				&& typedVar.type() != null
+				&& !(typedVar.parent() instanceof IRedefinitionNode)) // doesn't matter for REDEFINE children
 			{
-				if (mightBeFillerBytes(peek(1), peek(2)))
+				if (typedVar.type().isConstant())
 				{
-					parseRedefineFiller(currentRedefineNode);
-					continue;
+					statistic.constEncountered++;
+				}
+				else
+				{
+					statistic.nonConstEncountered++;
+				}
+
+				if (statistic.hasMixedConst())
+				{
+					report(ParserErrors.groupHasMixedConstVariables(variable.identifierNode()));
 				}
 			}
-
-			var nestedVariable = variable(groupNode.getDimensions());
-			groupNode.addVariable(nestedVariable);
-
-			if (peek().line() == previousToken().line()
-				&& peek().kind() != SyntaxKind.NUMBER_LITERAL) // multiple variables declared in the same line...
-			{
-				// Error handling for trailing stuff that shouldn't be there
-				skipToNextLineReportingEveryToken();
-			}
 		}
-
-		if (groupNode.variables().size() == 0)
-		{
-			report(ParserErrors.emptyGroupVariable(groupNode));
-		}
-
-		currentRedefineNode = previousRedefine;
-
-		return groupNode;
 	}
 
 	private boolean mightBeFillerBytes(SyntaxToken fillerToken, SyntaxToken maybeFillerBytes)
 	{
+		if (fillerToken == null || maybeFillerBytes == null)
+		{
+			return false;
+		}
+
 		return maybeFillerBytes.kind() == SyntaxKind.OPERAND_SKIP
 			// This happens when it's e.g.
 			// 2 FILLER 5
@@ -482,6 +533,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			length = getLengthFromDataType(dataType + "." + number.source());
 		}
 		type.setLength(length);
+		typedVariable.setType(type);
 
 		if (!arrayConsumed && consumeOptionally(typedVariable, SyntaxKind.SLASH))
 		{
@@ -532,7 +584,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			}
 			else
 			{
-				if (typedVariable.dimensions().size() > 0)
+				if (!typedVariable.dimensions().isEmpty())
 				{
 					consumeArrayInitializer(typedVariable);
 				}
@@ -541,19 +593,18 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 					consumeMandatory(typedVariable, SyntaxKind.LESSER_SIGN);
 					if (peek().kind().isSystemVariable())
 					{
-						type.setInitialValue(consumeSystemVariableNode(typedVariable).token());
+						type.setInitialValue(consumeSystemVariableNode(typedVariable));
 					}
 					else
 					{
 						var literal = consumeLiteralNode(typedVariable);
-						type.setInitialValue(literal.token());
+						type.setInitialValue(literal);
 					}
 					consumeMandatory(typedVariable, SyntaxKind.GREATER_SIGN);
 				}
 			}
 		}
 
-		typedVariable.setType(type);
 		if (consumeOptionally(typedVariable, SyntaxKind.LPAREN))
 		{
 			// TODO(masks): Parse for real and add to variable
@@ -668,21 +719,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		{
 			switch (variable.type().format())
 			{
-				case ALPHANUMERIC:
-				case BINARY:
-				case UNICODE:
-					break;
-
-				case CONTROL:
-				case DATE:
-				case FLOAT:
-				case INTEGER:
-				case LOGIC:
-				case NUMERIC:
-				case PACKED:
-				case TIME:
-				case NONE:
-					report(ParserErrors.dynamicVariableLengthNotAllowed(variable));
+				case ALPHANUMERIC, BINARY, UNICODE ->
+				{}
+				case CONTROL, DATE, FLOAT, INTEGER, LOGIC, NUMERIC, PACKED, TIME, NONE -> report(ParserErrors.dynamicVariableLengthNotAllowed(variable));
 			}
 
 			if (variableLength > 0.0)
@@ -734,83 +773,69 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		{
 			switch (variable.type().format())
 			{
-				case ALPHANUMERIC:
-				case BINARY:
-				case UNICODE:
+				case ALPHANUMERIC, BINARY, UNICODE ->
+				{
 					if (!variable.type().hasDynamicLength())
 					{
 						report(ParserErrors.dataTypeNeedsLength(variable));
 					}
-					break;
-
-				case CONTROL:
-				case DATE:
-				case LOGIC:
-				case TIME:
-				case NONE:
-					break;
-
-				case FLOAT:
-				case INTEGER:
-				case NUMERIC:
-				case PACKED:
-					report(ParserErrors.dataTypeNeedsLength(variable));
+				}
+				case CONTROL, DATE, LOGIC, TIME, NONE ->
+				{}
+				case FLOAT, INTEGER, NUMERIC, PACKED -> report(ParserErrors.dataTypeNeedsLength(variable));
 			}
 		}
 
 		if (variable.type().initialValue() != null)
 		{
+			var initialValueKind = inferInitialValueKind(variable.type().initialValue());
+
 			switch (variable.type().format())
 			{
-				case ALPHANUMERIC:
-					if (variable.type().initialValue().kind().isBoolean())
+				case ALPHANUMERIC ->
+				{
+					if (initialValueKind.isBoolean())
 					{
 						break;
 					}
-					expectInitialValueType(variable, SyntaxKind.STRING_LITERAL, SyntaxKind.NUMBER_LITERAL, SyntaxKind.HEX_LITERAL);
-					break;
-
-				case DATE:
-					expectInitialValueType(variable, SyntaxKind.DATE_LITERAL);
-					break;
-
-				case BINARY:
-				case CONTROL:
-				case TIME:
-				case UNICODE:
-				case NONE:
-					// TODO: Unsure about these at the moment
-					break;
-
-				case FLOAT:
-				case NUMERIC:
-				case PACKED:
-				case INTEGER:
-					expectInitialValueType(variable, SyntaxKind.NUMBER_LITERAL);
-					break;
-
-				case LOGIC:
-					var initialValueType = variable.type().initialValue().kind();
-					if (initialValueType != SyntaxKind.TRUE && initialValueType != SyntaxKind.FALSE)
+					expectInitialValueType(variable, initialValueKind, SyntaxKind.STRING_LITERAL, SyntaxKind.NUMBER_LITERAL, SyntaxKind.HEX_LITERAL);
+				}
+				case DATE -> expectInitialValueType(variable, initialValueKind, SyntaxKind.DATE_LITERAL);
+				case BINARY, CONTROL, TIME, UNICODE, NONE ->
+				{}
+				case FLOAT, NUMERIC, PACKED, INTEGER -> expectInitialValueType(variable, initialValueKind, SyntaxKind.NUMBER_LITERAL);
+				case LOGIC ->
+				{
+					if (initialValueKind != SyntaxKind.TRUE && initialValueKind != SyntaxKind.FALSE)
 					{
 						report(ParserErrors.initValueMismatch(variable, SyntaxKind.TRUE, SyntaxKind.FALSE));
 					}
-					break;
+				}
 			}
 		}
 	}
 
-	private void expectInitialValueType(TypedVariableNode variableNode, SyntaxKind... expectedKinds)
+	private SyntaxKind inferInitialValueKind(IOperandNode initialValueNode)
+	{
+		if (initialValueNode instanceof ITokenNode tokenNode)
+		{
+			return tokenNode.token().kind();
+		}
+
+		return SyntaxKind.STRING_LITERAL; // concat
+	}
+
+	private void expectInitialValueType(TypedVariableNode variableNode, SyntaxKind initialValueKind, SyntaxKind... expectedKinds)
 	{
 		for (var expectedKind : expectedKinds)
 		{
-			if (variableNode.type().initialValue().kind() == expectedKind)
+			if (initialValueKind == expectedKind)
 			{
 				return;
 			}
 		}
 
-		if (!variableNode.type().initialValue().kind().isSystemVariable()) // TODO(system-variables): Check type
+		if (!initialValueKind.isSystemVariable())
 		{
 			report(ParserErrors.initValueMismatch(variableNode, expectedKinds));
 		}
@@ -837,7 +862,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		{
 			var dimension = new ArrayDimension();
 			var lowerBound = extractArrayBound(new TokenNode(peek()), dimension);
-			var upperBound = ArrayDimension.UNBOUND_VALUE;
+			var upperBound = 0;
 			consume(dimension);
 			if (consumeOptionally(dimension, SyntaxKind.COLON))
 			{
@@ -858,6 +883,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 			dimension.setLowerBound(lowerBound);
 			dimension.setUpperBound(upperBound);
+
 			variable.addDimension(dimension);
 			while (!isAtEnd() && !peekKind(SyntaxKind.COMMA) && !peekKind(SyntaxKind.RPAREN))
 			{
@@ -877,17 +903,17 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		if (token.token().kind().isIdentifier())
 		{
-			var isUnboundV = token.token().symbolName().equals("V"); // (1:V) is allowed in parameter scope, where V stands for unbound
+			var isUnboundV = token.token().symbolName().equals("V"); // (1:V) is allowed in parameter scope, where V stands for variable
 
-			if (currentScope.isParameter() && isUnboundV && !isVariableDeclared(token.token().symbolName()))
+			if (currentScope.isParameter() && isUnboundV && isVariableUndeclared(token.token().symbolName()))
 			{
-				return ArrayDimension.UNBOUND_VALUE;
+				return IArrayDimension.VARIABLE_BOUND;
 			}
 
-			if (!isVariableDeclared(token.token().symbolName()))
+			if (isVariableUndeclared(token.token().symbolName()))
 			{
 				report(ParserErrors.unresolvedReference(token));
-				return ArrayDimension.UNBOUND_VALUE;
+				return IArrayDimension.UNBOUND_VALUE;
 			}
 
 			var constReference = getDeclaredVariable(token);
@@ -900,11 +926,11 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				var referenceNode = new SymbolReferenceNode(token.token());
 				typedNode.addReference(referenceNode);
 				dimension.addNode(referenceNode);
-				return typedNode.type().initialValue().intValue();
+				return ((ILiteralNode) typedNode.type().initialValue()).token().intValue();
 			}
 		}
 
-		return ArrayDimension.UNBOUND_VALUE;
+		return IArrayDimension.UNBOUND_VALUE;
 	}
 
 	private void checkBounds(IArrayDimension dimension)
@@ -1109,6 +1135,11 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private void checkIndependentVariable(VariableNode variable)
 	{
+		if (currentRedefine(variable) != null)
+		{
+			return;
+		}
+
 		if (!variable.name().startsWith("+"))
 		{
 			report(ParserErrors.invalidAivNaming(variable));
@@ -1120,13 +1151,26 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 	}
 
-	private void addTargetToRedefine(ScopeNode scopeNode, RedefinitionNode redefinitionNode)
+	private void addTargetToRedefine(RedefinitionNode redefinitionNode)
+	{
+		if (redefinitionNode.parent()instanceof ScopeNode scope)
+		{
+			addTargetToRedefine(scope.variables(), redefinitionNode);
+		}
+
+		if (redefinitionNode.parent()instanceof IGroupNode group)
+		{
+			addTargetToRedefine(group.variables(), redefinitionNode);
+		}
+	}
+
+	private void addTargetToRedefine(Iterable<IVariableNode> possibleVariables, RedefinitionNode redefinitionNode)
 	{
 		IVariableNode target = null;
 
-		for (var variable : scopeNode.variables())
+		for (var variable : possibleVariables)
 		{
-			if (variable.name().equalsIgnoreCase(redefinitionNode.name()))
+			if (variable.name() != null && variable.name().equalsIgnoreCase(redefinitionNode.name()))
 			{
 				target = variable;
 				break;
@@ -1139,7 +1183,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			return;
 		}
 
-		if (target instanceof TypedVariableNode typedTarget && typedTarget.type().hasDynamicLength())
+		if (target instanceof TypedVariableNode typedTarget
+			&& typedTarget.type() != null // TODO: no types for view stuff yet :(
+			&& typedTarget.type().hasDynamicLength())
 		{
 			report(ParserErrors.redefineCantTargetDynamic(redefinitionNode));
 			return;
@@ -1147,28 +1193,22 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		redefinitionNode.setTarget(target);
 
+		// length check for redefine will be done afterward
+	}
+
+	private void checkRedefineLength(IRedefinitionNode redefinitionNode)
+	{
+		var target = redefinitionNode.target();
+
+		if (target instanceof ITypedVariableNode typedTarget && typedTarget.type() == null)
+		{
+			// The target is a VIEW variable which has no explicit type
+			return;
+		}
+
 		var targetLength = calculateVariableLengthInBytes(target);
 		var redefineLength = calculateVariableLengthInBytes(redefinitionNode);
-
 		var skipLengthCheck = false;
-
-		if (target.isArray())
-		{
-			var totalOccurrences = 0;
-			for (var dimension : target.dimensions())
-			{
-				if (dimension.isLowerUnbound() || dimension.isUpperUnbound())
-				{
-					report(ParserErrors.redefineTargetCantBeXArray(dimension));
-					skipLengthCheck = true;
-				}
-				else
-				{
-					totalOccurrences += dimension.occurerences();
-				}
-			}
-			targetLength *= totalOccurrences;
-		}
 
 		for (var variable : redefinitionNode.variables())
 		{
@@ -1193,21 +1233,33 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 	}
 
-	private double calculateVariableLengthInBytes(IVariableNode target)
+	private int calculateVariableLengthInBytes(IVariableNode target)
 	{
 		if (target instanceof ITypedVariableNode typedNode)
 		{
+			if (typedNode.isArray())
+			{
+				return calculateLengthInBytesWithArray(typedNode);
+			}
+
 			return typedNode.type().byteSize();
 		}
 
 		if (target instanceof IRedefinitionNode redefinitionNode)
 		{
-			var groupLength = 0.0;
+			var groupLength = 0;
 			for (var member : redefinitionNode.variables())
 			{
 				if (member instanceof ITypedVariableNode typedVariableNode)
 				{
-					groupLength += typedVariableNode.type().byteSize();
+					if (typedVariableNode.isArray())
+					{
+						groupLength += calculateLengthInBytesWithArray(typedVariableNode);
+					}
+					else
+					{
+						groupLength += typedVariableNode.type().byteSize();
+					}
 				}
 			}
 
@@ -1216,7 +1268,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		else
 			if (target instanceof IGroupNode groupNode)
 			{
-				var groupLength = 0.0;
+				var groupLength = 0;
 				for (var member : groupNode.variables())
 				{
 					groupLength += calculateVariableLengthInBytes(member);
@@ -1225,12 +1277,30 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 				return groupLength;
 			}
 
-		return 0.0;
+		return 0;
 	}
 
-	private boolean isVariableDeclared(String potentialVariableName)
+	private int calculateLengthInBytesWithArray(ITypedVariableNode target)
 	{
-		return declaredVariables.containsKey(potentialVariableName.toUpperCase());
+		var totalOccurrences = 0;
+		for (var dimension : target.dimensions())
+		{
+			if (dimension.isLowerUnbound() || dimension.isUpperUnbound())
+			{
+				report(ParserErrors.redefineTargetCantBeXArray(dimension));
+			}
+			else
+			{
+				totalOccurrences = totalOccurrences == 0 ? dimension.occurerences() : totalOccurrences * dimension.occurerences();
+			}
+		}
+
+		return (target.type().byteSize()) * totalOccurrences;
+	}
+
+	private boolean isVariableUndeclared(String potentialVariableName)
+	{
+		return !declaredVariables.containsKey(potentialVariableName.toUpperCase());
 	}
 
 	private VariableNode getDeclaredVariable(ITokenNode tokenNode)
@@ -1241,37 +1311,144 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 	private void addDeclaredVariable(VariableNode variable)
 	{
-		if (variable instanceof GroupNode groupNode)
+		addDeclaredVariable(variable, variable);
+	}
+
+	private void addDeclaredVariable(VariableNode variable, ISyntaxNode diagnosticPosition)
+	{
+		if (variable.level() > 1 && variable.parent() == null)
 		{
-			for (var nestedVariable : groupNode.variables())
-			{
-				addDeclaredVariable((VariableNode) nestedVariable);
-			}
+			// will be added by the group in `groupVariable()` after it has been assigned its parent
+			return;
 		}
 
-		if (variable instanceof IRedefinitionNode)
+		if (variable instanceof RedefinitionNode)
 		{
-			// Nested variables are already handled above. The #VAR in `REDEFINE #VAR` doesn't need to be added
+			// REDEFINE doesn't need to be a declared variable, because
+			// the target of REDEFINE has been declared.
 			return;
 		}
 
 		if (declaredVariables.containsKey(variable.name()))
 		{
 			var alreadyDefined = declaredVariables.get(variable.name());
+			if (alreadyDefined.position().isSamePositionAs(variable.position()))
+			{
+				return;
+			}
+
 			if (!variable.qualifiedName().equals(alreadyDefined.qualifiedName()))
 			{
+				// Variable with the same name exists, but qualified names differ.
+				// Re-add the old with the qualified name and also add the new one
+				// qualified
 				declaredVariables.remove(variable.name());
 				declaredVariables.put(alreadyDefined.qualifiedName(), alreadyDefined);
 				declaredVariables.put(variable.qualifiedName(), variable);
 			}
 			else
 			{
-				report(ParserErrors.duplicatedSymbols(variable, alreadyDefined));
+				report(ParserErrors.duplicatedSymbols(variable, alreadyDefined, diagnosticPosition));
 			}
 
 			return;
 		}
 
 		declaredVariables.put(variable.name(), variable);
+	}
+
+	private void addVariableToCurrentGroup(VariableNode variable)
+	{
+		if (groupStack.isEmpty())
+		{
+			return;
+		}
+
+		var last = groupStack.peekLast();
+		if (last.level() == variable.level() - 1)
+		{
+			last.addVariable(variable);
+		}
+	}
+
+	private void popGroupsIfNecessary()
+	{
+		if (groupStack.isEmpty())
+		{
+			return;
+		}
+
+		if (!peekKind(SyntaxKind.NUMBER_LITERAL))
+		{
+			return;
+		}
+
+		var newLevel = peek().intValue();
+		while (!groupStack.isEmpty() && newLevel <= groupStack.peekLast().level())
+		{
+			groupStack.removeLast();
+		}
+	}
+
+	private RedefinitionNode currentRedefine(VariableNode currentVar)
+	{
+		if (currentVar instanceof RedefinitionNode redefine)
+		{
+			return redefine;
+		}
+
+		if (groupStack.isEmpty())
+		{
+			return null;
+		}
+
+		for (var group : groupStack)
+		{
+			if (group instanceof RedefinitionNode redefine)
+			{
+				return redefine;
+			}
+		}
+
+		return null;
+	}
+
+	private List<IArrayDimension> currentGroupsDimensions()
+	{
+		if (groupStack.isEmpty())
+		{
+			return List.of();
+		}
+		return groupStack.peekLast().getDimensions();
+	}
+
+	private static class GroupConstStatistic
+	{
+		private int constEncountered;
+		private int nonConstEncountered;
+
+		private boolean hasMixedConst()
+		{
+			return constEncountered > 0 && nonConstEncountered > 0;
+		}
+	}
+
+	@SuppressWarnings("ClassEscapesDefinedScope")
+	@Override
+	protected ITokenNode consumeMandatoryIdentifierTokenNode(BaseSyntaxNode node)
+	{
+		var currentToken = tokens.peek();
+		if (tokens.isAtEnd() || (currentToken.kind() != SyntaxKind.IDENTIFIER && !currentToken.kind().canBeIdentifier()))
+		{
+			// In case of DEFINE DATA we don't throw here to keep parsing a whole DEFINE DATA.
+			// These variables won't be resolvable though, because the original implementation
+			// that the StatementListParser uses is throwing, which is fine.
+			report(ParserErrors.unexpectedTokenWhenIdentifierWasExpected(currentToken));
+		}
+
+		tokens.advance();
+		var tokenNode = new TokenNode(currentToken.withKind(SyntaxKind.IDENTIFIER));
+		node.addNode(tokenNode);
+		return tokenNode;
 	}
 }

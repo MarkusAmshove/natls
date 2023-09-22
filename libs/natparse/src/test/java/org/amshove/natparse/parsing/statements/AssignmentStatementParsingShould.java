@@ -105,4 +105,11 @@ class AssignmentStatementParsingShould extends StatementParseTest
 		var assignment = assertParsesSingleStatement("#VAR := (CD=RE)", IAssignmentStatementNode.class);
 		assertNodeType(assignment.operand(), IAttributeNode.class);
 	}
+
+	@Test
+	void parseStringConcatAssignments()
+	{
+		var assignment = assertParsesSingleStatement("#VAR := 'Hello'\n- ' World'", IAssignmentStatementNode.class);
+		assertNodeType(assignment.operand(), IStringConcatOperandNode.class);
+	}
 }

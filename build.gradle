@@ -2,6 +2,8 @@ plugins {
 	id 'java-library'
 	id 'org.sonarqube' version '3.4.0.2513'
 	id "com.diffplug.spotless" version "6.2.0"
+    id 'signing'
+    id 'io.github.gradle-nexus.publish-plugin'  version '1.3.0'
 }
 
 ext {
@@ -45,7 +47,7 @@ allprojects {
 	apply plugin: 'java-library'
 	apply plugin: 'jacoco'
 
-	group = 'org.amshove'
+	group = 'org.amshove.natural'
 
 	java {
 		toolchain {
@@ -111,14 +113,24 @@ task testReport(type: TestReport) {
 	reportOn subprojects.collect { it.tasks.withType(Test) }
 }
 
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+        }
+    }
+}
+
 sonarqube {
 	properties {
 		property "sonar.projectKey", "MarkusAmshove_natls"
 		property "sonar.organization", "markusamshove"
 		property "sonar.host.url", "https://sonarcloud.io"
 		property 'sonar.coverage.jacoco.xmlReportPaths', "${rootProject.buildDir}/reports/jacoco/cover/cover.xml"
-		property 'sonar.coverage.exclusions', 'tools/**/*'
+		property 'sonar.coverage.exclusions', 'tools/**/*,libs/natlint/src/main/java/org/amshove/natlint/cli/sinks/*.*'
 	}
 }
 
+project.tasks.getByPath('natlint:test').dependsOn(project.tasks.getByPath('natparse:test'))
 project.tasks['sonarqube'].dependsOn cover

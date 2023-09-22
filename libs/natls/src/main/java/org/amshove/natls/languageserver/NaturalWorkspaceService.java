@@ -1,8 +1,11 @@
 package org.amshove.natls.languageserver;
 
 import com.google.common.io.Files;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.amshove.natls.DiagnosticTool;
 import org.amshove.natls.catalog.CatalogResult;
+import org.amshove.natls.config.LSConfiguration;
 import org.amshove.natls.natunit.NatUnitResultParser;
 import org.amshove.natls.project.LanguageServerFile;
 import org.eclipse.lsp4j.*;
@@ -22,12 +25,15 @@ import java.util.concurrent.ConcurrentHashMap;
 public class NaturalWorkspaceService implements WorkspaceService
 {
 	private NaturalLanguageService languageService;
-	private ConcurrentHashMap<String, LanguageServerFile> filesWithCatError = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, LanguageServerFile> filesWithCatError = new ConcurrentHashMap<>();
 
 	@Override
 	public void didChangeConfiguration(DidChangeConfigurationParams params)
 	{
-
+		var settings = (JsonObject) params.getSettings();
+		var jsonObject = settings.getAsJsonObject("natls");
+		var configuration = new Gson().fromJson(jsonObject, LSConfiguration.class);
+		languageService.setConfiguration(configuration);
 	}
 
 	@Override

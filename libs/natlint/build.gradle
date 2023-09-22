@@ -1,5 +1,6 @@
 plugins {
-    id 'com.github.johnrengelman.shadow' version '7.1.0'
+    id 'maven-publish'
+    id 'com.github.johnrengelman.shadow' version '5.2.0' // do not update unless https://github.com/johnrengelman/shadow/issues/651 is fixed
 }
 
 dependencies {
@@ -20,9 +21,54 @@ shadowJar {
 jar {
     manifest {
         attributes(
-                'Main-Class': 'org.amshove.natlint.App',
-                'Implementation-Title': project.name,
-                'Implementation-Version': project.version
+            'Main-Class': 'org.amshove.natlint.App',
+            'Implementation-Title': project.name,
+            'Implementation-Version': project.version
         )
     }
 }
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        mavenNatlint(MavenPublication) {
+            from components.java
+            pom {
+                name = project.name
+                description = 'Static code analysis for Software AGs Natural language'
+                url = 'https://github.com/MarkusAmshove/natls'
+                scm {
+                    connection = 'scm:git:https://github.com/MarkusAmshove/natls.git'
+                    developerConnection = 'scm:git:git@github.com:MarkusAmshove/natls.git'
+                    url = 'https://github.com/MarkusAmshove/natls'
+                }
+
+                licenses {
+                    license {
+                        name = 'MIT'
+                        url = 'https://github.com/MarkusAmshove/natls/blob/main/LICENSE'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'markusamshove'
+                        name = 'Markus Amshove'
+                    }
+                }
+            }
+        }
+    }
+}
+
+signing {
+    def signingKey = findProperty("signingKey")
+    def signingPassword = findProperty("signingPassword")
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign publishing.publications.mavenNatlint
+}
+

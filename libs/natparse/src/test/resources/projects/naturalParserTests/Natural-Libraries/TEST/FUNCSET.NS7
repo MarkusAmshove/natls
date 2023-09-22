@@ -1,0 +1,17 @@
+* >Natural Source Header 000000
+* :Mode S
+* :CP
+* <Natural Source Header
+DEFINE FUNCTION FUNCSET
+
+  RETURNS (N12,7)
+
+  DEFINE DATA
+  LOCAL
+  END-DEFINE
+
+FUNCSET := 'A'
+
+END-FUNCTION
+
+END

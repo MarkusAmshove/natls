@@ -1,5 +1,7 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.AdditionalDiagnosticInfo;
+import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
@@ -9,11 +11,21 @@ import org.amshove.natparse.natural.project.NaturalProgrammingMode;
 
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
 class ParserErrors
 {
+	private static SyntaxKind getKindFromInitialValue(IOperandNode node)
+	{
+		if (node instanceof IStringConcatOperandNode)
+		{
+			return SyntaxKind.STRING_LITERAL;
+		}
+		return ((ITokenNode) node).token().kind();
+	}
+
 	private static String formatTokenKind(SyntaxToken token)
 	{
 		if (token == null || token.kind() == null)
@@ -63,7 +75,7 @@ class ParserErrors
 		);
 	}
 
-	public static ParserDiagnostic unexpectedToken(List<SyntaxKind> expectedTokenKinds, TokenList tokens)
+	public static ParserDiagnostic unexpectedToken(Collection<SyntaxKind> expectedTokenKinds, TokenList tokens)
 	{
 		var currentToken = tokens.peek();
 		var invalidToken = currentToken != null ? currentToken : tokens.peek(-1);
@@ -97,7 +109,7 @@ class ParserErrors
 	public static ParserDiagnostic initValueMismatch(TypedVariableNode variable, SyntaxKind expectedKind)
 	{
 		return ParserDiagnostic.create(
-			"Type mismatch on initial value. Got <%s> but expected <%s>".formatted(variable.type().initialValue().kind(), expectedKind),
+			"Type mismatch on initial value. Got <%s> but expected <%s>".formatted(getKindFromInitialValue(variable.type().initialValue()), expectedKind),
 			variable.identifierNode(),
 			ParserError.INITIAL_VALUE_TYPE_MISMATCH
 		);
@@ -111,7 +123,7 @@ class ParserErrors
 		}
 
 		return ParserDiagnostic.create(
-			"Type mismatch on initial value. Got <%s> but expected one of <%s>".formatted(variable.type().initialValue().kind(), Arrays.stream(expectedKinds).map(Enum::toString).collect(Collectors.joining(","))),
+			"Type mismatch on initial value. Got <%s> but expected one of <%s>".formatted(getKindFromInitialValue(variable.type().initialValue()), Arrays.stream(expectedKinds).map(Enum::toString).collect(Collectors.joining(","))),
 			variable.identifierNode(),
 			ParserError.INITIAL_VALUE_TYPE_MISMATCH
 		);
@@ -190,12 +202,12 @@ class ParserErrors
 	{
 		return ParserDiagnostic.create(
 			"No target for REDEFINE found. The redefined variable must be declared beforehand",
-			redefinitionNode.identifierNode(),
+			redefinitionNode.identifierNode() != null ? redefinitionNode.identifierNode() : redefinitionNode,
 			ParserError.NO_TARGET_VARIABLE_FOR_REDEFINE_FOUND
 		);
 	}
 
-	public static ParserDiagnostic redefinitionLengthIsTooLong(RedefinitionNode node, double redefinitionLength, double maxLength)
+	public static ParserDiagnostic redefinitionLengthIsTooLong(IRedefinitionNode node, double redefinitionLength, double maxLength)
 	{
 		return ParserDiagnostic.create(
 			"Length of redefinition (%s bytes) exceeds target length (%s bytes) of %s".formatted(DataFormat.formatLength(redefinitionLength), DataFormat.formatLength(maxLength), node.declaration().source()),
@@ -206,8 +218,29 @@ class ParserErrors
 
 	public static ParserDiagnostic unresolvedReference(ITokenNode node)
 	{
-		return ParserDiagnostic.create(
+		var diagnostic = ParserDiagnostic.create(
 			"Unresolved reference: %s".formatted(node.token().source()),
+			node.token(),
+			ParserError.UNRESOLVED_REFERENCE
+		);
+
+		if (!node.diagnosticPosition().isSamePositionAs(node.position()))
+		{
+			diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("Used here", node.position()));
+		}
+
+		return diagnostic;
+	}
+
+	public static ParserDiagnostic unresolvedDdmField(ITokenNode node)
+	{
+		return unresolvedDdmField(node, node.token().symbolName());
+	}
+
+	public static ParserDiagnostic unresolvedDdmField(ITokenNode node, String fieldName)
+	{
+		return ParserDiagnostic.create(
+			"Unresolved DDM field: %s".formatted(fieldName),
 			node.token(),
 			ParserError.UNRESOLVED_REFERENCE
 		);
@@ -319,7 +352,16 @@ class ParserErrors
 		);
 	}
 
-	public static IDiagnostic unresolvedExternalModule(SyntaxToken token)
+	public static IDiagnostic unresolvedDdm(SyntaxToken token)
+	{
+		return ParserDiagnostic.create(
+			"Could not resolve DDM %s".formatted(token.symbolName()),
+			token,
+			ParserError.UNRESOLVED_IMPORT
+		);
+	}
+
+	public static ParserDiagnostic unresolvedExternalModule(SyntaxToken token)
 	{
 		return ParserDiagnostic.create(
 			"Could not resolve external module %s".formatted(token.symbolName()),
@@ -328,14 +370,14 @@ class ParserErrors
 		);
 	}
 
-	public static IDiagnostic duplicatedSymbols(ISymbolNode duplicatedSymbol, ISymbolNode firstDeclaration)
+	public static IDiagnostic duplicatedSymbols(ISymbolNode duplicatedSymbol, ISymbolNode firstDeclaration, ISyntaxNode diagnosticPosition)
 	{
 		return ParserDiagnostic.create(
 			"Symbol with name %s already declared in %s".formatted(
 				duplicatedSymbol.declaration().symbolName(),
 				firstDeclaration.position().fileNameWithoutExtension()
 			),
-			duplicatedSymbol,
+			diagnosticPosition,
 			ParserError.DUPLICATED_SYMBOL
 		);
 	}
@@ -505,6 +547,16 @@ class ParserErrors
 		);
 	}
 
+	public static IDiagnostic valueTruncation(String message, ISyntaxNode node)
+	{
+		return ParserDiagnostic.create(
+			message,
+			node,
+			ParserError.LITERAL_VALUE_TRUNCATED,
+			DiagnosticSeverity.WARNING
+		);
+	}
+
 	public static IDiagnostic typeMismatch(String message, ISyntaxNode node)
 	{
 		return ParserDiagnostic.create(
@@ -555,6 +607,42 @@ class ParserErrors
 			"Statement must have a body. Add IGNORE if body should be empty.",
 			errorToken,
 			ParserError.STATEMENT_HAS_EMPTY_BODY
+		);
+	}
+
+	public static IDiagnostic groupHasMixedConstVariables(ISyntaxNode variable)
+	{
+		return ParserDiagnostic.create(
+			"A group can not have a mix of CONST and non-CONST variables. Either make all CONST or none.",
+			variable,
+			ParserError.GROUP_HAS_MIXED_CONST
+		);
+	}
+
+	public static IDiagnostic cyclomaticInclude(SyntaxToken referencingToken)
+	{
+		return ParserDiagnostic.create(
+			"Cyclomatic INCLUDE found. %s is recursively included multiple times.".formatted(referencingToken.symbolName()),
+			referencingToken,
+			ParserError.CYCLOMATIC_INCLUDE
+		);
+	}
+
+	public static IDiagnostic unexpectedTokenWhenIdentifierWasExpected(SyntaxToken token)
+	{
+		return ParserDiagnostic.create(
+			"Identifier expected, but got %s".formatted(token.kind()),
+			token,
+			ParserError.UNEXPECTED_TOKEN_EXPECTED_IDENTIFIER
+		);
+	}
+
+	public static IDiagnostic operandExpected(SyntaxToken token)
+	{
+		return ParserDiagnostic.create(
+			"Expected operand, but got %s".formatted(token.kind()),
+			token,
+			ParserError.UNEXPECTED_TOKEN_EXPECTED_OPERAND
 		);
 	}
 }

@@ -67,12 +67,22 @@ public class BooleanOperatorAnalyzer extends AbstractAnalyzer
 	@Override
 	public void beforeAnalyzing(IAnalyzeContext context)
 	{
-		var configuredPreference = context.getConfiguration(context.getModule().file(), "natls.style.comparisons", "sign");
-		preferredOperatorMapping = configuredPreference.equalsIgnoreCase("short") ? PREFERRED_OPERATOR_SHORT : PREFERRED_OPERATOR_SIGNS;
+		var configuredPreference = context.getConfiguration(context.getModule().file(), "natls.style.comparisons", "false");
+		preferredOperatorMapping = switch (configuredPreference.toLowerCase())
+		{
+			case "short" -> PREFERRED_OPERATOR_SHORT;
+			case "sign" -> PREFERRED_OPERATOR_SIGNS;
+			default -> Map.of();
+		};
 	}
 
 	private void analyzeComparison(ISyntaxNode node, IAnalyzeContext context)
 	{
+		if (preferredOperatorMapping.isEmpty())
+		{
+			return;
+		}
+
 		var comparisonNode = (IHasComparisonOperator) node;
 		var syntaxToken = comparisonNode.comparisonToken();
 

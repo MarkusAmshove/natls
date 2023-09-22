@@ -1,3 +1,7 @@
+plugins {
+    id 'maven-publish'
+}
+
 dependencies {
     implementation libraries.dom4j
 
@@ -6,3 +10,48 @@ dependencies {
     testImplementation libraries.slf4j_nop
     testImplementation project(':testhelpers')
 }
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        mavenNatparse(MavenPublication) {
+            from components.java
+            pom {
+                name = project.name
+                url = 'https://github.com/MarkusAmshove/natls'
+                description = 'Parser for Software AGs Natural language'
+                scm {
+                    connection = 'scm:git:https://github.com/MarkusAmshove/natls.git'
+                    developerConnection = 'scm:git:git@github.com:MarkusAmshove/natls.git'
+                    url = 'https://github.com/MarkusAmshove/natls'
+                }
+
+                licenses {
+                    license {
+                        name = 'MIT'
+                        url = 'https://github.com/MarkusAmshove/natls/blob/main/LICENSE'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'markusamshove'
+                        name = 'Markus Amshove'
+                    }
+                }
+            }
+        }
+    }
+}
+
+signing {
+    def signingKey = findProperty("signingKey")
+    def signingPassword = findProperty("signingPassword")
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign publishing.publications.mavenNatparse
+}
+

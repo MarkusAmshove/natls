@@ -19,14 +19,14 @@ public class CompressRefactorings implements ICodeActionProvider
 	@Override
 	public boolean isApplicable(RefactoringContext context)
 	{
-		return context.nodeAtPosition()instanceof ICompressStatementNode compressStatementNode
+		return context.nodeAtStartPosition()instanceof ICompressStatementNode compressStatementNode
 			&& (!compressStatementNode.isFull() || !compressStatementNode.isNumeric() || !compressStatementNode.isWithDelimiters());
 	}
 
 	@Override
 	public List<CodeAction> createCodeAction(RefactoringContext context)
 	{
-		var compress = (ICompressStatementNode) context.nodeAtPosition();
+		var compress = (ICompressStatementNode) context.nodeAtStartPosition();
 		var compressKeyword = Objects.requireNonNull(compress.findDescendantToken(SyntaxKind.COMPRESS));
 
 		var actions = new ArrayList<CodeAction>();

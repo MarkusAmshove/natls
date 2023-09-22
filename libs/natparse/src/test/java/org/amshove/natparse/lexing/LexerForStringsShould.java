@@ -65,6 +65,15 @@ class LexerForStringsShould extends AbstractLexerTest
 	}
 
 	@Test
+	void reportADiagnosticForUnterminatedHexLiterals()
+	{
+		assertDiagnostic(
+			"H'00",
+			assertedDiagnostic(0, 0, 0, 4, LexerError.UNTERMINATED_STRING)
+		);
+	}
+
+	@Test
 	void correctlyParseTimeFormats()
 	{
 		assertTokens(
@@ -77,23 +86,6 @@ class LexerForStringsShould extends AbstractLexerTest
 			SyntaxKind.RPAREN,
 			SyntaxKind.TO,
 			SyntaxKind.IDENTIFIER
-		);
-	}
-
-	@Test
-	void lexConcatenatedString()
-	{
-		assertTokens(
-			"""
-				INPUT
-				'Hello'
-				 - ' World'
-						-'!'
-				 WRITE
-				""",
-			token(SyntaxKind.INPUT),
-			token(SyntaxKind.STRING_LITERAL, "'Hello World!'"),
-			token(SyntaxKind.WRITE)
 		);
 	}
 
@@ -157,39 +149,6 @@ class LexerForStringsShould extends AbstractLexerTest
 	}
 
 	@Test
-	void correctlyAdvanceTheLinesOnStringMultilineConcat()
-	{
-		var tokens = lexSource("""
-			'Hello' -
-				'World'
-			WRITE
-			""");
-
-		var hello = tokens.advance();
-		assertThat(hello.line()).isEqualTo(0);
-		assertThat(hello.source()).isEqualTo("'HelloWorld'");
-		var write = tokens.advance();
-		assertThat(write.line()).isEqualTo(2);
-	}
-
-	@Test
-	void correctlyAdvanceTheLinesOnMultipleStringMultilineConcat()
-	{
-		var tokens = lexSource("""
-			'Hello' -
-				'World' -
-				'Yay'
-			WRITE
-			""");
-
-		var hello = tokens.advance();
-		assertThat(hello.line()).isEqualTo(0);
-		assertThat(hello.source()).isEqualTo("'HelloWorldYay'");
-		var write = tokens.advance();
-		assertThat(write.line()).isEqualTo(3);
-	}
-
-	@Test
 	void lexDateStringLiterals()
 	{
 		assertTokens(
@@ -241,5 +200,15 @@ class LexerForStringsShould extends AbstractLexerTest
 			"#E'2010-05-05",
 			assertedDiagnostic(2, 2, 0, 11, LexerError.UNTERMINATED_STRING)
 		);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"''", "\"\"", "T''", "H''", "D''", "E''"
+	})
+	void reportADiagnosticForEmptyStringLiterals(String literal)
+	{
+		assertDiagnostic(literal, assertedDiagnostic(0, 0, 0, literal.length(), LexerError.INVALID_STRING_LENGTH));
 	}
 }

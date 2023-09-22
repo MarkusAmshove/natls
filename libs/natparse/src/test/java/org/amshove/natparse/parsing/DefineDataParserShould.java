@@ -2,10 +2,11 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
+import org.amshove.natparse.parsing.ddm.DdmParser;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -13,6 +14,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -90,6 +92,25 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		var using = defineData.localUsings().first();
 		assertThat(using.referencingToken().symbolName()).isEqualTo("SOMELDA");
 		assertThat(using.reference()).isEqualTo(importedLda);
+	}
+
+	@Test
+	void notImportVariablesFromModulesThatAreNotDataAreas()
+	{
+		useStubModuleProvider();
+		var subprogram = newEmptySubprogram();
+		moduleProvider.addModule("SUBPROG", subprogram);
+
+		var source = """
+			DEFINE DATA
+			LOCAL USING SUBPROG
+			END-DEFINE
+			""";
+
+		var defineData = assertDiagnostic(source, ParserError.INVALID_MODULE_TYPE);
+		var using = defineData.localUsings().first();
+		assertThat(using.referencingToken().symbolName()).isEqualTo("SUBPROG");
+		assertThat(using.reference()).isNull();
 	}
 
 	@Test
@@ -221,6 +242,21 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void raiseADiagnosticForKeywordsUsedAsIdentifierButStillParseOn()
+	{
+		var defineData = assertDiagnostic("""
+			DEFINE DATA LOCAL
+			1 PROCESS
+			2 #VAR (A10)
+			END-DEFINE
+			""", ParserError.UNEXPECTED_TOKEN_EXPECTED_IDENTIFIER);
+
+		assertThat(defineData.variables().first().name()).isEqualTo("PROCESS");
+		assertThat(defineData.variables().last().name()).isEqualTo("#VAR");
+		assertThat(defineData.variables().last().qualifiedName()).isEqualTo("PROCESS.#VAR");
+	}
+
+	@Test
 	void addADiagnosticForMissingDataFormats()
 	{
 		var source = """
@@ -294,7 +330,8 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""");
 
 		var variable = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
-		assertThat(variable.type().initialValue().source()).isEqualTo("'hello'");
+		var stringConcant = assertNodeType(variable.type().initialValue(), ILiteralNode.class);
+		assertThat(stringConcant.token().stringValue()).isEqualTo("hello");
 	}
 
 	@Test
@@ -309,7 +346,8 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""");
 
 		var variable = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
-		assertThat(variable.type().initialValue().source()).isEqualTo("'hello world!'");
+		var stringConcant = assertNodeType(variable.type().initialValue(), IStringConcatOperandNode.class);
+		assertThat(stringConcant.stringValue()).isEqualTo("hello world!");
 	}
 
 	@Test
@@ -322,8 +360,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""");
 
 		var variable = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
-		assertThat(variable.type().initialValue().source()).isEqualTo("*DATN");
-		var systemVar = variable.findDescendantOfType(ISystemVariableNode.class);
+		var systemVar = assertNodeType(variable.type().initialValue(), ISystemVariableNode.class);
 		assertThat(systemVar).isNotNull();
 		assertThat(systemVar.systemVariable()).isEqualTo(SyntaxKind.DATN);
 	}
@@ -339,7 +376,8 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var variable = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
 		assertThat(variable.type().isConstant()).isTrue();
-		assertThat(variable.type().initialValue().source()).isEqualTo("'hello'");
+		var literal = assertNodeType(variable.type().initialValue(), ILiteralNode.class);
+		assertThat(literal.token().stringValue()).isEqualTo("hello");
 	}
 
 	@Test
@@ -353,7 +391,8 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var variable = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
 		assertThat(variable.type().isConstant()).isTrue();
-		assertThat(variable.type().initialValue().source()).isEqualTo("'hello'");
+		var literal = assertNodeType(variable.type().initialValue(), ILiteralNode.class);
+		assertThat(literal.token().stringValue()).isEqualTo("hello");
 	}
 
 	@ParameterizedTest
@@ -396,6 +435,37 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			1 #ALPH (A5) INIT <H'0A'>
 			end-define
 			""");
+	}
+
+	@Test
+	void allowMixedStringConcatInitialValuesForAlphanumericFields()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			define data local
+			1 #ALPH (A5) INIT <'Hello'
+			- H'0A'
+			- 'World'>
+			end-define
+			""");
+
+		var typedVar = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
+		var stringConcat = assertNodeType(typedVar.type().initialValue(), IStringConcatOperandNode.class);
+		assertThat(stringConcat.stringValue()).isEqualTo("Hello\nWorld");
+	}
+
+	@Test
+	void allowMixedStringConcatInitialValuesStartingWithHex()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			define data local
+			1 alfa (a29) init<H'0A'
+			-'Test'>
+			end-define
+			""");
+
+		var variable = assertNodeType(defineData.variables().first(), ITypedVariableNode.class);
+		var concat = assertNodeType(variable.type().initialValue(), IStringConcatOperandNode.class);
+		assertThat(concat.stringValue()).isEqualTo("\nTest");
 	}
 
 	@Test
@@ -474,6 +544,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var scopeNode = defineData.findDescendantOfType(IScopeNode.class);
 		assertThat(scopeNode).isNotNull();
+		assert scopeNode != null;
 		assertThat(scopeNode.descendants().size()).isEqualTo(3); // LOCAL + Group + Typed
 
 		var group = assertNodeType(defineData.variables().first(), IGroupNode.class);
@@ -523,6 +594,63 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		assertThat(afterGroup.type().format()).isEqualTo(DataFormat.TIME);
 	}
 
+	@Test
+	void raiseAnErrorOnGroupsThatContainConstAndNonConst()
+	{
+		assertDiagnostic(
+			"""
+			define data local
+			1 #GRP1
+			2 #G1-CONST (A1) CONST<'A'>
+			2 #NOCONST (A2)
+			end-define
+			""",
+			ParserError.GROUP_HAS_MIXED_CONST
+		);
+	}
+
+	@Test
+	void raiseAnErrorOnGroupsThatContainConstAndNonConstInNestedGroup()
+	{
+		assertDiagnostic(
+			"""
+			define data local
+			1 #GRP1
+			2 #NO-CONST (A1)
+			2 #GRP2
+			3 #CONST (A2) CONST<'A'>
+			end-define
+			""",
+			ParserError.GROUP_HAS_MIXED_CONST
+		);
+	}
+
+	@Test
+	void raiseNoErrorIfNoGroupVariableIsConst()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 #GRP1
+			2 #G1-NOCONST (A1)
+			2 #GRP2
+			3 #NOCONST (A2)
+			end-define
+			""");
+	}
+
+	@Test
+	void raiseNoErrorIfAllGroupVariableAreConst()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 #GRP1
+			2 #G1-CONST (A1) CONST<'A'>
+			2 #GRP2
+			3 #CONST (A2) CONST<'B'>
+			end-define
+			""");
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
@@ -563,7 +691,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""");
 	}
 
-	@Disabled("Does not work yet")
+	@Test
 	void parseAnArrayWithWhitespaceAfterTheSlash()
 	{
 		assertParsesWithoutDiagnostics("""
@@ -662,7 +790,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	{
 		"(A1/#length)",
 		"(A1 /#length)",
-		//		TODO(lexermode): "(A1/ #length)"
+		"(A1/ #length)",
 		"(A1 / #length)"
 	})
 	void parseAnArrayThatHasAConstReferenceAsDimensionAndArrayHasConstElements(String variable)
@@ -673,6 +801,31 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			1 #myarray %s const<'a','b'>
 			end-define
 			""".formatted(variable));
+	}
+
+	@Test
+	void raiseADiagnosticForArrayBoundsThatAreNeitherConstNorInit()
+	{
+		assertDiagnostic("""
+			define data local
+			1 #num (i4)
+			1 #array (n12/#num)
+			end-define
+			""", ParserError.ARRAY_DIMENSION_MUST_BE_CONST_OR_INIT);
+	}
+
+	@Test
+	void notRaiseADiagnosticForArrayBoundsThatAreNeitherConstNorInitInViews()
+	{
+		// For Arrays in views it is okay if the dimension is not CONST or INIT
+		// according to the compiler.
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 #num (i4)
+			1 myview view of myddm
+			2 #arrayfield (n12/#num)
+			end-define
+			""");
 	}
 
 	@Test
@@ -771,6 +924,8 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		var length = assertNodeType(defineData.variables().first(), IReferencableNode.class);
 		var myArray = assertNodeType(defineData.variables().last(), ITypedVariableNode.class);
 		var referenceNode = myArray.dimensions().first().findDescendantOfType(ISymbolReferenceNode.class);
+		assertThat(referenceNode).as("No reference found").isNotNull();
+		assert referenceNode != null;
 
 		assertThat(length.references().first()).isEqualTo(referenceNode);
 		assertThat(referenceNode.reference()).isEqualTo(length);
@@ -836,6 +991,71 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void parseFillerInRedefinesInViews()
+	{
+		assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 MYVIEW VIEW OF MYDDM
+				 2 ANARRAY (A61/1:1)
+				 2 REDEFINE ANARRAY
+					  3 INREDEFINE (1:1)
+						   4 #INGRP (A1)
+						   4 FILLER 56X
+			END-DEFINE
+			""");
+	}
+
+	@Test
+	void raiseADiagnosticIfAFillerIsUsedOutsideOfRedefine()
+	{
+		assertDiagnostic("""
+			   DEFINE DATA
+			   LOCAL
+			   1 #GRP
+				2 FILLER 50X
+				2 #SUBSTR (A10)
+			   END-DEFINE
+			""", ParserError.UNEXPECTED_TOKEN);
+	}
+
+	@Test
+	void notRaiseADiagnosticIfAVariableWithNameFillerIsUsedOutsideOfRedefine()
+	{
+		var data = assertParsesWithoutDiagnostics("""
+			   DEFINE DATA
+			   LOCAL
+			   1 #GRP
+				2 FILLER (A5)
+				2 #SUBSTR (A10)
+			   END-DEFINE
+			""");
+
+		assertThat(data.findVariable("FILLER")).isNotNull();
+	}
+
+	@Test
+	void parseSubsequentRedefineFiller()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA
+			LOCAL
+			1 #LONG-VAR  (A100)
+			1 REDEFINE #LONG-VAR
+			  2 FILLER            20X
+			  2 FILLER            60X
+			  2 #REST             (A20)
+			1 #VAR-AFTER            (A30)
+			END-DEFINE
+			WRITE #VAR-AFTER
+			END
+			""");
+
+		assertThat(defineData.findVariable("#LONG-VAR")).as("#LONG-VAR not found").isNotNull();
+		assertThat(defineData.findVariable("#REST")).as("#REST not found").isNotNull();
+		assertThat(defineData.findVariable("#VAR-AFTER")).as("#VAR-AFTER not found").isNotNull();
+	}
+
+	@Test
 	void notReportALengthDiagnosticForNestedRedefineVariables()
 	{
 		assertParsesWithoutDiagnostics("""
@@ -850,6 +1070,37 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			   2 ALSO-INSIDE (A4)
 			end-define
 			""");
+	}
+
+	@Test
+	void parseTheUpperBoundOfVariableParameterDimensions()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA PARAMETER
+			1 #PARM (A10 / 1:V)
+			END-DEFINE
+			""");
+
+		var parameter = defineData.findVariable("#PARM");
+		assertThat(parameter).isNotNull();
+		assert parameter != null;
+		assertThat(parameter.dimensions().first().upperBound()).isEqualTo(10);
+	}
+
+	@Test
+	void parseTheUpperBoundOfVariableParameterDimensionsInGroups()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA PARAMETER
+			1 #GRP (1:V)
+			2 #PARM (A10)
+			END-DEFINE
+			""");
+
+		var parameter = defineData.findVariable("#PARM");
+		assertThat(parameter).isNotNull();
+		assert parameter != null;
+		assertThat(parameter.dimensions().first().upperBound()).isEqualTo(10);
 	}
 
 	@Test
@@ -939,7 +1190,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			   01 #FIRSTVAR
 				 02 #FIRSTVAR-A (N2) INIT <5>
 				 02 #FIRSTVAR-B (P6) INIT <10>
-			  01 REDEFINE #FIRSTVAR
+			   01 REDEFINE #FIRSTVAR
 				 02 #FIRSTVAR-ALPHA (A6)
 			   END-DEFINE
 			""";
@@ -953,6 +1204,42 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void parseVariablesAfterNestedRedefines()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 #GRP
+			  2 #VAR1 (N8)
+			  2 REDEFINE #VAR1
+			    3 #VAR-A (A8)
+			    3 REDEFINE #VAR-A
+			      4 #VAR-R-1 (A8)
+			  2 #VAR-2 (A10)
+			  2 #VAR-3(L)
+			END-DEFINE
+			""");
+
+		assertThat(defineData.findVariable("#VAR-2")).as("#VAR-2 not found").isNotNull();
+		assertThat(defineData.findVariable("#VAR-3")).as("#VAR-3 not found").isNotNull();
+	}
+
+	@Test
+	void allowToRedefineWithXArraysHavingConstBounds()
+	{
+		assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 DTAC
+			  2 VAR-MAX (I2) CONST<2>
+			  2 VAR
+				  3 VAR-1 (A8) CONST<'ABC'>
+				  3 VAR-2 (A8) CONST<'DEF'>
+			  2 REDEFINE VAR
+				3 PROCESS-ALL (A8/1:VAR-MAX)
+			END-DEFINE
+			""");
+	}
+
+	@Test
 	void redefineIndependentVariables()
 	{
 		var source = """
@@ -960,7 +1247,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			   INDEPENDENT
 			   1 +MY-AIV (A10)
 			   1 REDEFINE +MY-AIV
-			   2 #INSIDE (A2)
+				   2 #INSIDE (A2)
 			   END-DEFINE
 			""";
 
@@ -981,13 +1268,13 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	void notRaiseADiagnosticIfRedefineHasSmallerOrEqualLength(String varFormat, String redefVarFormat)
 	{
 		var source = """
-			DEFINE DATA
-			LOCAL
-			1 #FIELD (%s)
-			1 REDEFINE #FIELD
-			  2 #REDEF-FIELD (%s)
-		    END-DEFINE
-			""".formatted(varFormat, redefVarFormat);
+            DEFINE DATA
+            LOCAL
+            1 #FIELD (%s)
+            1 REDEFINE #FIELD
+             2 #REDEF-FIELD (%s)
+            END-DEFINE
+            """.formatted(varFormat, redefVarFormat);
 
 		assertParsesWithoutDiagnostics(source);
 	}
@@ -1001,13 +1288,13 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	void raiseADiagnosticIfRedefineHasGreaterLength(String varFormat, String redefVarFormat)
 	{
 		var source = """
-			DEFINE DATA
-			LOCAL
-			1 #FIELD (%s)
-			1 REDEFINE #FIELD
-			 2 #REDEF-FIELD (%s)
-			END-DEFINE
-		 """.formatted(varFormat, redefVarFormat);
+            DEFINE DATA
+            LOCAL
+            1 #FIELD (%s)
+            1 REDEFINE #FIELD
+             2 #REDEF-FIELD (%s)
+            END-DEFINE
+         """.formatted(varFormat, redefVarFormat);
 
 		assertDiagnostic(source, ParserError.REDEFINE_LENGTH_EXCEEDS_TARGET_LENGTH);
 	}
@@ -1101,7 +1388,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var view = findVariable(defineData, "MY-VIEW", IViewNode.class);
 		assertThat(view.variables().size()).isEqualTo(1);
-		var theArray = assertNodeType(view.variables().first(), ITypedVariableNode.class);
+		var theArray = assertNodeType(view.variables().first(), VariableNode.class);
 		assertThat(theArray.name()).isEqualTo("ARRAY-INSIDE");
 		assertThat(theArray.dimensions().first().lowerBound()).isEqualTo(1);
 		assertThat(theArray.dimensions().first().upperBound()).isEqualTo(8);
@@ -1122,7 +1409,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var view = assertNodeType(defineData.variables().first(), IViewNode.class);
 		assertThat(view.variables().size()).isEqualTo(1);
-		var theArray = assertNodeType(view.variables().first(), TypedVariableNode.class);
+		var theArray = assertNodeType(view.variables().first(), VariableNode.class);
 		assertThat(theArray.name()).isEqualTo("DDM-FIELD");
 		assertThat(theArray.dimensions().first().lowerBound()).isEqualTo(1);
 		assertThat(theArray.dimensions().first().upperBound()).isEqualTo(10);
@@ -1131,12 +1418,14 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	@Test
 	void parseAViewWithRedefinition()
 	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
 		var source = """
 			DEFINE DATA
 			LOCAL
 			1 MY-VIEW VIEW MY-DDM
-			2 DDM-FIELD
-			2 REDEFINE DDM-FIELD
+			2 A-DDM-FIELD /* A10
+			2 REDEFINE A-DDM-FIELD
 			3 FILLER 5X
 			3 #REST (A5)
 			END-DEFINE
@@ -1146,9 +1435,32 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		var view = assertNodeType(defineData.variables().first(), IViewNode.class);
 		assertThat(view.variables().size()).isEqualTo(2);
 		var redefined = assertNodeType(view.variables().get(1), IRedefinitionNode.class);
-		assertThat(redefined.declaration().symbolName()).isEqualTo("DDM-FIELD");
+		assertThat(redefined.declaration().symbolName()).isEqualTo("A-DDM-FIELD");
 		assertThat(redefined.fillerBytes()).isEqualTo(5);
 		assertThat(assertNodeType(redefined.variables().first(), ITypedVariableNode.class).declaration().symbolName()).isEqualTo("#REST");
+	}
+
+	@Test
+	void allowToRedefineSuperDescriptors()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		var source = """
+			DEFINE DATA
+			LOCAL
+			1 MY-VIEW VIEW MY-DDM
+			2 A-SUPERDESCRIPTOR /* A25
+			2 REDEFINE A-SUPERDESCRIPTOR
+			3 #A-DDM-FIELD (A10)
+			3 #REST (A15)
+			END-DEFINE
+			""";
+
+		var defineData = assertParsesWithoutDiagnostics(source);
+
+		var superdescriptor = assertNodeType(defineData.findVariable("A-SUPERDESCRIPTOR"), ITypedVariableNode.class);
+		assertThat(superdescriptor.type().format()).isEqualTo(DataFormat.ALPHANUMERIC);
+		assertThat(superdescriptor.type().length()).isEqualTo(25.0);
 	}
 
 	@Test
@@ -1173,7 +1485,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""");
 
 		var variable = findVariable(defineData, "#p-unbound-array", ITypedVariableNode.class);
-		assertThat(variable.dimensions().first().isUpperUnbound()).isTrue();
+		assertThat(variable.dimensions().first().upperBound()).isEqualTo(3);
 	}
 
 	@Test
@@ -1317,6 +1629,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var inside = data.variables().last();
 		assertThat(inside.name()).isEqualTo("#INSIDE");
+		assertThat(inside.dimensions()).hasSize(1);
 		assertThat(inside.dimensions().first().lowerBound()).isEqualTo(1);
 		assertThat(inside.dimensions().first().upperBound()).isEqualTo(10);
 	}
@@ -1335,6 +1648,28 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var inside = data.variables().last();
 		assertThat(inside.name()).isEqualTo("#INSIDE");
+		assertThat(inside.dimensions().size()).isEqualTo(2);
+		assertThat(inside.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(inside.dimensions().first().upperBound()).isEqualTo(10);
+		assertThat(inside.dimensions().last().lowerBound()).isEqualTo(1);
+		assertThat(inside.dimensions().last().upperBound()).isEqualTo(5);
+	}
+
+	@Test
+	void addMultipleDimensionsForGroupArraysContainingGroupArray()
+	{
+		var data = assertParsesWithoutDiagnostics("""
+			define data
+			local
+			1 #myarraygroup (1:10)
+			2 #insidegrp (1:5)
+			3 #insidevar (A5) /* This is considered a second dimension, so (1:10,1:5)
+			end-define
+			""");
+		// TODO(array-initializer): Check values
+
+		var inside = data.variables().last();
+		assertThat(inside.name()).isEqualTo("#INSIDEVAR");
 		assertThat(inside.dimensions().size()).isEqualTo(2);
 		assertThat(inside.dimensions().first().lowerBound()).isEqualTo(1);
 		assertThat(inside.dimensions().first().upperBound()).isEqualTo(10);
@@ -1538,6 +1873,49 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void showNoDiagnosticForRedefinesWithGroupsInvolved()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data local
+			1 #grp
+			2 #var1 (A1/1:1000)
+			2 #var2 (A1/1:100)
+			1 redefine #grp
+			2 #bytes1 (A1/1:250)
+			2 #bytes2 (A1/1:850)
+			2 redefine #bytes2
+			3 #bytes-str (A750)
+			3 #r1 (a1/101:150)
+			1 redefine #grp
+			2 #var3 (A300)
+			end-define
+			""");
+	}
+
+	@Test
+	void showADiagnosticForRedefinesWithGroupsInvolved()
+	{
+		assertDiagnostic(
+			"""
+			define data local
+			1 #grp
+			2 #var1 (A1/1:1000)
+			2 #var2 (A1/1:100)
+			1 redefine #grp
+			2 #bytes1 (A1/1:250)
+			2 #bytes2 (A1/1:850)
+			2 redefine #bytes2
+			3 #bytes-str (A750)
+			3 #r1 (a1/1:450)
+			1 redefine #grp
+			2 #var3 (A300)
+			end-define
+			""",
+			ParserError.REDEFINE_LENGTH_EXCEEDS_TARGET_LENGTH
+		);
+	}
+
+	@Test
 	void showADiagnosticForRedefinesWhenThereAreMoreMembersThanArrayDimensions()
 	{
 		assertDiagnostic(
@@ -1702,9 +2080,9 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			define data local
 			1 #var1 (A10)
 			1 redefine #var1
-			2 #thegroup
-			3 filler 5X
-			3 rest (a5)
+				2 #thegroup
+					3 filler 5X
+					3 rest (a5)
 			end-define
 			""");
 	}
@@ -1803,6 +2181,208 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""");
 	}
 
+	@Test
+	void reportADiagnosticForAnUnresolvableDdm()
+	{
+		useStubModuleProvider();
+		assertDiagnostic("""
+			DEFINE DATA
+			LOCAL
+			1 AVIEW VIEW OF UNRESOLVED
+			2 DDM-VAR
+			END-DEFINE
+			""", ParserError.UNRESOLVED_IMPORT);
+	}
+
+	@Test
+	void notReportADiagnosticForAnUnresolvableDdmCopycodeParameter()
+	{
+		useStubModuleProvider();
+		assertParsesWithoutDiagnostics("""
+			DEFINE DATA
+			LOCAL
+			1 AVIEW VIEW OF &1&
+			2 DDM-VAR
+			END-DEFINE
+			""");
+	}
+
+	@Test
+	void loadVariableTypesFromDdms()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+			2 A-DDM-FIELD
+			2 A-MULTIPLE-FIELD
+			2 C*A-MULTIPLE-FIELD
+			2 A-PERIODIC-MEMBER
+			END-DEFINE
+			""");
+
+		var ddmFieldVar = assertNodeType(defineData.findVariable("A-DDM-FIELD"), ITypedVariableNode.class);
+		assertThat(ddmFieldVar.type().format()).isEqualTo(DataFormat.ALPHANUMERIC);
+		assertThat(ddmFieldVar.type().length()).isEqualTo(10.0);
+
+		var ddmMultipleValueField = assertNodeType(defineData.findVariable("A-MULTIPLE-FIELD"), ITypedVariableNode.class);
+		assertThat(ddmMultipleValueField.type().format()).isEqualTo(DataFormat.NUMERIC);
+		assertThat(ddmMultipleValueField.type().length()).isEqualTo(7.2);
+		assertThat(ddmMultipleValueField.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(ddmMultipleValueField.dimensions().first().upperBound()).isEqualTo(199);
+
+		var countField = assertNodeType(defineData.findVariable("C*A-MULTIPLE-FIELD"), ITypedVariableNode.class);
+		assertThat(countField.type().format()).isEqualTo(DataFormat.INTEGER);
+		assertThat(countField.type().length()).isEqualTo(4);
+
+		var periodicMember = assertNodeType(defineData.findVariable("A-PERIODIC-MEMBER"), ITypedVariableNode.class);
+		assertThat(periodicMember.type().format()).isEqualTo(DataFormat.ALPHANUMERIC);
+		assertThat(periodicMember.type().length()).isEqualTo(5.0);
+		assertThat(periodicMember.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(periodicMember.dimensions().first().upperBound()).isEqualTo(199);
+	}
+
+	@Test
+	void useArrayDimensionsOfGroupsWhenPeriodicGroupIsExplicitlySpecified()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+				2 A-PERIODIC-GROUP (1:10)
+					3 A-PERIODIC-MEMBER
+			END-DEFINE
+			""");
+
+		var periodicGroup = assertNodeType(defineData.findVariable("A-PERIODIC-GROUP"), IGroupNode.class);
+		assertThat(periodicGroup.dimensions()).hasSize(1);
+		assertThat(periodicGroup.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(periodicGroup.dimensions().first().upperBound()).isEqualTo(10);
+
+		var periodicMember = assertNodeType(defineData.findVariable("A-PERIODIC-MEMBER"), ITypedVariableNode.class);
+		assertThat(periodicMember.dimensions()).hasSize(1);
+		assertThat(periodicMember.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(periodicMember.dimensions().first().upperBound()).isEqualTo(10);
+	}
+
+	@Test
+	void useArrayDimensionsOfPeriodicMembersWhenExplicitlySpecified()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+				2 A-PERIODIC-MEMBER (1)
+			END-DEFINE
+			""");
+
+		var periodicMember = assertNodeType(defineData.findVariable("A-PERIODIC-MEMBER"), ITypedVariableNode.class);
+		assertThat(periodicMember.dimensions()).hasSize(1);
+		assertThat(periodicMember.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(periodicMember.dimensions().first().upperBound()).isEqualTo(1);
+	}
+
+	@Test
+	void useArrayDimensionsOfMultipleValueFieldsWhenExplicitlySpecifiedButWithoutType()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+				2 A-MULTIPLE-FIELD (1:10)
+			END-DEFINE
+			""");
+
+		var field = assertNodeType(defineData.findVariable("A-MULTIPLE-FIELD"), ITypedVariableNode.class);
+		assertThat(field.type().format()).isEqualTo(DataFormat.NUMERIC);
+		assertThat(field.type().length()).isEqualTo(7.2);
+		assertThat(field.dimensions()).hasSize(1);
+		assertThat(field.dimensions().first().lowerBound()).isEqualTo(1);
+		assertThat(field.dimensions().first().upperBound()).isEqualTo(10);
+	}
+
+	@Test
+	void reportADiagnosticForUnresolvedDdmFields()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		assertDiagnostic("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+			2 UNRESOLVED-FIELD
+			END-DEFINE
+			""", ParserError.UNRESOLVED_REFERENCE);
+	}
+
+	@Test
+	void reportADiagnosticForUnresolvedCountFields()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		assertDiagnostic("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+			2 C*UNRESOLVED-FIELD
+			END-DEFINE
+			""", ParserError.UNRESOLVED_REFERENCE);
+	}
+
+	@Test
+	void reportADiagnosticIfASpecifiedVariableTypeDiffersFromTheDdmInFormat()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		assertDiagnostic("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+			2 A-DDM-FIELD (N10)
+			END-DEFINE
+			""", ParserError.TYPE_MISMATCH);
+	}
+
+	@Test
+	void reportADiagnosticIfASpecifiedVariableTypeDiffersFromTheDdmInLength()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		assertDiagnostic("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+			2 A-DDM-FIELD (A8)
+			END-DEFINE
+			""", ParserError.TYPE_MISMATCH);
+	}
+
+	@Test
+	void notReportADiagnosticIfASpecifiedVariableTypeDiffersInLengthSpecificationForDateVariables()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+			2 DATE-FIELD (D)
+			END-DEFINE
+			""");
+	}
+
+	@Test
+	void notReportADiagnosticIfASpecifiedVariableTypeDiffersInLengthSpecificationForLogicalVariables()
+	{
+		useStubModuleProvider();
+		moduleProvider.addDdm("MY-DDM", myDdm());
+		assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW OF MY-DDM
+			2 BOOL-FIELD (L)
+			END-DEFINE
+			""");
+	}
+
 	private <T extends IParameterDefinitionNode> void assertParameter(IParameterDefinitionNode node, Class<T> parameterType, String identifier)
 	{
 		var typedNode = assertNodeType(node, parameterType);
@@ -1846,5 +2426,27 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		}
 
 		return assertNodeType(variable.get(), expectedType);
+	}
+
+	private IDataDefinitionModule myDdm()
+	{
+		return new DdmParser().parseDdm("""
+DB: 000 FILE: 100  - MY-DDM                      DEFAULT SEQUENCE:
+TYPE: ADABAS
+
+T L DB Name                              F Leng  S D Remark
+- - -- --------------------------------  - ----  - - ------------------------
+  1 AA A-DDM-FIELD                       A   10  N
+  1 AB ANOTHER-DDM-FIELD                 A   15  N
+M 1 AC A-MULTIPLE-FIELD                  N  7,2  N
+P 1 BA A-PERIODIC-GROUP
+  2 BB A-PERIODIC-MEMBER                 A    5  N
+  1 CA DATE-FIELD                        D    6  N
+  1 CB BOOL-FIELD                        L    1  N
+  1 AG A-SUPERDESCRIPTOR                 A   25  N S
+*      -------- SOURCE FIELD(S) -------
+*      A-DDM-FIELD   (1-10)
+*      ANOTHER-DDM-FIELD (1-15)
+			""");
 	}
 }

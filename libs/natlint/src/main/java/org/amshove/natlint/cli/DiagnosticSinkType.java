@@ -1,5 +1,7 @@
 package org.amshove.natlint.cli;
 
+import org.amshove.natlint.cli.sinks.*;
+
 import java.nio.file.Path;
 
 public enum DiagnosticSinkType

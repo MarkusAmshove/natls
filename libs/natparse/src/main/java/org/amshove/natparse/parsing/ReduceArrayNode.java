@@ -3,7 +3,6 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.IReduceArrayNode;
-import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.IVariableReferenceNode;
 
 import java.util.ArrayList;
@@ -46,5 +45,18 @@ class ReduceArrayNode extends StatementNode implements IReduceArrayNode
 	void addDimension(IOperandNode operand)
 	{
 		dimensions.add(operand);
+	}
+
+	@Override
+	public ReadOnlyList<IOperandNode> mutations()
+	{
+		var mutations = new ArrayList<IOperandNode>();
+		mutations.add(arrayToReduce);
+		if (errorVariable != null)
+		{
+			mutations.add(errorVariable);
+		}
+
+		return ReadOnlyList.from(mutations);
 	}
 }

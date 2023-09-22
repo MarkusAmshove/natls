@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 
-public class DdmParserShould
+class DdmParserShould
 {
 	@Test
 	void parseTheMetadataLine()
@@ -48,12 +48,12 @@ public class DdmParserShould
 		assertThat(ddm.name()).isEqualTo("COMPLETE-DDM");
 		assertThat(ddm.fileNumber()).isEqualTo("100");
 		assertThat(ddm.databaseNumber()).isEqualTo("000");
-		assertThat(ddm.defaultSequence()).isEqualTo("");
+		assertThat(ddm.defaultSequence()).isEmpty();
 		assertThat(ddm.type()).isEqualTo(DdmType.ADABAS);
 
 		var fields = ddm.fields();
 
-		assertThat(ddm.fields().size()).isEqualTo(11);
+		assertThat(ddm.fields()).hasSize(12);
 		var topLevelFields = fields.stream().map(IDdmField::name).collect(Collectors.toList());
 
 		assertThat(topLevelFields)
@@ -80,6 +80,14 @@ public class DdmParserShould
 		var nestedGroup = assertIsGroupField(findGroupMember(topLevelGroupField, "TOP-LEVEL-GROUP-GROUP"));
 		assertThat(nestedGroup.level()).isEqualTo(2);
 		assertGroupHasMember(nestedGroup, "TOP-LEVEL-GROUP-GROUP-CHILD");
+
+		var periodicGroup = assertIsPeriodicGroupField(findField(ddm, "PERIODIC-GROUP"));
+		assertThat(periodicGroup.fieldType()).isEqualTo(FieldType.PERIODIC);
+		assertGroupHasMember(periodicGroup, "PERIODIC-MEMBER");
+		var periodicMember = findGroupMember(periodicGroup, "PERIODIC-MEMBER");
+		assertThat(periodicMember.level()).isEqualTo(2);
+		assertThat(periodicMember.format()).isEqualTo(DataFormat.NUMERIC);
+		assertThat(periodicMember.length()).isEqualTo(2.0);
 
 		var aSuperdescriptor = assertIsSuperdescriptor(findField(ddm, "A-SUPERDESCRIPTOR"));
 		assertThat(aSuperdescriptor.fields()).hasSize(2);
@@ -137,6 +145,33 @@ public class DdmParserShould
 	}
 
 	@Test
+	void parseASuperdescriptorThatIsAlsoAPeriodicGroup()
+	{
+		var ddm = new DdmParser().parseDdm("""
+DB: 000 FILE: 100  - MY-DDM                      DEFAULT SEQUENCE:
+TYPE: ADABAS
+
+T L DB Name                              F Leng  S D Remark
+- - -- --------------------------------  - ----  - - ------------------------
+  1 AA A-DDM-FIELD                       A   10  N
+  1 AB ANOTHER-DDM-FIELD                 A   15  N
+M 1 AC A-MULTIPLE-FIELD                  N  7,2  N
+P 1 BA A-PERIODIC-GROUP
+  2 BB A-PERIODIC-MEMBER                 A    5  N
+P 1 AG A-SUPERDESCRIPTOR                 A   25  N S
+*      -------- SOURCE FIELD(S) -------
+*      A-DDM-FIELD   (1-10)
+*      ANOTHER-DDM-FIELD (1-15)
+			""");
+
+		var descriptor = findField(ddm, "A-SUPERDESCRIPTOR");
+		assertThat(descriptor.format()).isEqualTo(DataFormat.ALPHANUMERIC);
+		assertThat(descriptor.length()).isEqualTo(25);
+		assertThat(descriptor.descriptor()).isEqualTo(DescriptorType.SUPERDESCRIPTOR);
+		assertThat(descriptor.fieldType()).isEqualTo(FieldType.PERIODIC);
+	}
+
+	@Test
 	void throwAnExceptionIfNoMatchingFieldToReferenceIsFound()
 	{
 		assertThatExceptionOfType(NaturalParseException.class)
@@ -173,6 +208,13 @@ public class DdmParserShould
 	private IGroupField assertIsGroupField(IDdmField field)
 	{
 		assertThat(field.fieldType()).isEqualTo(FieldType.GROUP);
+		assertThat(field).isInstanceOf(IGroupField.class);
+		return (IGroupField) field;
+	}
+
+	private IGroupField assertIsPeriodicGroupField(IDdmField field)
+	{
+		assertThat(field.fieldType()).isEqualTo(FieldType.PERIODIC);
 		assertThat(field).isInstanceOf(IGroupField.class);
 		return (IGroupField) field;
 	}

@@ -11,15 +11,24 @@ import org.amshove.natparse.natural.builtin.SystemFunctionDefinition;
 import org.amshove.natparse.natural.builtin.SystemVariableDefinition;
 import org.eclipse.lsp4j.Hover;
 
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class HoverProvider
 {
-	private static final Hover EMPTY_HOVER = null; // This should be null according to the LSP spec
+	public static final Hover EMPTY_HOVER = null; // This should be null according to the LSP spec
 
 	public Hover createHover(HoverContext context)
 	{
+		// This should always come first, as this is essentially hovering a leaf node which is a variable.
+		// If this comes after other possible hovers then hovering e.g. a CALLNAT parameter always returns
+		// the module documentation instead of the passed parameter.
+		if (context.nodeToHover()instanceof ISymbolReferenceNode symbolReferenceNode && symbolReferenceNode.reference()instanceof IVariableNode variableNode)
+		{
+			return hoverVariable(variableNode, context);
+		}
+
 		if (context.nodeToHover() instanceof IDefineWorkFileNode
 			|| context.nodeToHover().parent() instanceof IDefineWorkFileNode)
 		{
@@ -52,17 +61,19 @@ public class HoverProvider
 			return hoverExternalModule(moduleReferencingNode);
 		}
 
+		if (context.nodeToHover().parent()instanceof IModuleReferencingNode moduleReferencingNode)
+		{
+			return hoverExternalModule(moduleReferencingNode);
+		}
+
 		if (context.nodeToHover()instanceof IVariableNode variableNode)
 		{
 			return hoverVariable(variableNode, context);
 		}
 
-		if (context.nodeToHover()instanceof ISymbolReferenceNode symbolReferenceNode)
+		if (context.nodeToHover().parent()instanceof IVariableNode variableNode)
 		{
-			if (symbolReferenceNode.reference()instanceof IVariableNode variableNode)
-			{
-				return hoverVariable(variableNode, context);
-			}
+			return hoverVariable(variableNode, context);
 		}
 
 		return EMPTY_HOVER;
@@ -120,9 +131,8 @@ public class HoverProvider
 		return new Hover(contentBuilder.build());
 	}
 
-	private Hover hoverExternalModule(IModuleReferencingNode moduleReferencingNode)
+	public Hover hoverModule(INaturalModule module)
 	{
-		var module = moduleReferencingNode.reference();
 		if (module == null)
 		{
 			return EMPTY_HOVER;
@@ -130,12 +140,6 @@ public class HoverProvider
 
 		var contentBuilder = MarkupContentBuilderFactory.newBuilder();
 		contentBuilder.appendStrong("%s.%s".formatted(module.file().getLibrary().getName(), module.file().getReferableName())).appendNewline();
-		/*
-		if(module instanceof IFunction function)
-		{
-			TODO: Add return type
-		}
-		 */
 
 		if (!module.file().getFilenameWithoutExtension().equals(module.file().getReferableName()))
 		{
@@ -148,9 +152,23 @@ public class HoverProvider
 			contentBuilder.appendCode(documentation);
 		}
 
+		if (module instanceof IFunction function && function.returnType() != null)
+		{
+			contentBuilder.appendSection(
+				"Result", cb -> cb
+					.appendCode("RETURNS " + Objects.requireNonNull(function.returnType()).toShortString()).appendNewline()
+			);
+		}
+
 		addModuleParameter(contentBuilder, module);
 
 		return new Hover(contentBuilder.build());
+	}
+
+	private Hover hoverExternalModule(IModuleReferencingNode moduleReferencingNode)
+	{
+		var module = moduleReferencingNode.reference();
+		return hoverModule(module);
 	}
 
 	private Hover hoverBuiltinFunction(SyntaxKind kind)
@@ -230,9 +248,12 @@ public class HoverProvider
 			declaration += " %s".formatted(typedVariableNode.type().toShortString());
 			if (typedVariableNode.type().initialValue() != null)
 			{
+				var initValue = typedVariableNode.type().initialValue()instanceof ITokenNode tokenNode
+					? tokenNode.token().source()
+					: ((IStringConcatOperandNode) typedVariableNode.type().initialValue()).stringValue();
 				declaration += " %s<%s>".formatted(
 					typedVariableNode.type().isConstant() ? "CONST" : "INIT",
-					typedVariableNode.type().initialValue().source()
+					initValue
 				);
 			}
 		}
