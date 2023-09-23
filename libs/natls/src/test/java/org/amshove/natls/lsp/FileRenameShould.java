@@ -1,7 +1,10 @@
 package org.amshove.natls.lsp;
 
 import org.amshove.natls.languageserver.LspUtil;
-import org.amshove.natls.testlifecycle.*;
+import org.amshove.natls.testlifecycle.LanguageServerTest;
+import org.amshove.natls.testlifecycle.LspProjectName;
+import org.amshove.natls.testlifecycle.LspTestContext;
+import org.amshove.natls.testlifecycle.TextEditApplier;
 import org.eclipse.lsp4j.FileRename;
 import org.eclipse.lsp4j.RenameFilesParams;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
@@ -12,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -24,104 +28,116 @@ class FileRenameShould extends LanguageServerTest
 	@Test
 	void renameASubprogramOnTheCallSite()
 	{
-		whenRenamingFile("CALLEDN", "CHANGEN");
+		whenRenamingFile("CALLEDN.NSN", "CHANGEN");
 
 		itShouldChange(
-			expectedRename("CALLER", 8, "CALLNAT 'CHANGEN' #PARM"),
-			expectedRename("CALLER", 10, "    CALLNAT 'CHANGEN' #PARM"),
-			expectedRename("CALLER2", 7, "CALLNAT 'CHANGEN' #TEST")
+			expectedRename("CALLER.NSN", 8, "CALLNAT 'CHANGEN' #PARM"),
+			expectedRename("CALLER.NSN", 10, "    CALLNAT 'CHANGEN' #PARM"),
+			expectedRename("CALLER2.NSN", 7, "CALLNAT 'CHANGEN' #TEST")
 		);
 	}
 
 	@Test
 	void renameALdaOnTheCallSite()
 	{
-		whenRenamingFile("SOMELDA", "MYLDA");
+		whenRenamingFile("SOMELDA.NSL", "MYLDA");
 
 		itShouldChange(
-			expectedRename("CALLER", 3, "LOCAL USING MYLDA"),
-			expectedRename("CALLER2", 4, "LOCAL USING MYLDA")
+			expectedRename("CALLER.NSN", 3, "LOCAL USING MYLDA"),
+			expectedRename("CALLER2.NSN", 4, "LOCAL USING MYLDA")
 		);
 	}
 
 	@Test
 	void renameAPdaOnTheCallSite()
 	{
-		whenRenamingFile("SOMEPDA", "MYPDA");
+		whenRenamingFile("SOMEPDA.NSA", "MYPDA");
 
 		itShouldChange(
-			expectedRename("CALLER", 1, "PARAMETER USING MYPDA"),
-			expectedRename("CALLER2", 2, "PARAMETER USING MYPDA")
+			expectedRename("CALLER.NSN", 1, "PARAMETER USING MYPDA"),
+			expectedRename("CALLER2.NSN", 2, "PARAMETER USING MYPDA")
 		);
 	}
 
 	@Test
 	void renameAGdaOnTheCallSite()
 	{
-		whenRenamingFile("SOMEGDA", "MYGDA");
+		whenRenamingFile("SOMEGDA.NSG", "MYGDA");
 
 		itShouldChange(
-			expectedRename("CALLER", 2, "GLOBAL USING MYGDA"),
-			expectedRename("CALLER2", 3, "GLOBAL USING MYGDA")
+			expectedRename("CALLER.NSN", 2, "GLOBAL USING MYGDA"),
+			expectedRename("CALLER2.NSN", 3, "GLOBAL USING MYGDA")
 		);
 	}
 
 	@Test
 	void renameAProgramOnTheCallSite()
 	{
-		whenRenamingFile("SOMEPROG", "MYPROG");
+		whenRenamingFile("SOMEPROG.NSP", "MYPROG");
 
 		itShouldChange(
-			expectedRename("CALLER", 13, "FETCH 'MYPROG' 50"),
-			expectedRename("CALLER", 15, "    FETCH RETURN 'MYPROG' 22"),
-			expectedRename("CALLER2", 11, "        FETCH REPEAT 'MYPROG' 100")
+			expectedRename("CALLER.NSN", 13, "FETCH 'MYPROG' 50"),
+			expectedRename("CALLER.NSN", 15, "    FETCH RETURN 'MYPROG' 22"),
+			expectedRename("CALLER2.NSN", 11, "        FETCH REPEAT 'MYPROG' 100")
 		);
 	}
 
 	@Test
 	void renameCallSitesInCopycodes()
 	{
-		whenRenamingFile("PROGCC", "CCPROG");
+		whenRenamingFile("PROGCC.NSP", "CCPROG");
 
 		itShouldChange(
-			expectedRename("INCL", 0, "FETCH 'CCPROG' 200")
+			expectedRename("INCL.NSC", 0, "FETCH 'CCPROG' 200")
 		);
 
-		whenRenamingFile("SUBCC", "CCSUB");
+		whenRenamingFile("SUBCC.NSN", "CCSUB");
 
 		itShouldChange(
-			expectedRename("INCL", 2, "CALLNAT 'CCSUB' #VAR")
+			expectedRename("INCL.NSC", 2, "CALLNAT 'CCSUB' #VAR")
 		);
 	}
 
 	@Test
-	void renameCallSitesOfFunctions()
+	void renameCallSitesOfFunctionsAndTheFunctionItself()
 	{
-		whenRenamingFile("FUNC", "MYFUNC");
+		whenRenamingFile("FUNC.NS7", "MYFUNC");
 
 		itShouldChange(
-			expectedRename("CALLER", 18, "IF MYFUNC(<>)"),
-			expectedRename("CALLER2", 12, "    WHEN MYFUNC(<>)"),
-			expectedRename("INCL", 4, "#BOOL := MYFUNC(<>)")
+			expectedRename("CALLER.NSN", 18, "IF MYFUNC(<>)"),
+			expectedRename("CALLER2.NSN", 12, "    WHEN MYFUNC(<>)"),
+			expectedRename("INCL.NSC", 4, "#BOOL := MYFUNC(<>)"),
+			expectedRename("CALLED", "FUNC.NS7", 0, "DEFINE FUNCTION MYFUNC"),
+			expectedRename("CALLED", "FUNC.NS7", 4, "MYFUNC := FALSE")
 		);
 	}
 
 	@Test
 	void onlyRenameReferencesInReferencedLibraries()
 	{
-		whenRenamingFile("NOREF", "CALLEDN", "NEWSUBN");
+		whenRenamingFile("NOREF", "CALLEDN.NSN", "NEWSUBN");
 
 		itShouldChange(
-			expectedRename("NOREF", "CALLER", 2, "CALLNAT 'NEWSUBN'")
+			expectedRename("NOREF", "CALLER.NSN", 2, "CALLNAT 'NEWSUBN'")
 		);
 	}
 
 	@Test
 	void notRenameReferencesInUnrelatedLibraries()
 	{
-		whenRenamingFile("CALLED", "CALLEDN", "CHANGEN");
+		whenRenamingFile("CALLED", "CALLEDN.NSN", "CHANGEN");
 
 		expectNoChangesInUnrelatedLibrary();
+	}
+
+	@Test
+	void notChangeAnythingWhenRenamingTheFileOfAnExternalSubroutine()
+	{
+		whenRenamingFile("EXTSUB.NSS", "EXTSUB2");
+
+		assertThat(renameEdit.getChanges())
+			.as("No actions needed if just renaming the file of an external subroutine")
+			.isEmpty();
 	}
 
 	private LspTestContext theTestContext;
@@ -148,7 +164,7 @@ class FileRenameShould extends LanguageServerTest
 
 	private void whenRenamingFile(String library, String module, String newName)
 	{
-		var document = textDocumentIdentifier(library, module);
+		var document = new TextDocumentIdentifier(getContext().project().rootPath().resolve(Path.of("Natural-Libraries", library, module)).toUri().toString());
 		var folderUri = document.getUri().substring(0, document.getUri().lastIndexOf('/') + 1);
 		var extension = document.getUri().substring(document.getUri().lastIndexOf('.'));
 		renamedFileUri = "%s%s%s".formatted(folderUri, newName, extension);
@@ -219,7 +235,7 @@ class FileRenameShould extends LanguageServerTest
 	private ExpectedRename expectedRename(String library, String module, int line, String expectedLine)
 	{
 		return new ExpectedRename(
-			textDocumentIdentifier(library, module),
+			new TextDocumentIdentifier(getContext().project().rootPath().resolve(Path.of("Natural-Libraries", library, module)).toUri().toString()),
 			line,
 			expectedLine
 		);

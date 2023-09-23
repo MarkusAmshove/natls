@@ -26,10 +26,7 @@ import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
-import org.amshove.natparse.natural.IModuleReferencingNode;
-import org.amshove.natparse.natural.IReferencableNode;
-import org.amshove.natparse.natural.ISymbolReferenceNode;
-import org.amshove.natparse.natural.IVariableReferenceNode;
+import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.natural.project.NaturalProject;
@@ -683,7 +680,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		return edits;
 	}
 
-	public WorkspaceEdit willRename(List<FileRename> renames)
+	public WorkspaceEdit willRenameFiles(List<FileRename> renames)
 	{
 		var edit = new WorkspaceEdit();
 		var fileChanges = new HashMap<String, List<TextEdit>>();
@@ -706,6 +703,8 @@ public class NaturalLanguageService implements LanguageClientAware
 				// The file has just been moved, the name remains the same
 				continue;
 			}
+
+			// TODO: Do name clash check if a module with new referable name in lib already exists
 
 			oldFile.parse(ParseStrategy.WITH_CALLERS);
 			var oldModule = oldFile.module();
@@ -734,6 +733,28 @@ public class NaturalLanguageService implements LanguageClientAware
 				textEdit.setNewText(newName);
 				textEdit.setRange(LspUtil.toRange(cachedPosition));
 				changes.add(textEdit);
+			}
+
+			if (oldFile.getType() == NaturalFileType.FUNCTION && oldModule instanceof IFunction func)
+			{
+				var changes = fileChanges.computeIfAbsent(oldModule.file().getPath().toUri().toString(), u -> new ArrayList<>());
+
+				var textEdit = new TextEdit();
+				textEdit.setNewText(newName);
+				textEdit.setRange(LspUtil.toRange(func.functionName()));
+				changes.add(textEdit);
+
+				var funcNameVariable = func.defineData().findVariable(oldFile.getReferableName());
+				if (funcNameVariable != null)
+				{
+					for (var reference : funcNameVariable.references())
+					{
+						var refEdit = new TextEdit();
+						refEdit.setNewText(newName);
+						refEdit.setRange(LspUtil.toRange(reference.referencingToken()));
+						changes.add(refEdit);
+					}
+				}
 			}
 
 			// This is here and not in didRename because the client changes the files after this call.
