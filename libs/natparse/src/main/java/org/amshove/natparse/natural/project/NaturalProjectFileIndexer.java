@@ -51,8 +51,9 @@ public class NaturalProjectFileIndexer
 		var filename = path.getFileName().toString().split("\\.")[0];
 		return switch (type)
 		{
-			case SUBPROGRAM, DDM, LDA, PDA, GDA, PROGRAM, FUNCTION, COPYCODE, MAP, HELPROUTINE -> filename;
+			case SUBPROGRAM, DDM, LDA, PDA, GDA, PROGRAM, COPYCODE, MAP, HELPROUTINE -> filename;
 			case SUBROUTINE -> extractSubroutineName(path);
+			case FUNCTION -> extractFunctionName(path);
 		};
 	}
 
@@ -69,6 +70,17 @@ public class NaturalProjectFileIndexer
 			{
 				throw new RuntimeException("Could not find DEFINE SUBSROUTINE");
 			}
+		}
+
+		return lexemes.peek().symbolName();
+	}
+
+	private String extractFunctionName(Path path)
+	{
+		var lexemes = new Lexer().lex(filesystem.readFile(path), path);
+		if (!lexemes.advanceAfterNextIfFound(SyntaxKind.FUNCTION))
+		{
+			throw new RuntimeException("Could not find DEFINE FUNCTION");
 		}
 
 		return lexemes.peek().symbolName();
