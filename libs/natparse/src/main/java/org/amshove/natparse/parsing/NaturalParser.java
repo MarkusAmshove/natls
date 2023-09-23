@@ -68,6 +68,7 @@ public class NaturalParser
 				if (tokens.peek(1).kind() == SyntaxKind.RETURNS)
 				{
 					var functionName = tokens.advance();
+					naturalModule.setFunctionName(functionName);
 					functionReturnVariable = new VariableNode();
 					functionReturnVariable.setLevel(1);
 					functionReturnVariable.setScope(VariableScope.LOCAL);
@@ -89,7 +90,7 @@ public class NaturalParser
 						if (typeTokenSource.contains("/") || tokens.peek().kind() == SyntaxKind.SLASH)
 						{
 							var firstDimension = new ArrayDimension();
-							// Parsing array dimensions is currently too tightly coupled into DefineDataParser
+							// Parsing array dimensions is currently too tightly coupled into DefineDataParser,
 							// so we do a rudimentary implementation to revisit later.
 							firstDimension.setLowerBound(IArrayDimension.UNBOUND_VALUE);
 							firstDimension.setUpperBound(IArrayDimension.UNBOUND_VALUE);
