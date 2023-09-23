@@ -1,0 +1,8 @@
+DEFINE DATA
+PARAMETER
+1 #PARM (A10)
+END-DEFINE
+
+WRITE 'Called within copycode'
+
+END
