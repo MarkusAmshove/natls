@@ -102,7 +102,12 @@ public abstract class AbstractAnalyzerTest
 
 	protected void testDiagnostics(String source, DiagnosticAssertion... expectedDiagnostics)
 	{
-		testDiagnostics(testFile(source), expectedDiagnostics);
+		testDiagnostics("TESTFILE.NSN", source, expectedDiagnostics);
+	}
+
+	protected void testDiagnostics(String filename, String source, DiagnosticAssertion... expectedDiagnostics)
+	{
+		testDiagnostics(testFile(filename, source), expectedDiagnostics);
 	}
 
 	private void assertDescriptionIsExported(DiagnosticDescription diagnosticDescription)
@@ -147,10 +152,12 @@ public abstract class AbstractAnalyzerTest
 		}
 	}
 
-	private NaturalFile testFile(String source)
+	private NaturalFile testFile(String name, String source)
 	{
-		var syntheticFilePath = directoryForSyntheticFiles.resolve("TESTFILE.NSN");
-		var syntheticFile = new SyntheticNaturalFile("TESTFILE", syntheticFilePath, NaturalFileType.SUBPROGRAM);
+		var syntheticFilePath = directoryForSyntheticFiles.resolve(name);
+		var withoutExtension = name.split("\\.")[0];
+		var extension = name.split("\\.")[1];
+		var syntheticFile = new SyntheticNaturalFile(withoutExtension, syntheticFilePath, NaturalFileType.fromExtension(extension));
 		try
 		{
 			Files.writeString(syntheticFilePath, source);

@@ -28,6 +28,7 @@ public class NaturalModule
 	private ReadOnlyList<SyntaxToken> comments;
 	private NaturalHeader sourceHeader;
 	private IDataType returnType;
+	private SyntaxToken functionName;
 
 	public NaturalModule(NaturalFile file)
 	{
@@ -210,5 +211,17 @@ public class NaturalModule
 	void setReturnType(IDataType type)
 	{
 		returnType = type;
+	}
+
+	void setFunctionName(SyntaxToken name)
+	{
+		this.functionName = name;
+	}
+
+	@Nullable
+	@Override
+	public SyntaxToken functionName()
+	{
+		return functionName;
 	}
 }
