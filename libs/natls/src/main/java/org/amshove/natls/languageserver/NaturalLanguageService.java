@@ -30,10 +30,7 @@ import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
-import org.amshove.natparse.natural.IModuleReferencingNode;
-import org.amshove.natparse.natural.IReferencableNode;
-import org.amshove.natparse.natural.ISymbolReferenceNode;
-import org.amshove.natparse.natural.IVariableReferenceNode;
+import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.natural.project.NaturalProject;
@@ -42,6 +39,7 @@ import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.ResponseErrorException;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseError;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
@@ -52,6 +50,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -583,12 +582,19 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	public WorkspaceEdit rename(RenameParams params)
 	{
-		var path = LspUtil.uriToPath(params.getTextDocument().getUri());
+		var fileUri = params.getTextDocument().getUri();
+		var path = LspUtil.uriToPath(fileUri);
 		var file = findNaturalFile(path);
 
-		var node = NodeUtil.findTokenNodeAtPosition(path, params.getPosition().getLine(), params.getPosition().getCharacter(), file.module().syntaxTree());
+		var module = file.module();
+		var node = NodeUtil.findTokenNodeAtPosition(path, params.getPosition().getLine(), params.getPosition().getCharacter(), module.syntaxTree());
 		if (node instanceof ISymbolReferenceNode symbolReferenceNode)
 		{
+			if (file.getType() == NaturalFileType.FUNCTION && symbolReferenceNode.reference().declaration() == ((IFunction) module).functionName())
+			{
+				return renameFunctionAndItsFile(params, path, fileUri);
+			}
+
 			return renameComputer.rename(symbolReferenceNode, params.getNewName());
 		}
 
@@ -603,6 +609,32 @@ public class NaturalLanguageService implements LanguageClientAware
 		}
 
 		return null;
+	}
+
+	private WorkspaceEdit renameFunctionAndItsFile(RenameParams params, Path oldPath, String oldUri)
+	{
+		var workspaceEdit = new WorkspaceEdit();
+		var newUri = oldPath.getParent().resolve("%s.%s".formatted(params.getNewName(), "NS7")).toUri().toString();
+
+		var changes = new ArrayList<Either<TextDocumentEdit, ResourceOperation>>();
+		workspaceEdit.setDocumentChanges(changes);
+
+		// Act like the function has been renamed by file rename and get all the changes that have to be done
+		var renameFileChanges = willRenameFiles(List.of(new FileRename(params.getTextDocument().getUri(), newUri)));
+		for (Map.Entry<String, List<TextEdit>> stringListEntry : renameFileChanges.getChanges().entrySet())
+		{
+			var txtDocEdit = new TextDocumentEdit(new VersionedTextDocumentIdentifier(stringListEntry.getKey(), 0), stringListEntry.getValue());
+			changes.add(Either.forLeft(txtDocEdit));
+		}
+
+		// Rename the file as last change
+		var operation = new RenameFile();
+		operation.setNewUri(newUri);
+		operation.setOldUri(oldUri);
+		operation.setOptions(new RenameFileOptions(false, true));
+		changes.add(Either.forRight(operation));
+
+		return workspaceEdit;
 	}
 
 	private void assertCanRenameInFile(LanguageServerFile file)

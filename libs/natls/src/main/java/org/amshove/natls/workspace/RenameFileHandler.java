@@ -13,6 +13,7 @@ import org.eclipse.lsp4j.WorkspaceEdit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 public class RenameFileHandler
 {
@@ -28,7 +29,15 @@ public class RenameFileHandler
 			var oldPath = LspUtil.uriToPath(rename.getOldUri());
 			var oldFile = project.findFile(oldPath);
 
-			if (oldFile.getType() == NaturalFileType.SUBROUTINE)
+			if (oldFile == null && project.findFile(LspUtil.uriToPath(rename.getNewUri())) != null)
+			{
+				// TODO: This fixed one problem in double renaming functions, but it still doesn't work.
+				// old file doesn't exist but new one does.
+				// it is already handled, because we're retriggered after RenameFile operation (e.g. renaming function from function name)
+				continue;
+			}
+
+			if (Objects.requireNonNull(oldFile).getType() == NaturalFileType.SUBROUTINE)
 			{
 				// Rename of file doesn't change the referable name of external subroutines
 				continue;

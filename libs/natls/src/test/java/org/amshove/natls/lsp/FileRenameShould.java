@@ -5,10 +5,8 @@ import org.amshove.natls.testlifecycle.LanguageServerTest;
 import org.amshove.natls.testlifecycle.LspProjectName;
 import org.amshove.natls.testlifecycle.LspTestContext;
 import org.amshove.natls.testlifecycle.TextEditApplier;
-import org.eclipse.lsp4j.FileRename;
-import org.eclipse.lsp4j.RenameFilesParams;
-import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.eclipse.lsp4j.WorkspaceEdit;
+import org.eclipse.lsp4j.*;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -140,6 +138,61 @@ class FileRenameShould extends LanguageServerTest
 			.isEmpty();
 	}
 
+	@Test
+	void renameAFunctionAndItsFileOnRenameTriggeredOnFunctionName()
+	{
+		var textDocument = textDocumentIdentifier("CALLED", "FUNC");
+		var renameParams = new RenameParams(
+			textDocument,
+			new Position(4, 1),
+			"FUNCY"
+		);
+
+		var changes = getContext().languageService().rename(renameParams);
+		assertThat(changes.getChanges()).isEmpty();
+		assertThat(changes.getDocumentChanges()).isNotEmpty();
+
+		var docChanges = changes.getDocumentChanges();
+
+		// The changes to change to the new function name should come first
+		var expectedChanges = List.of(
+			new ExpectedDocumentChange(uri("CALLEE", "CALLER.NSN"), List.of(new LineAndNewText(18, "FUNCY"))),
+			new ExpectedDocumentChange(uri("CALLED", "FUNC.NS7"), List.of(new LineAndNewText(0, "FUNCY"), new LineAndNewText(4, "FUNCY"))),
+			new ExpectedDocumentChange(uri("CALLEE", "INCL.NSC"), List.of(new LineAndNewText(4, "FUNCY"))),
+			new ExpectedDocumentChange(uri("CALLEE", "CALLER2.NSN"), List.of(new LineAndNewText(12, "FUNCY")))
+		);
+
+		assertThat(docChanges)
+			.as("Expected changes to have %d document changes and one file rename change (%d total)".formatted(expectedChanges.size(), expectedChanges.size() + 1))
+			.hasSize(expectedChanges.size() + 1);
+
+		var documentEditsOnly = docChanges.stream().filter(Either::isLeft).map(Either::getLeft).toList();
+		for (var expectedChange : expectedChanges)
+		{
+			assertThat(documentEditsOnly).anySatisfy(edit ->
+			{
+				assertThat(edit.getTextDocument().getUri()).as("Expected an edit to this file").isEqualTo(expectedChange.uri);
+				assertThat(edit.getEdits()).as("Expected this amount of file edits to file %s".formatted(expectedChange.uri)).hasSize(expectedChange.changes.size());
+
+				for (var change : expectedChange.changes)
+				{
+					assertThat(edit.getEdits())
+						.as("Expected changes to file %s to have an edit in line %d with new text %s".formatted(expectedChange.uri, change.line, change.newText))
+						.anyMatch(te -> te.getRange().getStart().getLine() == change.line && te.getNewText().equals(change.newText));
+				}
+			});
+		}
+
+		// The last change to do is renaming the old file
+		var lastChange = docChanges.get(4);
+		assertThat(lastChange.isRight()).isTrue();
+		assertThat(lastChange.getRight()).isInstanceOf(RenameFile.class);
+		var renameFile = (RenameFile) lastChange.getRight();
+		assertThat(renameFile.getOldUri()).isEqualTo(textDocument.getUri());
+		var expectedNewUri = LspUtil.uriToPath(textDocument.getUri()).getParent().resolve("FUNCY.NS7").toUri().toString();
+		assertThat(renameFile.getNewUri()).isEqualTo(expectedNewUri);
+	}
+
 	private LspTestContext theTestContext;
 
 	@Override
@@ -164,7 +217,7 @@ class FileRenameShould extends LanguageServerTest
 
 	private void whenRenamingFile(String library, String module, String newName)
 	{
-		var document = new TextDocumentIdentifier(getContext().project().rootPath().resolve(Path.of("Natural-Libraries", library, module)).toUri().toString());
+		var document = new TextDocumentIdentifier(uri(library, module));
 		var folderUri = document.getUri().substring(0, document.getUri().lastIndexOf('/') + 1);
 		var extension = document.getUri().substring(document.getUri().lastIndexOf('.'));
 		renamedFileUri = "%s%s%s".formatted(folderUri, newName, extension);
@@ -178,6 +231,11 @@ class FileRenameShould extends LanguageServerTest
 		{
 			throw new RuntimeException("Request did not finish withing timeout", e);
 		}
+	}
+
+	private String uri(String library, String module)
+	{
+		return getContext().project().rootPath().resolve(Path.of("Natural-Libraries", library, module)).toUri().toString();
 	}
 
 	private void itShouldChange(ExpectedRename... expectedRenames)
@@ -242,5 +300,11 @@ class FileRenameShould extends LanguageServerTest
 	}
 
 	record ExpectedRename(TextDocumentIdentifier document, int line, String expectedLineContent)
+	{}
+
+	record ExpectedDocumentChange(String uri, List<LineAndNewText> changes)
+	{}
+
+	record LineAndNewText(int line, String newText)
 	{}
 }
