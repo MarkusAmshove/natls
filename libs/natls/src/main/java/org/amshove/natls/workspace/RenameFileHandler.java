@@ -49,8 +49,6 @@ public class RenameFileHandler
 				continue;
 			}
 
-			// TODO: Do name clash check if a module with new referable name in lib already exists
-
 			oldFile.parse(ParseStrategy.WITH_CALLERS);
 			var oldModule = oldFile.module();
 
