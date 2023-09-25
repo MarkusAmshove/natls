@@ -292,6 +292,17 @@ class LexerForAttributeControlsShould extends AbstractLexerTest
 	}
 
 	@Test
+	void consumeEmWithEscapedNestedRParens()
+	{
+		assertTokens(
+			"(EM=DD-MM-YYYY').')",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.EM, "EM=DD-MM-YYYY').'"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
 	void recognizeASecondAttributeAfterCVWhenCVHadAnArrayIndexer()
 	{
 		// the ) from A(1) terminated the `inParens` state from the Lexer
