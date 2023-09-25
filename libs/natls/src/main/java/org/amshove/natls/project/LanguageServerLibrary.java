@@ -159,7 +159,7 @@ public class LanguageServerLibrary
 		fileByReferableName.remove(oldFile.getReferableName());
 
 		var newName = newPath.getFileName().toString().split("\\.")[0];
-		var oldLibrary = oldFile.getLibrary().getLibrary();
+		var oldLibrary = getLibrary();
 		var newNaturalFile = new NaturalFile(newName, newPath, oldFile.getType(), oldLibrary);
 		oldLibrary.addFile(newNaturalFile);
 		addFile(new LanguageServerFile(newNaturalFile));

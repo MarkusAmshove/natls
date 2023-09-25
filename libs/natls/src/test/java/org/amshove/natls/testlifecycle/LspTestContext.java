@@ -22,4 +22,10 @@ public record LspTestContext(
 	{
 		return server.getWorkspaceService();
 	}
+
+	@Override
+	public LanguageServerProject project()
+	{
+		return languageService.getProject();
+	}
 }

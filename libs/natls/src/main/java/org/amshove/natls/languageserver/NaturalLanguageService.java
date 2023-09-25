@@ -734,6 +734,11 @@ public class NaturalLanguageService implements LanguageClientAware
 		return renameFileHandler.handleFileRename(renames, languageServerProject);
 	}
 
+	public LanguageServerProject getProject()
+	{
+		return languageServerProject;
+	}
+
 	private static <T> T extractJsonObject(Object obj, Class<T> clazz)
 	{
 		if (clazz.isInstance(obj))

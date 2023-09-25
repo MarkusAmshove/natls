@@ -54,18 +54,20 @@ public class LanguageServerProject
 		return null;
 	}
 
-	// TODO: This shouldn't be here. The callers should use the LanguageServerFile as object provider
-	//	  to find stuff that is actually in scope.
+	public LanguageServerFile findFileByReferableName(String library, String referableName)
+	{
+		return libraries.get(library).findFile(referableName);
+	}
+
+	// Used in tests only
 	public LanguageServerFile findFileByReferableName(String referableName)
 	{
 		for (var lib : libraries.values())
 		{
-			for (var file : lib.files())
+			var foundFile = lib.findFile(referableName);
+			if (foundFile != null)
 			{
-				if (file.getReferableName().equalsIgnoreCase(referableName))
-				{
-					return file;
-				}
+				return foundFile;
 			}
 		}
 

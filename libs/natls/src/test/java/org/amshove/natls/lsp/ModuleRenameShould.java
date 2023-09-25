@@ -33,6 +33,9 @@ class ModuleRenameShould extends LanguageServerTest
 			expectedRename("CALLER.NSN", 10, "    CALLNAT 'CHANGEN' #PARM"),
 			expectedRename("CALLER2.NSN", 7, "CALLNAT 'CHANGEN' #TEST")
 		);
+
+		assertReferableNameChanged("CALLEDN", "CHANGEN");
+		assertOldPathIsntReferableAnymore(uri("CALLED", "CALLEDN.NSN"));
 	}
 
 	@Test
@@ -44,6 +47,9 @@ class ModuleRenameShould extends LanguageServerTest
 			expectedRename("CALLER.NSN", 3, "LOCAL USING MYLDA"),
 			expectedRename("CALLER2.NSN", 4, "LOCAL USING MYLDA")
 		);
+
+		assertReferableNameChanged("SOMELDA", "MYLDA");
+		assertOldPathIsntReferableAnymore(uri("CALLED", "SOMELDA.NSL"));
 	}
 
 	@Test
@@ -55,6 +61,9 @@ class ModuleRenameShould extends LanguageServerTest
 			expectedRename("CALLER.NSN", 1, "PARAMETER USING MYPDA"),
 			expectedRename("CALLER2.NSN", 2, "PARAMETER USING MYPDA")
 		);
+
+		assertReferableNameChanged("SOMEPDA", "MYPDA");
+		assertOldPathIsntReferableAnymore(uri("CALLED", "SOMEPDA.NSA"));
 	}
 
 	@Test
@@ -66,6 +75,9 @@ class ModuleRenameShould extends LanguageServerTest
 			expectedRename("CALLER.NSN", 2, "GLOBAL USING MYGDA"),
 			expectedRename("CALLER2.NSN", 3, "GLOBAL USING MYGDA")
 		);
+
+		assertReferableNameChanged("SOMEGDA", "MYGDA");
+		assertOldPathIsntReferableAnymore(uri("CALLED", "SOMEPDA.NSG"));
 	}
 
 	@Test
@@ -78,6 +90,9 @@ class ModuleRenameShould extends LanguageServerTest
 			expectedRename("CALLER.NSN", 15, "    FETCH RETURN 'MYPROG' 22"),
 			expectedRename("CALLER2.NSN", 11, "        FETCH REPEAT 'MYPROG' 100")
 		);
+
+		assertReferableNameChanged("SOMEPROG", "MYPROG");
+		assertOldPathIsntReferableAnymore(uri("CALLED", "SOMEPROG.NSP"));
 	}
 
 	@Test
@@ -108,6 +123,9 @@ class ModuleRenameShould extends LanguageServerTest
 			expectedRename("CALLED", "FUNC.NS7", 0, "DEFINE FUNCTION MYFUNC"),
 			expectedRename("CALLED", "FUNC.NS7", 4, "MYFUNC := FALSE")
 		);
+
+		assertReferableNameChanged("FUNC", "MYFUNC");
+		assertOldPathIsntReferableAnymore(uri("CALLED", "FUNC.NS7"));
 	}
 
 	@Test
@@ -191,6 +209,9 @@ class ModuleRenameShould extends LanguageServerTest
 		assertThat(renameFile.getOldUri()).isEqualTo(textDocument.getUri());
 		var expectedNewUri = LspUtil.uriToPath(textDocument.getUri()).getParent().resolve("FUNCY.NS7").toUri().toString();
 		assertThat(renameFile.getNewUri()).isEqualTo(expectedNewUri);
+
+		assertReferableNameChanged("FUNC", "FUNCY");
+		assertOldPathIsntReferableAnymore(uri("CALLED", "FUNC.NS7"));
 	}
 
 	@Test
@@ -238,6 +259,9 @@ class ModuleRenameShould extends LanguageServerTest
 				}
 			});
 		}
+
+		assertReferableNameChanged("EXTERNAL-SUB", "MY-ROUTINE");
+		assertOldPathIsStillReferable(uri("CALLED", "EXTSUB.NSS"));
 	}
 
 	private LspTestContext theTestContext;
@@ -252,6 +276,31 @@ class ModuleRenameShould extends LanguageServerTest
 	void beforeEach(@LspProjectName("filerename") LspTestContext testContext)
 	{
 		theTestContext = testContext;
+	}
+
+	private void assertReferableNameChanged(String oldName, String newName)
+	{
+		assertThat(getContext().project().findFileByReferableName("CALLED", oldName))
+			.as("There is still a dangling module with the old referable name")
+			.isNull();
+
+		assertThat(getContext().project().findFileByReferableName("CALLED", newName))
+			.as("Module with new referable name not found")
+			.isNotNull();
+	}
+
+	private void assertOldPathIsntReferableAnymore(String uri)
+	{
+		assertThat(getContext().project().findFile(LspUtil.uriToPath(uri)))
+			.as("There is still a dangling path reference to the old module")
+			.isNull();
+	}
+
+	private void assertOldPathIsStillReferable(String uri)
+	{
+		assertThat(getContext().project().findFile(LspUtil.uriToPath(uri)))
+			.as("The original file path should still be referable")
+			.isNotNull();
 	}
 
 	private WorkspaceEdit renameEdit;
