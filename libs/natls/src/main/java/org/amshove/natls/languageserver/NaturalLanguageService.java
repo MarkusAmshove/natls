@@ -546,6 +546,10 @@ public class NaturalLanguageService implements LanguageClientAware
 		var file = findNaturalFile(path);
 
 		var node = NodeUtil.findTokenNodeAtPosition(path, params.getPosition().getLine(), params.getPosition().getCharacter(), file.module().syntaxTree());
+		if (node == null)
+		{
+			throw new ResponseErrorException(new ResponseError(1, "Nothing renamable found", null));
+		}
 
 		String placeholder = null;
 
@@ -605,6 +609,12 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		if (node != null && node.parent()instanceof IReferencableNode referencableNode)
 		{
+			if (file.getType() == NaturalFileType.SUBROUTINE && referencableNode instanceof ISubroutineNode subroutine && subroutine.declaration().symbolName().equals(module.name()))
+			{
+				var edits = renameComputer.renameExternalSubroutine(params.getNewName(), subroutine, module, file);
+				languageServerProject.renameReferableModule(params.getTextDocument().getUri(), params.getNewName());
+				return edits;
+			}
 			return renameComputer.rename(referencableNode, params.getNewName());
 		}
 

@@ -106,4 +106,10 @@ public class LanguageServerProject
 		var oldFile = findFile(LspUtil.uriToPath(oldUri));
 		oldFile.getLibrary().rename(oldFile, LspUtil.uriToPath(newUri));
 	}
+
+	public void renameReferableModule(String uri, String newReferableName)
+	{
+		var oldFile = findFile(LspUtil.uriToPath(uri));
+		oldFile.getLibrary().rename(oldFile, newReferableName);
+	}
 }

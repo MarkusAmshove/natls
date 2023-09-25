@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-class FileRenameShould extends LanguageServerTest
+class ModuleRenameShould extends LanguageServerTest
 {
 
 	@Test
@@ -193,6 +193,53 @@ class FileRenameShould extends LanguageServerTest
 		assertThat(renameFile.getNewUri()).isEqualTo(expectedNewUri);
 	}
 
+	@Test
+	void renameExternalSubroutinesThroughItsDefineSubroutine()
+	{
+		var textDocument = textDocumentIdentifier("CALLED", "EXTERNAL-SUB");
+		var renameParams = new RenameParams(
+			textDocument,
+			new Position(5, 20),
+			"MY-ROUTINE"
+		);
+
+		var renameResponse = getContext().languageService().rename(renameParams);
+		assertThat(renameResponse.getChanges()).isNotEmpty();
+
+		var expectedChanges = List.of(
+			new ExpectedDocumentChange(uri("CALLEE", "CALLER2.NSN"), List.of(new LineAndNewText(18, "MY-ROUTINE"))),
+			new ExpectedDocumentChange(uri("CALLEE", "INCL.NSC"), List.of(new LineAndNewText(6, "MY-ROUTINE"))),
+			new ExpectedDocumentChange(uri("CALLED", "EXTSUB.NSS"), List.of(new LineAndNewText(5, "MY-ROUTINE")))
+		);
+
+		var changes = renameResponse.getChanges();
+
+		assertThat(renameResponse.getChanges())
+			.as("Expected renameResponse to have %d renameResponse".formatted(expectedChanges.size()))
+			.hasSize(expectedChanges.size());
+
+		for (var expectedChange : expectedChanges)
+		{
+			assertThat(changes).anySatisfy((uri, edits) ->
+			{
+				assertThat(uri)
+					.as("Expected an edit to this file")
+					.isEqualTo(expectedChange.uri);
+
+				assertThat(edits)
+					.as("Expected %d edits to file %s".formatted(expectedChange.changes.size(), uri))
+					.hasSize(expectedChange.changes.size());
+
+				for (var change : expectedChange.changes)
+				{
+					assertThat(edits)
+						.as("Expected changes to file %s to have an edit in line %d with new text %s".formatted(uri, change.line, change.newText))
+						.anyMatch(te -> te.getRange().getStart().getLine() == change.line && te.getNewText().equals(change.newText));
+				}
+			});
+		}
+	}
+
 	private LspTestContext theTestContext;
 
 	@Override
@@ -222,7 +269,7 @@ class FileRenameShould extends LanguageServerTest
 		var extension = document.getUri().substring(document.getUri().lastIndexOf('.'));
 		renamedFileUri = "%s%s%s".formatted(folderUri, newName, extension);
 
-		var rename = new FileRename(document.getUri(), FileRenameShould.this.renamedFileUri);
+		var rename = new FileRename(document.getUri(), ModuleRenameShould.this.renamedFileUri);
 		try
 		{
 			renameEdit = getContext().workspaceService().willRenameFiles(new RenameFilesParams(List.of(rename))).get(5, TimeUnit.HOURS);

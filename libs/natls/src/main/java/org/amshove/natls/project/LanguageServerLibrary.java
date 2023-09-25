@@ -164,4 +164,14 @@ public class LanguageServerLibrary
 		oldLibrary.addFile(newNaturalFile);
 		addFile(new LanguageServerFile(newNaturalFile));
 	}
+
+	public void rename(LanguageServerFile oldFile, String newReferableName)
+	{
+		fileByReferableName.remove(oldFile.getReferableName());
+
+		var library = oldFile.getLibrary().getLibrary();
+		var newNaturalFile = new NaturalFile(newReferableName, oldFile.getPath(), oldFile.getType(), library);
+		library.addFile(newNaturalFile);
+		addFile(new LanguageServerFile(newNaturalFile));
+	}
 }

@@ -1,19 +1,19 @@
 package org.amshove.natls.workspace;
 
 import org.amshove.natls.languageserver.LspUtil;
+import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natls.project.LanguageServerProject;
 import org.amshove.natls.project.ModuleReferenceCache;
 import org.amshove.natls.project.ParseStrategy;
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.IFunction;
+import org.amshove.natparse.natural.IModuleReferencingNode;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.eclipse.lsp4j.FileRename;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.WorkspaceEdit;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class RenameFileHandler
 {
@@ -58,25 +58,7 @@ public class RenameFileHandler
 				default -> newNameRaw;
 			};
 
-			var callers = oldModule.callers();
-
-			for (var caller : callers)
-			{
-				var changes = fileChanges.computeIfAbsent(caller.referencingToken().filePath().toUri().toString(), u -> new ArrayList<>());
-				var textEdit = new TextEdit();
-				textEdit.setNewText(newName);
-				textEdit.setRange(LspUtil.toRange(caller.referencingToken()));
-				changes.add(textEdit);
-			}
-
-			for (var cachedPosition : ModuleReferenceCache.retrieveCachedPositions(oldFile))
-			{
-				var changes = fileChanges.computeIfAbsent(cachedPosition.filePath().toUri().toString(), u -> new ArrayList<>());
-				var textEdit = new TextEdit();
-				textEdit.setNewText(newName);
-				textEdit.setRange(LspUtil.toRange(cachedPosition));
-				changes.add(textEdit);
-			}
+			fileChanges.putAll(computeCallerRenames(newName, oldFile, oldModule.callers()));
 
 			if (oldFile.getType() == NaturalFileType.FUNCTION && oldModule instanceof IFunction func)
 			{
@@ -111,5 +93,29 @@ public class RenameFileHandler
 		edit.setChanges(fileChanges);
 
 		return edit;
+	}
+
+	public static Map<String, List<TextEdit>> computeCallerRenames(String newName, LanguageServerFile oldFileOfModule, ReadOnlyList<IModuleReferencingNode> callers)
+	{
+		var callerChanges = new HashMap<String, List<TextEdit>>();
+		for (var caller : callers)
+		{
+			var changes = callerChanges.computeIfAbsent(caller.referencingToken().filePath().toUri().toString(), u -> new ArrayList<>());
+			var textEdit = new TextEdit();
+			textEdit.setNewText(newName);
+			textEdit.setRange(LspUtil.toRange(caller.referencingToken()));
+			changes.add(textEdit);
+		}
+
+		for (var cachedPosition : ModuleReferenceCache.retrieveCachedPositions(oldFileOfModule))
+		{
+			var changes = callerChanges.computeIfAbsent(cachedPosition.filePath().toUri().toString(), u -> new ArrayList<>());
+			var textEdit = new TextEdit();
+			textEdit.setNewText(newName);
+			textEdit.setRange(LspUtil.toRange(cachedPosition));
+			changes.add(textEdit);
+		}
+
+		return callerChanges;
 	}
 }
