@@ -157,15 +157,30 @@ class ModuleRenameShould extends LanguageServerTest
 	}
 
 	@Test
-	void renameAFunctionAndItsFileOnRenameTriggeredOnFunctionName()
+	void renameAFunctionAndItsFileOnRenameTriggeredOnFunctionNameDeclarationWithinFunction()
+	{
+		testFunctionRenameFromWithin(new Position(0, 18));
+	}
+
+	@Test
+	void renameAFunctionAndItsFileOnRenameTriggeredOnFunctionNameReferenceWithinFunction()
+	{
+		testFunctionRenameFromWithin(new Position(4, 1));
+	}
+
+	private void testFunctionRenameFromWithin(Position pos)
 	{
 		var textDocument = textDocumentIdentifier("CALLED", "FUNC");
 		var renameParams = new RenameParams(
 			textDocument,
-			new Position(4, 1),
+			pos,
 			"FUNCY"
 		);
 
+		var placeholder = getContext().languageService().prepareRename(new PrepareRenameParams(textDocument, pos));
+		assertThat(placeholder)
+			.as("Prepare rename did not finish with a result")
+			.isNotNull();
 		var changes = getContext().languageService().rename(renameParams);
 		assertThat(changes.getChanges()).isEmpty();
 		assertThat(changes.getDocumentChanges()).isNotEmpty();

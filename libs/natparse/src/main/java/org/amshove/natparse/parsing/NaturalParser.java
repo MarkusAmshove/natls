@@ -57,72 +57,7 @@ public class NaturalParser
 		VariableNode functionReturnVariable = null;
 		if (file.getFiletype() == NaturalFileType.FUNCTION) // skip over DEFINE FUNCTION
 		{
-			// TODO: Implement proper when implementing different NaturalModules
-			while (!tokens.isAtEnd())
-			{
-				if (tokens.peek().kind() == SyntaxKind.DEFINE && tokens.peek(1).kind() == SyntaxKind.DATA)
-				{
-					break;
-				}
-
-				if (tokens.peek(1).kind() == SyntaxKind.RETURNS)
-				{
-					var functionName = tokens.advance();
-					naturalModule.setFunctionName(functionName);
-					functionReturnVariable = new VariableNode();
-					functionReturnVariable.setLevel(1);
-					functionReturnVariable.setScope(VariableScope.LOCAL);
-					functionReturnVariable.setDeclaration(new TokenNode(functionName));
-
-					tokens.advance(); // RETURNS
-					if (tokens.peek().kind() == SyntaxKind.LPAREN)
-					{
-						tokens.advance(); // (
-						var typeTokenSource = tokens.advance().source();
-						if (tokens.peek().kind() == SyntaxKind.COMMA || tokens.peek().kind() == SyntaxKind.DOT)
-						{
-							typeTokenSource += tokens.advance().source(); // decimal
-							typeTokenSource += tokens.advance().source(); // next number
-						}
-						var type = DataType.fromString(typeTokenSource);
-						var typedReturnVariable = new TypedVariableNode(functionReturnVariable);
-
-						if (typeTokenSource.contains("/") || tokens.peek().kind() == SyntaxKind.SLASH)
-						{
-							var firstDimension = new ArrayDimension();
-							// Parsing array dimensions is currently too tightly coupled into DefineDataParser,
-							// so we do a rudimentary implementation to revisit later.
-							firstDimension.setLowerBound(IArrayDimension.UNBOUND_VALUE);
-							firstDimension.setUpperBound(IArrayDimension.UNBOUND_VALUE);
-							typedReturnVariable.addDimension(firstDimension);
-							while (tokens.peek().kind() != SyntaxKind.RPAREN && !tokens.isAtEnd())
-							{
-								if (tokens.peek().kind() == SyntaxKind.COMMA)
-								{
-									var nextDimension = new ArrayDimension();
-									nextDimension.setLowerBound(IArrayDimension.UNBOUND_VALUE);
-									nextDimension.setUpperBound(IArrayDimension.UNBOUND_VALUE);
-									typedReturnVariable.addDimension(nextDimension);
-								}
-								tokens.advance();
-							}
-						}
-
-						tokens.advance(); // )
-						if (tokens.peek().kind() == SyntaxKind.DYNAMIC)
-						{
-							type = DataType.ofDynamicLength(type.format());
-						}
-						naturalModule.setReturnType(type);
-						typedReturnVariable.setType(new VariableType(type));
-						functionReturnVariable = typedReturnVariable;
-					}
-					advanceToDefineData(tokens);
-					break;
-				}
-
-				tokens.advance();
-			}
+			functionReturnVariable = consumeDefineFunction(tokens, naturalModule);
 		}
 
 		// Try to advance to DEFINE DATA.
@@ -163,6 +98,78 @@ public class NaturalParser
 		}
 
 		return false;
+	}
+
+	private VariableNode consumeDefineFunction(TokenList tokens, NaturalModule naturalModule)
+	{
+		VariableNode functionReturnVariable = null;
+		while (!tokens.isAtEnd())
+		{
+			if (tokens.peek().kind() == SyntaxKind.DEFINE && tokens.peek(1).kind() == SyntaxKind.DATA)
+			{
+				break;
+			}
+
+			if (tokens.peek(1).kind() == SyntaxKind.RETURNS)
+			{
+				var functionName = tokens.advance();
+				naturalModule.setFunctionName(functionName);
+				functionReturnVariable = new VariableNode();
+				functionReturnVariable.setLevel(1);
+				functionReturnVariable.setScope(VariableScope.LOCAL);
+				functionReturnVariable.setDeclaration(new TokenNode(functionName));
+
+				tokens.advance(); // RETURNS
+				if (tokens.peek().kind() == SyntaxKind.LPAREN)
+				{
+					tokens.advance(); // (
+					var typeTokenSource = tokens.advance().source();
+					if (tokens.peek().kind() == SyntaxKind.COMMA || tokens.peek().kind() == SyntaxKind.DOT)
+					{
+						typeTokenSource += tokens.advance().source(); // decimal
+						typeTokenSource += tokens.advance().source(); // next number
+					}
+					var type = DataType.fromString(typeTokenSource);
+					var typedReturnVariable = new TypedVariableNode(functionReturnVariable);
+
+					if (typeTokenSource.contains("/") || tokens.peek().kind() == SyntaxKind.SLASH)
+					{
+						var firstDimension = new ArrayDimension();
+						// Parsing array dimensions is currently too tightly coupled into DefineDataParser,
+						// so we do a rudimentary implementation to revisit later.
+						firstDimension.setLowerBound(IArrayDimension.UNBOUND_VALUE);
+						firstDimension.setUpperBound(IArrayDimension.UNBOUND_VALUE);
+						typedReturnVariable.addDimension(firstDimension);
+						while (tokens.peek().kind() != SyntaxKind.RPAREN && !tokens.isAtEnd())
+						{
+							if (tokens.peek().kind() == SyntaxKind.COMMA)
+							{
+								var nextDimension = new ArrayDimension();
+								nextDimension.setLowerBound(IArrayDimension.UNBOUND_VALUE);
+								nextDimension.setUpperBound(IArrayDimension.UNBOUND_VALUE);
+								typedReturnVariable.addDimension(nextDimension);
+							}
+							tokens.advance();
+						}
+					}
+
+					tokens.advance(); // )
+					if (tokens.peek().kind() == SyntaxKind.DYNAMIC)
+					{
+						type = DataType.ofDynamicLength(type.format());
+					}
+					naturalModule.setReturnType(type);
+					typedReturnVariable.setType(new VariableType(type));
+					functionReturnVariable = typedReturnVariable;
+				}
+				advanceToDefineData(tokens);
+				break;
+			}
+
+			tokens.advance();
+		}
+
+		return functionReturnVariable;
 	}
 
 	private IDefineData parseDefineData(TokenList tokens, IModuleProvider moduleProvider, NaturalModule naturalModule)

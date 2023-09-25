@@ -26,6 +26,7 @@ import org.amshove.natls.referencing.ReferenceFinder;
 import org.amshove.natls.signaturehelp.SignatureHelpProvider;
 import org.amshove.natls.snippets.SnippetEngine;
 import org.amshove.natls.workspace.RenameFileHandler;
+import org.amshove.natparse.IPosition;
 import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.lexing.SyntaxKind;
@@ -548,6 +549,16 @@ public class NaturalLanguageService implements LanguageClientAware
 		var node = NodeUtil.findTokenNodeAtPosition(path, params.getPosition().getLine(), params.getPosition().getCharacter(), file.module().syntaxTree());
 		if (node == null)
 		{
+			if (file.getType() == NaturalFileType.FUNCTION
+				&& file.module()instanceof IFunction function
+				&& function.functionName() != null
+				&& positionEnclosesOther(function.functionName(), params.getPosition()))
+			{
+				var result = new PrepareRenameResult();
+				result.setRange(LspUtil.toRange(function.functionName()));
+				result.setPlaceholder(function.functionName().symbolName());
+				return result;
+			}
 			throw new ResponseErrorException(new ResponseError(1, "Nothing renamable found", null));
 		}
 
@@ -584,6 +595,11 @@ public class NaturalLanguageService implements LanguageClientAware
 		return result;
 	}
 
+	private boolean positionEnclosesOther(IPosition position, Position lspPosition)
+	{
+		return position.line() == lspPosition.getLine() && position.offsetInLine() <= lspPosition.getCharacter() && position.endOffset() >= lspPosition.getCharacter();
+	}
+
 	public WorkspaceEdit rename(RenameParams params)
 	{
 		var fileUri = params.getTextDocument().getUri();
@@ -616,6 +632,11 @@ public class NaturalLanguageService implements LanguageClientAware
 				return edits;
 			}
 			return renameComputer.rename(referencableNode, params.getNewName());
+		}
+
+		if (node == null && file.getType() == NaturalFileType.FUNCTION && module instanceof IFunction function && function.functionName() != null && positionEnclosesOther(function.functionName(), params.getPosition()))
+		{
+			return renameFunctionAndItsFile(params, path, fileUri);
 		}
 
 		return null;
