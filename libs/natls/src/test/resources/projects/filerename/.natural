@@ -1,0 +1,16 @@
+<LibraryStepLibs>
+    <LibrariesSteplibs>
+        <LibrarySteplib>
+            <LibrarySteplibName>CALLED</LibrarySteplibName>
+            <LibrarySteplibExtensions>0;</LibrarySteplibExtensions>
+        </LibrarySteplib>
+        <LibrarySteplib>
+            <LibrarySteplibName>CALLEE</LibrarySteplibName>
+            <LibrarySteplibExtensions>0;CALLED[-1,-1];</LibrarySteplibExtensions>
+        </LibrarySteplib>
+        <LibrarySteplib>
+            <LibrarySteplibName>NOREF</LibrarySteplibName>
+            <LibrarySteplibExtensions>0;</LibrarySteplibExtensions>
+        </LibrarySteplib>
+    </LibrariesSteplibs>
+</LibraryStepLibs>

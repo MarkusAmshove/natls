@@ -1,5 +1,6 @@
 package org.amshove.natls.project;
 
+import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
@@ -53,18 +54,20 @@ public class LanguageServerProject
 		return null;
 	}
 
-	// TODO: This shouldn't be here. The callers should use the LanguageServerFile as object provider
-	//	  to find stuff that is actually in scope.
+	public LanguageServerFile findFileByReferableName(String library, String referableName)
+	{
+		return libraries.get(library).findFile(referableName);
+	}
+
+	// Used in tests only
 	public LanguageServerFile findFileByReferableName(String referableName)
 	{
 		for (var lib : libraries.values())
 		{
-			for (var file : lib.files())
+			var foundFile = lib.findFile(referableName);
+			if (foundFile != null)
 			{
-				if (file.getReferableName().equalsIgnoreCase(referableName))
-				{
-					return file;
-				}
+				return foundFile;
 			}
 		}
 
@@ -98,5 +101,17 @@ public class LanguageServerProject
 	public Path rootPath()
 	{
 		return project.getRootPath();
+	}
+
+	public void renameFile(String oldUri, String newUri)
+	{
+		var oldFile = findFile(LspUtil.uriToPath(oldUri));
+		oldFile.getLibrary().rename(oldFile, LspUtil.uriToPath(newUri));
+	}
+
+	public void renameReferableModule(String uri, String newReferableName)
+	{
+		var oldFile = findFile(LspUtil.uriToPath(uri));
+		oldFile.getLibrary().rename(oldFile, newReferableName);
 	}
 }

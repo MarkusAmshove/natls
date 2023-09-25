@@ -153,4 +153,28 @@ public class LanguageServerLibrary
 	{
 		return fileByReferableName.get(referableName);
 	}
+
+	public void rename(LanguageServerFile oldFile, Path newPath)
+	{
+
+		var newName = newPath.getFileName().toString().split("\\.")[0];
+		var oldFilesLsLibrary = oldFile.getLibrary();
+		oldFilesLsLibrary.fileByReferableName.remove(oldFile.getReferableName());
+		var oldNaturalLibrary = oldFilesLsLibrary.getLibrary();
+		var newNaturalFile = new NaturalFile(newName, newPath, oldFile.getType(), oldNaturalLibrary);
+		oldNaturalLibrary.removeFile(oldFile.getNaturalFile());
+		oldNaturalLibrary.addFile(newNaturalFile);
+		addFile(new LanguageServerFile(newNaturalFile));
+	}
+
+	public void rename(LanguageServerFile oldFile, String newReferableName)
+	{
+		var oldFilesLsLibrary = oldFile.getLibrary();
+		oldFilesLsLibrary.fileByReferableName.remove(oldFile.getReferableName());
+		var oldNaturalLibrary = oldFilesLsLibrary.getLibrary();
+		var newNaturalFile = new NaturalFile(newReferableName, oldFile.getPath(), oldFile.getType(), oldNaturalLibrary);
+		oldNaturalLibrary.removeFile(oldFile.getNaturalFile());
+		oldNaturalLibrary.addFile(newNaturalFile);
+		addFile(new LanguageServerFile(newNaturalFile));
+	}
 }

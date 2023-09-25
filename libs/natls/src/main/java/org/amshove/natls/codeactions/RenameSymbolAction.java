@@ -1,7 +1,11 @@
 package org.amshove.natls.codeactions;
 
 import org.amshove.natls.languageserver.LspUtil;
+import org.amshove.natls.project.LanguageServerFile;
+import org.amshove.natls.workspace.RenameFileHandler;
+import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.IReferencableNode;
+import org.amshove.natparse.natural.ISubroutineNode;
 import org.amshove.natparse.natural.ISymbolReferenceNode;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.WorkspaceEdit;
@@ -51,5 +55,13 @@ public class RenameSymbolAction
 
 		workspaceEdit.setChanges(changesPerFile);
 		return workspaceEdit;
+	}
+
+	public WorkspaceEdit renameExternalSubroutine(String newName, ISubroutineNode subroutine, INaturalModule module, LanguageServerFile file)
+	{
+		var edit = rename(subroutine, newName);
+		var callerChanges = RenameFileHandler.computeCallerRenames(newName, file, module.callers());
+		edit.getChanges().putAll(callerChanges);
+		return edit;
 	}
 }

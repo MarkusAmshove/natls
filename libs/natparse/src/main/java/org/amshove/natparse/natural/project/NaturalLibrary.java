@@ -61,6 +61,20 @@ public class NaturalLibrary
 		file.setLibrary(this);
 	}
 
+	public void removeFile(NaturalFile file)
+	{
+		if (file.getFiletype() == NaturalFileType.DDM)
+		{
+			ddmsByReferableName.remove(file.getReferableName());
+		}
+		else
+		{
+			modulesByReferableName.remove(file.getReferableName());
+		}
+
+		file.setLibrary(null);
+	}
+
 	public NaturalFile findModuleByReferableName(String referableName, boolean includeStepLibs)
 	{
 		if (modulesByReferableName.containsKey(referableName))
