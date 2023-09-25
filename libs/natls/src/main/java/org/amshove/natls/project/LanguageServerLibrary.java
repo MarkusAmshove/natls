@@ -156,22 +156,25 @@ public class LanguageServerLibrary
 
 	public void rename(LanguageServerFile oldFile, Path newPath)
 	{
-		fileByReferableName.remove(oldFile.getReferableName());
 
 		var newName = newPath.getFileName().toString().split("\\.")[0];
-		var oldLibrary = getLibrary();
-		var newNaturalFile = new NaturalFile(newName, newPath, oldFile.getType(), oldLibrary);
-		oldLibrary.addFile(newNaturalFile);
+		var oldFilesLsLibrary = oldFile.getLibrary();
+		oldFilesLsLibrary.fileByReferableName.remove(oldFile.getReferableName());
+		var oldNaturalLibrary = oldFilesLsLibrary.getLibrary();
+		var newNaturalFile = new NaturalFile(newName, newPath, oldFile.getType(), oldNaturalLibrary);
+		oldNaturalLibrary.removeFile(oldFile.getNaturalFile());
+		oldNaturalLibrary.addFile(newNaturalFile);
 		addFile(new LanguageServerFile(newNaturalFile));
 	}
 
 	public void rename(LanguageServerFile oldFile, String newReferableName)
 	{
-		fileByReferableName.remove(oldFile.getReferableName());
-
-		var library = oldFile.getLibrary().getLibrary();
-		var newNaturalFile = new NaturalFile(newReferableName, oldFile.getPath(), oldFile.getType(), library);
-		library.addFile(newNaturalFile);
+		var oldFilesLsLibrary = oldFile.getLibrary();
+		oldFilesLsLibrary.fileByReferableName.remove(oldFile.getReferableName());
+		var oldNaturalLibrary = oldFilesLsLibrary.getLibrary();
+		var newNaturalFile = new NaturalFile(newReferableName, oldFile.getPath(), oldFile.getType(), oldNaturalLibrary);
+		oldNaturalLibrary.removeFile(oldFile.getNaturalFile());
+		oldNaturalLibrary.addFile(newNaturalFile);
 		addFile(new LanguageServerFile(newNaturalFile));
 	}
 }
