@@ -31,7 +31,6 @@ public class RenameFileHandler
 
 			if (oldFile == null && project.findFile(LspUtil.uriToPath(rename.getNewUri())) != null)
 			{
-				// TODO: This fixed one problem in double renaming functions, but it still doesn't work.
 				// old file doesn't exist but new one does.
 				// it is already handled, because we're retriggered after RenameFile operation (e.g. renaming function from function name)
 				continue;
