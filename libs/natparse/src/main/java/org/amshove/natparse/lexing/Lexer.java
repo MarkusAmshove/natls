@@ -393,16 +393,15 @@ public class Lexer
 
 	private void consumeAsteriskOrSystemVariable()
 	{
-		if (scanner.peek(1) == '*')
+		var createSyntaxKind = SyntaxKind.ASTERISK;
+		var lookaheadIndex = 1;
+		if (scanner.peek(lookaheadIndex) == '*')
 		{
-			scanner.start();
-			scanner.advance();
-			scanner.advance();
-			createAndAdd(SyntaxKind.EXPONENT_OPERATOR);
-			return;
+			createSyntaxKind = SyntaxKind.EXPONENT_OPERATOR;
+			lookaheadIndex = 2;
 		}
 
-		var lookahead = scanner.peek(1);
+		var lookahead = scanner.peek(lookaheadIndex);
 		switch (lookahead)
 		{
 			case 'a':
@@ -439,13 +438,14 @@ public class Lexer
 			case 'W':
 				break;
 			default:
-				createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
+				scanner.start();
+				scanner.advance(lookaheadIndex);
+				createAndAdd(createSyntaxKind);
 				return;
-
 		}
 
 		scanner.start();
-		scanner.advance();
+		scanner.advance(lookaheadIndex);
 		if (scanner.advanceIfIgnoreCase("OCCURRENCE"))
 		{
 			createAndAdd(SyntaxKind.OCCURRENCE);
@@ -847,7 +847,7 @@ public class Lexer
 			return;
 		}
 		scanner.rollbackCurrentLexeme();
-		createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
+		createAndAddCurrentSingleToken(createSyntaxKind);
 	}
 
 	private boolean consumeNumberedLabel()
