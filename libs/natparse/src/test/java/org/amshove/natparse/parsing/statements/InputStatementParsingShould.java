@@ -63,7 +63,11 @@ class InputStatementParsingShould extends StatementParseTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"MARK POSITION 3 IN FIELD #NUMBER", "MARK 3", "MARK #NUMBER", "MARK *#NUMBER"
+		"MARK POSITION 3 IN FIELD #NUMBER",
+		"MARK 3",
+		"MARK #NUMBER",
+		"MARK *#NUMBER",
+		"MARK **COM"
 	})
 	void consumeMark(String permutation)
 	{
