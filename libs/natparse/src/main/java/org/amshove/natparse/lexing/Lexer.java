@@ -396,7 +396,7 @@ public class Lexer
 		if (scanner.peek(1) == '*')
 		{
 			var prev = previous();
-			if (prev == null || prev != null && prev.kind() != SyntaxKind.MARK)
+			if (prev == null || prev.kind() != SyntaxKind.MARK)
 			{
 				scanner.start();
 				scanner.advance(2); // "**"
