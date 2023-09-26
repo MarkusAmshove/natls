@@ -20,6 +20,8 @@ WRITE #NOT-ARRAY(HIS.) /* No diagnostic, label reference
 /* No diagnostics, array accessed
 WRITE #ARR(*)
 WRITE #ARR(5)
+WRITE #ARR(LABEL./1)
+WRITE #ARR(LABEL.,2)
 
 /* No dimension specified
 WRITE #ARR /* !{D:ERROR:NPP042}
