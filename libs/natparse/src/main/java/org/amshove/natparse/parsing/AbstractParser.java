@@ -1005,8 +1005,8 @@ abstract class AbstractParser<T>
 		{
 			consumeMandatory(reference, SyntaxKind.LPAREN);
 			var isArrayRef = consumeOptionally(reference, SyntaxKind.LABEL_IDENTIFIER)
-			&& (consumeOptionally(reference, SyntaxKind.SLASH)
-			|| consumeOptionally(reference, SyntaxKind.COMMA));
+				&& (consumeOptionally(reference, SyntaxKind.SLASH)
+					|| consumeOptionally(reference, SyntaxKind.COMMA));
 			// If just RPAREN left, then this was just a LABEL_IDENTIFIER and thus not an array.
 			isArrayRef = isArrayRef || !peekKind(SyntaxKind.RPAREN);
 			if (isArrayRef)
