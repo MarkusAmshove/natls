@@ -9,6 +9,5 @@ public interface IFunction extends INaturalModule, IModuleWithBody, IHasDefineDa
 	@Nullable
 	IDataType returnType();
 
-	@Nullable
 	SyntaxToken functionName();
 }

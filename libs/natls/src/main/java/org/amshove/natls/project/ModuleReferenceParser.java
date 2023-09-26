@@ -115,7 +115,10 @@ public class ModuleReferenceParser
 	private FoundReference processFetch(TokenList tokens)
 	{
 		tokens.advance(); // fetch
-		tokens.advance(); // repeat/return
+		if (tokens.peek().kind() == SyntaxKind.RETURN || tokens.peek().kind() == SyntaxKind.REPEAT)
+		{
+			tokens.advance();
+		}
 		if (tokens.peek().kind() == SyntaxKind.STRING_LITERAL)
 		{
 			return new FoundReference(tokens.peek().stringValue().toUpperCase(), tokens.peek());

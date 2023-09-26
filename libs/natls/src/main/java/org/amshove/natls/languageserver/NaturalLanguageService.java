@@ -25,6 +25,8 @@ import org.amshove.natls.project.ParseStrategy;
 import org.amshove.natls.referencing.ReferenceFinder;
 import org.amshove.natls.signaturehelp.SignatureHelpProvider;
 import org.amshove.natls.snippets.SnippetEngine;
+import org.amshove.natls.workspace.RenameFileHandler;
+import org.amshove.natparse.IPosition;
 import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.lexing.SyntaxKind;
@@ -38,6 +40,7 @@ import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.ResponseErrorException;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseError;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
@@ -48,6 +51,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -64,6 +68,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	private final InlayHintProvider inlayHintProvider = new InlayHintProvider();
 	private HoverProvider hoverProvider;
 	private final RenameSymbolAction renameComputer = new RenameSymbolAction();
+	private final RenameFileHandler renameFileHandler = new RenameFileHandler();
 	private final CodeLensService codeLensService = new CodeLensService();
 
 	private static LSConfiguration config = LSConfiguration.createDefault();
@@ -438,7 +443,7 @@ public class NaturalLanguageService implements LanguageClientAware
 				monitor.progress("Indexing %s.%s".formatted(library.name(), file.getReferableName()), (int) percentageDone);
 				switch (file.getType())
 				{
-					case PROGRAM, SUBPROGRAM, SUBROUTINE, FUNCTION -> parser.parseReferences(file);
+					case PROGRAM, SUBPROGRAM, SUBROUTINE, FUNCTION, COPYCODE -> parser.parseReferences(file);
 					default ->
 					{}
 				}
@@ -542,6 +547,20 @@ public class NaturalLanguageService implements LanguageClientAware
 		var file = findNaturalFile(path);
 
 		var node = NodeUtil.findTokenNodeAtPosition(path, params.getPosition().getLine(), params.getPosition().getCharacter(), file.module().syntaxTree());
+		if (node == null)
+		{
+			if (file.getType() == NaturalFileType.FUNCTION
+				&& file.module()instanceof IFunction function
+				&& function.functionName() != null
+				&& positionEnclosesOther(function.functionName(), params.getPosition()))
+			{
+				var result = new PrepareRenameResult();
+				result.setRange(LspUtil.toRange(function.functionName()));
+				result.setPlaceholder(function.functionName().symbolName());
+				return result;
+			}
+			throw new ResponseErrorException(new ResponseError(1, "Nothing renamable found", null));
+		}
 
 		String placeholder = null;
 
@@ -576,14 +595,26 @@ public class NaturalLanguageService implements LanguageClientAware
 		return result;
 	}
 
+	private boolean positionEnclosesOther(IPosition position, Position lspPosition)
+	{
+		return position.line() == lspPosition.getLine() && position.offsetInLine() <= lspPosition.getCharacter() && position.endOffset() >= lspPosition.getCharacter();
+	}
+
 	public WorkspaceEdit rename(RenameParams params)
 	{
-		var path = LspUtil.uriToPath(params.getTextDocument().getUri());
+		var fileUri = params.getTextDocument().getUri();
+		var path = LspUtil.uriToPath(fileUri);
 		var file = findNaturalFile(path);
 
-		var node = NodeUtil.findTokenNodeAtPosition(path, params.getPosition().getLine(), params.getPosition().getCharacter(), file.module().syntaxTree());
+		var module = file.module();
+		var node = NodeUtil.findTokenNodeAtPosition(path, params.getPosition().getLine(), params.getPosition().getCharacter(), module.syntaxTree());
 		if (node instanceof ISymbolReferenceNode symbolReferenceNode)
 		{
+			if (file.getType() == NaturalFileType.FUNCTION && symbolReferenceNode.reference().declaration() == ((IFunction) module).functionName())
+			{
+				return renameFunctionAndItsFile(params, path, fileUri);
+			}
+
 			return renameComputer.rename(symbolReferenceNode, params.getNewName());
 		}
 
@@ -594,10 +625,47 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		if (node != null && node.parent()instanceof IReferencableNode referencableNode)
 		{
+			if (file.getType() == NaturalFileType.SUBROUTINE && referencableNode instanceof ISubroutineNode subroutine && subroutine.declaration().symbolName().equals(module.name()))
+			{
+				var edits = renameComputer.renameExternalSubroutine(params.getNewName(), subroutine, module, file);
+				languageServerProject.renameReferableModule(params.getTextDocument().getUri(), params.getNewName());
+				return edits;
+			}
 			return renameComputer.rename(referencableNode, params.getNewName());
 		}
 
+		if (node == null && file.getType() == NaturalFileType.FUNCTION && module instanceof IFunction function && function.functionName() != null && positionEnclosesOther(function.functionName(), params.getPosition()))
+		{
+			return renameFunctionAndItsFile(params, path, fileUri);
+		}
+
 		return null;
+	}
+
+	private WorkspaceEdit renameFunctionAndItsFile(RenameParams params, Path oldPath, String oldUri)
+	{
+		var workspaceEdit = new WorkspaceEdit();
+		var newUri = oldPath.getParent().resolve("%s.%s".formatted(params.getNewName(), "NS7")).toUri().toString();
+
+		var changes = new ArrayList<Either<TextDocumentEdit, ResourceOperation>>();
+		workspaceEdit.setDocumentChanges(changes);
+
+		// Act like the function has been renamed by file rename and get all the changes that have to be done
+		var renameFileChanges = willRenameFiles(List.of(new FileRename(params.getTextDocument().getUri(), newUri)));
+		for (Map.Entry<String, List<TextEdit>> stringListEntry : renameFileChanges.getChanges().entrySet())
+		{
+			var txtDocEdit = new TextDocumentEdit(new VersionedTextDocumentIdentifier(stringListEntry.getKey(), 0), stringListEntry.getValue());
+			changes.add(Either.forLeft(txtDocEdit));
+		}
+
+		// Rename the file as last change
+		var operation = new RenameFile();
+		operation.setNewUri(newUri);
+		operation.setOldUri(oldUri);
+		operation.setOptions(new RenameFileOptions(false, true));
+		changes.add(Either.forRight(operation));
+
+		return workspaceEdit;
 	}
 
 	private void assertCanRenameInFile(LanguageServerFile file)
@@ -680,6 +748,16 @@ public class NaturalLanguageService implements LanguageClientAware
 		});
 
 		return edits;
+	}
+
+	public WorkspaceEdit willRenameFiles(List<FileRename> renames)
+	{
+		return renameFileHandler.handleFileRename(renames, languageServerProject);
+	}
+
+	public LanguageServerProject getProject()
+	{
+		return languageServerProject;
 	}
 
 	private static <T> T extractJsonObject(Object obj, Class<T> clazz)

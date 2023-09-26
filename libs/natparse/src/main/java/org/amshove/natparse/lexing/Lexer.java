@@ -1163,12 +1163,12 @@ public class Lexer
 		var nestedParens = 0;
 		while (!scanner.isAtEnd() && !(scanner.peek() == ')' && nestedParens == 0) || isInString)
 		{
-			if (scanner.peek() == '(')
+			if (!isInString && scanner.peek() == '(')
 			{
 				nestedParens++;
 			}
 
-			if (scanner.peek() == ')')
+			if (!isInString && scanner.peek() == ')')
 			{
 				nestedParens--;
 			}
