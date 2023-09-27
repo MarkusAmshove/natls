@@ -1788,6 +1788,13 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void parseWriteWithReportSpecificationAsAttribute()
+	{
+		var write = assertParsesSingleStatement("WRITE (CC)", IWriteNode.class);
+		assertThat(write.reportSpecification()).map(SyntaxToken::source).hasValue("CC");
+	}
+
+	@Test
 	void parseWriteWithLineAdvancement()
 	{
 		assertParsesSingleStatement("WRITE (1) // 10X 'literal' (I)", IWriteNode.class);
