@@ -81,7 +81,7 @@ public class TestContext
 
 	private String moduleKey(NaturalFile file)
 	{
-		return "%s:%s".formatted(MODULE_KEY, project.getRootPath().relativize(file.getPath()).toString());
+		return "%s:%s".formatted(MODULE_KEY, project.getRootPath().relativize(file.getPath()).toString()).replace("\\", "/");
 	}
 
 	private TestContext(NaturalProject project)
