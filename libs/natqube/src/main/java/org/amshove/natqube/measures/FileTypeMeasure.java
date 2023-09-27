@@ -2,16 +2,11 @@ package org.amshove.natqube.measures;
 
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natqube.NaturalMetrics;
-import org.amshove.natqube.sensor.NatlintSensor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.sensor.SensorContext;
 
 public class FileTypeMeasure implements INaturalFileMeasurer
 {
-	private static final Logger LOGGER = LoggerFactory.getLogger(NatlintSensor.class);
-
 	@Override
 	public void measure(SensorContext context, NaturalFile file, InputFile inputFile)
 	{

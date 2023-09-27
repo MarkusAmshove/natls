@@ -9,6 +9,7 @@ import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
 import org.amshove.natparse.parsing.NaturalParser;
 import org.amshove.natparse.parsing.project.BuildFileProjectReader;
+import org.amshove.natqube.NatQubeException;
 import org.amshove.natqube.Natural;
 import org.amshove.natqube.measures.FileTypeMeasure;
 import org.amshove.natqube.rules.NaturalRuleRepository;
@@ -51,7 +52,7 @@ public class NatlintSensor implements Sensor
 		sensorContext = context;
 		projectKey = context.project().key();
 		var filesystem = new ActualFilesystem();
-		var buildfilePath = filesystem.findNaturalProjectFile(context.fileSystem().baseDir().toPath()).get();
+		var buildfilePath = filesystem.findNaturalProjectFile(context.fileSystem().baseDir().toPath()).orElseThrow();
 		naturalProject = new BuildFileProjectReader(filesystem).getNaturalProject(buildfilePath);
 		new NaturalProjectFileIndexer().indexProject(naturalProject);
 
@@ -59,7 +60,11 @@ public class NatlintSensor implements Sensor
 
 		for (var library : naturalProject.getLibraries())
 		{
-			LOGGER.error("Starting lib %s".formatted(library.getName()));
+			if (LOGGER.isInfoEnabled())
+			{
+				LOGGER.info("Starting lib %s".formatted(library.getName()));
+			}
+
 			library.files().parallelStream().forEach(naturalFile ->
 			{
 				try
@@ -71,7 +76,7 @@ public class NatlintSensor implements Sensor
 					var inputFile = findInputFile(naturalFile.getPath());
 					if (inputFile == null)
 					{
-						throw new RuntimeException("Couldn't find input file for natural file");
+						throw new NatQubeException("Couldn't find input file for natural file");
 					}
 
 					fileTypeMeasurer.measure(context, naturalFile, inputFile);
