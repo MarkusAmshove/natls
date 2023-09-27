@@ -9,7 +9,8 @@ plugins {
 ext {
 	JAVA_VERSION = 17
 	SLF4J_VERSION = '1.7.32'
-    SONAR_VERSION = '9.14.0.375'
+    SONAR_VERSION = '9.9.1.69595'
+    SONAR_API_VERSION = '10.1.0.809'
 	libraries = [
 		// Implementation
 		guava : 'com.google.guava:guava:31.0.1-jre',
@@ -21,7 +22,9 @@ ext {
 		slf4j_utillogging : "org.slf4j:slf4j-jdk14:${SLF4J_VERSION}",
 		reflections  : 'org.reflections:reflections:0.10.2',
 		picocli : 'info.picocli:picocli:4.6.3',
-        sonarqube_api   : "org.sonarsource.api.plugin:sonar-plugin-api:${SONAR_VERSION}",
+        sonarqube_api   : "org.sonarsource.api.plugin:sonar-plugin-api:${SONAR_API_VERSION}",
+        sonarqube_test_fixtures : "org.sonarsource.api.plugin:sonar-plugin-api-test-fixtures:${SONAR_API_VERSION}",
+        sonarqube_test_api : "org.sonarsource.sonarqube:sonar-plugin-api-impl:${SONAR_VERSION}",
 		// Test
 		junit_jupiter : 'org.junit:junit-bom:5.8.2',
 		assertJ : 'org.assertj:assertj-core:3.23.1',

@@ -7,10 +7,18 @@ dependencies {
     compileOnly libraries.slf4j_api
     implementation project(':natparse')
     implementation project(':natlint')
+
+    testImplementation project(':testhelpers')
+    testImplementation libraries.sonarqube_test_api
+    testImplementation libraries.sonarqube_test_fixtures
 }
 
 tasks.withType(JavaCompile).configureEach {
     options.release.set(17)
+}
+
+configurations.testImplementation {
+    exclude group: 'ch.qos.logback', module: 'logback-classic'
 }
 
 jar {
