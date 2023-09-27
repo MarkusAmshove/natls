@@ -86,14 +86,21 @@ public class Lexer
 					consumeNewLine();
 					continue;
 				case '(':
-					parensLevel++;
-					lastBeforeOpenParens = previous();
-					if (lexerMode == LexerMode.IN_DEFINE_DATA && lastBeforeOpenParens != null && lastBeforeOpenParens.kind() != SyntaxKind.LESSER_SIGN)
+					if (consumeNumberedLabel())
 					{
-						lexerMode = LexerMode.IN_DATA_TYPE;
+						continue;
 					}
-					createAndAddCurrentSingleToken(SyntaxKind.LPAREN);
-					continue;
+					else
+					{
+						parensLevel++;
+						lastBeforeOpenParens = previous();
+						if (lexerMode == LexerMode.IN_DEFINE_DATA && lastBeforeOpenParens != null && lastBeforeOpenParens.kind() != SyntaxKind.LESSER_SIGN)
+						{
+							lexerMode = LexerMode.IN_DATA_TYPE;
+						}
+						createAndAddCurrentSingleToken(SyntaxKind.LPAREN);
+						continue;
+					}
 				case ')':
 					parensLevel--;
 					if (lexerMode == LexerMode.IN_DATA_TYPE)
@@ -388,11 +395,14 @@ public class Lexer
 	{
 		if (scanner.peek(1) == '*')
 		{
-			scanner.start();
-			scanner.advance();
-			scanner.advance();
-			createAndAdd(SyntaxKind.EXPONENT_OPERATOR);
-			return;
+			var prev = previous();
+			if (prev == null || prev.kind() != SyntaxKind.MARK)
+			{
+				scanner.start();
+				scanner.advance(2); // "**"
+				createAndAdd(SyntaxKind.EXPONENT_OPERATOR);
+				return;
+			}
 		}
 
 		var lookahead = scanner.peek(1);
@@ -434,7 +444,6 @@ public class Lexer
 			default:
 				createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
 				return;
-
 		}
 
 		scanner.start();
@@ -843,6 +852,34 @@ public class Lexer
 		createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
 	}
 
+	private boolean consumeNumberedLabel()
+	{
+		var previous = previous();
+		if (previous != null && previous.kind() == SyntaxKind.IDENTIFIER)
+		{
+			return false;
+		}
+
+		var i = 1; // Skip '(', then check if next 4 are digits
+		while (i < 5 && !scanner.willPassEnd(i) && Character.isDigit(scanner.peek(i)))
+		{
+			i++;
+		}
+
+		if (i == 5 && scanner.peek(i) == ')')
+		{
+			createAndAddCurrentSingleToken(SyntaxKind.LPAREN);
+			scanner.start();
+			scanner.advance(4);
+			createAndAdd(SyntaxKind.LABEL_IDENTIFIER);
+			createAndAddCurrentSingleToken(SyntaxKind.RPAREN);
+			return true;
+		}
+
+		scanner.reset();
+		return false;
+	}
+
 	private void consumeIdentifier()
 	{
 		scanner.start();
@@ -1128,12 +1165,12 @@ public class Lexer
 		var nestedParens = 0;
 		while (!scanner.isAtEnd() && !(scanner.peek() == ')' && nestedParens == 0) || isInString)
 		{
-			if (scanner.peek() == '(')
+			if (!isInString && scanner.peek() == '(')
 			{
 				nestedParens++;
 			}
 
-			if (scanner.peek() == ')')
+			if (!isInString && scanner.peek() == ')')
 			{
 				nestedParens--;
 			}

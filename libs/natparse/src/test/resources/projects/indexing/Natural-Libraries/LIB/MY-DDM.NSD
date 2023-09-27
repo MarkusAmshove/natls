@@ -1,0 +1,11 @@
+DB: 000 FILE: 000  - MY-DDM                          DEFAULT SEQUENCE:
+
+T L DB Name                              F Leng  S D Remark
+- - -- --------------------------------  - ----  - - ------------------------
+*      >Natural Source Header 000000
+*      :CP
+*
+*
+*      <Natural Source Header
+  1 AA FIELD                             N  5,0    D
+******DDM OUTPUT TERMINATED******

@@ -34,7 +34,7 @@ public class LspProjectNameResolver implements ParameterResolver
 			var projectName = parameterContext.getParameter().getAnnotation(LspProjectName.class).value();
 			var tempDir = new NaturalProjectResourceResolver.AutoDeleteTempDirectory(projectName);
 			extensionContext.getStore(NAMESPACE).put("tempdir", tempDir);
-			var project = TestProjectLoader.loadProjectFromResources(tempDir.getPath(), projectName);
+			TestProjectLoader.loadProjectFromResources(tempDir.getPath(), projectName);
 			var server = new NaturalLanguageServer();
 			var params = new InitializeParams();
 			params.setCapabilities(createCapabilities());
@@ -43,7 +43,7 @@ public class LspProjectNameResolver implements ParameterResolver
 			var client = new StubClient();
 			server.connect(client);
 			server.initialize(params).get(1, TimeUnit.MINUTES);
-			return new LspTestContext(project, client, server, server.getLanguageService());
+			return new LspTestContext(server.getLanguageService().getProject(), client, server, server.getLanguageService());
 		}
 		catch (InterruptedException | ExecutionException | TimeoutException e)
 		{

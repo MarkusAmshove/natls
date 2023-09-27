@@ -1,0 +1,6 @@
+define function MYFUNC /* purposely different than file name
+returns (l)
+define data local
+end-define
+ignore
+end-function

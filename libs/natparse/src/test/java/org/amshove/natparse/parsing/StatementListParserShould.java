@@ -1138,6 +1138,7 @@ class StatementListParserShould extends StatementParseTest
 		"BY DESC1 FROM 'Asd' THRU 'def'",
 		"LOGICAL DYNAMIC #DIRECTION SEQUENCE BY DESC1",
 		"LOGICAL DYNAMIC #DIRECTION SEQUENCE BY DESC1 FROM 'A' TO 'Z'",
+		"IN LOGICAL DYNAMIC #DIRECTION SEQUENCE BY DESC1 STARTING FROM 'A' TO 'Z'",
 		"WITH DESC1 EQUAL TO 'Asd'",
 		"WITH DESC1 GT 'Asd'",
 		"WITH DESC1 LESS THAN 'Asd'",
@@ -1519,6 +1520,21 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var move = assertParsesSingleStatement("MOVE EDITED #VAR1 (EM=XX) TO #VAR2", IMoveStatementNode.class);
 		assertThat(move.isEdited()).isTrue();
+	}
+
+	@Test
+	void parseMoveEditedWithEditorMaskContainingRParenInString()
+	{
+		var result = assertParsesWithoutDiagnostics("""
+			MOVE EDITED #V1 (EM=D')') TO #V2
+			IF #V1 = #V2
+			IGNORE
+			END-IF
+			""");
+
+		assertThat(result.statements()).hasSize(2);
+		assertNodeType(result.statements().first(), IMoveStatementNode.class);
+		assertNodeType(result.statements().last(), IIfStatementNode.class);
 	}
 
 	@Test
@@ -2260,6 +2276,13 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var escape = assertParsesSingleStatement("ESCAPE BOTTOM (RD.)", IEscapeNode.class);
 		assertThat(escape.label()).map(SyntaxToken::symbolName).hasValue("RD.");
+	}
+
+	@Test
+	void parseEscapeNumberedLabel()
+	{
+		var escape = assertParsesSingleStatement("ESCAPE BOTTOM (0123)", IEscapeNode.class);
+		assertThat(escape.label()).map(SyntaxToken::symbolName).hasValue("0123");
 	}
 
 	@ParameterizedTest

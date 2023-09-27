@@ -171,7 +171,7 @@ public class SourceTextScanner
 		return currentOffset >= source.length;
 	}
 
-	private boolean willPassEnd(int offset)
+	public boolean willPassEnd(int offset)
 	{
 		return currentOffset + offset >= source.length;
 	}

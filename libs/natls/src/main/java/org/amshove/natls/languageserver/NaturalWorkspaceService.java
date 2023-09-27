@@ -37,6 +37,12 @@ public class NaturalWorkspaceService implements WorkspaceService
 	}
 
 	@Override
+	public CompletableFuture<WorkspaceEdit> willRenameFiles(RenameFilesParams params)
+	{
+		return CompletableFuture.supplyAsync(() -> languageService.willRenameFiles(params.getFiles()));
+	}
+
+	@Override
 	public void didCreateFiles(CreateFilesParams params)
 	{
 		for (var file : params.getFiles())
