@@ -30,23 +30,21 @@ public class TestContext
 		return new TestContext(project);
 	}
 
-	public <T extends Serializable> TestContext assertMeasure(InputFile file, Metric<T> metricKey, T value)
+	public <T extends Serializable> void assertMeasure(InputFile file, Metric<T> metricKey, T value)
 	{
 		var measure = context.measure(file.key(), metricKey);
 
 		if (measure == null && value == null)
 		{
-			return this;
+			return;
 		}
 
 		if (measure == null)
 		{
 			fail("No Measure <" + metricKey.getName() + "> on " + file.filename());
-			return this;
 		}
 
 		assertThat(value).as("Metric <" + metricKey.getName() + "> did not match").isEqualTo(measure.value());
-		return this;
 	}
 
 	public NaturalFile findNaturalFile(String lib, String module)
@@ -94,18 +92,15 @@ public class TestContext
 
 	private void initializeContext()
 	{
-		project.getLibraries().forEach(lib ->
+		project.getLibraries().forEach(lib -> lib.files().forEach(file ->
 		{
-			lib.files().forEach(file ->
-			{
-				var inputFile = TestInputFileBuilder
-					.create(MODULE_KEY, project.getRootPath().relativize(file.getPath()).toString())
-					.setContents(fileContents(file.getPath()))
-					.build();
+			var inputFile = TestInputFileBuilder
+				.create(MODULE_KEY, project.getRootPath().relativize(file.getPath()).toString())
+				.setContents(fileContents(file.getPath()))
+				.build();
 
-				context.fileSystem().add(inputFile);
-			});
-		});
+			context.fileSystem().add(inputFile);
+		}));
 	}
 
 	private String fileContents(Path filePath)

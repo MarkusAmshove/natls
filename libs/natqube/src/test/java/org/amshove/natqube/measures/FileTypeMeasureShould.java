@@ -7,7 +7,16 @@ import org.amshove.testhelpers.IntegrationTest;
 import org.amshove.testhelpers.ProjectName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.sonar.api.ce.measure.Component;
 import org.sonar.api.measures.Metric;
+import org.sonar.api.testfixtures.measure.TestComponent;
+import org.sonar.api.testfixtures.measure.TestMeasureComputerContext;
+import org.sonar.api.testfixtures.measure.TestMeasureComputerDefinitionContext;
+import org.sonar.api.testfixtures.measure.TestSettings;
+
+import java.util.Objects;
+
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @IntegrationTest
 class FileTypeMeasureShould
@@ -84,6 +93,24 @@ class FileTypeMeasureShould
 	void countFunctions()
 	{
 		assertCountedMeasure("MYFUNC", NaturalMetrics.NUMBER_OF_FUNCTIONS);
+	}
+
+	@Test
+	void aggregateMeasuresOnFolderLevel()
+	{
+		var aggregator = new AggregateFileTypeMeasure();
+
+		var context = new TestMeasureComputerContext(
+			new TestComponent(TestContext.MODULE_KEY + ":Natural-Libraries/LIB", Component.Type.DIRECTORY, null),
+			new TestSettings(),
+			aggregator.define(new TestMeasureComputerDefinitionContext())
+		);
+		context.addChildrenMeasures(NaturalMetrics.NUMBER_OF_COPYCODES.key(), 10, 5);
+		context.addChildrenMeasures(NaturalMetrics.NUMBER_OF_SUBPROGRAMS.key(), 2, 2, 3);
+
+		aggregator.compute(context);
+		assertThat(Objects.requireNonNull(context.getMeasure(NaturalMetrics.NUMBER_OF_COPYCODES.key())).getIntValue()).isEqualTo(15);
+		assertThat(Objects.requireNonNull(context.getMeasure(NaturalMetrics.NUMBER_OF_SUBPROGRAMS.key())).getIntValue()).isEqualTo(7);
 	}
 
 	private void assertCountedMeasure(String filename, Metric<Integer> metric)
