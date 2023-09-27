@@ -641,7 +641,7 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
-	void doParsePossibleNumberedLabelReferencesAsArrayIndex()
+	void parsePossibleNumberedLabelReferencesAsArrayIndex()
 	{
 		var operand = parseOperand("#ARR(0123)");
 		var reference = assertIsVariableReference(operand, "#ARR");
