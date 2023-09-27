@@ -5,7 +5,7 @@ import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.lexing.Lexer;
-import org.amshove.natparse.natural.project.NaturalFile;
+import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
 import org.amshove.natparse.parsing.NaturalParser;
 import org.amshove.natparse.parsing.project.BuildFileProjectReader;
@@ -29,16 +29,14 @@ public class NatlintSensor implements Sensor
 	private static final Logger LOGGER = LoggerFactory.getLogger(NatlintSensor.class);
 	private final Configuration config;
 	private SensorContext sensorContext;
+	private String projectKey;
+	private NaturalProject naturalProject;
 
 	public NatlintSensor(Configuration config)
 	{
 
 		this.config = config;
 	}
-
-	private long saveIssuesMaxTime = Long.MIN_VALUE;
-	private NaturalFile saveIssuesMaxFile = null;
-	private long longestSingleIssueSave = Long.MIN_VALUE;
 
 	@Override
 	public void describe(SensorDescriptor descriptor)
@@ -51,21 +49,15 @@ public class NatlintSensor implements Sensor
 	public void execute(SensorContext context)
 	{
 		sensorContext = context;
+		projectKey = context.project().key();
 		var filesystem = new ActualFilesystem();
-		LOGGER.error("Finding project file");
 		var buildfilePath = filesystem.findNaturalProjectFile(context.fileSystem().baseDir().toPath()).get();
-		var project = new BuildFileProjectReader(filesystem).getNaturalProject(buildfilePath);
-		LOGGER.error("Project initialized: %s".formatted(buildfilePath));
-		LOGGER.error("Start indexing");
-		var indexStartTime = System.currentTimeMillis();
-		new NaturalProjectFileIndexer().indexProject(project);
-		var indexEndTime = System.currentTimeMillis();
-		LOGGER.error("Indexing done: %dms".formatted(indexEndTime - indexStartTime));
+		naturalProject = new BuildFileProjectReader(filesystem).getNaturalProject(buildfilePath);
+		new NaturalProjectFileIndexer().indexProject(naturalProject);
 
 		var fileTypeMeasurer = new FileTypeMeasure();
 
-		var analysisStart = System.currentTimeMillis();
-		for (var library : project.getLibraries())
+		for (var library : naturalProject.getLibraries())
 		{
 			LOGGER.error("Starting lib %s".formatted(library.getName()));
 			library.files().parallelStream().forEach(naturalFile ->
@@ -84,7 +76,6 @@ public class NatlintSensor implements Sensor
 
 					fileTypeMeasurer.measure(context, naturalFile, inputFile);
 
-					var saveIssuesStart = System.currentTimeMillis();
 					for (var diagnostic : lexResult.diagnostics())
 					{
 						saveDiagnosticAsIssue(context, inputFile, diagnostic);
@@ -97,13 +88,6 @@ public class NatlintSensor implements Sensor
 					{
 						saveDiagnosticAsIssue(context, inputFile, diagnostic);
 					}
-					var saveIssuesDuration = System.currentTimeMillis() - saveIssuesStart;
-
-					if (saveIssuesDuration > saveIssuesMaxTime)
-					{
-						saveIssuesMaxTime = saveIssuesDuration;
-						saveIssuesMaxFile = naturalFile;
-					}
 				}
 				catch (Exception e)
 				{
@@ -111,11 +95,6 @@ public class NatlintSensor implements Sensor
 				}
 			});
 		}
-		var analysisEnd = System.currentTimeMillis();
-		LOGGER.error("Analysis ended after %dms".formatted(analysisEnd - analysisStart));
-
-		LOGGER.error("Longest save issues: %dms, %s".formatted(saveIssuesMaxTime, saveIssuesMaxFile.getPath()));
-		LOGGER.error("Longest single issue save: %dms".formatted(longestSingleIssueSave));
 	}
 
 	private void saveDiagnosticAsIssue(SensorContext context, InputFile inputFile, IDiagnostic diagnostic)
@@ -137,24 +116,23 @@ public class NatlintSensor implements Sensor
 					.message(info.message())
 			);
 		}
-		var saveStart = System.currentTimeMillis();
 		issue
 			.forRule(RuleKey.of(NaturalRuleRepository.REPOSITORY, diagnostic.id()))
 			.save();
-		var saveDuration = System.currentTimeMillis() - saveStart;
-		if (saveDuration > longestSingleIssueSave)
-		{
-			longestSingleIssueSave = saveDuration;
-		}
 	}
 
 	private InputFile findInputFile(Path filePath)
 	{
-		return sensorContext.fileSystem().inputFile(f -> f.uri().equals(filePath.toUri()));
+		return sensorContext.fileSystem().inputFile(f -> f.key().equals(inputFileKey(filePath)));
 	}
 
 	private TextRange textRange(InputFile file, IPosition position)
 	{
 		return file.newRange(position.line() + 1, position.offsetInLine(), position.line() + 1, position.endOffset());
+	}
+
+	private String inputFileKey(Path filePath)
+	{
+		return "%s:%s".formatted(projectKey, naturalProject.getRootPath().relativize(filePath).toString().replace("\\", "/"));
 	}
 }

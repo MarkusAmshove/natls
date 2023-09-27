@@ -4,7 +4,6 @@ import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.fs.internal.TestInputFileBuilder;
-import org.sonar.api.batch.sensor.SensorContext;
 import org.sonar.api.batch.sensor.internal.SensorContextTester;
 import org.sonar.api.measures.Metric;
 
@@ -20,7 +19,7 @@ import static org.assertj.core.api.Fail.fail;
 
 public class TestContext
 {
-	public static final String MODULE_KEY = "moduleskey";
+	public static final String MODULE_KEY = "projectKey";
 	private final SensorContextTester context;
 	private final Path directory;
 	private final NaturalProject project;
@@ -66,7 +65,7 @@ public class TestContext
 		throw new RuntimeException("Natural file %s.%s not found".formatted(lib, module));
 	}
 
-	public SensorContext sensorContext()
+	public SensorContextTester sensorContext()
 	{
 		return context;
 	}

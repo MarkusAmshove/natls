@@ -1,0 +1,9 @@
+* >Natural Source Header 000000
+* :Mode S
+* :CP
+* <Natural Source Header
+DEFINE DATA LOCAL
+1 #INVALID-LENGTH (A2) INIT <''>
+END-DEFINE
+WRITE #INVALID-LENGTH
+END
