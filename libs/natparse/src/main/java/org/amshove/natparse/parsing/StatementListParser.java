@@ -2465,7 +2465,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(printer, SyntaxKind.DEFINE);
 		consumeMandatory(printer, SyntaxKind.PRINTER);
 		consumeMandatory(printer, SyntaxKind.LPAREN);
-		if (peekKind(SyntaxKind.IDENTIFIER))
+		if (peekKind(SyntaxKind.IDENTIFIER) || tokens.peek().kind().canBeIdentifier())
 		{
 			var name = consumeMandatoryIdentifier(printer);
 			printer.setName(name);

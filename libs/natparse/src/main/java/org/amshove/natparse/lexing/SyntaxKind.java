@@ -783,6 +783,6 @@ public enum SyntaxKind
 
 	public boolean isAttribute()
 	{
-		return this == AD || this == DY || this == CD || this == EM || this == NL || this == AL || this == DF || this == PM || this == IP || this == IS || this == CV || this == ZP || this == SG || this == ES || this == SB;
+		return this == AD || this == DY || this == CC || this == CD || this == EM || this == NL || this == AL || this == DF || this == PM || this == IP || this == IS || this == CV || this == ZP || this == SG || this == ES || this == SB;
 	}
 }

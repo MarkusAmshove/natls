@@ -1642,6 +1642,14 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void parseADefinePrinterWithPrinterNameAsAttribute()
+	{
+		var printer = assertParsesSingleStatement("DEFINE PRINTER (CC=2)", IDefinePrinterNode.class);
+		assertThat(printer.printerNumber()).isEqualTo(2);
+		assertThat(printer.printerName()).map(SyntaxToken::symbolName).hasValue("CC");
+	}
+
+	@Test
 	void parseADefinePrinterWithOutputString()
 	{
 		var printer = assertParsesSingleStatement("DEFINE PRINTER(5) OUTPUT 'LPT1'", IDefinePrinterNode.class);
