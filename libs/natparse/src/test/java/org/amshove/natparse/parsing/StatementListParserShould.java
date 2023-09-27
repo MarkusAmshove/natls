@@ -1744,6 +1744,13 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void parseClosePrinterWithPrinterNameAsAttribute()
+	{
+		var closePrinter = assertParsesSingleStatement("CLOSE PRINTER (CC)", IClosePrinterNode.class);
+		assertThat(closePrinter.printer().symbolName()).isEqualTo("CC");
+	}
+
+	@Test
 	void parseFormat()
 	{
 		var statementList = assertParsesWithoutDiagnostics("""
@@ -1860,6 +1867,15 @@ class StatementListParserShould extends StatementParseTest
 		var display = assertParsesSingleStatement("DISPLAY (PR2)", IDisplayNode.class);
 		assertThat(display.reportSpecification()).isPresent();
 		assertThat(display.reportSpecification().get().symbolName()).isEqualTo("PR2");
+		assertThat(display.descendants()).hasSize(4);
+	}
+
+	@Test
+	void parseDisplayWithReportSpecificationAsAttribute()
+	{
+		var display = assertParsesSingleStatement("DISPLAY (CC)", IDisplayNode.class);
+		assertThat(display.reportSpecification()).isPresent();
+		assertThat(display.reportSpecification().get().symbolName()).isEqualTo("CC");
 		assertThat(display.descendants()).hasSize(4);
 	}
 

@@ -2434,13 +2434,13 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(closePrinter, SyntaxKind.PRINTER);
 		consumeMandatory(closePrinter, SyntaxKind.LPAREN);
 
-		if (peekAnyMandatoryOrAdvance(List.of(SyntaxKind.NUMBER_LITERAL, SyntaxKind.IDENTIFIER)))
+		if (peekKind(SyntaxKind.NUMBER_LITERAL))
 		{
-			if (peekKind(SyntaxKind.NUMBER_LITERAL))
-			{
-				var literal = consumeNonConcatLiteralNode(closePrinter, SyntaxKind.NUMBER_LITERAL);
-				closePrinter.setPrinter(literal.token());
-			}
+			var literal = consumeNonConcatLiteralNode(closePrinter, SyntaxKind.NUMBER_LITERAL);
+			closePrinter.setPrinter(literal.token());
+		}
+		else
+		{
 			if (peek().kind().canBeIdentifier())
 			{
 				var identifier = consumeIdentifierTokenOnly();
