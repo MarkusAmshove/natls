@@ -152,7 +152,9 @@ The language server is tested primarily with two clients:
 
 `natqube` requires at least SonarQube 9.9 (which is/was a LTS release) running with Java 17.
 
-The plugin is currently not distributed in a centralized way. You have to build it from source (`gradlew shadowJar`) and put the file `libs/natqube/build/libs/natqube.jar` into the plugins folder as described in [their documentation](https://docs.sonarqube.org/latest/setup-and-upgrade/install-a-plugin/#manually-installing-plugins).
+The plugin is currently not distributed the SonarQube marketplace.
+Starting from v0.10 you can grab the [natqube.jar from the Releases page](https://github.com/MarkusAmshove/natls/releases) and put it into the plugins folder as described in [the SonarQube documentation](https://docs.sonarqube.org/latest/setup-and-upgrade/install-a-plugin/#manually-installing-plugins).
+Alternatively you can build the jar yourself (`gradlew shadowJar`) and put the file from `libs/natqube/build/libs/natqube.jar` into the plugin folder.
 
 ## Configuration
 
