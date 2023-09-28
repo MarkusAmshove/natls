@@ -532,7 +532,6 @@ public enum SyntaxKind
 	LISTED(true, false, false),
 	LOCAL(true, false, false),
 	LOCKS(true, false, false),
-	// LOG(true,false, false), sadly this is used my natunit as a subroutine name :(
 	LOG_LS(true, false, false),
 	LOG_PS(true, false, false),
 	LOGICAL(true, false, false),
