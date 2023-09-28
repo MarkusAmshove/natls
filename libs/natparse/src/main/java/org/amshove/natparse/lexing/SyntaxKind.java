@@ -401,6 +401,7 @@ public enum SyntaxKind
 	EDITED(true, false, false),
 	EJ(true, false, false),
 	EM(true, false, false), // EDITOR MASK
+	EMU(true, false, false),
 	ENCODED(true, false, false),
 	END_CLASS(true, false, false),
 	END_DEFINE(true, false, false),
@@ -475,6 +476,7 @@ public enum SyntaxKind
 	HW(true, false, false),
 	IA(true, false, false),
 	IC(true, false, false),
+	ICU(true, false, false),
 	ID(true, false, false),
 	IDENTICAL(true, false, false),
 	IM(true, false, false),
@@ -512,6 +514,7 @@ public enum SyntaxKind
 	KEYS(true, false, false),
 	LAST(true, false, false),
 	LC(true, false, false),
+	LCU(true, false, false),
 	LE(true, false, false),
 	LEAVE(true, false, false),
 	LEAVING(true, false, false),
@@ -693,6 +696,7 @@ public enum SyntaxKind
 	SYNC(true, false, false),
 	SYSTEM(true, false, false),
 	TC(true, false, false),
+	TCU(true, false, false),
 	TEXT(true, false, false),
 	TEXTAREA(true, false, false),
 	TEXTVARIABLE(true, false, false),
@@ -783,6 +787,38 @@ public enum SyntaxKind
 
 	public boolean isAttribute()
 	{
-		return this == AD || this == DY || this == CD || this == EM || this == NL || this == AL || this == DF || this == PM || this == IP || this == IS || this == CV || this == ZP || this == SG || this == ES || this == SB;
+		return this == AD ||
+			this == AL ||
+			this == CC ||
+			this == CD ||
+			this == CV ||
+			this == DF ||
+			this == DL ||
+			this == DY ||
+			this == EM || this == EMU ||
+			this == ES ||
+			this == FC ||
+			this == FL ||
+			this == GC ||
+			this == HC ||
+			this == HW ||
+			this == IC || this == ICU ||
+			this == IP ||
+			this == IS ||
+			this == KD ||
+			this == LC || this == LCU ||
+			this == LS ||
+			this == MC ||
+			this == MP ||
+			this == MS ||
+			this == NL ||
+			this == PC ||
+			this == PM ||
+			this == PS ||
+			this == SB ||
+			this == SG ||
+			this == TC || this == TCU ||
+			this == UC ||
+			this == ZP;
 	}
 }
