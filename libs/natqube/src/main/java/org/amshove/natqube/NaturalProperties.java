@@ -8,10 +8,9 @@ import java.util.List;
 
 public class NaturalProperties
 {
-	private static final String CATEGORY_ANALYZER = "Analyzer";
 	public static final String NATLINT_ISSUE_FILE_KEY = "org.amshove.natqube.natlintIssueFile";
+	private static final String CATEGORY_ANALYZER = "Analyzer";
 	private static final String DEFAULT_NATLINT_ISSUE_FILE = "diagnostics.csv";
-
 	private static final List<PropertyDefinition> propertyDefinitions = new ArrayList<>();
 
 	static
@@ -32,4 +31,7 @@ public class NaturalProperties
 	{
 		return propertyDefinitions;
 	}
+
+	private NaturalProperties()
+	{}
 }

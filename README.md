@@ -150,11 +150,13 @@ The language server is tested primarily with two clients:
 
 ## Running natqube
 
-To get the output of `natlint` into SonarQube, you have to first install `natqube` as a SonarQube plugin.
+`natqube` requires at least SonarQube 9.9 (which is/was a LTS release) running with Java 17.
 
-To do this, simply add the `natqube.jar` that comes out of `gradlew shadowJar` into the `extensions/plugins` folder of SonarQube. An example can be found in `docker/Dockerfile.sonar`.
+The plugin is currently not distributed the SonarQube marketplace.
+Starting from v0.10 you can grab the [natqube.jar from the Releases page](https://github.com/MarkusAmshove/natls/releases) and put it into the plugins folder as described in [the SonarQube documentation](https://docs.sonarqube.org/latest/setup-and-upgrade/install-a-plugin/#manually-installing-plugins).
+Alternatively you can build the jar yourself (`gradlew shadowJar`) and put the file from `libs/natqube/build/libs/natqube.jar` into the plugin folder.
 
-`natqube` currently expects to find a `diagnostics.csv` file within the scanners root working directory (e.g. the root of the repository). This file is created by running the `natlint` CLI with either `--sink=CSV` or `--ci`. Using `--ci` is recommended for build servers, because it also forces `natlint` to exit gracefully to not break pipelines when encountering diagnostics.
+To run an analysis after setting up the SonarQube backend, grab the [SonarScanner](https://docs.sonarsource.com/sonarqube/latest/analyzing-source-code/scanners/sonarscanner/) and run your first analysis. The Natural plugin will autmatically be pulled from the backend.
 
 ## Configuration
 
