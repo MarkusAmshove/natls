@@ -2444,6 +2444,43 @@ class StatementListParserShould extends StatementParseTest
 			END-SELECT""".formatted(operation), ISelectNode.class);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"FETCH FIRST 10 ROWS ONLY",
+		"FETCH FIRST #NUM ROWS ONLY",
+		"FETCH FIRST 1 ROW ONLY",
+	})
+	void parseSelectWithFetchFirst(String operation)
+	{
+		assertParsesSingleStatement("""
+			SELECT * FROM DB2_TABLE WHERE COLUMN = 'search'
+			%s
+			END-SELECT""".formatted(operation), ISelectNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"AND (SELECT MAX(X) FROM ANOTHER_TABLE WHERE COL2 = 'search')",
+		"LEFT JOIN (SELECT * FROM XXX WHERE TYPE = 'MANR' AND INFO_TYPE = '1007') M ON(M.NOEGLE = P.MA_NR)",
+	})
+	void parseSelectWithSubSelect(String operation)
+	{
+		assertParsesSingleStatement("""
+			SELECT * FROM DB2_TABLE WHERE COLUMN = 'search'
+			%s
+			END-SELECT""", ISelectNode.class);
+	}
+
+	@Test
+	void parseSelectWithJoinAndSubSelect()
+	{
+		assertParsesSingleStatement("""
+			SELECT * FROM DB2_TABLE WHERE COLUMN = 'search' AND (SELECT MAX(X) FROM ANOTHER_TABLE WHERE COL2 = 'search')
+			END-SELECT""", ISelectNode.class);
+	}
+
 	@Test
 	void parseDb2Insert()
 	{
