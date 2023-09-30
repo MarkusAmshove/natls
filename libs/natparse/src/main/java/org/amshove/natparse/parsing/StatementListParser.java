@@ -1402,6 +1402,21 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				numSelectExpected++;
 			}
 
+			// Sub-select
+			var prev = previousToken();
+			if (peekKind(SyntaxKind.SELECT) && prev != null && prev.kind() == SyntaxKind.LPAREN)
+			{
+				consume(select);
+				continue;
+			}
+
+			// FETCH FIRST clause
+			if (peekKind(SyntaxKind.FETCH) && peekKind(1, SyntaxKind.FIRST))
+			{
+				consume(select);
+				continue;
+			}
+
 			if (isStatementStart())
 			{
 				break;
