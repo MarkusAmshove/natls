@@ -1642,6 +1642,14 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void parseADefinePrinterWithPrinterNameAsAttribute()
+	{
+		var printer = assertParsesSingleStatement("DEFINE PRINTER (CC=2)", IDefinePrinterNode.class);
+		assertThat(printer.printerNumber()).isEqualTo(2);
+		assertThat(printer.printerName()).map(SyntaxToken::symbolName).hasValue("CC");
+	}
+
+	@Test
 	void parseADefinePrinterWithOutputString()
 	{
 		var printer = assertParsesSingleStatement("DEFINE PRINTER(5) OUTPUT 'LPT1'", IDefinePrinterNode.class);
@@ -1736,6 +1744,13 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void parseClosePrinterWithPrinterNameAsAttribute()
+	{
+		var closePrinter = assertParsesSingleStatement("CLOSE PRINTER (CC)", IClosePrinterNode.class);
+		assertThat(closePrinter.printer().symbolName()).isEqualTo("CC");
+	}
+
+	@Test
 	void parseFormat()
 	{
 		var statementList = assertParsesWithoutDiagnostics("""
@@ -1770,6 +1785,13 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var write = assertParsesSingleStatement("WRITE (REP1)", IWriteNode.class);
 		assertThat(write.reportSpecification()).map(SyntaxToken::source).hasValue("REP1");
+	}
+
+	@Test
+	void parseWriteWithReportSpecificationAsAttribute()
+	{
+		var write = assertParsesSingleStatement("WRITE (CC)", IWriteNode.class);
+		assertThat(write.reportSpecification()).map(SyntaxToken::source).hasValue("CC");
 	}
 
 	@Test
@@ -1852,6 +1874,15 @@ class StatementListParserShould extends StatementParseTest
 		var display = assertParsesSingleStatement("DISPLAY (PR2)", IDisplayNode.class);
 		assertThat(display.reportSpecification()).isPresent();
 		assertThat(display.reportSpecification().get().symbolName()).isEqualTo("PR2");
+		assertThat(display.descendants()).hasSize(4);
+	}
+
+	@Test
+	void parseDisplayWithReportSpecificationAsAttribute()
+	{
+		var display = assertParsesSingleStatement("DISPLAY (CC)", IDisplayNode.class);
+		assertThat(display.reportSpecification()).isPresent();
+		assertThat(display.reportSpecification().get().symbolName()).isEqualTo("CC");
 		assertThat(display.descendants()).hasSize(4);
 	}
 

@@ -2079,7 +2079,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		if (consumeOptionally(display, SyntaxKind.LPAREN))
 		{
-			if (peekKind(SyntaxKind.IDENTIFIER) && peekKind(1, SyntaxKind.RPAREN))
+			if (peek().kind().canBeIdentifier() && peekKind(1, SyntaxKind.RPAREN))
 			{
 				var token = consumeMandatoryIdentifier(display);
 				display.setReportSpecification(token);
@@ -2227,7 +2227,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(write, statementKind);
 		if (consumeOptionally(write, SyntaxKind.LPAREN))
 		{
-			if (peekKind(SyntaxKind.IDENTIFIER) && peekKind(1, SyntaxKind.RPAREN))
+			if (peek().kind().canBeIdentifier() && peekKind(1, SyntaxKind.RPAREN))
 			{
 				var token = consumeMandatoryIdentifier(write);
 				write.setReportSpecification(token);
@@ -2434,14 +2434,14 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(closePrinter, SyntaxKind.PRINTER);
 		consumeMandatory(closePrinter, SyntaxKind.LPAREN);
 
-		if (peekAnyMandatoryOrAdvance(List.of(SyntaxKind.NUMBER_LITERAL, SyntaxKind.IDENTIFIER)))
+		if (peekKind(SyntaxKind.NUMBER_LITERAL))
 		{
-			if (peekKind(SyntaxKind.NUMBER_LITERAL))
-			{
-				var literal = consumeNonConcatLiteralNode(closePrinter, SyntaxKind.NUMBER_LITERAL);
-				closePrinter.setPrinter(literal.token());
-			}
-			if (peekKind(SyntaxKind.IDENTIFIER))
+			var literal = consumeNonConcatLiteralNode(closePrinter, SyntaxKind.NUMBER_LITERAL);
+			closePrinter.setPrinter(literal.token());
+		}
+		else
+		{
+			if (peek().kind().canBeIdentifier())
 			{
 				var identifier = consumeIdentifierTokenOnly();
 				closePrinter.setPrinter(identifier);
@@ -2465,7 +2465,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(printer, SyntaxKind.DEFINE);
 		consumeMandatory(printer, SyntaxKind.PRINTER);
 		consumeMandatory(printer, SyntaxKind.LPAREN);
-		if (peekKind(SyntaxKind.IDENTIFIER))
+		if (peek().kind().canBeIdentifier())
 		{
 			var name = consumeMandatoryIdentifier(printer);
 			printer.setName(name);
