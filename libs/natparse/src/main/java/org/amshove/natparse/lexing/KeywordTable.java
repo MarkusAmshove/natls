@@ -142,6 +142,7 @@ public class KeywordTable
 			case "eject" -> SyntaxKind.EJECT;
 			case "else" -> SyntaxKind.ELSE;
 			case "em" -> SyntaxKind.EM;
+			case "emu" -> SyntaxKind.EMU;
 			case "encoded" -> SyntaxKind.ENCODED;
 			case "end" -> SyntaxKind.END;
 			case "end-all" -> SyntaxKind.END_ALL;
@@ -260,6 +261,7 @@ public class KeywordTable
 			case "hw" -> SyntaxKind.HW;
 			case "ia" -> SyntaxKind.IA;
 			case "ic" -> SyntaxKind.IC;
+			case "icu" -> SyntaxKind.ICU;
 			case "id" -> SyntaxKind.ID;
 			case "identical" -> SyntaxKind.IDENTICAL;
 			case "if" -> SyntaxKind.IF;
@@ -309,6 +311,7 @@ public class KeywordTable
 			case "language" -> SyntaxKind.LANGUAGE;
 			case "last" -> SyntaxKind.LAST;
 			case "lc" -> SyntaxKind.LC;
+			case "lcu" -> SyntaxKind.LCU;
 			case "le" -> SyntaxKind.LE;
 			case "leading" -> SyntaxKind.LEADING;
 			case "leave" -> SyntaxKind.LEAVE;
@@ -555,6 +558,7 @@ public class KeywordTable
 			case "system" -> SyntaxKind.SYSTEM;
 			case "tan" -> SyntaxKind.TAN;
 			case "tc" -> SyntaxKind.TC;
+			case "tcu" -> SyntaxKind.TCU;
 			case "terminate" -> SyntaxKind.TERMINATE;
 			case "text" -> SyntaxKind.TEXT;
 			case "textarea" -> SyntaxKind.TEXTAREA;

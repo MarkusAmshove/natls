@@ -77,6 +77,11 @@ public class NaturalFile
 		return fileName.substring(0, extensionIndex);
 	}
 
+	public String getFilename()
+	{
+		return path.getFileName().toString();
+	}
+
 	public NaturalLibrary getLibrary()
 	{
 		return library;

@@ -187,7 +187,7 @@ public class AnalyzeCommand implements Callable<Integer>
 	{
 		if (ciMode)
 		{
-			sinkType = DiagnosticSinkType.CI_CSV;
+			sinkType = DiagnosticSinkType.CSV;
 		}
 	}
 

@@ -1,25 +1,37 @@
 package org.amshove.natqube.sensor;
 
+import org.amshove.natlint.linter.NaturalLinter;
+import org.amshove.natparse.IDiagnostic;
+import org.amshove.natparse.IPosition;
+import org.amshove.natparse.infrastructure.ActualFilesystem;
+import org.amshove.natparse.lexing.Lexer;
+import org.amshove.natparse.natural.project.NaturalProject;
+import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
+import org.amshove.natparse.parsing.NaturalParser;
+import org.amshove.natparse.parsing.project.BuildFileProjectReader;
+import org.amshove.natqube.NatQubeException;
 import org.amshove.natqube.Natural;
-import org.amshove.natqube.NaturalProperties;
+import org.amshove.natqube.measures.FileTypeMeasure;
 import org.amshove.natqube.rules.NaturalRuleRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.api.batch.fs.InputFile;
+import org.sonar.api.batch.fs.TextRange;
 import org.sonar.api.batch.sensor.Sensor;
 import org.sonar.api.batch.sensor.SensorContext;
 import org.sonar.api.batch.sensor.SensorDescriptor;
 import org.sonar.api.config.Configuration;
 import org.sonar.api.rule.RuleKey;
 
-import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class NatlintSensor implements Sensor
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NatlintSensor.class);
 	private final Configuration config;
+	private SensorContext sensorContext;
+	private String projectKey;
+	private NaturalProject naturalProject;
 
 	public NatlintSensor(Configuration config)
 	{
@@ -37,71 +49,95 @@ public class NatlintSensor implements Sensor
 	@Override
 	public void execute(SensorContext context)
 	{
-		var maybeDiagnosticFileName = config.get(NaturalProperties.NATLINT_ISSUE_FILE_KEY);
-		if (maybeDiagnosticFileName.isEmpty())
-		{
-			LOGGER.error("No diagnostic file pattern found");
-			return;
-		}
+		sensorContext = context;
+		projectKey = context.project().key();
+		var filesystem = new ActualFilesystem();
+		var buildfilePath = filesystem.findNaturalProjectFile(context.fileSystem().baseDir().toPath()).orElseThrow();
+		naturalProject = new BuildFileProjectReader(filesystem).getNaturalProject(buildfilePath);
+		new NaturalProjectFileIndexer().indexProject(naturalProject);
 
-		var diagnosticFile = context.fileSystem().inputFile((f) -> f.filename().equals(maybeDiagnosticFileName.get()));
-		if (diagnosticFile == null)
-		{
-			LOGGER.error("Diagnostic file not found");
-			return;
-		}
+		var fileTypeMeasurer = new FileTypeMeasure();
 
-		try
+		for (var library : naturalProject.getLibraries())
 		{
-			var diagnostics = diagnosticFile.contents().lines().skip(1).map(l ->
+			if (LOGGER.isInfoEnabled())
 			{
-				var split = l.split(";");
-				if (split.length != 7)
-				{
-					return null;
-				}
-				var absolutePath = Path.of(split[0]).toUri();
-				var id = split[1];
-				var line = split[4];
-				var offset = split[5];
-				var length = split[6];
-				var message = split[3];
-				return new CsvDiagnostic(id, absolutePath, Integer.parseInt(line), Integer.parseInt(offset), Integer.parseInt(length), message);
-			})
-				.filter(Objects::nonNull)
-				.collect(Collectors.groupingBy(CsvDiagnostic::getFileUri));
+				LOGGER.info("Starting lib %s".formatted(library.getName()));
+			}
 
-			context.fileSystem().inputFiles(f -> !f.filename().endsWith(".NSM")).forEach(f ->
+			library.files().parallelStream().forEach(naturalFile ->
 			{
-				if (!diagnostics.containsKey(f.uri()))
+				try
 				{
-					return;
-				}
+					var lexResult = new Lexer().lex(filesystem.readFile(naturalFile.getPath()), naturalFile.getPath());
+					var parseResult = new NaturalParser().parse(naturalFile, lexResult);
+					var lintResult = new NaturalLinter().lint(parseResult);
 
-				var fileDiagnostics = diagnostics.get(f.uri());
-				for (var diagnostic : fileDiagnostics)
-				{
-					try
+					var inputFile = findInputFile(naturalFile.getPath());
+					if (inputFile == null)
 					{
-						var issue = context.newIssue();
-						issue.at(
-							issue.newLocation()
-								.on(f)
-								.at(f.newRange(diagnostic.getLine(), diagnostic.getOffsetInLine(), diagnostic.getLine(), diagnostic.getOffsetInLine() + diagnostic.getLength()))
-								.message(diagnostic.getMessage())
-						);
-						issue
-							.forRule(RuleKey.of(NaturalRuleRepository.REPOSITORY, diagnostic.getId()))
-							.save();
+						throw new NatQubeException("Couldn't find input file for natural file");
 					}
-					catch (Exception e)
-					{}
+
+					fileTypeMeasurer.measure(context, naturalFile, inputFile);
+
+					for (var diagnostic : lexResult.diagnostics())
+					{
+						saveDiagnosticAsIssue(context, inputFile, diagnostic);
+					}
+					for (var diagnostic : parseResult.diagnostics())
+					{
+						saveDiagnosticAsIssue(context, inputFile, diagnostic);
+					}
+					for (var diagnostic : lintResult)
+					{
+						saveDiagnosticAsIssue(context, inputFile, diagnostic);
+					}
+				}
+				catch (Exception e)
+				{
+					LOGGER.error("Error on %s".formatted(naturalFile.getPath()), e);
 				}
 			});
 		}
-		catch (IOException e)
+	}
+
+	private void saveDiagnosticAsIssue(SensorContext context, InputFile inputFile, IDiagnostic diagnostic)
+	{
+		var issue = context.newIssue();
+		issue.at(
+			issue.newLocation()
+				.on(inputFile)
+				.at(textRange(inputFile, diagnostic))
+				.message(diagnostic.message())
+		);
+		for (var info : diagnostic.additionalInfo())
 		{
-			throw new RuntimeException(e);
+			var sonarFile = findInputFile(info.position().filePath());
+			issue.addLocation(
+				issue.newLocation()
+					.on(sonarFile)
+					.at(textRange(sonarFile, info.position()))
+					.message(info.message())
+			);
 		}
+		issue
+			.forRule(RuleKey.of(NaturalRuleRepository.REPOSITORY, diagnostic.id()))
+			.save();
+	}
+
+	private InputFile findInputFile(Path filePath)
+	{
+		return sensorContext.fileSystem().inputFile(f -> f.key().equals(inputFileKey(filePath)));
+	}
+
+	private TextRange textRange(InputFile file, IPosition position)
+	{
+		return file.newRange(position.line() + 1, position.offsetInLine(), position.line() + 1, position.endOffset());
+	}
+
+	private String inputFileKey(Path filePath)
+	{
+		return "%s:%s".formatted(projectKey, naturalProject.getRootPath().relativize(filePath).toString().replace("\\", "/"));
 	}
 }
