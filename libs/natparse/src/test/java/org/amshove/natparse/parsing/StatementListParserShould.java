@@ -565,15 +565,22 @@ class StatementListParserShould extends StatementParseTest
 			""", IIfStatementNode.class);
 	}
 
-	@Test
-	void parseIfBreak()
+	@ParameterizedTest
+	@ValueSource(strings =
 	{
-		var ifbreak = assertParsesSingleStatement("""
-			IF BREAK #VAR1 /1/ AND NOT BREAK #VAR2 /2/
-				IGNORE
-			END-IF
-			""", IIfStatementNode.class);
-
+		"BREAK", "NOT BREAK"
+	})
+	void raiseADiagnosticForIfBreakConditionIfTargetIsNotAVariable(String ifBreak)
+	{
+		assertParsesSingleStatementWithDiagnostic(
+			"""
+						IF %s 'Hi'
+						IGNORE
+						END-IF
+			""".formatted(ifBreak),
+			IfStatementNode.class,
+			ParserError.INVALID_OPERAND
+		);
 	}
 
 	@ParameterizedTest
