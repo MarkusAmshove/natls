@@ -565,6 +565,21 @@ class StatementListParserShould extends StatementParseTest
 			""", IIfStatementNode.class);
 	}
 
+	@Test
+	void parseIfBreakOperand()
+	{
+		var ifStatement = assertParsesSingleStatement("""
+			IF BREAK OF #VAR
+				IGNORE
+			END-IF
+			""", IIfStatementNode.class);
+
+		var criteria = ifStatement.condition().criteria();
+		assertNodeType(criteria, IIfBreakCriteriaNode.class);
+		var ifBreak = (IIfBreakCriteriaNode) criteria;
+		assertIsVariableReference(ifBreak.operand(), "#VAR");
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
