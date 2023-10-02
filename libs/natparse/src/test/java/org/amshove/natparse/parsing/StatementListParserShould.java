@@ -4,6 +4,7 @@ import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.conditionals.IConditionNode;
+import org.amshove.natparse.natural.conditionals.IIfBreakCriteriaNode;
 import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -564,25 +565,37 @@ class StatementListParserShould extends StatementParseTest
 			""", IIfStatementNode.class);
 	}
 
-	@ParameterizedTest
-	@CsvSource(
-		{
-			"BREAK, #TEST", "BREAK OF, #TEST", "BREAK #TEST, THEN", "BREAK OF #TEST, THEN", "BREAK OF #TEST /3/, THEN"
-		}
-	)
-
-	void parseIfBreakStatements(String keywords, String variables)
+	@Test
+	void parseIfBreak()
 	{
-		var source = """
-			IF %s %s
+		var ifbreak = assertParsesSingleStatement("""
+			IF BREAK #VAR1 /1/ AND NOT BREAK #VAR2 /2/
 				IGNORE
 			END-IF
-			""".formatted(keywords, variables);
+			""", IIfStatementNode.class);
 
-		var ifStatement = assertParsesSingleStatement(source, IIfBreakNode.class);
-		assertThat(ifStatement.body().statements()).hasSize(1);
-		var i = source.split("[ |\\/]").length + 2;
-		assertThat(ifStatement.descendants()).hasSize(i);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"BREAK #TEST",
+		"BREAK OF #TEST",
+		"BREAK #TEST THEN",
+		"BREAK OF #TEST THEN",
+		"BREAK OF #TEST /3/ THEN",
+		"BREAK OF #TEST1 AND NOT BREAK OF #TEST2",
+		"BREAK OF #TEST1 /1/ AND NOT BREAK OF #TEST2",
+		"BREAK OF #TEST1 OR NOT BREAK OF #TEST2 /2/",
+		"BREAK OF #TEST1 /1/ OR NOT BREAK OF #TEST2 /2/ THEN",
+	})
+	void parseIfBreakStatements(String ifBreak)
+	{
+		assertParsesWithoutDiagnostics("""
+						IF %s
+						IGNORE
+						END-IF
+			""".formatted(ifBreak));
 	}
 
 	@ParameterizedTest
@@ -3119,12 +3132,12 @@ class StatementListParserShould extends StatementParseTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"SPECIFIED", "NOT SPECIFIED"
+		"SPECIFIED", "NOT SPECIFIED", "SPECIFIED AND #VAR2 NOT SPECIFIED"
 	})
 	void raiseNoDiagnosticForSpecifiedConditionIfTargetAVariable(String specified)
 	{
 		assertParsesWithoutDiagnostics("""
-						IF #VAR %s
+						IF #VAR1 %s
 						IGNORE
 						END-IF
 			""".formatted(specified));

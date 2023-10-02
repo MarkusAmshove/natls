@@ -3038,10 +3038,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			return ifNoRecord();
 		}
-		if (peekKind(1, SyntaxKind.BREAK))
-		{
-			return ifBreak();
-		}
 		if (peekKind(1, SyntaxKind.SELECTION))
 		{
 			return ifSelection();
@@ -3156,8 +3152,16 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			return negatedConditionCriteria();
 		}
 
-		var tmpNode = new BaseSyntaxNode();
-		var lhs = consumeSubstringOrOperand(tmpNode);
+		IOperandNode lhs = null;
+		if (peekKind(SyntaxKind.BREAK))
+		{
+			return breakConditionCriteria();
+		}
+		else
+		{
+			var tmpNode = new BaseSyntaxNode();
+			lhs = consumeSubstringOrOperand(tmpNode);
+		}
 
 		if (peekKind(SyntaxKind.IS))
 		{
@@ -3234,6 +3238,22 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return true;
+	}
+
+	private ILogicalConditionCriteriaNode breakConditionCriteria() throws ParseError
+	{
+		var breakCriteria = new IfBreakCriteriaNode();
+		consumeMandatory(breakCriteria, SyntaxKind.BREAK);
+		consumeOptionally(breakCriteria, SyntaxKind.OF);
+		var lhs = consumeOperandNode(breakCriteria);
+		breakCriteria.setOperand(lhs);
+		checkOperand(lhs, "IF BREAK can only be specified for variable references", AllowedOperand.VARIABLE_REFERENCE);
+		if (consumeOptionally(breakCriteria, SyntaxKind.SLASH))
+		{
+			consumeLiteralNode(breakCriteria, SyntaxKind.NUMBER_LITERAL);
+			consumeMandatory(breakCriteria, SyntaxKind.SLASH);
+		}
+		return breakCriteria;
 	}
 
 	private ILogicalConditionCriteriaNode modifiedCriteria(IOperandNode lhs) throws ParseError
@@ -3520,28 +3540,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		statement.setBody(statementList(SyntaxKind.END_NOREC));
 
 		consumeMandatoryClosing(statement, SyntaxKind.END_NOREC, opening);
-
-		return statement;
-	}
-
-	private IfBreakNode ifBreak() throws ParseError
-	{
-		var statement = new IfBreakNode();
-
-		var opening = consumeMandatory(statement, SyntaxKind.IF);
-		consumeMandatory(statement, SyntaxKind.BREAK);
-		consumeOptionally(statement, SyntaxKind.OF);
-		consumeMandatoryIdentifier(statement);
-		if (consumeOptionally(statement, SyntaxKind.SLASH))
-		{
-			consumeLiteralNode(statement, SyntaxKind.NUMBER_LITERAL);
-			consumeMandatory(statement, SyntaxKind.SLASH);
-		}
-
-		consumeOptionally(statement, SyntaxKind.THEN);
-		statement.setBody(statementList(SyntaxKind.END_IF));
-
-		consumeMandatoryClosing(statement, SyntaxKind.END_IF, opening);
 
 		return statement;
 	}
