@@ -5,7 +5,6 @@ import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IArrayDimension;
 import org.amshove.natparse.natural.ITokenNode;
-import org.amshove.natparse.natural.VariableScope;
 import org.amshove.natparse.natural.ddm.FieldType;
 import org.amshove.natparse.natural.ddm.IGroupField;
 
