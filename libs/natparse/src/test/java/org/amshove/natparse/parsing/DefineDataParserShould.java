@@ -815,6 +815,16 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void raiseADiagnosticForEmHdPmForParameter()
+	{
+		assertDiagnostic("""
+			define data parameter
+			1 #var (a20) (EM=XXXXXX HD='Header' PM=I)
+			end-define
+			""", ParserError.EMHDPM_NOT_ALLOWED_IN_SCOPE);
+	}
+
+	@Test
 	void notRaiseADiagnosticForArrayBoundsThatAreNeitherConstNorInitInViews()
 	{
 		// For Arrays in views it is okay if the dimension is not CONST or INIT
@@ -1461,6 +1471,21 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		var superdescriptor = assertNodeType(defineData.findVariable("A-SUPERDESCRIPTOR"), ITypedVariableNode.class);
 		assertThat(superdescriptor.type().format()).isEqualTo(DataFormat.ALPHANUMERIC);
 		assertThat(superdescriptor.type().length()).isEqualTo(25.0);
+	}
+
+	@Test
+	void allowEmHdPmInViews()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 MY-VIEW VIEW MY-DDM
+			2 A-GROUP(1:12)
+			3 A-VAR (N12,2) (EM=999,99 HD='Header' PM=I)
+			END-DEFINE
+			""");
+
+		var view = assertNodeType(defineData.variables().first(), IViewNode.class);
+		assertNodeType(view.variables().first(), IGroupNode.class);
 	}
 
 	@Test

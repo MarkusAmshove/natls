@@ -273,6 +273,15 @@ class ParserErrors
 		);
 	}
 
+	public static ParserDiagnostic emhdpmNotAllowedInCurrentScope(TokenNode errorToken, VariableScope currentScope)
+	{
+		return ParserDiagnostic.create(
+			"%s is not allowed in scope %s".formatted(errorToken.token().source(), currentScope),
+			errorToken,
+			ParserError.EMHDPM_NOT_ALLOWED_IN_SCOPE
+		);
+	}
+
 	public static IDiagnostic trailingToken(SyntaxToken token)
 	{
 		return ParserDiagnostic.create(

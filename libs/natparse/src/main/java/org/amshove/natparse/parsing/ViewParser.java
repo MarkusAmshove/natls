@@ -5,6 +5,7 @@ import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IArrayDimension;
 import org.amshove.natparse.natural.ITokenNode;
+import org.amshove.natparse.natural.VariableScope;
 import org.amshove.natparse.natural.ddm.FieldType;
 import org.amshove.natparse.natural.ddm.IGroupField;
 
@@ -172,6 +173,16 @@ class ViewParser extends AbstractParser<ViewNode>
 		if (consumeOptionally(typedVariable, SyntaxKind.DYNAMIC))
 		{
 			type.setDynamicLength();
+		}
+
+		// Consume optional emhdpm
+		if (consumeOptionally(typedVariable, SyntaxKind.LPAREN))
+		{
+			while (!isAtEnd() && peek().kind() != SyntaxKind.RPAREN && peek().kind() != SyntaxKind.END_DEFINE)
+			{
+				consume(typedVariable);
+			}
+			consumeMandatory(typedVariable, SyntaxKind.RPAREN);
 		}
 
 		typedVariable.setType(type);
