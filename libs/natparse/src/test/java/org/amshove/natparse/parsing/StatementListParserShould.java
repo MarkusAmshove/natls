@@ -4,6 +4,7 @@ import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.conditionals.IConditionNode;
+import org.amshove.natparse.natural.conditionals.IIfBreakCriteriaNode;
 import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -564,25 +565,59 @@ class StatementListParserShould extends StatementParseTest
 			""", IIfStatementNode.class);
 	}
 
-	@ParameterizedTest
-	@CsvSource(
-		{
-			"BREAK, #TEST", "BREAK OF, #TEST", "BREAK #TEST, THEN", "BREAK OF #TEST, THEN", "BREAK OF #TEST /3/, THEN"
-		}
-	)
-
-	void parseIfBreakStatements(String keywords, String variables)
+	@Test
+	void parseIfBreakOperand()
 	{
-		var source = """
-			IF %s %s
+		var ifStatement = assertParsesSingleStatement("""
+			IF BREAK OF #VAR
 				IGNORE
 			END-IF
-			""".formatted(keywords, variables);
+			""", IIfStatementNode.class);
 
-		var ifStatement = assertParsesSingleStatement(source, IIfBreakNode.class);
-		assertThat(ifStatement.body().statements()).hasSize(1);
-		var i = source.split("[ |\\/]").length + 2;
-		assertThat(ifStatement.descendants()).hasSize(i);
+		var criteria = ifStatement.condition().criteria();
+		assertNodeType(criteria, IIfBreakCriteriaNode.class);
+		var ifBreak = (IIfBreakCriteriaNode) criteria;
+		assertIsVariableReference(ifBreak.operand(), "#VAR");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"BREAK", "NOT BREAK"
+	})
+	void raiseADiagnosticForIfBreakConditionIfTargetIsNotAVariable(String ifBreak)
+	{
+		assertParsesSingleStatementWithDiagnostic(
+			"""
+						IF %s 'Hi'
+						IGNORE
+						END-IF
+			""".formatted(ifBreak),
+			IfStatementNode.class,
+			ParserError.INVALID_OPERAND
+		);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"BREAK #TEST",
+		"BREAK OF #TEST",
+		"BREAK #TEST THEN",
+		"BREAK OF #TEST THEN",
+		"BREAK OF #TEST /3/ THEN",
+		"BREAK OF #TEST1 AND NOT BREAK OF #TEST2",
+		"BREAK OF #TEST1 /1/ AND NOT BREAK OF #TEST2",
+		"BREAK OF #TEST1 OR NOT BREAK OF #TEST2 /2/",
+		"BREAK OF #TEST1 /1/ OR NOT BREAK OF #TEST2 /2/ THEN",
+	})
+	void parseIfBreakStatements(String ifBreak)
+	{
+		assertParsesWithoutDiagnostics("""
+						IF %s
+						IGNORE
+						END-IF
+			""".formatted(ifBreak));
 	}
 
 	@ParameterizedTest
@@ -3119,12 +3154,12 @@ class StatementListParserShould extends StatementParseTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"SPECIFIED", "NOT SPECIFIED"
+		"SPECIFIED", "NOT SPECIFIED", "SPECIFIED AND #VAR2 NOT SPECIFIED"
 	})
 	void raiseNoDiagnosticForSpecifiedConditionIfTargetAVariable(String specified)
 	{
 		assertParsesWithoutDiagnostics("""
-						IF #VAR %s
+						IF #VAR1 %s
 						IGNORE
 						END-IF
 			""".formatted(specified));
