@@ -13,6 +13,7 @@ permissions:
   contents: write
   packages: write
   deployments: write
+  issues: write
 
 jobs:
   release-drafter:
