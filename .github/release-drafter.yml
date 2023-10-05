@@ -24,6 +24,7 @@ categories:
     collapse-after: 3
     labels:
       - 'infrastructure🧰'
+      - 'dependencies⏫'
 template: |
   ## What's Changed
 
