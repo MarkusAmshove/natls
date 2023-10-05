@@ -87,6 +87,7 @@ jobs:
 
   release-maven-central:
     name: Release to Maven Central
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
 
     steps:
@@ -110,6 +111,7 @@ jobs:
 
   create-issue:
     name: Create after Release issue
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
 
     steps:
