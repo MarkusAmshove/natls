@@ -1811,6 +1811,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return newPage;
 	}
 
+	private static final List<SyntaxKind> EXAMINE_REPLACE_DELETE_CLAUSES = List.of(SyntaxKind.AND, SyntaxKind.REPLACE, SyntaxKind.DELETE);
 	private static final List<SyntaxKind> EXAMINE_GIVING_CLAUSES = List.of(SyntaxKind.GIVING, SyntaxKind.IN, SyntaxKind.KW_NUMBER, SyntaxKind.POSITION, SyntaxKind.LENGTH, SyntaxKind.INDEX);
 
 	private StatementNode examine() throws ParseError
@@ -1869,7 +1870,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			consumeAnyOptionally(examine, List.of(SyntaxKind.DELIMITERS, SyntaxKind.DELIMITER));
 			if (peek().kind().isLiteralOrConst() || peek().kind().isIdentifier()
-				|| (peek().kind().canBeIdentifier() && !peekAny(EXAMINE_GIVING_CLAUSES)))
+				|| (peek().kind().canBeIdentifier() && !peekAny(EXAMINE_REPLACE_DELETE_CLAUSES) && !peekAny(EXAMINE_GIVING_CLAUSES)))
 			{
 				// specifying a delimiter is optional
 				consumeOperandNode(examine);
