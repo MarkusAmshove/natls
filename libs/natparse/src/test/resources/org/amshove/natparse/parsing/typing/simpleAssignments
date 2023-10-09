@@ -27,7 +27,6 @@ DEFINE DATA LOCAL
 END-DEFINE
 
 /* NPP037: Type mismatch
-/* NPP045: Literal value truncation
 
 /* Format N
 #N1 := #N1
@@ -260,9 +259,7 @@ END-DEFINE
 #F := *ISN
 #F := *PROGRAM /* !{D:ERROR:NPP037}
 
-#N1 := 23 /* !{D:WARNING:NPP045}
 #N1 := 2
-#I1 := 128 /* !{D:WARNING:NPP045}
 #I1 := 127
 
 #N1 := #CONST-N1-I4 /* Should work, the constant *value* is N1
@@ -273,7 +270,6 @@ END-DEFINE
 #A1 := *OCC(#ARR) /* I4 has implicit conversion to A1
 #A1 := #N1 /* N1 has implicit conversion to A1
 #A1 := 1 /* I1 has implicit conversion to A1
-#A1 := 10 /* !{D:WARNING:NPP045} value is truncated
 
 #A10 := #T /* Implicit conversion
 #A10 := #D /* Implicit conversion

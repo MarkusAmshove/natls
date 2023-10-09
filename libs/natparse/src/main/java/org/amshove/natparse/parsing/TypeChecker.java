@@ -161,7 +161,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		// Only do this for literals
 		// #N5 := #N10 is legal compiler wise, but might result in a runtime error
 		{
-			checkTypeCompatibleOrTruncation(operandType, targetType, assignment.operand());
+			checkTypeCompatible(operandType, targetType, assignment.operand());
 			return;
 		}
 
@@ -184,26 +184,14 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		}
 	}
 
-	private void checkTypeCompatibleOrTruncation(IDataType operandType, IDataType targetType, ISyntaxNode location)
+	private void checkTypeCompatible(IDataType operandType, IDataType targetType, ISyntaxNode location)
 	{
 		if (operandType.fitsInto(targetType))
 		{
 			return;
 		}
 
-		if (operandType.hasCompatibleFormat(targetType))
-		{
-			report(
-				ParserErrors.valueTruncation(
-					"Value is truncated from %s to %s at runtime. Extend the target variable or remove the truncated parts from this literal.".formatted(
-						operandType.toShortString(),
-						targetType.toShortString()
-					),
-					location
-				)
-			);
-		}
-		else
+		if (!operandType.hasCompatibleFormat(targetType))
 		{
 			report(
 				ParserErrors.typeMismatch(
@@ -521,7 +509,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		}
 		else
 		{
-			checkTypeCompatibleOrTruncation(inferredInitialType, typedVariable.type(), initialNode);
+			checkTypeCompatible(inferredInitialType, typedVariable.type(), initialNode);
 		}
 	}
 

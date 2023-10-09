@@ -1,6 +1,0 @@
-name: EM, HD, PM not allowed in this scope
-priority: BLOCKER
-tags: natparse-internal,compile-time
-type: BUG
-description:
-``EM, HD, PM`` is not allowed in ``PARAMETER`` scope.

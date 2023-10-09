@@ -1,7 +1,6 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.AdditionalDiagnosticInfo;
-import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
@@ -553,16 +552,6 @@ class ParserErrors
 			message,
 			node,
 			ParserError.REFERENCE_NOT_MUTABLE
-		);
-	}
-
-	public static IDiagnostic valueTruncation(String message, ISyntaxNode node)
-	{
-		return ParserDiagnostic.create(
-			message,
-			node,
-			ParserError.LITERAL_VALUE_TRUNCATED,
-			DiagnosticSeverity.WARNING
 		);
 	}
 
