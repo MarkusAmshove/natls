@@ -2009,18 +2009,24 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(examine.descendants().size()).isEqualTo(12);
 	}
 
-	@Test
-	void parseAnExamineWithGivingAsDefaultNumber()
+	@ParameterizedTest
+	@ValueSource(strings =
 	{
-		var examine = assertParsesSingleStatement("EXAMINE #VAR FOR 'a' GIVING #N POSITION #P LENGTH #L INDEX #I", IExamineNode.class);
-		assertThat(examine.descendants().size()).isEqualTo(12);
-	}
-
-	@Test
-	void parseAnExamineWithoutGiving()
+		"FOR 'a' GIVING NUMBER #N POSITION #P LENGTH #L INDEX #I",
+		"FOR 'a' GIVING #N POSITION #P LENGTH #L INDEX #I",
+		"FOR 'a' AND DELETE FIRST GIVING INDEX #I",
+		"FOR 'a' AND DELETE FIRST INDEX #I",
+		"FOR #EXAM WITH DELIMITERS GIVING #N INDEX #I",
+		"FOR #EXAM WITH DELIMITERS GIVING #N",
+		"FOR #EXAM WITH DELIMITERS GIVING NUMBER #N INDEX #I",
+		"FOR #EXAM WITH DELIMITERS INDEX #I",
+		"FOR #EXAM WITH DELIMITERS SPACE GIVING NUMBER #N POSITION #P LENGTH #L INDEX #I",
+		"FOR #EXAM WITH DELIMITERS SPACE GIVING #N POSITION #P LENGTH #L INDEX #I",
+		"FOR #EXAM WITH DELIMITERS SPACE GIVING POSITION #P GIVING LENGTH #L INDEX #I",
+	})
+	void parseAnExamineWithDelimtersAndGiving(String statement)
 	{
-		var examine = assertParsesSingleStatement("EXAMINE #VAR FOR 'a' AND DELETE FIRST INDEX #I", IExamineNode.class);
-		assertThat(examine.descendants().size()).isEqualTo(9);
+		assertParsesSingleStatement("EXAMINE #VAR %s".formatted(statement), IExamineNode.class);
 	}
 
 	@Test
