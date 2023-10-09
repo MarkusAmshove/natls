@@ -174,6 +174,16 @@ class ViewParser extends AbstractParser<ViewNode>
 			type.setDynamicLength();
 		}
 
+		// Consume optional emhdpm
+		if (consumeOptionally(typedVariable, SyntaxKind.LPAREN))
+		{
+			while (!isAtEnd() && peek().kind() != SyntaxKind.RPAREN && peek().kind() != SyntaxKind.END_DEFINE)
+			{
+				consume(typedVariable);
+			}
+			consumeMandatory(typedVariable, SyntaxKind.RPAREN);
+		}
+
 		typedVariable.setType(type);
 
 		checkVariableTypeAgainstDdm(typedVariable);

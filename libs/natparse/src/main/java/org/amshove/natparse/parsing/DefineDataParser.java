@@ -607,8 +607,11 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		if (consumeOptionally(typedVariable, SyntaxKind.LPAREN))
 		{
-			// TODO(masks): Parse for real and add to variable
-			// TODO(masks): Not legal for parameter?
+			if (currentScope == VariableScope.PARAMETER)
+			{
+				report(ParserErrors.emhdpmNotAllowedInCurrentScope(getPreviousNode(), currentScope));
+			}
+
 			while (!isAtEnd() && peek().kind() != SyntaxKind.RPAREN && peek().kind() != SyntaxKind.END_DEFINE)
 			{
 				consume(typedVariable);
@@ -616,7 +619,6 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 			consumeMandatory(typedVariable, SyntaxKind.RPAREN);
 		}
 
-		// TODO: Only for parameter
 		if (consumeOptionally(typedVariable, SyntaxKind.BY))
 		{
 			if (currentScope != VariableScope.PARAMETER)
