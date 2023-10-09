@@ -2003,6 +2003,27 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void parseAnExamineWithKeywordThatCanBeIdentifier()
+	{
+		var examine = assertParsesSingleStatement("EXAMINE #VAR FOR 'a' WITH DELIMITER SPACE AND DELETE FIRST INDEX #IX", IExamineNode.class);
+		assertThat(examine.descendants().size()).isEqualTo(12);
+	}
+
+	@Test
+	void parseAnExamineWithGivingAsDefaultNumber()
+	{
+		var examine = assertParsesSingleStatement("EXAMINE #VAR FOR 'a' GIVING #N POSITION #P LENGTH #L INDEX #I", IExamineNode.class);
+		assertThat(examine.descendants().size()).isEqualTo(12);
+	}
+
+	@Test
+	void parseAnExamineWithoutGiving()
+	{
+		var examine = assertParsesSingleStatement("EXAMINE #VAR FOR 'a' AND DELETE FIRST INDEX #I", IExamineNode.class);
+		assertThat(examine.descendants().size()).isEqualTo(9);
+	}
+
+	@Test
 	void parseASimpleSeparate()
 	{
 		var separate = assertParsesSingleStatement("SEPARATE #VAR INTO #ARR(*)", ISeparateStatementNode.class);
