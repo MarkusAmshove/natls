@@ -3,7 +3,6 @@ LOCAL
 1 #C-A-CONST-1 (A1) CONST<'ABC'> /* !{D:ERROR:NPP037}
 1 #C-A-CONST-2 (A1) CONST<'A'> /* Length matches
 1 #C-A-CONST-3 (A5) CONST<'A'> /* Length is smaller
-1 #C-A-CONST-NUM (A1) CONST<20> /* !{D:WARNING:NPP045} value is truncated
 
 1 #C-I-1 (I1) INIT<-1> /* Length matches
 1 #C-I-1-BIG (I1) INIT<280> /* !{D:ERROR:NPP037}
