@@ -48,7 +48,8 @@ final class TypeChecker implements ISyntaxNodeVisitor
 							e.getMessage()
 						),
 					node
-				)
+				),
+				node
 			);
 		}
 	}
@@ -97,7 +98,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			var operandType = inferDataType(operand);
 			if (operandType.format() == DataFormat.LOGIC || operandType.format() == DataFormat.CONTROL)
 			{
-				report(ParserErrors.typeMismatch("COMPRESS operand can't be of type %s".formatted(operandType.format().identifier()), operand));
+				report(ParserErrors.typeMismatch("COMPRESS operand can't be of type %s".formatted(operandType.format().identifier()), operand), operand);
 			}
 		}
 
@@ -110,7 +111,8 @@ final class TypeChecker implements ISyntaxNodeVisitor
 				ParserErrors.typeMismatch(
 					"COMPRESS target needs to have type A, B or U but got %s".formatted(targetType.toShortString()),
 					compress.intoTarget()
-				)
+				),
+				compress.intoTarget()
 			);
 		}
 	}
@@ -179,7 +181,8 @@ final class TypeChecker implements ISyntaxNodeVisitor
 						targetType.toShortString()
 					),
 					location
-				)
+				),
+				location
 			);
 		}
 	}
@@ -200,7 +203,8 @@ final class TypeChecker implements ISyntaxNodeVisitor
 						targetType.toShortString()
 					),
 					location
-				)
+				),
+				location
 			);
 		}
 	}
@@ -246,7 +250,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		var type = inferDataType(operand.parameter());
 		if (operand.parameter() instanceof ILiteralNode || type.format() == DataFormat.NONE)
 		{
-			report(ParserErrors.typeMismatch("Parameter must be a typed variable of any format, but is %s".formatted(type.toShortString()), operand));
+			report(ParserErrors.typeMismatch("Parameter must be a typed variable of any format, but is %s".formatted(type.toShortString()), operand), operand);
 		}
 	}
 
@@ -255,7 +259,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		var type = inferDataType(operand.parameter());
 		if (type.format() != DataFormat.NONE && !type.isNumericFamily())
 		{
-			report(ParserErrors.typeMismatch("Parameter must be of type N, P, I or F, but is %s".formatted(type.toShortString()), operand));
+			report(ParserErrors.typeMismatch("Parameter must be of type N, P, I or F, but is %s".formatted(type.toShortString()), operand), operand);
 		}
 	}
 
@@ -268,7 +272,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			type = inferDataType(sortKeyNode.variable());
 			if (type.format() != DataFormat.ALPHANUMERIC || type.length() > 253 || type.hasDynamicLength())
 			{
-				report(ParserErrors.typeMismatch("Parameter must be of type A with a maximum length of 253, but is %s".formatted(type.toShortString()), node));
+				report(ParserErrors.typeMismatch("Parameter must be of type A with a maximum length of 253, but is %s".formatted(type.toShortString()), node), node);
 			}
 		}
 
@@ -282,7 +286,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 
 			if (type.format() != DataFormat.NONE && type.format() != DataFormat.ALPHANUMERIC && type.format() != DataFormat.UNICODE)
 			{
-				report(ParserErrors.typeMismatch("Parameter must be of type A or U, but is %s".formatted(type.toShortString()), node));
+				report(ParserErrors.typeMismatch("Parameter must be of type A or U, but is %s".formatted(type.toShortString()), node), node);
 			}
 		}
 
@@ -303,12 +307,12 @@ final class TypeChecker implements ISyntaxNodeVisitor
 
 				if (type.format() != DataFormat.ALPHANUMERIC && type.format() != DataFormat.UNICODE && type.format() != DataFormat.BINARY)
 				{
-					report(ParserErrors.typeMismatch("Parameter to *LENGTH must be of type A, B or U but is %s".formatted(type.toShortString()), parameter));
+					report(ParserErrors.typeMismatch("Parameter to *LENGTH must be of type A, B or U but is %s".formatted(type.toShortString()), parameter), parameter);
 				}
 
 				if (!type.hasDynamicLength())
 				{
-					report(ParserErrors.typeMismatch("Parameter to *LENGTH must have dynamic length (e.g. A DYNAMIC) but is %s".formatted(type.toShortString()), parameter));
+					report(ParserErrors.typeMismatch("Parameter to *LENGTH must have dynamic length (e.g. A DYNAMIC) but is %s".formatted(type.toShortString()), parameter), parameter);
 				}
 			}
 		}
@@ -320,7 +324,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			var type = inferDataType(parameter);
 			if (type != null && type.format() != DataFormat.NONE && type.format() != DataFormat.ALPHANUMERIC && type.format() != DataFormat.UNICODE && type.format() != DataFormat.BINARY)
 			{
-				report(ParserErrors.typeMismatch("Parameter to *TRIM must be of type A, B or U but is %s".formatted(type.toShortString()), parameter));
+				report(ParserErrors.typeMismatch("Parameter to *TRIM must be of type A, B or U but is %s".formatted(type.toShortString()), parameter), parameter);
 			}
 		}
 	}
@@ -345,7 +349,8 @@ final class TypeChecker implements ISyntaxNodeVisitor
 						ParserErrors.typeMismatch(
 							"Inferred format %s is not compatible with %s (%s)".formatted(inferredType.format(), typedTarget.declaration().symbolName(), typedTarget.type().format()),
 							value
-						)
+						),
+						value
 					);
 				}
 			}
@@ -462,7 +467,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			{
 				if (typedVariable.type().hasDynamicLength())
 				{
-					report(ParserErrors.typeMismatch("Can't use operand with dynamic length if WRITE WORK misses the VARIABLE keyword", variableReference));
+					report(ParserErrors.typeMismatch("Can't use operand with dynamic length if WRITE WORK misses the VARIABLE keyword", variableReference), variableReference);
 				}
 				else
 					if (typedVariable.isArray())
@@ -471,7 +476,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 						{
 							if (dimension instanceof IRangedArrayAccessNode ranged && containsDynamicDimension(ranged))
 							{
-								report(ParserErrors.typeMismatch("Can't use operand with dynamic array access if WRITE WORK misses the VARIABLE keyword", variableReference));
+								report(ParserErrors.typeMismatch("Can't use operand with dynamic array access if WRITE WORK misses the VARIABLE keyword", variableReference), variableReference);
 							}
 						}
 					}
@@ -504,7 +509,8 @@ final class TypeChecker implements ISyntaxNodeVisitor
 					"Type mismatch: Initializer %s (inferred %s) does not fit into %s"
 						.formatted(initialSource, inferredInitialType.toShortString(), typedVariable.type().toShortString()),
 					initialNode
-				)
+				),
+				initialNode
 			);
 		}
 		else
@@ -554,7 +560,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 
 		if (operand instanceof ILiteralNode)
 		{
-			report(ParserErrors.referenceNotMutable("Operand is not modifiable by statement", operand));
+			report(ParserErrors.referenceNotMutable("Operand is not modifiable by statement", operand), operand);
 		}
 	}
 
@@ -572,7 +578,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 
 		if (typedVariable.type() != null && typedVariable.type().isConstant())
 		{
-			report(ParserErrors.referenceNotMutable("Variable can't be modified because it is CONST", variableReference.referencingToken()));
+			report(ParserErrors.referenceNotMutable("Variable can't be modified because it is CONST", variableReference.referencingToken()), variableReference);
 		}
 	}
 
@@ -585,7 +591,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 
 		if (entry instanceof SystemVariableDefinition sysVarDefinition && !sysVarDefinition.isModifiable())
 		{
-			report(ParserErrors.referenceNotMutable("Unmodifiable system variables can't be modified", node));
+			report(ParserErrors.referenceNotMutable("Unmodifiable system variables can't be modified", node), node);
 		}
 	}
 
@@ -617,13 +623,18 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		{
 			if (dimension instanceof IRangedArrayAccessNode)
 			{
-				report(ParserErrors.typeMismatch("Operand can't specify array range in this context", dimension));
+				report(ParserErrors.typeMismatch("Operand can't specify array range in this context", dimension), dimension);
 			}
 		}
 	}
 
-	private void report(IDiagnostic diagnostic)
+	private void report(IDiagnostic diagnostic, ISyntaxNode node)
 	{
+		if (!node.diagnosticPosition().isSamePositionAs(node.position()) && diagnostic instanceof ParserDiagnostic parserDiagnostic)
+		{
+			diagnostic = parserDiagnostic.relocate(node.diagnosticPosition());
+		}
+
 		diagnostics.add(diagnostic);
 	}
 
