@@ -73,7 +73,7 @@ jobs:
           cache: 'gradle'
 
       - name: Cache SonarCloud packages
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         if: matrix.os == 'ubuntu-latest'
         with:
           path: ~/.sonar/cache
