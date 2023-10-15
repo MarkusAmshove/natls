@@ -2003,6 +2003,35 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void parseAnExamineWithKeywordThatCanBeIdentifier()
+	{
+		var examine = assertParsesSingleStatement("EXAMINE #VAR FOR 'a' WITH DELIMITER SPACE AND DELETE FIRST INDEX #IX", IExamineNode.class);
+		assertThat(examine.descendants().size()).isEqualTo(12);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"FOR 'a' GIVING NUMBER #N POSITION #P LENGTH #L INDEX #I",
+		"FOR 'a' GIVING #N POSITION #P LENGTH #L INDEX #I",
+		"FOR 'a' AND DELETE FIRST GIVING INDEX #I",
+		"FOR 'a' AND DELETE FIRST INDEX #I",
+		"FOR #EXAM WITH DELIMITERS GIVING #N INDEX #I",
+		"FOR #EXAM WITH DELIMITERS GIVING #N",
+		"FOR #EXAM WITH DELIMITERS GIVING NUMBER #N INDEX #I",
+		"FOR #EXAM WITH DELIMITERS INDEX #I",
+		"FOR #EXAM WITH DELIMITERS SPACE GIVING NUMBER #N POSITION #P LENGTH #L INDEX #I",
+		"FOR #EXAM WITH DELIMITERS SPACE GIVING #N POSITION #P LENGTH #L INDEX #I",
+		"FOR #EXAM WITH DELIMITERS SPACE GIVING POSITION #P GIVING LENGTH #L INDEX #I",
+		"#EXAM WITH DELIMITER REPLACE ' '",
+		"#EXAM WITH DELIMITER SPACE REPLACE ' '",
+	})
+	void parseAnExamineWithDelimtersAndGiving(String statement)
+	{
+		assertParsesSingleStatement("EXAMINE #VAR %s".formatted(statement), IExamineNode.class);
+	}
+
+	@Test
 	void parseASimpleSeparate()
 	{
 		var separate = assertParsesSingleStatement("SEPARATE #VAR INTO #ARR(*)", ISeparateStatementNode.class);
