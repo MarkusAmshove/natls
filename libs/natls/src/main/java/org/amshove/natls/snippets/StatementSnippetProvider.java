@@ -68,7 +68,15 @@ public class StatementSnippetProvider implements ISnippetProvider
 			END-DECIDE
 			""");
 
-	private static final NaturalSnippet FOR = new NaturalSnippet("for")
+	private static final NaturalSnippet FOR_I = new NaturalSnippet("fori")
+		.applicableWhen(f -> f.getType().canHaveBody())
+		.insertsText("""
+			FOR ${1:#I} = 1 TO ${2}
+			  ${0:IGNORE}
+			END-FOR
+			""");
+
+	private static final NaturalSnippet FOR_ARRAY = new NaturalSnippet("forarr")
 		.applicableWhen(f -> f.getType().canHaveBody())
 		.insertsText("""
 			#S-${1:ARRAY} := *OCC(${1:ARRAY})
@@ -101,7 +109,8 @@ public class StatementSnippetProvider implements ISnippetProvider
 		DECIDE_FOR_FIRST_CONDITION,
 		DECIDE_ON_FIRST_VALUE,
 		DECIDE_ON_EVERY_VALUE,
-		FOR,
+		FOR_I,
+		FOR_ARRAY,
 		SOURCE_HEADER,
 		RESIZE,
 		RESIZE_AND_RESET,
