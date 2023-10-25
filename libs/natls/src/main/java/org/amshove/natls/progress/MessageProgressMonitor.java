@@ -21,7 +21,7 @@ public class MessageProgressMonitor implements IProgressMonitor
 		{
 			// for client messages, only show every tenth entry to reduce spam
 			client.showMessage(ClientMessage.log("%d%% %s".formatted(percentage, message)));
-			lastTenthPercentage = (int) (percentage / 10);
+			lastTenthPercentage = percentage / 10;
 		}
 	}
 
