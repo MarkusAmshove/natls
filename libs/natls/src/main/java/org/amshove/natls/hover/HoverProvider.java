@@ -56,6 +56,16 @@ public class HoverProvider
 			return hoverBuiltinFunction(context.tokenToHover().kind());
 		}
 
+		if (context.nodeToHover()instanceof IMathFunctionOperandNode mathFunction)
+		{
+			return MathFunctionHoverRegistry.getHover(mathFunction);
+		}
+
+		if (context.nodeToHover().parent()instanceof IMathFunctionOperandNode mathFunction)
+		{
+			return MathFunctionHoverRegistry.getHover(mathFunction);
+		}
+
 		if (context.nodeToHover()instanceof IModuleReferencingNode moduleReferencingNode)
 		{
 			return hoverExternalModule(moduleReferencingNode);

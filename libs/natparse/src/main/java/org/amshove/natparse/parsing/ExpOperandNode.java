@@ -1,9 +1,10 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.natural.IExpOperandNode;
 import org.amshove.natparse.natural.IMathFunctionOperandNode;
 import org.amshove.natparse.natural.IOperandNode;
 
-class ExpOperandNode extends BaseSyntaxNode implements IMathFunctionOperandNode
+class ExpOperandNode extends BaseSyntaxNode implements IExpOperandNode
 {
 	private IOperandNode parameter;
 

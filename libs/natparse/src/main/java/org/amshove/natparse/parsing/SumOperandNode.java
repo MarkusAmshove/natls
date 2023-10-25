@@ -2,8 +2,9 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.natural.IMathFunctionOperandNode;
 import org.amshove.natparse.natural.IOperandNode;
+import org.amshove.natparse.natural.ISumOperandNode;
 
-class SumOperandNode extends BaseSyntaxNode implements IMathFunctionOperandNode
+class SumOperandNode extends BaseSyntaxNode implements ISumOperandNode
 {
 	private IOperandNode parameter;
 
