@@ -1,7 +1,6 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.natural.IAbsOperandNode;
-import org.amshove.natparse.natural.IMathFunctionOperandNode;
 import org.amshove.natparse.natural.IOperandNode;
 
 class AbsOperandNode extends BaseSyntaxNode implements IAbsOperandNode
