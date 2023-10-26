@@ -63,8 +63,6 @@ Returns the Cosine of the given parameter.
 ```EXP(parameter)```
 
 Exponentiation of the given parameter to Euler's number `e`:
-
-`e<sup>parameter</sup>`
 """
 				)
 			)
@@ -76,6 +74,13 @@ Exponentiation of the given parameter to Euler's number `e`:
 ```FRAC(parameter)```
 
 Returns the fractional part of the given parameter.
+
+Example:
+
+```
+#NUM1 := 55,123
+#NUM2 := FRAC(#NUM1) /* Results in 0,123
+```
 """
 				)
 			)
@@ -87,6 +92,13 @@ Returns the fractional part of the given parameter.
 ```INT(parameter)```
 
 Returns the integer part of the given parameter.
+
+Example:
+
+```
+#NUM1 := 55,123
+#NUM2 := INT(#NUM1) /* Results in 55,0
+```
 """
 				)
 			)
