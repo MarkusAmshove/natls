@@ -1,4 +1,4 @@
 package org.amshove.natparse.natural;
 
-public interface ISinOperandNode extends IOperandNode
+public interface ISinOperandNode extends IMathFunctionOperandNode
 {}

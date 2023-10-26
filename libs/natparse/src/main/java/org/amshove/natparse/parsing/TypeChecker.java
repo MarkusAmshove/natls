@@ -236,7 +236,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 			checkProcessingLoopFunctions(function);
 		}
 
-		if (node instanceof IMathFunctionOperandNode function)
+		if (node instanceof IMathFunctionOperandNode function && !(function instanceof IValOperandNode)) // VAL is the only math function that takes alphanumerics
 		{
 			checkMathematicalSystemFunctions(function);
 			return;
