@@ -332,6 +332,27 @@ class CodeInsertionPlacerShould extends EmptyProjectTest
 		);
 	}
 
+	@Test
+	void findARangeForAStatementInAFunction()
+	{
+		var file = createOrSaveLanguageServerFile("LIBONE", "FUNC.NS7", """
+			DEFINE FUNCTION FUNC
+			RETURNS (L)
+			DEFINE DATA LOCAL
+			END-DEFINE
+			END-FUNCTION
+			END
+			""");
+
+		assertInsertion(
+			sut.findInsertionPositionForStatement(file),
+			"",
+			4, 0,
+			4, 0,
+			System.lineSeparator()
+		);
+	}
+
 	private void assertInsertion(CodeInsertion insertion, String prefix, int startLine, int offsetInStartLine, int endLine, int offsetInEndLine, String suffix)
 	{
 		var range = insertion.range();

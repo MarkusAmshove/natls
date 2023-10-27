@@ -2,6 +2,7 @@ package org.amshove.natls.codemutation;
 
 import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natls.project.LanguageServerFile;
+import org.amshove.natparse.IPosition;
 import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.*;
@@ -81,11 +82,23 @@ public class CodeInsertionPlacer
 			return new CodeInsertion(System.lineSeparator(), LspUtil.toRangeAfter(NodeUtil.deepFindLeaf(lastNodeThatIsNotBodyNode).position()));
 		}
 
-		var lastNode = file.getType() == NaturalFileType.SUBROUTINE
+		var lastNodePosition = findLastNodeInFileThatCantHaveStatementsAfter(file.getType(), withBody);
+
+		return new CodeInsertion(LspUtil.toRangeBefore(lastNodePosition), System.lineSeparator());
+	}
+
+	private static IPosition findLastNodeInFileThatCantHaveStatementsAfter(NaturalFileType type, IModuleWithBody withBody)
+	{
+		if (type == NaturalFileType.FUNCTION)
+		{
+			var lastNode = withBody.body().statements().last();
+			var index = withBody.body().statements().indexOf(lastNode);
+			return withBody.body().statements().get(index - 1).position();
+		}
+
+		return type == NaturalFileType.SUBROUTINE
 			? withBody.body().statements().first().descendants().last().position()
 			: withBody.body().statements().last().position();
-
-		return new CodeInsertion(LspUtil.toRangeBefore(lastNode), System.lineSeparator());
 	}
 
 	private static Optional<Range> findLastInsertionPositionForParameter(LanguageServerFile file)
