@@ -95,6 +95,48 @@ class CreateUnresolvedSubroutineQuickFixShould extends CodeActionTest
 	}
 
 	@Test
+	void addASubroutineBeforeTheEndFunctionTokenInFunctions()
+	{
+		assertCodeActionWithTitle("Declare inline subroutine MY-SUB", "LIBONE", "FUNC.NS7", """
+			DEFINE FUNCTION MYFUNC
+
+			RETURNS (L)
+
+			DEFINE DATA
+			LOCAL
+			END-DEFINE
+
+			PERFORM MY-S${}$UB
+
+			END-FUNCTION
+			END
+			""")
+			.fixes(ParserError.UNRESOLVED_IMPORT.id())
+			.resultsApplied("""
+			DEFINE FUNCTION MYFUNC
+
+			RETURNS (L)
+
+			DEFINE DATA
+			LOCAL
+			END-DEFINE
+
+			PERFORM MY-SUB
+			
+			/***********************************************************************
+			DEFINE SUBROUTINE MY-SUB
+			/***********************************************************************
+
+			IGNORE
+
+			END-SUBROUTINE
+
+			END-FUNCTION
+			END
+				""");
+	}
+
+	@Test
 	void addASubroutineInAnExternalSubroutine()
 	{
 		assertCodeActionWithTitle("Declare inline subroutine MY-SUB", "LIBONE", "SUB.NSS", """
