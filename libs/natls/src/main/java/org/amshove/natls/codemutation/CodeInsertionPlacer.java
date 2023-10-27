@@ -73,11 +73,6 @@ public class CodeInsertionPlacer
 	{
 		var withBody = (IModuleWithBody) file.module();
 
-		if (file.getType() == NaturalFileType.FUNCTION)
-		{
-
-		}
-
 		if (withBody.body().statements().isEmpty())
 		{
 			var lastNodeThatIsNotBodyNode = file.module().syntaxTree().descendants().stream()
