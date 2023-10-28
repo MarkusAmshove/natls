@@ -16,7 +16,9 @@ import org.amshove.natls.documentsymbol.DocumentSymbolProvider;
 import org.amshove.natls.hover.HoverContext;
 import org.amshove.natls.hover.HoverProvider;
 import org.amshove.natls.inlayhints.InlayHintProvider;
+import org.amshove.natls.progress.BackgroundTasks;
 import org.amshove.natls.progress.IProgressMonitor;
+import org.amshove.natls.progress.NullProgressMonitor;
 import org.amshove.natls.progress.ProgressTasks;
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natls.project.LanguageServerProject;
@@ -54,10 +56,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class NaturalLanguageService implements LanguageClientAware
 {
+	private static final Logger log = Logger.getAnonymousLogger();
 	private static final CodeActionRegistry codeActionRegistry = CodeActionRegistry.INSTANCE;
 	private NaturalProject project; // TODO: Replace
 	private LanguageServerProject languageServerProject;
@@ -95,8 +99,11 @@ public class NaturalLanguageService implements LanguageClientAware
 		indexer.indexProject(project);
 		this.project = project;
 		languageServerProject = LanguageServerProject.fromProject(project);
-		parseFileReferences(progressMonitor);
-		preParseDataAreas(progressMonitor);
+		if (!getConfig().getInitialization().isAsync())
+		{
+			parseFileReferencesAsync(progressMonitor);
+			preParseDataAreas(progressMonitor);
+		}
 		initialized = true;
 		hoverProvider = new HoverProvider();
 		completionProvider = new CompletionProvider(new SnippetEngine(languageServerProject), hoverProvider);
@@ -406,9 +413,14 @@ public class NaturalLanguageService implements LanguageClientAware
 		monitor.progress("Done", 100);
 	}
 
-	public CompletableFuture<Void> parseFileReferences()
+	public CompletableFuture<Void> parseFileReferencesAsync()
 	{
-		return ProgressTasks.startNewVoid("Parsing file references", client, this::parseFileReferences);
+		return BackgroundTasks.enqueue(() -> parseFileReferencesAsync(new NullProgressMonitor()), "Parsing file references");
+	}
+
+	public CompletableFuture<Void> preparseDataAreasAsync()
+	{
+		return BackgroundTasks.enqueue(() -> preParseDataAreas(new NullProgressMonitor()), "Parsing Data Areas");
 	}
 
 	private void preParseDataAreas(IProgressMonitor monitor)
@@ -418,9 +430,10 @@ public class NaturalLanguageService implements LanguageClientAware
 			.parallel()
 			.peek(f -> monitor.progress(f.getReferableName(), 0))
 			.forEach(f -> f.parse(ParseStrategy.WITHOUT_CALLERS));
+		log.info("preParseDataAreas done");
 	}
 
-	private void parseFileReferences(IProgressMonitor monitor)
+	private void parseFileReferencesAsync(IProgressMonitor monitor)
 	{
 		monitor.progress("Clearing current references", 0);
 		var parser = new ModuleReferenceParser();
@@ -450,6 +463,7 @@ public class NaturalLanguageService implements LanguageClientAware
 				processedFiles++;
 			}
 		}
+		log.info("parseFileReferences done");
 	}
 
 	public boolean isInitialized()

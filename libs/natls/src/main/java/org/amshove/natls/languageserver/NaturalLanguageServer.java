@@ -1,13 +1,13 @@
 package org.amshove.natls.languageserver;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.amshove.natls.App;
 import org.amshove.natls.codeactions.CodeActionRegistry;
+import org.amshove.natls.config.LSConfiguration;
 import org.amshove.natls.markupcontent.MarkdownContentBuilder;
 import org.amshove.natls.markupcontent.MarkupContentBuilderFactory;
-import org.amshove.natls.progress.ClientProgressType;
-import org.amshove.natls.progress.MessageProgressMonitor;
-import org.amshove.natls.progress.ProgressTasks;
-import org.amshove.natls.progress.WorkDoneProgressMonitor;
+import org.amshove.natls.progress.*;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -39,6 +39,11 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			var initStart = System.currentTimeMillis();
 			log.info("Starting initialization");
 			var capabilities = new ServerCapabilities();
+
+			var config = params.getInitializationOptions() != null
+				? new Gson().fromJson((JsonObject) params.getInitializationOptions(), LSConfiguration.class)
+				: LSConfiguration.createDefault();
+			NaturalLanguageService.setConfiguration(config);
 
 			capabilities.setWorkspaceSymbolProvider(true);
 			capabilities.setDocumentSymbolProvider(new DocumentSymbolOptions("NatLS"));
@@ -141,12 +146,40 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 				progressMonitor.progress("Initialization done in %dms".formatted(endTime - startTime), 100);
 			}
 
+			BackgroundTasks.initialize(client);
 			var lspName = App.class.getPackage().getImplementationTitle();
 			var lspVersion = App.class.getPackage().getImplementationVersion();
 			var initEnd = System.currentTimeMillis();
 			log.info("Initialization done. Took %dms".formatted(initEnd - initStart));
 			return new InitializeResult(capabilities, new ServerInfo(lspName != null ? lspName : "natls", lspVersion != null ? lspVersion : "dev"));
 		});
+	}
+
+	@Override
+	public void initialized(InitializedParams params)
+	{
+		log.info("initialized() called");
+		if (NaturalLanguageService.getConfig().getInitialization().isAsync())
+		{
+			client.showMessage(ClientMessage.info("Background initialization started"));
+			var fileReferences = languageService.parseFileReferencesAsync();
+			var dataAreas = languageService.preparseDataAreasAsync();
+			CompletableFuture.allOf(fileReferences, dataAreas)
+				.whenComplete((v, error) ->
+				{
+					if (error == null)
+					{
+						client.showMessage(ClientMessage.info("Background initialization done"));
+						client.refreshCodeLenses()
+							.whenComplete((i, i2) -> client.refreshInlayHints());
+					}
+					else
+					{
+						client.showMessage(ClientMessage.error("Background initialization failed"));
+					}
+				});
+		}
+		log.info("initialized() returned");
 	}
 
 	@Override
@@ -204,7 +237,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 	{
 		if (languageService.isInitialized())
 		{
-			return languageService.parseFileReferences();
+			languageService.parseFileReferencesAsync();
 		}
 
 		return CompletableFuture.completedFuture(null);
