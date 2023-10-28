@@ -9,11 +9,18 @@ public class WorkDoneProgressMonitor implements IProgressMonitor
 {
 	private final String taskId;
 	private final LanguageClient client;
+	private int previousPercentage;
 
 	public WorkDoneProgressMonitor(String taskId, LanguageClient client)
 	{
 		this.taskId = taskId;
 		this.client = client;
+	}
+
+	@Override
+	public void progress(String message)
+	{
+		progress(message, (previousPercentage < 100 ? ++previousPercentage : previousPercentage));
 	}
 
 	@Override
@@ -25,6 +32,7 @@ public class WorkDoneProgressMonitor implements IProgressMonitor
 		report.setCancellable(true);
 
 		client.notifyProgress(new ProgressParams(Either.forLeft(taskId), Either.forLeft(report)));
+		previousPercentage = percentage;
 	}
 
 	@Override

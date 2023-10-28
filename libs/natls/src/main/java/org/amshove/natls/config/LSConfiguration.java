@@ -5,6 +5,7 @@ public class LSConfiguration
 
 	private CompletionConfiguration completion;
 	private InlayHintsConfiguration inlayhints;
+	private InitilizationConfiguration initialization;
 
 	public static LSConfiguration createDefault()
 	{
@@ -17,6 +18,10 @@ public class LSConfiguration
 		var inlay = new InlayHintsConfiguration();
 		inlay.setShowAssignmentTargetType(false);
 		config.setInlayhints(inlay);
+
+		var init = new InitilizationConfiguration();
+		init.setAsync(false);
+		config.setInitialization(init);
 
 		return config;
 	}
@@ -39,5 +44,15 @@ public class LSConfiguration
 	public void setInlayhints(InlayHintsConfiguration inlayhints)
 	{
 		this.inlayhints = inlayhints;
+	}
+
+	public InitilizationConfiguration getInitialization()
+	{
+		return initialization;
+	}
+
+	public void setInitialization(InitilizationConfiguration initialization)
+	{
+		this.initialization = initialization;
 	}
 }

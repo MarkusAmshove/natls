@@ -28,4 +28,9 @@ public record LspTestContext(
 	{
 		return languageService.getProject();
 	}
+
+	public StubClient getClient()
+	{
+		return client;
+	}
 }

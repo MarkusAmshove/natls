@@ -3,11 +3,15 @@ package org.amshove.natls.testlifecycle;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.services.LanguageClient;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class StubClient implements LanguageClient
 {
+	private final List<ShownMessage> shownMessages = new ArrayList<>();
+	private int refreshCodeLensesCalls = 0;
+
 	@Override
 	public void telemetryEvent(Object object)
 	{
@@ -23,7 +27,7 @@ public class StubClient implements LanguageClient
 	@Override
 	public void showMessage(MessageParams messageParams)
 	{
-
+		shownMessages.add(new ShownMessage(messageParams.getType(), messageParams.getMessage()));
 	}
 
 	@Override
@@ -101,6 +105,23 @@ public class StubClient implements LanguageClient
 	@Override
 	public CompletableFuture<Void> refreshCodeLenses()
 	{
-		return new CompletableFuture<>();
+		refreshCodeLensesCalls++;
+		return CompletableFuture.completedFuture(null);
 	}
+
+	public List<String> getShownMessages()
+	{
+		return shownMessages
+			.stream()
+			.map(ShownMessage::message)
+			.toList();
+	}
+
+	public int getRefreshCodeLensesCalls()
+	{
+		return refreshCodeLensesCalls;
+	}
+
+	record ShownMessage(MessageType type, String message)
+	{}
 }

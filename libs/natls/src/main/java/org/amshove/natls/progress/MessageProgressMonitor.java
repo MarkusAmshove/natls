@@ -8,10 +8,17 @@ public class MessageProgressMonitor implements IProgressMonitor
 	private final LanguageClient client;
 
 	private int lastTenthPercentage = 0;
+	private int previousPercentage = 0;
 
 	public MessageProgressMonitor(LanguageClient client)
 	{
 		this.client = client;
+	}
+
+	@Override
+	public void progress(String message)
+	{
+		progress(message, ++previousPercentage);
 	}
 
 	@Override

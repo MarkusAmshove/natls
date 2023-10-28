@@ -33,7 +33,7 @@ public class NaturalWorkspaceService implements WorkspaceService
 		var settings = (JsonObject) params.getSettings();
 		var jsonObject = settings.getAsJsonObject("natls");
 		var configuration = new Gson().fromJson(jsonObject, LSConfiguration.class);
-		languageService.setConfiguration(configuration);
+		NaturalLanguageService.setConfiguration(configuration);
 	}
 
 	@Override
