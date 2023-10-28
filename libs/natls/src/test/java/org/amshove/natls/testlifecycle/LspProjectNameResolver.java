@@ -43,6 +43,7 @@ public class LspProjectNameResolver implements ParameterResolver
 			var client = new StubClient();
 			server.connect(client);
 			server.initialize(params).get(1, TimeUnit.MINUTES);
+			server.initialized(new InitializedParams());
 			return new LspTestContext(server.getLanguageService().getProject(), client, server, server.getLanguageService());
 		}
 		catch (InterruptedException | ExecutionException | TimeoutException e)
