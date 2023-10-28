@@ -83,18 +83,21 @@ public class NaturalLanguageService implements LanguageClientAware
 	public void indexProject(Path workspaceRoot, IProgressMonitor progressMonitor)
 	{
 		this.workspaceRoot = workspaceRoot;
+		progressMonitor.progress("Reading project file", 20);
 		var projectFile = new ActualFilesystem().findNaturalProjectFile(workspaceRoot);
 		if (projectFile.isEmpty())
 		{
 			throw new LanguageServerException("Could not load Natural project. .natural or _naturalBuild not found");
 		}
 		var project = new BuildFileProjectReader().getNaturalProject(projectFile.get());
+		progressMonitor.progress("Parsing .editorconfig", 30);
 		var editorconfigPath = projectFile.get().getParent().resolve(".editorconfig");
 		if (editorconfigPath.toFile().exists())
 		{
 			loadEditorConfig(editorconfigPath);
 		}
 
+		progressMonitor.progress("Indexing Natural files", 40);
 		var indexer = new NaturalProjectFileIndexer();
 		indexer.indexProject(project);
 		this.project = project;
@@ -106,6 +109,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		}
 		initialized = true;
 		hoverProvider = new HoverProvider();
+		progressMonitor.progress("Initializing Completion", 80);
 		completionProvider = new CompletionProvider(new SnippetEngine(languageServerProject), hoverProvider);
 	}
 

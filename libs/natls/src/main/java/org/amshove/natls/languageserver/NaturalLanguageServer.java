@@ -129,7 +129,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			}
 
 			var startTime = System.currentTimeMillis();
-			progressMonitor.progress("Begin indexing", 5);
+			progressMonitor.progress("Begin Indexing", 10);
 			languageService.indexProject(Paths.get(URI.create(params.getRootUri())), progressMonitor);
 			workspaceService.setLanguageService(languageService);
 			documentService.setLanguageService(languageService);
