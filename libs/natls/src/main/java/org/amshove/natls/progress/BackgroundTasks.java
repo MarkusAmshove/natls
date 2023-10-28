@@ -15,6 +15,9 @@ public class BackgroundTasks
 	private static final ExecutorService workpool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 	private static LanguageClient client;
 
+	private BackgroundTasks()
+	{}
+
 	public static CompletableFuture<Void> enqueue(Runnable runnable, String description)
 	{
 		var future = new CompletableFuture<Void>();
