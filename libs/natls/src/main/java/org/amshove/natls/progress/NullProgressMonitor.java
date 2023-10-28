@@ -5,7 +5,13 @@ public class NullProgressMonitor implements IProgressMonitor
 	@Override
 	public void progress(String message, int percentage)
 	{
+		// intentionally empty
+	}
 
+	@Override
+	public void progress(String message)
+	{
+		// intentionally empty
 	}
 
 	@Override

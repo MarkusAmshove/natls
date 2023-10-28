@@ -170,13 +170,13 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 					if (error == null)
 					{
 						client.showMessage(ClientMessage.info("Background initialization done"));
-						client.refreshCodeLenses()
-							.whenComplete((i, i2) -> client.refreshInlayHints());
+						client.refreshCodeLenses();
 					}
 					else
 					{
 						client.showMessage(ClientMessage.error("Background initialization failed"));
 					}
+					languageService.setInitialized();
 				});
 		}
 		log.info("initialized() returned");

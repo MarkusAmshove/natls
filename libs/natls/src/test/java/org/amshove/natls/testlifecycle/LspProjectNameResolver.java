@@ -1,5 +1,7 @@
 package org.amshove.natls.testlifecycle;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.amshove.natls.languageserver.NaturalLanguageServer;
 import org.amshove.testhelpers.NaturalProjectResourceResolver;
 import org.eclipse.lsp4j.*;
@@ -31,7 +33,8 @@ public class LspProjectNameResolver implements ParameterResolver
 	{
 		try
 		{
-			var projectName = parameterContext.getParameter().getAnnotation(LspProjectName.class).value();
+			var annotation = parameterContext.getParameter().getAnnotation(LspProjectName.class);
+			var projectName = annotation.value();
 			var tempDir = new NaturalProjectResourceResolver.AutoDeleteTempDirectory(projectName);
 			extensionContext.getStore(NAMESPACE).put("tempdir", tempDir);
 			TestProjectLoader.loadProjectFromResources(tempDir.getPath(), projectName);
@@ -41,6 +44,13 @@ public class LspProjectNameResolver implements ParameterResolver
 			params.setWorkspaceFolders(List.of(new WorkspaceFolder(tempDir.getPath().toUri().toString())));
 			params.setRootUri(tempDir.getPath().toUri().toString());
 			var client = new StubClient();
+
+			if (!annotation.config().isEmpty())
+			{
+				var config = new Gson().fromJson(annotation.config(), JsonObject.class);
+				params.setInitializationOptions(config);
+			}
+
 			server.connect(client);
 			server.initialize(params).get(1, TimeUnit.MINUTES);
 			server.initialized(new InitializedParams());

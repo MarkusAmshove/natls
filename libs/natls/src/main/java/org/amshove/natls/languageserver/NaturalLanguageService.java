@@ -106,10 +106,10 @@ public class NaturalLanguageService implements LanguageClientAware
 		{
 			parseFileReferencesAsync(progressMonitor);
 			preParseDataAreas(progressMonitor);
+			initialized = true;
 		}
-		initialized = true;
 		hoverProvider = new HoverProvider();
-		progressMonitor.progress("Initializing Completion", 80);
+		progressMonitor.progress("Initializing Services", 80);
 		completionProvider = new CompletionProvider(new SnippetEngine(languageServerProject), hoverProvider);
 	}
 
@@ -419,11 +419,15 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	public CompletableFuture<Void> parseFileReferencesAsync()
 	{
+		// BackgroundTasks can't have a ProgressMonitor, because the progress would spam the communication
+		// and make the client wait for finish of the progress before sending new requests.
 		return BackgroundTasks.enqueue(() -> parseFileReferencesAsync(new NullProgressMonitor()), "Parsing file references");
 	}
 
 	public CompletableFuture<Void> preparseDataAreasAsync()
 	{
+		// BackgroundTasks can't have a ProgressMonitor, because the progress would spam the communication
+		// and make the client wait for finish of the progress before sending new requests.
 		return BackgroundTasks.enqueue(() -> preParseDataAreas(new NullProgressMonitor()), "Parsing Data Areas");
 	}
 
@@ -432,7 +436,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		monitor.progress("Preparsing data areas", 0);
 		languageServerProject.libraries().stream().flatMap(l -> l.files().stream().filter(f -> f.getType() == NaturalFileType.LDA || f.getType() == NaturalFileType.PDA))
 			.parallel()
-			.peek(f -> monitor.progress(f.getReferableName(), 0))
+			.peek(f -> monitor.progress("Parsing data areas %s".formatted(f.getReferableName())))
 			.forEach(f -> f.parse(ParseStrategy.WITHOUT_CALLERS));
 		log.info("preParseDataAreas done");
 	}
@@ -457,7 +461,7 @@ public class NaturalLanguageService implements LanguageClientAware
 					break;
 				}
 				var percentageDone = 100L * processedFiles / allFilesCount;
-				monitor.progress("Indexing %s.%s".formatted(library.name(), file.getReferableName()), (int) percentageDone);
+				monitor.progress("Parsing references %s.%s".formatted(library.name(), file.getReferableName()), (int) percentageDone);
 				switch (file.getType())
 				{
 					case PROGRAM, SUBPROGRAM, SUBROUTINE, FUNCTION, COPYCODE -> parser.parseReferences(file);
@@ -776,6 +780,11 @@ public class NaturalLanguageService implements LanguageClientAware
 	public LanguageServerProject getProject()
 	{
 		return languageServerProject;
+	}
+
+	public void setInitialized()
+	{
+		this.initialized = true;
 	}
 
 	private static <T> T extractJsonObject(Object obj, Class<T> clazz)

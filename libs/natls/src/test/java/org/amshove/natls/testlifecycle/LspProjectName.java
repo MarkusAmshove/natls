@@ -10,4 +10,6 @@ import java.lang.annotation.Target;
 public @interface LspProjectName
 {
 	String value();
+
+	String config() default "";
 }
