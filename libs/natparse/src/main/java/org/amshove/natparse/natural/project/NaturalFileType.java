@@ -1,5 +1,7 @@
 package org.amshove.natparse.natural.project;
 
+import org.amshove.natparse.NaturalParseException;
+
 import java.nio.file.Path;
 import java.util.Arrays;
 
@@ -23,6 +25,17 @@ public enum NaturalFileType
 
 	public static final NaturalFileType[] VALUES = NaturalFileType.values();
 
+	public static NaturalFileType fromPath(Path filepath)
+	{
+		var wholeName = filepath.getFileName().toString();
+		var split = wholeName.split("\\.");
+		if (split.length < 2)
+		{
+			throw new NaturalParseException("Could not determine natural file type from path <%s>".formatted(filepath));
+		}
+		return fromExtension(split[split.length - 1]);
+	}
+
 	public static NaturalFileType fromExtension(String extension)
 	{
 		return switch (extension)
@@ -38,7 +51,7 @@ public enum NaturalFileType
 			case "NSM" -> MAP;
 			case "NSC" -> COPYCODE;
 			case "NS7" -> FUNCTION;
-			default -> throw new RuntimeException(extension);
+			default -> throw new NaturalParseException("Could not determine natural file type by extension %s".formatted(extension));
 		};
 	}
 
