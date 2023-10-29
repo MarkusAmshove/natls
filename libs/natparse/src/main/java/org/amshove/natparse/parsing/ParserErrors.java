@@ -643,4 +643,13 @@ class ParserErrors
 			ParserError.UNEXPECTED_TOKEN_EXPECTED_OPERAND
 		);
 	}
+
+	public static ParserDiagnostic invalidScopeForFileType(SyntaxKind expectedScope, SyntaxKind actualScope, SyntaxToken position)
+	{
+		return ParserDiagnostic.create(
+			"Invalid scope for file type. Expected: %s but got %s".formatted(expectedScope, actualScope),
+			position,
+			ParserError.INVALID_SCOPE_FOR_FILE_TYPE
+		);
+	}
 }

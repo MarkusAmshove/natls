@@ -3,6 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
+import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.parsing.ddm.DdmParser;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
@@ -11,8 +12,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -311,10 +314,12 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings =
-	{
-		"F", "I", "N", "P", "A", "B", "U"
-	})
+	@ValueSource(
+		strings =
+		{
+			"F", "I", "N", "P", "A", "B", "U"
+		}
+	)
 	void addDiagnosticsForTypesMissingALength(String type)
 	{
 		assertDiagnostic("define data local 1 #m (%s) end-define".formatted(type), ParserError.VARIABLE_LENGTH_MISSING);
@@ -599,12 +604,12 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	{
 		assertDiagnostic(
 			"""
-			define data local
-			1 #GRP1
-			2 #G1-CONST (A1) CONST<'A'>
-			2 #NOCONST (A2)
-			end-define
-			""",
+				define data local
+				1 #GRP1
+				2 #G1-CONST (A1) CONST<'A'>
+				2 #NOCONST (A2)
+				end-define
+				""",
 			ParserError.GROUP_HAS_MIXED_CONST
 		);
 	}
@@ -614,13 +619,13 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	{
 		assertDiagnostic(
 			"""
-			define data local
-			1 #GRP1
-			2 #NO-CONST (A1)
-			2 #GRP2
-			3 #CONST (A2) CONST<'A'>
-			end-define
-			""",
+				define data local
+				1 #GRP1
+				2 #NO-CONST (A1)
+				2 #GRP2
+				3 #CONST (A2) CONST<'A'>
+				end-define
+				""",
 			ParserError.GROUP_HAS_MIXED_CONST
 		);
 	}
@@ -652,10 +657,12 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings =
-	{
-		"(T/*)", "(T/2)", "(T/1:10)", "(T/1:*)", "(T/*,1:5)", "(T/*:10)", "(A10/1:10)", "(T/1:10,50:*,*:20)", "(A20/1:10,50:*,*:20)",
-	})
+	@ValueSource(
+		strings =
+		{
+			"(T/*)", "(T/2)", "(T/1:10)", "(T/1:*)", "(T/*,1:5)", "(T/*:10)", "(A10/1:10)", "(T/1:10,50:*,*:20)", "(A20/1:10,50:*,*:20)",
+		}
+	)
 	void parseArrayDefinitions(String variable)
 	{
 		assertParsesWithoutDiagnostics("""
@@ -666,10 +673,12 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings =
-	{
-		"(1:10,20:*)", "(1:10)", "(1:*)", "(*:5)", "(*)", "(5)"
-	})
+	@ValueSource(
+		strings =
+		{
+			"(1:10,20:*)", "(1:10)", "(1:*)", "(*:5)", "(*)", "(5)"
+		}
+	)
 	void parseArrayDefinitionsForGroups(String variable)
 	{
 		assertParsesWithoutDiagnostics("""
@@ -786,13 +795,15 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings =
-	{
-		"(A1/#length)",
-		"(A1 /#length)",
-		"(A1/ #length)",
-		"(A1 / #length)"
-	})
+	@ValueSource(
+		strings =
+		{
+			"(A1/#length)",
+			"(A1 /#length)",
+			"(A1/ #length)",
+			"(A1 / #length)"
+		}
+	)
 	void parseAnArrayThatHasAConstReferenceAsDimensionAndArrayHasConstElements(String variable)
 	{
 		assertParsesWithoutDiagnostics("""
@@ -1278,13 +1289,13 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	void notRaiseADiagnosticIfRedefineHasSmallerOrEqualLength(String varFormat, String redefVarFormat)
 	{
 		var source = """
-            DEFINE DATA
-            LOCAL
-            1 #FIELD (%s)
-            1 REDEFINE #FIELD
-             2 #REDEF-FIELD (%s)
-            END-DEFINE
-            """.formatted(varFormat, redefVarFormat);
+			DEFINE DATA
+			LOCAL
+			1 #FIELD (%s)
+			1 REDEFINE #FIELD
+			 2 #REDEF-FIELD (%s)
+			END-DEFINE
+			""".formatted(varFormat, redefVarFormat);
 
 		assertParsesWithoutDiagnostics(source);
 	}
@@ -1298,13 +1309,13 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	void raiseADiagnosticIfRedefineHasGreaterLength(String varFormat, String redefVarFormat)
 	{
 		var source = """
-            DEFINE DATA
-            LOCAL
-            1 #FIELD (%s)
-            1 REDEFINE #FIELD
-             2 #REDEF-FIELD (%s)
-            END-DEFINE
-         """.formatted(varFormat, redefVarFormat);
+			   DEFINE DATA
+			   LOCAL
+			   1 #FIELD (%s)
+			   1 REDEFINE #FIELD
+			    2 #REDEF-FIELD (%s)
+			   END-DEFINE
+			""".formatted(varFormat, redefVarFormat);
 
 		assertDiagnostic(source, ParserError.REDEFINE_LENGTH_EXCEEDS_TARGET_LENGTH);
 	}
@@ -1703,10 +1714,12 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings =
-	{
-		"EM=9999", "EMU=9999", "HD='header'", "PM=952"
-	})
+	@ValueSource(
+		strings =
+		{
+			"EM=9999", "EMU=9999", "HD='header'", "PM=952"
+		}
+	)
 	void parseEditMasks(String mask)
 	{
 		assertParsesWithoutDiagnostics("""
@@ -1717,10 +1730,12 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings =
-	{
-		"AD=D", "AD=B", "AD=I", "AD=N", "AD=V", "AD=U", "AD=C", "AD=Y", "AD=P", "CD=BL", "CD=GR", "CD=NE", "CD=PI", "CD=RE", "CD=TU", "CD=YE", "AD=I CD=BL"
-	})
+	@ValueSource(
+		strings =
+		{
+			"AD=D", "AD=B", "AD=I", "AD=N", "AD=V", "AD=U", "AD=C", "AD=Y", "AD=P", "CD=BL", "CD=GR", "CD=NE", "CD=PI", "CD=RE", "CD=TU", "CD=YE", "AD=I CD=BL"
+		}
+	)
 	void parseAttributeConstantsAsInit(String attribute)
 	{
 		assertParsesWithoutDiagnostics("""
@@ -1922,20 +1937,20 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	{
 		assertDiagnostic(
 			"""
-			define data local
-			1 #grp
-			2 #var1 (A1/1:1000)
-			2 #var2 (A1/1:100)
-			1 redefine #grp
-			2 #bytes1 (A1/1:250)
-			2 #bytes2 (A1/1:850)
-			2 redefine #bytes2
-			3 #bytes-str (A750)
-			3 #r1 (a1/1:450)
-			1 redefine #grp
-			2 #var3 (A300)
-			end-define
-			""",
+				define data local
+				1 #grp
+				2 #var1 (A1/1:1000)
+				2 #var2 (A1/1:100)
+				1 redefine #grp
+				2 #bytes1 (A1/1:250)
+				2 #bytes2 (A1/1:850)
+				2 redefine #bytes2
+				3 #bytes-str (A750)
+				3 #r1 (a1/1:450)
+				1 redefine #grp
+				2 #var3 (A300)
+				end-define
+				""",
 			ParserError.REDEFINE_LENGTH_EXCEEDS_TARGET_LENGTH
 		);
 	}
@@ -1958,10 +1973,12 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings =
-	{
-		"1", "3", "5", "7", "9", "11", "32"
-	})
+	@ValueSource(
+		strings =
+		{
+			"1", "3", "5", "7", "9", "11", "32"
+		}
+	)
 	void showADiagnosticForInvalidFloatLengths(String length)
 	{
 		assertDiagnostic(
@@ -1975,10 +1992,12 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings =
-	{
-		"3", "5", "8", "12", "24", "32"
-	})
+	@ValueSource(
+		strings =
+		{
+			"3", "5", "8", "12", "24", "32"
+		}
+	)
 	void showADiagnosticForInvalidIntegerLengths(String length)
 	{
 		assertDiagnostic(
@@ -1992,10 +2011,12 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings =
-	{
-		"30", "32"
-	})
+	@ValueSource(
+		strings =
+		{
+			"30", "32"
+		}
+	)
 	void showADiagnosticForInvalidNumericLengths(String length)
 	{
 		assertDiagnostic(
@@ -2009,10 +2030,12 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings =
-	{
-		"30", "32"
-	})
+	@ValueSource(
+		strings =
+		{
+			"30", "32"
+		}
+	)
 	void showADiagnosticForInvalidPackedLengths(String length)
 	{
 		assertDiagnostic(
@@ -2026,10 +2049,12 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings =
-	{
-		"C", "D", "L", "T"
-	})
+	@ValueSource(
+		strings =
+		{
+			"C", "D", "L", "T"
+		}
+	)
 	void showADiagnosticForLengthsWithTypesThatCantSpecifyLength(String type)
 	{
 		assertDiagnostic(
@@ -2043,10 +2068,12 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings =
-	{
-		"TRUE", "FALSE"
-	})
+	@ValueSource(
+		strings =
+		{
+			"TRUE", "FALSE"
+		}
+	)
 	void showNoDiagnosticForInitiatingAnAlphanumericWithBoolean(String bool)
 	{
 		assertParsesWithoutDiagnostics("""
@@ -2408,6 +2435,103 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			""");
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"PARAMETER", "GLOBAL"
+	})
+	void raiseADiagnosticIfALdaSpecifiesAnInvalidScope(String scope)
+	{
+		assertDiagnostic(
+			"""
+				DEFINE DATA %s
+				1 #VAR (L)
+				END-DEFINE
+				""".formatted(scope),
+			NaturalFileType.LDA,
+			ParserError.INVALID_SCOPE_FOR_FILE_TYPE
+		);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"LOCAL", "GLOBAL"
+	})
+	void raiseADiagnosticIfAPdaSpecifiesAnInvalidScope(String scope)
+	{
+		assertDiagnostic(
+			"""
+				DEFINE DATA %s
+				1 #VAR (L)
+				END-DEFINE
+				""".formatted(scope),
+			NaturalFileType.PDA,
+			ParserError.INVALID_SCOPE_FOR_FILE_TYPE
+		);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"LOCAL", "PARAMETER"
+	})
+	void raiseADiagnosticIfAGdaSpecifiesAnInvalidScope(String scope)
+	{
+		assertDiagnostic(
+			"""
+				DEFINE DATA %s
+				1 #VAR (L)
+				END-DEFINE
+				""".formatted(scope),
+			NaturalFileType.GDA,
+			ParserError.INVALID_SCOPE_FOR_FILE_TYPE
+		);
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"LDA,LOCAL",
+			"PDA,PARAMETER",
+			"GDA,GLOBAL"
+		}
+	)
+	void notRaiseADiagnosticIfADataAreaHasTheExpectedScope(String extension, String scope)
+	{
+		assertParsesWithoutDiagnostics(
+			"""
+				DEFINE DATA %s
+				1 #VAR (L)
+				END-DEFINE
+				""".formatted(scope),
+			NaturalFileType.valueOf(extension)
+		);
+	}
+
+	@TestFactory
+	Stream<DynamicTest> notRaiseADiagnosticForScopesInNonDataAreas()
+	{
+		var scopes = List.of("PARAMETER", "GLOBAL", "LOCAL");
+		return Arrays.stream(NaturalFileType.VALUES)
+			.filter(NaturalFileType::canHaveDefineData)
+			.filter(t -> t != NaturalFileType.GDA && t != NaturalFileType.PDA && t != NaturalFileType.LDA)
+			.flatMap(
+				t -> scopes.stream().map(
+					s -> dynamicTest(
+						"Scope %s should be allowed in type %s".formatted(s, t), () -> assertParsesWithoutDiagnostics(
+							"""
+								DEFINE DATA %s
+								1 #VAR (L)
+								END-DEFINE
+								""".formatted(s),
+							t
+						)
+					)
+				)
+			);
+	}
+
 	private <T extends IParameterDefinitionNode> void assertParameter(IParameterDefinitionNode node, Class<T> parameterType, String identifier)
 	{
 		var typedNode = assertNodeType(node, parameterType);
@@ -2456,22 +2580,22 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	private IDataDefinitionModule myDdm()
 	{
 		return new DdmParser().parseDdm("""
-DB: 000 FILE: 100  - MY-DDM                      DEFAULT SEQUENCE:
-TYPE: ADABAS
+			DB: 000 FILE: 100  - MY-DDM                      DEFAULT SEQUENCE:
+			TYPE: ADABAS
 
-T L DB Name                              F Leng  S D Remark
-- - -- --------------------------------  - ----  - - ------------------------
-  1 AA A-DDM-FIELD                       A   10  N
-  1 AB ANOTHER-DDM-FIELD                 A   15  N
-M 1 AC A-MULTIPLE-FIELD                  N  7,2  N
-P 1 BA A-PERIODIC-GROUP
-  2 BB A-PERIODIC-MEMBER                 A    5  N
-  1 CA DATE-FIELD                        D    6  N
-  1 CB BOOL-FIELD                        L    1  N
-  1 AG A-SUPERDESCRIPTOR                 A   25  N S
-*      -------- SOURCE FIELD(S) -------
-*      A-DDM-FIELD   (1-10)
-*      ANOTHER-DDM-FIELD (1-15)
-			""");
+			T L DB Name                              F Leng  S D Remark
+			- - -- --------------------------------  - ----  - - ------------------------
+			  1 AA A-DDM-FIELD                       A   10  N
+			  1 AB ANOTHER-DDM-FIELD                 A   15  N
+			M 1 AC A-MULTIPLE-FIELD                  N  7,2  N
+			P 1 BA A-PERIODIC-GROUP
+			  2 BB A-PERIODIC-MEMBER                 A    5  N
+			  1 CA DATE-FIELD                        D    6  N
+			  1 CB BOOL-FIELD                        L    1  N
+			  1 AG A-SUPERDESCRIPTOR                 A   25  N S
+			*      -------- SOURCE FIELD(S) -------
+			*      A-DDM-FIELD   (1-10)
+			*      ANOTHER-DDM-FIELD (1-15)
+						""");
 	}
 }
