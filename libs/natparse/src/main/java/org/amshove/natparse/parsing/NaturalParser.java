@@ -10,6 +10,7 @@ import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.natural.project.NaturalProgrammingMode;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class NaturalParser
 {
@@ -335,6 +336,12 @@ public class NaturalParser
 			{
 				return true;
 			}
+
+			if (areAllInAView(foundVariables) && tryFindAndReferenceInViewAccessibleByCurrentAdabasStatementNesting(referenceNode))
+			{
+				return true;
+			}
+
 			module.addDiagnostic(ParserErrors.ambiguousSymbolReference(referenceNode, possibleQualifications.toString()));
 		}
 
@@ -345,5 +352,60 @@ public class NaturalParser
 		}
 
 		return defineData.findDdmField(symbolName) != null;
+	}
+
+	private boolean tryFindAndReferenceInViewAccessibleByCurrentAdabasStatementNesting(ISymbolReferenceNode referenceNode)
+	{
+		var adabasViewInAccess = getAdabasViewsInAccessAtNodePosition(referenceNode);
+		if (adabasViewInAccess.isEmpty())
+		{
+			return false;
+		}
+
+		var variableCandidatesInViews = new ArrayList<IVariableNode>();
+		for (var viewInAccess : adabasViewInAccess)
+		{
+			var maybeDeclaredVariable = viewInAccess.findVariable(referenceNode.referencingToken().symbolName());
+			if (maybeDeclaredVariable != null)
+			{
+				variableCandidatesInViews.add(maybeDeclaredVariable);
+			}
+		}
+
+		if (variableCandidatesInViews.size() == 1)
+		{
+			variableCandidatesInViews.get(0).addReference(referenceNode);
+			return true;
+		}
+
+		return false;
+	}
+
+	private List<IViewNode> getAdabasViewsInAccessAtNodePosition(ISyntaxNode node)
+	{
+		var views = new ArrayList<IViewNode>();
+		while (node.parent() != null)
+		{
+			var parent = node.parent();
+			if (parent instanceof IAdabasAccessStatementNode adabasAccess)
+			{
+				views.add((IViewNode) adabasAccess.view().reference());
+			}
+			node = parent;
+		}
+		return views;
+	}
+
+	private boolean areAllInAView(List<IVariableNode> variables)
+	{
+		for (var foundVariable : variables)
+		{
+			if (!foundVariable.isInView())
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 }

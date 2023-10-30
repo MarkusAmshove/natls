@@ -3,10 +3,8 @@ package org.amshove.natparse.natural;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.conditionals.IConditionNode;
 
-public interface IHistogramNode extends IStatementWithBodyNode
+public interface IHistogramNode extends IStatementWithBodyNode, IAdabasAccessStatementNode
 {
-	IVariableReferenceNode view();
-
 	SyntaxToken descriptor();
 
 	IConditionNode condition();

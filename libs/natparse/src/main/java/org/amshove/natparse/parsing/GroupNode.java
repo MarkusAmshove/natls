@@ -7,6 +7,7 @@ import org.amshove.natparse.natural.IGroupNode;
 import org.amshove.natparse.natural.IVariableNode;
 import org.amshove.natparse.natural.VariableScope;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,5 +59,29 @@ class GroupNode extends VariableNode implements IGroupNode
 	List<IArrayDimension> getDimensions()
 	{
 		return dimensions;
+	}
+
+	@Nullable
+	@Override
+	public IVariableNode findVariable(String name)
+	{
+		for (var variable : variables)
+		{
+			if (variable.name().equals(name) || variable.qualifiedName().equals(name))
+			{
+				return variable;
+			}
+
+			if (variable instanceof IGroupNode groupNode)
+			{
+				var foundNested = groupNode.findVariable(name);
+				if (foundNested != null)
+				{
+					return foundNested;
+				}
+			}
+		}
+
+		return null;
 	}
 }
