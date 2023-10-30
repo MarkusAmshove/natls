@@ -1,0 +1,44 @@
+DEFINE DATA LOCAL
+1 A-VIEW VIEW OF A-DDM
+2 DDMFIELD (A10)
+2 REDEFINE DDMFIELD
+3 #A (A2)
+1 B-VIEW VIEW OF B-DDM
+2 DDMFIELD (A10)
+2 REDEFINE DDMFIELD
+3 #A (A2)
+3 #B (A4)
+END-DEFINE
+
+WRITE DDMFIELD /* !{D:ERROR:NPP029} This is ambiguous, because we don't know if it is A-VIEW or B-VIEW
+
+WRITE A-VIEW.DDMFIELD /* Not ambiguous, qualifed
+WRITE B-VIEW.DDMFIELD /* Not ambiguous, qualifed
+
+READ A-VIEW BY ISN
+    WRITE DDMFIELD /* Not ambiguous, context reveals that it has to be A-VIEW.DDMFIELD
+END-READ
+
+READ B-VIEW BY ISN
+    WRITE DDMFIELD /* Not ambiguous, context reveals that it has to be B-VIEW.DDMFIELD
+END-READ
+
+READ A-VIEW BY ISN
+    READ B-VIEW BY ISN
+        WRITE DDMFIELD /* !{D:ERROR:NPP029} Can't figure out if A-VIEW or B-VIEW
+        WRITE #B /* Fine, #B is only declared in B-VIEW
+        WRITE #A /* !{D:ERROR:NPP029} #A declared in both redefines
+
+        WRITE B-VIEW.#A /* qualified
+        WRITE A-VIEW.#A /* qualified
+    END-READ
+END-READ
+
+READ A-VIEW BY ISN
+    READ B-VIEW BY ISN
+        WRITE A-VIEW.DDMFIELD /* Fine, qualified
+        WRITE B-VIEW.DDMFIELD /* Fine, qualified
+    END-READ
+END-READ
+
+END

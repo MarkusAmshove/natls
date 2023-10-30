@@ -1,8 +1,6 @@
 package org.amshove.natparse.natural;
 
-public interface IReadNode extends IStatementWithBodyNode
+public interface IReadNode extends IStatementWithBodyNode, IAdabasAccessStatementNode
 {
-	IVariableReferenceNode viewReference();
-
 	ReadSequence readSequence();
 }

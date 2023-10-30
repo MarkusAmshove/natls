@@ -10,7 +10,7 @@ class ReadNode extends StatementWithBodyNode implements IReadNode
 	private ReadSequence readSequence;
 
 	@Override
-	public IVariableReferenceNode viewReference()
+	public IVariableReferenceNode view()
 	{
 		return view;
 	}

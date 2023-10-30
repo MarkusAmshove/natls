@@ -1,6 +1,6 @@
 package org.amshove.natparse.natural;
 
-public interface IFindNode extends IStatementWithBodyNode
+public interface IFindNode extends IStatementWithBodyNode, IAdabasAccessStatementNode
 {
-	IVariableReferenceNode viewReference();
+	IVariableReferenceNode view();
 }

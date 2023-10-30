@@ -13,7 +13,7 @@ class FindNode extends StatementWithBodyNode implements IFindNode
 	}
 
 	@Override
-	public IVariableReferenceNode viewReference()
+	public IVariableReferenceNode view()
 	{
 		return view;
 	}
