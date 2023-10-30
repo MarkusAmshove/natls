@@ -103,4 +103,12 @@ class CopyCodesShould extends ParserIntegrationTest
 		assertThat(subprogram.diagnostics().first().id()).isEqualTo(ParserError.CYCLOMATIC_INCLUDE.id());
 		assertThat(subprogram.diagnostics().first().message()).isEqualTo("Cyclomatic INCLUDE found. RECCC is recursively included multiple times.");
 	}
+
+	@Test
+	void correctlyParseStatementsWhenTheHeadBodyAndTailAreInDifferentCopycodes(@ProjectName("copycodetests") NaturalProject project)
+	{
+		var program = assertFileParsesAs(project.findModule("LIBTWO", "PROG"), IProgram.class);
+		assertThat(program.body().statements()).hasSize(1);
+		assertThat(program.body().statements().first()).isInstanceOf(IIfStatementNode.class);
+	}
 }
