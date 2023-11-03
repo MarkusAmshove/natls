@@ -16,6 +16,7 @@ public class CodeLensService
 	{
 		registeredProviders.add(new ModuleReferencesCodeLens());
 		registeredProviders.add(new InternalSubroutineReferencesCodeLens());
+		registeredProviders.add(new NatUnitCodeLensProvider());
 	}
 
 	public List<CodeLens> provideCodeLens(LanguageServerFile file)
