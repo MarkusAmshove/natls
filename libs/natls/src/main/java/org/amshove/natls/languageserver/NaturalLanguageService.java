@@ -797,4 +797,11 @@ public class NaturalLanguageService implements LanguageClientAware
 		var jsonData = (JsonObject) obj;
 		return new Gson().fromJson(jsonData, clazz);
 	}
+
+	public CalledModulesResponse getCalledModules(TextDocumentIdentifier identifier)
+	{
+		var file = findNaturalFile(identifier);
+		var outgoingReferences = file.getOutgoingReferences();
+		return new CalledModulesResponse(outgoingReferences.stream().map(f -> LspUtil.pathToUri(f.getPath())).distinct().toList());
+	}
 }

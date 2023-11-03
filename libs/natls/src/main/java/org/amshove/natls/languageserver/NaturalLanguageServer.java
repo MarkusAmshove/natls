@@ -250,6 +250,13 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 		return CompletableFuture.completedFuture(new ReferableFileExistsResponse(languageService.findReferableName(params.getLibrary(), params.getReferableName()) != null));
 	}
 
+	@JsonRequest
+	@SuppressWarnings("unused")
+	public CompletableFuture<CalledModulesResponse> calledModules(CalledModulesParams params)
+	{
+		return CompletableFuture.supplyAsync(() -> languageService.getCalledModules(params.getIdentifier()));
+	}
+
 	@Override
 	public NotebookDocumentService getNotebookDocumentService()
 	{
