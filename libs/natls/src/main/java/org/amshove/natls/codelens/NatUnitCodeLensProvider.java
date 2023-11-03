@@ -32,7 +32,7 @@ public class NatUnitCodeLensProvider implements ICodeLensProvider
 		}
 
 		var firstNodeRange = LspUtil.toRange(file.module().syntaxTree().descendants().first().position());
-		var label = totalTestCases > 1 ? "testcases" : "testcase";
+		var label = totalTestCases > 1 ? "test cases" : "test case";
 		return List.of(
 			new CodeLens(
 				firstNodeRange,

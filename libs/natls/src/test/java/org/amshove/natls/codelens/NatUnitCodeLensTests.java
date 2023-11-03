@@ -44,7 +44,7 @@ class NatUnitCodeLensTests extends CodeLensTest
 		testCodeLens(identifier, lenses ->
 		{
 			var natUnitLens = filterNatUnitLenses(lenses).get(0);
-			assertThat(natUnitLens.getCommand().getTitle()).isEqualTo("$(beaker) 1 testcase");
+			assertThat(natUnitLens.getCommand().getTitle()).isEqualTo("$(beaker) 1 test case");
 		});
 	}
 
@@ -76,7 +76,7 @@ class NatUnitCodeLensTests extends CodeLensTest
 		testCodeLens(identifier, lenses ->
 		{
 			var natUnitLens = filterNatUnitLenses(lenses).get(0);
-			assertThat(natUnitLens.getCommand().getTitle()).isEqualTo("$(beaker) 2 testcases");
+			assertThat(natUnitLens.getCommand().getTitle()).isEqualTo("$(beaker) 2 test cases");
 		});
 	}
 
