@@ -273,6 +273,12 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 
 		consume(using, SyntaxKind.USING);
 
+		if (peekKind(SyntaxKind.END_DEFINE))
+		{
+			report(ParserErrors.unexpectedTokenWhenIdentifierWasExpected(peek()));
+			throw new ParseError(peek());
+		}
+
 		var identifier = consumeIdentifierTokenOnly();
 		using.setUsingTarget(identifier);
 		var identifierTokenNode = new TokenNode(identifier);
