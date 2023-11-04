@@ -229,4 +229,29 @@ class CompleteEndpointShould extends CompletionTest
 			""")
 			.assertContainsCompleting("MY-SUBROUTINE", CompletionItemKind.Event, "PERFORM MY-SUBROUTINE ${1:#P-PARM1} ${2:#P-PARM2}%n$0".formatted());
 	}
+
+	@Test
+	void completeDataAreasWhenCompletionIsTriggeredAfterUsingInDefineData()
+	{
+		createOrSaveFile("LIBONE", "MYLDA.NSL", """
+			DEFINE DATA LOCAL
+			1 #INLDA (A10)
+			END
+			""");
+
+		createOrSaveFile("LIBONE", "MYPDA.NSA", """
+			DEFINE DATA PARAMETER
+			1 #INPDA (A10)
+			END
+			""");
+
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA
+			LOCAL USING ${}$
+			END-DEFINE
+			END
+			""")
+			.assertContainsCompleting("MYLDA", CompletionItemKind.Struct, "MYLDA")
+			.assertContainsCompleting("MYPDA", CompletionItemKind.Struct, "MYPDA");
+	}
 }

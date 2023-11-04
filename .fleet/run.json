@@ -1,0 +1,10 @@
+{
+  "configurations": [
+   {
+      "type": "gradle",
+      "name": "Test",
+      "tasks": [ "test" ],
+    },
+    
+  ]
+}

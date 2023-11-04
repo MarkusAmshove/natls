@@ -7,6 +7,7 @@ import org.amshove.natls.languageserver.UnresolvedCompletionInfo;
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natls.project.LanguageServerLibrary;
 import org.amshove.natls.snippets.SnippetEngine;
+import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
@@ -18,6 +19,7 @@ import org.eclipse.lsp4j.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 public class CompletionProvider
 {
@@ -41,20 +43,44 @@ public class CompletionProvider
 			return List.of();
 		}
 		var module = file.module();
+		var completionContext = CodeCompletionContext.create(file, params.getPosition());
 
 		var completionItems = new ArrayList<CompletionItem>();
 
+		if (completionContext.completesDataArea())
+		{
+			return dataAreaCompletions(file.getLibrary());
+		}
+
 		completionItems.addAll(snippetEngine.provideSnippets(file));
+
+		completionItems.addAll(variableCompletion(module, file));
 
 		completionItems.addAll(functionCompletions(file.getLibrary()));
 		completionItems.addAll(externalSubroutineCompletions(file.getLibrary()));
 		completionItems.addAll(subprogramCompletions(file.getLibrary()));
 
-		completionItems.addAll(variableCompletion(module, file));
-
 		completionItems.addAll(completeSystemVars("*".equals(params.getContext().getTriggerCharacter())));
 
 		return completionItems;
+	}
+
+	private List<CompletionItem> dataAreaCompletions(LanguageServerLibrary library)
+	{
+		var dataAreas = new ArrayList<LanguageServerFile>();
+		dataAreas.addAll(library.getModulesOfType(NaturalFileType.LDA, true));
+		List<LanguageServerFile> pdas = library.getModulesOfType(NaturalFileType.PDA, true);
+		dataAreas.addAll(pdas);
+		dataAreas.addAll(library.getModulesOfType(NaturalFileType.GDA, true));
+		return dataAreas.stream()
+			.map(f ->
+			{
+				var item = new CompletionItem(f.getReferableName());
+				item.setInsertText(f.getReferableName());
+				item.setKind(CompletionItemKind.Struct);
+				return item;
+			})
+			.toList();
 	}
 
 	public CompletionItem resolveComplete(CompletionItem item, LanguageServerFile file, UnresolvedCompletionInfo info, LSConfiguration config)
