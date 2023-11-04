@@ -254,4 +254,22 @@ class CompleteEndpointShould extends CompletionTest
 			.assertContainsCompleting("MYLDA", CompletionItemKind.Struct, "MYLDA")
 			.assertContainsCompleting("MYPDA", CompletionItemKind.Struct, "MYPDA");
 	}
+
+	@Test
+	void completeDataAreasAfterUsingEvenIfThereAlreadyIsAVariableDeclarationInSameLine()
+	{
+		createOrSaveFile("LIBONE", "MYLDA.NSL", """
+			DEFINE DATA LOCAL
+			1 #INLDA (A10)
+			END
+			""");
+
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA
+			LOCAL USING ${}$ LOCAL 1 #VAR (N2)
+			END-DEFINE
+			END
+			""")
+			.assertContainsCompleting("MYLDA", CompletionItemKind.Struct, "MYLDA");
+	}
 }
