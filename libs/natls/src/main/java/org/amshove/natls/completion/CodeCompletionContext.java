@@ -16,7 +16,7 @@ public record CodeCompletionContext(SemanticPosition semanticPosition, SyntaxTok
 		if (module instanceof IHasDefineData hasDefineData && hasDefineData.defineData() != null
 			&& hasDefineData.defineData().enclosesPosition(position.getLine(), position.getCharacter()))
 		{
-			 semanticPosition = SemanticPosition.DEFINE_DATA;
+			semanticPosition = SemanticPosition.DEFINE_DATA;
 		}
 
 		var tokenAtPosition = NodeUtil.findTokenOnOrBeforePosition(file.tokens().toList(), position.getLine(), position.getCharacter());
