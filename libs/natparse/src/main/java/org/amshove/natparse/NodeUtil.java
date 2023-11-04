@@ -1,5 +1,6 @@
 package org.amshove.natparse;
 
+import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 
 import javax.annotation.Nullable;
@@ -23,6 +24,26 @@ public class NodeUtil
 		return node.position() != null
 			&& node.position().filePath() != null
 			&& module.file().getPath().equals(node.position().filePath());
+	}
+
+	public static SyntaxToken findTokenOnOrBeforePosition(List<SyntaxToken> tokens, int line, int column)
+	{
+		SyntaxToken lastToken = null;
+		for (var token : tokens)
+		{
+			if (token.line() > line)
+			{
+				break;
+			}
+			if (token.line() == line && token.offsetInLine() > column)
+			{
+				break;
+			}
+
+			lastToken = token;
+		}
+
+		return lastToken;
 	}
 
 	/**

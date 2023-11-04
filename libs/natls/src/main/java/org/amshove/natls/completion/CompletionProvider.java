@@ -41,20 +41,44 @@ public class CompletionProvider
 			return List.of();
 		}
 		var module = file.module();
+		var completionContext = CodeCompletionContext.create(file, params.getPosition());
 
 		var completionItems = new ArrayList<CompletionItem>();
 
+		if (completionContext.completesDataArea())
+		{
+			return dataAreaCompletions(file.getLibrary());
+		}
+
 		completionItems.addAll(snippetEngine.provideSnippets(file));
+
+		completionItems.addAll(variableCompletion(module, file));
 
 		completionItems.addAll(functionCompletions(file.getLibrary()));
 		completionItems.addAll(externalSubroutineCompletions(file.getLibrary()));
 		completionItems.addAll(subprogramCompletions(file.getLibrary()));
 
-		completionItems.addAll(variableCompletion(module, file));
-
 		completionItems.addAll(completeSystemVars("*".equals(params.getContext().getTriggerCharacter())));
 
 		return completionItems;
+	}
+
+	private List<CompletionItem> dataAreaCompletions(LanguageServerLibrary library)
+	{
+		var dataAreas = new ArrayList<LanguageServerFile>();
+		dataAreas.addAll(library.getModulesOfType(NaturalFileType.LDA, true));
+		List<LanguageServerFile> pdas = library.getModulesOfType(NaturalFileType.PDA, true);
+		dataAreas.addAll(pdas);
+		dataAreas.addAll(library.getModulesOfType(NaturalFileType.GDA, true));
+		return dataAreas.stream()
+			.map(f ->
+			{
+				var item = new CompletionItem(f.getReferableName());
+				item.setInsertText(f.getReferableName());
+				item.setKind(CompletionItemKind.Struct);
+				return item;
+			})
+			.toList();
 	}
 
 	public CompletionItem resolveComplete(CompletionItem item, LanguageServerFile file, UnresolvedCompletionInfo info, LSConfiguration config)
