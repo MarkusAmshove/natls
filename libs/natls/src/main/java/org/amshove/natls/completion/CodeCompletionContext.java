@@ -13,12 +13,10 @@ public record CodeCompletionContext(SemanticPosition semanticPosition, SyntaxTok
 	{
 		var module = file.module();
 		var semanticPosition = SemanticPosition.STATEMENTS;
-		if (module instanceof IHasDefineData hasDefineData && hasDefineData.defineData() != null)
+		if (module instanceof IHasDefineData hasDefineData && hasDefineData.defineData() != null
+			&& hasDefineData.defineData().enclosesPosition(position.getLine(), position.getCharacter()))
 		{
-			if (hasDefineData.defineData().enclosesPosition(position.getLine(), position.getCharacter()))
-			{
-				semanticPosition = SemanticPosition.DEFINE_DATA;
-			}
+			 semanticPosition = SemanticPosition.DEFINE_DATA;
 		}
 
 		var tokenAtPosition = NodeUtil.findTokenOnOrBeforePosition(file.tokens().toList(), position.getLine(), position.getCharacter());

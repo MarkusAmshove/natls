@@ -7,7 +7,6 @@ import org.amshove.natls.languageserver.UnresolvedCompletionInfo;
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natls.project.LanguageServerLibrary;
 import org.amshove.natls.snippets.SnippetEngine;
-import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
@@ -19,7 +18,6 @@ import org.eclipse.lsp4j.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 
 public class CompletionProvider
 {
