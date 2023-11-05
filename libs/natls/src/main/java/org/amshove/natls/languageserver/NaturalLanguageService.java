@@ -6,6 +6,7 @@ import org.amshove.natlint.editorconfig.EditorConfigParser;
 import org.amshove.natlint.linter.LinterContext;
 import org.amshove.natls.DiagnosticTool;
 import org.amshove.natls.LanguageServerException;
+import org.amshove.natls.SymbolKinds;
 import org.amshove.natls.codeactions.CodeActionRegistry;
 import org.amshove.natls.codeactions.RefactoringContext;
 import org.amshove.natls.codeactions.RenameSymbolAction;
@@ -171,7 +172,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	{
 		return new SymbolInformation(
 			file.getReferableName(),
-			SymbolKind.Class,
+			SymbolKinds.forFileType(file.getReferableName(), file.getFiletype()),
 			new Location(
 				file.getPath().toUri().toString(),
 				new Range(
@@ -518,7 +519,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		item.setName(file.getReferableName());
 		item.setDetail(file.getType().toString());
 		item.setUri(params.getTextDocument().getUri());
-		item.setKind(SymbolKind.Class);
+		item.setKind(SymbolKinds.forFileType(file.getReferableName(), file.getType()));
 		return List.of(item);
 	}
 
@@ -530,7 +531,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		item.setName(file.getReferableName());
 		item.setDetail(file.getType().toString());
 		item.setUri(file.getPath().toUri().toString());
-		item.setKind(SymbolKind.Class);
+		item.setKind(SymbolKinds.forFileType(file.getReferableName(), file.getType()));
 		return item;
 	}
 
@@ -542,7 +543,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		item.setName(referableModuleName);
 		item.setDetail(node.getClass().getSimpleName());
 		item.setUri(node.referencingToken().filePath().toUri().toString());
-		item.setKind(SymbolKind.Class);
+		item.setKind(SymbolKinds.forModuleFromNode(node));
 		return item;
 	}
 
