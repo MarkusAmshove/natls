@@ -514,8 +514,6 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	public List<CallHierarchyItem> createCallHierarchyItems(CallHierarchyPrepareParams params)
 	{
-		// TODO: Use Position from params. If in DEFINE DATA or top level statement block, search for module references
-		// 	If within local subroutine, get the local call hierarchy to that subroutine
 		var file = findNaturalFile(LspUtil.uriToPath(params.getTextDocument().getUri()));
 		var item = new CallHierarchyItem();
 		item.setRange(new Range(new Position(0, 0), new Position(0, 0)));
@@ -545,7 +543,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		item.setRange(LspUtil.toRange(node.referencingToken()));
 		item.setSelectionRange(LspUtil.toRange(node));
 		item.setName(referableModuleName);
-		item.setDetail(node.getClass().getSimpleName());
+		item.setDetail(node.reference().file().getFiletype().toString());
 		item.setUri(node.referencingToken().filePath().toUri().toString());
 		item.setKind(SymbolKinds.forModuleFromNode(node));
 		return item;
