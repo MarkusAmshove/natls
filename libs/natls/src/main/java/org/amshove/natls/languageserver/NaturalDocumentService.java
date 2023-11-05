@@ -111,7 +111,7 @@ public class NaturalDocumentService implements TextDocumentService
 	@Override
 	public CompletableFuture<List<CallHierarchyIncomingCall>> callHierarchyIncomingCalls(CallHierarchyIncomingCallsParams params)
 	{
-		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.createCallHierarchyIncomingCalls(params.getItem())));
+		return wrapSafe(() -> languageService.createCallHierarchyIncomingCalls(params.getItem()));
 	}
 
 	@Override

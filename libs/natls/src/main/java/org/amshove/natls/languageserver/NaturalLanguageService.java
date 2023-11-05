@@ -494,18 +494,22 @@ public class NaturalLanguageService implements LanguageClientAware
 			.toList();
 	}
 
-	public List<CallHierarchyIncomingCall> createCallHierarchyIncomingCalls(CallHierarchyItem item)
+	public CompletableFuture<List<CallHierarchyIncomingCall>> createCallHierarchyIncomingCalls(CallHierarchyItem item)
 	{
 		var file = findNaturalFile(LspUtil.uriToPath(item.getUri()));
-		return file.module().callers().stream()
-			.map(r ->
-			{
-				var call = new CallHierarchyIncomingCall();
-				call.setFrom(callHierarchyItem(r, findNaturalFile(r.referencingToken().filePath()).getReferableName()));
-				call.setFromRanges(List.of(new Range(new Position(0, 0), new Position(0, 0))));
-				return call;
-			})
-			.toList();
+		return ProgressTasks.startNew("Collecting incoming calls", client, m ->
+		{
+			file.reparseCallers(m);
+			return file.module().callers().stream()
+				.map(r ->
+				{
+					var call = new CallHierarchyIncomingCall();
+					call.setFrom(callHierarchyItem(r, findNaturalFile(r.referencingToken().filePath()).getReferableName()));
+					call.setFromRanges(List.of(LspUtil.toRange(r)));
+					return call;
+				})
+				.toList();
+		});
 	}
 
 	public List<CallHierarchyItem> createCallHierarchyItems(CallHierarchyPrepareParams params)
