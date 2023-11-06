@@ -6,7 +6,6 @@ import org.amshove.natparse.natural.*;
 import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.SymbolKind;
 
 import java.util.ArrayList;
 import java.util.List;

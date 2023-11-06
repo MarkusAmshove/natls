@@ -6,6 +6,9 @@ import org.eclipse.lsp4j.SymbolKind;
 
 public class SymbolKinds
 {
+	private SymbolKinds()
+	{}
+
 	public static SymbolKind forModuleFromNode(ISyntaxNode node)
 	{
 		var fileType = node.diagnosticPosition().fileType();
