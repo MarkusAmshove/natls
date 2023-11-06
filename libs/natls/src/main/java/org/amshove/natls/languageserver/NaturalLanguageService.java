@@ -485,7 +485,8 @@ public class NaturalLanguageService implements LanguageClientAware
 		var callingFile = findNaturalFile(LspUtil.uriToPath(item.getUri()));
 		var referencingNodesInCallingFile = NodeUtil.findNodesOfType(callingFile.module().syntaxTree(), IModuleReferencingNode.class);
 		return referencingNodesInCallingFile.stream()
-			.map(reference -> {
+			.map(reference ->
+			{
 				var call = new CallHierarchyOutgoingCall();
 				call.setTo(callHierarchyItem(reference, reference.reference().name(), false));
 				call.setFromRanges(List.of(LspUtil.toRange(reference)));
