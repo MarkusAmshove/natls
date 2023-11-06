@@ -482,13 +482,13 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	public List<CallHierarchyOutgoingCall> createCallHierarchyOutgoingCalls(CallHierarchyItem item)
 	{
-		var file = findNaturalFile(LspUtil.uriToPath(item.getUri()));
-		return file.getOutgoingReferences().stream()
-			.map(r ->
-			{
+		var callingFile = findNaturalFile(LspUtil.uriToPath(item.getUri()));
+		var referencingNodesInCallingFile = NodeUtil.findNodesOfType(callingFile.module().syntaxTree(), IModuleReferencingNode.class);
+		return referencingNodesInCallingFile.stream()
+			.map(reference -> {
 				var call = new CallHierarchyOutgoingCall();
-				call.setTo(callHierarchyItem(r));
-				call.setFromRanges(List.of(item.getRange()));
+				call.setTo(callHierarchyItem(reference, reference.reference().name(), false));
+				call.setFromRanges(List.of(LspUtil.toRange(reference)));
 				return call;
 			})
 			.toList();
@@ -504,7 +504,7 @@ public class NaturalLanguageService implements LanguageClientAware
 				.map(r ->
 				{
 					var call = new CallHierarchyIncomingCall();
-					call.setFrom(callHierarchyItem(r, findNaturalFile(r.referencingToken().filePath()).getReferableName()));
+					call.setFrom(callHierarchyItem(r, findNaturalFile(r.referencingToken().filePath()).getReferableName(), true));
 					call.setFromRanges(List.of(LspUtil.toRange(r)));
 					return call;
 				})
@@ -525,27 +525,18 @@ public class NaturalLanguageService implements LanguageClientAware
 		return List.of(item);
 	}
 
-	private CallHierarchyItem callHierarchyItem(LanguageServerFile file)
-	{
-		var item = new CallHierarchyItem();
-		item.setRange(new Range(new Position(0, 0), new Position(0, 0)));
-		item.setSelectionRange(new Range(new Position(0, 0), new Position(0, 0)));
-		item.setName(file.getReferableName());
-		item.setDetail(file.getType().toString());
-		item.setUri(file.getPath().toUri().toString());
-		item.setKind(SymbolKinds.forFileType(file.getReferableName(), file.getType()));
-		return item;
-	}
-
-	private CallHierarchyItem callHierarchyItem(IModuleReferencingNode node, String referableModuleName)
+	private CallHierarchyItem callHierarchyItem(IModuleReferencingNode node, String referableModuleName, boolean isIncomingHierarchyItem)
 	{
 		var item = new CallHierarchyItem();
 		item.setRange(LspUtil.toRange(node.referencingToken()));
 		item.setSelectionRange(LspUtil.toRange(node));
 		item.setName(referableModuleName);
-		item.setDetail(node.reference().file().getFiletype().toString());
+		item.setDetail(findNaturalFile(node.diagnosticPosition().filePath()).getType().toString());
 		item.setUri(node.referencingToken().filePath().toUri().toString());
-		item.setKind(SymbolKinds.forModuleFromNode(node));
+		var icon = isIncomingHierarchyItem
+			? SymbolKinds.forModuleFromNode(node)
+			: SymbolKinds.forModule(node.reference());
+		item.setKind(icon);
 		return item;
 	}
 
