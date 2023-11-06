@@ -7,6 +7,7 @@ import org.amshove.natlint.linter.LinterContext;
 import org.amshove.natls.DiagnosticTool;
 import org.amshove.natls.LanguageServerException;
 import org.amshove.natls.SymbolKinds;
+import org.amshove.natls.callhierarchy.CallHierarchyProvider;
 import org.amshove.natls.codeactions.CodeActionRegistry;
 import org.amshove.natls.codeactions.RefactoringContext;
 import org.amshove.natls.codeactions.RenameSymbolAction;
@@ -79,6 +80,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	private static LSConfiguration config = LSConfiguration.createDefault();
 	private final ReferenceFinder referenceFinder = new ReferenceFinder();
 	private final SignatureHelpProvider signatureHelp = new SignatureHelpProvider();
+	private CallHierarchyProvider callHierarchyProvider;
 	private CompletionProvider completionProvider;
 
 	public void indexProject(Path workspaceRoot, IProgressMonitor progressMonitor)
@@ -109,9 +111,10 @@ public class NaturalLanguageService implements LanguageClientAware
 			preParseDataAreas(progressMonitor);
 			initialized = true;
 		}
-		hoverProvider = new HoverProvider();
 		progressMonitor.progress("Initializing Services", 80);
+		hoverProvider = new HoverProvider();
 		completionProvider = new CompletionProvider(new SnippetEngine(languageServerProject), hoverProvider);
+		callHierarchyProvider = new CallHierarchyProvider(languageServerProject);
 	}
 
 	public void loadEditorConfig(Path path)
@@ -483,16 +486,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	public List<CallHierarchyOutgoingCall> createCallHierarchyOutgoingCalls(CallHierarchyItem item)
 	{
 		var callingFile = findNaturalFile(LspUtil.uriToPath(item.getUri()));
-		var referencingNodesInCallingFile = NodeUtil.findNodesOfType(callingFile.module().syntaxTree(), IModuleReferencingNode.class);
-		return referencingNodesInCallingFile.stream()
-			.map(reference ->
-			{
-				var call = new CallHierarchyOutgoingCall();
-				call.setTo(callHierarchyItem(reference, reference.reference().name(), false));
-				call.setFromRanges(List.of(LspUtil.toRange(reference)));
-				return call;
-			})
-			.toList();
+		return callHierarchyProvider.createOutgoingCallHierarchyItems(callingFile);
 	}
 
 	public CompletableFuture<List<CallHierarchyIncomingCall>> createCallHierarchyIncomingCalls(CallHierarchyItem item)
@@ -501,44 +495,14 @@ public class NaturalLanguageService implements LanguageClientAware
 		return ProgressTasks.startNew("Collecting incoming calls", client, m ->
 		{
 			file.reparseCallers(m);
-			return file.module().callers().stream()
-				.map(r ->
-				{
-					var call = new CallHierarchyIncomingCall();
-					call.setFrom(callHierarchyItem(r, findNaturalFile(r.referencingToken().filePath()).getReferableName(), true));
-					call.setFromRanges(List.of(LspUtil.toRange(r)));
-					return call;
-				})
-				.toList();
+			return callHierarchyProvider.createIncomingCallHierarchyItems(file);
 		});
 	}
 
 	public List<CallHierarchyItem> createCallHierarchyItems(CallHierarchyPrepareParams params)
 	{
 		var file = findNaturalFile(LspUtil.uriToPath(params.getTextDocument().getUri()));
-		var item = new CallHierarchyItem();
-		item.setRange(new Range(new Position(0, 0), new Position(0, 0)));
-		item.setSelectionRange(new Range(new Position(0, 0), new Position(0, 0)));
-		item.setName(file.getReferableName());
-		item.setDetail(file.getType().toString());
-		item.setUri(params.getTextDocument().getUri());
-		item.setKind(SymbolKinds.forFileType(file.getReferableName(), file.getType()));
-		return List.of(item);
-	}
-
-	private CallHierarchyItem callHierarchyItem(IModuleReferencingNode node, String referableModuleName, boolean isIncomingHierarchyItem)
-	{
-		var item = new CallHierarchyItem();
-		item.setRange(LspUtil.toRange(node.referencingToken()));
-		item.setSelectionRange(LspUtil.toRange(node));
-		item.setName(referableModuleName);
-		item.setDetail(findNaturalFile(node.diagnosticPosition().filePath()).getType().toString());
-		item.setUri(node.referencingToken().filePath().toUri().toString());
-		var icon = isIncomingHierarchyItem
-			? SymbolKinds.forModuleFromNode(node)
-			: SymbolKinds.forModule(node.reference());
-		item.setKind(icon);
-		return item;
+		return callHierarchyProvider.prepareCallHierarchy(file);
 	}
 
 	public List<CodeAction> codeAction(CodeActionParams params)
