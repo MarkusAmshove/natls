@@ -136,7 +136,7 @@ public class LspUtil
 	public static Location toLocation(ISyntaxNode node)
 	{
 		var position = node.position();
-		return toLocation(position, node.descendants().last().position());
+		return toLocation(position, node.descendants().hasItems() ? node.descendants().last().position() : position);
 	}
 
 	public static Location toLocation(IPosition position)
