@@ -51,7 +51,7 @@ public class CompletionProvider
 			return dataAreaCompletions(file.getLibrary());
 		}
 
-		var isFilteredOnQualifiedNames = params.getContext().getTriggerKind() == CompletionTriggerKind.TriggerCharacter && params.getContext().getTriggerCharacter().equals(".");
+		var isFilteredOnQualifiedNames = params.getContext().getTriggerKind() == CompletionTriggerKind.TriggerCharacter && ".".equals(params.getContext().getTriggerCharacter());
 		if (isFilteredOnQualifiedNames || completionContext.previousToken().kind() == SyntaxKind.LABEL_IDENTIFIER) // Label identifier is what's lexed for incomplete qualification, e.g. GRP.
 		{
 			var qualifiedNameFilter = completionContext.previousToken().symbolName();
@@ -71,6 +71,8 @@ public class CompletionProvider
 				.toList()
 		);
 
+		completionItems.addAll(localSubroutineCompletions(module));
+
 		completionItems.addAll(functionCompletions(file.getLibrary()));
 		completionItems.addAll(externalSubroutineCompletions(file.getLibrary()));
 		completionItems.addAll(subprogramCompletions(file.getLibrary()));
@@ -80,10 +82,18 @@ public class CompletionProvider
 		return completionItems;
 	}
 
+	private List<CompletionItem> localSubroutineCompletions(INaturalModule module)
+	{
+		return module.referencableNodes().stream()
+			.filter(n -> n instanceof ISubroutineNode)
+			.map(ISubroutineNode.class::cast)
+			.map(this::createCompletionItem)
+			.toList();
+	}
+
 	private List<CompletionItem> dataAreaCompletions(LanguageServerLibrary library)
 	{
-		var dataAreas = new ArrayList<LanguageServerFile>();
-		dataAreas.addAll(library.getModulesOfType(NaturalFileType.LDA, true));
+		var dataAreas = new ArrayList<>(library.getModulesOfType(NaturalFileType.LDA, true));
 		List<LanguageServerFile> pdas = library.getModulesOfType(NaturalFileType.PDA, true);
 		dataAreas.addAll(pdas);
 		dataAreas.addAll(library.getModulesOfType(NaturalFileType.GDA, true));
@@ -309,21 +319,6 @@ public class CompletionProvider
 			})
 			.filter(Objects::nonNull)
 			.toList();
-	}
-
-	private CompletionItem createCompletionItem(IReferencableNode referencableNode, LanguageServerFile openFile, ReadOnlyList<IReferencableNode> referencableNodes)
-	{
-		if (referencableNode instanceof IVariableNode variableNode)
-		{
-			return createCompletionItem(variableNode, openFile, referencableNodes);
-		}
-
-		if (referencableNode instanceof ISubroutineNode subroutineNode)
-		{
-			return createCompletionItem(subroutineNode);
-		}
-
-		return null;
 	}
 
 	private CompletionItem createCompletionItem(IVariableNode variableNode, LanguageServerFile openFile, ReadOnlyList<IReferencableNode> referencableNodes)
