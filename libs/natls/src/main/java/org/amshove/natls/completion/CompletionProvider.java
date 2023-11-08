@@ -85,7 +85,7 @@ public class CompletionProvider
 	private List<CompletionItem> localSubroutineCompletions(INaturalModule module)
 	{
 		return module.referencableNodes().stream()
-			.filter(n -> n instanceof ISubroutineNode)
+			.filter(ISubroutineNode.class::isInstance)
 			.map(ISubroutineNode.class::cast)
 			.map(this::createCompletionItem)
 			.toList();
@@ -204,7 +204,7 @@ public class CompletionProvider
 	private Stream<IVariableNode> findVariablesToComplete(INaturalModule module)
 	{
 		return module.referencableNodes().stream()
-			.filter(v -> v instanceof IVariableNode)
+			.filter(IVariableNode.class::isInstance)
 			.map(IVariableNode.class::cast)
 			.filter(v -> !(v instanceof IRedefinitionNode)); // this is the `REDEFINE #VAR`, which results in the variable being doubled in completion
 	}
