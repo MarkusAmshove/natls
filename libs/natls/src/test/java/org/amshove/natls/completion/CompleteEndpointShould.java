@@ -272,4 +272,40 @@ class CompleteEndpointShould extends CompletionTest
 			""")
 			.assertContainsCompleting("MYLDA", CompletionItemKind.Struct, "MYLDA");
 	}
+
+	@Test
+	void filterVariableCompletionBasedOnTypedQualification()
+	{
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA
+			LOCAL
+			1 #GRP1
+			2 #VAR (A10)
+			1 #GRP2
+			2 #VAR (A10)
+			END-DEFINE
+			WRITE #GRP1.${}$
+			END
+			""")
+			.assertDoesNotContainVariable("#GRP2.#VAR")
+			.assertContainsVariableCompleting("#GRP1.#VAR :(A10) (SUB)", "#VAR");
+	}
+
+	@Test
+	void filterVariableCompletionBasedOnTypedQualificationOnTriggerChar()
+	{
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA
+			LOCAL
+			1 #GRP1
+			2 #VAR (A10)
+			1 #GRP2
+			2 #VAR (A10)
+			END-DEFINE
+			WRITE #GRP1.${}$
+			END
+			""")
+			.assertDoesNotContainVariable("#GRP2.#VAR")
+			.assertContainsVariableCompleting("#GRP1.#VAR :(A10) (SUB)", "#VAR");
+	}
 }
