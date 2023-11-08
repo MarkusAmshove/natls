@@ -18,6 +18,7 @@ import org.eclipse.lsp4j.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 public class CompletionProvider
 {
@@ -50,9 +51,25 @@ public class CompletionProvider
 			return dataAreaCompletions(file.getLibrary());
 		}
 
+		var isFilteredOnQualifiedNames = params.getContext().getTriggerKind() == CompletionTriggerKind.TriggerCharacter && params.getContext().getTriggerCharacter().equals(".");
+		if (isFilteredOnQualifiedNames || completionContext.previousToken().kind() == SyntaxKind.LABEL_IDENTIFIER) // Label identifier is what's lexed for incomplete qualification, e.g. GRP.
+		{
+			var qualifiedNameFilter = completionContext.previousToken().symbolName();
+			return findVariablesToComplete(module)
+				.filter(v -> v.qualifiedName().startsWith(qualifiedNameFilter))
+				.map(v -> toVariableCompletion(v, module, file, qualifiedNameFilter))
+				.filter(Objects::nonNull)
+				.toList();
+		}
+
 		completionItems.addAll(snippetEngine.provideSnippets(file));
 
-		completionItems.addAll(variableCompletion(module, file));
+		completionItems.addAll(
+			findVariablesToComplete(module)
+				.map(v -> toVariableCompletion(v, module, file, ""))
+				.filter(Objects::nonNull)
+				.toList()
+		);
 
 		completionItems.addAll(functionCompletions(file.getLibrary()));
 		completionItems.addAll(externalSubroutineCompletions(file.getLibrary()));
@@ -155,29 +172,31 @@ public class CompletionProvider
 		};
 	}
 
-	private List<CompletionItem> variableCompletion(INaturalModule module, LanguageServerFile file)
+	private CompletionItem toVariableCompletion(IVariableNode variableNode, INaturalModule module, LanguageServerFile file, String alreadyPresentText)
+	{
+		try
+		{
+			var item = createCompletionItem(variableNode, file, module.referencableNodes());
+			item.setInsertText(item.getInsertText().substring(alreadyPresentText.length()));
+			if (item.getKind() == CompletionItemKind.Variable)
+			{
+				item.setData(new UnresolvedCompletionInfo((String) item.getData(), file.getPath().toUri().toString()));
+			}
+			return item;
+		}
+		catch (Exception e)
+		{
+			log.log(Level.SEVERE, "Variable completion threw an exception", e);
+			return null;
+		}
+	}
+
+	private Stream<IVariableNode> findVariablesToComplete(INaturalModule module)
 	{
 		return module.referencableNodes().stream()
-			.filter(v -> !(v instanceof IRedefinitionNode)) // this is the `REDEFINE #VAR`, which results in the variable being doubled in completion
-			.map(n ->
-			{
-				try
-				{
-					var item = createCompletionItem(n, file, module.referencableNodes());
-					if (item != null && item.getKind() == CompletionItemKind.Variable)
-					{
-						item.setData(new UnresolvedCompletionInfo((String) item.getData(), file.getPath().toUri().toString()));
-					}
-					return item;
-				}
-				catch (Exception e)
-				{
-					log.log(Level.SEVERE, "Variable completion threw an exception", e);
-					return null;
-				}
-			})
-			.filter(Objects::nonNull)
-			.toList();
+			.filter(v -> v instanceof IVariableNode)
+			.map(IVariableNode.class::cast)
+			.filter(v -> !(v instanceof IRedefinitionNode)); // this is the `REDEFINE #VAR`, which results in the variable being doubled in completion
 	}
 
 	private Collection<? extends CompletionItem> functionCompletions(LanguageServerLibrary library)
