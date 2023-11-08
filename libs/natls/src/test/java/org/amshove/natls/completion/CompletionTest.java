@@ -13,14 +13,20 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 public abstract class CompletionTest extends EmptyProjectTest
 {
-	protected CompletionAssertion assertCompletions(String libName, String fileName, String sourceWithCursor)
+	protected CompletionAssertion assertCompletions(String libName, String fileName, String triggerChar, String sourceWithCursor)
 	{
 		try
 		{
 			var cursor = SourceWithCursor.fromSourceWithCursor(sourceWithCursor);
 			var identifier = createOrSaveFile(libName, fileName, cursor);
 			var params = new CompletionParams(identifier, cursor.toSinglePosition());
-			params.setContext(new CompletionContext(CompletionTriggerKind.Invoked));
+			var context = new CompletionContext(CompletionTriggerKind.Invoked);
+			if (triggerChar != null)
+			{
+				context.setTriggerKind(CompletionTriggerKind.TriggerCharacter);
+				context.setTriggerCharacter(triggerChar);
+			}
+			params.setContext(context);
 			var completions = getContext().documentService().completion(params).get(1, TimeUnit.MINUTES).getLeft();
 
 			var resolvedCompletes = new ArrayList<CompletionItem>();
@@ -35,7 +41,11 @@ public abstract class CompletionTest extends EmptyProjectTest
 		{
 			throw new RuntimeException(e);
 		}
+	}
 
+	protected CompletionAssertion assertCompletions(String libName, String fileName, String sourceWithCursor)
+	{
+		return assertCompletions(libName, fileName, null, sourceWithCursor);
 	}
 
 	record CompletionAssertion(List<CompletionItem> items)
@@ -78,6 +88,16 @@ public abstract class CompletionTest extends EmptyProjectTest
 						)
 				)
 				.anyMatch(ci -> ci.getLabel().equals(label) && ci.getKind().equals(kind) && ci.getInsertText().equals(completion));
+			return this;
+		}
+
+		CompletionAssertion assertDoesNotContainVariable(String label)
+		{
+			assertThat(items)
+				.as(
+					"Expected completions to not contain variable with label %s"
+				)
+				.noneMatch(ci -> ci.getKind().equals(CompletionItemKind.Variable) && ci.getLabel().equalsIgnoreCase(label));
 			return this;
 		}
 	}
