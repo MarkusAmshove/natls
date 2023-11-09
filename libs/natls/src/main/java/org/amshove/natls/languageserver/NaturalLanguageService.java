@@ -245,7 +245,7 @@ public class NaturalLanguageService implements LanguageClientAware
 			return List.of(LspUtil.toLocation(moduleReferencingNode.reference()));
 		}
 
-		if (node.token() != null && node.token().kind().opensStatement())
+		if (node.token() != null && node.token().kind().opensStatementWithCloseKeyword())
 		{
 			return List.of(LspUtil.toLocation(node.parent().descendants().last()));
 		}
