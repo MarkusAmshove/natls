@@ -186,7 +186,7 @@ public class CompletionProvider
 	{
 		try
 		{
-			var item = createCompletionItem(variableNode, file, module.referencableNodes());
+			var item = createCompletionItem(variableNode, file, module.referencableNodes(), !alreadyPresentText.isEmpty());
 			item.setInsertText(item.getInsertText().substring(alreadyPresentText.length()));
 			if (item.getKind() == CompletionItemKind.Variable)
 			{
@@ -321,12 +321,12 @@ public class CompletionProvider
 			.toList();
 	}
 
-	private CompletionItem createCompletionItem(IVariableNode variableNode, LanguageServerFile openFile, ReadOnlyList<IReferencableNode> referencableNodes)
+	private CompletionItem createCompletionItem(IVariableNode variableNode, LanguageServerFile openFile, ReadOnlyList<IReferencableNode> referencableNodes, boolean forceQualification)
 	{
 		var item = new CompletionItem();
 		var variableName = variableNode.name();
 
-		if (config.getCompletion().isQualify() || referencableNodes.stream().filter(n -> n.declaration().symbolName().equals(variableNode.name())).count() > 1)
+		if (forceQualification || config.getCompletion().isQualify() || referencableNodes.stream().filter(n -> n.declaration().symbolName().equals(variableNode.name())).count() > 1)
 		{
 			variableName = variableNode.qualifiedName();
 		}

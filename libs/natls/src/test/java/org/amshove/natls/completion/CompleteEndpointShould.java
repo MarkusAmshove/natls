@@ -292,6 +292,21 @@ class CompleteEndpointShould extends CompletionTest
 	}
 
 	@Test
+	void filterVariableCompletionBasedOnTypedQualificationWhenVariablesAreNotAmbiguous()
+	{
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA
+			LOCAL
+			1 #GRP1
+			2 #VARIABLE (A10)
+			END-DEFINE
+			WRITE #GRP1.${}$
+			END
+			""")
+			.assertContainsVariableCompleting("#GRP1.#VARIABLE :(A10) (SUB)", "#VARIABLE");
+	}
+
+	@Test
 	void filterVariableCompletionBasedOnTypedQualificationOnTriggerChar()
 	{
 		assertCompletions("LIBONE", "SUB.NSN", """
@@ -307,5 +322,20 @@ class CompleteEndpointShould extends CompletionTest
 			""")
 			.assertDoesNotContainVariable("#GRP2.#VAR")
 			.assertContainsVariableCompleting("#GRP1.#VAR :(A10) (SUB)", "#VAR");
+	}
+
+	@Test
+	void filterVariableCompletionBasedOnTypedQualificationOnTriggerCharWhenVariablesAreNotAmbiguous()
+	{
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA
+			LOCAL
+			1 #GRP1
+			2 #VARIABLE (A10)
+			END-DEFINE
+			WRITE #GRP1.${}$
+			END
+			""")
+			.assertContainsVariableCompleting("#GRP1.#VARIABLE :(A10) (SUB)", "#VARIABLE");
 	}
 }
