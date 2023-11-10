@@ -72,7 +72,17 @@ public abstract class LanguageServerTest
 		return findLanguageServerFile(createOrSaveFile(libraryName, name, source));
 	}
 
+	protected TextDocumentIdentifier createOrSaveFileExternally(String libraryName, String name, String source)
+	{
+		return createOrSaveFile(libraryName, name, source, true);
+	}
+
 	protected TextDocumentIdentifier createOrSaveFile(String libraryName, String name, String source)
+	{
+		return createOrSaveFile(libraryName, name, source, false);
+	}
+
+	private TextDocumentIdentifier createOrSaveFile(String libraryName, String name, String source, boolean externallyChanged)
 	{
 		try
 		{
@@ -86,18 +96,33 @@ public abstract class LanguageServerTest
 			Files.writeString(filePath, source);
 
 			var fileUri = filePath.toUri().toString();
+			var identifier = new TextDocumentIdentifier(fileUri);
+
+			if (externallyChanged)
+			{
+				getContext().workspaceService().didChangeWatchedFiles(
+					new DidChangeWatchedFilesParams(
+						List.of(
+							new FileEvent(
+								fileUri,
+								existed ? FileChangeType.Changed : FileChangeType.Created
+							)
+						)
+					)
+				);
+				return identifier;
+			}
+
 			if (existed)
 			{
-				getContext().documentService().didSave(new DidSaveTextDocumentParams(new TextDocumentIdentifier(fileUri)));
-				//				getContext().languageService().fileSaved(filePath);
+				getContext().documentService().didSave(new DidSaveTextDocumentParams(identifier));
 			}
 			else
 			{
 				getContext().workspaceService().didCreateFiles(new CreateFilesParams(List.of(new FileCreate(fileUri))));
-				//				getContext().languageService().createdFile(fileUri);
 			}
 
-			return new TextDocumentIdentifier(fileUri);
+			return identifier;
 		}
 		catch (IOException e)
 		{

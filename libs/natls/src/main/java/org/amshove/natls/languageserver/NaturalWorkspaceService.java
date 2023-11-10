@@ -116,7 +116,7 @@ public class NaturalWorkspaceService implements WorkspaceService
 			case Changed ->
 			{
 				log.fine("Module is saved or externally changed, reparsing with callers");
-				languageService.fileExternallySaved(filepath);
+				languageService.fileExternallyChanged(filepath);
 			}
 			case Deleted ->
 			{

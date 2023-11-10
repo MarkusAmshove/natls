@@ -303,19 +303,19 @@ public class NaturalLanguageService implements LanguageClientAware
 	public LanguageServerFile findNaturalFile(String library, String name)
 	{
 		var naturalFile = project.findModule(library, name);
-		return languageServerProject.findFile(naturalFile);
+		return naturalFile == null ? null : languageServerProject.findFile(naturalFile);
 	}
 
 	public LanguageServerFile findNaturalFile(TextDocumentIdentifier identifier)
 	{
 		var naturalFile = project.findModule(LspUtil.uriToPath(identifier.getUri()));
-		return languageServerProject.findFile(naturalFile);
+		return naturalFile == null ? null : languageServerProject.findFile(naturalFile);
 	}
 
 	public LanguageServerFile findNaturalFile(Path path)
 	{
 		var naturalFile = project.findModule(path);
-		return languageServerProject.findFile(naturalFile);
+		return naturalFile == null ? null : languageServerProject.findFile(naturalFile);
 	}
 
 	public void publishDiagnostics(LanguageServerFile file)
@@ -358,7 +358,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		client.refreshCodeLenses();
 	}
 
-	public void fileExternallySaved(Path path)
+	public void fileExternallyChanged(Path path)
 	{
 		if (openEditors.contains(path))
 		{
@@ -367,7 +367,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		}
 
 		var file = findNaturalFile(path);
-		ProgressTasks.startNewVoid("Reparsing changed module %s".formatted(file.getReferableName()), client, m -> file.parseWithoutCallers());
+		file.parseWithoutCallers();
 	}
 
 	public void fileDeleted(Path path)
@@ -798,14 +798,6 @@ public class NaturalLanguageService implements LanguageClientAware
 	{
 		ProgressTasks.startNewVoid("Reparsing open files", client, m ->
 		{
-			try
-			{
-				Thread.sleep(200);
-			}
-			catch (InterruptedException e)
-			{
-				throw new RuntimeException(e);
-			}
 			for (var openEditor : openEditors)
 			{
 				var file = findNaturalFile(openEditor);
