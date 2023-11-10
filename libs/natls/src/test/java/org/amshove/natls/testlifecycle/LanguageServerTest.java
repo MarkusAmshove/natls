@@ -4,12 +4,13 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.amshove.natls.config.LSConfiguration;
 import org.amshove.natls.project.LanguageServerFile;
-import org.eclipse.lsp4j.DidChangeConfigurationParams;
-import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.*;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.logging.LogManager;
 
 @LspTest
@@ -87,11 +88,13 @@ public abstract class LanguageServerTest
 			var fileUri = filePath.toUri().toString();
 			if (existed)
 			{
-				getContext().languageService().fileSaved(filePath);
+				getContext().documentService().didSave(new DidSaveTextDocumentParams(new TextDocumentIdentifier(fileUri)));
+				//				getContext().languageService().fileSaved(filePath);
 			}
 			else
 			{
-				getContext().languageService().createdFile(fileUri);
+				getContext().workspaceService().didCreateFiles(new CreateFilesParams(List.of(new FileCreate(fileUri))));
+				//				getContext().languageService().createdFile(fileUri);
 			}
 
 			return new TextDocumentIdentifier(fileUri);
