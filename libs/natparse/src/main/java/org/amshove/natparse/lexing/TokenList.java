@@ -5,6 +5,7 @@ import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.project.NaturalHeader;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
@@ -25,8 +26,9 @@ public class TokenList implements Iterable<SyntaxToken>
 	}
 
 	private final List<SyntaxToken> tokens;
-	private final List<LexerDiagnostic> diagnostics;
+	final List<LexerDiagnostic> diagnostics;
 	private final List<SyntaxToken> comments;
+	private final List<SyntaxToken> hiddenTokens; // TODO: For resolved INCLUDE stuff. Keep the tokens for diagnostics
 	private final Path filePath;
 	private NaturalHeader sourceHeader;
 	private int currentOffset = 0;
@@ -36,6 +38,7 @@ public class TokenList implements Iterable<SyntaxToken>
 		this.tokens = tokens;
 		diagnostics = List.of();
 		comments = List.of();
+		hiddenTokens = List.of();
 		this.filePath = filePath;
 	}
 
@@ -44,8 +47,31 @@ public class TokenList implements Iterable<SyntaxToken>
 		this.tokens = tokens;
 		this.diagnostics = diagnostics;
 		this.comments = comments;
+		this.hiddenTokens = List.of(); // TODO: Handle usages
 		this.filePath = filePath;
 		this.sourceHeader = sourceHeader;
+	}
+
+	TokenList(Path filePath, List<SyntaxToken> tokens, List<LexerDiagnostic> diagnostics, List<SyntaxToken> comments, List<SyntaxToken> hiddenTokens, NaturalHeader sourceHeader)
+	{
+		this.tokens = tokens;
+		this.diagnostics = diagnostics;
+		this.comments = comments;
+		this.hiddenTokens = hiddenTokens;
+		this.filePath = filePath;
+		this.sourceHeader = sourceHeader;
+	}
+
+	static TokenList withResolvedIncludes(TokenList original, List<SyntaxToken> newTokens, List<SyntaxToken> hiddenTokens, List<LexerDiagnostic> diagnostics)
+	{
+		return new TokenList(
+			original.filePath,
+			newTokens,
+			diagnostics,
+			original.comments,
+			hiddenTokens,
+			original.sourceHeader
+		);
 	}
 
 	public ReadOnlyList<IDiagnostic> diagnostics()
