@@ -8,6 +8,7 @@ import org.amshove.natls.catalog.CatalogResult;
 import org.amshove.natls.config.LSConfiguration;
 import org.amshove.natls.natunit.NatUnitResultParser;
 import org.amshove.natls.project.LanguageServerFile;
+import org.amshove.natparse.natural.project.NaturalFileType;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.CompletableFutures;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -16,14 +17,18 @@ import org.eclipse.lsp4j.services.WorkspaceService;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class NaturalWorkspaceService implements WorkspaceService
 {
+	private static final Logger log = Logger.getAnonymousLogger();
 	private NaturalLanguageService languageService;
 	private final ConcurrentHashMap<String, LanguageServerFile> filesWithCatError = new ConcurrentHashMap<>();
 
@@ -54,81 +59,135 @@ public class NaturalWorkspaceService implements WorkspaceService
 	@Override
 	public void didChangeWatchedFiles(DidChangeWatchedFilesParams params)
 	{
-		// TODO: Handle delete of a module
-		// TODO: Handle new module
+		log.fine("didChangeWatchedFiles start");
+		var changedModules = 0;
 		for (var change : params.getChanges())
 		{
-			if (!change.getUri().endsWith(".xml") && !change.getUri().endsWith(".XML") && !change.getUri().endsWith("stow.log"))
+			try
 			{
-				continue;
-			}
+				var filepath = LspUtil.uriToPath(change.getUri());
 
-			if (change.getUri().endsWith("stow.log"))
-			{
-				parseCatalogResult(change);
-				continue;
-			}
-
-			if (change.getUri().contains("merged/"))
-			{
-				// HTML Test report
-				continue;
-			}
-
-			var testFile = LspUtil.uriToPath(change.getUri());
-			var libraryAndTestname = testFile.getFileName().toString();
-			var library = libraryAndTestname.substring(0, libraryAndTestname.lastIndexOf('-'));
-			var testcase = libraryAndTestname.substring(libraryAndTestname.lastIndexOf('-') + 1).split("\\.")[0];
-			var naturalFile = languageService.findNaturalFile(library, testcase);
-			if (naturalFile == null)
-			{
-				continue;
-			}
-
-			naturalFile.clearDiagnosticsByTool(DiagnosticTool.NATUNIT);
-
-			if (change.getType() == FileChangeType.Deleted)
-			{
-				languageService.publishDiagnostics(naturalFile);
-			}
-			else
-			{
-				var result = new NatUnitResultParser().parse(testFile);
-
-				for (var testResult : result.getTestResults())
+				var isNaturalModule = NaturalFileType.isNaturalFile(filepath);
+				if (isNaturalModule)
 				{
-					if (testResult.hasFailed())
-					{
-						try
-						{
-							var message = testResult.message();
-							var lineNumberStartIndex = message.indexOf('(') + 1;
-							var lineNumberEndIndex = message.indexOf(')');
-
-							var line = Integer.parseInt(message.substring(lineNumberStartIndex, lineNumberEndIndex));
-							line += 3; // Renumbering, but line is zero based
-
-							var actualFailureMessage = message.substring(message.indexOf(':') + 1).trim();
-
-							var theAssertionLine = Files.readLines(naturalFile.getPath().toFile(), Charset.defaultCharset()).get(line);
-							var startIndex = theAssertionLine.length() - theAssertionLine.trim().length();
-
-							naturalFile.addDiagnostic(
-								DiagnosticTool.NATUNIT, new Diagnostic(
-									new Range(new Position(line, startIndex), new Position(line, theAssertionLine.length())),
-									"Assertion Failure: " + actualFailureMessage,
-									DiagnosticSeverity.Error,
-									DiagnosticTool.NATUNIT.getId()
-								)
-							);
-						}
-						catch (Exception e)
-						{}
-					}
+					changedModules++;
+					handleNaturalModuleChange(filepath, change);
+					continue;
 				}
 
-				languageService.publishDiagnostics(naturalFile);
+				var isXmlFile = change.getUri().endsWith(".xml") || change.getUri().endsWith(".XML");
+				var isNatUnitResult = isXmlFile && !filepath.toAbsolutePath().toString().contains("Natural-Libraries");
+				if (isNatUnitResult)
+				{
+					handleNatUnitTestResult(filepath, change);
+					continue;
+				}
+
+				var isStowLog = change.getUri().endsWith("stow.log");
+				if (isStowLog)
+				{
+					parseCatalogResult(change);
+				}
 			}
+			catch (Exception e)
+			{
+				log.log(Level.SEVERE, "Error during changed watched file changed (%s), skipping file %s".formatted(change.getType(), change.getUri()), e);
+			}
+		}
+
+		if (changedModules > 0)
+		{
+			languageService.reparseOpenFiles();
+		}
+
+		log.fine("didChangeWatchedFiles end");
+	}
+
+	private void handleNaturalModuleChange(Path filepath, FileEvent change)
+	{
+		log.fine("Handling watched natural module change: %s".formatted(filepath));
+		switch (change.getType())
+		{
+			case Created ->
+			{
+				log.fine("Module is new, adding to project");
+				languageService.createdFile(change.getUri());
+			}
+			case Changed ->
+			{
+				log.fine("Module is saved or externally changed, reparsing with callers");
+				languageService.fileExternallySaved(filepath);
+			}
+			case Deleted ->
+			{
+				log.fine("Module is deleted, removing");
+				languageService.fileDeleted(filepath);
+			}
+		}
+	}
+
+	private void handleNatUnitTestResult(Path filepath, FileEvent change)
+	{
+		if (change.getUri().contains("merged/"))
+		{
+			// HTML Test report
+			return;
+		}
+
+		var libraryAndTestname = filepath.getFileName().toString();
+		var library = libraryAndTestname.substring(0, libraryAndTestname.lastIndexOf('-'));
+		var testcase = libraryAndTestname.substring(libraryAndTestname.lastIndexOf('-') + 1).split("\\.")[0];
+		var naturalFile = languageService.findNaturalFile(library, testcase);
+		if (naturalFile == null)
+		{
+			return;
+		}
+
+		naturalFile.clearDiagnosticsByTool(DiagnosticTool.NATUNIT);
+
+		if (change.getType() == FileChangeType.Deleted)
+		{
+			languageService.publishDiagnostics(naturalFile);
+		}
+		else
+		{
+			var result = new NatUnitResultParser().parse(filepath);
+
+			for (var testResult : result.getTestResults())
+			{
+				if (testResult.hasFailed())
+				{
+					try
+					{
+						var message = testResult.message();
+						var lineNumberStartIndex = message.indexOf('(') + 1;
+						var lineNumberEndIndex = message.indexOf(')');
+
+						var line = Integer.parseInt(message.substring(lineNumberStartIndex, lineNumberEndIndex));
+						line += 3; // Renumbering, but line is zero based
+
+						var actualFailureMessage = message.substring(message.indexOf(':') + 1).trim();
+
+						var theAssertionLine = Files.readLines(naturalFile.getPath().toFile(), Charset.defaultCharset()).get(line);
+						var startIndex = theAssertionLine.length() - theAssertionLine.trim().length();
+
+						naturalFile.addDiagnostic(
+							DiagnosticTool.NATUNIT, new Diagnostic(
+								new Range(new Position(line, startIndex), new Position(line, theAssertionLine.length())),
+								"Assertion Failure: " + actualFailureMessage,
+								DiagnosticSeverity.Error,
+								DiagnosticTool.NATUNIT.getId()
+							)
+						);
+					}
+					catch (Exception e)
+					{
+						// Nothing we can do
+					}
+				}
+			}
+
+			languageService.publishDiagnostics(naturalFile);
 		}
 	}
 

@@ -147,7 +147,7 @@ public class LanguageServerFile implements IModuleProvider
 		}
 		catch (Exception e)
 		{
-			log.error("Error during parse from <%s>".formatted(file.getPath()), e);
+			log.error("Error during parse of <%s>".formatted(file.getPath()), e);
 			addDiagnostic(
 				DiagnosticTool.NATPARSE,
 				new Diagnostic(
@@ -164,6 +164,11 @@ public class LanguageServerFile implements IModuleProvider
 	public void parse()
 	{
 		parse(ParseStrategy.WITH_CALLERS);
+	}
+
+	public void parseWithoutCallers()
+	{
+		parse(ParseStrategy.WITHOUT_CALLERS);
 	}
 
 	private boolean hasToReparseCallers(String newSource)

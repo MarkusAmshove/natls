@@ -53,10 +53,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -82,6 +79,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	private final SignatureHelpProvider signatureHelp = new SignatureHelpProvider();
 	private CallHierarchyProvider callHierarchyProvider;
 	private CompletionProvider completionProvider;
+	private final Set<Path> openEditors = new HashSet<>();
 
 	public void indexProject(Path workspaceRoot, IProgressMonitor progressMonitor)
 	{
@@ -352,13 +350,31 @@ public class NaturalLanguageService implements LanguageClientAware
 		var file = findNaturalFile(path);
 		if (file == null)
 		{
-			// TODO: Handle new file
 			return;
 		}
 
 		file.save();
 		publishDiagnostics(file);
 		client.refreshCodeLenses();
+	}
+
+	public void fileExternallySaved(Path path)
+	{
+		if (openEditors.contains(path))
+		{
+			// Already handled by `fileSaved`
+			return;
+		}
+
+		var file = findNaturalFile(path);
+		ProgressTasks.startNewVoid("Reparsing changed module %s".formatted(file.getReferableName()), client, m -> file.parseWithoutCallers());
+	}
+
+	public void fileDeleted(Path path)
+	{
+		var file = findNaturalFile(path);
+		languageServerProject.removeFile(file);
+		reparseOpenFiles();
 	}
 
 	public void fileClosed(Path path)
@@ -368,6 +384,8 @@ public class NaturalLanguageService implements LanguageClientAware
 		{
 			return;
 		}
+
+		openEditors.remove(path);
 
 		file.close();
 		publishDiagnostics(file);
@@ -380,6 +398,8 @@ public class NaturalLanguageService implements LanguageClientAware
 		{
 			return;
 		}
+
+		openEditors.add(path);
 
 		file.open();
 		publishDiagnostics(file);
@@ -772,5 +792,28 @@ public class NaturalLanguageService implements LanguageClientAware
 		var file = findNaturalFile(identifier);
 		var outgoingReferences = file.getOutgoingReferences();
 		return new CalledModulesResponse(outgoingReferences.stream().map(f -> LspUtil.pathToUri(f.getPath())).distinct().toList());
+	}
+
+	public void reparseOpenFiles()
+	{
+		ProgressTasks.startNewVoid("Reparsing open files", client, m ->
+		{
+			try
+			{
+				Thread.sleep(200);
+			}
+			catch (InterruptedException e)
+			{
+				throw new RuntimeException(e);
+			}
+			for (var openEditor : openEditors)
+			{
+				var file = findNaturalFile(openEditor);
+				m.progress(file.getReferableName());
+				log.fine("Reparsing open file %s".formatted(openEditor));
+				file.parseWithoutCallers();
+				publishDiagnosticsOfFile(file);
+			}
+		});
 	}
 }

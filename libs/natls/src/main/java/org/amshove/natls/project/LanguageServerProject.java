@@ -98,6 +98,11 @@ public class LanguageServerProject
 		return lspFile;
 	}
 
+	public void removeFile(LanguageServerFile file)
+	{
+		file.getLibrary().remove(file);
+	}
+
 	public Path rootPath()
 	{
 		return project.getRootPath();
