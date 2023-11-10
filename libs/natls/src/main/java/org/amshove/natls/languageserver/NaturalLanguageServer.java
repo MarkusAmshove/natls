@@ -106,10 +106,8 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			if (client != null)
 			{
 				var watchFileMethod = "workspace/didChangeWatchedFiles";
-				var natunitWatcher = new FileSystemWatcher(Either.forLeft("**/build/test-results/**/*.xml"));
-				var stowWatcher = new FileSystemWatcher(Either.forLeft("**/build/stow.log"));
 				var sourceWatcher = new FileSystemWatcher(Either.forLeft("**/Natural-Libraries/**/*.*"));
-				var watchChangesRegistrationOption = new DidChangeWatchedFilesRegistrationOptions(List.of(natunitWatcher, sourceWatcher, stowWatcher));
+				var watchChangesRegistrationOption = new DidChangeWatchedFilesRegistrationOptions(List.of(sourceWatcher));
 				client.registerCapability(new RegistrationParams(List.of(new Registration(UUID.randomUUID().toString(), watchFileMethod, watchChangesRegistrationOption))));
 			}
 
