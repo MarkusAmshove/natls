@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class NaturalLanguageServer implements LanguageServer, LanguageClientAware
@@ -207,6 +208,22 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 	public WorkspaceService getWorkspaceService()
 	{
 		return workspaceService;
+	}
+
+	@Override
+	public void setTrace(SetTraceParams params)
+	{
+		var level = params.getValue().equalsIgnoreCase("verbose")
+			? Level.FINE
+			: Level.INFO;
+
+		log.info("Setting LogLevel to %s".formatted(level));
+		var rootLogger = Logger.getLogger("");
+		rootLogger.setLevel(level);
+		for (var handler : rootLogger.getHandlers())
+		{
+			handler.setLevel(level);
+		}
 	}
 
 	@Override
