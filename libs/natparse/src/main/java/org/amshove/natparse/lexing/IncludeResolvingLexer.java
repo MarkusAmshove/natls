@@ -4,6 +4,8 @@ import org.amshove.natparse.AdditionalDiagnosticInfo;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.infrastructure.IFilesystem;
+import org.amshove.natparse.natural.project.NaturalFile;
+import org.amshove.natparse.parsing.DefaultModuleProvider;
 import org.amshove.natparse.parsing.IModuleProvider;
 
 import java.nio.file.Path;
@@ -24,6 +26,11 @@ public class IncludeResolvingLexer
 	IncludeResolvingLexer(IFilesystem filesystem)
 	{
 		fs = filesystem;
+	}
+
+	public TokenList lex(String source, Path path, NaturalFile file)
+	{
+		return lex(source, path, new DefaultModuleProvider(file));
 	}
 
 	public TokenList lex(String source, Path path, IModuleProvider moduleProvider)
@@ -123,7 +130,7 @@ public class IncludeResolvingLexer
 				);
 				positionedParameterTokens.add(positionedToken);
 			}
-			parameter.add(new TokenList(positionedParameterTokens.get(0).filePath(), positionedParameterTokens));
+			parameter.add(new TokenList(theParameterToken.filePath(), positionedParameterTokens));
 			hiddenTokens.add(theParameterToken);
 		}
 
@@ -152,6 +159,7 @@ public class IncludeResolvingLexer
 	{
 		var parameterIndex = parameterPosition - 1;
 		var tokensFromParameterToInsert = parameter.get(parameterIndex);
+		tokensFromParameterToInsert.rollback(); // Always make sure we restart at offset 0 because the parameter's TokenList is reused
 		while (!tokensFromParameterToInsert.isAtEnd())
 		{
 			var tokenToInsert = tokensFromParameterToInsert.advance();
