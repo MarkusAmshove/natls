@@ -8,6 +8,7 @@ import org.amshove.natparse.parsing.IModuleProvider;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
 public class IncludeResolvingLexer
@@ -27,10 +28,10 @@ public class IncludeResolvingLexer
 
 	public TokenList lex(String source, Path path, IModuleProvider moduleProvider)
 	{
-		return lex(source, path, moduleProvider, null);
+		return lex(source, path, moduleProvider, null, List.of());
 	}
 
-	private TokenList lex(String source, Path path, IModuleProvider moduleProvider, IPosition relocatedDiagnosticPosition)
+	private TokenList lex(String source, Path path, IModuleProvider moduleProvider, IPosition relocatedDiagnosticPosition, List<TokenList> parameter)
 	{
 		var lexer = new Lexer();
 		if (relocatedDiagnosticPosition != null)
@@ -38,6 +39,10 @@ public class IncludeResolvingLexer
 			lexer.relocateDiagnosticPosition(relocatedDiagnosticPosition);
 		}
 		var tokenList = lexer.lex(source, path);
+		if (!parameter.isEmpty()) // TODO: includeStack.size() > 1 better condition?
+		{
+			tokenList = substituteCopyCodeParameterInNestedInclude(tokenList, parameter);
+		}
 		return resolve(tokenList, moduleProvider);
 	}
 
@@ -51,10 +56,6 @@ public class IncludeResolvingLexer
 		{
 			if (tokens.peek().kind() == SyntaxKind.INCLUDE)
 			{
-				if (includeStack.size() > 1)
-				{
-					// nested, replace parameter first
-				}
 				handleInclude(newTokens, hiddenTokens, diagnostics, tokens, moduleProvider);
 			}
 			else
@@ -65,6 +66,32 @@ public class IncludeResolvingLexer
 
 		includeStack.pop();
 		return TokenList.withResolvedIncludes(tokens, newTokens, hiddenTokens, diagnostics);
+	}
+
+	private TokenList substituteCopyCodeParameterInNestedInclude(TokenList tokens, List<TokenList> parameter)
+	{
+		var newTokens = new ArrayList<SyntaxToken>();
+		var diagnostics = new ArrayList<>(tokens.diagnostics);
+		while (!tokens.isAtEnd())
+		{
+			if (tokens.peekKind(SyntaxKind.COPYCODE_PARAMETER))
+			{
+				var parameterToken = tokens.advance();
+				var parameterPosition = parameterToken.copyCodeParameterPosition();
+				if (!validateParameterPosition(parameterPosition, parameterToken.diagnosticPosition(), parameterToken, parameter, diagnostics))
+				{
+					newTokens.add(parameterToken);
+					continue;
+				}
+
+				substituteParameter(newTokens, parameterPosition, parameter, tokens);
+			}
+			else
+			{
+				newTokens.add(tokens.advance());
+			}
+		}
+		return new TokenList(tokens.filePath(), newTokens, diagnostics, tokens.comments().toList(), tokens.sourceHeader());
 	}
 
 	private void handleInclude(ArrayList<SyntaxToken> newTokens, ArrayList<SyntaxToken> hiddenTokens, ArrayList<LexerDiagnostic> diagnostics, TokenList tokens, IModuleProvider moduleProvider)
@@ -109,51 +136,59 @@ public class IncludeResolvingLexer
 			// TODO: Diagnostic for recursive copycodes and bail out
 		}
 		var source = fs.readFile(path);
-		var lexedTokens = lex(source, path, moduleProvider, copyCodeNameToken);
+		var lexedTokens = lex(source, path, moduleProvider, copyCodeNameToken, parameter);
 		diagnostics.addAll(lexedTokens.diagnostics);
 		while (!lexedTokens.isAtEnd())
 		{
 			var token = lexedTokens.advance();
-			if (token.kind() == SyntaxKind.COPYCODE_PARAMETER)
-			{
-				var parameterPosition = token.copyCodeParameterPosition();
-				var parameterIndex = parameterPosition - 1;
-				if (parameterIndex >= parameter.size())
-				{
-					var diagnostic = LexerDiagnostic.create(
-						"Copy code parameter with position %d not provided".formatted(parameterPosition),
-						copyCodeNameToken.offset(),
-						copyCodeNameToken.offsetInLine(),
-						copyCodeNameToken.line(),
-						copyCodeNameToken.length(),
-						copyCodeNameToken.filePath(),
-						LexerError.MISSING_COPYCODE_PARAMETER
-					);
-					diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo(
-						"Parameter is used here",
-						token
-					));
-					diagnostics.add(diagnostic);
-					newTokens.add(token);
-					continue;
-				}
-				var tokensToInsert = parameter.get(parameterIndex);
-				while (!tokensToInsert.isAtEnd())
-				{
-					var tokenToInsert = tokensToInsert.advance();
-					if (tokenToInsert.kind().isIdentifier() && lexedTokens.peekKind(SyntaxKind.DOT) && lexedTokens.peekKindSafe(1).canBeIdentifier())
-					{
-						// Build qualified name for e.g. &1&.#VAR
-						tokenToInsert = tokenToInsert.combine(lexedTokens.advance(), SyntaxKind.IDENTIFIER);
-						tokenToInsert = tokenToInsert.combine(lexedTokens.advance(), SyntaxKind.IDENTIFIER);
-					}
-					newTokens.add(tokenToInsert);
-				}
-			}
-			else
-			{
-				newTokens.add(token);
-			}
+			newTokens.add(token);
 		}
+	}
+
+	/**
+	 * Substitute the given copy code parameter and add it to the result list of tokens.
+	 */
+	private static void substituteParameter(ArrayList<SyntaxToken> newTokens, int parameterPosition, List<TokenList> parameter, TokenList originalTokens)
+	{
+		var parameterIndex = parameterPosition - 1;
+		var tokensFromParameterToInsert = parameter.get(parameterIndex);
+		while (!tokensFromParameterToInsert.isAtEnd())
+		{
+			var tokenToInsert = tokensFromParameterToInsert.advance();
+			if (tokenToInsert.kind().isIdentifier() && originalTokens.peekKind(SyntaxKind.DOT) && originalTokens.peekKindSafe(1).canBeIdentifier())
+			{
+				// Build qualified name for e.g. &1&.#VAR
+				tokenToInsert = tokenToInsert.combine(originalTokens.advance(), SyntaxKind.IDENTIFIER);
+				tokenToInsert = tokenToInsert.combine(originalTokens.advance(), SyntaxKind.IDENTIFIER);
+			}
+			newTokens.add(tokenToInsert);
+		}
+	}
+
+	private boolean validateParameterPosition(int position, IPosition diagnosticPosition, IPosition additionalPosition, List<TokenList> passedParameter, List<LexerDiagnostic> diagnostics)
+	{
+		var parameterIndex = position - 1;
+		if (parameterIndex >= passedParameter.size())
+		{
+			var diagnostic = LexerDiagnostic.create(
+				"Copy code parameter with position %d not provided".formatted(position),
+				diagnosticPosition.offset(),
+				diagnosticPosition.offsetInLine(),
+				diagnosticPosition.line(),
+				diagnosticPosition.length(),
+				diagnosticPosition.filePath(),
+				LexerError.MISSING_COPYCODE_PARAMETER
+			);
+			diagnostic.addAdditionalInfo(
+				new AdditionalDiagnosticInfo(
+					"Parameter is used here",
+					additionalPosition
+				)
+			);
+			diagnostics.add(diagnostic);
+			return false;
+		}
+
+		return true;
 	}
 }

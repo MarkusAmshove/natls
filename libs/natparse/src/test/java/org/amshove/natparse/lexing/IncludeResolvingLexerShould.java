@@ -191,6 +191,17 @@ class IncludeResolvingLexerShould extends AbstractLexerTest
 	}
 
 	@Test
+	void substituteSingleQuotedStringLiterals()
+	{
+		givenAnExternalCopyCodeWithSource("STRLIT", "&1&");
+		var result = lexAndResolve("INCLUDE STRLIT '''SOME TEXT'''");
+		assertThat(result.diagnostics).isEmpty();
+		var token = result.advance();
+		assertThat(token.kind()).isEqualTo(SyntaxKind.STRING_LITERAL);
+		assertThat(token.source()).isEqualTo("'SOME TEXT'");
+	}
+
+	@Test
 	void substituteDoubleQuotedStringLiterals()
 	{
 		givenAnExternalCopyCodeWithSource("STRLIT", "&1&");
@@ -198,7 +209,7 @@ class IncludeResolvingLexerShould extends AbstractLexerTest
 		assertThat(result.diagnostics).isEmpty();
 		var token = result.advance();
 		assertThat(token.kind()).isEqualTo(SyntaxKind.STRING_LITERAL);
-		assertThat(token.source()).isEqualTo("\"\"SOME TEXT\"\"");
+		assertThat(token.source()).isEqualTo("\"SOME TEXT\"");
 	}
 
 	@Test
