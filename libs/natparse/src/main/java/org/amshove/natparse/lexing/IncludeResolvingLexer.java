@@ -51,6 +51,10 @@ public class IncludeResolvingLexer
 		{
 			if (tokens.peek().kind() == SyntaxKind.INCLUDE)
 			{
+				if (includeStack.size() > 1)
+				{
+					// nested, replace parameter first
+				}
 				handleInclude(newTokens, hiddenTokens, diagnostics, tokens, moduleProvider);
 			}
 			else
@@ -66,14 +70,14 @@ public class IncludeResolvingLexer
 	private void handleInclude(ArrayList<SyntaxToken> newTokens, ArrayList<SyntaxToken> hiddenTokens, ArrayList<LexerDiagnostic> diagnostics, TokenList tokens, IModuleProvider moduleProvider)
 	{
 		hiddenTokens.add(tokens.advance()); // INCLUDE
-		var copycodeNameToken = tokens.advance();
+		var copyCodeNameToken = tokens.advance();
 		// TODO: Assert Identifier etc.
-		hiddenTokens.add(copycodeNameToken);
-		var moduleName = copycodeNameToken.symbolName();
+		hiddenTokens.add(copyCodeNameToken);
+		var moduleName = copyCodeNameToken.symbolName();
 
 		var parameter = new ArrayList<TokenList>();
 		var parameterLexer = new Lexer();
-		while (!tokens.isAtEnd() && tokens.peek().kind() == SyntaxKind.STRING_LITERAL)
+		while (!tokens.isAtEnd() && (tokens.peekKind(SyntaxKind.STRING_LITERAL)))
 		{
 			var theParameterToken = tokens.advance();
 			var parameterTokens = parameterLexer.lex(theParameterToken.stringValue(), theParameterToken.diagnosticPosition().filePath());
@@ -105,7 +109,7 @@ public class IncludeResolvingLexer
 			// TODO: Diagnostic for recursive copycodes and bail out
 		}
 		var source = fs.readFile(path);
-		var lexedTokens = lex(source, path, moduleProvider, copycodeNameToken);
+		var lexedTokens = lex(source, path, moduleProvider, copyCodeNameToken);
 		diagnostics.addAll(lexedTokens.diagnostics);
 		while (!lexedTokens.isAtEnd())
 		{
@@ -118,11 +122,11 @@ public class IncludeResolvingLexer
 				{
 					var diagnostic = LexerDiagnostic.create(
 						"Copy code parameter with position %d not provided".formatted(parameterPosition),
-						copycodeNameToken.offset(),
-						copycodeNameToken.offsetInLine(),
-						copycodeNameToken.line(),
-						copycodeNameToken.length(),
-						copycodeNameToken.filePath(),
+						copyCodeNameToken.offset(),
+						copyCodeNameToken.offsetInLine(),
+						copyCodeNameToken.line(),
+						copyCodeNameToken.length(),
+						copyCodeNameToken.filePath(),
 						LexerError.MISSING_COPYCODE_PARAMETER
 					);
 					diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo(

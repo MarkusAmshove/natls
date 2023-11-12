@@ -189,6 +189,41 @@ class IncludeResolvingLexerShould extends AbstractLexerTest
 		assertThat(additionalDiagnosticInCC.message()).isEqualTo("Parameter is used here");
 	}
 
+	@Test
+	void substituteDoubleQuotedStringLiterals()
+	{
+		givenAnExternalCopyCodeWithSource("STRLIT", "&1&");
+		var result = lexAndResolve("INCLUDE STRLIT \"\"\"SOME TEXT\"\"\"");
+		assertThat(result.diagnostics).isEmpty();
+		var token = result.advance();
+		assertThat(token.kind()).isEqualTo(SyntaxKind.STRING_LITERAL);
+		assertThat(token.source()).isEqualTo("\"\"SOME TEXT\"\"");
+	}
+
+	@Test
+	void substituteStringLiteralsForMultipleNestedLevelsWithoutPassingQuotes()
+	{
+		givenAnExternalCopyCodeWithSource("CC1", "INCLUDE CC2 '&1&'");
+		givenAnExternalCopyCodeWithSource("CC2", "&1&");
+		var result = lexAndResolve("INCLUDE CC1 '#VAR'");
+		assertThat(result.diagnostics).isEmpty();
+		var token = result.advance();
+		assertThat(token.kind()).isEqualTo(SyntaxKind.IDENTIFIER);
+		assertThat(token.symbolName()).isEqualTo("#VAR");
+	}
+
+	@Test
+	void substituteStringLiteralsForMultipleNestedLevelsWithPassingQuotes()
+	{
+		givenAnExternalCopyCodeWithSource("CC1", "INCLUDE CC2 &1&");
+		givenAnExternalCopyCodeWithSource("CC2", "&1&");
+		var result = lexAndResolve("INCLUDE CC1 '''#VAR'''");
+		assertThat(result.diagnostics).isEmpty();
+		var token = result.advance();
+		assertThat(token.kind()).isEqualTo(SyntaxKind.IDENTIFIER);
+		assertThat(token.symbolName()).isEqualTo("#VAR");
+	}
+
 	private TokenList lexAndResolve(String source)
 	{
 		return sut.lex(source, Path.of("OUTER.NSN"), moduleProvider);
