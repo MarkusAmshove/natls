@@ -6,6 +6,7 @@ import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.parsing.IModuleProvider;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
@@ -201,6 +202,7 @@ class IncludeResolvingLexerShould extends AbstractLexerTest
 	}
 
 	@Test
+	@Disabled("This doesn't compile (at least on open systems). The nested include is not allowed to have '&1&', it needs to be &1& and be passed with multiple quotes")
 	void substituteStringLiteralsForMultipleNestedLevelsWithoutPassingQuotes()
 	{
 		givenAnExternalCopyCodeWithSource("CC1", "INCLUDE CC2 '&1&'");
