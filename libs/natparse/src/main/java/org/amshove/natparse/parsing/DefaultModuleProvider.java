@@ -8,11 +8,11 @@ import org.amshove.natparse.parsing.ddm.DdmParser;
 
 import java.nio.file.Files;
 
-class DefaultModuleProvider implements IModuleProvider
+public class DefaultModuleProvider implements IModuleProvider
 {
 	private final NaturalFile caller;
 
-	DefaultModuleProvider(NaturalFile caller)
+	public DefaultModuleProvider(NaturalFile caller)
 	{
 		this.caller = caller;
 	}

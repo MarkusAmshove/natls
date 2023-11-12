@@ -2,6 +2,7 @@ package org.amshove.natparse.lexing;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Stack;
 
 import org.amshove.natparse.infrastructure.ActualFilesystem;
@@ -10,8 +11,18 @@ import org.amshove.natparse.parsing.IModuleProvider;
 
 public class CopyCodeResolver
 {
-	private static final IFilesystem fs = new ActualFilesystem();
+	private final IFilesystem fs;
 	private Stack<Path> includeStack = new Stack<>();
+
+	public CopyCodeResolver()
+	{
+		this(new ActualFilesystem());
+	}
+
+	CopyCodeResolver(IFilesystem filesystem)
+	{
+		fs = filesystem;
+	}
 
 	public TokenList resolve(TokenList tokens, IModuleProvider moduleProvider)
 	{
@@ -44,12 +55,14 @@ public class CopyCodeResolver
 		var moduleName = copycodeNameToken.symbolName();
 
 		var parameter = new ArrayList<SyntaxToken>();
-		while (tokens.peek().kind() == SyntaxKind.STRING_LITERAL)
+		while (!tokens.isAtEnd() && tokens.peek().kind() == SyntaxKind.STRING_LITERAL)
 		{
-			parameter.add(tokens.advance());
+			var theParameterToken = tokens.advance();
+			parameter.add(theParameterToken);
+			hiddenTokens.add(theParameterToken);
 		}
 
-		var lexer = new Lexer();
+		var lexer = new Lexer(false, parameter);
 		var copycode = moduleProvider.findNaturalModule(moduleName);
 		// TODO: Module not found
 		// TODO: Wrong Module Type

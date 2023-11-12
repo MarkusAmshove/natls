@@ -9,10 +9,12 @@ import org.amshove.natparse.natural.project.NaturalProgrammingMode;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class Lexer
 {
-	private final List<String> copyCodeParameter;
+	private List<String> copyCodeParameter;
+	private List<SyntaxToken> tokenParameter;
 	private SourceTextScanner scanner;
 	private List<SyntaxToken> tokens;
 	private List<SyntaxToken> comments;
@@ -50,6 +52,12 @@ public class Lexer
 	public Lexer(List<String> copyCodeParameter)
 	{
 		this.copyCodeParameter = copyCodeParameter;
+	}
+
+	public Lexer(boolean ignored, List<SyntaxToken> copyCodeParameter) // TODO: Remove ignored
+	{
+		this.copyCodeParameter = List.of();
+		this.tokenParameter = copyCodeParameter;
 	}
 
 	public TokenList lex(String source, Path filePath)
@@ -346,7 +354,7 @@ public class Lexer
 				offset++;
 			}
 
-			if (scanner.peek(offset) == '&') // all were digits and we end with ampersand, so this is a copycode parameter
+			if (scanner.peek(offset) == '&') // all were digits, and we end with ampersand, so this is a copycode parameter
 			{
 				scanner.advance(offset);
 				var position = Integer.parseInt(scanner.lexemeText().substring(1));
@@ -355,7 +363,15 @@ public class Lexer
 				// only raise the diagnostic for the including side
 				if (relocatedDiagnosticPosition != null)
 				{
-					addDiagnostic("Copy code parameter with position %d not provided".formatted(position), "Parameter is used here", LexerError.MISSING_COPYCODE_PARAMETER);
+					if (tokenParameter.isEmpty()) // TODO: Only relevant while "old way" copyCodeParameter exists
+					{
+						addDiagnostic("Copy code parameter with position %d not provided".formatted(position), "Parameter is used here", LexerError.MISSING_COPYCODE_PARAMETER);
+					}
+					else
+					{
+						doTheNewMagic(position);
+						return;
+					}
 				}
 			}
 
@@ -365,6 +381,22 @@ public class Lexer
 		}
 
 		consumeIdentifier();
+	}
+
+	private void doTheNewMagic(int parameterPosition)
+	{
+		var parameterToken = tokenParameter.get(parameterPosition - 1);
+		var sourceOfToken = parameterToken.stringValue();
+		// TODO: perf
+		var nestedLexer = new Lexer(false, tokenParameter);
+		var tokenList = nestedLexer.lex(sourceOfToken, filePath);
+		// TODO: Diagnostics
+		for (var syntaxToken : tokenList)
+		{
+			syntaxToken.setDiagnosticPosition(parameterToken); // TODO: Maybe to relocated thingy? not sure
+			addToken(syntaxToken, false);
+		}
+		scanner.reset(); // Go to after &n&
 	}
 
 	private boolean previousWasNoLiteralOrIdentifier()
@@ -1726,7 +1758,7 @@ public class Lexer
 			scanner.lexemeText(),
 			filePath
 		);
-		addToken(token);
+		addToken(token, true);
 	}
 
 	private SyntaxToken previous()
@@ -1871,7 +1903,7 @@ public class Lexer
 		}
 	}
 
-	private void addToken(SyntaxToken token)
+	private void addToken(SyntaxToken token, boolean relocate)
 	{
 		if (token.kind() == SyntaxKind.IDENTIFIER)
 		{
@@ -1892,7 +1924,10 @@ public class Lexer
 				lexerMode = LexerMode.DEFAULT;
 			}
 
-		token.setDiagnosticPosition(relocatedDiagnosticPosition);
+		if (relocate)
+		{
+			token.setDiagnosticPosition(relocatedDiagnosticPosition);
+		}
 		tokens.add(token);
 		scanner.reset();
 	}

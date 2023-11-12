@@ -23,3 +23,6 @@ project(':tools/explore').name = 'explore'
 
 include 'tools/diffcsv'
 project(':tools/diffcsv').name = 'diffcsv'
+
+include 'tools/dumptokens'
+project(':tools/dumptokens').name = 'dumptokens'

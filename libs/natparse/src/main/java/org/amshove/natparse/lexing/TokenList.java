@@ -299,4 +299,9 @@ public class TokenList implements Iterable<SyntaxToken>
 	{
 		currentOffset += offset;
 	}
+
+	public ReadOnlyList<SyntaxToken> hiddenTokens()
+	{
+		return ReadOnlyList.from(hiddenTokens);
+	}
 }

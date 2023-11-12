@@ -1,0 +1,23 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '7.1.0'
+}
+
+shadowJar {
+    archiveBaseName.set('dumptokens')
+    archiveClassifier.set('')
+    archiveVersion.set('')
+}
+
+dependencies {
+    implementation project(':natparse')
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'org.amshove.natls.dumptokens.App',
+                'Implementation-Title': project.name,
+                'Implementation-Version': project.version
+        )
+    }
+}
