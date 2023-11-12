@@ -5,7 +5,6 @@ import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.project.NaturalHeader;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
@@ -136,6 +135,31 @@ public class TokenList implements Iterable<SyntaxToken>
 		}
 
 		return true;
+	}
+
+	public boolean peekKind(SyntaxKind kind)
+	{
+		return peekKind(0, kind);
+	}
+
+	public boolean peekKind(int offset, SyntaxKind kind)
+	{
+		if (isAtEnd(offset))
+		{
+			return false;
+		}
+
+		return peek(offset).kind() == kind;
+	}
+
+	public SyntaxKind peekKindSafe(int offset)
+	{
+		if (isAtEnd(offset))
+		{
+			return SyntaxKind.EOF;
+		}
+
+		return peek(offset).kind();
 	}
 
 	/**

@@ -12,26 +12,6 @@ class LexerCopycodeParameterSubstitutionShould
 {
 
 	@Test
-	void substituteParameterToCreateAQualifiedNameIncludingArrayAccessIfNestedIdentifierIsAKeywordThatCanBeIdentifier()
-	{
-		var result = lex("&1&.ISN(*)", "#GRP");
-		assertThat(result.diagnostics()).isEmpty();
-
-		var token = result.advance();
-		assertThat(token.kind()).isEqualTo(SyntaxKind.IDENTIFIER);
-		assertThat(token.source()).isEqualTo("#GRP.ISN");
-
-		token = result.advance();
-		assertThat(token.kind()).isEqualTo(SyntaxKind.LPAREN);
-
-		token = result.advance();
-		assertThat(token.kind()).isEqualTo(SyntaxKind.ASTERISK);
-
-		token = result.advance();
-		assertThat(token.kind()).isEqualTo(SyntaxKind.RPAREN);
-	}
-
-	@Test
 	void raiseADiagnosticIfParameterAreMissing()
 	{
 		var lexer = new Lexer(List.of("'Hi'"));

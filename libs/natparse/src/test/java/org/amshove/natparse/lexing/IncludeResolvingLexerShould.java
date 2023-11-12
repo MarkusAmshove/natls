@@ -148,6 +148,22 @@ class IncludeResolvingLexerShould extends AbstractLexerTest
 		);
 	}
 
+	@Test
+	void substituteParameterToCreateAQualifiedNameIncludingArrayAccessIfNestedIdentifierIsAKeywordThatCanBeIdentifier()
+	{
+		givenAnExternalCopyCodeWithSource("MACC", "&1&.ISN(*)");
+		var result = lexAndResolve("INCLUDE MACC '#GRP'");
+		assertTokensInOrder(
+			result,
+			token(SyntaxKind.IDENTIFIER, "#GRP.ISN"),
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.ASTERISK),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+
+
 	private TokenList lexAndResolve(String source)
 	{
 		return sut.lex(source, Path.of("OUTER.NSN"), moduleProvider);

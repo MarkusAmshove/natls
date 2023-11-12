@@ -117,7 +117,7 @@ public class IncludeResolvingLexer
 				while (!tokensToInsert.isAtEnd())
 				{
 					var tokenToInsert = tokensToInsert.advance();
-					if (tokenToInsert.kind().isIdentifier() && lexedTokens.peekKinds(SyntaxKind.DOT, SyntaxKind.IDENTIFIER))
+					if (tokenToInsert.kind().isIdentifier() && lexedTokens.peekKind(SyntaxKind.DOT) && lexedTokens.peekKindSafe(1).canBeIdentifier())
 					{
 						// Build qualified name for e.g. &1&.#VAR
 						tokenToInsert = tokenToInsert.combine(lexedTokens.advance(), SyntaxKind.IDENTIFIER);
