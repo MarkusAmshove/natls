@@ -741,7 +741,8 @@ public enum SyntaxKind
 	XML(true, false, false),
 	YEAR(true, false, false),
 	ZD(true, false, false),
-	ZP(true, false, false);
+	ZP(true, false, false),
+	COPYCODE_PARAMETER(false, false, false);
 
 	private final boolean canBeIdentifier;
 	private final boolean isSystemVariable;

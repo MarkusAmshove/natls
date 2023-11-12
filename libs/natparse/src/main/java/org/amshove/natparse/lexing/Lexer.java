@@ -9,7 +9,6 @@ import org.amshove.natparse.natural.project.NaturalProgrammingMode;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class Lexer
 {
@@ -357,46 +356,14 @@ public class Lexer
 			if (scanner.peek(offset) == '&') // all were digits, and we end with ampersand, so this is a copycode parameter
 			{
 				scanner.advance(offset);
-				var position = Integer.parseInt(scanner.lexemeText().substring(1));
-				scanner.advance(); // to include the closing in error position
+				scanner.advance(); // closing &
 
-				// only raise the diagnostic for the including side
-				if (relocatedDiagnosticPosition != null)
-				{
-					if (tokenParameter.isEmpty()) // TODO: Only relevant while "old way" copyCodeParameter exists
-					{
-						addDiagnostic("Copy code parameter with position %d not provided".formatted(position), "Parameter is used here", LexerError.MISSING_COPYCODE_PARAMETER);
-					}
-					else
-					{
-						doTheNewMagic(position);
-						return;
-					}
-				}
+				createAndAdd(SyntaxKind.COPYCODE_PARAMETER);
+				return;
 			}
-
-			// We roll this all back, because this was just for better error messages.
-			// The &n& will be added as an IDENTIFIER so that copy codes get analyzed correctly.
-			scanner.rollbackCurrentLexeme();
 		}
 
 		consumeIdentifier();
-	}
-
-	private void doTheNewMagic(int parameterPosition)
-	{
-		var parameterToken = tokenParameter.get(parameterPosition - 1);
-		var sourceOfToken = parameterToken.stringValue();
-		// TODO: perf
-		var nestedLexer = new Lexer(false, tokenParameter);
-		var tokenList = nestedLexer.lex(sourceOfToken, filePath);
-		// TODO: Diagnostics
-		for (var syntaxToken : tokenList)
-		{
-			syntaxToken.setDiagnosticPosition(parameterToken); // TODO: Maybe to relocated thingy? not sure
-			addToken(syntaxToken, false);
-		}
-		scanner.reset(); // Go to after &n&
 	}
 
 	private boolean previousWasNoLiteralOrIdentifier()

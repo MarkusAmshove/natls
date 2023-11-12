@@ -1,6 +1,7 @@
 package org.amshove.natparse.lexing;
 
 import org.amshove.natparse.IPosition;
+import org.amshove.natparse.NaturalParseException;
 import org.checkerframework.dataflow.qual.Pure;
 
 import java.nio.file.Path;
@@ -119,6 +120,19 @@ public class SyntaxToken implements IPosition
 				yield source.substring(1, source.length() - 1).replace(escapedQuote, quoteChar);
 			}
 		};
+	}
+
+	/**
+	 * Returns the n for the copy code parameter &n&
+	 */
+	public int copyCodeParameterPosition()
+	{
+		if (kind != SyntaxKind.COPYCODE_PARAMETER)
+		{
+			throw new NaturalParseException("copyCodeParameterPosition() called on token %s".formatted(kind));
+		}
+
+		return Integer.parseInt(source.substring(1, source.length() - 1));
 	}
 
 	/**

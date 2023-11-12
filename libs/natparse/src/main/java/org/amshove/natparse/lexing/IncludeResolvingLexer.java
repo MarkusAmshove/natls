@@ -1,5 +1,6 @@
 package org.amshove.natparse.lexing;
 
+import org.amshove.natparse.IPosition;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.infrastructure.IFilesystem;
 import org.amshove.natparse.parsing.IModuleProvider;
@@ -25,7 +26,16 @@ public class IncludeResolvingLexer
 
 	public TokenList lex(String source, Path path, IModuleProvider moduleProvider)
 	{
+		return lex(source, path, moduleProvider, null);
+	}
+
+	private TokenList lex(String source, Path path, IModuleProvider moduleProvider, IPosition relocatedDiagnosticPosition)
+	{
 		var lexer = new Lexer();
+		if (relocatedDiagnosticPosition != null)
+		{
+			lexer.relocateDiagnosticPosition(relocatedDiagnosticPosition);
+		}
 		var tokenList = lexer.lex(source, path);
 		return resolve(tokenList, moduleProvider);
 	}
@@ -61,14 +71,29 @@ public class IncludeResolvingLexer
 		var moduleName = copycodeNameToken.symbolName();
 
 		var parameter = new ArrayList<SyntaxToken>();
+		var parameterLexer = new Lexer();
 		while (!tokens.isAtEnd() && tokens.peek().kind() == SyntaxKind.STRING_LITERAL)
 		{
 			var theParameterToken = tokens.advance();
-			parameter.add(theParameterToken);
+			var parameterTokens = parameterLexer.lex(theParameterToken.stringValue(), theParameterToken.diagnosticPosition().filePath());
+			diagnostics.addAll(parameterTokens.diagnostics);
+			while (!parameterTokens.isAtEnd())
+			{
+				var originalToken = parameterTokens.advance();
+				var positionedToken = new SyntaxToken(
+					originalToken.kind(),
+					theParameterToken.offset() + originalToken.offset() + 1, // +1 because of the string literal quote char
+					theParameterToken.offsetInLine() + originalToken.offsetInLine() + 1,
+					theParameterToken.line(),
+					originalToken.source(),
+					originalToken.filePath()
+				);
+				parameter.add(positionedToken);
+			}
+			//			parameter.add(theParameterToken);
 			hiddenTokens.add(theParameterToken);
 		}
 
-		var lexer = new Lexer(false, parameter);
 		var copycode = moduleProvider.findNaturalModule(moduleName);
 		// TODO: Module not found
 		// TODO: Wrong Module Type
@@ -78,13 +103,22 @@ public class IncludeResolvingLexer
 			// TODO: Diagnostic for recursive copycodes and bail out
 		}
 		var source = fs.readFile(path);
-		lexer.relocateDiagnosticPosition(copycodeNameToken);
-		var lexedTokens = lexer.lex(source, path);
-		var nestedResolved = resolve(lexedTokens, moduleProvider);
-		diagnostics.addAll(nestedResolved.diagnostics);
-		while (!nestedResolved.isAtEnd())
+		var lexedTokens = lex(source, path, moduleProvider, copycodeNameToken);
+		diagnostics.addAll(lexedTokens.diagnostics);
+		while (!lexedTokens.isAtEnd())
 		{
-			newTokens.add(nestedResolved.advance());
+			var token = lexedTokens.advance();
+			if (token.kind() == SyntaxKind.COPYCODE_PARAMETER)
+			{
+				var parameterPosition = token.copyCodeParameterPosition();
+				// TODO: Parameter not provided diagnostic
+				var tokenToReplace = parameter.get(parameterPosition - 1);
+				newTokens.add(tokenToReplace);
+			}
+			else
+			{
+				newTokens.add(token);
+			}
 		}
 	}
 }
