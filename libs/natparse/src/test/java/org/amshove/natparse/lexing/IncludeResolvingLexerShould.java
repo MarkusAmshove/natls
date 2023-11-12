@@ -237,6 +237,22 @@ class IncludeResolvingLexerShould extends AbstractLexerTest
 		assertThat(token.symbolName()).isEqualTo("#VAR");
 	}
 
+	@Test
+	void correctlyBuildTokensWhenACopyCodeParameterIsUsedAfterIncludeButNotAsIncludeParameter()
+	{
+		givenAnExternalCopyCodeWithSource("CC1", "INCLUDE CC2 &1&\n&2& := 10");
+		givenAnExternalCopyCodeWithSource("CC2", "WRITE &1&");
+		var result = lexAndResolve("INCLUDE CC1 '''#VAR''' '#VAR2'");
+		assertTokensInOrder(
+			result,
+			token(SyntaxKind.WRITE),
+			token(SyntaxKind.IDENTIFIER, "#VAR"),
+			token(SyntaxKind.IDENTIFIER, "#VAR2"),
+			token(SyntaxKind.COLON_EQUALS_SIGN),
+			token(SyntaxKind.NUMBER_LITERAL, "10")
+		);
+	}
+
 	private TokenList lexAndResolve(String source)
 	{
 		return sut.lex(source, Path.of("OUTER.NSN"), moduleProvider);
