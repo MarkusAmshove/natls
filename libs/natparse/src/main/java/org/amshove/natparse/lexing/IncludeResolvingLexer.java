@@ -70,13 +70,14 @@ public class IncludeResolvingLexer
 		hiddenTokens.add(copycodeNameToken);
 		var moduleName = copycodeNameToken.symbolName();
 
-		var parameter = new ArrayList<SyntaxToken>();
+		var parameter = new ArrayList<TokenList>();
 		var parameterLexer = new Lexer();
 		while (!tokens.isAtEnd() && tokens.peek().kind() == SyntaxKind.STRING_LITERAL)
 		{
 			var theParameterToken = tokens.advance();
 			var parameterTokens = parameterLexer.lex(theParameterToken.stringValue(), theParameterToken.diagnosticPosition().filePath());
 			diagnostics.addAll(parameterTokens.diagnostics);
+			var positionedParameterTokens = new ArrayList<SyntaxToken>();
 			while (!parameterTokens.isAtEnd())
 			{
 				var originalToken = parameterTokens.advance();
@@ -88,9 +89,9 @@ public class IncludeResolvingLexer
 					originalToken.source(),
 					originalToken.filePath()
 				);
-				parameter.add(positionedToken);
+				positionedParameterTokens.add(positionedToken);
 			}
-			//			parameter.add(theParameterToken);
+			parameter.add(new TokenList(positionedParameterTokens.get(0).filePath(), positionedParameterTokens));
 			hiddenTokens.add(theParameterToken);
 		}
 
@@ -112,15 +113,18 @@ public class IncludeResolvingLexer
 			{
 				var parameterPosition = token.copyCodeParameterPosition();
 				// TODO: Parameter not provided diagnostic
-				var tokenToReplace = parameter.get(parameterPosition - 1);
-
-				if (tokenToReplace.kind().isIdentifier() && lexedTokens.peekKinds(SyntaxKind.DOT, SyntaxKind.IDENTIFIER))
+				var tokensToInsert = parameter.get(parameterPosition - 1);
+				while (!tokensToInsert.isAtEnd())
 				{
-					// Build qualified name for e.g. &1&.#VAR
-					tokenToReplace = tokenToReplace.combine(lexedTokens.advance(), SyntaxKind.IDENTIFIER);
-					tokenToReplace = tokenToReplace.combine(lexedTokens.advance(), SyntaxKind.IDENTIFIER);
+					var tokenToInsert = tokensToInsert.advance();
+					if (tokenToInsert.kind().isIdentifier() && lexedTokens.peekKinds(SyntaxKind.DOT, SyntaxKind.IDENTIFIER))
+					{
+						// Build qualified name for e.g. &1&.#VAR
+						tokenToInsert = tokenToInsert.combine(lexedTokens.advance(), SyntaxKind.IDENTIFIER);
+						tokenToInsert = tokenToInsert.combine(lexedTokens.advance(), SyntaxKind.IDENTIFIER);
+					}
+					newTokens.add(tokenToInsert);
 				}
-				newTokens.add(tokenToReplace);
 			}
 			else
 			{

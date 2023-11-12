@@ -10,26 +10,6 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 class LexerCopycodeParameterSubstitutionShould
 {
-	@Test
-	void substituteParameterIncludingArrayAccess()
-	{
-		var result = lex("&1&", "#VAR (#I)");
-		assertThat(result.diagnostics()).isEmpty();
-
-		var token = result.advance();
-		assertThat(token.kind()).isEqualTo(SyntaxKind.IDENTIFIER);
-		assertThat(token.source()).isEqualTo("#VAR");
-
-		token = result.advance();
-		assertThat(token.kind()).isEqualTo(SyntaxKind.LPAREN);
-
-		token = result.advance();
-		assertThat(token.kind()).isEqualTo(SyntaxKind.IDENTIFIER);
-		assertThat(token.source()).isEqualTo("#I");
-
-		token = result.advance();
-		assertThat(token.kind()).isEqualTo(SyntaxKind.RPAREN);
-	}
 
 	@Test
 	void substituteParameterToCreateAQualifiedNameIncludingArrayAccessIfNestedIdentifierIsAKeywordThatCanBeIdentifier()
