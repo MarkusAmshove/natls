@@ -52,6 +52,28 @@ class IncludeResolvingLexerShould extends AbstractLexerTest
 	}
 
 	@Test
+	void substituteParameterToCreateAQualifiedName()
+	{
+		givenAnExternalCopyCodeWithSource("THECC", "&1&.#VAR");
+		var result = lexAndResolve("INCLUDE THECC '#GRP'");
+		assertTokensInOrder(result, token(SyntaxKind.IDENTIFIER, "#GRP.#VAR"));
+	}
+
+	@Test
+	void substituteParameterIncludingArrayAccess()
+	{
+		givenAnExternalCopyCodeWithSource("ARRACC", "&1&");
+		var result = lexAndResolve("INCLUDE ARRACC '#VAR (#I)'");
+		assertTokensInOrder(
+			result,
+			token(SyntaxKind.IDENTIFIER, "#VAR"),
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.IDENTIFIER, "#I"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
 	void passParameterToNestedCopyCodes()
 	{
 		givenAnExternalCopyCodeWithSource("MYCC", "WRITE &1& #NOPARM");

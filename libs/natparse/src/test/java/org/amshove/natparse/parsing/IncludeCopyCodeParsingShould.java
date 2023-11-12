@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-class CopyCodesShould extends ParserIntegrationTest
+class IncludeCopyCodeParsingShould extends ParserIntegrationTest
 {
 	@Test
 	void notReportDiagnosticsForUnresolvedReferences(@ProjectName("copycodetests") NaturalProject project)

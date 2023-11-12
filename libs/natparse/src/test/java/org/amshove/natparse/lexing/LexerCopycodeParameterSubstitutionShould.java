@@ -1,6 +1,5 @@
 package org.amshove.natparse.lexing;
 
-import org.amshove.natparse.IDiagnostic;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
@@ -11,27 +10,6 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 class LexerCopycodeParameterSubstitutionShould
 {
-
-	@Test
-	void substituteAParameter()
-	{
-		var result = lex("&1&", "#VAR");
-		assertThat(result.diagnostics()).isEmpty();
-		var firstToken = result.advance();
-		assertThat(firstToken.kind()).isEqualTo(SyntaxKind.IDENTIFIER);
-		assertThat(firstToken.source()).isEqualTo("#VAR");
-	}
-
-	@Test
-	void substituteParameterToCreateAQualifiedName()
-	{
-		var result = lex("&1&.#VAR", "#GRP");
-		assertThat(result.diagnostics()).isEmpty();
-		var firstToken = result.advance();
-		assertThat(firstToken.kind()).isEqualTo(SyntaxKind.IDENTIFIER);
-		assertThat(firstToken.source()).isEqualTo("#GRP.#VAR");
-	}
-
 	@Test
 	void substituteParameterIncludingArrayAccess()
 	{

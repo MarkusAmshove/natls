@@ -37,6 +37,12 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 	}
 
 	@Test
+	void recognizeIdentifiersContainingButNotStartingWithAmpersands()
+	{
+		assertTokens("GLOBAL&VARIABLE", token(SyntaxKind.IDENTIFIER, "GLOBAL&VARIABLE"));
+	}
+
+	@Test
 	void recognizeAivVariables()
 	{
 		assertTokens("+MY-AIV", token(SyntaxKind.IDENTIFIER, "+MY-AIV"));

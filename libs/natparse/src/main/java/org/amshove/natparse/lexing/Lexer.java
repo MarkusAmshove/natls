@@ -342,7 +342,6 @@ public class Lexer
 
 	private void consumeIdentifierOrCopyCodeParameter()
 	{
-		// This checks for left over parameter, e.g. if a user didn't provide a parameter
 		if (scanner.peek() == '&')
 		{
 			scanner.start();
@@ -361,6 +360,8 @@ public class Lexer
 				createAndAdd(SyntaxKind.COPYCODE_PARAMETER);
 				return;
 			}
+
+			scanner.rollbackCurrentLexeme(); // it was not a copy code parameter. Reset and let consumeIdentifier() handle it
 		}
 
 		consumeIdentifier();

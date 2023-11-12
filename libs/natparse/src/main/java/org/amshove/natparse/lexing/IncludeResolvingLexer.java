@@ -113,6 +113,13 @@ public class IncludeResolvingLexer
 				var parameterPosition = token.copyCodeParameterPosition();
 				// TODO: Parameter not provided diagnostic
 				var tokenToReplace = parameter.get(parameterPosition - 1);
+
+				if (tokenToReplace.kind().isIdentifier() && lexedTokens.peekKinds(SyntaxKind.DOT, SyntaxKind.IDENTIFIER))
+				{
+					// Build qualified name for e.g. &1&.#VAR
+					tokenToReplace = tokenToReplace.combine(lexedTokens.advance(), SyntaxKind.IDENTIFIER);
+					tokenToReplace = tokenToReplace.combine(lexedTokens.advance(), SyntaxKind.IDENTIFIER);
+				}
 				newTokens.add(tokenToReplace);
 			}
 			else
