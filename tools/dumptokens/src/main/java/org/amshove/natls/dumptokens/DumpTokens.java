@@ -1,8 +1,7 @@
 package org.amshove.natls.dumptokens;
 
 import org.amshove.natparse.infrastructure.ActualFilesystem;
-import org.amshove.natparse.lexing.CopyCodeResolver;
-import org.amshove.natparse.lexing.Lexer;
+import org.amshove.natparse.lexing.IncludeResolvingLexer;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.project.NaturalProjectFileIndexer;
 import org.amshove.natparse.parsing.DefaultModuleProvider;
@@ -10,9 +9,10 @@ import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 
 import java.nio.file.Path;
 
-public class App
+public class DumpTokens
 {
 	private static final ActualFilesystem fs = new ActualFilesystem();
+
 	public static void main(String[] args)
 	{
 		if (args.length == 0)
@@ -26,11 +26,10 @@ public class App
 		var project = new BuildFileProjectReader().getNaturalProject(projectFile);
 		new NaturalProjectFileIndexer().indexProject(project);
 		var naturalFile = project.findModule(filePath);
-		var resolver = new CopyCodeResolver();
-		var lexer = new Lexer();
-		var tokens = lexer.lex(fs.readFile(filePath), filePath);
-		var resolvedTokens = resolver.resolve(tokens, new DefaultModuleProvider(naturalFile));
-		printTokens(resolvedTokens);
+		var resolvingLexer = new IncludeResolvingLexer();
+
+		var tokens = resolvingLexer.lex(fs.readFile(filePath), filePath, new DefaultModuleProvider(naturalFile));
+		printTokens(tokens);
 	}
 
 	private static void printTokens(TokenList tokens)

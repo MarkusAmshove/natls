@@ -1,30 +1,36 @@
 package org.amshove.natparse.lexing;
 
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Stack;
-
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.infrastructure.IFilesystem;
 import org.amshove.natparse.parsing.IModuleProvider;
 
-public class CopyCodeResolver
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Stack;
+
+public class IncludeResolvingLexer
 {
 	private final IFilesystem fs;
 	private Stack<Path> includeStack = new Stack<>();
 
-	public CopyCodeResolver()
+	public IncludeResolvingLexer()
 	{
 		this(new ActualFilesystem());
 	}
 
-	CopyCodeResolver(IFilesystem filesystem)
+	IncludeResolvingLexer(IFilesystem filesystem)
 	{
 		fs = filesystem;
 	}
 
-	public TokenList resolve(TokenList tokens, IModuleProvider moduleProvider)
+	public TokenList lex(String source, Path path, IModuleProvider moduleProvider)
+	{
+		var lexer = new Lexer();
+		var tokenList = lexer.lex(source, path);
+		return resolve(tokenList, moduleProvider);
+	}
+
+	private TokenList resolve(TokenList tokens, IModuleProvider moduleProvider)
 	{
 		includeStack.push(tokens.filePath());
 		var newTokens = new ArrayList<SyntaxToken>();

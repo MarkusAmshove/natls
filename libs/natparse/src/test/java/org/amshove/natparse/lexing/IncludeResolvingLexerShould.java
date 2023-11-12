@@ -14,31 +14,33 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class CopyCodeResolverShould extends AbstractLexerTest
+class IncludeResolvingLexerShould extends AbstractLexerTest
 {
 	private IModuleProvider moduleProvider;
 	private IFilesystem filesystem;
-	private CopyCodeResolver sut;
+	private IncludeResolvingLexer sut;
 
 	@BeforeEach
 	void setup()
 	{
 		moduleProvider = mock(IModuleProvider.class);
 		filesystem = mock(IFilesystem.class);
-		sut = new CopyCodeResolver(filesystem);
+		sut = new IncludeResolvingLexer(filesystem);
 	}
 
 	@Test
-	void notTouchTokensThatDontContainInclude()
+	void lexASourceWithoutInclude()
 	{
 		var source = "WRITE VAR 'Literal' #VAR2";
-		var lexer = new Lexer();
-		var tokenList = lexer.lex(source, Path.of("SUB.NSN"));
-		var previousTokens = tokenList.allTokens();
-		var resolver = new CopyCodeResolver();
+		var tokens = lexAndResolve(source);
 
-		var newList = resolver.resolve(tokenList, null);
-		assertThat(newList.allTokens()).isEqualTo(previousTokens);
+		assertTokensInOrder(
+			tokens,
+			SyntaxKind.WRITE,
+			SyntaxKind.IDENTIFIER,
+			SyntaxKind.STRING_LITERAL,
+			SyntaxKind.IDENTIFIER
+		);
 	}
 
 	@Test
@@ -110,9 +112,7 @@ class CopyCodeResolverShould extends AbstractLexerTest
 
 	private TokenList lexAndResolve(String source)
 	{
-		var lexer = new Lexer();
-		var lexedTokens = lexer.lex(source, Path.of("OUTER.NSN"));
-		return sut.resolve(lexedTokens, moduleProvider);
+		return sut.lex(source, Path.of("OUTER.NSN"), moduleProvider);
 	}
 
 	private void givenAnExternalCopyCodeWithSource(String name, String source)

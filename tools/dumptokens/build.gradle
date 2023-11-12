@@ -15,7 +15,7 @@ dependencies {
 jar {
     manifest {
         attributes(
-                'Main-Class': 'org.amshove.natls.dumptokens.App',
+                'Main-Class': 'org.amshove.natls.dumptokens.DumpTokens',
                 'Implementation-Title': project.name,
                 'Implementation-Version': project.version
         )
