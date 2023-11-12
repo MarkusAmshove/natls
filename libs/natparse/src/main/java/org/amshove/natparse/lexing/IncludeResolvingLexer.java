@@ -1,5 +1,6 @@
 package org.amshove.natparse.lexing;
 
+import org.amshove.natparse.AdditionalDiagnosticInfo;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.infrastructure.IFilesystem;
@@ -112,8 +113,27 @@ public class IncludeResolvingLexer
 			if (token.kind() == SyntaxKind.COPYCODE_PARAMETER)
 			{
 				var parameterPosition = token.copyCodeParameterPosition();
-				// TODO: Parameter not provided diagnostic
-				var tokensToInsert = parameter.get(parameterPosition - 1);
+				var parameterIndex = parameterPosition - 1;
+				if (parameterIndex >= parameter.size())
+				{
+					var diagnostic = LexerDiagnostic.create(
+						"Copy code parameter with position %d not provided".formatted(parameterPosition),
+						copycodeNameToken.offset(),
+						copycodeNameToken.offsetInLine(),
+						copycodeNameToken.line(),
+						copycodeNameToken.length(),
+						copycodeNameToken.filePath(),
+						LexerError.MISSING_COPYCODE_PARAMETER
+					);
+					diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo(
+						"Parameter is used here",
+						token
+					));
+					diagnostics.add(diagnostic);
+					newTokens.add(token);
+					continue;
+				}
+				var tokensToInsert = parameter.get(parameterIndex);
 				while (!tokensToInsert.isAtEnd())
 				{
 					var tokenToInsert = tokensToInsert.advance();

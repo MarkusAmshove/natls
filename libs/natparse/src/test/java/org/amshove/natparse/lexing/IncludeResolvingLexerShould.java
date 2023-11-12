@@ -162,7 +162,32 @@ class IncludeResolvingLexerShould extends AbstractLexerTest
 		);
 	}
 
+	@Test
+	void raiseADiagnosticIfParametersAreMissing()
+	{
+		givenAnExternalCopyCodeWithSource("PARCC", "&1& := &2&");
+		var result = lexAndResolve("INCLUDE PARCC '#VAR'");
 
+		var ccNameToken = result.hiddenTokens().get(1);
+		assertThat(ccNameToken.symbolName()).isEqualTo("PARCC");
+
+		assertThat(result.diagnostics()).hasSize(1);
+
+		var diagnostic = result.diagnostics().first();
+		assertThat(diagnostic.id()).isEqualTo(LexerError.MISSING_COPYCODE_PARAMETER.id());
+		assertThat(diagnostic.message()).isEqualTo("Copy code parameter with position 2 not provided");
+		assertThat(diagnostic.isSamePositionAs(ccNameToken))
+			.as("Expected the diagnostic to be raised on the CC name")
+			.isTrue();
+
+		assertThat(diagnostic.additionalInfo()).hasSize(1);
+		var danglingParameterInCC = result.peek(2);
+		assertThat(danglingParameterInCC.kind()).isEqualTo(SyntaxKind.COPYCODE_PARAMETER);
+		assertThat(danglingParameterInCC.source()).isEqualTo("&2&");
+		var additionalDiagnosticInCC = diagnostic.additionalInfo().first();
+		assertThat(additionalDiagnosticInCC.position()).isEqualTo(danglingParameterInCC);
+		assertThat(additionalDiagnosticInCC.message()).isEqualTo("Parameter is used here");
+	}
 
 	private TokenList lexAndResolve(String source)
 	{

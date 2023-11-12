@@ -10,19 +10,6 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 class LexerCopycodeParameterSubstitutionShould
 {
-
-	@Test
-	void raiseADiagnosticIfParameterAreMissing()
-	{
-		var lexer = new Lexer(List.of("'Hi'"));
-		lexer.relocateDiagnosticPosition(new PlainPosition(0, 0, 0, 0, Path.of("")));
-
-		var result = lexer.lex("&2&", Path.of("original.nsn"));
-		assertThat(result.diagnostics()).hasSize(1);
-		assertThat(result.diagnostics().first().id()).isEqualTo(LexerError.MISSING_COPYCODE_PARAMETER.id());
-		assertThat(result.diagnostics().first().message()).isEqualTo("Copy code parameter with position 2 not provided");
-	}
-
 	@Test
 	void substituteStringLiterals()
 	{
