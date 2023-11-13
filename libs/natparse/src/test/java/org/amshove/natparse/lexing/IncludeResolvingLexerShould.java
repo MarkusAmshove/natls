@@ -272,6 +272,47 @@ class IncludeResolvingLexerShould extends AbstractLexerTest
 		assertThat(result.diagnostics().first().message()).isEqualTo("Module type SUBPROGRAM can't be used with INCLUDE");
 	}
 
+	@Test
+	void addPartsAfterCopyCodeParameterThatAreNotSeparatedWithWhitespaceToTheParameterToken()
+	{
+		givenAnExternalCopyCodeWithSource("CC", "WRITE &1&_S &1&");
+		var result = lexAndResolve("INCLUDE CC '#VAR'");
+		assertTokensInOrder(
+			result,
+			token(SyntaxKind.WRITE),
+			token(SyntaxKind.IDENTIFIER, "#VAR_S"),
+			token(SyntaxKind.IDENTIFIER, "#VAR")
+		);
+	}
+
+	@Test
+	void convertAnIdentifierEndingInDotToLabelIdentifier()
+	{
+		givenAnExternalCopyCodeWithSource("CC", "&1&.");
+		var result = lexAndResolve("INCLUDE CC 'VAR'");
+		assertTokensInOrder(
+			result,
+			token(SyntaxKind.LABEL_IDENTIFIER, "VAR.")
+		);
+	}
+
+	@Test
+	void combineIdentifiersWithKeywordsThatCanBeIdentifier()
+	{
+		givenAnExternalCopyCodeWithSource("MYCC", "ASSIGN &1&.COUNT(#I) = #COUNT");
+		var result = lexAndResolve("INCLUDE MYCC 'VAR'");
+		assertTokensInOrder(
+			result,
+			token(SyntaxKind.ASSIGN),
+			token(SyntaxKind.IDENTIFIER, "VAR.COUNT"),
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.IDENTIFIER, "#I"),
+			token(SyntaxKind.RPAREN),
+			token(SyntaxKind.EQUALS_SIGN),
+			token(SyntaxKind.IDENTIFIER, "#COUNT")
+		);
+	}
+
 	private TokenList lexAndResolve(String source)
 	{
 		return sut.lex(source, Path.of("OUTER.NSN"), moduleProvider);

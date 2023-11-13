@@ -92,7 +92,7 @@ public class IncludeResolvingLexer
 					continue;
 				}
 
-				substituteParameter(newTokens, parameterPosition, parameter, tokens);
+				substituteParameter(newTokens, parameterPosition, parameter, tokens, parameterToken);
 			}
 			else
 			{
@@ -184,7 +184,7 @@ public class IncludeResolvingLexer
 	/**
 	 * Substitute the given copy code parameter and add it to the result list of tokens.
 	 */
-	private static void substituteParameter(ArrayList<SyntaxToken> newTokens, int parameterPosition, List<TokenList> parameter, TokenList originalTokens)
+	private static void substituteParameter(ArrayList<SyntaxToken> newTokens, int parameterPosition, List<TokenList> parameter, TokenList originalTokens, SyntaxToken parameterToken)
 	{
 		var parameterIndex = parameterPosition - 1;
 		var tokensFromParameterToInsert = parameter.get(parameterIndex);
@@ -198,8 +198,50 @@ public class IncludeResolvingLexer
 				tokenToInsert = tokenToInsert.combine(originalTokens.advance(), SyntaxKind.IDENTIFIER);
 				tokenToInsert = tokenToInsert.combine(originalTokens.advance(), SyntaxKind.IDENTIFIER);
 			}
+
+			// Combine tokens that are meant to be constructed TO the parameter.
+			// Example: &1&_ASD
+			// Is meant to be one token for an identifier
+			var nextInOriginal = originalTokens.peek();
+			if (nextInOriginal != null && needsToBeAppended(parameterToken, nextInOriginal))
+			{
+				tokenToInsert = tokenToInsert.combine(originalTokens.advance(), tokenToInsert.kind());
+				var combinedInOriginal = nextInOriginal;
+				while ((nextInOriginal = originalTokens.peek()) != null)
+				{
+					if (needsToBeAppended(combinedInOriginal, nextInOriginal))
+					{
+						tokenToInsert = tokenToInsert.combine(originalTokens.advance(), tokenToInsert.kind());
+						combinedInOriginal = nextInOriginal;
+					}
+					else
+					{
+						break;
+					}
+				}
+			}
+
+			if (tokenToInsert.source().endsWith("."))
+			{
+				tokenToInsert = tokenToInsert.withKind(SyntaxKind.LABEL_IDENTIFIER);
+			}
+
 			newTokens.add(tokenToInsert);
 		}
+	}
+
+	private static boolean needsToBeAppended(SyntaxToken appendedTo, SyntaxToken toBeAppended)
+	{
+		if (appendedTo.totalEndOffset() != toBeAppended.offset())
+		{
+			return false;
+		}
+
+		return switch (toBeAppended.kind())
+		{
+			case LPAREN, RPAREN, COMMA -> false;
+			default -> true;
+		};
 	}
 
 	private boolean validateParameterPosition(int position, IPosition diagnosticPosition, IPosition additionalPosition, List<TokenList> passedParameter, List<LexerDiagnostic> diagnostics)
