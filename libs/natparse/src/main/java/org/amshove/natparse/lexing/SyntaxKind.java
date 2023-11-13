@@ -742,7 +742,7 @@ public enum SyntaxKind
 	YEAR(true, false, false),
 	ZD(true, false, false),
 	ZP(true, false, false),
-	COPYCODE_PARAMETER(false, false, false);
+	COPYCODE_PARAMETER(true, false, false);
 
 	private final boolean canBeIdentifier;
 	private final boolean isSystemVariable;
