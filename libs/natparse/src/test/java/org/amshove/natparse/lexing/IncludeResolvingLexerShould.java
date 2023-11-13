@@ -253,6 +253,25 @@ class IncludeResolvingLexerShould extends AbstractLexerTest
 		);
 	}
 
+	@Test
+	void raiseADiagnosticIfACopyCodeCantBeResolved()
+	{
+		var result = lexAndResolve("INCLUDE UNRES");
+		assertThat(result.diagnostics()).hasSize(1);
+		assertThat(result.diagnostics().first().id()).isEqualTo(LexerError.UNRESOLVED_COPYCODE.id());
+		assertThat(result.diagnostics().first().message()).isEqualTo("Unresolved copy code UNRES");
+	}
+
+	@Test
+	void raiseADiagnosticIfAnInvalidModuleTypeIsUsedForInclude()
+	{
+		givenAnExternalSubprogramExists("SUBPROG");
+		var result = lexAndResolve("INCLUDE SUBPROG");
+		assertThat(result.diagnostics()).hasSize(1);
+		assertThat(result.diagnostics().first().id()).isEqualTo(LexerError.INVALID_INCLUDE_TYPE.id());
+		assertThat(result.diagnostics().first().message()).isEqualTo("Module type SUBPROGRAM can't be used with INCLUDE");
+	}
+
 	private TokenList lexAndResolve(String source)
 	{
 		return sut.lex(source, Path.of("OUTER.NSN"), moduleProvider);
@@ -264,6 +283,14 @@ class IncludeResolvingLexerShould extends AbstractLexerTest
 		when(filesystem.readFile(path)).thenReturn(source);
 		var module = mock(INaturalModule.class);
 		when(module.file()).thenReturn(new NaturalFile(name, path, NaturalFileType.COPYCODE));
+		when(moduleProvider.findNaturalModule(name)).thenReturn(module);
+	}
+
+	private void givenAnExternalSubprogramExists(String name)
+	{
+		var path = Path.of(name + ".NSN");
+		var module = mock(INaturalModule.class);
+		when(module.file()).thenReturn(new NaturalFile(name, path, NaturalFileType.SUBPROGRAM));
 		when(moduleProvider.findNaturalModule(name)).thenReturn(module);
 	}
 

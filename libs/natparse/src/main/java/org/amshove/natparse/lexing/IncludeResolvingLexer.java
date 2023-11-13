@@ -5,6 +5,7 @@ import org.amshove.natparse.IPosition;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.infrastructure.IFilesystem;
 import org.amshove.natparse.natural.project.NaturalFile;
+import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.parsing.DefaultModuleProvider;
 import org.amshove.natparse.parsing.IModuleProvider;
 
@@ -135,8 +136,36 @@ public class IncludeResolvingLexer
 		}
 
 		var copycode = moduleProvider.findNaturalModule(moduleName);
-		// TODO: Module not found
-		// TODO: Wrong Module Type
+		if (copycode == null || copycode.file() == null)
+		{
+			var diagnostic = LexerDiagnostic.create(
+				"Unresolved copy code %s".formatted(copyCodeNameToken.symbolName()),
+				copyCodeNameToken.offset(),
+				copyCodeNameToken.offsetInLine(),
+				copyCodeNameToken.line(),
+				copyCodeNameToken.length(),
+				copyCodeNameToken.filePath(),
+				LexerError.UNRESOLVED_COPYCODE
+			);
+			diagnostics.add(diagnostic);
+			return;
+		}
+
+		if (copycode.file().getFiletype() != NaturalFileType.COPYCODE)
+		{
+			diagnostics.add(
+				LexerDiagnostic.create(
+					"Module type %s can't be used with INCLUDE".formatted(copycode.file().getFiletype()),
+					copyCodeNameToken.offset(),
+					copyCodeNameToken.offsetInLine(),
+					copyCodeNameToken.line(),
+					copyCodeNameToken.length(),
+					copyCodeNameToken.filePath(),
+					LexerError.INVALID_INCLUDE_TYPE
+				)
+			);
+			return;
+		}
 		var path = copycode.file().getPath();
 		if (includeStack.contains(path))
 		{
