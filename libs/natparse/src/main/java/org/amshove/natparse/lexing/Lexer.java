@@ -12,8 +12,7 @@ import java.util.List;
 
 public class Lexer
 {
-	private List<String> copyCodeParameter;
-	private List<SyntaxToken> tokenParameter;
+	private final List<String> copyCodeParameter;
 	private SourceTextScanner scanner;
 	private List<SyntaxToken> tokens;
 	private List<SyntaxToken> comments;
@@ -51,12 +50,6 @@ public class Lexer
 	public Lexer(List<String> copyCodeParameter)
 	{
 		this.copyCodeParameter = copyCodeParameter;
-	}
-
-	public Lexer(boolean ignored, List<SyntaxToken> copyCodeParameter) // TODO: Remove ignored
-	{
-		this.copyCodeParameter = List.of();
-		this.tokenParameter = copyCodeParameter;
 	}
 
 	public TokenList lex(String source, Path filePath)
@@ -1726,7 +1719,7 @@ public class Lexer
 			scanner.lexemeText(),
 			filePath
 		);
-		addToken(token, true);
+		addToken(token);
 	}
 
 	private SyntaxToken previous()
@@ -1871,7 +1864,7 @@ public class Lexer
 		}
 	}
 
-	private void addToken(SyntaxToken token, boolean relocate)
+	private void addToken(SyntaxToken token)
 	{
 		if (token.kind() == SyntaxKind.IDENTIFIER)
 		{
@@ -1892,10 +1885,7 @@ public class Lexer
 				lexerMode = LexerMode.DEFAULT;
 			}
 
-		if (relocate)
-		{
-			token.setDiagnosticPosition(relocatedDiagnosticPosition);
-		}
+		token.setDiagnosticPosition(relocatedDiagnosticPosition);
 		tokens.add(token);
 		scanner.reset();
 	}
