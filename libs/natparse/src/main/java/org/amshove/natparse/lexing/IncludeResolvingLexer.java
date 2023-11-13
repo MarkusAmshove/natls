@@ -4,6 +4,7 @@ import org.amshove.natparse.AdditionalDiagnosticInfo;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
 import org.amshove.natparse.infrastructure.IFilesystem;
+import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.parsing.DefaultModuleProvider;
@@ -36,7 +37,7 @@ public class IncludeResolvingLexer
 
 	public TokenList lex(String source, Path path, IModuleProvider moduleProvider)
 	{
-		return lex(source, path, moduleProvider, null, List.of());
+		return lexSourceReplace(source, path, moduleProvider, null, List.of());
 	}
 
 	private TokenList lex(String source, Path path, IModuleProvider moduleProvider, IPosition relocatedDiagnosticPosition, List<TokenList> parameter)
@@ -54,6 +55,16 @@ public class IncludeResolvingLexer
 		return resolve(tokenList, moduleProvider);
 	}
 
+	private TokenList lexSourceReplace(String source, Path path, IModuleProvider moduleProvider, IPosition relocatedDiagnosticPosition, List<String> parameter)
+	{
+		var lexer = new Lexer(parameter);
+		if (relocatedDiagnosticPosition != null)
+		{
+			lexer.relocateDiagnosticPosition(relocatedDiagnosticPosition);
+		}
+		return resolve(lexer.lex(source, path), moduleProvider);
+	}
+
 	private TokenList resolve(TokenList tokens, IModuleProvider moduleProvider)
 	{
 		includeStack.push(tokens.filePath());
@@ -64,7 +75,7 @@ public class IncludeResolvingLexer
 		{
 			if (tokens.peek().kind() == SyntaxKind.INCLUDE)
 			{
-				handleInclude(newTokens, hiddenTokens, diagnostics, tokens, moduleProvider);
+				handleIncludeSourceReplace(newTokens, hiddenTokens, diagnostics, tokens, moduleProvider);
 			}
 			else
 			{
@@ -102,6 +113,63 @@ public class IncludeResolvingLexer
 		return new TokenList(tokens.filePath(), newTokens, diagnostics, tokens.comments().toList(), tokens.sourceHeader());
 	}
 
+	private void handleIncludeSourceReplace(ArrayList<SyntaxToken> tokensToAppendCopyCodeTo, ArrayList<SyntaxToken> hiddenTokens, ArrayList<LexerDiagnostic> diagnostics, TokenList outerTokens, IModuleProvider moduleProvider)
+	{
+		hiddenTokens.add(outerTokens.advance()); // INCLUDE
+		var copyCodeNameToken = outerTokens.advance();
+		// TODO: Assert Identifier etc.
+		hiddenTokens.add(copyCodeNameToken);
+		var copyCodeName = copyCodeNameToken.symbolName();
+
+		var parameterToCopyCode = new ArrayList<String>();
+		while (!outerTokens.isAtEnd() && outerTokens.peekKind(SyntaxKind.STRING_LITERAL))
+		{
+			var theParameterToken = outerTokens.advance();
+			parameterToCopyCode.add(theParameterToken.stringValue());
+		}
+
+		var copycode = moduleProvider.findNaturalModule(copyCodeName);
+		if (!validateCopyCodeExists(copycode, diagnostics, copyCodeNameToken))
+		{
+			return;
+		}
+
+		if (!validateModuleIsCopyCode(copycode, diagnostics, copyCodeNameToken))
+		{
+			return;
+		}
+
+		var path = copycode.file().getPath();
+		if (isCyclomaticInclude(path, diagnostics, copyCodeNameToken))
+		{
+			return;
+		}
+
+		var source = fs.readFile(path);
+		var copyCodeTokens = lexSourceReplace(source, path, moduleProvider, copyCodeNameToken, parameterToCopyCode);
+		diagnostics.addAll(copyCodeTokens.diagnostics);
+		while (!copyCodeTokens.isAtEnd())
+		{
+			var theToken = copyCodeTokens.advance();
+			if (theToken.kind() == SyntaxKind.COPYCODE_PARAMETER)
+			{
+				diagnostics.add(
+					LexerDiagnostic.create(
+						"Copy code parameter with position %d not provided".formatted(theToken.copyCodeParameterPosition()),
+						copyCodeNameToken.offset(),
+						copyCodeNameToken.offsetInLine(),
+						copyCodeNameToken.line(),
+						copyCodeNameToken.length(),
+						copyCodeNameToken.filePath(),
+						LexerError.MISSING_COPYCODE_PARAMETER
+					)
+				);
+			}
+
+			tokensToAppendCopyCodeTo.add(theToken);
+		}
+	}
+
 	private void handleInclude(ArrayList<SyntaxToken> newTokens, ArrayList<SyntaxToken> hiddenTokens, ArrayList<LexerDiagnostic> diagnostics, TokenList tokens, IModuleProvider moduleProvider)
 	{
 		hiddenTokens.add(tokens.advance()); // INCLUDE
@@ -136,6 +204,34 @@ public class IncludeResolvingLexer
 		}
 
 		var copycode = moduleProvider.findNaturalModule(moduleName);
+		if (!validateCopyCodeExists(copycode, diagnostics, copyCodeNameToken))
+		{
+			return;
+		}
+
+		if (!validateModuleIsCopyCode(copycode, diagnostics, copyCodeNameToken))
+		{
+			return;
+		}
+
+		var path = copycode.file().getPath();
+		if (isCyclomaticInclude(path, diagnostics, copyCodeNameToken))
+		{
+			return;
+		}
+
+		var source = fs.readFile(path);
+		var lexedTokens = lex(source, path, moduleProvider, copyCodeNameToken, parameter);
+		diagnostics.addAll(lexedTokens.diagnostics);
+		while (!lexedTokens.isAtEnd())
+		{
+			var token = lexedTokens.advance();
+			newTokens.add(token);
+		}
+	}
+
+	private boolean validateCopyCodeExists(INaturalModule copycode, List<LexerDiagnostic> diagnostics, SyntaxToken copyCodeNameToken)
+	{
 		if (copycode == null || copycode.file() == null)
 		{
 			var diagnostic = LexerDiagnostic.create(
@@ -148,14 +244,19 @@ public class IncludeResolvingLexer
 				LexerError.UNRESOLVED_COPYCODE
 			);
 			diagnostics.add(diagnostic);
-			return;
+			return false;
 		}
 
-		if (copycode.file().getFiletype() != NaturalFileType.COPYCODE)
+		return true;
+	}
+
+	private boolean validateModuleIsCopyCode(INaturalModule module, List<LexerDiagnostic> diagnostics, SyntaxToken copyCodeNameToken)
+	{
+		if (module.file().getFiletype() != NaturalFileType.COPYCODE)
 		{
 			diagnostics.add(
 				LexerDiagnostic.create(
-					"Module type %s can't be used with INCLUDE".formatted(copycode.file().getFiletype()),
+					"Module type %s can't be used with INCLUDE".formatted(module.file().getFiletype()),
 					copyCodeNameToken.offset(),
 					copyCodeNameToken.offsetInLine(),
 					copyCodeNameToken.line(),
@@ -164,9 +265,14 @@ public class IncludeResolvingLexer
 					LexerError.INVALID_INCLUDE_TYPE
 				)
 			);
-			return;
+			return false;
 		}
-		var path = copycode.file().getPath();
+
+		return true;
+	}
+
+	private boolean isCyclomaticInclude(Path path, List<LexerDiagnostic> diagnostics, SyntaxToken copyCodeNameToken)
+	{
 		if (includeStack.contains(path))
 		{
 			diagnostics.add(
@@ -180,16 +286,10 @@ public class IncludeResolvingLexer
 					LexerError.CYCLOMATIC_INCLUDE
 				)
 			);
-			return;
+			return true;
 		}
-		var source = fs.readFile(path);
-		var lexedTokens = lex(source, path, moduleProvider, copyCodeNameToken, parameter);
-		diagnostics.addAll(lexedTokens.diagnostics);
-		while (!lexedTokens.isAtEnd())
-		{
-			var token = lexedTokens.advance();
-			newTokens.add(token);
-		}
+
+		return false;
 	}
 
 	/**
@@ -280,5 +380,10 @@ public class IncludeResolvingLexer
 		}
 
 		return true;
+	}
+
+	private void report(SyntaxToken toToken, String message, LexerError error, List<LexerDiagnostic> diagnostics)
+	{
+
 	}
 }
