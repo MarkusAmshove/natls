@@ -313,6 +313,17 @@ class IncludeResolvingLexerShould extends AbstractLexerTest
 		);
 	}
 
+	@Test
+	void raiseADiagnosticForCyclomaticIncludes()
+	{
+		givenAnExternalCopyCodeWithSource("CC1", "INCLUDE CC2");
+		givenAnExternalCopyCodeWithSource("CC2", "INCLUDE CC1");
+		var result = lexAndResolve("INCLUDE CC1");
+		assertThat(result.diagnostics()).hasSize(1);
+		assertThat(result.diagnostics().first().id()).isEqualTo(LexerError.CYCLOMATIC_INCLUDE.id());
+		assertThat(result.diagnostics().first().message()).isEqualTo("Cyclomatic include found. CC1 is recursively included multiple times");
+	}
+
 	private TokenList lexAndResolve(String source)
 	{
 		return sut.lex(source, Path.of("OUTER.NSN"), moduleProvider);

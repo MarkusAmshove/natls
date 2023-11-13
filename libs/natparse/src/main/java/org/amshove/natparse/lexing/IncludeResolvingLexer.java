@@ -169,7 +169,18 @@ public class IncludeResolvingLexer
 		var path = copycode.file().getPath();
 		if (includeStack.contains(path))
 		{
-			// TODO: Diagnostic for recursive copycodes and bail out
+			diagnostics.add(
+				LexerDiagnostic.create(
+					"Cyclomatic include found. %s is recursively included multiple times".formatted(copyCodeNameToken.symbolName()),
+					copyCodeNameToken.offset(),
+					copyCodeNameToken.offsetInLine(),
+					copyCodeNameToken.line(),
+					copyCodeNameToken.length(),
+					copyCodeNameToken.filePath(),
+					LexerError.CYCLOMATIC_INCLUDE
+				)
+			);
+			return;
 		}
 		var source = fs.readFile(path);
 		var lexedTokens = lex(source, path, moduleProvider, copyCodeNameToken, parameter);
