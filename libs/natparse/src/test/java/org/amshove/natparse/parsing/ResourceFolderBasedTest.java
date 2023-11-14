@@ -2,7 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.IDiagnostic;
-import org.amshove.natparse.lexing.Lexer;
+import org.amshove.natparse.lexing.IncludeResolvingLexer;
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
 import org.amshove.natparse.natural.project.NaturalFile;
@@ -74,13 +74,14 @@ public abstract class ResourceFolderBasedTest
 
 				var testsInFile = new ArrayList<DynamicTest>();
 				var expectedDiagnostics = findExpectedDiagnostics(source);
+				var naturalFile = new NaturalFile(testFileName, testFilePath, fileType);
 
-				var lexer = new Lexer();
-				var tokens = lexer.lex(source, testFilePath);
+				var lexer = new IncludeResolvingLexer();
+				var tokens = lexer.lex(source, testFilePath, naturalFile);
 				var diagnostics = new ArrayList<>(tokens.diagnostics().toList());
 				var parser = new NaturalParser();
 
-				var parseResult = parser.parse(new NaturalFile(testFileName, testFilePath, fileType), tokens);
+				var parseResult = parser.parse(naturalFile, tokens);
 				parseResult.diagnostics().stream()
 					.filter(d -> !d.id().equals(ParserError.UNRESOLVED_IMPORT.id()))
 					.forEach(diagnostics::add);

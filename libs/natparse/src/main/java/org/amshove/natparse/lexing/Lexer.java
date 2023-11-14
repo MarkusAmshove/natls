@@ -47,7 +47,7 @@ public class Lexer
 		this(NO_PARAMETER);
 	}
 
-	public Lexer(List<String> copyCodeParameter)
+	Lexer(List<String> copyCodeParameter)
 	{
 		this.copyCodeParameter = copyCodeParameter;
 	}

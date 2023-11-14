@@ -1,6 +1,5 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
@@ -10,9 +9,6 @@ import org.amshove.natparse.natural.conditionals.IHasComparisonOperator;
 import org.amshove.natparse.natural.conditionals.ILogicalConditionCriteriaNode;
 import org.amshove.natparse.natural.project.NaturalFileType;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -2901,85 +2897,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			var parameter = consumeLiteralNode(include, SyntaxKind.STRING_LITERAL);
 			include.addParameter(parameter);
-		}
-
-		var referencedModule = sideloadModule(referencingToken.symbolName(), previousTokenNode().token());
-		include.setReferencedModule((NaturalModule) referencedModule);
-
-		if (referencedModule != null && currentModuleCallStack.add(referencingToken.symbolName()))
-		{
-			try
-			{
-				if (referencedModule.file().getFiletype() != NaturalFileType.COPYCODE)
-				{
-					report(ParserErrors.invalidModuleType("Only copycodes can be INCLUDEd", include.referencingToken()));
-				}
-
-				var includedSource = Files.readString(referencedModule.file().getPath());
-				var normalizedParameter = new ArrayList<String>(include.providedParameter().size());
-				for (var parameter : include.providedParameter())
-				{
-					var value = parameter instanceof LiteralNode literal
-						? literal.token().stringValue()
-						: ((StringConcatOperandNode) parameter).stringValue();
-					normalizedParameter.add(value);
-				}
-				var lexer = new Lexer(normalizedParameter);
-				lexer.relocateDiagnosticPosition(shouldRelocateDiagnostics() ? relocatedDiagnosticPosition : referencingToken);
-				var tokens = lexer.lex(includedSource, referencedModule.file().getPath());
-
-				for (var diagnostic : tokens.diagnostics())
-				{
-					report(diagnostic);
-				}
-
-				var nestedParser = new StatementListParser(moduleProvider);
-				nestedParser.currentModuleCallStack.addAll(this.currentModuleCallStack);
-				nestedParser.relocateDiagnosticPosition(
-					shouldRelocateDiagnostics()
-						? relocatedDiagnosticPosition
-						: referencingToken
-				);
-				var statementList = nestedParser.parse(tokens);
-
-				for (var diagnostic : statementList.diagnostics())
-				{
-					if (!ParserError.isUnresolvedError(diagnostic.id()))
-					{
-						// Unresolved references will be resolved by the module including the copycode.
-						report(diagnostic);
-					}
-				}
-				unresolvedReferences.addAll(nestedParser.unresolvedReferences);
-				referencableNodes.addAll(nestedParser.referencableNodes);
-				include.setBody(
-					statementList.result(),
-					shouldRelocateDiagnostics()
-						? relocatedDiagnosticPosition
-						: referencingToken
-				);
-				currentModuleCallStack.remove(referencingToken.symbolName());
-			}
-			catch (IOException e)
-			{
-				throw new UncheckedIOException(e);
-			}
-		}
-		else
-		{
-			if (currentModuleCallStack.contains(referencingToken.symbolName()))
-			{
-				report(ParserErrors.cyclomaticInclude(referencingToken));
-			}
-
-			var unresolvedBody = new StatementListNode();
-			unresolvedBody.setParent(include);
-			include.setBody(
-				unresolvedBody,
-				shouldRelocateDiagnostics()
-					? relocatedDiagnosticPosition
-					: referencingToken
-			);
 		}
 
 		return include;

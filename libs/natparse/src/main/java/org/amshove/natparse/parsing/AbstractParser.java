@@ -1170,13 +1170,17 @@ abstract class AbstractParser<T>
 				if (shouldRelocateDiagnostics())
 				{
 					diagnostics.add(parserDiagnostic.relocate(relocatedDiagnosticPosition));
-					return;
 				}
-				if (tokens.peek().hasDifferentDiagnosticPosition() && !tokens.peek().filePath().equals(tokens.filePath()))
-				{
-					// TODO: Is this a hack? reloactedDiagnosticPosition isn't filled for include anymore, so how would we recognize it?
-					diagnostics.add(parserDiagnostic.relocate(tokens.peek().diagnosticPosition()));
-				}
+				else
+					if (tokens.peek().hasDifferentDiagnosticPosition() && !tokens.peek().filePath().equals(tokens.filePath()))
+					{
+						// TODO: Is this a hack? reloactedDiagnosticPosition isn't filled for include anymore, so how would we recognize it?
+						diagnostics.add(parserDiagnostic.relocate(tokens.peek().diagnosticPosition()));
+					}
+					else
+					{
+						diagnostics.add(diagnostic);
+					}
 			}
 			else
 			{

@@ -2,7 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
-import org.amshove.natparse.lexing.Lexer;
+import org.amshove.natparse.lexing.IncludeResolvingLexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFile;
@@ -45,8 +45,8 @@ public abstract class AbstractParserTest<NodeType>
 
 	protected NodeType assertParsesWithoutDiagnostics(String source, NaturalFileType fileType)
 	{
-		var lexer = new Lexer();
-		var lexResult = lexer.lex(source, Paths.get("TEST.%s".formatted(fileType.getExtension())));
+		var lexer = new IncludeResolvingLexer();
+		var lexResult = lexer.lex(source, Paths.get("TEST.%s".formatted(fileType.getExtension())), moduleProvider);
 		assertThat(lexResult.diagnostics().size())
 			.as(
 				"Expected the source to lex without diagnostics%n%s"
@@ -71,8 +71,8 @@ public abstract class AbstractParserTest<NodeType>
 
 	protected NodeType assertDiagnostic(String source, NaturalFileType fileType, ParserError expectedError)
 	{
-		var lexer = new Lexer();
-		var tokens = lexer.lex(source, Paths.get("TESTMODULE.%s".formatted(fileType.getExtension())));
+		var lexer = new IncludeResolvingLexer();
+		var tokens = lexer.lex(source, Paths.get("TESTMODULE.%s".formatted(fileType.getExtension())), moduleProvider);
 		var result = sut.parse(tokens);
 
 		assertDiagnosticsContain(result.diagnostics(), expectedError);
