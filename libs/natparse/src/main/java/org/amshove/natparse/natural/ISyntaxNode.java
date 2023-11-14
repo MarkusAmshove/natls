@@ -14,9 +14,25 @@ public interface ISyntaxNode extends ISyntaxTree
 
 	default boolean enclosesPosition(int line, int column)
 	{
-		return diagnosticPosition().line() == line
-			&& descendants().first().diagnosticPosition().offsetInLine() <= column
-			&& descendants().last().diagnosticPosition().endOffset() >= column;
+		var firstDescendant = descendants().first().diagnosticPosition();
+		var lastDescendant = descendants().last().diagnosticPosition();
+
+		if (line > lastDescendant.line() || line < firstDescendant.line())
+		{
+			return false;
+		}
+
+		if (firstDescendant.line() < line && lastDescendant.line() > line)
+		{
+			return true;
+		}
+
+		if (firstDescendant.line() == line && firstDescendant.offsetInLine() <= column && firstDescendant.endOffset() >= column)
+		{
+			return true;
+		}
+
+		return lastDescendant.line() == line && lastDescendant.endOffset() >= column;
 	}
 
 	boolean isInFile(Path path);

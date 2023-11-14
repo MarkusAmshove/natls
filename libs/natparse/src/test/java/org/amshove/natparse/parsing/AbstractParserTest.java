@@ -43,10 +43,10 @@ public abstract class AbstractParserTest<NodeType>
 		sut = sutFactory.apply(moduleProvider);
 	}
 
-	protected NodeType assertParsesWithoutDiagnostics(String source)
+	protected NodeType assertParsesWithoutDiagnostics(String source, NaturalFileType fileType)
 	{
 		var lexer = new Lexer();
-		var lexResult = lexer.lex(source, Paths.get("TEST.NSN"));
+		var lexResult = lexer.lex(source, Paths.get("TEST.%s".formatted(fileType.getExtension())));
 		assertThat(lexResult.diagnostics().size())
 			.as(
 				"Expected the source to lex without diagnostics%n%s"
@@ -64,15 +64,25 @@ public abstract class AbstractParserTest<NodeType>
 		return parseResult.result();
 	}
 
-	protected NodeType assertDiagnostic(String source, ParserError expectedError)
+	protected NodeType assertParsesWithoutDiagnostics(String source)
+	{
+		return assertParsesWithoutDiagnostics(source, NaturalFileType.SUBPROGRAM);
+	}
+
+	protected NodeType assertDiagnostic(String source, NaturalFileType fileType, ParserError expectedError)
 	{
 		var lexer = new Lexer();
-		var tokens = lexer.lex(source, Paths.get("TESTMODULE.NSN"));
+		var tokens = lexer.lex(source, Paths.get("TESTMODULE.%s".formatted(fileType.getExtension())));
 		var result = sut.parse(tokens);
 
 		assertDiagnosticsContain(result.diagnostics(), expectedError);
 
 		return result.result();
+	}
+
+	protected NodeType assertDiagnostic(String source, ParserError expectedError)
+	{
+		return assertDiagnostic(source, NaturalFileType.SUBPROGRAM, expectedError);
 	}
 
 	protected void assertDiagnosticsContain(ReadOnlyList<IDiagnostic> diagnostics, ParserError expectedError)

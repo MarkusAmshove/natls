@@ -1025,7 +1025,7 @@ class StatementListParserShould extends StatementParseTest
 			END-FIND
 			""", IFindNode.class);
 
-		assertThat(findStatement.viewReference()).isNotNull();
+		assertThat(findStatement.view()).isNotNull();
 		assertThat(findStatement.descendants()).anyMatch(n -> n instanceof IConditionNode);
 	}
 
@@ -1040,7 +1040,7 @@ class StatementListParserShould extends StatementParseTest
 			END-FIND
 			""", IFindNode.class);
 
-		assertThat(findStatement.viewReference()).isNotNull();
+		assertThat(findStatement.view()).isNotNull();
 	}
 
 	@Test
@@ -1052,7 +1052,7 @@ class StatementListParserShould extends StatementParseTest
 			END-FIND
 			""", IFindNode.class);
 
-		assertThat(findStatement.viewReference()).isNotNull();
+		assertThat(findStatement.view()).isNotNull();
 		assertThat(findStatement.descendants()).anyMatch(n -> n instanceof IConditionNode);
 	}
 
@@ -1067,7 +1067,7 @@ class StatementListParserShould extends StatementParseTest
 			FIND %s THE-VIEW WITH LIMIT 5 THE-DESCRIPTOR = 'Asd'
 			""".formatted(findOption), IFindNode.class);
 
-		assertThat(findStatement.viewReference()).isNotNull();
+		assertThat(findStatement.view()).isNotNull();
 		assertThat(findStatement.descendants()).anyMatch(n -> n instanceof IConditionNode);
 		assertThat(findStatement.descendants()).hasSize(7);
 	}
@@ -1106,7 +1106,7 @@ class StatementListParserShould extends StatementParseTest
 			END-FIND
 			""".formatted(statement), IFindNode.class);
 
-		assertThat(findStatement.viewReference()).isNotNull();
+		assertThat(findStatement.view()).isNotNull();
 	}
 
 	@ParameterizedTest
@@ -1130,7 +1130,7 @@ class StatementListParserShould extends StatementParseTest
 			END-READ
 			""".formatted(statement), IReadNode.class);
 
-		assertThat(read.viewReference()).isNotNull();
+		assertThat(read.view()).isNotNull();
 		assertThat(read.readSequence().isPhysicalSequence()).isTrue();
 		assertThat(read.readSequence().isIsnSequence()).isFalse();
 		assertThat(read.readSequence().isLogicalSequence()).isFalse();
@@ -1154,7 +1154,7 @@ class StatementListParserShould extends StatementParseTest
 			END-READ
 			""".formatted(statement), IReadNode.class);
 
-		assertThat(read.viewReference()).isNotNull();
+		assertThat(read.view()).isNotNull();
 		assertThat(read.readSequence().isPhysicalSequence()).isFalse();
 		assertThat(read.readSequence().isIsnSequence()).isTrue();
 		assertThat(read.readSequence().isLogicalSequence()).isFalse();
@@ -1186,7 +1186,7 @@ class StatementListParserShould extends StatementParseTest
 			END-READ
 			""".formatted(statement), IReadNode.class);
 
-		assertThat(read.viewReference()).isNotNull();
+		assertThat(read.view()).isNotNull();
 		assertThat(read.readSequence().isPhysicalSequence()).isFalse();
 		assertThat(read.readSequence().isIsnSequence()).isFalse();
 		assertThat(read.readSequence().isLogicalSequence()).isTrue();
@@ -1206,7 +1206,7 @@ class StatementListParserShould extends StatementParseTest
 			END-READ
 			""".formatted(statement), IReadNode.class);
 
-		assertThat(readStatement.viewReference()).isNotNull();
+		assertThat(readStatement.view()).isNotNull();
 	}
 
 	@ParameterizedTest

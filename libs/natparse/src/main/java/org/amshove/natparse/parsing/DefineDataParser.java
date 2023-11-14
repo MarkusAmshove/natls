@@ -139,6 +139,8 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		var scopeNode = new ScopeNode();
 		currentScope = VariableScope.fromSyntaxKind(scope.kind());
 
+		checkScopeAgainstFileType(scope);
+
 		scopeNode.addNode(new TokenNode(scope));
 		scopeNode.setScope(currentScope);
 
@@ -214,6 +216,29 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		return scopeNode;
 	}
 
+	private void checkScopeAgainstFileType(SyntaxToken scope)
+	{
+		var filetype = NaturalFileType.fromPath(scope.filePath());
+		var expectedScope = switch (filetype)
+		{
+			case LDA -> SyntaxKind.LOCAL;
+			case PDA -> SyntaxKind.PARAMETER;
+			case GDA -> SyntaxKind.GLOBAL;
+			default -> null;
+		};
+
+		if (expectedScope == null)
+		{
+			// Not a define data inside a data area, but program/subprogram/etc.
+			return;
+		}
+
+		if (expectedScope != scope.kind())
+		{
+			report(ParserErrors.invalidScopeForFileType(expectedScope, scope.kind(), scope));
+		}
+	}
+
 	private void passDownArrayDimensions(ScopeNode scope)
 	{
 		for (var variable : scope.variables())
@@ -247,6 +272,12 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		using.addNode(new TokenNode(scopeToken));
 
 		consume(using, SyntaxKind.USING);
+
+		if (peekKind(SyntaxKind.END_DEFINE))
+		{
+			report(ParserErrors.unexpectedTokenWhenIdentifierWasExpected(peek()));
+			throw new ParseError(peek());
+		}
 
 		var identifier = consumeIdentifierTokenOnly();
 		using.setUsingTarget(identifier);

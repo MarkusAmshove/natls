@@ -821,4 +821,14 @@ public enum SyntaxKind
 			this == UC ||
 			this == ZP;
 	}
+
+	public boolean closesStatement()
+	{
+		return this == END_IF || this == END_FOR || this == END_DECIDE || this == END_DEFINE || this == END_BREAK || this == END_ERROR || this == END_FIND || this == END_READ || this == END_SUBROUTINE || this == END_REPEAT || this == END_WORK;
+	}
+
+	public boolean opensStatementWithCloseKeyword()
+	{
+		return this == IF || this == DEFINE || this == DECIDE || this == REPEAT || this == READ || this == FIND || this == FOR;
+	}
 }

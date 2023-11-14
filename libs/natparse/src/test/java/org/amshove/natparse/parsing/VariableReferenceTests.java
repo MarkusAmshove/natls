@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.testhelpers.ProjectName;
@@ -120,6 +121,20 @@ class VariableReferenceTests extends ParserIntegrationTest
 		assertThat(subprogram.diagnostics())
 			.as("The expected diagnostic id differs")
 			.allMatch(d -> d.id().equals(ParserError.AMBIGUOUS_VARIABLE_REFERENCE.id()));
+	}
+
+	@Test
+	void disambiguateAndResolveVariableReferencesBasedOnAdabasAccessContext(@ProjectName("variablereferencetests") NaturalProject project)
+	{
+		var subprogram = assertFileParsesAs(project.findModule("DISAMBIG"), ISubprogram.class);
+		var assignments = NodeUtil.findNodesOfType(subprogram.body(), IAssignmentStatementNode.class);
+		assertThat(assignments).hasSize(2);
+
+		var aViewDdmField = subprogram.defineData().findVariable("A-VIEW.DDMFIELD");
+		var bViewDdmField = subprogram.defineData().findVariable("B-VIEW.DDMFIELD");
+
+		assertThat(((IVariableReferenceNode) assignments.get(0).operand()).reference()).isEqualTo(aViewDdmField);
+		assertThat(((IVariableReferenceNode) assignments.get(1).operand()).reference()).isEqualTo(bViewDdmField);
 	}
 
 	@Test

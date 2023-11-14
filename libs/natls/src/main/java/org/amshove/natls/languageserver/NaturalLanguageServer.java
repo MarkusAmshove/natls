@@ -55,10 +55,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			capabilities.setDefinitionProvider(true);
 			capabilities.setReferencesProvider(true);
 
-			// Don't add a dot. This re-triggers completion and loses the context on qualified variables.
-			// To support a trigger char, the completion has to take into account if it was triggered by a char and
-			// then filter based on previous tokens, which the client does not send over.
-			capabilities.setCompletionProvider(new CompletionOptions(true, List.of("*")));
+			capabilities.setCompletionProvider(new CompletionOptions(true, List.of("*", ".")));
 
 			capabilities.setCodeLensProvider(new CodeLensOptions(false));
 			capabilities.setCallHierarchyProvider(true);
@@ -248,6 +245,13 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 	public CompletableFuture<ReferableFileExistsResponse> referableFileExists(ReferableFileExistsParams params)
 	{
 		return CompletableFuture.completedFuture(new ReferableFileExistsResponse(languageService.findReferableName(params.getLibrary(), params.getReferableName()) != null));
+	}
+
+	@JsonRequest
+	@SuppressWarnings("unused")
+	public CompletableFuture<CalledModulesResponse> calledModules(CalledModulesParams params)
+	{
+		return CompletableFuture.supplyAsync(() -> languageService.getCalledModules(params.getIdentifier()));
 	}
 
 	@Override

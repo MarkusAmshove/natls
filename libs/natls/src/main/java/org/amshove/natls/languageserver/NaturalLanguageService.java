@@ -6,6 +6,8 @@ import org.amshove.natlint.editorconfig.EditorConfigParser;
 import org.amshove.natlint.linter.LinterContext;
 import org.amshove.natls.DiagnosticTool;
 import org.amshove.natls.LanguageServerException;
+import org.amshove.natls.SymbolKinds;
+import org.amshove.natls.callhierarchy.CallHierarchyProvider;
 import org.amshove.natls.codeactions.CodeActionRegistry;
 import org.amshove.natls.codeactions.RefactoringContext;
 import org.amshove.natls.codeactions.RenameSymbolAction;
@@ -78,6 +80,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	private static LSConfiguration config = LSConfiguration.createDefault();
 	private final ReferenceFinder referenceFinder = new ReferenceFinder();
 	private final SignatureHelpProvider signatureHelp = new SignatureHelpProvider();
+	private CallHierarchyProvider callHierarchyProvider;
 	private CompletionProvider completionProvider;
 
 	public void indexProject(Path workspaceRoot, IProgressMonitor progressMonitor)
@@ -108,9 +111,10 @@ public class NaturalLanguageService implements LanguageClientAware
 			preParseDataAreas(progressMonitor);
 			initialized = true;
 		}
-		hoverProvider = new HoverProvider();
 		progressMonitor.progress("Initializing Services", 80);
+		hoverProvider = new HoverProvider();
 		completionProvider = new CompletionProvider(new SnippetEngine(languageServerProject), hoverProvider);
+		callHierarchyProvider = new CallHierarchyProvider(languageServerProject);
 	}
 
 	public void loadEditorConfig(Path path)
@@ -171,7 +175,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	{
 		return new SymbolInformation(
 			file.getReferableName(),
-			SymbolKind.Class,
+			SymbolKinds.forFileType(file.getReferableName(), file.getFiletype()),
 			new Location(
 				file.getPath().toUri().toString(),
 				new Range(
@@ -239,6 +243,16 @@ public class NaturalLanguageService implements LanguageClientAware
 		if (node.parent()instanceof IModuleReferencingNode moduleReferencingNode)
 		{
 			return List.of(LspUtil.toLocation(moduleReferencingNode.reference()));
+		}
+
+		if (node.token() != null && node.token().kind().opensStatementWithCloseKeyword())
+		{
+			return List.of(LspUtil.toLocation(node.parent().descendants().last()));
+		}
+
+		if (node.token() != null && node.token().kind().closesStatement())
+		{
+			return List.of(LspUtil.toLocation(node.parent().descendants().first()));
 		}
 
 		return List.of();
@@ -481,69 +495,24 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	public List<CallHierarchyOutgoingCall> createCallHierarchyOutgoingCalls(CallHierarchyItem item)
 	{
-		var file = findNaturalFile(LspUtil.uriToPath(item.getUri()));
-		return file.getOutgoingReferences().stream()
-			.map(r ->
-			{
-				var call = new CallHierarchyOutgoingCall();
-				call.setTo(callHierarchyItem(r));
-				call.setFromRanges(List.of(item.getRange()));
-				return call;
-			})
-			.toList();
+		var callingFile = findNaturalFile(LspUtil.uriToPath(item.getUri()));
+		return callHierarchyProvider.createOutgoingCallHierarchyItems(callingFile);
 	}
 
-	public List<CallHierarchyIncomingCall> createCallHierarchyIncomingCalls(CallHierarchyItem item)
+	public CompletableFuture<List<CallHierarchyIncomingCall>> createCallHierarchyIncomingCalls(CallHierarchyItem item)
 	{
 		var file = findNaturalFile(LspUtil.uriToPath(item.getUri()));
-		return file.module().callers().stream()
-			.map(r ->
-			{
-				var call = new CallHierarchyIncomingCall();
-				call.setFrom(callHierarchyItem(r, findNaturalFile(r.referencingToken().filePath()).getReferableName()));
-				call.setFromRanges(List.of(new Range(new Position(0, 0), new Position(0, 0))));
-				return call;
-			})
-			.toList();
+		return ProgressTasks.startNew("Collecting incoming calls", client, m ->
+		{
+			file.reparseCallers(m);
+			return callHierarchyProvider.createIncomingCallHierarchyItems(file);
+		});
 	}
 
 	public List<CallHierarchyItem> createCallHierarchyItems(CallHierarchyPrepareParams params)
 	{
-		// TODO: Use Position from params. If in DEFINE DATA or top level statement block, search for module references
-		// 	If within local subroutine, get the local call hierarchy to that subroutine
 		var file = findNaturalFile(LspUtil.uriToPath(params.getTextDocument().getUri()));
-		var item = new CallHierarchyItem();
-		item.setRange(new Range(new Position(0, 0), new Position(0, 0)));
-		item.setSelectionRange(new Range(new Position(0, 0), new Position(0, 0)));
-		item.setName(file.getReferableName());
-		item.setDetail(file.getType().toString());
-		item.setUri(params.getTextDocument().getUri());
-		item.setKind(SymbolKind.Class);
-		return List.of(item);
-	}
-
-	private CallHierarchyItem callHierarchyItem(LanguageServerFile file)
-	{
-		var item = new CallHierarchyItem();
-		item.setRange(new Range(new Position(0, 0), new Position(0, 0)));
-		item.setSelectionRange(new Range(new Position(0, 0), new Position(0, 0)));
-		item.setName(file.getReferableName());
-		item.setDetail(file.getType().toString());
-		item.setUri(file.getPath().toUri().toString());
-		item.setKind(SymbolKind.Class);
-		return item;
-	}
-
-	private CallHierarchyItem callHierarchyItem(IModuleReferencingNode node, String referableModuleName)
-	{
-		var item = new CallHierarchyItem();
-		item.setRange(LspUtil.toRange(node.referencingToken()));
-		item.setSelectionRange(LspUtil.toRange(node));
-		item.setName(referableModuleName);
-		item.setDetail(node.getClass().getSimpleName());
-		item.setUri(node.referencingToken().filePath().toUri().toString());
-		item.setKind(SymbolKind.Class);
-		return item;
+		return callHierarchyProvider.prepareCallHierarchy(file);
 	}
 
 	public List<CodeAction> codeAction(CodeActionParams params)
@@ -796,5 +765,12 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		var jsonData = (JsonObject) obj;
 		return new Gson().fromJson(jsonData, clazz);
+	}
+
+	public CalledModulesResponse getCalledModules(TextDocumentIdentifier identifier)
+	{
+		var file = findNaturalFile(identifier);
+		var outgoingReferences = file.getOutgoingReferences();
+		return new CalledModulesResponse(outgoingReferences.stream().map(f -> LspUtil.pathToUri(f.getPath())).distinct().toList());
 	}
 }

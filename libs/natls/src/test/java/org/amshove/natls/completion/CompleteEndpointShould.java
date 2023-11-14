@@ -229,4 +229,113 @@ class CompleteEndpointShould extends CompletionTest
 			""")
 			.assertContainsCompleting("MY-SUBROUTINE", CompletionItemKind.Event, "PERFORM MY-SUBROUTINE ${1:#P-PARM1} ${2:#P-PARM2}%n$0".formatted());
 	}
+
+	@Test
+	void completeDataAreasWhenCompletionIsTriggeredAfterUsingInDefineData()
+	{
+		createOrSaveFile("LIBONE", "MYLDA.NSL", """
+			DEFINE DATA LOCAL
+			1 #INLDA (A10)
+			END
+			""");
+
+		createOrSaveFile("LIBONE", "MYPDA.NSA", """
+			DEFINE DATA PARAMETER
+			1 #INPDA (A10)
+			END
+			""");
+
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA
+			LOCAL USING ${}$
+			END-DEFINE
+			END
+			""")
+			.assertContainsCompleting("MYLDA", CompletionItemKind.Struct, "MYLDA")
+			.assertContainsCompleting("MYPDA", CompletionItemKind.Struct, "MYPDA");
+	}
+
+	@Test
+	void completeDataAreasAfterUsingEvenIfThereAlreadyIsAVariableDeclarationInSameLine()
+	{
+		createOrSaveFile("LIBONE", "MYLDA.NSL", """
+			DEFINE DATA LOCAL
+			1 #INLDA (A10)
+			END
+			""");
+
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA
+			LOCAL USING ${}$ LOCAL 1 #VAR (N2)
+			END-DEFINE
+			END
+			""")
+			.assertContainsCompleting("MYLDA", CompletionItemKind.Struct, "MYLDA");
+	}
+
+	@Test
+	void filterVariableCompletionBasedOnTypedQualification()
+	{
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA
+			LOCAL
+			1 #GRP1
+			2 #VAR (A10)
+			1 #GRP2
+			2 #VAR (A10)
+			END-DEFINE
+			WRITE #GRP1.${}$
+			END
+			""")
+			.assertDoesNotContainVariable("#GRP2.#VAR")
+			.assertContainsVariableCompleting("#GRP1.#VAR :(A10) (SUB)", "#VAR");
+	}
+
+	@Test
+	void filterVariableCompletionBasedOnTypedQualificationWhenVariablesAreNotAmbiguous()
+	{
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA
+			LOCAL
+			1 #GRP1
+			2 #VARIABLE (A10)
+			END-DEFINE
+			WRITE #GRP1.${}$
+			END
+			""")
+			.assertContainsVariableCompleting("#GRP1.#VARIABLE :(A10) (SUB)", "#VARIABLE");
+	}
+
+	@Test
+	void filterVariableCompletionBasedOnTypedQualificationOnTriggerChar()
+	{
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA
+			LOCAL
+			1 #GRP1
+			2 #VAR (A10)
+			1 #GRP2
+			2 #VAR (A10)
+			END-DEFINE
+			WRITE #GRP1.${}$
+			END
+			""")
+			.assertDoesNotContainVariable("#GRP2.#VAR")
+			.assertContainsVariableCompleting("#GRP1.#VAR :(A10) (SUB)", "#VAR");
+	}
+
+	@Test
+	void filterVariableCompletionBasedOnTypedQualificationOnTriggerCharWhenVariablesAreNotAmbiguous()
+	{
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA
+			LOCAL
+			1 #GRP1
+			2 #VARIABLE (A10)
+			END-DEFINE
+			WRITE #GRP1.${}$
+			END
+			""")
+			.assertContainsVariableCompleting("#GRP1.#VARIABLE :(A10) (SUB)", "#VARIABLE");
+	}
 }

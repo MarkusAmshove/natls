@@ -179,10 +179,38 @@ class DefinitionEndpointTests extends LanguageServerTest
 	void definitionShouldReturnAnEmptyListIfCalledOnAKeyword()
 	{
 		assertNoDefinitions("""
-			DEF${}$INE DATA LOCAL
+			DEFINE DA${}$TA LOCAL
 			END-DEFINE
 			END
 			""");
+	}
+
+	@Test
+	void definitionShouldReturnEndTokenForStatementOpeningKeywords()
+	{
+		assertSingleDefinitionInSameModule(
+			"""
+			DEF${}$INE DATA LOCAL
+			END-DEFINE
+			END
+			""",
+			1, // END-DEFINE
+			0
+		);
+	}
+
+	@Test
+	void definitionShouldReturnOpeningTokenForStatementClosingKeywords()
+	{
+		assertSingleDefinitionInSameModule(
+			"""
+			DEFINE DATA LOCAL
+			E${}$ND-DEFINE
+			END
+			""",
+			0, // DEFINE
+			0
+		);
 	}
 
 	@Test
