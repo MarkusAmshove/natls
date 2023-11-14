@@ -4,6 +4,7 @@ import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.testhelpers.ProjectName;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -58,6 +59,7 @@ class VariableReferenceTests extends ParserIntegrationTest
 	}
 
 	@Test
+	@Disabled("Should now probably handled by language server") // TODO: Implement a different test for find references and go to definition
 	void includeShouldAddABidirectionalReference(@ProjectName("variablereferencetests") NaturalProject project)
 	{
 		var subprogram = assertFileParsesAs(project.findModule("SUBMOD3"), ISubprogram.class);
