@@ -56,12 +56,12 @@ public class IncludeResolvingLexer
 		return resolve(tokenList, moduleProvider);
 	}
 
-	private TokenList lexSourceReplace(String source, Path path, IModuleProvider moduleProvider, IPosition relocatedDiagnosticPosition, List<String> parameter)
+	private TokenList lexSourceReplace(String source, Path path, IModuleProvider moduleProvider, SyntaxToken relocatedDiagnosticPosition, List<String> parameter)
 	{
 		var lexer = new Lexer(parameter);
 		if (relocatedDiagnosticPosition != null)
 		{
-			lexer.relocateDiagnosticPosition(relocatedDiagnosticPosition);
+			lexer.relocateDiagnosticPosition(relocatedDiagnosticPosition.diagnosticPosition());
 		}
 		return resolve(lexer.lex(source, path), moduleProvider);
 	}

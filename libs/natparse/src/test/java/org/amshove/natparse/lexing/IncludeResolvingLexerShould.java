@@ -90,6 +90,20 @@ class IncludeResolvingLexerShould extends AbstractLexerTest
 	}
 
 	@Test
+	void setTheDiagnosticPositionOfParameterTokensToTheCopyCodeName()
+	{
+		givenAnExternalCopyCodeWithSource("MYCC", "WRITE &1& #NOPARM");
+		var result = lexAndResolve("WRITE #OUTER INCLUDE MYCC '#INNER'");
+
+		var copyCodeNameToken = result.hiddenTokens().get(1);
+		assertThat(copyCodeNameToken.kind()).isEqualTo(SyntaxKind.IDENTIFIER);
+		assertThat(copyCodeNameToken.symbolName()).isEqualTo("MYCC");
+
+		var noParm = result.allTokens().get(result.allTokens().size() - 1);
+		assertThat(noParm.diagnosticPosition()).isEqualTo(copyCodeNameToken);
+	}
+
+	@Test
 	void setTheDiagnosticPositionOfNonParameterTokensToTheCopyCodeName()
 	{
 		givenAnExternalCopyCodeWithSource("MYCC", "WRITE &1& #NOPARM");
@@ -118,6 +132,23 @@ class IncludeResolvingLexerShould extends AbstractLexerTest
 			token(SyntaxKind.WRITE),
 			token(SyntaxKind.STRING_LITERAL, "'MYCC2'")
 		);
+	}
+
+	@Test
+	void setTheDiagnosticPositionOfNestedIncludesToTheOuterMostIncludeCopyCodeName()
+	{
+		givenAnExternalCopyCodeWithSource("MYCC", "WRITE 'MYCC' INCLUDE MYCC2");
+		givenAnExternalCopyCodeWithSource("MYCC2", "WRITE 'INMYCC2'");
+		var result = lexAndResolve("WRITE 'OUTER' INCLUDE MYCC");
+
+		var lastToken = result.allTokens().get(result.allTokens().size() - 1);
+		assertThat(lastToken.source()).isEqualTo("'INMYCC2'");
+
+		var copyCodeNameToken = result.hiddenTokens().get(1);
+		assertThat(copyCodeNameToken.kind()).isEqualTo(SyntaxKind.IDENTIFIER);
+		assertThat(copyCodeNameToken.symbolName()).isEqualTo("MYCC");
+
+		assertThat(lastToken.diagnosticPosition()).isEqualTo(copyCodeNameToken);
 	}
 
 	@Test
