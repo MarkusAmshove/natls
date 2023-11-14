@@ -8,7 +8,7 @@ import org.amshove.natls.progress.IProgressMonitor;
 import org.amshove.natls.progress.NullProgressMonitor;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
-import org.amshove.natparse.lexing.Lexer;
+import org.amshove.natparse.lexing.IncludeResolvingLexer;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
@@ -308,8 +308,8 @@ public class LanguageServerFile implements IModuleProvider
 		outgoingReferences.clear(); // Will be re-added during parse
 		clearDiagnosticsByTool(DiagnosticTool.NATPARSE);
 
-		var lexer = new Lexer();
-		tokens = lexer.lex(source, file.getPath());
+		var lexer = new IncludeResolvingLexer();
+		tokens = lexer.lex(source, file.getPath(), this);
 		var parser = new NaturalParser(this);
 
 		module = parser.parse(file, tokens);
@@ -359,8 +359,8 @@ public class LanguageServerFile implements IModuleProvider
 		try
 		{
 			var source = Files.readString(file.getPath());
-			var lexer = new Lexer();
-			tokens = lexer.lex(source, file.getPath());
+			var lexer = new IncludeResolvingLexer();
+			tokens = lexer.lex(source, file.getPath(), this);
 			var defineDataParser = new DefineDataParser(this);
 			var definedata = defineDataParser.parse(tokens);
 			var module = new NaturalModule(file);
