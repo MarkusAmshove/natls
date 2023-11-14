@@ -1165,6 +1165,17 @@ abstract class AbstractParser<T>
 	{
 		if (diagnostic != null)
 		{
+			if (!shouldRelocateDiagnostics() && diagnostic.fileType() == NaturalFileType.COPYCODE)
+			{
+				var prev = previousToken();
+				if (prev != null && prev.kind() == SyntaxKind.COPYCODE_PARAMETER)
+				{
+					// Do not raise diagnostics in copy codes. They can only be properly analyzed through
+					// INCLUDE in a proper module
+					return;
+				}
+			}
+
 			if (shouldRelocateDiagnostics() && diagnostic instanceof ParserDiagnostic parserDiagnostic)
 			{
 				diagnostics.add(parserDiagnostic.relocate(relocatedDiagnosticPosition));

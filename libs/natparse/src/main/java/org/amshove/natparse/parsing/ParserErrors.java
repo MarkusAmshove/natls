@@ -66,6 +66,11 @@ class ParserErrors
 	{
 		var currentToken = tokens.peek();
 		var invalidToken = currentToken != null ? currentToken : tokens.peek(-1);
+		if (invalidToken.kind() == SyntaxKind.COPYCODE_PARAMETER)
+		{
+			// We're most likely inside a copy code, so the diagnostic doesn't make sense
+			return null;
+		}
 		var message = currentToken != null ? "Unexpected token <%s>, expected <%s>".formatted(formatTokenKind(invalidToken), expectedToken) : "Unexpected token after this, expected <%s>".formatted(expectedToken);
 		return ParserDiagnostic.create(
 			message,
@@ -80,6 +85,11 @@ class ParserErrors
 		var invalidToken = currentToken != null ? currentToken : tokens.peek(-1);
 		var expectedTokens = expectedTokenKinds.stream().map(Enum::toString).collect(Collectors.joining(", "));
 		var message = currentToken != null ? "Unexpected token <%s>, expected one of <%s>".formatted(formatTokenKind(invalidToken), expectedTokens) : "Unexpected token after this, expected one of <%s>".formatted(expectedTokens);
+		if (invalidToken.kind() == SyntaxKind.COPYCODE_PARAMETER)
+		{
+			// We're most likely inside a copy code, so the diagnostic doesn't make sense
+			return null;
+		}
 		return ParserDiagnostic.create(
 			message,
 			invalidToken,
@@ -446,6 +456,11 @@ class ParserErrors
 
 	public static IDiagnostic unexpectedToken(SyntaxToken wrongToken, String message)
 	{
+		if (wrongToken.kind() == SyntaxKind.COPYCODE_PARAMETER)
+		{
+			// We're most likely inside a copy code, so the diagnostic doesn't make sense
+			return null;
+		}
 		return ParserDiagnostic.create(
 			message,
 			wrongToken,
@@ -617,17 +632,13 @@ class ParserErrors
 		);
 	}
 
-	public static IDiagnostic cyclomaticInclude(SyntaxToken referencingToken)
-	{
-		return ParserDiagnostic.create(
-			"Cyclomatic INCLUDE found. %s is recursively included multiple times.".formatted(referencingToken.symbolName()),
-			referencingToken,
-			ParserError.CYCLOMATIC_INCLUDE
-		);
-	}
-
 	public static IDiagnostic unexpectedTokenWhenIdentifierWasExpected(SyntaxToken token)
 	{
+		if (token.kind() == SyntaxKind.COPYCODE_PARAMETER)
+		{
+			// We're most likely inside a copy code, so the diagnostic doesn't make sense
+			return null;
+		}
 		return ParserDiagnostic.create(
 			"Identifier expected, but got %s".formatted(token.kind()),
 			token,
@@ -637,6 +648,11 @@ class ParserErrors
 
 	public static IDiagnostic operandExpected(SyntaxToken token)
 	{
+		if (token.kind() == SyntaxKind.COPYCODE_PARAMETER)
+		{
+			// We're most likely inside a copy code, so the diagnostic doesn't make sense
+			return null;
+		}
 		return ParserDiagnostic.create(
 			"Expected operand, but got %s".formatted(token.kind()),
 			token,
