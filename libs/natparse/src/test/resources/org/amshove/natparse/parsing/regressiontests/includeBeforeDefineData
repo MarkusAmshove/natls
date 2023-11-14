@@ -3,7 +3,8 @@
 /* That was because the NaturalParser looked for "DEFINE DATA" after lexing and if these weren't
 /* the current tokens, the DEFINE DATA wasn't parsed by the DefineDataParser.
 /* Instead all the tokens went into the StatementListParser
-INCLUDE SOMECC
+/* Now the Lexer resolves the INCLUDE, so the diagnostic here should be that the Lexer didn't find the copy code
+INCLUDE SOMECC /* !{D:ERROR:NPL006}
 DEFINE DATA
 LOCAL
 1 TMP1 (A) DYNAMIC

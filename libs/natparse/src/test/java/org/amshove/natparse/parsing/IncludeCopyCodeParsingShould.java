@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.lexing.LexerError;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.testhelpers.ProjectName;
@@ -69,8 +70,7 @@ class IncludeCopyCodeParsingShould extends ParserIntegrationTest
 	void correctlyIncludeStringLiterals(@ProjectName("copycodetests") NaturalProject project)
 	{
 		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "INCLSTR"), ISubprogram.class);
-		var include = (IIncludeNode) subprogram.body().statements().first();
-		var write = (IWriteNode) include.body().statements().first();
+		var write = (WriteNode) subprogram.body().statements().first();
 		assertThat(((ILiteralNode) write.descendants().last()).token().source()).isEqualTo("\"\"\"Text\"\"\"");
 	}
 
@@ -78,8 +78,7 @@ class IncludeCopyCodeParsingShould extends ParserIntegrationTest
 	void correctlyIncludeStringConcatLiterals(@ProjectName("copycodetests") NaturalProject project)
 	{
 		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "INCLMSTR"), ISubprogram.class);
-		var include = (IIncludeNode) subprogram.body().statements().first();
-		var write = (IWriteNode) include.body().statements().first();
+		var write = (IWriteNode) subprogram.body().statements().first();
 		assertThat(((VariableReferenceNode) write.descendants().get(write.descendants().size() - 2)).token().source()).isEqualTo("#VAR1");
 		assertThat(((VariableReferenceNode) write.descendants().last()).token().source()).isEqualTo("#VAR2");
 	}
@@ -88,9 +87,7 @@ class IncludeCopyCodeParsingShould extends ParserIntegrationTest
 	void correctlyIncludeStringLiteralsOnNestedLevels(@ProjectName("copycodetests") NaturalProject project)
 	{
 		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "WRITNEST"), ISubprogram.class);
-		var firstInclude = (IIncludeNode) subprogram.body().statements().first();
-		var secondInclude = (IIncludeNode) firstInclude.body().statements().first();
-		var write = (IWriteNode) secondInclude.body().statements().first();
+		var write = (IWriteNode) subprogram.body().statements().first();
 		assertThat(write.descendants()).as("WRITE statement should only have 2 nodes. The WRITE keyword and the string operand").hasSize(2);
 		assertThat(((ILiteralNode) write.descendants().last()).token().source()).isEqualTo("\"Text\"");
 	}
@@ -100,8 +97,8 @@ class IncludeCopyCodeParsingShould extends ParserIntegrationTest
 	{
 		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "INCLREC"), ISubprogram.class);
 		assertThat(subprogram.diagnostics()).hasSize(1);
-		assertThat(subprogram.diagnostics().first().id()).isEqualTo(ParserError.CYCLOMATIC_INCLUDE.id());
-		assertThat(subprogram.diagnostics().first().message()).isEqualTo("Cyclomatic INCLUDE found. RECCC is recursively included multiple times.");
+		assertThat(subprogram.diagnostics().first().id()).isEqualTo(LexerError.CYCLOMATIC_INCLUDE.id());
+		assertThat(subprogram.diagnostics().first().message()).isEqualTo("Cyclomatic include found. RECCC is recursively included multiple times");
 	}
 
 	@Test
