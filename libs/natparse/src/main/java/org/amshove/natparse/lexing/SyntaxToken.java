@@ -70,6 +70,11 @@ public class SyntaxToken implements IPosition
 		return diagnosticPosition;
 	}
 
+	public boolean hasDifferentDiagnosticPosition()
+	{
+		return !isSamePositionAs(diagnosticPosition);
+	}
+
 	public void setDiagnosticPosition(IPosition diagnosticPosition)
 	{
 		this.diagnosticPosition = diagnosticPosition;
