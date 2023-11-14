@@ -1,27 +1,21 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.IPosition;
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.IIncludeNode;
-import org.amshove.natparse.natural.IStatementListNode;
 import org.amshove.natparse.natural.ITokenNode;
 
 class IncludeNode extends ModuleReferencingNode implements IIncludeNode
 {
-	private IStatementListNode body;
+	private ReadOnlyList<ITokenNode> body;
 
 	@Override
-	public IStatementListNode body()
+	public ReadOnlyList<ITokenNode> body()
 	{
 		return body;
 	}
 
-	void setBody(IStatementListNode body, IPosition diagnosticPosition)
+	void setBody(ReadOnlyList<ITokenNode> body)
 	{
-		addNode((StatementListNode) body);
 		this.body = body;
-		body.directDescendantsOfType(ITokenNode.class).forEach(tokenNode ->
-		{
-			tokenNode.token().setDiagnosticPosition(diagnosticPosition);
-		});
 	}
 }

@@ -1,4 +1,8 @@
 package org.amshove.natparse.natural;
 
-public interface IIncludeNode extends IStatementWithBodyNode, IModuleReferencingNode
-{}
+import org.amshove.natparse.ReadOnlyList;
+
+public interface IIncludeNode extends IModuleReferencingNode
+{
+	ReadOnlyList<ITokenNode> body();
+}

@@ -1,5 +1,8 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.ReadOnlyList;
+import org.amshove.natparse.infrastructure.ActualFilesystem;
+import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
@@ -18,8 +21,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private static final List<SyntaxKind> TO_INTO = List.of(SyntaxKind.INTO, SyntaxKind.TO);
 
 	private List<IReferencableNode> referencableNodes;
-
-	private Set<String> currentModuleCallStack = new HashSet<>();
 
 	public List<IReferencableNode> getReferencableNodes()
 	{
@@ -2892,6 +2893,27 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		var referencingToken = consumeMandatoryIdentifier(include);
 		include.setReferencingToken(referencingToken);
+		var copyCodeModule = (NaturalModule) sideloadModule(referencingToken.symbolName(), referencingToken);
+		include.setReferencedModule(copyCodeModule);
+
+		if (copyCodeModule != null)
+		{
+			try
+			{
+				var bodyTokens = new ArrayList<ITokenNode>();
+				var lexer = new Lexer();
+				var tokens = lexer.lex(new ActualFilesystem().readFile(copyCodeModule.file().getPath()), copyCodeModule.file().getPath());
+				while (!tokens.isAtEnd())
+				{
+					bodyTokens.add(new TokenNode(tokens.advance()));
+				}
+				include.setBody(ReadOnlyList.from(bodyTokens));
+			}
+			catch (Exception e)
+			{
+				// ignore to keep parsing. this is just for hidden statements
+			}
+		}
 
 		while (!isAtEnd() && peekKind(SyntaxKind.STRING_LITERAL))
 		{

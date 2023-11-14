@@ -25,7 +25,7 @@ public class SignatureHelpProvider
 		}
 
 		// If we find a module referencing statement, that's the most likely match
-		var maybeStatement = NodeUtil.findStatementInLine(module.file().getPath(), position.getLine(), hasBody.body());
+		var maybeStatement = NodeUtil.findStatementInLine(module.file().getPath(), position.getLine(), module.syntaxTree());
 		if (maybeStatement.isPresent() && maybeStatement.get()instanceof IModuleReferencingNode moduleReferencingNode)
 		{
 			return provideSignatureForStatement(moduleReferencingNode, position);
@@ -93,13 +93,13 @@ public class SignatureHelpProvider
 		setActiveParameter(include, position, help);
 
 		var copyCodeParameter = new ArrayList<String>();
-		include.body().acceptNodeVisitor(n ->
+		for (var tokenNode : include.body())
 		{
-			if (n instanceof ITokenNode tokenNode && tokenNode.token().kind() == SyntaxKind.IDENTIFIER && tokenNode.token().source().matches(".*?&\\d+&"))
+			if (tokenNode.token().kind() == SyntaxKind.COPYCODE_PARAMETER || (tokenNode.token().kind() == SyntaxKind.IDENTIFIER && tokenNode.token().source().matches(".*?&\\d+&")))
 			{
 				copyCodeParameter.add(tokenNode.token().source());
 			}
-		});
+		}
 
 		copyCodeParameter
 			.stream()

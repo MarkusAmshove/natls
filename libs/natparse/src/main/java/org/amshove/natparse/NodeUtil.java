@@ -223,7 +223,24 @@ public class NodeUtil
 		return (IVariableNode) owner;
 	}
 
-	public static Optional<IStatementNode> findStatementInLine(Path filePath, int line, IStatementListNode statementList)
+	public static Optional<IStatementNode> findStatementInLine(Path filePath, int line, ISyntaxTree syntaxTree)
+	{
+		for (var node : syntaxTree)
+		{
+			if (node instanceof IStatementListNode statementList)
+			{
+				var maybeStatement = findStatementInLine(filePath, line, statementList);
+				if (maybeStatement.isPresent())
+				{
+					return maybeStatement;
+				}
+			}
+		}
+
+		return Optional.empty();
+	}
+
+	private static Optional<IStatementNode> findStatementInLine(Path filePath, int line, IStatementListNode statementList)
 	{
 		for (var statement : statementList.statements())
 		{
