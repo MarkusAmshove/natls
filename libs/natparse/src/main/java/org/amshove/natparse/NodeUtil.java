@@ -75,13 +75,13 @@ public class NodeUtil
 
 		for (var node : syntaxTree)
 		{
-			if (!node.position().filePath().equals(filePath))
+			var isTokenNode = node instanceof ITokenNode;
+			if (isTokenNode && !node.position().filePath().equals(filePath))
 			{
 				continue;
 			}
 
 			var isInLine = node.position().line() == line;
-			var isTokenNode = node instanceof ITokenNode;
 
 			if (isTokenNode && isInLine && node.position().offsetInLine() == character)
 			{
