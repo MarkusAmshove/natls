@@ -12,6 +12,7 @@ import org.amshove.natparse.parsing.IModuleProvider;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
 
@@ -148,26 +149,19 @@ public class IncludeResolvingLexer
 		var source = fs.readFile(path);
 		var copyCodeTokens = lexSourceReplace(source, path, moduleProvider, copyCodeNameToken, parameterToCopyCode);
 		diagnostics.addAll(copyCodeTokens.diagnostics);
+
+		var unprovidedParameterUsageDiagnostics = new HashMap<Integer, LexerDiagnostic>();
 		while (!copyCodeTokens.isAtEnd())
 		{
 			var theToken = copyCodeTokens.advance();
 			if (theToken.kind() == SyntaxKind.COPYCODE_PARAMETER)
 			{
-				diagnostics.add(
-					LexerDiagnostic.create(
-						"Copy code parameter with position %d not provided".formatted(theToken.copyCodeParameterPosition()),
-						copyCodeNameToken.offset(),
-						copyCodeNameToken.offsetInLine(),
-						copyCodeNameToken.line(),
-						copyCodeNameToken.length(),
-						copyCodeNameToken.filePath(),
-						LexerError.MISSING_COPYCODE_PARAMETER
-					)
-				);
+				addUnprovidedParameterDiagnostic(copyCodeNameToken, theToken, unprovidedParameterUsageDiagnostics);
 			}
 
 			tokensToAppendCopyCodeTo.add(theToken);
 		}
+		diagnostics.addAll(unprovidedParameterUsageDiagnostics.values());
 	}
 
 	private void handleInclude(ArrayList<SyntaxToken> newTokens, ArrayList<SyntaxToken> hiddenTokens, ArrayList<LexerDiagnostic> diagnostics, TokenList tokens, IModuleProvider moduleProvider)
@@ -290,6 +284,23 @@ public class IncludeResolvingLexer
 		}
 
 		return false;
+	}
+
+	private void addUnprovidedParameterDiagnostic(SyntaxToken diagnosticPosition, SyntaxToken parameterToken, HashMap<Integer, LexerDiagnostic> diagnostics)
+	{
+		var diagnostic = diagnostics.computeIfAbsent(
+			parameterToken.copyCodeParameterPosition(), position -> LexerDiagnostic.create(
+				"Copy code parameter with position %d not provided".formatted(position),
+				diagnosticPosition.offset(),
+				diagnosticPosition.offsetInLine(),
+				diagnosticPosition.line(),
+				diagnosticPosition.length(),
+				diagnosticPosition.filePath(),
+				LexerError.MISSING_COPYCODE_PARAMETER
+			)
+		);
+
+		diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("Parameter is used here", parameterToken));
 	}
 
 	/**

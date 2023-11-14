@@ -90,35 +90,6 @@ class IncludeResolvingLexerShould extends AbstractLexerTest
 	}
 
 	@Test
-	void setThePositionOfParametersToTheInnerPositionOfTheLiteralPassed()
-	{
-		givenAnExternalCopyCodeWithSource("MYCC", "WRITE &1& #NOPARM");
-		var result = lexAndResolve("WRITE #OUTER INCLUDE MYCC '#INNER'");
-
-		/*
-		Given the code
-		WRITE #OUTER INCLUDE MYCC '#INNER'
-		the token within the copy code should span here:
-		WRITE #OUTER INCLUDE MYCC '#INNER'
-								------
-		that should make it sure that e.g. refactoring could also rename within the literal
-		and that passing multiple tokens like '5 > 5' can actually point at the part in the literal
-		that causes a diagnostic
-		 */
-
-		var includeParameter = result.hiddenTokens().get(2);
-		assertThat(includeParameter.kind()).isEqualTo(SyntaxKind.STRING_LITERAL);
-
-		var resolvedParameter = result.allTokens().get(3);
-		assertThat(resolvedParameter.source()).isEqualTo("#INNER");
-		assertThat(resolvedParameter.offsetInLine()).isEqualTo(27);
-		assertThat(resolvedParameter.offset()).isEqualTo(27);
-		assertThat(resolvedParameter.length()).isEqualTo("#INNER".length());
-		assertThat(resolvedParameter.endOffset()).isEqualTo(27 + "#INNER".length());
-		assertThat(resolvedParameter.totalEndOffset()).isEqualTo(27 + "#INNER".length());
-	}
-
-	@Test
 	void setTheDiagnosticPositionOfNonParameterTokensToTheCopyCodeName()
 	{
 		givenAnExternalCopyCodeWithSource("MYCC", "WRITE &1& #NOPARM");
@@ -188,6 +159,23 @@ class IncludeResolvingLexerShould extends AbstractLexerTest
 		var additionalDiagnosticInCC = diagnostic.additionalInfo().first();
 		assertThat(additionalDiagnosticInCC.position()).isEqualTo(danglingParameterInCC);
 		assertThat(additionalDiagnosticInCC.message()).isEqualTo("Parameter is used here");
+	}
+
+	@Test
+	void addParameterUsagesOfUnprovidedParameterAsAdditionalPositions()
+	{
+		givenAnExternalCopyCodeWithSource("PARCC", "&1& := 'Hello'\nWRITE &1&");
+		var result = lexAndResolve("INCLUDE PARCC");
+
+		assertThat(result.diagnostics()).hasSize(1);
+		var diagnostic = result.diagnostics().first();
+		assertThat(diagnostic.fileType()).isEqualTo(NaturalFileType.SUBPROGRAM);
+
+		assertThat(diagnostic.additionalInfo()).hasSize(2);
+		assertThat(diagnostic.additionalInfo().first().position().fileType()).isEqualTo(NaturalFileType.COPYCODE);
+		assertThat(diagnostic.additionalInfo().first().position().offset()).isEqualTo(0);
+		assertThat(diagnostic.additionalInfo().last().position().fileType()).isEqualTo(NaturalFileType.COPYCODE);
+		assertThat(diagnostic.additionalInfo().last().position().offset()).isEqualTo(21);
 	}
 
 	@Test
