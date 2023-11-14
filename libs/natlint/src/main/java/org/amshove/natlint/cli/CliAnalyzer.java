@@ -10,7 +10,7 @@ import org.amshove.natlint.linter.NaturalLinter;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.infrastructure.ActualFilesystem;
-import org.amshove.natparse.lexing.Lexer;
+import org.amshove.natparse.lexing.IncludeResolvingLexer;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.project.*;
@@ -131,7 +131,7 @@ public class CliAnalyzer
 				filesChecked.incrementAndGet();
 				var allDiagnosticsInFile = new ArrayList<IDiagnostic>();
 
-				var tokens = lex(file, allDiagnosticsInFile);
+				var tokens = lex(file);
 				if (tokens == null)
 				{
 					return;
@@ -212,13 +212,13 @@ public class CliAnalyzer
 		return diagnostics.stream().filter(d -> diagnosticPredicates.stream().allMatch(p -> p.test(d))).toList();
 	}
 
-	private TokenList lex(NaturalFile file, ArrayList<IDiagnostic> allDiagnosticsInFile)
+	private TokenList lex(NaturalFile file)
 	{
 		try
 		{
-			var lexer = new Lexer();
+			var lexer = new IncludeResolvingLexer();
 			var lexStart = System.currentTimeMillis();
-			var tokens = lexer.lex(filesystem.readFile(file.getPath()), file.getPath());
+			var tokens = lexer.lex(filesystem.readFile(file.getPath()), file.getPath(), file);
 			var lexEnd = System.currentTimeMillis();
 			countLinesOfCode(tokens);
 			if (slowestLexedModule.milliseconds < lexEnd - lexStart)
@@ -228,7 +228,6 @@ public class CliAnalyzer
 
 			var diagnostics = filterDiagnostics(tokens.diagnostics());
 			fileStatusSink.printDiagnostics(file.getPath(), MessageType.LEX_FAILED, diagnostics);
-			allDiagnosticsInFile.addAll(diagnostics);
 			return tokens;
 		}
 		catch (Exception e)
