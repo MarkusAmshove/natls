@@ -312,6 +312,35 @@ class IncludeResolvingLexerShould extends AbstractLexerTest
 		assertThat(result.diagnostics().first().message()).isEqualTo("Cyclomatic include found. CC1 is recursively included multiple times");
 	}
 
+	@Test
+	void correctlyPassIncludeStringConcatParameter()
+	{
+		givenAnExternalCopyCodeWithSource("CC", "WRITE &1&");
+		var result = lexAndResolve("INCLUDE CC '#VAR1'\n- ' #VAR2'");
+		assertTokensInOrder(
+			result,
+			token(SyntaxKind.WRITE),
+			token(SyntaxKind.IDENTIFIER, "#VAR1"),
+			token(SyntaxKind.IDENTIFIER, "#VAR2")
+		);
+	}
+
+	@Test
+	void correctlyPassIncludeStringConcatParameterWithMultipleConcats()
+	{
+		givenAnExternalCopyCodeWithSource("CC", "WRITE &1& &2&");
+		var result = lexAndResolve("INCLUDE CC '#VAR1'\n- ' #VAR2'\n- ' #VAR3' '#VAR4'");
+		assertThat(result.diagnostics()).isEmpty();
+		assertTokensInOrder(
+			result,
+			token(SyntaxKind.WRITE),
+			token(SyntaxKind.IDENTIFIER, "#VAR1"),
+			token(SyntaxKind.IDENTIFIER, "#VAR2"),
+			token(SyntaxKind.IDENTIFIER, "#VAR3"),
+			token(SyntaxKind.IDENTIFIER, "#VAR4")
+		);
+	}
+
 	private TokenList lexAndResolve(String source)
 	{
 		return sut.lex(source, Path.of("OUTER.NSN"), moduleProvider);

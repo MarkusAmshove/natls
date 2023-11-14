@@ -126,7 +126,13 @@ public class IncludeResolvingLexer
 		while (!outerTokens.isAtEnd() && outerTokens.peekKind(SyntaxKind.STRING_LITERAL))
 		{
 			var theParameterToken = outerTokens.advance();
-			parameterToCopyCode.add(theParameterToken.stringValue());
+			var parameterValue = new StringBuilder(theParameterToken.stringValue());
+			while (outerTokens.peekKind(SyntaxKind.MINUS) && outerTokens.peekKind(1, SyntaxKind.STRING_LITERAL))
+			{
+				outerTokens.advance(); // MINUS
+				parameterValue.append(outerTokens.advance().stringValue());
+			}
+			parameterToCopyCode.add(parameterValue.toString());
 		}
 
 		var copycode = moduleProvider.findNaturalModule(copyCodeName);
