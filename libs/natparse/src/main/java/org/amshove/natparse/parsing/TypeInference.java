@@ -3,6 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.builtin.BuiltInFunctionTable;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 public class TypeInference
@@ -43,6 +44,33 @@ public class TypeInference
 			return inferType(substr.operand());
 		}
 
+		if (operand instanceof IArithmeticExpressionNode arithmeticExpressionNode)
+		{
+			return inferArithmeticType(arithmeticExpressionNode);
+		}
+
 		return Optional.empty();
+	}
+
+	private static Optional<IDataType> inferArithmeticType(IArithmeticExpressionNode arithmetic)
+	{
+		var collectedTypes = new ArrayList<IDataType>();
+		inferType(arithmetic.left()).ifPresent(collectedTypes::add);
+		inferType(arithmetic.right()).ifPresent(collectedTypes::add);
+		if (collectedTypes.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		IDataType biggestType = null;
+		for (var collectedType : collectedTypes)
+		{
+			if (biggestType == null || collectedType.byteSize() > biggestType.byteSize())
+			{
+				biggestType = collectedType;
+			}
+		}
+
+		return Optional.of(biggestType);
 	}
 }
