@@ -57,8 +57,9 @@ public class ReferenceFinder
 			);
 		}
 
-		if (node instanceof IStatementListNode && node.parent() == null && file.getType() == NaturalFileType.COPYCODE)
+		if (node != null && node.parent() instanceof IStatementListNode && node.parent().parent() == null && file.getType() == NaturalFileType.COPYCODE)
 		{
+			// We're on the very first node within a copy code, so we're looking for references to the copy code
 			for (var callingFile : file.getIncomingReferences())
 			{
 				if (monitor.isCancellationRequested())
