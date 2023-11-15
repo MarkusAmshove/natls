@@ -652,37 +652,8 @@ final class TypeChecker implements ISyntaxNodeVisitor
 
 	private IDataType inferDataType(IOperandNode operand)
 	{
-		if (operand instanceof IVariableReferenceNode variable && variable.reference()instanceof ITypedVariableNode typedRef && typedRef.type() != null)
-		{
-			return typedRef.type();
-		}
-
-		if (operand instanceof ILiteralNode literal)
-		{
-			return literal.inferType();
-		}
-
-		if (operand instanceof IStringConcatOperandNode stringConcat)
-		{
-			return stringConcat.inferType();
-		}
-
-		if (operand instanceof ISystemFunctionNode sysFunction)
-		{
-			return BuiltInFunctionTable.getDefinition(sysFunction.systemFunction()).type();
-		}
-
-		if (operand instanceof ISystemVariableNode sysVar)
-		{
-			return BuiltInFunctionTable.getDefinition(sysVar.systemVariable()).type();
-		}
-
-		if (operand instanceof ISubstringOperandNode substr)
-		{
-			return inferDataType(substr.operand());
-		}
-
-		return new DataType(DataFormat.NONE, IDataType.ONE_GIGABYTE); // couldn't infer, don't raise something yet
+		return TypeInference.inferType(operand)
+			.orElse(new DataType(DataFormat.NONE, IDataType.ONE_GIGABYTE)); // couldn't infer, don't raise something yet
 	}
 
 }

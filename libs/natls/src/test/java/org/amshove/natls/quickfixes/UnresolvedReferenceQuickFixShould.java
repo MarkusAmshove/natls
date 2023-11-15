@@ -7,6 +7,8 @@ import org.amshove.natls.testlifecycle.LspTestContext;
 import org.amshove.natparse.parsing.ParserError;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class UnresolvedReferenceQuickFixShould extends CodeActionTest
 {
@@ -357,5 +359,65 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 				INCLUDE THECC
 				END
 					""");
+	}
+
+	@Test
+	void addAVariableWithSpecificTypeBasedOnInferredTypeForAssignmentsLiterals()
+	{
+		assertCodeActionWithTitle("Declare local variable #NAME", "LIBONE", "MEINS.NSN", """
+			DEFINE DATA
+			END-DEFINE
+
+			#N${}$AME := 'Peter'
+
+			END
+			""")
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.resultsApplied("""
+				DEFINE DATA
+				LOCAL
+				1 #NAME (A5)
+				END-DEFINE
+
+				#NAME := 'Peter'
+
+				END
+				""");
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"*OCC(#ARR),I4",
+			"*ISN,P10",
+			"*LENGTH(#STR),I4",
+			"*TIMX,T",
+			"*TIMESTMP,B8",
+			"*TIMN,N7",
+			"*DAT4J,A7",
+			"*NET-USER,A253"
+		}
+	)
+	void addAVariableWithSpecificTypeBasedOnInferredTypeForAssignmentsWithSystemVariables(String rhs, String expectedType)
+	{
+		assertCodeActionWithTitle("Declare local variable #NAME", "LIBONE", "MEINS.NSN", """
+			DEFINE DATA
+			END-DEFINE
+
+			#N${}$AME := %s
+
+			END
+			""".formatted(rhs))
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.resultsApplied("""
+				DEFINE DATA
+				LOCAL
+				1 #NAME (%s)
+				END-DEFINE
+
+				#NAME := %s
+
+				END
+				""".formatted(expectedType, rhs));
 	}
 }
