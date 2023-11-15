@@ -138,7 +138,7 @@ class ExternalModuleHoverShould extends HoveringTest
 
 			*Result:*
 			```natural
-			RETURNS (L1)
+			RETURNS (L)
 			```
 
 

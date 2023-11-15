@@ -92,7 +92,7 @@ public interface IDataType
 		var details = "";
 
 		details += "(%s".formatted(format().identifier());
-		if (length() > 0.0 && !hasDynamicLength())
+		if (length() > 0.0 && !hasDynamicLength() && format().canHaveUserDefinedLength())
 		{
 			details += "%s".formatted(formatLength(length()));
 		}

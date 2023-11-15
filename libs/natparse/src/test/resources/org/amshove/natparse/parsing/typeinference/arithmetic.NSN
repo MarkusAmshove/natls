@@ -1,0 +1,25 @@
+* >Natural Source Header 000000
+* :Mode S
+* :CP
+* :LineIncrement 10
+* <Natural Source Header
+DEFINE DATA
+LOCAL
+1 #BIGNUM (P12)
+1 #LITTLENUM (I1)
+1 #FLOATING (N12,7)
+1 #ARR (A10/*)
+
+1 #TARGET (A) DYNAMIC /* To have no diagnostics
+END-DEFINE
+
+#TARGET := #LITTLENUM + *ISN /* TYPE: (P10)
+#TARGET := #BIGNUM + *OCC(#ARR) /* TYPE: (P12)
+
+#TARGET := #BIGNUM /* TYPE: (P12)
+#TARGET := #ARR(1) /* TYPE: (A10)
+
+#TARGET := TRUE /* TYPE: (L)
+#TARGET := FALSE /* TYPE: (L)
+
+END

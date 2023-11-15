@@ -1,17 +1,30 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.IDiagnostic;
+import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.natural.IAssignmentStatementNode;
 import org.amshove.natparse.natural.IDataType;
+import org.amshove.natparse.natural.IModuleWithBody;
+import org.amshove.natparse.natural.project.NaturalFile;
+import org.amshove.natparse.natural.project.NaturalFileType;
+import org.amshove.testhelpers.ResourceHelper;
+import org.junit.jupiter.api.DynamicContainer;
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
+import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 class TypeInferenceShould
 {
@@ -64,11 +77,54 @@ class TypeInferenceShould
 		assertInferredType(inferRhs("*OCC(#ARR) + 1"), "(I4)");
 	}
 
-	// TODO: File based test with inferred type in comment
-	// e.g.
-	// #VAR := #NUM1 + *ISN /* TYPE: (P10)
-	// #VAR := #BIGNUM + *OCC(#ARR) /* TYPE: (I4)
-	// etc.
+	@TestFactory
+	Stream<DynamicContainer> testoPesto()
+	{
+		var files = ResourceHelper.findRelativeResourceFiles("typeinference", getClass());
+		return files.stream().map(f ->
+		{
+			var path = Paths.get(f);
+			var containerName = path.getFileName().toString();
+			var testsInFile = new ArrayList<DynamicTest>();
+
+			var content = ResourceHelper.readResourceFile(f, getClass());
+
+			var lexer = new Lexer();
+			var tokens = lexer.lex(content, path);
+			if (tokens.diagnostics().hasItems())
+			{
+				throw new RuntimeException("Expected the source to lex without diagnostics");
+			}
+			var parser = new NaturalParser(new ModuleProviderStub());
+			var module = parser.parse(new NaturalFile(containerName, path, NaturalFileType.SUBPROGRAM), tokens);
+
+			var lines = content.split("\\r?\\n");
+			var lineNo = -1;
+			for (var line : lines)
+			{
+				lineNo++;
+				if (!line.contains("TYPE:"))
+				{
+					continue;
+				}
+
+				var expectedType = line.substring(line.indexOf("TYPE:") + "TYPE:".length()).trim();
+				var statement = NodeUtil.findStatementInLine(path, lineNo, ((IModuleWithBody) module).body()).orElseThrow();
+				testsInFile.add(dynamicTest("Line %d: %s".formatted(lineNo, expectedType), () ->
+				{
+					if (!(statement instanceof IAssignmentStatementNode assign))
+					{
+						throw new RuntimeException("Tested statement must be an assignment");
+					}
+
+					var inferedType = TypeInference.inferType(assign.operand()).orElseThrow();
+					assertInferredType(inferedType, expectedType);
+				}));
+			}
+
+			return dynamicContainer(containerName, testsInFile);
+		});
+	}
 
 	private void assertInferredType(IDataType type, String expectedType)
 	{
