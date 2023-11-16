@@ -453,4 +453,40 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 				END
 				""".formatted(expectedType, statement.replace("${}$", "")));
 	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"1 TO 10",
+			":= 1 TO 10",
+			":= 1 THRU 10",
+			":= 1 TO #OCC"
+		}
+	)
+	void addAVariableWithSpecificTypeForForLoopCounters(String upperBound)
+	{
+		assertCodeActionWithTitle("Declare local variable #INDEX", "LIBONE", "MEINS.NSN", """
+			DEFINE DATA
+			END-DEFINE
+
+			FOR #IN${}$DEX %s
+			IGNORE
+			END-FOR
+
+			END
+			""".formatted(upperBound))
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.resultsApplied("""
+				DEFINE DATA
+				LOCAL
+				1 #INDEX (I4)
+				END-DEFINE
+
+				FOR #INDEX %s
+				IGNORE
+				END-FOR
+
+				END
+				""".formatted(upperBound));
+	}
 }

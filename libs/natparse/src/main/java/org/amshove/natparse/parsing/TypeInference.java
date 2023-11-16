@@ -89,6 +89,11 @@ public class TypeInference
 			return Optional.of(new DataType(DataFormat.FLOAT, 8));
 		}
 
+		if (statement instanceof IForLoopNode forLoop && forLoop.loopControl() == tokenNode)
+		{
+			return Optional.of(new DataType(DataFormat.INTEGER, 4));
+		}
+
 		return Optional.empty();
 	}
 
