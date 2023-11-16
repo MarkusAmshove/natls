@@ -3,9 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.lexing.Lexer;
-import org.amshove.natparse.natural.IAssignmentStatementNode;
-import org.amshove.natparse.natural.IDataType;
-import org.amshove.natparse.natural.IModuleWithBody;
+import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.testhelpers.ResourceHelper;
@@ -25,6 +23,8 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class TypeInferenceShould
 {
@@ -81,6 +81,7 @@ class TypeInferenceShould
 	Stream<DynamicContainer> testoPesto()
 	{
 		var files = ResourceHelper.findRelativeResourceFiles("typeinference", getClass());
+		var provider = createModuleProvider();
 		return files.stream().map(f ->
 		{
 			var path = Paths.get(f);
@@ -95,7 +96,7 @@ class TypeInferenceShould
 			{
 				throw new RuntimeException("Expected the source to lex without diagnostics");
 			}
-			var parser = new NaturalParser(new ModuleProviderStub());
+			var parser = new NaturalParser(provider);
 			var module = parser.parse(new NaturalFile(containerName, path, NaturalFileType.SUBPROGRAM), tokens);
 
 			var lines = content.split("\\r?\\n");
@@ -122,8 +123,24 @@ class TypeInferenceShould
 				}));
 			}
 
+			if (testsInFile.isEmpty())
+			{
+				throw new RuntimeException("No tests found in %s".formatted(f));
+			}
 			return dynamicContainer(containerName, testsInFile);
 		});
+	}
+
+	private IModuleProvider createModuleProvider()
+	{
+		var provider = mock(IModuleProvider.class);
+		var lReturnModule = new NaturalModule(new NaturalFile("LRETURN", Path.of("LRETURN.NS7"), NaturalFileType.FUNCTION));
+		lReturnModule.setReturnType(new DataType(DataFormat.LOGIC, 0));
+		when(provider.findNaturalModule("LRETURN")).thenReturn(lReturnModule);
+		var iReturnModule = new NaturalModule(new NaturalFile("IRETURN", Path.of("IRETURN.NS7"), NaturalFileType.FUNCTION));
+		iReturnModule.setReturnType(new DataType(DataFormat.INTEGER, 4));
+		when(provider.findNaturalModule("IRETURN")).thenReturn(iReturnModule);
+		return provider;
 	}
 
 	private void assertInferredType(IDataType type, String expectedType)

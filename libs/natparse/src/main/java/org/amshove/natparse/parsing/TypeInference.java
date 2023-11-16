@@ -19,6 +19,11 @@ public class TypeInference
 			return Optional.of(typedRef.type());
 		}
 
+		if (operand instanceof IFunctionCallNode functionCall && functionCall.reference()instanceof IFunction function)
+		{
+			return Optional.ofNullable(function.returnType());
+		}
+
 		if (operand instanceof ILiteralNode literal)
 		{
 			return Optional.of(literal.inferType());
@@ -71,6 +76,6 @@ public class TypeInference
 			}
 		}
 
-		return Optional.of(biggestType);
+		return Optional.ofNullable(biggestType);
 	}
 }
