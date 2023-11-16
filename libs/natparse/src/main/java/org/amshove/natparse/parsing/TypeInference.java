@@ -1,5 +1,7 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.NodeUtil;
+import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.builtin.BuiltInFunctionTable;
 
@@ -52,6 +54,39 @@ public class TypeInference
 		if (operand instanceof IArithmeticExpressionNode arithmeticExpressionNode)
 		{
 			return inferArithmeticType(arithmeticExpressionNode);
+		}
+
+		return Optional.empty();
+	}
+
+	public static Optional<IDataType> inferTypeForTokenInStatement(SyntaxToken token, IStatementNode statement)
+	{
+		if (token == null || statement == null)
+		{
+			return Optional.empty();
+		}
+
+		var tokenNode = NodeUtil.findTokenNodeForToken(token, statement);
+		if (tokenNode == null)
+		{
+			return Optional.empty();
+		}
+
+		if (statement instanceof IAssignmentStatementNode assign && assign.target() == tokenNode)
+		{
+			return inferType(assign.operand());
+		}
+
+		if (statement instanceof IBasicMathStatementNode mathStatement
+			&& (!(mathStatement instanceof IDivideStatementNode divide) || divide.isRounded())
+			&& mathStatement.target() == tokenNode)
+		{
+			return Optional.of(new DataType(DataFormat.INTEGER, 4));
+		}
+
+		if (statement instanceof IDivideStatementNode divide && divide.target() == tokenNode)
+		{
+			return Optional.of(new DataType(DataFormat.FLOAT, 8));
 		}
 
 		return Optional.empty();

@@ -207,6 +207,11 @@ public class NodeUtil
 	@Nullable
 	public static <T extends ISyntaxNode> T findFirstParentOfType(ISyntaxNode start, Class<T> type)
 	{
+		if (start == null)
+		{
+			return null;
+		}
+
 		var current = (ISyntaxNode) start.parent();
 		while (current != null)
 		{

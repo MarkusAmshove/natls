@@ -420,4 +420,37 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 				END
 				""".formatted(expectedType, rhs));
 	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"ADD 1 TO #VA${}$R,I4",
+			"SUBTRACT 1 FROM #V${}$AR,I4",
+			"MULTIPLY #VA${}$R BY 1,I4",
+			"DIVIDE 2 INTO #${}$VAR,F8",
+			"DIVIDE ROUNDED 2 INTO #V${}$AR,I4"
+		}
+	)
+	void addAVariableWithSpecificTypeForMathStatements(String statement, String expectedType)
+	{
+		assertCodeActionWithTitle("Declare local variable #VAR", "LIBONE", "MEINS.NSN", """
+			DEFINE DATA
+			END-DEFINE
+
+			%s
+
+			END
+			""".formatted(statement))
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.resultsApplied("""
+				DEFINE DATA
+				LOCAL
+				1 #VAR (%s)
+				END-DEFINE
+
+				%s
+
+				END
+				""".formatted(expectedType, statement.replace("${}$", "")));
+	}
 }

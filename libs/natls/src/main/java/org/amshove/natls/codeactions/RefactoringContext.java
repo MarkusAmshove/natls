@@ -3,6 +3,7 @@ package org.amshove.natls.codeactions;
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.INaturalModule;
+import org.amshove.natparse.natural.IStatementNode;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.Range;
@@ -17,6 +18,7 @@ public record RefactoringContext(
 	Range originalRange,
 	ISyntaxNode nodeAtStartPosition,
 	ISyntaxNode nodeAtEndPosition,
+	IStatementNode statementAtPosition,
 	List<Diagnostic> diagnosticsAtPosition
 )
 {

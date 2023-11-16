@@ -5,7 +5,6 @@ import org.amshove.natls.codeactions.AbstractQuickFix;
 import org.amshove.natls.codeactions.QuickFixContext;
 import org.amshove.natls.project.LanguageServerLibrary;
 import org.amshove.natls.project.ParseStrategy;
-import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.parsing.ParserError;
@@ -45,19 +44,38 @@ public class UnresolvedReferenceQuickFix extends AbstractQuickFix
 
 	private Stream<CodeAction> createDeclareVariableEdit(QuickFixContext context, String unresolvedReference)
 	{
-		var inferredType = "(A) DYNAMIC";
-		if (context.nodeAtPosition()instanceof IAssignmentStatementNode assignment)
+		var inferredType = TypeInference.inferTypeForTokenInStatement(context.tokenUnderCursor(), context.statementAtPosition())
+			.map(IDataType::toShortString)
+			.orElse("(A) DYNAMIC");
+		/*
+		if (context.statementAtPosition() != null)
 		{
-			var nodeToInferTypeFor = NodeUtil.findTokenNodeForToken(context.tokenUnderCursor(), context.nodeAtPosition());
-			if (nodeToInferTypeFor != null && assignment.target() == nodeToInferTypeFor)
+			var inferredTypeBasedOnPositionInStatement = inferTypeInStatement(context.statementAtPosition(), context.tokenUnderCursor());
+			if (inferredTypeBasedOnPositionInStatement)
+		}
+		var nodeToInferTypeFor = NodeUtil.findTokenNodeForToken(context.tokenUnderCursor(), context.nodeAtPosition());
+		if (nodeToInferTypeFor != null)
+		{
+			if (context.nodeAtPosition() instanceof IAssignmentStatementNode assignment)
 			{
-				var type = TypeInference.inferType(assignment.operand());
-				if (type.isPresent())
+				if (assignment.target() == nodeToInferTypeFor)
 				{
-					inferredType = type.get().toShortString();
+					var type = TypeInference.inferType(assignment.operand());
+					if (type.isPresent())
+					{
+						inferredType = type.get().toShortString();
+					}
 				}
 			}
-		}
+			else
+				if (context.nodeAtPosition() instanceof IBasicMathStatementNode mathNode)
+				{
+					if (nodeToInferTypeFor == mathNode.target())
+					{
+						inferredType = "(I4)";
+					}
+				}
+		}*/
 
 		return Stream.of(
 			new CodeActionBuilder("Declare local variable %s".formatted(unresolvedReference), CodeActionKind.QuickFix)
