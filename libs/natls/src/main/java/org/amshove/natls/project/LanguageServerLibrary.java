@@ -177,4 +177,10 @@ public class LanguageServerLibrary
 		oldNaturalLibrary.addFile(newNaturalFile);
 		addFile(new LanguageServerFile(newNaturalFile));
 	}
+
+	public void remove(LanguageServerFile file)
+	{
+		file.getLibrary().library.removeFile(file.getNaturalFile());
+		file.getLibrary().fileByReferableName.remove(file.getReferableName());
+	}
 }

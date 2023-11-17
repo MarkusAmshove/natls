@@ -3,13 +3,13 @@ package org.amshove.natls.testlifecycle;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.services.LanguageClient;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public class StubClient implements LanguageClient
 {
 	private final List<ShownMessage> shownMessages = new ArrayList<>();
+	private final Map<String, List<Diagnostic>> publishedDiagnosticsPerUri = new HashMap<>();
 	private int refreshCodeLensesCalls = 0;
 
 	@Override
@@ -21,7 +21,7 @@ public class StubClient implements LanguageClient
 	@Override
 	public void publishDiagnostics(PublishDiagnosticsParams diagnostics)
 	{
-
+		publishedDiagnosticsPerUri.put(diagnostics.getUri(), diagnostics.getDiagnostics());
 	}
 
 	@Override
@@ -120,6 +120,11 @@ public class StubClient implements LanguageClient
 	public int getRefreshCodeLensesCalls()
 	{
 		return refreshCodeLensesCalls;
+	}
+
+	public List<Diagnostic> getPublishedDiagnostics(TextDocumentIdentifier document)
+	{
+		return publishedDiagnosticsPerUri.get(document.getUri());
 	}
 
 	record ShownMessage(MessageType type, String message)

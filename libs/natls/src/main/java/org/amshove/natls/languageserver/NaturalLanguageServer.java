@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class NaturalLanguageServer implements LanguageServer, LanguageClientAware
@@ -55,7 +56,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			capabilities.setDefinitionProvider(true);
 			capabilities.setReferencesProvider(true);
 
-			capabilities.setCompletionProvider(new CompletionOptions(true, List.of("*", ".")));
+			capabilities.setCompletionProvider(new CompletionOptions(true, List.of(".")));
 
 			capabilities.setCodeLensProvider(new CodeLensOptions(false));
 			capabilities.setCallHierarchyProvider(true);
@@ -105,10 +106,8 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			if (client != null)
 			{
 				var watchFileMethod = "workspace/didChangeWatchedFiles";
-				var natunitWatcher = new FileSystemWatcher(Either.forLeft("**/build/test-results/**/*.xml"));
-				var stowWatcher = new FileSystemWatcher(Either.forLeft("**/build/stow.log"));
 				var sourceWatcher = new FileSystemWatcher(Either.forLeft("**/Natural-Libraries/**/*.*"));
-				var watchChangesRegistrationOption = new DidChangeWatchedFilesRegistrationOptions(List.of(natunitWatcher, sourceWatcher, stowWatcher));
+				var watchChangesRegistrationOption = new DidChangeWatchedFilesRegistrationOptions(List.of(sourceWatcher));
 				client.registerCapability(new RegistrationParams(List.of(new Registration(UUID.randomUUID().toString(), watchFileMethod, watchChangesRegistrationOption))));
 			}
 
@@ -207,6 +206,22 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 	public WorkspaceService getWorkspaceService()
 	{
 		return workspaceService;
+	}
+
+	@Override
+	public void setTrace(SetTraceParams params)
+	{
+		var level = params.getValue().equalsIgnoreCase("verbose")
+			? Level.FINE
+			: Level.INFO;
+
+		log.info(() -> "Setting LogLevel to %s".formatted(level));
+		var rootLogger = Logger.getLogger("");
+		rootLogger.setLevel(level);
+		for (var handler : rootLogger.getHandlers())
+		{
+			handler.setLevel(level);
+		}
 	}
 
 	@Override
