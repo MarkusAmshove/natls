@@ -1,5 +1,6 @@
 package org.amshove.natparse;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -11,6 +12,7 @@ import java.util.stream.Stream;
 
 public class ReadOnlyList<T> implements Iterable<T>
 {
+	@SuppressWarnings("rawtypes")
 	private static final ReadOnlyList EMPTY = ReadOnlyList.from(Collections.emptyList());
 
 	private final ArrayList<T> collection;
@@ -73,7 +75,7 @@ public class ReadOnlyList<T> implements Iterable<T>
 	}
 
 	@Override
-	public Iterator<T> iterator()
+	public @Nonnull Iterator<T> iterator()
 	{
 		return collection.iterator();
 	}
@@ -81,6 +83,11 @@ public class ReadOnlyList<T> implements Iterable<T>
 	public Stream<T> stream()
 	{
 		return collection.stream();
+	}
+
+	public boolean contains(T value)
+	{
+		return collection.contains(value);
 	}
 
 	public int size()

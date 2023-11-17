@@ -1897,25 +1897,25 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			if (consumeOptionally(examine, SyntaxKind.IN))
 			{
-				consumeOperandNode(examine);
+				examine.setGivingNumber(consumeOperandNode(examine));
 			}
 			else
 				if (consumeOptionally(examine, SyntaxKind.KW_NUMBER))
 				{
 					consumeOptionally(examine, SyntaxKind.IN);
-					consumeOperandNode(examine);
+					examine.setGivingNumber(consumeOperandNode(examine));
 				}
 				else
 					if (consumeOptionally(examine, SyntaxKind.POSITION))
 					{
 						consumeOptionally(examine, SyntaxKind.IN);
-						consumeOperandNode(examine);
+						examine.setGivingPosition(consumeOperandNode(examine));
 					}
 					else
 						if (consumeOptionally(examine, SyntaxKind.LENGTH))
 						{
 							consumeOptionally(examine, SyntaxKind.IN);
-							consumeOperandNode(examine);
+							examine.setGivingLength(consumeOperandNode(examine));
 						}
 						else
 							if (consumeOptionally(examine, SyntaxKind.INDEX))
@@ -1923,12 +1923,12 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 								consumeOptionally(examine, SyntaxKind.IN);
 								while (isOperand())
 								{
-									consumeOperandNode(examine);
+									examine.addGivingIndex(consumeOperandNode(examine));
 								}
 							}
 							else
 							{
-								consumeOperandNode(examine);
+								examine.setGivingNumber(consumeOperandNode(examine));
 							}
 		}
 

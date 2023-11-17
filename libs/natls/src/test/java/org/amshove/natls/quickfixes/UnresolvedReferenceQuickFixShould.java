@@ -489,4 +489,44 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 				END
 				""".formatted(upperBound));
 	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"GIVING NUMBER #${}$NUM",
+			"GIVING #N${}$UM",
+			"GIVING IN #N${}$UM",
+			"GIVING NUMBER IN #${}$NUM",
+			"GIVING INDEX #N${}$UM",
+			"GIVING INDEX IN #N${}$UM",
+			"GIVING POSITION #NU${}$M",
+			"GIVING POSITION IN #NUM${}$",
+			"GIVING LENGTH IN #N${}$UM",
+			"GIVING LENGTH #NU${}$M"
+		}
+	)
+	void addAVariableWithSpecificTypeForForExamineGivingClauses(String givingClause)
+	{
+		assertCodeActionWithTitle("Declare local variable #NUM", "LIBONE", "MEINS.NSN", """
+			DEFINE DATA
+			1 #A (A10)
+			END-DEFINE
+
+			EXAMINE #A FOR ',' %s
+
+			END
+			""".formatted(givingClause))
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.resultsApplied("""
+				DEFINE DATA
+				LOCAL
+				1 #NUM (I4)
+				1 #A (A10)
+				END-DEFINE
+
+				EXAMINE #A FOR ',' %s
+
+				END
+				""".formatted(givingClause.replace("${}$", "")));
+	}
 }

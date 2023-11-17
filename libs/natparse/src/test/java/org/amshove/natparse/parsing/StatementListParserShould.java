@@ -2031,6 +2031,79 @@ class StatementListParserShould extends StatementParseTest
 		assertParsesSingleStatement("EXAMINE #VAR %s".formatted(statement), IExamineNode.class);
 	}
 
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"GIVING NUMBER #NUM",
+			"NUMBER #NUM",
+			"NUMBER IN #NUM",
+			"GIVING IN #NUM",
+			"GIVING NUMBER IN #NUM",
+			"GIVING #NUM"
+		}
+	)
+	void parseAnExamineWithGivingNumber(String extra)
+	{
+		var examine = assertParsesSingleStatement("EXAMINE #VAR FOR ',' %s".formatted(extra), IExamineNode.class);
+		assertIsVariableReference(examine.givingNumber(), "#NUM");
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"GIVING POSITION IN #NUM",
+			"GIVING POSITION #NUM",
+			"POSITION IN #NUM",
+			"POSITION #NUM"
+		}
+	)
+	void parseAnExamineWithGivingPosition(String extra)
+	{
+		var examine = assertParsesSingleStatement("EXAMINE #VAR FOR ',' %s".formatted(extra), IExamineNode.class);
+		assertIsVariableReference(examine.givingPosition(), "#NUM");
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"GIVING LENGTH IN #NUM",
+			"GIVING LENGTH #NUM",
+			"LENGTH IN #NUM",
+			"LENGTH #NUM"
+		}
+	)
+	void parseAnExamineWithGivingLength(String extra)
+	{
+		var examine = assertParsesSingleStatement("EXAMINE #VAR FOR ',' %s".formatted(extra), IExamineNode.class);
+		assertIsVariableReference(examine.givingLength(), "#NUM");
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"GIVING INDEX IN #NUM",
+			"GIVING INDEX #NUM",
+			"INDEX IN #NUM",
+			"INDEX #NUM"
+		}
+	)
+	void parseAnExamineWithIndex(String extra)
+	{
+		var examine = assertParsesSingleStatement("EXAMINE #VAR(*) FOR ',' %s".formatted(extra), IExamineNode.class);
+		assertThat(examine.givingIndex()).hasSize(1);
+		assertIsVariableReference(examine.givingIndex().first(), "#NUM");
+	}
+
+	@Test
+	void parseAnExamineWithMultipleIndices()
+	{
+		var examine = assertParsesSingleStatement("EXAMINE #ARR FOR ',' GIVING INDEX #I1 #I2 #I3", IExamineNode.class);
+		assertThat(examine.givingIndex()).hasSize(3);
+		assertIsVariableReference(examine.givingIndex().get(0), "#I1");
+		assertIsVariableReference(examine.givingIndex().get(1), "#I2");
+		assertIsVariableReference(examine.givingIndex().get(2), "#I3");
+	}
+
 	@Test
 	void parseASimpleSeparate()
 	{

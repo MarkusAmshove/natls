@@ -10,6 +10,8 @@ import java.util.Optional;
 
 public class TypeInference
 {
+	private static final IDataType I4 = new DataType(DataFormat.INTEGER, 4);
+
 	private TypeInference()
 	{}
 
@@ -67,31 +69,42 @@ public class TypeInference
 		}
 
 		var tokenNode = NodeUtil.findTokenNodeForToken(token, statement);
-		if (tokenNode == null)
+		if (!(tokenNode instanceof IOperandNode operandNode))
 		{
 			return Optional.empty();
 		}
 
-		if (statement instanceof IAssignmentStatementNode assign && assign.target() == tokenNode)
+		if (statement instanceof IAssignmentStatementNode assign && assign.target() == operandNode)
 		{
 			return inferType(assign.operand());
 		}
 
 		if (statement instanceof IBasicMathStatementNode mathStatement
 			&& (!(mathStatement instanceof IDivideStatementNode divide) || divide.isRounded())
-			&& mathStatement.target() == tokenNode)
+			&& mathStatement.target() == operandNode)
 		{
-			return Optional.of(new DataType(DataFormat.INTEGER, 4));
+			return Optional.of(I4);
 		}
 
-		if (statement instanceof IDivideStatementNode divide && divide.target() == tokenNode)
+		if (statement instanceof IDivideStatementNode divide && divide.target() == operandNode)
 		{
 			return Optional.of(new DataType(DataFormat.FLOAT, 8));
 		}
 
-		if (statement instanceof IForLoopNode forLoop && forLoop.loopControl() == tokenNode)
+		if (statement instanceof IForLoopNode forLoop && forLoop.loopControl() == operandNode)
 		{
-			return Optional.of(new DataType(DataFormat.INTEGER, 4));
+			return Optional.of(I4);
+		}
+
+		if (statement instanceof IExamineNode examineNode)
+		{
+			if (examineNode.givingLength() == operandNode
+				|| examineNode.givingPosition() == operandNode
+				|| examineNode.givingNumber() == operandNode
+				|| examineNode.givingIndex().contains(operandNode))
+			{
+				return Optional.of(I4);
+			}
 		}
 
 		return Optional.empty();
@@ -121,6 +134,6 @@ public class TypeInference
 			}
 		}
 
-		return Optional.ofNullable(biggestType);
+		return Optional.of(biggestType);
 	}
 }
