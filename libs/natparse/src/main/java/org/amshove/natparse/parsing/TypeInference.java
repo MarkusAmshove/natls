@@ -96,15 +96,12 @@ public class TypeInference
 			return Optional.of(I4);
 		}
 
-		if (statement instanceof IExamineNode examineNode)
+		if (statement instanceof IExamineNode examineNode && (examineNode.givingLength() == operandNode
+			|| examineNode.givingPosition() == operandNode
+			|| examineNode.givingNumber() == operandNode
+			|| examineNode.givingIndex().contains(operandNode)))
 		{
-			if (examineNode.givingLength() == operandNode
-				|| examineNode.givingPosition() == operandNode
-				|| examineNode.givingNumber() == operandNode
-				|| examineNode.givingIndex().contains(operandNode))
-			{
-				return Optional.of(I4);
-			}
+			return Optional.of(I4);
 		}
 
 		return Optional.empty();

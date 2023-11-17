@@ -47,35 +47,6 @@ public class UnresolvedReferenceQuickFix extends AbstractQuickFix
 		var inferredType = TypeInference.inferTypeForTokenInStatement(context.tokenUnderCursor(), context.statementAtPosition())
 			.map(IDataType::toShortString)
 			.orElse("(A) DYNAMIC");
-		/*
-		if (context.statementAtPosition() != null)
-		{
-			var inferredTypeBasedOnPositionInStatement = inferTypeInStatement(context.statementAtPosition(), context.tokenUnderCursor());
-			if (inferredTypeBasedOnPositionInStatement)
-		}
-		var nodeToInferTypeFor = NodeUtil.findTokenNodeForToken(context.tokenUnderCursor(), context.nodeAtPosition());
-		if (nodeToInferTypeFor != null)
-		{
-			if (context.nodeAtPosition() instanceof IAssignmentStatementNode assignment)
-			{
-				if (assignment.target() == nodeToInferTypeFor)
-				{
-					var type = TypeInference.inferType(assignment.operand());
-					if (type.isPresent())
-					{
-						inferredType = type.get().toShortString();
-					}
-				}
-			}
-			else
-				if (context.nodeAtPosition() instanceof IBasicMathStatementNode mathNode)
-				{
-					if (nodeToInferTypeFor == mathNode.target())
-					{
-						inferredType = "(I4)";
-					}
-				}
-		}*/
 
 		return Stream.of(
 			new CodeActionBuilder("Declare local variable %s".formatted(unresolvedReference), CodeActionKind.QuickFix)
