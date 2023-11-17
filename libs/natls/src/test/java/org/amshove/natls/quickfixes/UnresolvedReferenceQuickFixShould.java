@@ -7,6 +7,8 @@ import org.amshove.natls.testlifecycle.LspTestContext;
 import org.amshove.natparse.parsing.ParserError;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class UnresolvedReferenceQuickFixShould extends CodeActionTest
 {
@@ -357,5 +359,174 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 				INCLUDE THECC
 				END
 					""");
+	}
+
+	@Test
+	void addAVariableWithSpecificTypeBasedOnInferredTypeForAssignmentsLiterals()
+	{
+		assertCodeActionWithTitle("Declare local variable #NAME", "LIBONE", "MEINS.NSN", """
+			DEFINE DATA
+			END-DEFINE
+
+			#N${}$AME := 'Peter'
+
+			END
+			""")
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.resultsApplied("""
+				DEFINE DATA
+				LOCAL
+				1 #NAME (A5)
+				END-DEFINE
+
+				#NAME := 'Peter'
+
+				END
+				""");
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"*OCC(#ARR),I4",
+			"*ISN,P10",
+			"*LENGTH(#STR),I4",
+			"*TIMX,T",
+			"*TIMESTMP,B8",
+			"*TIMN,N7",
+			"*DAT4J,A7",
+			"*NET-USER,A253"
+		}
+	)
+	void addAVariableWithSpecificTypeBasedOnInferredTypeForAssignmentsWithSystemVariables(String rhs, String expectedType)
+	{
+		assertCodeActionWithTitle("Declare local variable #NAME", "LIBONE", "MEINS.NSN", """
+			DEFINE DATA
+			END-DEFINE
+
+			#N${}$AME := %s
+
+			END
+			""".formatted(rhs))
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.resultsApplied("""
+				DEFINE DATA
+				LOCAL
+				1 #NAME (%s)
+				END-DEFINE
+
+				#NAME := %s
+
+				END
+				""".formatted(expectedType, rhs));
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"ADD 1 TO #VA${}$R,I4",
+			"SUBTRACT 1 FROM #V${}$AR,I4",
+			"MULTIPLY #VA${}$R BY 1,I4",
+			"DIVIDE 2 INTO #${}$VAR,F8",
+			"DIVIDE ROUNDED 2 INTO #V${}$AR,I4"
+		}
+	)
+	void addAVariableWithSpecificTypeForMathStatements(String statement, String expectedType)
+	{
+		assertCodeActionWithTitle("Declare local variable #VAR", "LIBONE", "MEINS.NSN", """
+			DEFINE DATA
+			END-DEFINE
+
+			%s
+
+			END
+			""".formatted(statement))
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.resultsApplied("""
+				DEFINE DATA
+				LOCAL
+				1 #VAR (%s)
+				END-DEFINE
+
+				%s
+
+				END
+				""".formatted(expectedType, statement.replace("${}$", "")));
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"1 TO 10",
+			":= 1 TO 10",
+			":= 1 THRU 10",
+			":= 1 TO #OCC"
+		}
+	)
+	void addAVariableWithSpecificTypeForForLoopCounters(String upperBound)
+	{
+		assertCodeActionWithTitle("Declare local variable #INDEX", "LIBONE", "MEINS.NSN", """
+			DEFINE DATA
+			END-DEFINE
+
+			FOR #IN${}$DEX %s
+			IGNORE
+			END-FOR
+
+			END
+			""".formatted(upperBound))
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.resultsApplied("""
+				DEFINE DATA
+				LOCAL
+				1 #INDEX (I4)
+				END-DEFINE
+
+				FOR #INDEX %s
+				IGNORE
+				END-FOR
+
+				END
+				""".formatted(upperBound));
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"GIVING NUMBER #${}$NUM",
+			"GIVING #N${}$UM",
+			"GIVING IN #N${}$UM",
+			"GIVING NUMBER IN #${}$NUM",
+			"GIVING INDEX #N${}$UM",
+			"GIVING INDEX IN #N${}$UM",
+			"GIVING POSITION #NU${}$M",
+			"GIVING POSITION IN #NUM${}$",
+			"GIVING LENGTH IN #N${}$UM",
+			"GIVING LENGTH #NU${}$M"
+		}
+	)
+	void addAVariableWithSpecificTypeForForExamineGivingClauses(String givingClause)
+	{
+		assertCodeActionWithTitle("Declare local variable #NUM", "LIBONE", "MEINS.NSN", """
+			DEFINE DATA
+			1 #A (A10)
+			END-DEFINE
+
+			EXAMINE #A FOR ',' %s
+
+			END
+			""".formatted(givingClause))
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.resultsApplied("""
+				DEFINE DATA
+				LOCAL
+				1 #NUM (I4)
+				1 #A (A10)
+				END-DEFINE
+
+				EXAMINE #A FOR ',' %s
+
+				END
+				""".formatted(givingClause.replace("${}$", "")));
 	}
 }

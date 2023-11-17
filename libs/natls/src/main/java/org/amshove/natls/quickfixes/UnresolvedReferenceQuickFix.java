@@ -5,12 +5,10 @@ import org.amshove.natls.codeactions.AbstractQuickFix;
 import org.amshove.natls.codeactions.QuickFixContext;
 import org.amshove.natls.project.LanguageServerLibrary;
 import org.amshove.natls.project.ParseStrategy;
-import org.amshove.natparse.natural.IHasDefineData;
-import org.amshove.natparse.natural.INaturalModule;
-import org.amshove.natparse.natural.IVariableNode;
-import org.amshove.natparse.natural.VariableScope;
+import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.parsing.ParserError;
+import org.amshove.natparse.parsing.TypeInference;
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionKind;
 
@@ -46,7 +44,10 @@ public class UnresolvedReferenceQuickFix extends AbstractQuickFix
 
 	private Stream<CodeAction> createDeclareVariableEdit(QuickFixContext context, String unresolvedReference)
 	{
-		var inferredType = "(A) DYNAMIC";
+		var inferredType = TypeInference.inferTypeForTokenInStatement(context.tokenUnderCursor(), context.statementAtPosition())
+			.map(IDataType::toShortString)
+			.orElse("(A) DYNAMIC");
+
 		return Stream.of(
 			new CodeActionBuilder("Declare local variable %s".formatted(unresolvedReference), CodeActionKind.QuickFix)
 				.fixesDiagnostic(context.diagnostic())

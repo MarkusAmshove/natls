@@ -77,4 +77,13 @@ public enum DataFormat
 			default -> throw new NaturalParseException(String.format("Can't determine DataFormat from format \"%s\"", source));
 		};
 	}
+
+	public boolean canHaveUserDefinedLength()
+	{
+		return switch (this)
+		{
+			case ALPHANUMERIC, BINARY, FLOAT, INTEGER, NUMERIC, PACKED, UNICODE -> true;
+			default -> false;
+		};
+	}
 }

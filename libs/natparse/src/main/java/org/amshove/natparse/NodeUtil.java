@@ -125,6 +125,14 @@ public class NodeUtil
 
 			if (node.position().line() == line && node.position().offsetInLine() == character)
 			{
+				if (node instanceof IStatementListNode statementListNode)
+				{
+					var descendantFoundNode = findNodeAtPosition(filePath, line, character, statementListNode);
+					if (descendantFoundNode != null)
+					{
+						return descendantFoundNode;
+					}
+				}
 				return node;
 			}
 
@@ -199,6 +207,11 @@ public class NodeUtil
 	@Nullable
 	public static <T extends ISyntaxNode> T findFirstParentOfType(ISyntaxNode start, Class<T> type)
 	{
+		if (start == null)
+		{
+			return null;
+		}
+
 		var current = (ISyntaxNode) start.parent();
 		while (current != null)
 		{
@@ -295,5 +308,27 @@ public class NodeUtil
 		}
 
 		return ReadOnlyList.from(statements);
+	}
+
+	public static ITokenNode findTokenNodeForToken(SyntaxToken token, ISyntaxTree tree)
+	{
+		for (var node : tree)
+		{
+			if (node instanceof ITokenNode tokenNode && tokenNode.token() == token)
+			{
+				return tokenNode;
+			}
+
+			if (node.descendants().hasItems())
+			{
+				var maybeNode = findTokenNodeForToken(token, node);
+				if (maybeNode != null)
+				{
+					return maybeNode;
+				}
+			}
+		}
+
+		return null;
 	}
 }

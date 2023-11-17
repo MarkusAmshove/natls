@@ -92,7 +92,7 @@ public interface IDataType
 		var details = "";
 
 		details += "(%s".formatted(format().identifier());
-		if (length() > 0.0 && !hasDynamicLength())
+		if (length() > 0.0 && !hasDynamicLength() && format().canHaveUserDefinedLength())
 		{
 			details += "%s".formatted(formatLength(length()));
 		}
@@ -184,5 +184,15 @@ public interface IDataType
 			case NUMERIC, PACKED, ALPHANUMERIC, UNICODE, INTEGER, TIME, FLOAT -> true;
 			default -> false;
 			});
+	}
+
+	default boolean isFloating()
+	{
+		return switch (format())
+		{
+			case FLOAT -> true;
+			case NUMERIC, PACKED -> calculateDigitsAfterDecimalPoint() > 0;
+			default -> false;
+		};
 	}
 }

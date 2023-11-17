@@ -547,7 +547,10 @@ public class NaturalLanguageService implements LanguageClientAware
 		var nodeAtEnd = NodeUtil.findNodeAtPosition(params.getRange().getEnd().getLine(), params.getRange().getEnd().getCharacter(), file.module());
 
 		var diagnosticsAtPosition = file.diagnosticsInRange(params.getRange());
-		var context = new RefactoringContext(params.getTextDocument().getUri(), file.module(), file, token, params.getRange(), nodeAtStart, nodeAtEnd, diagnosticsAtPosition);
+		var statementUnderCursor = nodeAtStart instanceof IStatementNode statement
+			? statement
+			: NodeUtil.findFirstParentOfType(nodeAtStart, IStatementNode.class);
+		var context = new RefactoringContext(params.getTextDocument().getUri(), file.module(), file, token, params.getRange(), nodeAtStart, nodeAtEnd, statementUnderCursor, diagnosticsAtPosition);
 
 		return codeActionRegistry.createCodeActions(context);
 	}
