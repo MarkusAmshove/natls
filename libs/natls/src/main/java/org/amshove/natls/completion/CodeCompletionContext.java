@@ -7,7 +7,9 @@ import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.IHasDefineData;
 import org.eclipse.lsp4j.Position;
 
-public record CodeCompletionContext(SemanticPosition semanticPosition, SyntaxToken previousToken)
+import javax.annotation.Nullable;
+
+public record CodeCompletionContext(SemanticPosition semanticPosition, @Nullable SyntaxToken currentToken, @Nullable SyntaxToken previousToken)
 {
 	public static CodeCompletionContext create(LanguageServerFile file, Position position)
 	{
@@ -19,13 +21,29 @@ public record CodeCompletionContext(SemanticPosition semanticPosition, SyntaxTok
 			semanticPosition = SemanticPosition.DEFINE_DATA;
 		}
 
-		var tokenAtPosition = NodeUtil.findTokenOnOrBeforePosition(file.tokens().toList(), position.getLine(), position.getCharacter());
-		return new CodeCompletionContext(semanticPosition, tokenAtPosition);
-
+		var tokens = file.tokens().toList();
+		var tokenAtPosition = NodeUtil.findTokenOnOrBeforePosition(tokens, position.getLine(), position.getCharacter());
+		var previousToken = NodeUtil.findTokenOnOrBeforePosition(tokens, tokenAtPosition.line(), tokenAtPosition.offsetInLine() - 1);
+		if (tokenAtPosition.line() < position.getLine())
+		{
+			previousToken = tokenAtPosition;
+			tokenAtPosition = null;
+		}
+		return new CodeCompletionContext(semanticPosition, tokenAtPosition, previousToken);
 	}
 
 	public boolean completesDataArea()
 	{
-		return semanticPosition == SemanticPosition.DEFINE_DATA && previousToken.kind() == SyntaxKind.USING;
+		return semanticPosition == SemanticPosition.DEFINE_DATA && isCurrentTokenKind(SyntaxKind.USING);
+	}
+
+	public boolean isCurrentTokenKind(SyntaxKind kind)
+	{
+		return currentToken != null && currentToken.kind() == kind;
+	}
+
+	public boolean isPreviousTokenKind(SyntaxKind kind)
+	{
+		return previousToken != null && previousToken.kind() == kind;
 	}
 }

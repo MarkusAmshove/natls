@@ -52,14 +52,28 @@ public class CompletionProvider
 		}
 
 		var isFilteredOnQualifiedNames = params.getContext().getTriggerKind() == CompletionTriggerKind.TriggerCharacter && ".".equals(params.getContext().getTriggerCharacter());
-		if (isFilteredOnQualifiedNames || completionContext.previousToken().kind() == SyntaxKind.LABEL_IDENTIFIER) // Label identifier is what's lexed for incomplete qualification, e.g. GRP.
+		if (isFilteredOnQualifiedNames || completionContext.isCurrentTokenKind(SyntaxKind.LABEL_IDENTIFIER)) // Label identifier is what's lexed for incomplete qualification, e.g. GRP.
 		{
-			var qualifiedNameFilter = completionContext.previousToken().symbolName();
+			assert completionContext.currentToken() != null;
+			var qualifiedNameFilter = completionContext.currentToken().symbolName();
 			return findVariablesToComplete(module)
 				.filter(v -> v.qualifiedName().startsWith(qualifiedNameFilter))
 				.map(v -> toVariableCompletion(v, module, file, qualifiedNameFilter))
 				.filter(Objects::nonNull)
 				.toList();
+		}
+
+		if (completionContext.isCurrentTokenKind(SyntaxKind.PERFORM) || completionContext.isPreviousTokenKind(SyntaxKind.PERFORM))
+		{
+			completionItems.addAll(externalSubroutineCompletions(file.getLibrary()));
+			completionItems.addAll(localSubroutineCompletions(module, completionContext));
+			return completionItems;
+		}
+
+		if (completionContext.isCurrentTokenKind(SyntaxKind.CALLNAT) || completionContext.isPreviousTokenKind(SyntaxKind.CALLNAT))
+		{
+			completionItems.addAll(subprogramCompletions(file.getLibrary()));
+			return completionItems;
 		}
 
 		completionItems.addAll(snippetEngine.provideSnippets(file));
@@ -71,23 +85,35 @@ public class CompletionProvider
 				.toList()
 		);
 
-		completionItems.addAll(localSubroutineCompletions(module));
+		completionItems.addAll(localSubroutineCompletions(module, completionContext));
 
 		completionItems.addAll(functionCompletions(file.getLibrary()));
 		completionItems.addAll(externalSubroutineCompletions(file.getLibrary()));
 		completionItems.addAll(subprogramCompletions(file.getLibrary()));
 
-		completionItems.addAll(completeSystemVars("*".equals(params.getContext().getTriggerCharacter())));
+		completionItems.addAll(completeSystemVars("*".equals(params.getContext().getTriggerCharacter()))); // TODO: Das muss wieder funktionieren
+
+		var previousTokenSource = completionContext.previousToken() != null ? completionContext.previousToken().source().toUpperCase() : null;
+		var currentTokenSource = completionContext.currentToken() != null ? completionContext.currentToken().source().toUpperCase() : null;
+		for (var completionItem : completionItems)
+		{
+			if (completionItem.getData() != null)
+			{
+				var data = (UnresolvedCompletionInfo) completionItem.getData();
+				data.addPreviousText(previousTokenSource);
+				data.addPreviousText(currentTokenSource);
+			}
+		}
 
 		return completionItems;
 	}
 
-	private List<CompletionItem> localSubroutineCompletions(INaturalModule module)
+	private List<CompletionItem> localSubroutineCompletions(INaturalModule module, CodeCompletionContext context)
 	{
 		return module.referencableNodes().stream()
 			.filter(ISubroutineNode.class::isInstance)
 			.map(ISubroutineNode.class::cast)
-			.map(this::createCompletionItem)
+			.map(n -> this.createCompletionItem(n, context))
 			.toList();
 	}
 
@@ -163,7 +189,8 @@ public class CompletionProvider
 						hoverProvider.hoverModule(module).getContents().getRight().getValue()
 					)
 				);
-				item.setInsertText("PERFORM %s%s%n$0".formatted(file.getReferableName(), externalSubroutineParameterListAsSnippet(file)));
+				var perform = info.hasPreviousText("PERFORM") ? "" : "PERFORM ";
+				item.setInsertText("%s%s%s%n$0".formatted(perform, file.getReferableName(), externalSubroutineParameterListAsSnippet(file)));
 				yield item;
 			}
 			case Class ->
@@ -175,7 +202,8 @@ public class CompletionProvider
 						hoverProvider.hoverModule(module).getContents().getRight().getValue()
 					)
 				);
-				item.setInsertText("CALLNAT '%s'%s%n$0".formatted(file.getReferableName(), externalSubroutineParameterListAsSnippet(file)));
+				var callnat = info.hasPreviousText("CALLNAT") ? "" : "CALLNAT ";
+				item.setInsertText("%s'%s'%s%n$0".formatted(callnat, file.getReferableName(), externalSubroutineParameterListAsSnippet(file)));
 				yield item;
 			}
 			default -> item;
@@ -368,11 +396,14 @@ public class CompletionProvider
 		return item;
 	}
 
-	private CompletionItem createCompletionItem(ISubroutineNode subroutineNode)
+	private CompletionItem createCompletionItem(ISubroutineNode subroutineNode, CodeCompletionContext context)
 	{
 		var item = new CompletionItem();
 		item.setKind(CompletionItemKind.Method);
-		item.setInsertText("PERFORM " + subroutineNode.declaration().trimmedSymbolName(32));
+		var perform = context.isCurrentTokenKind(SyntaxKind.PERFORM) || context.isPreviousTokenKind(SyntaxKind.PERFORM)
+			? ""
+			: "PERFORM ";
+		item.setInsertText(perform + subroutineNode.declaration().trimmedSymbolName(32));
 		item.setLabel(subroutineNode.declaration().symbolName());
 		item.setSortText("1");
 
