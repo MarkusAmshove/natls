@@ -78,7 +78,7 @@ public class NaturalWorkspaceService implements WorkspaceService
 
 	private void handleNaturalModuleChange(Path filepath, FileEvent change)
 	{
-		log.fine("Handling watched natural module change: %s".formatted(filepath));
+		log.fine(() -> "Handling watched natural module change: %s".formatted(filepath));
 		switch (change.getType())
 		{
 			case Created ->
