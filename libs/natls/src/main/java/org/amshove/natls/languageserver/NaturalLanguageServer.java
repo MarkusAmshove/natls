@@ -215,7 +215,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			? Level.FINE
 			: Level.INFO;
 
-		log.info("Setting LogLevel to %s".formatted(level));
+		log.info(() -> "Setting LogLevel to %s".formatted(level));
 		var rootLogger = Logger.getLogger("");
 		rootLogger.setLevel(level);
 		for (var handler : rootLogger.getHandlers())

@@ -3,7 +3,6 @@ package org.amshove.natls.languageserver;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.amshove.natls.config.LSConfiguration;
-import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.CompletableFutures;
@@ -13,7 +12,6 @@ import org.eclipse.lsp4j.services.WorkspaceService;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,7 +19,6 @@ public class NaturalWorkspaceService implements WorkspaceService
 {
 	private static final Logger log = Logger.getAnonymousLogger();
 	private NaturalLanguageService languageService;
-	private final ConcurrentHashMap<String, LanguageServerFile> filesWithCatError = new ConcurrentHashMap<>();
 
 	@Override
 	public void didChangeConfiguration(DidChangeConfigurationParams params)
@@ -76,7 +73,7 @@ public class NaturalWorkspaceService implements WorkspaceService
 			languageService.reparseOpenFiles();
 		}
 
-		log.fine("didChangeWatchedFiles end");
+		log.fine(() -> "didChangeWatchedFiles end");
 	}
 
 	private void handleNaturalModuleChange(Path filepath, FileEvent change)
