@@ -53,10 +53,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -82,6 +79,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	private final SignatureHelpProvider signatureHelp = new SignatureHelpProvider();
 	private CallHierarchyProvider callHierarchyProvider;
 	private CompletionProvider completionProvider;
+	private final Set<Path> openEditors = new HashSet<>();
 
 	public void indexProject(Path workspaceRoot, IProgressMonitor progressMonitor)
 	{
@@ -305,19 +303,19 @@ public class NaturalLanguageService implements LanguageClientAware
 	public LanguageServerFile findNaturalFile(String library, String name)
 	{
 		var naturalFile = project.findModule(library, name);
-		return languageServerProject.findFile(naturalFile);
+		return naturalFile == null ? null : languageServerProject.findFile(naturalFile);
 	}
 
 	public LanguageServerFile findNaturalFile(TextDocumentIdentifier identifier)
 	{
 		var naturalFile = project.findModule(LspUtil.uriToPath(identifier.getUri()));
-		return languageServerProject.findFile(naturalFile);
+		return naturalFile == null ? null : languageServerProject.findFile(naturalFile);
 	}
 
 	public LanguageServerFile findNaturalFile(Path path)
 	{
 		var naturalFile = project.findModule(path);
-		return languageServerProject.findFile(naturalFile);
+		return naturalFile == null ? null : languageServerProject.findFile(naturalFile);
 	}
 
 	public void publishDiagnostics(LanguageServerFile file)
@@ -352,13 +350,31 @@ public class NaturalLanguageService implements LanguageClientAware
 		var file = findNaturalFile(path);
 		if (file == null)
 		{
-			// TODO: Handle new file
 			return;
 		}
 
 		file.save();
 		publishDiagnostics(file);
 		client.refreshCodeLenses();
+	}
+
+	public void fileExternallyChanged(Path path)
+	{
+		if (openEditors.contains(path))
+		{
+			// Already handled by `fileSaved`
+			return;
+		}
+
+		var file = findNaturalFile(path);
+		file.parseWithoutCallers();
+	}
+
+	public void fileDeleted(Path path)
+	{
+		var file = findNaturalFile(path);
+		languageServerProject.removeFile(file);
+		reparseOpenFiles();
 	}
 
 	public void fileClosed(Path path)
@@ -368,6 +384,8 @@ public class NaturalLanguageService implements LanguageClientAware
 		{
 			return;
 		}
+
+		openEditors.remove(path);
 
 		file.close();
 		publishDiagnostics(file);
@@ -380,6 +398,8 @@ public class NaturalLanguageService implements LanguageClientAware
 		{
 			return;
 		}
+
+		openEditors.add(path);
 
 		file.open();
 		publishDiagnostics(file);
@@ -772,5 +792,20 @@ public class NaturalLanguageService implements LanguageClientAware
 		var file = findNaturalFile(identifier);
 		var outgoingReferences = file.getOutgoingReferences();
 		return new CalledModulesResponse(outgoingReferences.stream().map(f -> LspUtil.pathToUri(f.getPath())).distinct().toList());
+	}
+
+	public void reparseOpenFiles()
+	{
+		ProgressTasks.startNewVoid("Reparsing open files", client, m ->
+		{
+			for (var openEditor : openEditors)
+			{
+				var file = findNaturalFile(openEditor);
+				m.progress(file.getReferableName());
+				log.fine("Reparsing open file %s".formatted(openEditor));
+				file.parseWithoutCallers();
+				publishDiagnosticsOfFile(file);
+			}
+		});
 	}
 }

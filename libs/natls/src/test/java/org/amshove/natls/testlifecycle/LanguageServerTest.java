@@ -4,12 +4,13 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.amshove.natls.config.LSConfiguration;
 import org.amshove.natls.project.LanguageServerFile;
-import org.eclipse.lsp4j.DidChangeConfigurationParams;
-import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.*;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.logging.LogManager;
 
 @LspTest
@@ -71,7 +72,17 @@ public abstract class LanguageServerTest
 		return findLanguageServerFile(createOrSaveFile(libraryName, name, source));
 	}
 
+	protected TextDocumentIdentifier createOrSaveFileExternally(String libraryName, String name, String source)
+	{
+		return createOrSaveFile(libraryName, name, source, true);
+	}
+
 	protected TextDocumentIdentifier createOrSaveFile(String libraryName, String name, String source)
+	{
+		return createOrSaveFile(libraryName, name, source, false);
+	}
+
+	private TextDocumentIdentifier createOrSaveFile(String libraryName, String name, String source, boolean externallyChanged)
 	{
 		try
 		{
@@ -85,16 +96,33 @@ public abstract class LanguageServerTest
 			Files.writeString(filePath, source);
 
 			var fileUri = filePath.toUri().toString();
+			var identifier = new TextDocumentIdentifier(fileUri);
+
+			if (externallyChanged)
+			{
+				getContext().workspaceService().didChangeWatchedFiles(
+					new DidChangeWatchedFilesParams(
+						List.of(
+							new FileEvent(
+								fileUri,
+								existed ? FileChangeType.Changed : FileChangeType.Created
+							)
+						)
+					)
+				);
+				return identifier;
+			}
+
 			if (existed)
 			{
-				getContext().languageService().fileSaved(filePath);
+				getContext().documentService().didSave(new DidSaveTextDocumentParams(identifier));
 			}
 			else
 			{
-				getContext().languageService().createdFile(fileUri);
+				getContext().workspaceService().didCreateFiles(new CreateFilesParams(List.of(new FileCreate(fileUri))));
 			}
 
-			return new TextDocumentIdentifier(fileUri);
+			return identifier;
 		}
 		catch (IOException e)
 		{

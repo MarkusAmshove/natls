@@ -8,6 +8,7 @@ import org.eclipse.lsp4j.WorkDoneProgressEnd;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;
 
+import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,7 +18,7 @@ import java.util.function.Function;
 
 public class ProgressTasks
 {
-	private static final ConcurrentMap<String, IProgressMonitor> runningTasks = new ConcurrentHashMap<>();
+	private static final ConcurrentMap<String, CompletableFuture<?>> runningTasks = new ConcurrentHashMap<>();
 	private static ClientProgressType progressType = ClientProgressType.MESSAGE;
 
 	public static void setClientProgressType(ClientProgressType type)
@@ -27,26 +28,29 @@ public class ProgressTasks
 
 	public static CompletableFuture<Void> startNewVoid(String title, LanguageClient client, Consumer<IProgressMonitor> task)
 	{
-		if (progressType == ClientProgressType.WORK_DONE)
-		{
-			return startNewWorkDone(title, client, wrapVoid(task));
-		}
-		else
-		{
-			return startNewMessageBased(title, client, wrapVoid(task));
-		}
+		var taskId = UUID.randomUUID().toString();
+		var newTask = progressType == ClientProgressType.WORK_DONE
+			? startNewWorkDone(title, client, wrapVoid(task), taskId)
+			: startNewMessageBased(title, client, wrapVoid(task), taskId);
+
+		runningTasks.put(taskId, newTask);
+		return newTask;
 	}
 
 	public static <T> CompletableFuture<T> startNew(String title, LanguageClient client, Function<IProgressMonitor, T> task)
 	{
-		if (progressType == ClientProgressType.WORK_DONE)
-		{
-			return startNewWorkDone(title, client, task);
-		}
-		else
-		{
-			return startNewMessageBased(title, client, task);
-		}
+		var taskId = UUID.randomUUID().toString();
+		var newTask = progressType == ClientProgressType.WORK_DONE
+			? startNewWorkDone(title, client, task, taskId)
+			: startNewMessageBased(title, client, task, taskId);
+
+		runningTasks.put(taskId, newTask);
+		return newTask;
+	}
+
+	public static Collection<CompletableFuture<?>> getRunningTasks()
+	{
+		return runningTasks.values();
 	}
 
 	private static Function<IProgressMonitor, Void> wrapVoid(Consumer<IProgressMonitor> task)
@@ -58,13 +62,11 @@ public class ProgressTasks
 		};
 	}
 
-	private static <T> CompletableFuture<T> startNewMessageBased(String title, LanguageClient client, Function<IProgressMonitor, T> task)
+	private static <T> CompletableFuture<T> startNewMessageBased(String title, LanguageClient client, Function<IProgressMonitor, T> task, String taskId)
 	{
 		return CompletableFuture.supplyAsync(() ->
 		{
-			var taskId = UUID.randomUUID().toString();
 			var progressMonitor = new MessageProgressMonitor(client);
-			runningTasks.put(taskId, progressMonitor);
 			try
 			{
 				client.showMessage(ClientMessage.log(title));
@@ -77,18 +79,17 @@ public class ProgressTasks
 			}
 			finally
 			{
+				runningTasks.remove(taskId);
 				client.showMessage(ClientMessage.log("%s done".formatted(title)));
 			}
 		});
 	}
 
-	private static <T> CompletableFuture<T> startNewWorkDone(String title, LanguageClient client, Function<IProgressMonitor, T> task)
+	private static <T> CompletableFuture<T> startNewWorkDone(String title, LanguageClient client, Function<IProgressMonitor, T> task, String taskId)
 	{
-		var taskId = UUID.randomUUID().toString();
 		var params = new WorkDoneProgressCreateParams();
 		params.setToken(taskId);
 		var progressMonitor = new WorkDoneProgressMonitor(taskId, client);
-		runningTasks.put(taskId, progressMonitor);
 		return client.createProgress(params).thenApply((ignored) ->
 		{
 			try
