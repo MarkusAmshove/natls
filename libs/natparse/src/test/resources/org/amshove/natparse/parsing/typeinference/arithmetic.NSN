@@ -7,10 +7,13 @@ DEFINE DATA
 LOCAL
 1 #BIGNUM (P12)
 1 #LITTLENUM (I1)
+1 #I4 (I4)
 1 #FLOATING (N12,7)
 1 #ARR (A10/*)
+1 #F4 (F4)
+1 #F8 (F8)
 
-1 #TARGET (A) DYNAMIC /* To have no diagnostics
+1 #TARGET (A) DYNAMIC /* To have no diagnostics for LHS
 END-DEFINE
 
 #TARGET := #LITTLENUM + *ISN /* TYPE: (P10)
@@ -27,4 +30,9 @@ END-DEFINE
 #TARGET := #BIGNUM + IRETURN(<>) /* TYPE: (P12)
 #TARGET := IRETURN(<>) + #BIGNUM /* TYPE: (P12)
 
+/* Always prefer the floating type
+#TARGET := #LITTLENUM + #F4 /* TYPE: (F4)
+#TARGET := #F4 + #F4 /* TYPE: (F4)
+#TARGET := #I4 + #F4 /* TYPE: (F4)
+#TARGET := #BIGNUM + #FLOATING /* TYPE: (N12,7)
 END

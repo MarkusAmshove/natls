@@ -114,6 +114,11 @@ public class TypeInference
 			{
 				biggestType = collectedType;
 			}
+
+			if (!biggestType.isFloating() && collectedType.isFloating())
+			{
+				biggestType = collectedType;
+			}
 		}
 
 		return Optional.ofNullable(biggestType);

@@ -185,4 +185,14 @@ public interface IDataType
 			default -> false;
 			});
 	}
+
+	default boolean isFloating()
+	{
+		return switch (format())
+		{
+			case FLOAT -> true;
+			case NUMERIC, PACKED -> calculateDigitsAfterDecimalPoint() > 0;
+			default -> false;
+		};
+	}
 }

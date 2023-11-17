@@ -78,7 +78,7 @@ class TypeInferenceShould
 	}
 
 	@TestFactory
-	Stream<DynamicContainer> testoPesto()
+	Stream<DynamicContainer> testInferenceFiles()
 	{
 		var files = ResourceHelper.findRelativeResourceFiles("typeinference", getClass());
 		var provider = createModuleProvider();
