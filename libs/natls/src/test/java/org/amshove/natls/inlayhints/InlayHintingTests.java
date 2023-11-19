@@ -10,7 +10,9 @@ import org.eclipse.lsp4j.InlayHintParams;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
@@ -122,6 +124,30 @@ class InlayHintingTests extends LanguageServerTest
 			.succeedsWithin(1, TimeUnit.SECONDS)
 			.satisfies(
 				hints -> assertThat(hints).isEmpty()
+			);
+	}
+
+	@Test
+	void inlayHintsShouldBeShownForNewLinesInInputStatements() throws ExecutionException, InterruptedException, TimeoutException
+	{
+		var module = createOrSaveFile("LIBONE", "SUB.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+
+			INPUT (AD=MI)
+				'Field: ' #FIELD /
+				'Field2: ' #FIELD2 /
+				'Bye'
+			END
+			""");
+
+		var request = getContext().documentService().inlayHint(new InlayHintParams(module, LspUtil.newRange(0, 0, 8, 0)));
+		assertThat(request)
+			.succeedsWithin(1, TimeUnit.SECONDS)
+			.satisfies(
+				hints -> assertThat(hints).hasSize(2),
+				hints -> assertThat(hints.get(0).getLabel().getLeft()).isEqualTo("line 1"),
+				hints -> assertThat(hints.get(1).getLabel().getLeft()).isEqualTo("line 2")
 			);
 	}
 

@@ -57,6 +57,12 @@ public class InlayHintProvider
 				return;
 			}
 
+			if (n instanceof IInputStatementNode input)
+			{
+				addInputLineHints(input, hints);
+				return;
+			}
+
 			if (n instanceof IInternalPerformNode internalPerform && !internalPerform.reference().isInFile(module.file().getPath()))
 			{
 				var hint = new InlayHint();
@@ -70,5 +76,23 @@ public class InlayHintProvider
 		});
 
 		return hints;
+	}
+
+	private void addInputLineHints(IInputStatementNode input, ArrayList<InlayHint> hints)
+	{
+		var lineNo = 1;
+		for (var operand : input.descendants())
+		{
+			if (operand instanceof ITokenNode tokenNode && tokenNode.token().kind() == SyntaxKind.SLASH)
+			{
+				var hint = new InlayHint();
+				hint.setPosition(LspUtil.toPosition(tokenNode.token()));
+				hint.setLabel("line %d".formatted(lineNo));
+				hint.setPaddingLeft(true);
+				hints.add(hint);
+				hint.setKind(InlayHintKind.Type);
+				lineNo++;
+			}
+		}
 	}
 }
