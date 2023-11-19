@@ -208,6 +208,7 @@ public class CompletionProvider
 			{
 				item.setData(new UnresolvedCompletionInfo((String) item.getData(), file.getPath().toUri().toString()));
 			}
+			item.setSortText("1");
 			return item;
 		}
 		catch (Exception e)
@@ -236,6 +237,7 @@ public class CompletionProvider
 					var item = new CompletionItem(f.getReferableName());
 					item.setData(new UnresolvedCompletionInfo(f.getReferableName(), f.getUri()));
 					item.setKind(CompletionItemKind.Function);
+					item.setSortText("5");
 					return item;
 				}
 				catch (Exception e)
@@ -302,6 +304,7 @@ public class CompletionProvider
 					var item = new CompletionItem(f.getReferableName());
 					item.setData(createUnresolvedInfo(f, context));
 					item.setKind(CompletionItemKind.Class);
+					item.setSortText("5");
 					return item;
 				}
 				catch (Exception e)
@@ -325,6 +328,7 @@ public class CompletionProvider
 					var item = new CompletionItem(f.getReferableName());
 					item.setData(createUnresolvedInfo(f, context));
 					item.setKind(CompletionItemKind.Event);
+					item.setSortText("5");
 					return item;
 				}
 				catch (Exception e)
@@ -393,7 +397,7 @@ public class CompletionProvider
 			: "PERFORM ";
 		item.setInsertText(perform + subroutineNode.declaration().trimmedSymbolName(32));
 		item.setLabel(subroutineNode.declaration().symbolName());
-		item.setSortText("1");
+		item.setSortText("4");
 
 		return item;
 	}
@@ -414,7 +418,7 @@ public class CompletionProvider
 				completionItem.setKind(definition instanceof SystemFunctionDefinition ? CompletionItemKind.Function : CompletionItemKind.Variable);
 				completionItem.setLabel(label + " :%s".formatted(definition.type().toShortString()));
 				completionItem.setSortText(
-					(alreadyContainsAsterisk ? "0" : "9") + completionItem.getLabel()
+					(alreadyContainsAsterisk ? "0" : "2") + completionItem.getLabel()
 				); // if alreadyContainsAsterisk, bring them to the front. else to the end.
 
 				completionItem.setInsertText(insertion);
