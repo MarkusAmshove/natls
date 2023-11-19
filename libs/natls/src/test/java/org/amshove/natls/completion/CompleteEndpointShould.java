@@ -13,7 +13,7 @@ class CompleteEndpointShould extends CompletionTest
 			DEFINE DATA LOCAL
 			1 #VAR (A10)
 			END-DEFINE
-			
+
 			${}$
 			END
 			""")
@@ -26,11 +26,11 @@ class CompleteEndpointShould extends CompletionTest
 		assertCompletions("LIBONE", "SUB.NSN", """
 			DEFINE DATA LOCAL
 			END-DEFINE
-			
+
 			DEFINE SUBROUTINE MY-SUB
 			IGNORE
 			END-SUBROUTINE
-			
+
 			${}$
 			END
 			""")
@@ -43,11 +43,11 @@ class CompleteEndpointShould extends CompletionTest
 		assertCompletions("LIBONE", "SUB.NSN", """
 			DEFINE DATA LOCAL
 			END-DEFINE
-			
+
 			DEFINE SUBROUTINE MY-SUB
 			IGNORE
 			END-SUBROUTINE
-			
+
 			PERFORM ${}$
 			END
 			""")
@@ -60,11 +60,11 @@ class CompleteEndpointShould extends CompletionTest
 		assertCompletions("LIBONE", "SUB.NSN", """
 			DEFINE DATA LOCAL
 			END-DEFINE
-			
+
 			DEFINE SUBROUTINE MY-SUB
 			IGNORE
 			END-SUBROUTINE
-			
+
 			PERFORM MY-${}$
 			END
 			""")
@@ -77,7 +77,7 @@ class CompleteEndpointShould extends CompletionTest
 		assertCompletions("LIBONE", "SUB.NSN", """
 			DEFINE DATA LOCAL
 			END-DEFINE
-			
+
 			${}$
 			END
 			""")
@@ -90,11 +90,67 @@ class CompleteEndpointShould extends CompletionTest
 		assertCompletions("LIBONE", "SUB.NSN", """
 			DEFINE DATA LOCAL
 			END-DEFINE
-			
+
 			${}$
 			END
 			""")
 			.assertContains("*OCC :(I4)", CompletionItemKind.Function);
+	}
+
+	@Test
+	void completeSystemVariablesIfAsteriskIsPresent()
+	{
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA LOCAL
+			1 #VAR (I4)
+			END-DEFINE
+
+			#VAR := *${}$
+			END
+			""")
+			.assertContainsCompleting("*PID :(A32)", CompletionItemKind.Variable, "PID");
+	}
+
+	@Test
+	void completeSystemFunctionsWithAsteriskPresent()
+	{
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA LOCAL
+			1 #OCC (I4)
+			END-DEFINE
+
+			#OCC := *${}$
+			END
+			""")
+			.assertContainsCompleting("*OCC :(I4)", CompletionItemKind.Function, "OCC($1)$0");
+	}
+
+	@Test
+	void completeSystemVariablesIfAsteriskAndPartOfNameIsPresent()
+	{
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA LOCAL
+			1 #VAR (I4)
+			END-DEFINE
+
+			#VAR := *PI${}$
+			END
+			""")
+			.assertContainsCompleting("*PID :(A32)", CompletionItemKind.Variable, "PID");
+	}
+
+	@Test
+	void completeSystemFunctionsWithAsteriskAndPartOfNamePresent()
+	{
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA LOCAL
+			1 #OCC (I4)
+			END-DEFINE
+
+			#OCC := *OC${}$
+			END
+			""")
+			.assertContainsCompleting("*OCC :(I4)", CompletionItemKind.Function, "OCC($1)$0");
 	}
 
 	@Test
@@ -104,7 +160,7 @@ class CompleteEndpointShould extends CompletionTest
 			DEFINE DATA LOCAL
 			1 #ARR (A10/*)
 			END-DEFINE
-			
+
 			${}$
 			END
 			""")
@@ -123,7 +179,7 @@ class CompleteEndpointShould extends CompletionTest
 			1 #GRP
 			2 #VAR (A1)
 			END-DEFINE
-			
+
 			${}$
 			END
 			""")
@@ -142,7 +198,7 @@ class CompleteEndpointShould extends CompletionTest
 			1 #GRP
 			2 #VAR (A1)
 			END-DEFINE
-			
+
 			${}$
 			END
 			""")
@@ -163,7 +219,7 @@ class CompleteEndpointShould extends CompletionTest
 			1 #GRP2
 			2 #VAR (A1)
 			END-DEFINE
-			
+
 			${}$
 			END
 			""")

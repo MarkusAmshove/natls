@@ -91,7 +91,7 @@ public class CompletionProvider
 		completionItems.addAll(externalSubroutineCompletions(file.getLibrary(), completionContext));
 		completionItems.addAll(subprogramCompletions(file.getLibrary(), completionContext));
 
-		completionItems.addAll(completeSystemVars("*".equals(params.getContext().getTriggerCharacter()))); // TODO: Das muss wieder funktionieren
+		completionItems.addAll(completeSystemVars(completionContext));
 
 		return completionItems;
 	}
@@ -398,8 +398,9 @@ public class CompletionProvider
 		return item;
 	}
 
-	private List<CompletionItem> completeSystemVars(boolean triggered)
+	private List<CompletionItem> completeSystemVars(CodeCompletionContext context)
 	{
+		var alreadyContainsAsterisk = context.isCurrentTokenKind(SyntaxKind.ASTERISK) || context.isPreviousTokenKind(SyntaxKind.ASTERISK);
 		return Arrays.stream(SyntaxKind.values())
 			.filter(sk -> sk.isSystemVariable() || sk.isSystemFunction())
 			.map(sk ->
@@ -408,13 +409,13 @@ public class CompletionProvider
 				var completionItem = new CompletionItem();
 				var definition = BuiltInFunctionTable.getDefinition(sk);
 				var label = "*" + callableName;
-				var insertion = triggered ? callableName : label;
+				var insertion = alreadyContainsAsterisk ? callableName : label;
 				completionItem.setDetail(definition.documentation());
 				completionItem.setKind(definition instanceof SystemFunctionDefinition ? CompletionItemKind.Function : CompletionItemKind.Variable);
 				completionItem.setLabel(label + " :%s".formatted(definition.type().toShortString()));
 				completionItem.setSortText(
-					(triggered ? "0" : "9") + completionItem.getLabel()
-				); // if triggered, bring them to the front. else to the end.
+					(alreadyContainsAsterisk ? "0" : "9") + completionItem.getLabel()
+				); // if alreadyContainsAsterisk, bring them to the front. else to the end.
 
 				completionItem.setInsertText(insertion);
 				if (definition instanceof SystemFunctionDefinition functionDefinition && !functionDefinition.parameter().isEmpty())
