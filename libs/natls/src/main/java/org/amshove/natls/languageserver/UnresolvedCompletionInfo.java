@@ -72,11 +72,11 @@ public class UnresolvedCompletionInfo
 		this.previousTexts = previousTexts;
 	}
 
-	public void addPreviousText(String text)
+	public void setPreviousText(List<String> texts)
 	{
-		if (text != null)
+		if (texts != null && !texts.isEmpty())
 		{
-			previousTexts.add(text);
+			previousTexts = texts;
 		}
 	}
 

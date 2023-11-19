@@ -65,14 +65,14 @@ public class CompletionProvider
 
 		if (completionContext.isCurrentTokenKind(SyntaxKind.PERFORM) || completionContext.isPreviousTokenKind(SyntaxKind.PERFORM))
 		{
-			completionItems.addAll(externalSubroutineCompletions(file.getLibrary()));
+			completionItems.addAll(externalSubroutineCompletions(file.getLibrary(), completionContext));
 			completionItems.addAll(localSubroutineCompletions(module, completionContext));
 			return completionItems;
 		}
 
 		if (completionContext.isCurrentTokenKind(SyntaxKind.CALLNAT) || completionContext.isPreviousTokenKind(SyntaxKind.CALLNAT))
 		{
-			completionItems.addAll(subprogramCompletions(file.getLibrary()));
+			completionItems.addAll(subprogramCompletions(file.getLibrary(), completionContext));
 			return completionItems;
 		}
 
@@ -88,22 +88,10 @@ public class CompletionProvider
 		completionItems.addAll(localSubroutineCompletions(module, completionContext));
 
 		completionItems.addAll(functionCompletions(file.getLibrary()));
-		completionItems.addAll(externalSubroutineCompletions(file.getLibrary()));
-		completionItems.addAll(subprogramCompletions(file.getLibrary()));
+		completionItems.addAll(externalSubroutineCompletions(file.getLibrary(), completionContext));
+		completionItems.addAll(subprogramCompletions(file.getLibrary(), completionContext));
 
 		completionItems.addAll(completeSystemVars("*".equals(params.getContext().getTriggerCharacter()))); // TODO: Das muss wieder funktionieren
-
-		var previousTokenSource = completionContext.previousToken() != null ? completionContext.previousToken().source().toUpperCase() : null;
-		var currentTokenSource = completionContext.currentToken() != null ? completionContext.currentToken().source().toUpperCase() : null;
-		for (var completionItem : completionItems)
-		{
-			if (completionItem.getData() != null)
-			{
-				var data = (UnresolvedCompletionInfo) completionItem.getData();
-				data.addPreviousText(previousTokenSource);
-				data.addPreviousText(currentTokenSource);
-			}
-		}
 
 		return completionItems;
 	}
@@ -113,7 +101,7 @@ public class CompletionProvider
 		return module.referencableNodes().stream()
 			.filter(ISubroutineNode.class::isInstance)
 			.map(ISubroutineNode.class::cast)
-			.map(n -> this.createCompletionItem(n, context))
+			.map(n -> this.createLocalSubroutineCompletionItem(n, context))
 			.toList();
 	}
 
@@ -134,7 +122,7 @@ public class CompletionProvider
 			.toList();
 	}
 
-	public CompletionItem resolveComplete(CompletionItem item, LanguageServerFile file, UnresolvedCompletionInfo info, LSConfiguration config)
+	public CompletionItem resolveComplete(CompletionItem item, LanguageServerFile calledModulesFile, UnresolvedCompletionInfo info, LSConfiguration config)
 	{
 		this.config = config;
 
@@ -143,7 +131,7 @@ public class CompletionProvider
 			return item;
 		}
 
-		var module = file.module();
+		var module = calledModulesFile.module();
 
 		return switch (item.getKind())
 		{
@@ -163,7 +151,7 @@ public class CompletionProvider
 				item.setDocumentation(
 					new MarkupContent(
 						MarkupKind.MARKDOWN,
-						hoverProvider.createHover(new HoverContext(variableNode, variableNode.declaration(), file)).getContents().getRight().getValue()
+						hoverProvider.createHover(new HoverContext(variableNode, variableNode.declaration(), calledModulesFile)).getContents().getRight().getValue()
 					)
 				);
 				yield item;
@@ -177,7 +165,7 @@ public class CompletionProvider
 						hoverProvider.hoverModule(module).getContents().getRight().getValue()
 					)
 				);
-				item.setInsertText("%s(<%s>)$0".formatted(file.getReferableName(), functionParameterListAsSnippet(file)));
+				item.setInsertText("%s(<%s>)$0".formatted(calledModulesFile.getReferableName(), functionParameterListAsSnippet(calledModulesFile)));
 				yield item;
 			}
 			case Event ->
@@ -190,7 +178,7 @@ public class CompletionProvider
 					)
 				);
 				var perform = info.hasPreviousText("PERFORM") ? "" : "PERFORM ";
-				item.setInsertText("%s%s%s%n$0".formatted(perform, file.getReferableName(), externalSubroutineParameterListAsSnippet(file)));
+				item.setInsertText("%s%s%s%n$0".formatted(perform, calledModulesFile.getReferableName(), externalModuleParameterListAsSnippet(calledModulesFile)));
 				yield item;
 			}
 			case Class ->
@@ -203,7 +191,7 @@ public class CompletionProvider
 					)
 				);
 				var callnat = info.hasPreviousText("CALLNAT") ? "" : "CALLNAT ";
-				item.setInsertText("%s'%s'%s%n$0".formatted(callnat, file.getReferableName(), externalSubroutineParameterListAsSnippet(file)));
+				item.setInsertText("%s'%s'%s%n$0".formatted(callnat, calledModulesFile.getReferableName(), externalModuleParameterListAsSnippet(calledModulesFile)));
 				yield item;
 			}
 			default -> item;
@@ -283,9 +271,9 @@ public class CompletionProvider
 		return builder.toString();
 	}
 
-	private String externalSubroutineParameterListAsSnippet(LanguageServerFile subroutine)
+	private String externalModuleParameterListAsSnippet(LanguageServerFile module)
 	{
-		if (!(subroutine.module()instanceof IHasDefineData hasDefineData) || hasDefineData.defineData() == null)
+		if (!(module.module()instanceof IHasDefineData hasDefineData) || hasDefineData.defineData() == null)
 		{
 			return "";
 		}
@@ -303,7 +291,7 @@ public class CompletionProvider
 		return builder.toString();
 	}
 
-	private Collection<? extends CompletionItem> subprogramCompletions(LanguageServerLibrary library)
+	private Collection<? extends CompletionItem> subprogramCompletions(LanguageServerLibrary library, CodeCompletionContext context)
 	{
 		return library.getModulesOfType(NaturalFileType.SUBPROGRAM, true)
 			.stream()
@@ -312,7 +300,7 @@ public class CompletionProvider
 				try
 				{
 					var item = new CompletionItem(f.getReferableName());
-					item.setData(new UnresolvedCompletionInfo(f.getReferableName(), f.getUri()));
+					item.setData(createUnresolvedInfo(f, context));
 					item.setKind(CompletionItemKind.Class);
 					return item;
 				}
@@ -326,7 +314,7 @@ public class CompletionProvider
 			.toList();
 	}
 
-	private Collection<? extends CompletionItem> externalSubroutineCompletions(LanguageServerLibrary library)
+	private Collection<? extends CompletionItem> externalSubroutineCompletions(LanguageServerLibrary library, CodeCompletionContext context)
 	{
 		return library.getModulesOfType(NaturalFileType.SUBROUTINE, true)
 			.stream()
@@ -335,7 +323,7 @@ public class CompletionProvider
 				try
 				{
 					var item = new CompletionItem(f.getReferableName());
-					item.setData(new UnresolvedCompletionInfo(f.getReferableName(), f.getUri()));
+					item.setData(createUnresolvedInfo(f, context));
 					item.setKind(CompletionItemKind.Event);
 					return item;
 				}
@@ -396,7 +384,7 @@ public class CompletionProvider
 		return item;
 	}
 
-	private CompletionItem createCompletionItem(ISubroutineNode subroutineNode, CodeCompletionContext context)
+	private CompletionItem createLocalSubroutineCompletionItem(ISubroutineNode subroutineNode, CodeCompletionContext context)
 	{
 		var item = new CompletionItem();
 		item.setKind(CompletionItemKind.Method);
@@ -439,6 +427,13 @@ public class CompletionProvider
 			})
 			.toList();
 
+	}
+
+	private UnresolvedCompletionInfo createUnresolvedInfo(LanguageServerFile file, CodeCompletionContext context)
+	{
+		var info = new UnresolvedCompletionInfo(file.getReferableName(), file.getUri());
+		info.setPreviousText(context.previousTexts());
+		return info;
 	}
 
 }

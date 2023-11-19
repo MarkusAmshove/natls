@@ -8,8 +8,10 @@ import org.amshove.natparse.natural.IHasDefineData;
 import org.eclipse.lsp4j.Position;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
-public record CodeCompletionContext(SemanticPosition semanticPosition, @Nullable SyntaxToken currentToken, @Nullable SyntaxToken previousToken)
+public record CodeCompletionContext(SemanticPosition semanticPosition, @Nullable SyntaxToken currentToken, @Nullable SyntaxToken previousToken, List<String> previousTexts)
 {
 	public static CodeCompletionContext create(LanguageServerFile file, Position position)
 	{
@@ -29,7 +31,20 @@ public record CodeCompletionContext(SemanticPosition semanticPosition, @Nullable
 			previousToken = tokenAtPosition;
 			tokenAtPosition = null;
 		}
-		return new CodeCompletionContext(semanticPosition, tokenAtPosition, previousToken);
+
+		var previousTexts = new ArrayList<String>();
+		addTokenIfNotNull(previousToken, previousTexts);
+		addTokenIfNotNull(tokenAtPosition, previousTexts);
+
+		return new CodeCompletionContext(semanticPosition, tokenAtPosition, previousToken, previousTexts);
+	}
+
+	private static void addTokenIfNotNull(SyntaxToken token, ArrayList<String> sources)
+	{
+		if (token != null)
+		{
+			sources.add(token.source().toUpperCase());
+		}
 	}
 
 	public boolean completesDataArea()
