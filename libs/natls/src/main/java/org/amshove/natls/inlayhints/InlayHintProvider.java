@@ -80,17 +80,38 @@ public class InlayHintProvider
 
 	private void addInputLineHints(IInputStatementNode input, ArrayList<InlayHint> hints)
 	{
+		if (input.operands().isEmpty())
+		{
+			return;
+		}
+		// first hind needs special treatment before new lines are parsed as operands on input statements
+		var firstLineFirstOperand = input.operands().first();
+		var firstLineOperand = new InlayHint();
+		firstLineOperand.setPosition(LspUtil.toPosition(firstLineFirstOperand.position()));
+		firstLineOperand.setLabel("line %d".formatted(1));
+		firstLineOperand.setPaddingRight(true);
+		firstLineOperand.setKind(InlayHintKind.Type);
+		hints.add(firstLineOperand);
+
+		// This can be switched to input.operands() once new lines are parsed as operands
 		var lineNo = 1;
+		var nextIsInNewLine = false;
 		for (var operand : input.descendants())
 		{
-			if (operand instanceof ITokenNode tokenNode && tokenNode.token().kind() == SyntaxKind.SLASH)
+			if (nextIsInNewLine)
 			{
 				var hint = new InlayHint();
-				hint.setPosition(LspUtil.toPosition(tokenNode.token()));
+				hint.setPosition(LspUtil.toPosition(operand.position()));
 				hint.setLabel("line %d".formatted(lineNo));
-				hint.setPaddingLeft(true);
+				hint.setPaddingRight(true);
 				hints.add(hint);
 				hint.setKind(InlayHintKind.Type);
+				nextIsInNewLine = false;
+			}
+
+			if (operand instanceof ITokenNode tokenNode && tokenNode.token().kind() == SyntaxKind.SLASH)
+			{
+				nextIsInNewLine = true;
 				lineNo++;
 			}
 		}
