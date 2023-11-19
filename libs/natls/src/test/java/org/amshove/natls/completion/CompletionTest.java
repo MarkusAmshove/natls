@@ -5,6 +5,7 @@ import org.amshove.natls.testlifecycle.SourceWithCursor;
 import org.eclipse.lsp4j.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -68,10 +69,10 @@ public abstract class CompletionTest extends EmptyProjectTest
 						.formatted(
 							label,
 							kind,
-							items.stream().filter(i -> i.getKind().equals(kind)).map(Object::toString).collect(Collectors.joining("\n"))
+							items.stream().filter(i -> i.getKind() == kind).map(Object::toString).collect(Collectors.joining("\n"))
 						)
 				)
-				.anyMatch(ci -> ci.getLabel().equals(label) && ci.getKind().equals(kind));
+				.anyMatch(ci -> ci.getLabel().equals(label) && ci.getKind() == kind);
 			return this;
 		}
 
@@ -84,10 +85,10 @@ public abstract class CompletionTest extends EmptyProjectTest
 							label,
 							kind,
 							completion,
-							items.stream().filter(i -> i.getKind().equals(kind)).map(Object::toString).collect(Collectors.joining("\n"))
+							items.stream().filter(i -> i.getKind() == kind).map(Object::toString).collect(Collectors.joining("\n"))
 						)
 				)
-				.anyMatch(ci -> ci.getLabel().equals(label) && ci.getKind().equals(kind) && ci.getInsertText().equals(completion));
+				.anyMatch(ci -> ci.getLabel().equals(label) && ci.getKind() == kind && ci.getInsertText().equals(completion));
 			return this;
 		}
 
@@ -98,6 +99,15 @@ public abstract class CompletionTest extends EmptyProjectTest
 					"Expected completions to not contain variable with label %s"
 				)
 				.noneMatch(ci -> ci.getKind().equals(CompletionItemKind.Variable) && ci.getLabel().equalsIgnoreCase(label));
+			return this;
+		}
+
+		CompletionAssertion assertContainsOnlyKinds(CompletionItemKind... kinds)
+		{
+			var expectedKinds = Arrays.stream(kinds).collect(Collectors.toSet());
+			assertThat(items)
+				.as("Expected only to contain completion kinds %s".formatted(expectedKinds.stream().map(CompletionItemKind::toString).collect(Collectors.joining(", "))))
+				.allMatch(i -> expectedKinds.contains(i.getKind()));
 			return this;
 		}
 	}

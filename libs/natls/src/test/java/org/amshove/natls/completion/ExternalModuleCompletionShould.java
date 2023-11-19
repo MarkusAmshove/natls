@@ -120,6 +120,45 @@ class ExternalModuleCompletionShould extends CompletionTest
 	}
 
 	@Test
+	void onlyContainSubroutinesWhenInvokedAfterPerform()
+	{
+		createOrSaveFile("LIBONE", "SUBS1.NSS", """
+			DEFINE DATA PARAMETER
+			1 #P-PARAM (A10)
+			END-DEFINE
+			DEFINE SUBROUTINE EXT-SUBROUTINE-1
+			IGNORE
+			END-SUBROUTINE
+			END
+			""");
+		createOrSaveFile("LIBONE", "SUBS2.NSS", """
+			DEFINE DATA PARAMETER
+			1 #P-PARAM (A10)
+			END-DEFINE
+			DEFINE SUBROUTINE EXT-SUBROUTINE-2
+			IGNORE
+			END-SUBROUTINE
+			END
+			""");
+
+		assertCompletions("LIBONE", "SUB2.NSN", """
+			DEFINE DATA LOCAL
+			1 #PRESENT-VAR (A10)
+			END-DEFINE
+			DEFINE SUBROUTINE LOCAL-SUB
+			IGNORE
+			END-SUBROUTINE
+			
+			PERFORM ${}$
+			END
+			""")
+			.assertContains("EXT-SUBROUTINE-1", CompletionItemKind.Event)
+			.assertContains("EXT-SUBROUTINE-2", CompletionItemKind.Event)
+			.assertContains("LOCAL-SUB", CompletionItemKind.Method)
+			.assertContainsOnlyKinds(CompletionItemKind.Method, CompletionItemKind.Event);
+	}
+
+	@Test
 	void completeExternalSubroutinesWithoutPerformKeywordWhenPerformIsAlreadyPresentAndSomeOfTheNameOfTheSubroutineWasTyped()
 	{
 		createOrSaveFile("LIBONE", "SUBR.NSS", """
@@ -163,6 +202,60 @@ class ExternalModuleCompletionShould extends CompletionTest
 			""")
 			.assertContainsCompleting("MYLDA", CompletionItemKind.Struct, "MYLDA")
 			.assertContainsCompleting("MYPDA", CompletionItemKind.Struct, "MYPDA");
+	}
+
+	@Test
+	void completeDataAreasWhenCompletionIsTriggeredAfterUsingInDefineDataWithSomePartsOfTheNamePresent()
+	{
+		createOrSaveFile("LIBONE", "MYLDA.NSL", """
+			DEFINE DATA LOCAL
+			1 #INLDA (A10)
+			END
+			""");
+
+		createOrSaveFile("LIBONE", "MYPDA.NSA", """
+			DEFINE DATA PARAMETER
+			1 #INPDA (A10)
+			END
+			""");
+
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA
+			LOCAL USING MY${}$
+			END-DEFINE
+			END
+			""")
+			.assertContainsCompleting("MYLDA", CompletionItemKind.Struct, "MYLDA")
+			.assertContainsCompleting("MYPDA", CompletionItemKind.Struct, "MYPDA");
+	}
+
+	@Test
+	void onlyContainDataAreasWhenTriggeredToContainDataAreas()
+	{
+		createOrSaveFile("LIBONE", "MYLDA.NSL", """
+			DEFINE DATA LOCAL
+			1 #INLDA (A10)
+			END
+			""");
+
+		createOrSaveFile("LIBONE", "MYPDA.NSA", """
+			DEFINE DATA PARAMETER
+			1 #INPDA (A10)
+			END
+			""");
+
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA
+			LOCAL USING MY${}$
+			LOCAL
+			1 #PRESENT-VAR (A10)
+			END-DEFINE
+			DEFINE SUBROUTINE PRESENT-SUB
+			IGNORE
+			END-SUBROUTINE
+			END
+			""")
+			.assertContainsOnlyKinds(CompletionItemKind.Struct);
 	}
 
 	@Test
@@ -257,5 +350,36 @@ class ExternalModuleCompletionShould extends CompletionTest
 			END
 			""")
 			.assertContainsCompleting("SUBN", CompletionItemKind.Class, "'SUBN' ${1:#P-PARAM}%n$0".formatted());
+	}
+
+	@Test
+	void onlyContainCallnatsWhenInvokedAfterCallnat()
+	{
+		createOrSaveFile("LIBONE", "SUBN.NSN", """
+			DEFINE DATA PARAMETER
+			1 #P-PARAM (A10)
+			END-DEFINE
+			END
+			""");
+		createOrSaveFile("LIBONE", "SUBN2.NSN", """
+			DEFINE DATA PARAMETER
+			1 #P-PARAM (A10)
+			END-DEFINE
+			END
+			""");
+
+		assertCompletions("LIBONE", "SUB2.NSN", """
+			DEFINE DATA LOCAL
+			1 #PRESENT-VAR (A10)
+			END-DEFINE
+			DEFINE SUBROUTINE PRESENT-SUB
+			IGNORE
+			END-DEFINE
+			CALLNAT ${}$
+			END
+			""")
+			.assertContains("SUBN", CompletionItemKind.Class)
+			.assertContains("SUBN2", CompletionItemKind.Class)
+			.assertContainsOnlyKinds(CompletionItemKind.Class);
 	}
 }

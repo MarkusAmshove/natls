@@ -49,7 +49,7 @@ public record CodeCompletionContext(SemanticPosition semanticPosition, @Nullable
 
 	public boolean completesDataArea()
 	{
-		return semanticPosition == SemanticPosition.DEFINE_DATA && isCurrentTokenKind(SyntaxKind.USING);
+		return semanticPosition == SemanticPosition.DEFINE_DATA && (isCurrentTokenKind(SyntaxKind.USING) || isPreviousTokenKind(SyntaxKind.USING));
 	}
 
 	public boolean isCurrentTokenKind(SyntaxKind kind)
