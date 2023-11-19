@@ -52,14 +52,28 @@ public class CompletionProvider
 		}
 
 		var isFilteredOnQualifiedNames = params.getContext().getTriggerKind() == CompletionTriggerKind.TriggerCharacter && ".".equals(params.getContext().getTriggerCharacter());
-		if (isFilteredOnQualifiedNames || completionContext.previousToken().kind() == SyntaxKind.LABEL_IDENTIFIER) // Label identifier is what's lexed for incomplete qualification, e.g. GRP.
+		if (isFilteredOnQualifiedNames || completionContext.isCurrentTokenKind(SyntaxKind.LABEL_IDENTIFIER)) // Label identifier is what's lexed for incomplete qualification, e.g. GRP.
 		{
-			var qualifiedNameFilter = completionContext.previousToken().symbolName();
+			assert completionContext.currentToken() != null;
+			var qualifiedNameFilter = completionContext.currentToken().symbolName();
 			return findVariablesToComplete(module)
 				.filter(v -> v.qualifiedName().startsWith(qualifiedNameFilter))
 				.map(v -> toVariableCompletion(v, module, file, qualifiedNameFilter))
 				.filter(Objects::nonNull)
 				.toList();
+		}
+
+		if (completionContext.completesPerform() && !completionContext.completesParameter())
+		{
+			completionItems.addAll(externalSubroutineCompletions(file.getLibrary(), completionContext));
+			completionItems.addAll(localSubroutineCompletions(module, completionContext));
+			return completionItems;
+		}
+
+		if (completionContext.completesCallnat() && !completionContext.completesParameter())
+		{
+			completionItems.addAll(subprogramCompletions(file.getLibrary(), completionContext));
+			return completionItems;
 		}
 
 		completionItems.addAll(snippetEngine.provideSnippets(file));
@@ -71,23 +85,23 @@ public class CompletionProvider
 				.toList()
 		);
 
-		completionItems.addAll(localSubroutineCompletions(module));
+		completionItems.addAll(localSubroutineCompletions(module, completionContext));
 
 		completionItems.addAll(functionCompletions(file.getLibrary()));
-		completionItems.addAll(externalSubroutineCompletions(file.getLibrary()));
-		completionItems.addAll(subprogramCompletions(file.getLibrary()));
+		completionItems.addAll(externalSubroutineCompletions(file.getLibrary(), completionContext));
+		completionItems.addAll(subprogramCompletions(file.getLibrary(), completionContext));
 
-		completionItems.addAll(completeSystemVars("*".equals(params.getContext().getTriggerCharacter())));
+		completionItems.addAll(completeSystemVars(completionContext));
 
 		return completionItems;
 	}
 
-	private List<CompletionItem> localSubroutineCompletions(INaturalModule module)
+	private List<CompletionItem> localSubroutineCompletions(INaturalModule module, CodeCompletionContext context)
 	{
 		return module.referencableNodes().stream()
 			.filter(ISubroutineNode.class::isInstance)
 			.map(ISubroutineNode.class::cast)
-			.map(this::createCompletionItem)
+			.map(n -> this.createLocalSubroutineCompletionItem(n, context))
 			.toList();
 	}
 
@@ -108,7 +122,7 @@ public class CompletionProvider
 			.toList();
 	}
 
-	public CompletionItem resolveComplete(CompletionItem item, LanguageServerFile file, UnresolvedCompletionInfo info, LSConfiguration config)
+	public CompletionItem resolveComplete(CompletionItem item, LanguageServerFile calledModulesFile, UnresolvedCompletionInfo info, LSConfiguration config)
 	{
 		this.config = config;
 
@@ -117,7 +131,7 @@ public class CompletionProvider
 			return item;
 		}
 
-		var module = file.module();
+		var module = calledModulesFile.module();
 
 		return switch (item.getKind())
 		{
@@ -137,7 +151,7 @@ public class CompletionProvider
 				item.setDocumentation(
 					new MarkupContent(
 						MarkupKind.MARKDOWN,
-						hoverProvider.createHover(new HoverContext(variableNode, variableNode.declaration(), file)).getContents().getRight().getValue()
+						hoverProvider.createHover(new HoverContext(variableNode, variableNode.declaration(), calledModulesFile)).getContents().getRight().getValue()
 					)
 				);
 				yield item;
@@ -151,7 +165,7 @@ public class CompletionProvider
 						hoverProvider.hoverModule(module).getContents().getRight().getValue()
 					)
 				);
-				item.setInsertText("%s(<%s>)$0".formatted(file.getReferableName(), functionParameterListAsSnippet(file)));
+				item.setInsertText("%s(<%s>)$0".formatted(calledModulesFile.getReferableName(), functionParameterListAsSnippet(calledModulesFile)));
 				yield item;
 			}
 			case Event ->
@@ -163,7 +177,8 @@ public class CompletionProvider
 						hoverProvider.hoverModule(module).getContents().getRight().getValue()
 					)
 				);
-				item.setInsertText("PERFORM %s%s%n$0".formatted(file.getReferableName(), externalSubroutineParameterListAsSnippet(file)));
+				var perform = info.hasPreviousText("PERFORM") ? "" : "PERFORM ";
+				item.setInsertText("%s%s%s%n$0".formatted(perform, calledModulesFile.getReferableName(), externalModuleParameterListAsSnippet(calledModulesFile)));
 				yield item;
 			}
 			case Class ->
@@ -175,7 +190,8 @@ public class CompletionProvider
 						hoverProvider.hoverModule(module).getContents().getRight().getValue()
 					)
 				);
-				item.setInsertText("CALLNAT '%s'%s%n$0".formatted(file.getReferableName(), externalSubroutineParameterListAsSnippet(file)));
+				var callnat = info.hasPreviousText("CALLNAT") ? "" : "CALLNAT ";
+				item.setInsertText("%s'%s'%s%n$0".formatted(callnat, calledModulesFile.getReferableName(), externalModuleParameterListAsSnippet(calledModulesFile)));
 				yield item;
 			}
 			default -> item;
@@ -192,6 +208,7 @@ public class CompletionProvider
 			{
 				item.setData(new UnresolvedCompletionInfo((String) item.getData(), file.getPath().toUri().toString()));
 			}
+			item.setSortText("1");
 			return item;
 		}
 		catch (Exception e)
@@ -220,6 +237,7 @@ public class CompletionProvider
 					var item = new CompletionItem(f.getReferableName());
 					item.setData(new UnresolvedCompletionInfo(f.getReferableName(), f.getUri()));
 					item.setKind(CompletionItemKind.Function);
+					item.setSortText("5");
 					return item;
 				}
 				catch (Exception e)
@@ -255,9 +273,9 @@ public class CompletionProvider
 		return builder.toString();
 	}
 
-	private String externalSubroutineParameterListAsSnippet(LanguageServerFile subroutine)
+	private String externalModuleParameterListAsSnippet(LanguageServerFile module)
 	{
-		if (!(subroutine.module()instanceof IHasDefineData hasDefineData) || hasDefineData.defineData() == null)
+		if (!(module.module()instanceof IHasDefineData hasDefineData) || hasDefineData.defineData() == null)
 		{
 			return "";
 		}
@@ -275,7 +293,7 @@ public class CompletionProvider
 		return builder.toString();
 	}
 
-	private Collection<? extends CompletionItem> subprogramCompletions(LanguageServerLibrary library)
+	private Collection<? extends CompletionItem> subprogramCompletions(LanguageServerLibrary library, CodeCompletionContext context)
 	{
 		return library.getModulesOfType(NaturalFileType.SUBPROGRAM, true)
 			.stream()
@@ -284,8 +302,9 @@ public class CompletionProvider
 				try
 				{
 					var item = new CompletionItem(f.getReferableName());
-					item.setData(new UnresolvedCompletionInfo(f.getReferableName(), f.getUri()));
+					item.setData(createUnresolvedInfo(f, context));
 					item.setKind(CompletionItemKind.Class);
+					item.setSortText("5");
 					return item;
 				}
 				catch (Exception e)
@@ -298,7 +317,7 @@ public class CompletionProvider
 			.toList();
 	}
 
-	private Collection<? extends CompletionItem> externalSubroutineCompletions(LanguageServerLibrary library)
+	private Collection<? extends CompletionItem> externalSubroutineCompletions(LanguageServerLibrary library, CodeCompletionContext context)
 	{
 		return library.getModulesOfType(NaturalFileType.SUBROUTINE, true)
 			.stream()
@@ -307,8 +326,9 @@ public class CompletionProvider
 				try
 				{
 					var item = new CompletionItem(f.getReferableName());
-					item.setData(new UnresolvedCompletionInfo(f.getReferableName(), f.getUri()));
+					item.setData(createUnresolvedInfo(f, context));
 					item.setKind(CompletionItemKind.Event);
+					item.setSortText("5");
 					return item;
 				}
 				catch (Exception e)
@@ -368,19 +388,23 @@ public class CompletionProvider
 		return item;
 	}
 
-	private CompletionItem createCompletionItem(ISubroutineNode subroutineNode)
+	private CompletionItem createLocalSubroutineCompletionItem(ISubroutineNode subroutineNode, CodeCompletionContext context)
 	{
 		var item = new CompletionItem();
 		item.setKind(CompletionItemKind.Method);
-		item.setInsertText("PERFORM " + subroutineNode.declaration().trimmedSymbolName(32));
+		var perform = context.isCurrentTokenKind(SyntaxKind.PERFORM) || context.isPreviousTokenKind(SyntaxKind.PERFORM)
+			? ""
+			: "PERFORM ";
+		item.setInsertText(perform + subroutineNode.declaration().trimmedSymbolName(32));
 		item.setLabel(subroutineNode.declaration().symbolName());
-		item.setSortText("1");
+		item.setSortText("4");
 
 		return item;
 	}
 
-	private List<CompletionItem> completeSystemVars(boolean triggered)
+	private List<CompletionItem> completeSystemVars(CodeCompletionContext context)
 	{
+		var alreadyContainsAsterisk = context.isCurrentTokenKind(SyntaxKind.ASTERISK) || context.isPreviousTokenKind(SyntaxKind.ASTERISK);
 		return Arrays.stream(SyntaxKind.values())
 			.filter(sk -> sk.isSystemVariable() || sk.isSystemFunction())
 			.map(sk ->
@@ -389,13 +413,13 @@ public class CompletionProvider
 				var completionItem = new CompletionItem();
 				var definition = BuiltInFunctionTable.getDefinition(sk);
 				var label = "*" + callableName;
-				var insertion = triggered ? callableName : label;
+				var insertion = alreadyContainsAsterisk ? callableName : label;
 				completionItem.setDetail(definition.documentation());
 				completionItem.setKind(definition instanceof SystemFunctionDefinition ? CompletionItemKind.Function : CompletionItemKind.Variable);
 				completionItem.setLabel(label + " :%s".formatted(definition.type().toShortString()));
 				completionItem.setSortText(
-					(triggered ? "0" : "9") + completionItem.getLabel()
-				); // if triggered, bring them to the front. else to the end.
+					(alreadyContainsAsterisk ? "0" : "2") + completionItem.getLabel()
+				); // if alreadyContainsAsterisk, bring them to the front. else to the end.
 
 				completionItem.setInsertText(insertion);
 				if (definition instanceof SystemFunctionDefinition functionDefinition && !functionDefinition.parameter().isEmpty())
@@ -408,6 +432,13 @@ public class CompletionProvider
 			})
 			.toList();
 
+	}
+
+	private UnresolvedCompletionInfo createUnresolvedInfo(LanguageServerFile file, CodeCompletionContext context)
+	{
+		var info = new UnresolvedCompletionInfo(file.getReferableName(), file.getUri());
+		info.setPreviousText(context.previousTexts());
+		return info;
 	}
 
 }

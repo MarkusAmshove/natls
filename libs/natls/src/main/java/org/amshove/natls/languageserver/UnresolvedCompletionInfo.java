@@ -1,11 +1,14 @@
 package org.amshove.natls.languageserver;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class UnresolvedCompletionInfo
 {
 	private String qualifiedName;
 	private String uri;
+	private List<String> previousTexts = new ArrayList<>();
 
 	public UnresolvedCompletionInfo(String qualifiedName, String uri)
 	{
@@ -59,4 +62,26 @@ public class UnresolvedCompletionInfo
 			"uri=" + uri + ']';
 	}
 
+	public List<String> getPreviousTexts()
+	{
+		return previousTexts;
+	}
+
+	public void setPreviousTexts(List<String> previousTexts)
+	{
+		this.previousTexts = previousTexts;
+	}
+
+	public void setPreviousText(List<String> texts)
+	{
+		if (texts != null && !texts.isEmpty())
+		{
+			previousTexts = texts;
+		}
+	}
+
+	public boolean hasPreviousText(String text)
+	{
+		return previousTexts.contains(text.toUpperCase());
+	}
 }

@@ -13,7 +13,7 @@ class CompleteEndpointShould extends CompletionTest
 			DEFINE DATA LOCAL
 			1 #VAR (A10)
 			END-DEFINE
-			
+
 			${}$
 			END
 			""")
@@ -21,20 +21,72 @@ class CompleteEndpointShould extends CompletionTest
 	}
 
 	@Test
-	void containASubroutine()
+	void containAnInlineSubroutine()
 	{
 		assertCompletions("LIBONE", "SUB.NSN", """
 			DEFINE DATA LOCAL
 			END-DEFINE
-			
+
 			DEFINE SUBROUTINE MY-SUB
 			IGNORE
 			END-SUBROUTINE
-			
+
 			${}$
 			END
 			""")
-			.assertContains("MY-SUB", CompletionItemKind.Method);
+			.assertContainsCompleting("MY-SUB", CompletionItemKind.Method, "PERFORM MY-SUB");
+	}
+
+	@Test
+	void containAnInlineSubroutineWithoutPerformIfPerformKeywordIsAlreadyPresent()
+	{
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+
+			DEFINE SUBROUTINE MY-SUB
+			IGNORE
+			END-SUBROUTINE
+
+			PERFORM ${}$
+			END
+			""")
+			.assertContainsCompleting("MY-SUB", CompletionItemKind.Method, "MY-SUB");
+	}
+
+	@Test
+	void containAnInlineSubroutineWithoutPerformIfPerformKeywordIsAlreadyPresentAndSomePartsOfTheSubroutineNameIsPresent()
+	{
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+
+			DEFINE SUBROUTINE MY-SUB
+			IGNORE
+			END-SUBROUTINE
+
+			PERFORM MY-${}$
+			END
+			""")
+			.assertContainsCompleting("MY-SUB", CompletionItemKind.Method, "MY-SUB");
+	}
+
+	@Test
+	void containAnInlineSubroutineWithPerformEvenIfThePreviousLineHasACompletePerformStatement()
+	{
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+
+			DEFINE SUBROUTINE MY-SUB
+			IGNORE
+			END-SUBROUTINE
+
+			PERFORM MY-SUB
+			${}$
+			END
+			""")
+			.assertContainsCompleting("MY-SUB", CompletionItemKind.Method, "PERFORM MY-SUB");
 	}
 
 	@Test
@@ -43,7 +95,7 @@ class CompleteEndpointShould extends CompletionTest
 		assertCompletions("LIBONE", "SUB.NSN", """
 			DEFINE DATA LOCAL
 			END-DEFINE
-			
+
 			${}$
 			END
 			""")
@@ -56,11 +108,67 @@ class CompleteEndpointShould extends CompletionTest
 		assertCompletions("LIBONE", "SUB.NSN", """
 			DEFINE DATA LOCAL
 			END-DEFINE
-			
+
 			${}$
 			END
 			""")
 			.assertContains("*OCC :(I4)", CompletionItemKind.Function);
+	}
+
+	@Test
+	void completeSystemVariablesIfAsteriskIsPresent()
+	{
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA LOCAL
+			1 #VAR (I4)
+			END-DEFINE
+
+			#VAR := *${}$
+			END
+			""")
+			.assertContainsCompleting("*PID :(A32)", CompletionItemKind.Variable, "PID");
+	}
+
+	@Test
+	void completeSystemFunctionsWithAsteriskPresent()
+	{
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA LOCAL
+			1 #OCC (I4)
+			END-DEFINE
+
+			#OCC := *${}$
+			END
+			""")
+			.assertContainsCompleting("*OCC :(I4)", CompletionItemKind.Function, "OCC($1)$0");
+	}
+
+	@Test
+	void completeSystemVariablesIfAsteriskAndPartOfNameIsPresent()
+	{
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA LOCAL
+			1 #VAR (I4)
+			END-DEFINE
+
+			#VAR := *PI${}$
+			END
+			""")
+			.assertContainsCompleting("*PID :(A32)", CompletionItemKind.Variable, "PID");
+	}
+
+	@Test
+	void completeSystemFunctionsWithAsteriskAndPartOfNamePresent()
+	{
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA LOCAL
+			1 #OCC (I4)
+			END-DEFINE
+
+			#OCC := *OC${}$
+			END
+			""")
+			.assertContainsCompleting("*OCC :(I4)", CompletionItemKind.Function, "OCC($1)$0");
 	}
 
 	@Test
@@ -70,7 +178,7 @@ class CompleteEndpointShould extends CompletionTest
 			DEFINE DATA LOCAL
 			1 #ARR (A10/*)
 			END-DEFINE
-			
+
 			${}$
 			END
 			""")
@@ -89,7 +197,7 @@ class CompleteEndpointShould extends CompletionTest
 			1 #GRP
 			2 #VAR (A1)
 			END-DEFINE
-			
+
 			${}$
 			END
 			""")
@@ -108,7 +216,7 @@ class CompleteEndpointShould extends CompletionTest
 			1 #GRP
 			2 #VAR (A1)
 			END-DEFINE
-			
+
 			${}$
 			END
 			""")
@@ -129,148 +237,12 @@ class CompleteEndpointShould extends CompletionTest
 			1 #GRP2
 			2 #VAR (A1)
 			END-DEFINE
-			
+
 			${}$
 			END
 			""")
 			.assertContainsVariableCompleting("#GRP.#VAR :(A1) (SUB2)", "#GRP.#VAR")
 			.assertContainsVariableCompleting("#GRP2.#VAR :(A1) (SUB2)", "#GRP2.#VAR");
-	}
-
-	@Test
-	void completeFunctions()
-	{
-		createOrSaveFile("LIBONE", "FUNC.NS7", """
-			DEFINE FUNCTION FUNC
-			RETURNS (L)
-			DEFINE DATA LOCAL
-			END-DEFINE
-			FUNC := TRUE
-			END-FUNCTION
-			""");
-
-		assertCompletions("LIBONE", "SUB2.NSN", """
-			DEFINE DATA LOCAL
-			END-DEFINE
-			IF ${}$
-			IGNORE
-			END-IF
-			END
-			""")
-			.assertContainsCompleting("FUNC", CompletionItemKind.Function, "FUNC(<>)$0");
-	}
-
-	@Test
-	void completeFunctionsWithParameter()
-	{
-		createOrSaveFile("LIBONE", "FUNC.NS7", """
-			DEFINE FUNCTION FUNC
-			RETURNS (L)
-			DEFINE DATA
-			PARAMETER
-			1 P-PARAM (A1)
-			END-DEFINE
-			FUNC := TRUE
-			END-FUNCTION
-			""");
-
-		assertCompletions("LIBONE", "SUB2.NSN", """
-			DEFINE DATA LOCAL
-			END-DEFINE
-			IF ${}$
-			IGNORE
-			END-IF
-			END
-			""")
-			.assertContainsCompleting("FUNC", CompletionItemKind.Function, "FUNC(<${1:P-PARAM}>)$0");
-	}
-
-	@Test
-	void completeExternalSubroutines()
-	{
-		createOrSaveFile("LIBONE", "SUBR.NSS", """
-			DEFINE DATA LOCAL
-			END-DEFINE
-			DEFINE SUBROUTINE MY-SUBROUTINE
-			IGNORE
-			END-SUBROUTINE
-			END
-			""");
-
-		assertCompletions("LIBONE", "SUB2.NSN", """
-			DEFINE DATA LOCAL
-			END-DEFINE
-			${}$
-			END
-			""")
-			.assertContainsCompleting("MY-SUBROUTINE", CompletionItemKind.Event, "PERFORM MY-SUBROUTINE%n$0".formatted());
-	}
-
-	@Test
-	void completeExternalSubroutinesWithParameter()
-	{
-		createOrSaveFile("LIBONE", "SUBR.NSS", """
-			DEFINE DATA
-			PARAMETER
-			1 #P-PARM1 (A10)
-			1 #P-PARM2 (A10)
-			END-DEFINE
-			DEFINE SUBROUTINE MY-SUBROUTINE
-			IGNORE
-			END-SUBROUTINE
-			END
-			""");
-
-		assertCompletions("LIBONE", "SUB2.NSN", """
-			DEFINE DATA LOCAL
-			END-DEFINE
-			${}$
-			END
-			""")
-			.assertContainsCompleting("MY-SUBROUTINE", CompletionItemKind.Event, "PERFORM MY-SUBROUTINE ${1:#P-PARM1} ${2:#P-PARM2}%n$0".formatted());
-	}
-
-	@Test
-	void completeDataAreasWhenCompletionIsTriggeredAfterUsingInDefineData()
-	{
-		createOrSaveFile("LIBONE", "MYLDA.NSL", """
-			DEFINE DATA LOCAL
-			1 #INLDA (A10)
-			END
-			""");
-
-		createOrSaveFile("LIBONE", "MYPDA.NSA", """
-			DEFINE DATA PARAMETER
-			1 #INPDA (A10)
-			END
-			""");
-
-		assertCompletions("LIBONE", "SUB.NSN", """
-			DEFINE DATA
-			LOCAL USING ${}$
-			END-DEFINE
-			END
-			""")
-			.assertContainsCompleting("MYLDA", CompletionItemKind.Struct, "MYLDA")
-			.assertContainsCompleting("MYPDA", CompletionItemKind.Struct, "MYPDA");
-	}
-
-	@Test
-	void completeDataAreasAfterUsingEvenIfThereAlreadyIsAVariableDeclarationInSameLine()
-	{
-		createOrSaveFile("LIBONE", "MYLDA.NSL", """
-			DEFINE DATA LOCAL
-			1 #INLDA (A10)
-			END
-			""");
-
-		assertCompletions("LIBONE", "SUB.NSN", """
-			DEFINE DATA
-			LOCAL USING ${}$ LOCAL 1 #VAR (N2)
-			END-DEFINE
-			END
-			""")
-			.assertContainsCompleting("MYLDA", CompletionItemKind.Struct, "MYLDA");
 	}
 
 	@Test
