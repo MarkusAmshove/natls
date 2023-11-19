@@ -52,6 +52,16 @@ public record CodeCompletionContext(SemanticPosition semanticPosition, @Nullable
 		return semanticPosition == SemanticPosition.DEFINE_DATA && (isCurrentTokenKind(SyntaxKind.USING) || isPreviousTokenKind(SyntaxKind.USING));
 	}
 
+	public boolean completesPerform()
+	{
+		return isCurrentTokenKind(SyntaxKind.PERFORM) || isPreviousTokenKind(SyntaxKind.PERFORM);
+	}
+
+	public boolean completesCallnat()
+	{
+		return isCurrentTokenKind(SyntaxKind.CALLNAT) || isPreviousTokenKind(SyntaxKind.CALLNAT);
+	}
+
 	public boolean isCurrentTokenKind(SyntaxKind kind)
 	{
 		return currentToken != null && currentToken.kind() == kind;

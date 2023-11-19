@@ -63,14 +63,14 @@ public class CompletionProvider
 				.toList();
 		}
 
-		if (completionContext.isCurrentTokenKind(SyntaxKind.PERFORM) || completionContext.isPreviousTokenKind(SyntaxKind.PERFORM))
+		if (completionContext.completesPerform())
 		{
 			completionItems.addAll(externalSubroutineCompletions(file.getLibrary(), completionContext));
 			completionItems.addAll(localSubroutineCompletions(module, completionContext));
 			return completionItems;
 		}
 
-		if (completionContext.isCurrentTokenKind(SyntaxKind.CALLNAT) || completionContext.isPreviousTokenKind(SyntaxKind.CALLNAT))
+		if (completionContext.completesCallnat())
 		{
 			completionItems.addAll(subprogramCompletions(file.getLibrary(), completionContext));
 			return completionItems;
