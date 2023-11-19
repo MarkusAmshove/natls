@@ -11,7 +11,13 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public record CodeCompletionContext(SemanticPosition semanticPosition, @Nullable SyntaxToken currentToken, @Nullable SyntaxToken previousToken, List<String> previousTexts)
+public record CodeCompletionContext(
+	SemanticPosition semanticPosition,
+	@Nullable SyntaxToken currentToken,
+	@Nullable SyntaxToken previousToken,
+	List<String> previousTexts,
+	Position originalPosition
+)
 {
 	public static CodeCompletionContext create(LanguageServerFile file, Position position)
 	{
@@ -36,7 +42,7 @@ public record CodeCompletionContext(SemanticPosition semanticPosition, @Nullable
 		addTokenIfNotNull(previousToken, previousTexts);
 		addTokenIfNotNull(tokenAtPosition, previousTexts);
 
-		return new CodeCompletionContext(semanticPosition, tokenAtPosition, previousToken, previousTexts);
+		return new CodeCompletionContext(semanticPosition, tokenAtPosition, previousToken, previousTexts, position);
 	}
 
 	private static void addTokenIfNotNull(SyntaxToken token, ArrayList<String> sources)
@@ -70,5 +76,36 @@ public record CodeCompletionContext(SemanticPosition semanticPosition, @Nullable
 	public boolean isPreviousTokenKind(SyntaxKind kind)
 	{
 		return previousToken != null && previousToken.kind() == kind;
+	}
+
+	/**
+	 * Checks if the position of the current token is really within the cursor position.<br/>
+	 * If it is e.g. `PERFORM SUB ${}$` then this will return false.
+	 */
+	public boolean cursorIsExactlyOnCurrentToken()
+	{
+		if (currentToken == null)
+		{
+			return false;
+		}
+
+		return originalPosition.getCharacter() >= currentToken.offsetInLine() && originalPosition.getCharacter() <= currentToken.endOffset();
+	}
+
+	public boolean completesParameter()
+	{
+		if (!completesPerform() && !completesCallnat())
+		{
+			return false;
+		}
+
+		// the current token can't be the call indication keyword, because the identifier of the called modules has to be present.
+		// CALLNAT 'MOD' ${}$
+		// PERFORM SUB ${}$
+		// want to complete parameter, but
+		// CALLNAT ${}$
+		// PERFORM ${}
+		// don't.
+		return !isCurrentTokenKind(SyntaxKind.PERFORM) && !isCurrentTokenKind(SyntaxKind.CALLNAT) && !cursorIsExactlyOnCurrentToken();
 	}
 }

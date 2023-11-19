@@ -63,14 +63,14 @@ public class CompletionProvider
 				.toList();
 		}
 
-		if (completionContext.completesPerform())
+		if (completionContext.completesPerform() && !completionContext.completesParameter())
 		{
 			completionItems.addAll(externalSubroutineCompletions(file.getLibrary(), completionContext));
 			completionItems.addAll(localSubroutineCompletions(module, completionContext));
 			return completionItems;
 		}
 
-		if (completionContext.completesCallnat())
+		if (completionContext.completesCallnat() && !completionContext.completesParameter())
 		{
 			completionItems.addAll(subprogramCompletions(file.getLibrary(), completionContext));
 			return completionItems;

@@ -72,6 +72,24 @@ class CompleteEndpointShould extends CompletionTest
 	}
 
 	@Test
+	void containAnInlineSubroutineWithPerformEvenIfThePreviousLineHasACompletePerformStatement()
+	{
+		assertCompletions("LIBONE", "SUB.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+
+			DEFINE SUBROUTINE MY-SUB
+			IGNORE
+			END-SUBROUTINE
+
+			PERFORM MY-SUB
+			${}$
+			END
+			""")
+			.assertContainsCompleting("MY-SUB", CompletionItemKind.Method, "PERFORM MY-SUB");
+	}
+
+	@Test
 	void containsSystemVariables()
 	{
 		assertCompletions("LIBONE", "SUB.NSN", """

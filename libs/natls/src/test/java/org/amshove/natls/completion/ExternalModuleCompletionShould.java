@@ -148,7 +148,7 @@ class ExternalModuleCompletionShould extends CompletionTest
 			DEFINE SUBROUTINE LOCAL-SUB
 			IGNORE
 			END-SUBROUTINE
-			
+
 			PERFORM ${}$
 			END
 			""")
@@ -177,6 +177,50 @@ class ExternalModuleCompletionShould extends CompletionTest
 			END
 			""")
 			.assertContainsCompleting("MY-SUBROUTINE", CompletionItemKind.Event, "MY-SUBROUTINE%n$0".formatted());
+	}
+
+	@Test
+	void completeParameterOfExternalSubroutinesWhenPerformAndSubroutineNameIsPresent()
+	{
+		createOrSaveFile("LIBONE", "SUBR.NSS", """
+			DEFINE DATA PARAMETER
+			1 #P-PARM (A10)
+			END-DEFINE
+			DEFINE SUBROUTINE MY-SUBROUTINE
+			IGNORE
+			END-SUBROUTINE
+			END
+			""");
+
+		assertCompletions("LIBONE", "SUB2.NSN", """
+			DEFINE DATA LOCAL
+			1 #VAR (A10)
+			END-DEFINE
+			PERFORM MY-SUB ${}$
+			END
+			""")
+			.assertContains("#VAR :(A10) (SUB2)", CompletionItemKind.Variable);
+	}
+
+	@Test
+	void completeParameterOfCallnatsWhenCallnatAndModuleNameArePresent()
+	{
+		createOrSaveFile("LIBONE", "SUBN.NSN", """
+			DEFINE DATA PARAMETER
+			1 #P-PARM (A10)
+			END-DEFINE
+			IGNORE
+			END
+			""");
+
+		assertCompletions("LIBONE", "SUB2.NSN", """
+			DEFINE DATA LOCAL
+			1 #VAR (A10)
+			END-DEFINE
+			CALLNAT 'SUBN' ${}$
+			END
+			""")
+			.assertContains("#VAR :(A10) (SUB2)", CompletionItemKind.Variable);
 	}
 
 	@Test
