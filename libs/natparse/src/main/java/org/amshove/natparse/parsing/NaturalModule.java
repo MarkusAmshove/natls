@@ -43,6 +43,10 @@ public class NaturalModule
 	@Override
 	public String name()
 	{
+		if (functionName != null)
+		{
+			return functionName.symbolName();
+		}
 		return file.getReferableName();
 	}
 

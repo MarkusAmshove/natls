@@ -1,5 +1,6 @@
 package org.amshove.natls.codeactions;
 
+import org.amshove.natls.languageserver.NaturalLanguageService;
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.INaturalModule;
@@ -14,6 +15,7 @@ public record RefactoringContext(
 	String fileUri,
 	INaturalModule module,
 	LanguageServerFile file,
+	NaturalLanguageService service, // TODO: Remove again?
 	SyntaxToken tokenUnderCursor,
 	Range originalRange,
 	ISyntaxNode nodeAtStartPosition,

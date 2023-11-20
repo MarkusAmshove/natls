@@ -5,10 +5,7 @@ import org.amshove.natls.codemutation.TextEdits;
 import org.amshove.natls.codemutation.UsingToAdd;
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natparse.IPosition;
-import org.amshove.natparse.natural.IHasDefineData;
-import org.amshove.natparse.natural.ISyntaxNode;
-import org.amshove.natparse.natural.ITokenNode;
-import org.amshove.natparse.natural.VariableScope;
+import org.amshove.natparse.natural.*;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.WorkspaceEdit;
@@ -120,6 +117,13 @@ public class WorkspaceEditBuilder
 	{
 		var edits = textEdits.computeIfAbsent(file.getUri(), u -> new ArrayList<>());
 		edits.add(new TextEdit(range, source));
+		return this;
+	}
+
+	public WorkspaceEditBuilder addPrototype(LanguageServerFile file, IFunction calledFunction)
+	{
+		var edits = textEdits.computeIfAbsent(file.getUri(), u -> new ArrayList<>());
+		edits.add(TextEdits.addPrototype(file, calledFunction));
 		return this;
 	}
 }

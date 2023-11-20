@@ -1,9 +1,10 @@
 package org.amshove.natls.codemutation;
 
 import org.amshove.natls.project.LanguageServerFile;
-import org.amshove.natparse.natural.IHasDefineData;
-import org.amshove.natparse.natural.VariableScope;
+import org.amshove.natparse.natural.*;
 import org.eclipse.lsp4j.TextEdit;
+
+import java.util.stream.Collectors;
 
 public class TextEdits
 {
@@ -41,7 +42,7 @@ public class TextEdits
 			END-SUBROUTINE
 			""".formatted(name, source);
 
-		var insertion = rangeFinder.findInsertionPositionForStatement(file);
+		var insertion = rangeFinder.findInsertionPositionForStatementAtEnd(file);
 		return insertion.toTextEdit(subroutine);
 	}
 
@@ -56,4 +57,37 @@ public class TextEdits
 		return ((IHasDefineData) file.module()).defineData().usings().stream().anyMatch(u -> u.target().symbolName().equals(using));
 	}
 
+	public static TextEdit addPrototype(LanguageServerFile inFile, IFunction calledFunction)
+	{
+		var insertion = rangeFinder.findInsertionPositionForStatementAtStart(inFile);
+		return insertion.toTextEdit(
+			"""
+			DEFINE PROTOTYPE %s
+			  RETURNS %s
+			  DEFINE DATA
+			%s
+			  END-DEFINE
+			END-PROTOTYPE
+			""".formatted(
+				calledFunction.name(),
+				calledFunction.returnType().toShortString(),
+				calledFunction.defineData().parameterInOrder().stream().map(p ->
+				{
+					if (p instanceof IUsingNode using)
+					{
+						return "PARAMETER USING %s".formatted(using.target().symbolName());
+					}
+					var parameterVariable = (IVariableNode) p;
+					if (parameterVariable instanceof ITypedVariableNode typedParameter)
+					{
+						return "PARAMETER %d %s %s".formatted(typedParameter.level(), typedParameter.name(), typedParameter.formatTypeForDisplay());
+					}
+
+					return "PARAMETER %d %s".formatted(parameterVariable.level(), ((IVariableNode) p).name());
+				})
+					.map(p -> "    " + p)
+					.collect(Collectors.joining(System.lineSeparator()))
+			)
+		);
+	}
 }
