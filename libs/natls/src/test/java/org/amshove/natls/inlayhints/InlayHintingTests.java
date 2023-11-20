@@ -165,7 +165,7 @@ class InlayHintingTests extends LanguageServerTest
 		assertThat(request)
 			.succeedsWithin(1, TimeUnit.SECONDS)
 			.satisfies(
-				hints -> assertThat(hints).hasSize(0)
+				hints -> assertThat(hints).isEmpty()
 			);
 	}
 
