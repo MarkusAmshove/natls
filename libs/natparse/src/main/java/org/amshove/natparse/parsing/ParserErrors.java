@@ -652,4 +652,13 @@ class ParserErrors
 			ParserError.INVALID_SCOPE_FOR_FILE_TYPE
 		);
 	}
+
+	public static IDiagnostic variableQualificationNotAllowedHere(String message, SyntaxToken token)
+	{
+		return ParserDiagnostic.create(
+			message,
+			token,
+			ParserError.VARIABLE_QUALIFICATION_NOT_ALLOWED
+		);
+	}
 }
