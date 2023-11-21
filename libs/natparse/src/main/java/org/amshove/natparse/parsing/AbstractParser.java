@@ -3,7 +3,6 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.ReadOnlyList;
-import org.amshove.natparse.StringUtil;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
@@ -1145,28 +1144,6 @@ abstract class AbstractParser<T>
 		rangedAccess.setLowerBound(lower);
 		rangedAccess.setUpperBound(upper);
 		return rangedAccess;
-	}
-
-	private void checkArrayAccessForQualifiedVariables(ISyntaxNode node)
-	{
-		if (node instanceof IVariableReferenceNode variableReferenceNode && variableReferenceNode.referencingToken().isQualified())
-		{
-			var qualifierParts = variableReferenceNode.referencingToken().symbolName().split("\\.");
-			if (!StringUtil.isAllDigits(qualifierParts[1])) // Takes out the Adabas #FIELD.1 case
-			{
-				report(
-					ParserErrors.variableQualificationNotAllowedHere(
-						"Variable qualification is not allowed within array index access",
-						variableReferenceNode.token()
-					)
-				);
-			}
-		}
-
-		for (var descendant : node.descendants())
-		{
-			checkArrayAccessForQualifiedVariables(descendant);
-		}
 	}
 
 	protected ISystemVariableNode consumeSystemVariableNode(BaseSyntaxNode node)
