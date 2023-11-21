@@ -1,0 +1,6 @@
+name: Variable qualification not allowed here
+priority: BLOCKER
+tags: compile-time
+type: BUG
+description:
+Full qualification of variables is not allowed at this location.
