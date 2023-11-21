@@ -108,4 +108,14 @@ public record CodeCompletionContext(
 		// don't.
 		return !isCurrentTokenKind(SyntaxKind.PERFORM) && !isCurrentTokenKind(SyntaxKind.CALLNAT) && !cursorIsExactlyOnCurrentToken();
 	}
+
+	public String previousTextsCombined()
+	{
+		var sb = new StringBuilder();
+		for (var previousText : previousTexts)
+		{
+			sb.append(previousText);
+		}
+		return sb.toString();
+	}
 }

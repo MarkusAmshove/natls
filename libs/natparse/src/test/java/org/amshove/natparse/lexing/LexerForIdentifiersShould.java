@@ -141,7 +141,7 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"R1.", "R.", "R-1.", "#like-a-var.", "another-var.", "A.", "X.", "A123.", "#WAT."
+		"R1.", "R.", "R-1.", "#like-a-var. ", "another-var.", "A.", "X.", "A123.", "#WAT.)"
 	})
 	void recognizeJumpLabelsAsLabelIdentifiers(String source)
 	{
@@ -171,6 +171,46 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 			token(SyntaxKind.SLASH),
 			token(SyntaxKind.ASTERISK),
 			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
+	void recognizeLabelsUsingSlashAndVariable()
+	{
+		assertTokens(
+			"(F1./VAR)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.LABEL_IDENTIFIER, "F1."),
+			token(SyntaxKind.SLASH),
+			token(SyntaxKind.IDENTIFIER, "VAR"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
+	void recognizeLabelsUsingSlashAndLiteral()
+	{
+		assertTokens(
+			"(F1./1)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.LABEL_IDENTIFIER, "F1."),
+			token(SyntaxKind.SLASH),
+			token(SyntaxKind.NUMBER_LITERAL, "1"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
+	void recognizeLabelsMixedWithIdentifiersAndNumbers()
+	{
+		assertTokens(
+			"(F1./DIX1.2)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.LABEL_IDENTIFIER, "F1."),
+			token(SyntaxKind.SLASH),
+			token(SyntaxKind.IDENTIFIER, "DIX1"),
+			token(SyntaxKind.DOT),
+			token(SyntaxKind.NUMBER_LITERAL, "2")
 		);
 	}
 
@@ -292,6 +332,57 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 			SyntaxKind.EQ,
 			SyntaxKind.NUMBER_LITERAL,
 			SyntaxKind.RPAREN
+		);
+	}
+
+	@Test
+	void notTreatSomethingStartingWithANumberAsIdentifier()
+	{
+		assertTokens(
+			"1AA",
+			token(SyntaxKind.NUMBER_LITERAL, "1"),
+			token(SyntaxKind.IDENTIFIER, "AA")
+		);
+	}
+
+	@Test
+	void notTreatAnIdentifierColonNumberIdentifierAsQualifiedVariable()
+	{
+		assertTokens(
+			"#VAR.1AA",
+			token(SyntaxKind.IDENTIFIER, "#VAR"),
+			token(SyntaxKind.DOT),
+			token(SyntaxKind.NUMBER_LITERAL, "1"),
+			token(SyntaxKind.IDENTIFIER, "AA")
+		);
+	}
+
+	@Test
+	void notTreatAnIdentifierColonNumberIdentifierAsQualifiedVariableWithIdentifierThatMightBeKeyword()
+	{
+		assertTokens(
+			"VAR.1",
+			token(SyntaxKind.IDENTIFIER, "VAR"),
+			token(SyntaxKind.DOT),
+			token(SyntaxKind.NUMBER_LITERAL, "1")
+		);
+	}
+
+	@Test
+	void recognizeQualifiedCounterVariables()
+	{
+		assertTokens(
+			"#VAR.C*VAR2",
+			token(SyntaxKind.IDENTIFIER, "#VAR.C*VAR2")
+		);
+	}
+
+	@Test
+	void recognizeQualifiedCounterVariablesWhenQualifierMightBeKeyword()
+	{
+		assertTokens(
+			"VAR.C*VAR2",
+			token(SyntaxKind.IDENTIFIER, "VAR.C*VAR2")
 		);
 	}
 }

@@ -260,7 +260,7 @@ class CompleteEndpointShould extends CompletionTest
 			END
 			""")
 			.assertDoesNotContainVariable("#GRP2.#VAR")
-			.assertContainsVariableCompleting("#GRP1.#VAR :(A10) (SUB)", "#VAR");
+			.assertContainsVariableCompleting("#VAR :(A10) (SUB)", "#VAR");
 	}
 
 	@Test
@@ -275,7 +275,7 @@ class CompleteEndpointShould extends CompletionTest
 			WRITE #GRP1.${}$
 			END
 			""")
-			.assertContainsVariableCompleting("#GRP1.#VARIABLE :(A10) (SUB)", "#VARIABLE");
+			.assertContainsVariableCompleting("#VARIABLE :(A10) (SUB)", "#VARIABLE");
 	}
 
 	@Test
@@ -293,7 +293,7 @@ class CompleteEndpointShould extends CompletionTest
 			END
 			""")
 			.assertDoesNotContainVariable("#GRP2.#VAR")
-			.assertContainsVariableCompleting("#GRP1.#VAR :(A10) (SUB)", "#VAR");
+			.assertContainsVariableCompleting("#VAR :(A10) (SUB)", "#VAR");
 	}
 
 	@Test
@@ -308,6 +308,6 @@ class CompleteEndpointShould extends CompletionTest
 			WRITE #GRP1.${}$
 			END
 			""")
-			.assertContainsVariableCompleting("#GRP1.#VARIABLE :(A10) (SUB)", "#VARIABLE");
+			.assertContainsVariableCompleting("#VARIABLE :(A10) (SUB)", "#VARIABLE");
 	}
 }

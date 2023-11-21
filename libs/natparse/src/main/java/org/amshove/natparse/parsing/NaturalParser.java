@@ -263,6 +263,18 @@ public class NaturalParser
 
 		for (var unresolvedReference : statementParser.getUnresolvedReferences())
 		{
+			if (unresolvedReference.parent()instanceof IAdabasIndexAccess access
+				&& getAdabasViewsInAccessAtNodePosition(unresolvedReference).isEmpty())
+			{
+				var diagnostic = ParserErrors.variableQualificationNotAllowedHere("Variable qualification is not allowed within array index access outside of adabas statements", access.diagnosticPosition());
+				if (!diagnostic.filePath().equals(module.file().getPath()))
+				{
+					diagnostic = diagnostic.relocate(unresolvedReference.diagnosticPosition());
+				}
+				module.addDiagnostic(diagnostic);
+				continue;
+			}
+
 			if (unresolvedReference.referencingToken().symbolName().startsWith("&")
 				|| (unresolvedReference.referencingToken().symbolName().contains(".")
 					&& unresolvedReference.referencingToken().symbolName().split("\\.")[1].startsWith("&")))

@@ -2,6 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.AdditionalDiagnosticInfo;
 import org.amshove.natparse.IDiagnostic;
+import org.amshove.natparse.IPosition;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
@@ -653,11 +654,11 @@ class ParserErrors
 		);
 	}
 
-	public static IDiagnostic variableQualificationNotAllowedHere(String message, SyntaxToken token)
+	public static ParserDiagnostic variableQualificationNotAllowedHere(String message, IPosition position)
 	{
 		return ParserDiagnostic.create(
 			message,
-			token,
+			position,
 			ParserError.VARIABLE_QUALIFICATION_NOT_ALLOWED
 		);
 	}

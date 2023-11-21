@@ -22,6 +22,11 @@ class BaseSyntaxNode implements ISyntaxNode
 		this.parent = parent;
 	}
 
+	void removeNode(BaseSyntaxNode node)
+	{
+		nodes.remove(node);
+	}
+
 	public ISyntaxNode parent()
 	{
 		return parent;
