@@ -47,7 +47,7 @@ public class Lexer
 		this(NO_PARAMETER);
 	}
 
-	public Lexer(List<String> copyCodeParameter)
+	Lexer(List<String> copyCodeParameter)
 	{
 		this.copyCodeParameter = copyCodeParameter;
 	}
@@ -335,7 +335,6 @@ public class Lexer
 
 	private void consumeIdentifierOrCopyCodeParameter()
 	{
-		// This checks for left over parameter, e.g. if a user didn't provide a parameter
 		if (scanner.peek() == '&')
 		{
 			scanner.start();
@@ -346,22 +345,16 @@ public class Lexer
 				offset++;
 			}
 
-			if (scanner.peek(offset) == '&') // all were digits and we end with ampersand, so this is a copycode parameter
+			if (scanner.peek(offset) == '&') // all were digits, and we end with ampersand, so this is a copycode parameter
 			{
 				scanner.advance(offset);
-				var position = Integer.parseInt(scanner.lexemeText().substring(1));
-				scanner.advance(); // to include the closing in error position
+				scanner.advance(); // closing &
 
-				// only raise the diagnostic for the including side
-				if (relocatedDiagnosticPosition != null)
-				{
-					addDiagnostic("Copy code parameter with position %d not provided".formatted(position), "Parameter is used here", LexerError.MISSING_COPYCODE_PARAMETER);
-				}
+				createAndAdd(SyntaxKind.COPYCODE_PARAMETER);
+				return;
 			}
 
-			// We roll this all back, because this was just for better error messages.
-			// The &n& will be added as an IDENTIFIER so that copy codes get analyzed correctly.
-			scanner.rollbackCurrentLexeme();
+			scanner.rollbackCurrentLexeme(); // it was not a copy code parameter. Reset and let consumeIdentifier() handle it
 		}
 
 		consumeIdentifier();

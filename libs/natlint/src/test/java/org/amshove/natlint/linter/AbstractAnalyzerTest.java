@@ -7,7 +7,7 @@ import org.amshove.natlint.editorconfig.EditorConfig;
 import org.amshove.natlint.editorconfig.EditorConfigParser;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.ReadOnlyList;
-import org.amshove.natparse.lexing.Lexer;
+import org.amshove.natparse.lexing.IncludeResolvingLexer;
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
@@ -133,7 +133,7 @@ public abstract class AbstractAnalyzerTest
 		try
 		{
 			var source = Files.readString(file.getPath());
-			var tokenList = new Lexer().lex(source, file.getPath());
+			var tokenList = new IncludeResolvingLexer().lex(source, file.getPath(), file);
 			assertThat(tokenList.diagnostics())
 				.as("No Lexer errors should be present to test an analyzer")
 				.isEmpty();

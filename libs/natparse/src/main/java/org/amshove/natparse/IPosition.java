@@ -45,6 +45,11 @@ public interface IPosition
 
 	default boolean isSamePositionAs(IPosition other)
 	{
+		if (other == null)
+		{
+			return false;
+		}
+
 		return offset() == other.offset() && offsetInLine() == other.offsetInLine() && line() == other.line() && length() == other.length() && filePath().equals(other.filePath());
 	}
 

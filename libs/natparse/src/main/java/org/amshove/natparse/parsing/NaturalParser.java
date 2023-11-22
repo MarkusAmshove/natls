@@ -75,7 +75,14 @@ public class NaturalParser
 
 		if (file.getFiletype().canHaveBody())
 		{
-			topLevelNodes.add(parseBody(tokens, moduleProvider, naturalModule));
+			var body = parseBody(tokens, moduleProvider, naturalModule);
+			topLevelNodes.add(body);
+			naturalModule.setBody(body);
+			var hiddenStatementList = parseBody(TokenList.fromTokens(tokens.filePath(), tokens.hiddenTokens().toList()), moduleProvider, naturalModule);
+			if (hiddenStatementList.statements().hasItems())
+			{
+				topLevelNodes.add(hiddenStatementList);
+			}
 		}
 
 		naturalModule.setSyntaxTree(SyntaxTree.create(ReadOnlyList.from(topLevelNodes)));
@@ -195,7 +202,6 @@ public class NaturalParser
 		var result = statementParser.parse(tokens);
 		naturalModule.addReferencableNodes(statementParser.getReferencableNodes());
 		addRelevantParserDiagnostics(naturalModule, result);
-		naturalModule.setBody(result.result());
 		resolveVariableReferences(statementParser, naturalModule);
 
 		if (naturalModule.defineData() != null)

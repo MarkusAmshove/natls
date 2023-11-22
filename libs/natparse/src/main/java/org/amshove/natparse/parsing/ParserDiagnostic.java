@@ -56,7 +56,12 @@ public class ParserDiagnostic implements IDiagnostic
 
 	public static ParserDiagnostic create(String message, SyntaxToken token, ParserError error)
 	{
-		return create(message, (IPosition) token, error);
+		var diagnostic = create(message, (IPosition) token, error);
+		if (token.hasDifferentDiagnosticPosition())
+		{
+			return diagnostic.relocate(token.diagnosticPosition());
+		}
+		return diagnostic;
 	}
 
 	public static ParserDiagnostic create(String message, IPosition diagnosticPosition, ParserError error)

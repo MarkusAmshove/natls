@@ -25,8 +25,9 @@ public class TokenList implements Iterable<SyntaxToken>
 	}
 
 	private final List<SyntaxToken> tokens;
-	private final List<LexerDiagnostic> diagnostics;
+	final List<LexerDiagnostic> diagnostics;
 	private final List<SyntaxToken> comments;
+	private final List<SyntaxToken> hiddenTokens; // TODO: For resolved INCLUDE stuff. Keep the tokens for diagnostics
 	private final Path filePath;
 	private NaturalHeader sourceHeader;
 	private int currentOffset = 0;
@@ -36,6 +37,7 @@ public class TokenList implements Iterable<SyntaxToken>
 		this.tokens = tokens;
 		diagnostics = List.of();
 		comments = List.of();
+		hiddenTokens = List.of();
 		this.filePath = filePath;
 	}
 
@@ -44,8 +46,31 @@ public class TokenList implements Iterable<SyntaxToken>
 		this.tokens = tokens;
 		this.diagnostics = diagnostics;
 		this.comments = comments;
+		this.hiddenTokens = List.of(); // TODO: Handle usages
 		this.filePath = filePath;
 		this.sourceHeader = sourceHeader;
+	}
+
+	TokenList(Path filePath, List<SyntaxToken> tokens, List<LexerDiagnostic> diagnostics, List<SyntaxToken> comments, List<SyntaxToken> hiddenTokens, NaturalHeader sourceHeader)
+	{
+		this.tokens = tokens;
+		this.diagnostics = diagnostics;
+		this.comments = comments;
+		this.hiddenTokens = hiddenTokens;
+		this.filePath = filePath;
+		this.sourceHeader = sourceHeader;
+	}
+
+	static TokenList withResolvedIncludes(TokenList original, List<SyntaxToken> newTokens, List<SyntaxToken> hiddenTokens, List<LexerDiagnostic> diagnostics)
+	{
+		return new TokenList(
+			original.filePath,
+			newTokens,
+			diagnostics,
+			original.comments,
+			hiddenTokens,
+			original.sourceHeader
+		);
 	}
 
 	public ReadOnlyList<IDiagnostic> diagnostics()
@@ -110,6 +135,31 @@ public class TokenList implements Iterable<SyntaxToken>
 		}
 
 		return true;
+	}
+
+	public boolean peekKind(SyntaxKind kind)
+	{
+		return peekKind(0, kind);
+	}
+
+	public boolean peekKind(int offset, SyntaxKind kind)
+	{
+		if (isAtEnd(offset))
+		{
+			return false;
+		}
+
+		return peek(offset).kind() == kind;
+	}
+
+	public SyntaxKind peekKindSafe(int offset)
+	{
+		if (isAtEnd(offset))
+		{
+			return SyntaxKind.EOF;
+		}
+
+		return peek(offset).kind();
 	}
 
 	/**
@@ -272,5 +322,10 @@ public class TokenList implements Iterable<SyntaxToken>
 	public void advanceBy(int offset)
 	{
 		currentOffset += offset;
+	}
+
+	public ReadOnlyList<SyntaxToken> hiddenTokens()
+	{
+		return ReadOnlyList.from(hiddenTokens);
 	}
 }

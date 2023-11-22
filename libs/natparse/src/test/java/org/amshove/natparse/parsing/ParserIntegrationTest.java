@@ -1,6 +1,6 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.lexing.Lexer;
+import org.amshove.natparse.lexing.IncludeResolvingLexer;
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.testhelpers.IntegrationTest;
@@ -19,7 +19,7 @@ public abstract class ParserIntegrationTest
 		try
 		{
 			var source = Files.readString(file.getPath());
-			var tokens = new Lexer().lex(source, file.getPath());
+			var tokens = new IncludeResolvingLexer().lex(source, file.getPath(), file);
 			return new NaturalParser().parse(file, tokens);
 		}
 		catch (IOException e)

@@ -2247,19 +2247,6 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
-	void notReportADiagnosticForAnUnresolvableDdmCopycodeParameter()
-	{
-		useStubModuleProvider();
-		assertParsesWithoutDiagnostics("""
-			DEFINE DATA
-			LOCAL
-			1 AVIEW VIEW OF &1&
-			2 DDM-VAR
-			END-DEFINE
-			""");
-	}
-
-	@Test
 	void loadVariableTypesFromDdms()
 	{
 		useStubModuleProvider();

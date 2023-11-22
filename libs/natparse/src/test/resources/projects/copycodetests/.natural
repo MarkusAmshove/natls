@@ -4,5 +4,9 @@
             <LibrarySteplibName>LIBONE</LibrarySteplibName>
             <LibrarySteplibExtensions>0;</LibrarySteplibExtensions>
         </LibrarySteplib>
+        <LibrarySteplib>
+            <LibrarySteplibName>LIBTWO</LibrarySteplibName>
+            <LibrarySteplibExtensions>0;</LibrarySteplibExtensions>
+        </LibrarySteplib>
     </LibrariesSteplibs>
 </LibraryStepLibs>

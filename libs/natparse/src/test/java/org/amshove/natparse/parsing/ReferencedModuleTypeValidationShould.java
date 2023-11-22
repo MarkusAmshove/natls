@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.lexing.LexerError;
 import org.amshove.natparse.natural.ISubprogram;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.testhelpers.ProjectName;
@@ -72,7 +73,7 @@ class ReferencedModuleTypeValidationShould extends ParserIntegrationTest
 	@Test
 	void raiseADiagnosticWhenSomethingDifferentThanACopycodeIsUsedForInclude(@ProjectName("invalidModuleTypeTests") NaturalProject project)
 	{
-		assertRaised(
+		assertLexerRaised(
 			"INCLSUB",
 			"INVALID_FILE_TYPE should have been raised, because a Subprogram is used for INCLUDE",
 			project
@@ -143,5 +144,13 @@ class ReferencedModuleTypeValidationShould extends ParserIntegrationTest
 		assertThat(module.diagnostics())
 			.as(reason)
 			.anyMatch(d -> d.id().equals(ParserError.INVALID_MODULE_TYPE.id()));
+	}
+
+	private void assertLexerRaised(String moduleName, String reason, NaturalProject project)
+	{
+		var module = assertFileParsesAs(project.findModule("ALIB", moduleName), ISubprogram.class);
+		assertThat(module.diagnostics())
+			.as(reason)
+			.anyMatch(d -> d.id().equals(LexerError.INVALID_INCLUDE_TYPE.id()));
 	}
 }
