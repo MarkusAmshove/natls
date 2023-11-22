@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
@@ -264,7 +265,8 @@ public class NaturalParser
 		for (var unresolvedReference : statementParser.getUnresolvedReferences())
 		{
 			if (unresolvedReference.parent()instanceof IAdabasIndexAccess access
-				&& getAdabasViewsInAccessAtNodePosition(unresolvedReference).isEmpty())
+				&& getAdabasViewsInAccessAtNodePosition(unresolvedReference).isEmpty()
+				&& !NodeUtil.containsTokenWithKind(access.parent(), SyntaxKind.LABEL_IDENTIFIER))
 			{
 				var diagnostic = ParserErrors.variableQualificationNotAllowedHere("Variable qualification is not allowed within array index access outside of adabas statements", access.diagnosticPosition());
 				if (!diagnostic.filePath().equals(module.file().getPath()))

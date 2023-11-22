@@ -1,5 +1,6 @@
 package org.amshove.natparse;
 
+import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 
@@ -330,5 +331,18 @@ public class NodeUtil
 		}
 
 		return null;
+	}
+
+	public static boolean containsTokenWithKind(ISyntaxNode node, SyntaxKind kind)
+	{
+		for (var descendant : node.descendants())
+		{
+			if (descendant instanceof ITokenNode tokenNode && tokenNode.token().kind() == kind)
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
