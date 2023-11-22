@@ -1,6 +1,5 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
@@ -262,18 +261,12 @@ public class NaturalParser
 			return;
 		}
 
+		var unresolvedAdabasArrayAccess = new ArrayList<ISymbolReferenceNode>();
 		for (var unresolvedReference : statementParser.getUnresolvedReferences())
 		{
-			if (unresolvedReference.parent()instanceof IAdabasIndexAccess access
-				&& getAdabasViewsInAccessAtNodePosition(unresolvedReference).isEmpty()
-				&& !NodeUtil.containsTokenWithKind(access.parent(), SyntaxKind.LABEL_IDENTIFIER))
+			if (unresolvedReference.parent() instanceof IAdabasIndexAccess)
 			{
-				var diagnostic = ParserErrors.variableQualificationNotAllowedHere("Variable qualification is not allowed within array index access outside of adabas statements", access.diagnosticPosition());
-				if (!diagnostic.filePath().equals(module.file().getPath()))
-				{
-					diagnostic = diagnostic.relocate(unresolvedReference.diagnosticPosition());
-				}
-				module.addDiagnostic(diagnostic);
+				unresolvedAdabasArrayAccess.add(unresolvedReference); // needs to be re-evaluated after, because it's parents need to be resolved
 				continue;
 			}
 
@@ -324,14 +317,46 @@ public class NaturalParser
 
 			if (unresolvedReference.token().kind() == SyntaxKind.IDENTIFIER)
 			{
-				var diagnostic = ParserErrors.unresolvedReference(unresolvedReference);
+				reportUnresolvedReference(module, unresolvedReference);
+			}
+		}
+
+		for (var unresolvedReference : unresolvedAdabasArrayAccess)
+		{
+			if (unresolvedReference.parent()instanceof IAdabasIndexAccess adabasIndexAccess
+				&& adabasIndexAccess.parent()instanceof IVariableReferenceNode arrayRef
+				&& arrayRef.reference()instanceof IVariableNode resolvedArray
+				&& !resolvedArray.isInView())
+			{
+				var diagnostic = ParserErrors.variableQualificationNotAllowedHere(
+					"Variable qualification is not allowed when not referring to a database array",
+					adabasIndexAccess.diagnosticPosition()
+				);
+
 				if (!diagnostic.filePath().equals(module.file().getPath()))
 				{
 					diagnostic = diagnostic.relocate(unresolvedReference.diagnosticPosition());
 				}
 				module.addDiagnostic(diagnostic);
 			}
+			else
+			{
+				if (!tryFindAndReference(unresolvedReference.token().symbolName(), unresolvedReference, defineData, module))
+				{
+					reportUnresolvedReference(module, unresolvedReference);
+				}
+			}
 		}
+	}
+
+	private void reportUnresolvedReference(NaturalModule module, ISymbolReferenceNode unresolvedReference)
+	{
+		var diagnostic = ParserErrors.unresolvedReference(unresolvedReference);
+		if (!diagnostic.filePath().equals(module.file().getPath()))
+		{
+			diagnostic = diagnostic.relocate(unresolvedReference.diagnosticPosition());
+		}
+		module.addDiagnostic(diagnostic);
 	}
 
 	private boolean tryFindAndReference(String symbolName, ISymbolReferenceNode referenceNode, IDefineData defineData, NaturalModule module)
