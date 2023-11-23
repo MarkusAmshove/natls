@@ -358,6 +358,60 @@ public class LexerForIdentifiersShould extends AbstractLexerTest
 	}
 
 	@Test
+	void treatUtf8CharactersAsValidIdentifierStartForLeftSideOfQualification()
+	{
+		assertTokens(
+			"ÆONE.VAR",
+			token(SyntaxKind.IDENTIFIER, "ÆONE.VAR")
+		);
+	}
+
+	@Test
+	void treatUtf8CharactersAsValidIdentifierStartForRightSideOfQualification()
+	{
+		assertTokens(
+			"VAR.ÆONE",
+			token(SyntaxKind.IDENTIFIER, "VAR.ÆONE")
+		);
+	}
+
+	@Test
+	void treatUtf8CharactersAsValidIdentifierStartForBothSidesOfQualification()
+	{
+		assertTokens(
+			"ÆONE.ÆTWO",
+			token(SyntaxKind.IDENTIFIER, "ÆONE.ÆTWO")
+		);
+	}
+
+	@Test
+	void treatUtf8CharactersAsValidIdentifierStartForLeftSideOfQualificationInAiv()
+	{
+		assertTokens(
+			"+ÆONE.VAR",
+			token(SyntaxKind.IDENTIFIER, "+ÆONE.VAR")
+		);
+	}
+
+	@Test
+	void treatUtf8CharactersAsValidIdentifierStartForRightSideOfQualificationInAiv()
+	{
+		assertTokens(
+			"+VAR.ÆONE",
+			token(SyntaxKind.IDENTIFIER, "+VAR.ÆONE")
+		);
+	}
+
+	@Test
+	void treatUtf8CharactersAsValidIdentifierStartForBothSidesOfQualificationInAiv()
+	{
+		assertTokens(
+			"+ÆONE.ÆTWO",
+			token(SyntaxKind.IDENTIFIER, "+ÆONE.ÆTWO")
+		);
+	}
+
+	@Test
 	void notTreatAnIdentifierColonNumberIdentifierAsQualifiedVariableWithIdentifierThatMightBeKeyword()
 	{
 		assertTokens(

@@ -959,8 +959,7 @@ public class Lexer
 
 	private boolean isValidIdentifierStart(char character)
 	{
-		return (character >= 'A' && character <= 'Z')
-			|| (character >= 'a' && character <= 'z')
+		return Character.isAlphabetic(character)
 			|| character == '&'
 			|| character == '#'
 			|| character == '+';
