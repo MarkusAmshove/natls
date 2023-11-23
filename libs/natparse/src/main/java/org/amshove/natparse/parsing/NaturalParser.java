@@ -261,8 +261,15 @@ public class NaturalParser
 			return;
 		}
 
+		var unresolvedAdabasArrayAccess = new ArrayList<ISymbolReferenceNode>();
 		for (var unresolvedReference : statementParser.getUnresolvedReferences())
 		{
+			if (unresolvedReference.parent() instanceof IAdabasIndexAccess)
+			{
+				unresolvedAdabasArrayAccess.add(unresolvedReference); // needs to be re-evaluated after, because it's parents need to be resolved
+				continue;
+			}
+
 			if (unresolvedReference.referencingToken().symbolName().startsWith("&")
 				|| (unresolvedReference.referencingToken().symbolName().contains(".")
 					&& unresolvedReference.referencingToken().symbolName().split("\\.")[1].startsWith("&")))
@@ -310,14 +317,46 @@ public class NaturalParser
 
 			if (unresolvedReference.token().kind() == SyntaxKind.IDENTIFIER)
 			{
-				var diagnostic = ParserErrors.unresolvedReference(unresolvedReference);
+				reportUnresolvedReference(module, unresolvedReference);
+			}
+		}
+
+		for (var unresolvedReference : unresolvedAdabasArrayAccess)
+		{
+			if (unresolvedReference.parent()instanceof IAdabasIndexAccess adabasIndexAccess
+				&& adabasIndexAccess.parent()instanceof IVariableReferenceNode arrayRef
+				&& arrayRef.reference()instanceof IVariableNode resolvedArray
+				&& !resolvedArray.isInView())
+			{
+				var diagnostic = ParserErrors.variableQualificationNotAllowedHere(
+					"Variable qualification is not allowed when not referring to a database array",
+					adabasIndexAccess.diagnosticPosition()
+				);
+
 				if (!diagnostic.filePath().equals(module.file().getPath()))
 				{
 					diagnostic = diagnostic.relocate(unresolvedReference.diagnosticPosition());
 				}
 				module.addDiagnostic(diagnostic);
 			}
+			else
+			{
+				if (!tryFindAndReference(unresolvedReference.token().symbolName(), unresolvedReference, defineData, module))
+				{
+					reportUnresolvedReference(module, unresolvedReference);
+				}
+			}
 		}
+	}
+
+	private void reportUnresolvedReference(NaturalModule module, ISymbolReferenceNode unresolvedReference)
+	{
+		var diagnostic = ParserErrors.unresolvedReference(unresolvedReference);
+		if (!diagnostic.filePath().equals(module.file().getPath()))
+		{
+			diagnostic = diagnostic.relocate(unresolvedReference.diagnosticPosition());
+		}
+		module.addDiagnostic(diagnostic);
 	}
 
 	private boolean tryFindAndReference(String symbolName, ISymbolReferenceNode referenceNode, IDefineData defineData, NaturalModule module)

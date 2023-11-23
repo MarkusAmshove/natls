@@ -576,6 +576,56 @@ class OperandParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
+	void parseSpecialAdabasArraySyntaxWithVarDotNumber()
+	{
+		var operand = parseOperand("#ARR(DIX1.1)");
+		var array = assertNodeType(operand, IVariableReferenceNode.class);
+		var access = assertNodeType(array.dimensions().first(), IAdabasIndexAccess.class);
+		assertIsVariableReference(access.operands().first(), "DIX1");
+		assertLiteral(access.operands().last(), SyntaxKind.NUMBER_LITERAL);
+	}
+
+	@Test
+	void parseSpecialAdabasArraySyntaxWithNumberDotVar()
+	{
+		var operand = parseOperand("#ARR(1.DIX1)");
+		var array = assertNodeType(operand, IVariableReferenceNode.class);
+		var access = assertNodeType(array.dimensions().first(), IAdabasIndexAccess.class);
+		assertLiteral(access.operands().first(), SyntaxKind.NUMBER_LITERAL);
+		assertIsVariableReference(access.operands().last(), "DIX1");
+	}
+
+	@Test
+	void parseSpecialAdabasArraySyntaxWithVarDotVar()
+	{
+		var operand = parseOperand("#ARR(DIX1.DIX2)");
+		var array = assertNodeType(operand, IVariableReferenceNode.class);
+		var access = assertNodeType(array.dimensions().first(), IAdabasIndexAccess.class);
+		assertIsVariableReference(access.operands().first(), "DIX1");
+		assertIsVariableReference(access.operands().last(), "DIX2");
+	}
+
+	@Test
+	void parseSpecialAdabasArraySyntaxWithVarDotNumberAndLabel()
+	{
+		var operand = parseOperand("#ARR(F1./DIX1.2)");
+		var array = assertNodeType(operand, IVariableReferenceNode.class);
+		var access = assertNodeType(array.dimensions().first(), IAdabasIndexAccess.class);
+		assertIsVariableReference(access.operands().first(), "DIX1");
+		assertLiteral(access.operands().last(), SyntaxKind.NUMBER_LITERAL);
+	}
+
+	@Test
+	void parseSpecialAdabasArraySyntaxWithVarDotVarAndLabel()
+	{
+		var operand = parseOperand("#ARR(R1./DIX1.DIX2)");
+		var array = assertNodeType(operand, IVariableReferenceNode.class);
+		var access = assertNodeType(array.dimensions().first(), IAdabasIndexAccess.class);
+		assertIsVariableReference(access.operands().first(), "DIX1");
+		assertIsVariableReference(access.operands().last(), "DIX2");
+	}
+
+	@Test
 	void parseRetOperand()
 	{
 		var operand = parseOperand("RET('MODULE')");

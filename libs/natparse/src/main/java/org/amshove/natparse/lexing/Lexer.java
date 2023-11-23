@@ -894,6 +894,10 @@ public class Lexer
 		{
 			if (scanner.peek() == '.')
 			{
+				if (!isValidIdentifierStart(scanner.peek(1)))
+				{
+					break;
+				}
 				isQualified = true;
 			}
 
@@ -943,14 +947,22 @@ public class Lexer
 			}
 		}
 
-		if (scanner.peek(-1) == '.')
+		if (scanner.peek() == '.' && (scanner.peek(1) == ')' || scanner.peek(1) == ' ' || (isInParens() && scanner.peek(1) == '/')))
 		{
+			scanner.advance();
 			createAndAdd(SyntaxKind.LABEL_IDENTIFIER);
+			return;
 		}
-		else
-		{
-			createAndAdd(SyntaxKind.IDENTIFIER);
-		}
+
+		createAndAdd(SyntaxKind.IDENTIFIER);
+	}
+
+	private boolean isValidIdentifierStart(char character)
+	{
+		return Character.isAlphabetic(character)
+			|| character == '&'
+			|| character == '#'
+			|| character == '+';
 	}
 
 	private boolean isValidIdentifierCharacter(char character)
@@ -1016,10 +1028,16 @@ public class Lexer
 
 		while (!isLineEnd() && isNoWhitespace() && !scanner.isAtEnd() && isValidIdentifierCharacter(scanner.peek()))
 		{
+			var maybeAdabasSpecialIndexNotation = false;
 			// Characters from which we can be sure that we're dealing with an identifier
 			switch (scanner.peek())
 			{
 				case '.':
+					if (!isValidIdentifierStart(scanner.peek(1)))
+					{
+						maybeAdabasSpecialIndexNotation = true;
+						break;
+					}
 					isQualified = true;
 				case '@':
 				case '$':
@@ -1035,6 +1053,11 @@ public class Lexer
 						kindHint = SyntaxKind.IDENTIFIER;
 					}
 					break;
+			}
+
+			if (maybeAdabasSpecialIndexNotation && Character.isDigit(scanner.peek(1)))
+			{
+				break;
 			}
 
 			if (isInParens() && scanner.peek(-1) == '.' && (scanner.peek() == '/' || scanner.peek() == ')'))

@@ -52,10 +52,13 @@ public class CompletionProvider
 		}
 
 		var isFilteredOnQualifiedNames = params.getContext().getTriggerKind() == CompletionTriggerKind.TriggerCharacter && ".".equals(params.getContext().getTriggerCharacter());
-		if (isFilteredOnQualifiedNames || completionContext.isCurrentTokenKind(SyntaxKind.LABEL_IDENTIFIER)) // Label identifier is what's lexed for incomplete qualification, e.g. GRP.
+		if (isFilteredOnQualifiedNames || completionContext.isCurrentTokenKind(SyntaxKind.LABEL_IDENTIFIER) || (completionContext.isCurrentTokenKind(SyntaxKind.DOT) && completionContext.isPreviousTokenKind(SyntaxKind.IDENTIFIER)))
 		{
 			assert completionContext.currentToken() != null;
-			var qualifiedNameFilter = completionContext.currentToken().symbolName();
+			assert completionContext.previousToken() != null;
+			var qualifiedNameFilter = completionContext.currentToken().kind() == SyntaxKind.DOT
+				? completionContext.previousTextsCombined()
+				: completionContext.currentToken().symbolName(); // label identifier
 			return findVariablesToComplete(module)
 				.filter(v -> v.qualifiedName().startsWith(qualifiedNameFilter))
 				.map(v -> toVariableCompletion(v, module, file, qualifiedNameFilter))
@@ -203,6 +206,7 @@ public class CompletionProvider
 		try
 		{
 			var item = createCompletionItem(variableNode, file, module.referencableNodes(), !alreadyPresentText.isEmpty());
+			item.setLabel(item.getLabel().replace(alreadyPresentText, ""));
 			item.setInsertText(item.getInsertText().substring(alreadyPresentText.length()));
 			if (item.getKind() == CompletionItemKind.Variable)
 			{

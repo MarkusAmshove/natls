@@ -57,6 +57,10 @@ public class AbstractLexerTest
 			var expectedToken = expectedTokens.get(i);
 			var actualToken = lexemes.peek();
 
+			assertThat(actualToken)
+				.as("Expected to have a token of kind %s but got none".formatted(expectedToken.kind))
+				.isNotNull();
+
 			assertThat(actualToken.kind())
 				.as(
 					"Expected Token %d to be [%s] but was [%s]: '%s'. %s",
