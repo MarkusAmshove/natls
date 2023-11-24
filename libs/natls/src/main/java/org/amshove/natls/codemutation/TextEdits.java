@@ -1,6 +1,7 @@
 package org.amshove.natls.codemutation;
 
 import org.amshove.natls.project.LanguageServerFile;
+import org.amshove.natparse.natural.IGroupNode;
 import org.amshove.natparse.natural.IHasDefineData;
 import org.amshove.natparse.natural.VariableScope;
 import org.eclipse.lsp4j.TextEdit;
@@ -14,8 +15,28 @@ public class TextEdits
 
 	public static TextEdit addVariable(LanguageServerFile file, String variableName, String variableType, VariableScope scope)
 	{
+		if (variableName.contains("."))
+		{
+			var split = variableName.split("\\.");
+			var groupPart = split[0];
+			var variablePart = split[1];
+			return addVariableToGroup(file, groupPart, variablePart, variableType, scope);
+		}
 		var variableInsert = rangeFinder.findInsertionPositionToInsertVariable(file, scope);
 		return variableInsert.toTextEdit("%d %s %s".formatted(1, variableName, variableType));
+	}
+
+	private static TextEdit addVariableToGroup(LanguageServerFile file, String groupPart, String variablePart, String variableType, VariableScope scope)
+	{
+		var group = ((IHasDefineData) file.module()).defineData().findVariable(groupPart);
+		if (group instanceof IGroupNode groupNode)
+		{
+			var insertion = rangeFinder.insertInNextLineAfter(groupNode.variables().last());
+			return insertion.toTextEdit("2 %s %s".formatted(variablePart, variableType));
+		}
+
+		var insertion = rangeFinder.findInsertionPositionToInsertVariable(file, scope);
+		return insertion.toTextEdit("1 %s%n2 %s %s".formatted(groupPart, variablePart, variableType));
 	}
 
 	public static TextEdit addUsing(LanguageServerFile file, UsingToAdd neededUsing)

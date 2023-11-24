@@ -87,6 +87,14 @@ public class CodeInsertionPlacer
 		return new CodeInsertion(LspUtil.toRangeBefore(lastNodePosition), System.lineSeparator());
 	}
 
+	public CodeInsertion insertInNextLineAfter(ISyntaxNode node)
+	{
+		return new CodeInsertion(
+			LspUtil.toSingleRange(node.position().line() + 1, 0),
+			System.lineSeparator()
+		);
+	}
+
 	private static IPosition findLastNodeInFileThatCantHaveStatementsAfter(NaturalFileType type, IModuleWithBody withBody)
 	{
 		if (type == NaturalFileType.FUNCTION)
