@@ -1,6 +1,6 @@
 package org.amshove.natls.snippets;
 
-import org.amshove.natls.codemutation.TextEdits;
+import org.amshove.natls.codemutation.FileEdits;
 import org.amshove.natls.codemutation.UsingToAdd;
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natparse.natural.IHasDefineData;
@@ -110,10 +110,10 @@ public class NaturalSnippet
 		for (var using : usings)
 		{
 			documentationBuilder.append("%n%s USING %s".formatted(using.scope(), using.name()));
-			var edit = TextEdits.addUsing(file, using);
+			var edit = FileEdits.addUsing(file, using);
 			if (edit != null)
 			{
-				textEdits.add(edit);
+				textEdits.add(edit.textEdit());
 			}
 		}
 

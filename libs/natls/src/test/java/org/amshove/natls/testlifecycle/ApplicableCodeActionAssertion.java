@@ -1,7 +1,12 @@
 package org.amshove.natls.testlifecycle;
 
+import org.amshove.natls.languageserver.LspUtil;
 import org.eclipse.lsp4j.CodeAction;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -28,6 +33,27 @@ public final class ApplicableCodeActionAssertion extends CodeActionAssertion
 			.isEqualToNormalizingNewlines(expectedSource);
 
 		return this;
+	}
+
+	public CodeActionAssertion resultsAppliedInDifferentFile(TextDocumentIdentifier file, String expectedSource)
+	{
+		var applier = new TextEditApplier();
+		var allEdits = action.getEdit().getChanges().values().stream().flatMap(Collection::stream).toList();
+
+		try
+		{
+			var sourceOfDifferentFile = Files.readString(LspUtil.uriToPath(file.getUri()));
+			var changedText = applier.applyAll(allEdits, sourceOfDifferentFile);
+
+			assertThat(changedText)
+				.isEqualToNormalizingNewlines(expectedSource);
+
+			return this;
+		}
+		catch (IOException e)
+		{
+			throw new UncheckedIOException(e);
+		}
 	}
 
 	@Override

@@ -35,7 +35,7 @@ public class CodeInsertionPlacer
 		{
 			var firstUsing = usings.first();
 			var range = LspUtil.toSingleRange(firstUsing.position().line(), firstUsing.position().offsetInLine());
-			return new CodeInsertion(range, System.lineSeparator());
+			return new CodeInsertion(firstUsing.position().filePath(), range, System.lineSeparator());
 		}
 
 		var emptyScopeToken = defineData.findFirstScopeNode(scope);
@@ -47,6 +47,7 @@ public class CodeInsertionPlacer
 			 */
 			var scopeTokenRange = LspUtil.toSingleRange(emptyScopeToken.position().line(), emptyScopeToken.position().offsetInLine());
 			return new CodeInsertion(
+				emptyScopeToken.position().filePath(),
 				scopeTokenRange.getStart().getCharacter() == 0 ? "" : System.lineSeparator(), // the scope token is not the only thing in the line
 				scopeTokenRange,
 				System.lineSeparator()
@@ -55,7 +56,7 @@ public class CodeInsertionPlacer
 
 		var range = findRangeOfFirstScope(file, scope)
 			.orElse(findRangeForNewScope(file, scope));
-		return new CodeInsertion(range, System.lineSeparator());
+		return new CodeInsertion(file.getPath(), range, System.lineSeparator());
 	}
 
 	public CodeInsertion findInsertionPositionToInsertVariable(LanguageServerFile file, VariableScope scope)
@@ -64,9 +65,9 @@ public class CodeInsertionPlacer
 			? findLastInsertionPositionForParameter(file)
 			: findFirstInsertionPositionForVariable(file, scope);
 		return bestGuess
-			.map(r -> new CodeInsertion("", r, System.lineSeparator()))
-			.or(() -> findRangeOfFirstScope(file, scope).map(r -> new CodeInsertion("", moveOneDown(r), System.lineSeparator())))
-			.orElse(new CodeInsertion("%s%n".formatted(scope.toString()), findRangeForNewScope(file, scope), System.lineSeparator()));
+			.map(r -> new CodeInsertion(file.getPath(), "", r, System.lineSeparator()))
+			.or(() -> findRangeOfFirstScope(file, scope).map(r -> new CodeInsertion(file.getPath(), "", moveOneDown(r), System.lineSeparator())))
+			.orElse(new CodeInsertion(file.getPath(), "%s%n".formatted(scope.toString()), findRangeForNewScope(file, scope), System.lineSeparator()));
 	}
 
 	public CodeInsertion findInsertionPositionForStatement(LanguageServerFile file)
@@ -79,12 +80,30 @@ public class CodeInsertionPlacer
 				.filter(n -> !(n instanceof IStatementListNode))
 				.reduce((p, n) -> n)
 				.orElseThrow();
-			return new CodeInsertion(System.lineSeparator(), LspUtil.toRangeAfter(NodeUtil.deepFindLeaf(lastNodeThatIsNotBodyNode).position()));
+			var leaf = NodeUtil.deepFindLeaf(lastNodeThatIsNotBodyNode);
+			return new CodeInsertion(
+				leaf.position().filePath(),
+				System.lineSeparator(),
+				LspUtil.toRangeAfter(leaf.position())
+			);
 		}
 
 		var lastNodePosition = findLastNodeInFileThatCantHaveStatementsAfter(file.getType(), withBody);
 
-		return new CodeInsertion(LspUtil.toRangeBefore(lastNodePosition), System.lineSeparator());
+		return new CodeInsertion(
+			lastNodePosition.filePath(),
+			LspUtil.toRangeBefore(lastNodePosition),
+			System.lineSeparator()
+		);
+	}
+
+	public CodeInsertion insertInNextLineAfter(ISyntaxNode node)
+	{
+		return new CodeInsertion(
+			node.position().filePath(),
+			LspUtil.toSingleRange(node.position().line() + 1, 0),
+			System.lineSeparator()
+		);
 	}
 
 	private static IPosition findLastNodeInFileThatCantHaveStatementsAfter(NaturalFileType type, IModuleWithBody withBody)
