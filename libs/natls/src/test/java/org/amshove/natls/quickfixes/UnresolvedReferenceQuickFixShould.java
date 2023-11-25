@@ -613,4 +613,33 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 			END
 			""");
 	}
+
+	@Test
+	void addAVariableToAGroupInAnImportedDataArea()
+	{
+		var lda = createOrSaveFile("LIBONE", "MYLDA.NSL", """
+			DEFINE DATA LOCAL
+			1 #GRP
+			2 #VAR1 (A10)
+			END-DEFINE
+			""");
+
+		assertCodeActionWithTitle("Declare local variable #GRP.#VAR2", "LIBONE", "SUB.NSN", """
+			DEFINE DATA
+			LOCAL USING MYLDA
+			END-DEFINE
+
+			#GRP.#V${}$AR2 := *PID
+			END
+			""")
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.hasTitle("Declare local variable #GRP.#VAR2")
+			.resultsAppliedInDifferentFile(lda, """
+			DEFINE DATA LOCAL
+			1 #GRP
+			2 #VAR1 (A10)
+			2 #VAR2 (A32)
+			END-DEFINE
+			""");
+	}
 }
