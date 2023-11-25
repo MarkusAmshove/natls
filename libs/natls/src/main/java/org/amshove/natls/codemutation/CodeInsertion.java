@@ -3,6 +3,8 @@ package org.amshove.natls.codemutation;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
 
+import java.nio.file.Path;
+
 /**
  * Contains the {@code Range} where to insert code. Also contains a {@code insertionPrefix} if e.g. the scope needs to
  * be inserted and a {@code insertionSuffix} if something needs to be added after.
@@ -11,21 +13,21 @@ import org.eclipse.lsp4j.TextEdit;
  * @param range The range where the prefix + code + suffix name can be inserted
  * @param insertionSuffix A suffix which needs to be appended to the code
  */
-public record CodeInsertion(String insertionPrefix, Range range, String insertionSuffix)
+public record CodeInsertion(Path filePath, String insertionPrefix, Range range, String insertionSuffix)
 {
-	public CodeInsertion(String prefix, Range range)
+	public CodeInsertion(Path filePath, String prefix, Range range)
 	{
-		this(prefix, range, "");
+		this(filePath, prefix, range, "");
 	}
 
-	public CodeInsertion(Range range, String suffix)
+	public CodeInsertion(Path filePath, Range range, String suffix)
 	{
-		this("", range, suffix);
+		this(filePath, "", range, suffix);
 	}
 
-	public CodeInsertion(Range range)
+	public CodeInsertion(Path filePath, Range range)
 	{
-		this("", range, "");
+		this(filePath, "", range, "");
 	}
 
 	/**
@@ -37,11 +39,14 @@ public record CodeInsertion(String insertionPrefix, Range range, String insertio
 		return String.format("%s%s%s", insertionPrefix, code, insertionSuffix);
 	}
 
-	public TextEdit toTextEdit(String code)
+	public FileEdit toFileEdit(String code)
 	{
-		return new TextEdit(
-			range,
-			insertionText(code)
+		return new FileEdit(
+			filePath,
+			new TextEdit(
+				range,
+				insertionText(code)
+			)
 		);
 	}
 }
