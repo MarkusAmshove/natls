@@ -378,6 +378,44 @@ class ExternalModuleCompletionShould extends CompletionTest
 	}
 
 	@Test
+	void completeCallnatsWhenStringIsAlreadyPresent()
+	{
+		createOrSaveFile("LIBONE", "SUBN.NSN", """
+			DEFINE DATA PARAMETER
+			1 #PARAM (A10)
+			END-DEFINE
+			END
+			""");
+
+		assertCompletions("LIBONE", "SUB2.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+			CALLNAT '${}$'
+			END
+			""")
+			.assertContainsCompleting("SUBN", CompletionItemKind.Class, "SUBN' ${1:#PARAM}%n$0".formatted());
+	}
+
+	@Test
+	void completeCallnatsWhenStringIsAlreadyPartlyPresent()
+	{
+		createOrSaveFile("LIBONE", "SUBN.NSN", """
+			DEFINE DATA PARAMETER
+			1 #PARAM (A10)
+			END-DEFINE
+			END
+			""");
+
+		assertCompletions("LIBONE", "SUB2.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+			CALLNAT '${}$
+			END
+			""")
+			.assertContainsCompleting("SUBN", CompletionItemKind.Class, "SUBN' ${1:#PARAM}%n$0".formatted());
+	}
+
+	@Test
 	void completeCallnatsWithParameterWhenCallnatIsAlreadyPresent()
 	{
 		createOrSaveFile("LIBONE", "SUBN.NSN", """
