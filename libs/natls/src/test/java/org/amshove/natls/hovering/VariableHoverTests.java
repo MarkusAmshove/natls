@@ -98,15 +98,15 @@ LOCAL 1 #MYVAR (A10)
 				LOCAL 1 #MYVAR (A10)
 				```
 
-				*comment:*
+				*context:*
 				```natural
-				/* Inline comment
+				1 #MYVAR /* Inline comment
 				```"""
 		);
 	}
 
 	@Test
-	void theSourceFileOfTheVariableShouldBeAddedIfItDiffersFromTheHoveringFile()
+	void theUsingDataAreaShouldBeIncludedInTheContext()
 	{
 		createOrSaveFile("LIBONE", "MYLDA.NSL", """
 			DEFINE DATA
@@ -127,9 +127,75 @@ LOCAL 1 #MYVAR (A10)
 LOCAL 1 #MYVAR (A10)
 ```
 
-*source:*
+*context:*
+```natural
+LOCAL USING MYLDA
+1 #MYVAR
+```"""
+		);
+	}
 
-- LIBONE.MYLDA"""
+	@Test
+	void commentsOnTheUsingOfDataAreasShouldBeIncludedForGroupMembers()
+	{
+		createOrSaveFile("LIBONE", "MYLDA.NSL", """
+			DEFINE DATA LOCAL
+			1 #GRP
+			2 #MYVAR (A10)
+			END-DEFINE
+			""");
+
+		assertHover(
+			"""
+			DEFINE DATA
+			LOCAL USING MYLDA /* My using
+			END-DEFINE
+			
+			WRITE #MY${}$VAR
+			END""",
+			"""
+```natural
+LOCAL 2 #MYVAR (A10)
+```
+
+*context:*
+```natural
+LOCAL USING MYLDA /* My using
+1 #GRP
+2 #MYVAR
+```"""
+		);
+	}
+
+	@Test
+	void allRelevantCommentsEncounteredOnTheWayToTheVariableShouldBeIncluded()
+	{
+		createOrSaveFile("LIBONE", "MYLDA.NSL", """
+			DEFINE DATA LOCAL
+			1 #GRP /* Important group
+			2 #MYVAR (A10) /* The Variable
+			END-DEFINE
+			""");
+
+		assertHover(
+			"""
+			DEFINE DATA
+			LOCAL USING MYLDA /* My using
+			END-DEFINE
+			
+			WRITE #MY${}$VAR
+			END""",
+			"""
+```natural
+LOCAL 2 #MYVAR (A10)
+```
+
+*context:*
+```natural
+LOCAL USING MYLDA /* My using
+1 #GRP /* Important group
+2 #MYVAR /* The Variable
+```"""
 		);
 	}
 
@@ -150,10 +216,10 @@ LOCAL 1 #MYVAR (A10)
 LOCAL 2 #VARINGROUP (N4)
 ```
 
-*member of:*
-
+*context:*
 ```natural
-LOCAL 1 #MYGROUP
+1 #MYGROUP
+2 #VARINGROUP
 ```"""
 		);
 	}
