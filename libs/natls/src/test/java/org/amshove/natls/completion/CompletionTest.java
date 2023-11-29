@@ -88,8 +88,18 @@ public abstract class CompletionTest extends EmptyProjectTest
 							items.stream().filter(i -> i.getKind() == kind).map(Object::toString).collect(Collectors.joining("\n"))
 						)
 				)
-				.anyMatch(ci -> ci.getLabel().equals(label) && ci.getKind() == kind && ci.getInsertText().equals(completion));
+				.anyMatch(ci -> ci.getLabel().equals(label) && ci.getKind() == kind && isCompleting(ci, completion));
 			return this;
+		}
+
+		private boolean isCompleting(CompletionItem item, String expectedCompletion)
+		{
+			if (item.getInsertText() != null)
+			{
+				return item.getInsertText().equals(expectedCompletion);
+			}
+
+			return item.getTextEdit().getLeft().getNewText().equals(expectedCompletion);
 		}
 
 		CompletionAssertion assertDoesNotContainVariable(String label)

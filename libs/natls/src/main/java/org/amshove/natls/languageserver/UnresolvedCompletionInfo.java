@@ -67,6 +67,15 @@ public class UnresolvedCompletionInfo
 		return previousTexts;
 	}
 
+	public String getLastText()
+	{
+		if (previousTexts.isEmpty())
+		{
+			return "";
+		}
+		return previousTexts.get(previousTexts.size() - 1);
+	}
+
 	public void setPreviousTexts(List<String> previousTexts)
 	{
 		this.previousTexts = previousTexts;
