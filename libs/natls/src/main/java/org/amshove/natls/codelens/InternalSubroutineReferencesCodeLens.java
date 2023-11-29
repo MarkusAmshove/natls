@@ -4,13 +4,16 @@ import org.amshove.natls.CustomCommands;
 import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natparse.natural.IModuleWithBody;
+import org.amshove.natparse.natural.IStatementListNode;
 import org.amshove.natparse.natural.ISubroutineNode;
+import org.amshove.natparse.natural.project.NaturalFileType;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Command;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class InternalSubroutineReferencesCodeLens implements ICodeLensProvider
 {
@@ -27,6 +30,11 @@ public class InternalSubroutineReferencesCodeLens implements ICodeLensProvider
 				.map(ISubroutineNode.class::cast)
 				.map(s ->
 				{
+					if (file.getType() == NaturalFileType.SUBROUTINE && isTopLevelSubroutine(s))
+					{
+						return null;
+					}
+
 					var references = s.references().size();
 					var declarationRange = LspUtil.toRange(s.declaration());
 
@@ -46,9 +54,26 @@ public class InternalSubroutineReferencesCodeLens implements ICodeLensProvider
 						null
 					);
 				})
+				.filter(Objects::nonNull)
 				.forEach(codelens::add);
 		}
 
 		return codelens;
+	}
+
+	private boolean isTopLevelSubroutine(ISubroutineNode node)
+	{
+		/*
+		Module
+		StatementList
+			Subroutine <- top level
+		
+		Module
+		StatementList
+			Subroutine
+			StatementList
+				Subroutine <- not top level
+		 */
+		return !(node.parent()instanceof IStatementListNode statementList && statementList.parent() instanceof ISubroutineNode);
 	}
 }

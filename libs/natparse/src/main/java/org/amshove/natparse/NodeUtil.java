@@ -345,4 +345,23 @@ public class NodeUtil
 
 		return false;
 	}
+
+	public static <T extends IStatementNode> T findFirstStatementOfType(Class<T> statementType, ISyntaxTree tree)
+	{
+		if (statementType.isInstance(tree))
+		{
+			return statementType.cast(tree);
+		}
+
+		for (var descendant : tree.descendants())
+		{
+			var foundDescendant = findFirstStatementOfType(statementType, descendant);
+			if (foundDescendant != null)
+			{
+				return foundDescendant;
+			}
+		}
+
+		return null;
+	}
 }
