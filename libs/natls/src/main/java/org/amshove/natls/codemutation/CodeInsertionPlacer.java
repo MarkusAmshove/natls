@@ -70,7 +70,7 @@ public class CodeInsertionPlacer
 			.orElse(new CodeInsertion(file.getPath(), "%s%n".formatted(scope.toString()), findRangeForNewScope(file, scope), System.lineSeparator()));
 	}
 
-	public CodeInsertion findInsertionPositionForStatement(LanguageServerFile file)
+	public CodeInsertion findInsertionPositionForStatementAtEnd(LanguageServerFile file)
 	{
 		var withBody = (IModuleWithBody) file.module();
 
@@ -104,6 +104,14 @@ public class CodeInsertionPlacer
 			LspUtil.toSingleRange(node.position().line() + 1, 0),
 			System.lineSeparator()
 		);
+	}
+
+	public CodeInsertion findInsertionPositionForStatementAtStart(LanguageServerFile file)
+	{
+		var withBody = (IModuleWithBody) file.module();
+
+		var firstStatement = withBody.body().statements().first();
+		return new CodeInsertion(file.getPath(), "", LspUtil.toRangeBefore(firstStatement.position()));
 	}
 
 	private static IPosition findLastNodeInFileThatCantHaveStatementsAfter(NaturalFileType type, IModuleWithBody withBody)

@@ -288,7 +288,7 @@ class CodeInsertionPlacerShould extends EmptyProjectTest
 			""");
 
 		assertInsertion(
-			sut.findInsertionPositionForStatement(file),
+			sut.findInsertionPositionForStatementAtEnd(file),
 			"",
 			2, 0,
 			2, 0,
@@ -305,7 +305,7 @@ class CodeInsertionPlacerShould extends EmptyProjectTest
 			""");
 
 		assertInsertion(
-			sut.findInsertionPositionForStatement(file),
+			sut.findInsertionPositionForStatementAtEnd(file),
 			System.lineSeparator(),
 			1, "END-DEFINE".length(),
 			1, "END-DEFINE".length(),
@@ -324,7 +324,7 @@ class CodeInsertionPlacerShould extends EmptyProjectTest
 			""");
 
 		assertInsertion(
-			sut.findInsertionPositionForStatement(file),
+			sut.findInsertionPositionForStatementAtEnd(file),
 			"",
 			3, 0,
 			3, 0,
@@ -345,7 +345,7 @@ class CodeInsertionPlacerShould extends EmptyProjectTest
 			""");
 
 		assertInsertion(
-			sut.findInsertionPositionForStatement(file),
+			sut.findInsertionPositionForStatementAtEnd(file),
 			"",
 			4, 0,
 			4, 0,

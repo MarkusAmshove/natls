@@ -1,0 +1,6 @@
+name: Prototype is defined more than once
+priority: MAJOR
+tags: pitfall,confusing
+type: CODE_SMELL
+description:
+A function prototype is defined more than once for a single compilation unit.
