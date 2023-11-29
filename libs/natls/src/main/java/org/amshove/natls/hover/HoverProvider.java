@@ -2,8 +2,6 @@ package org.amshove.natls.hover;
 
 import org.amshove.natls.markupcontent.IMarkupContentBuilder;
 import org.amshove.natls.markupcontent.MarkupContentBuilderFactory;
-import org.amshove.natparse.IPosition;
-import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.builtin.BuiltInFunctionTable;
@@ -222,10 +220,6 @@ public class HoverProvider
 		var contentBuilder = MarkupContentBuilderFactory.newBuilder();
 		var declaration = formatVariableDeclaration(context.file().module(), variable);
 		contentBuilder.appendCode(declaration.declaration);
-		if (!declaration.comment.isEmpty())
-		{
-			contentBuilder.appendSection("comment", nestedBuilder -> nestedBuilder.appendCode(declaration.comment));
-		}
 
 		if (variable.isArray())
 		{
@@ -238,15 +232,9 @@ public class HoverProvider
 			});
 		}
 
-		if (variable.level() > 1)
-		{
-			var owner = NodeUtil.findLevelOneParentOf(variable);
-			contentBuilder.appendItalic("member of:");
-			contentBuilder.appendNewline();
-			contentBuilder.appendCode("%s %d %s".formatted(owner.scope().toString(), owner.level(), owner.name()));
-		}
+		var pathToVariableHover = VariableContextHover.create(context, variable);
+		pathToVariableHover.addVariableContext(contentBuilder);
 
-		addSourceFileIfNeeded(contentBuilder, variable.declaration(), context);
 		return new Hover(contentBuilder.build());
 	}
 
@@ -275,16 +263,6 @@ public class HoverProvider
 
 		var comment = module.extractLineComment(variable.position().line());
 		return new VariableDeclarationFormat(declaration, comment);
-	}
-
-	private static void addSourceFileIfNeeded(IMarkupContentBuilder contentBuilder, IPosition hoveredPosition, HoverContext context)
-	{
-		if (!hoveredPosition.filePath().equals(context.file().getPath()))
-		{
-			contentBuilder.appendItalic("source:");
-			contentBuilder.appendNewline();
-			contentBuilder.append("- %s.%s", context.file().getLibrary().name(), hoveredPosition.fileNameWithoutExtension());
-		}
 	}
 
 	private void addModuleParameter(IMarkupContentBuilder contentBuilder, INaturalModule module)
