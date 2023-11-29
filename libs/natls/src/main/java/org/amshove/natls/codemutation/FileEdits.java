@@ -98,8 +98,7 @@ public class FileEdits
 
 		return insertion.toFileEdit(
 			"""
-			DEFINE PROTOTYPE %s RETURNS %s
-			%s
+			DEFINE PROTOTYPE %s RETURNS %s%s
 			END-PROTOTYPE
 			""".formatted(
 				calledFunction.name(),

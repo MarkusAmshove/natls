@@ -111,7 +111,7 @@ public class CodeInsertionPlacer
 		var withBody = (IModuleWithBody) file.module();
 
 		var firstStatement = withBody.body().statements().first();
-		return new CodeInsertion("", LspUtil.toRangeBefore(firstStatement.position()));
+		return new CodeInsertion(file.getPath(), "", LspUtil.toRangeBefore(firstStatement.position()));
 	}
 
 	private static IPosition findLastNodeInFileThatCantHaveStatementsAfter(NaturalFileType type, IModuleWithBody withBody)
