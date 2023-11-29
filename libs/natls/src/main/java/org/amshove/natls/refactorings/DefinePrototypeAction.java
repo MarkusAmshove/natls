@@ -6,6 +6,7 @@ import org.amshove.natls.codeactions.RefactoringContext;
 import org.amshove.natls.quickfixes.CodeActionBuilder;
 import org.amshove.natparse.natural.IFunction;
 import org.amshove.natparse.natural.IFunctionCallNode;
+import org.amshove.natparse.natural.project.NaturalFileType;
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionKind;
 
@@ -16,7 +17,7 @@ public class DefinePrototypeAction implements ICodeActionProvider
 	@Override
 	public boolean isApplicable(RefactoringContext context)
 	{
-		return context.nodeAtStartPosition() instanceof IFunctionCallNode;
+		return context.file().getType() == NaturalFileType.FUNCTION && context.nodeAtStartPosition() instanceof IFunctionCallNode;
 	}
 
 	@Override
@@ -28,7 +29,6 @@ public class DefinePrototypeAction implements ICodeActionProvider
 			return List.of();
 		}
 
-		// TODO: Hack. Why does functionCall.reference() not have returnType set?
 		var function = (IFunction) context.service().findNaturalFile(functionCall.reference().file().getPath()).module();
 
 		return List.of(

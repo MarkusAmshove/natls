@@ -60,17 +60,15 @@ public class TextEdits
 	public static TextEdit addPrototype(LanguageServerFile inFile, IFunction calledFunction)
 	{
 		var insertion = rangeFinder.findInsertionPositionForStatementAtStart(inFile);
-		return insertion.toTextEdit(
-			"""
-			DEFINE PROTOTYPE %s
-			  RETURNS %s
-			  DEFINE DATA
-			%s
-			  END-DEFINE
-			END-PROTOTYPE
-			""".formatted(
-				calledFunction.name(),
-				calledFunction.returnType().toShortString(),
+
+		var defineDataBlock = "";
+		var parameter = calledFunction.defineData().parameterInOrder();
+		if (!parameter.isEmpty())
+		{
+			defineDataBlock = """
+				%n  DEFINE DATA
+				%s
+				  END-DEFINE""".formatted(
 				calledFunction.defineData().parameterInOrder().stream().map(p ->
 				{
 					if (p instanceof IUsingNode using)
@@ -87,6 +85,18 @@ public class TextEdits
 				})
 					.map(p -> "    " + p)
 					.collect(Collectors.joining(System.lineSeparator()))
+			);
+		}
+
+		return insertion.toTextEdit(
+			"""
+			DEFINE PROTOTYPE %s RETURNS %s
+			%s
+			END-PROTOTYPE
+			""".formatted(
+				calledFunction.name(),
+				calledFunction.returnType().toShortString(),
+				defineDataBlock
 			)
 		);
 	}
