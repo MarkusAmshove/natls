@@ -92,6 +92,14 @@ public class LspUtil
 		);
 	}
 
+	public static Range toRangeSpanning(Position start, IPosition endOfThisPosition)
+	{
+		return new Range(
+			start,
+			toRange(endOfThisPosition).getEnd()
+		);
+	}
+
 	public static Range toRange(IPosition position)
 	{
 		return new Range(

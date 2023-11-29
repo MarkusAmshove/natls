@@ -509,6 +509,7 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 	{
 		assertCodeActionWithTitle("Declare local variable #NUM", "LIBONE", "MEINS.NSN", """
 			DEFINE DATA
+			LOCAL
 			1 #A (A10)
 			END-DEFINE
 
@@ -528,5 +529,117 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 
 				END
 				""".formatted(givingClause.replace("${}$", "")));
+	}
+
+	@Test
+	void addAVariableToAGroupIfTheUnresolvedVarIsFullyQualified()
+	{
+		assertCodeActionWithTitle("Declare local variable #GRP.#VAR2", "LIBONE", "SUB.NSN", """
+			DEFINE DATA
+			LOCAL
+			1 #GRP
+			2 #VAR1 (I4)
+			END-DEFINE
+			
+			#GRP.#V${}$AR2 := 'Hi'
+			
+			END
+			""")
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.resultsApplied("""
+			DEFINE DATA
+			LOCAL
+			1 #GRP
+			2 #VAR1 (I4)
+			2 #VAR2 (A2)
+			END-DEFINE
+			
+			#GRP.#VAR2 := 'Hi'
+			
+			END
+			""");
+	}
+
+	@Test
+	void addAGroupAndVariableIfTheUnresolvedVarIsFullyQualified()
+	{
+		assertCodeActionWithTitle("Declare local variable #GRP.#VAR1", "LIBONE", "SUB.NSN", """
+			DEFINE DATA
+			LOCAL
+			END-DEFINE
+			
+			#GRP.#V${}$AR1 := 'Hi'
+			
+			END
+			""")
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.resultsApplied("""
+			DEFINE DATA
+			LOCAL
+			1 #GRP
+			2 #VAR1 (A2)
+			END-DEFINE
+			
+			#GRP.#VAR1 := 'Hi'
+			
+			END
+			""");
+	}
+
+	@Test
+	void addAGroupAndVariableIfTheUnresolvedVarIsFullyQualifiedAndOtherVariablesArePresent()
+	{
+		assertCodeActionWithTitle("Declare local variable #GRP.#VAR1", "LIBONE", "SUB.NSN", """
+			DEFINE DATA
+			LOCAL
+			1 #VAR1 (A10)
+			END-DEFINE
+			
+			#GRP.#V${}$AR1 := 'Hi'
+			
+			END
+			""")
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.resultsApplied("""
+			DEFINE DATA
+			LOCAL
+			1 #GRP
+			2 #VAR1 (A2)
+			1 #VAR1 (A10)
+			END-DEFINE
+			
+			#GRP.#VAR1 := 'Hi'
+			
+			END
+			""");
+	}
+
+	@Test
+	void addAVariableToAGroupInAnImportedDataArea()
+	{
+		var lda = createOrSaveFile("LIBONE", "MYLDA.NSL", """
+			DEFINE DATA LOCAL
+			1 #GRP
+			2 #VAR1 (A10)
+			END-DEFINE
+			""");
+
+		assertCodeActionWithTitle("Declare local variable #GRP.#VAR2", "LIBONE", "SUB.NSN", """
+			DEFINE DATA
+			LOCAL USING MYLDA
+			END-DEFINE
+
+			#GRP.#V${}$AR2 := *PID
+			END
+			""")
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.hasTitle("Declare local variable #GRP.#VAR2")
+			.resultsAppliedInDifferentFile(lda, """
+			DEFINE DATA LOCAL
+			1 #GRP
+			2 #VAR1 (A10)
+			2 #VAR2 (A32)
+			END-DEFINE
+			""");
 	}
 }

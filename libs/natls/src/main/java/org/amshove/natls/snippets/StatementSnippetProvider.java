@@ -103,6 +103,17 @@ public class StatementSnippetProvider implements ISnippetProvider
 			COMPRESS ${1:'Text'} INTO ${2:#VAR} ${3:LEAVING NO}
 			""");
 
+	private static final NaturalSnippet FOREACH_GROUP = new NaturalSnippet("foreach-group")
+		.applicableWhen(f -> f.getType().canHaveBody())
+		.insertsText("""
+			#S-${1:ITERATOR} := *OCC(${2:GROUPARRAY}.${3:ISN})
+			FOR #I-${1} := 1 TO #S-${1}
+			  MOVE BY NAME ${2}(#I-${1}) TO ${4:GROUP}
+
+			  ${0:IGNORE}
+			END-FOR
+			""");
+
 	private static final List<NaturalSnippet> snippets = List.of(
 		SUBROUTINE,
 		IF,
@@ -114,7 +125,8 @@ public class StatementSnippetProvider implements ISnippetProvider
 		SOURCE_HEADER,
 		RESIZE,
 		RESIZE_AND_RESET,
-		COMPRESS
+		COMPRESS,
+		FOREACH_GROUP
 	);
 
 	@Override

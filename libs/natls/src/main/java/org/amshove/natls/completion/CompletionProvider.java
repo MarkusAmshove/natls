@@ -3,6 +3,7 @@ package org.amshove.natls.completion;
 import org.amshove.natls.config.LSConfiguration;
 import org.amshove.natls.hover.HoverContext;
 import org.amshove.natls.hover.HoverProvider;
+import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natls.languageserver.UnresolvedCompletionInfo;
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natls.project.LanguageServerLibrary;
@@ -14,6 +15,7 @@ import org.amshove.natparse.natural.builtin.BuiltInFunctionTable;
 import org.amshove.natparse.natural.builtin.SystemFunctionDefinition;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.eclipse.lsp4j.*;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -52,10 +54,13 @@ public class CompletionProvider
 		}
 
 		var isFilteredOnQualifiedNames = params.getContext().getTriggerKind() == CompletionTriggerKind.TriggerCharacter && ".".equals(params.getContext().getTriggerCharacter());
-		if (isFilteredOnQualifiedNames || completionContext.isCurrentTokenKind(SyntaxKind.LABEL_IDENTIFIER)) // Label identifier is what's lexed for incomplete qualification, e.g. GRP.
+		if (isFilteredOnQualifiedNames || completionContext.isCurrentTokenKind(SyntaxKind.LABEL_IDENTIFIER) || (completionContext.isCurrentTokenKind(SyntaxKind.DOT) && completionContext.isPreviousTokenKind(SyntaxKind.IDENTIFIER)))
 		{
 			assert completionContext.currentToken() != null;
-			var qualifiedNameFilter = completionContext.currentToken().symbolName();
+			assert completionContext.previousToken() != null;
+			var qualifiedNameFilter = completionContext.currentToken().kind() == SyntaxKind.DOT
+				? completionContext.previousTextsCombined()
+				: completionContext.currentToken().symbolName(); // label identifier
 			return findVariablesToComplete(module)
 				.filter(v -> v.qualifiedName().startsWith(qualifiedNameFilter))
 				.map(v -> toVariableCompletion(v, module, file, qualifiedNameFilter))
@@ -132,6 +137,11 @@ public class CompletionProvider
 		}
 
 		var module = calledModulesFile.module();
+		if (module == null)
+		{
+			// Happens when the module this is called on has unrecoverable errors
+			return item;
+		}
 
 		return switch (item.getKind())
 		{
@@ -191,7 +201,16 @@ public class CompletionProvider
 					)
 				);
 				var callnat = info.hasPreviousText("CALLNAT") ? "" : "CALLNAT ";
-				item.setInsertText("%s'%s'%s%n$0".formatted(callnat, calledModulesFile.getReferableName(), externalModuleParameterListAsSnippet(calledModulesFile)));
+				if (item.getTextEdit() != null && item.getTextEdit().isLeft())
+				{
+					item.getTextEdit().getLeft().setNewText(
+						"%s'%s%n$0".formatted(calledModulesFile.getReferableName(), externalModuleParameterListAsSnippet(calledModulesFile))
+					);
+				}
+				else
+				{
+					item.setInsertText("%s'%s'%s%n$0".formatted(callnat, calledModulesFile.getReferableName(), externalModuleParameterListAsSnippet(calledModulesFile)));
+				}
 				yield item;
 			}
 			default -> item;
@@ -203,6 +222,7 @@ public class CompletionProvider
 		try
 		{
 			var item = createCompletionItem(variableNode, file, module.referencableNodes(), !alreadyPresentText.isEmpty());
+			item.setLabel(item.getLabel().replace(alreadyPresentText, ""));
 			item.setInsertText(item.getInsertText().substring(alreadyPresentText.length()));
 			if (item.getKind() == CompletionItemKind.Variable)
 			{
@@ -305,6 +325,17 @@ public class CompletionProvider
 					item.setData(createUnresolvedInfo(f, context));
 					item.setKind(CompletionItemKind.Class);
 					item.setSortText("5");
+					if (context.isCurrentTokenKind(SyntaxKind.STRING_LITERAL))
+					{
+						item.setTextEdit(
+							Either.forLeft(
+								new TextEdit(
+									LspUtil.toRangeSpanning(context.originalPosition(), context.currentToken()),
+									""
+								)
+							)
+						);
+					}
 					return item;
 				}
 				catch (Exception e)

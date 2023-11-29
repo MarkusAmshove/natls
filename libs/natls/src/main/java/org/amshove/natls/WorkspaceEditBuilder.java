@@ -1,8 +1,8 @@
 package org.amshove.natls;
 
-import org.amshove.natls.languageserver.LspUtil;
-import org.amshove.natls.codemutation.TextEdits;
+import org.amshove.natls.codemutation.FileEdits;
 import org.amshove.natls.codemutation.UsingToAdd;
+import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.natural.*;
@@ -74,9 +74,13 @@ public class WorkspaceEditBuilder
 
 	public WorkspaceEditBuilder addsUsing(LanguageServerFile file, String using, VariableScope scope)
 	{
-		var edits = textEdits.computeIfAbsent(file.getUri(), u -> new ArrayList<>());
+		var fileEdit = FileEdits.addUsing(file, new UsingToAdd(using, scope));
+		if (fileEdit != null)
+		{
+			var edits = textEdits.computeIfAbsent(fileEdit.fileUri(), u -> new ArrayList<>());
+			edits.add(fileEdit.textEdit());
+		}
 
-		edits.add(TextEdits.addUsing(file, new UsingToAdd(using, scope)));
 		return this;
 	}
 
@@ -87,9 +91,9 @@ public class WorkspaceEditBuilder
 			return this;
 		}
 
-		var edits = textEdits.computeIfAbsent(file.getUri(), u -> new ArrayList<>());
-
-		edits.add(TextEdits.addVariable(file, name, type, scope));
+		var fileEdit = FileEdits.addVariable(file, name, type, scope);
+		var edits = textEdits.computeIfAbsent(fileEdit.fileUri(), u -> new ArrayList<>());
+		edits.add(fileEdit.textEdit());
 		return this;
 	}
 
@@ -107,8 +111,9 @@ public class WorkspaceEditBuilder
 			throw new IllegalStateException("Module of type %s can not have subroutines".formatted(file.getType()));
 		}
 
-		var edits = textEdits.computeIfAbsent(file.getUri(), u -> new ArrayList<>());
-		edits.add(TextEdits.addSubroutine(file, name, source));
+		var fileEdit = FileEdits.addSubroutine(file, name, source);
+		var edits = textEdits.computeIfAbsent(fileEdit.fileUri(), u -> new ArrayList<>());
+		edits.add(fileEdit.textEdit());
 
 		return this;
 	}
@@ -122,8 +127,9 @@ public class WorkspaceEditBuilder
 
 	public WorkspaceEditBuilder addPrototype(LanguageServerFile file, IFunction calledFunction)
 	{
-		var edits = textEdits.computeIfAbsent(file.getUri(), u -> new ArrayList<>());
-		edits.add(TextEdits.addPrototype(file, calledFunction));
+		var fileEdit = FileEdits.addPrototype(file, calledFunction);
+		var edits = textEdits.computeIfAbsent(fileEdit.fileUri(), u -> new ArrayList<>());
+		edits.add(fileEdit.textEdit());
 		return this;
 	}
 }

@@ -9,7 +9,10 @@ import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFileType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 abstract class AbstractParser<T>
 {
@@ -1038,9 +1041,93 @@ abstract class AbstractParser<T>
 		}
 
 		var access = consumeArithmeticExpression(reference);
+
+		if (access instanceof IVariableReferenceNode varRef && varRef.referencingToken().isQualified())
+		{
+			return consumeSpecialAdabasIndexAccess(reference, varRef, true);
+		}
+
+		if (peekKind(SyntaxKind.DOT) || (access instanceof ILiteralNode literal && literal.token().kind() == SyntaxKind.NUMBER_LITERAL && literal.token().source().contains(".")))
+		{
+			return consumeSpecialAdabasIndexAccess(reference, access, false);
+		}
+
 		if (peekKind(SyntaxKind.COLON))
 		{
 			return consumeRangedArrayAccess(reference, access);
+		}
+
+		return access;
+	}
+
+	private IOperandNode consumeSpecialAdabasIndexAccess(BaseSyntaxNode originalReference, IOperandNode firstAccess, boolean needsSplit) throws ParseError
+	{
+		var access = new AdabasIndexAccess();
+		originalReference.addNode(access);
+
+		if (needsSplit)
+		{
+			// We have to split up an operand like #I.#K to actually be #I DOT #K, because that is the adabas notation
+			var qualifiedRef = (IVariableReferenceNode) firstAccess;
+
+			// Get rid of the previous node
+			((BaseSyntaxNode) qualifiedRef.parent()).removeNode((BaseSyntaxNode) qualifiedRef);
+			((BaseSyntaxNode) qualifiedRef).setParent(null);
+			unresolvedReferences.remove(qualifiedRef);
+
+			var qualifiedToken = qualifiedRef.referencingToken();
+			var tokenSplit = qualifiedToken.source().split("\\.");
+			var firstVarToken = new SyntaxToken(
+				SyntaxKind.IDENTIFIER,
+				qualifiedToken.offset(),
+				qualifiedToken.offsetInLine(),
+				qualifiedToken.line(),
+				tokenSplit[0],
+				qualifiedToken.filePath()
+			);
+			var dotToken = new SyntaxToken(
+				SyntaxKind.DOT,
+				qualifiedToken.offset() + tokenSplit[0].length(),
+				qualifiedToken.offsetInLine() + tokenSplit[0].length(),
+				qualifiedToken.line(),
+				".",
+				qualifiedToken.filePath()
+			);
+			var secondVarToken = new SyntaxToken(
+				SyntaxKind.IDENTIFIER,
+				dotToken.offset() + 1,
+				dotToken.offsetInLine() + 1,
+				qualifiedToken.line(),
+				tokenSplit[1],
+				qualifiedToken.filePath()
+			);
+
+			var firstRef = new VariableReferenceNode(firstVarToken);
+			var dot = new TokenNode(dotToken);
+			var secondRef = new VariableReferenceNode(secondVarToken);
+			access.addOperand(firstRef);
+			access.addNode(dot);
+			access.addOperand(secondRef);
+			unresolvedReferences.add(firstRef);
+			unresolvedReferences.add(secondRef);
+		}
+		else
+		{
+			access.setParent(firstAccess.parent());
+			((BaseSyntaxNode) firstAccess).setParent(access);
+			access.addOperand(firstAccess);
+		}
+
+		consumeOptionally(access, SyntaxKind.DOT);
+		while (!tokens.isAtEnd() && !peekKind(SyntaxKind.RPAREN))
+		{
+			if (peekKind(SyntaxKind.COLON) || peekKind(SyntaxKind.ASTERISK))
+			{
+				consume(access);
+				continue;
+			}
+
+			access.addOperand(consumeOperandNode(access));
 		}
 
 		return access;
