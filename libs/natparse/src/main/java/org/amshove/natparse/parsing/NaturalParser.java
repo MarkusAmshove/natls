@@ -71,6 +71,7 @@ public class NaturalParser
 			{
 				var defineData = (DefineDataNode) naturalModule.defineData();
 				defineData.addVariable(functionReturnVariable);
+				naturalModule.addReferencableNodes(List.of(functionReturnVariable));
 			}
 		}
 
