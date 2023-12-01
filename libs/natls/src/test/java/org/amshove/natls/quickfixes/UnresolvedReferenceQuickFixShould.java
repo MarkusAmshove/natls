@@ -642,4 +642,31 @@ class UnresolvedReferenceQuickFixShould extends CodeActionTest
 			END-DEFINE
 			""");
 	}
+
+	@Test
+	void addAVariableWithInferredTypeWhenVariableIsUsedAsArrayAccess()
+	{
+		assertCodeActionWithTitle("Declare local variable #INDEX", "LIBONE", "MEINS.NSN", """
+			DEFINE DATA
+			LOCAL
+			1 #ARR (A10/1:*)
+			END-DEFINE
+
+			#ARR(#IN${}$DEX) := 'A'
+
+			END
+			""")
+			.fixes(ParserError.UNRESOLVED_REFERENCE.id())
+			.resultsApplied("""
+			DEFINE DATA
+			LOCAL
+			1 #INDEX (I4)
+			1 #ARR (A10/1:*)
+			END-DEFINE
+
+			#ARR(#INDEX) := 'A'
+
+			END
+				""");
+	}
 }
