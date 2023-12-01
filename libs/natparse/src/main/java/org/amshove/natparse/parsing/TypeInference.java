@@ -104,6 +104,11 @@ public class TypeInference
 			return Optional.of(I4);
 		}
 
+		if (tokenNode.parent() instanceof IVariableReferenceNode) // Array access
+		{
+			return Optional.of(I4);
+		}
+
 		return Optional.empty();
 	}
 
