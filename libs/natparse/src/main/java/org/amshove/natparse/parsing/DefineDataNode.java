@@ -156,6 +156,14 @@ class DefineDataNode extends BaseSyntaxNode implements IDefineData
 		}
 	}
 
+	/**
+	 * Do not use this, exists temporarly for functions
+	 */
+	void addVariable(IVariableNode variable)
+	{
+		variables.add(variable);
+	}
+
 	private void addAllVariablesFromUsing(IUsingNode usingNode)
 	{
 		if (usingNode.defineData() == null)
