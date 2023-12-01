@@ -1,28 +1,33 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
-import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IAttributeNode;
-import org.amshove.natparse.natural.IDataType;
 
 class AttributeNode extends TokenNode implements IAttributeNode
 {
-	private static final IDataType DATA_TYPE = new LiteralNode.LiteralType(DataFormat.CONTROL, 2);
+	private final SyntaxKind kind;
+	private final String value;
 
-	public AttributeNode(SyntaxToken token)
+	AttributeNode(SyntaxToken token)
 	{
 		super(token);
+
+		// TODO: Make this more safe. Does every Attribute have an equals?
+		var splitByEqual = token.source().split("=");
+		kind = SyntaxKind.valueOf(splitByEqual[0].toUpperCase());
+		value = splitByEqual[1];
 	}
 
 	@Override
-	public IDataType inferType()
+	public SyntaxKind kind()
 	{
-		return DATA_TYPE;
+		return kind;
 	}
 
 	@Override
-	public IDataType reInferType(IDataType targetType)
+	public String value()
 	{
-		return DATA_TYPE;
+		return value;
 	}
 }

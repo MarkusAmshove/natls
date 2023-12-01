@@ -49,7 +49,7 @@ class AssignmentStatementParsingShould extends StatementParseTest
 			#TAR := (AD=IO)
 			""", IAssignmentStatementNode.class);
 
-		assertNodeType(assign.operand(), IAttributeNode.class);
+		assertNodeType(assign.operand(), IAttributeListNode.class);
 	}
 
 	@Test
@@ -103,7 +103,7 @@ class AssignmentStatementParsingShould extends StatementParseTest
 	void parseControlAttributeAssignments()
 	{
 		var assignment = assertParsesSingleStatement("#VAR := (CD=RE)", IAssignmentStatementNode.class);
-		assertNodeType(assignment.operand(), IAttributeNode.class);
+		assertNodeType(assignment.operand(), IAttributeListNode.class);
 	}
 
 	@Test

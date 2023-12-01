@@ -1,4 +1,10 @@
 package org.amshove.natparse.natural;
 
-public interface IAttributeNode extends ILiteralNode
-{}
+import org.amshove.natparse.lexing.SyntaxKind;
+
+public interface IAttributeNode extends ITokenNode
+{
+	SyntaxKind kind();
+
+	String value();
+}

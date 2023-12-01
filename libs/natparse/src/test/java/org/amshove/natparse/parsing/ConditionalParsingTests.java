@@ -627,7 +627,17 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	}
 
 	@Test
-	void handleNestedParenthesis()
+	void handleNestedParanthesis()
+	{
+		var criteria = assertParsesCriteria("#VAR = ((0 + 5))", IRelationalCriteriaNode.class);
+		assertIsVariableReference(criteria.left(), "#VAR");
+		var arithmetic = assertNodeType(criteria.right(), IArithmeticExpressionNode.class);
+		assertLiteral(arithmetic.left(), SyntaxKind.NUMBER_LITERAL);
+		assertLiteral(arithmetic.right(), SyntaxKind.NUMBER_LITERAL);
+	}
+
+	@Test
+	void handleNestedParenthesisInBiggerConditions()
 	{
 		assertParsesCriteria("NOT (#VAR1  =  #ARR(*))  AND  (#VAR2  > ((0 + 5)))", INegatedConditionalCriteria.class);
 	}

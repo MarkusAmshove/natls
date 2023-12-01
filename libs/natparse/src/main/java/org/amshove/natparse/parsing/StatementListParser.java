@@ -2618,9 +2618,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var opening = consumeMandatory(loopNode, SyntaxKind.FOR);
 		loopNode.setLoopControl(consumeVariableReferenceNode(loopNode));
 		consumeAnyOptionally(loopNode, List.of(SyntaxKind.COLON_EQUALS_SIGN, SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.FROM));
-		consumeOperandNode(loopNode); // TODO(arithmetic-expression): Could also be arithmetic expression
+		consumeArithmeticExpression(loopNode);
 		consumeAnyOptionally(loopNode, List.of(SyntaxKind.TO, SyntaxKind.THRU)); // According to the documentation, either TO or THRU is mandatory. However, FOR #I 1 10 also just works :)
-		var upperBound = consumeOperandNode(loopNode); // TODO(arithmetic-expression): Could also be arithmetic expression
+		var upperBound = consumeArithmeticExpression(loopNode);
 		loopNode.setUpperBound(upperBound);
 		if (consumeOptionally(loopNode, SyntaxKind.STEP))
 		{
@@ -4556,6 +4556,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			|| peekKind(SyntaxKind.POS)
 			|| peekKind(SyntaxKind.FRAC)
 			|| (peekKind(SyntaxKind.MINUS) && lookahead == SyntaxKind.NUMBER_LITERAL)
+			|| (peekKind(SyntaxKind.LPAREN) && lookahead != null && lookahead.isAttribute())
 			|| (peek().kind().canBeIdentifier() && !peekKindInLine(SyntaxKind.COLON_EQUALS_SIGN)); // hopefully this fixes `#ARR(10) :=` being recognized as operand and has no side effects :)
 	}
 
@@ -4727,5 +4728,23 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			&& (peek().kind().canBeIdentifier() || peek().kind().isSystemVariable())
 			&& (peekKind(1, SyntaxKind.COLON_EQUALS_SIGN)
 				|| (peekKind(1, SyntaxKind.LPAREN) && isKindAfterKindInSameLine(SyntaxKind.COLON_EQUALS_SIGN, SyntaxKind.RPAREN)));
+	}
+
+	private boolean isInputStatementAttribute(SyntaxKind kind)
+	{
+		return switch (kind)
+		{
+			case AD, AL, CD, CV, DF, DL, DY, EM, FL, HE, IP, LS, MC, MS, NL, PC, PM, PS, SG, ZP -> true;
+			default -> false;
+		};
+	}
+
+	private boolean isInputElementAttribute(SyntaxKind kind)
+	{
+		return switch (kind)
+		{
+			case AD, AL, CD, CV, DF, DL, DY, EM, EMU, FL, HE, IP, NL, PM, SB, SG, ZP -> true;
+			default -> false;
+		};
 	}
 }
