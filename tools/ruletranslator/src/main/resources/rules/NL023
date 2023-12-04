@@ -1,0 +1,6 @@
+name: Condition is always true
+priority: MAJOR
+tags: pitfall,confusing
+type: CODE_SMELL
+description:
+This condition always evaluates to ``true``.
