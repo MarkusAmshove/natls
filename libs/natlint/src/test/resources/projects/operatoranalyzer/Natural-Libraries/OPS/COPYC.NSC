@@ -1,0 +1,7 @@
+* >Natural Source Header 000000
+* :Mode S
+* :CP
+* <Natural Source Header
+IF 5 EQ 5
+IGNORE
+END-IF

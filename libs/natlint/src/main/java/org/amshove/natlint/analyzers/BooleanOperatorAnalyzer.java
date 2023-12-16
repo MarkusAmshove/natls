@@ -103,13 +103,16 @@ public class BooleanOperatorAnalyzer extends AbstractAnalyzer
 			return;
 		}
 
-		context.report(
-			DISCOURAGED_BOOLEAN_OPERATOR.createFormattedDiagnostic(
-				syntaxToken,
-				syntaxToken.source(),
-				preferredOperator
-			)
-		);
+		if (syntaxToken.filePath().equals(context.getModule().file().getPath()))
+		{
+			context.report(
+				DISCOURAGED_BOOLEAN_OPERATOR.createFormattedDiagnostic(
+					syntaxToken,
+					syntaxToken.source(),
+					preferredOperator
+				)
+			);
+		}
 	}
 
 	private void analyzeEquals(SyntaxToken syntaxToken, IAnalyzeContext context)
