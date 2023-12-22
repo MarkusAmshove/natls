@@ -69,7 +69,9 @@ public class NaturalParser
 			topLevelNodes.add(parseDefineData(tokens, moduleProvider, naturalModule));
 			if (file.getFiletype() == NaturalFileType.FUNCTION && naturalModule.defineData() != null && functionReturnVariable != null)
 			{
-				((DefineDataNode) naturalModule.defineData()).addNode(functionReturnVariable);
+				var defineData = (DefineDataNode) naturalModule.defineData();
+				defineData.addVariable(functionReturnVariable);
+				naturalModule.addReferencableNodes(List.of(functionReturnVariable));
 			}
 		}
 

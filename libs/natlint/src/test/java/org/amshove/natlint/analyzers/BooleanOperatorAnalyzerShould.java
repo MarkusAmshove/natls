@@ -162,6 +162,27 @@ class BooleanOperatorAnalyzerShould extends AbstractAnalyzerTest
 	}
 
 	@Test
+	void notReportDiagnosticsComingFromCopyCodes(@ProjectName("operatoranalyzer") NaturalProject project)
+	{
+		configureEditorConfig("""
+			[*]
+			natls.style.comparisons=sign
+			""");
+
+		// Diagnostic should come up in the copy code
+		testDiagnostics(
+			project.findModule("OPS", "COPYC"),
+			expectDiagnostic(4, BooleanOperatorAnalyzer.DISCOURAGED_BOOLEAN_OPERATOR)
+		);
+
+		// But not in an including module
+		testDiagnostics(
+			project.findModule("OPS", "SUB"),
+			expectNoDiagnosticOfType(BooleanOperatorAnalyzer.DISCOURAGED_BOOLEAN_OPERATOR)
+		);
+	}
+
+	@Test
 	void notEnforceEqualsOverEqForNatUnitTests(@ProjectName("natunit") NaturalProject project)
 	{
 		testDiagnostics(

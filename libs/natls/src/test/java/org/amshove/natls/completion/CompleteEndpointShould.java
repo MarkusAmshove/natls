@@ -310,4 +310,20 @@ class CompleteEndpointShould extends CompletionTest
 			""")
 			.assertContainsVariableCompleting("#VARIABLE :(A10) (SUB)", "#VARIABLE");
 	}
+
+	@Test
+	void containAFunctionsImplicitReturnVariable()
+	{
+		assertCompletions("LIBONE", "FUNC.NS7", """
+			DEFINE FUNCTION FUNC RETURNS (A1)
+			DEFINE DATA LOCAL
+			1 #VAR (A10)
+			END-DEFINE
+			${}$
+			END-FUNCTION
+			END
+			""")
+			.assertContainsVariable("FUNC :(A1) (FUNC)")
+			.assertContainsVariable("#VAR :(A10) (FUNC)");
+	}
 }
