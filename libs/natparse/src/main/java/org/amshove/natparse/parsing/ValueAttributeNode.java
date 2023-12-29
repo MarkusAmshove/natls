@@ -2,18 +2,17 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
-import org.amshove.natparse.natural.IAttributeNode;
+import org.amshove.natparse.natural.IValueAttributeNode;
 
-class AttributeNode extends TokenNode implements IAttributeNode
+class ValueAttributeNode extends BaseSyntaxNode implements IValueAttributeNode
 {
 	private final SyntaxKind kind;
 	private final String value;
 
-	AttributeNode(SyntaxToken token)
+	ValueAttributeNode(SyntaxToken token)
 	{
-		super(token);
-
 		// TODO: Make this more safe. Does every Attribute have an equals?
+		addNode(new TokenNode(token));
 		var splitByEqual = token.source().split("=");
 		kind = SyntaxKind.valueOf(splitByEqual[0].toUpperCase());
 		value = splitByEqual[1];

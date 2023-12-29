@@ -976,7 +976,7 @@ public class Lexer
 	{
 		if (isInParens() && scanner.peek(2) == '=')
 		{
-			var attributeLookahead = scanner.peekText(3);
+			var attributeLookahead = scanner.peekText(3).toUpperCase();
 			var previous = previous();
 			switch (attributeLookahead)
 			{
@@ -985,15 +985,24 @@ public class Lexer
 				case "CD=" -> colorDefinition();
 				case "CV=" -> controlVariableAttribute();
 				case "DF=" -> dateFormatAttribute();
+				case "DL=" -> operandAttribute(SyntaxKind.DL);
+				case "FL=" -> operandAttribute(SyntaxKind.FL);
 				case "DY=" -> dynamicAttribute();
 				case "ES=" -> emptyLineSuppression();
 				case "EM=" -> editMask();
+				case "HE=" -> helproutine();
+				case "MC=" -> operandAttribute(SyntaxKind.MC);
+				case "MS=" -> valueAttribute(SyntaxKind.MS);
 				case "IP=" -> inputPromptAttribute();
 				case "IS=" -> identicalSuppressAttribute();
-				case "NL=" -> numericLengthAttribute();
+				case "NL=" -> valueAttribute(SyntaxKind.NL);
+				case "PC=" -> operandAttribute(SyntaxKind.PC);
+				case "PM=" -> valueAttribute(SyntaxKind.PM);
+				case "PS=" -> operandAttribute(SyntaxKind.PS);
 				case "SB=" -> selectionBoxAttribute();
 				case "SG=" -> signPosition();
 				case "ZP=" -> zeroPrintingAttribute();
+				case "LS=" -> lineSize();
 			}
 
 			if (previous() != previous) // check that we consumed something
@@ -1214,6 +1223,29 @@ public class Lexer
 		createAndAdd(SyntaxKind.EM);
 	}
 
+	private void helproutine()
+	{
+		scanner.start();
+		scanner.advance(3); // HE=
+		var isInString = false;
+		while (!scanner.isAtEnd() && !scanner.peekText(")") || isInString)
+		{
+			if (scanner.peek() == '\'' || scanner.peek() == '"')
+			{
+				isInString = !isInString;
+			}
+
+			if (isWhitespace(0) && !isInString)
+			{
+				break;
+			}
+
+			scanner.advance();
+		}
+
+		createAndAdd(SyntaxKind.HE);
+	}
+
 	private void attributeDefinition()
 	{
 		scanner.start();
@@ -1232,6 +1264,25 @@ public class Lexer
 		}
 
 		createAndAdd(SyntaxKind.AD);
+	}
+
+	private void valueAttribute(SyntaxKind kind)
+	{
+		scanner.start();
+		scanner.advance(kind.name().length() + 1); // e.g. "DL" + "="
+		while (!scanner.isAtEnd() && isNoWhitespace() && scanner.peek() != ')')
+		{
+			scanner.advance();
+		}
+
+		createAndAdd(kind);
+	}
+
+	private void operandAttribute(SyntaxKind kind)
+	{
+		scanner.start();
+		scanner.advance(kind.name().length() + 1); // e.g. "DL" + "="
+		createAndAdd(kind);
 	}
 
 	private void alphanumericLengthAttribute()
@@ -1294,10 +1345,10 @@ public class Lexer
 		createAndAdd(SyntaxKind.IS);
 	}
 
-	private void numericLengthAttribute()
+	private void lineSize()
 	{
 		scanner.start();
-		scanner.advance(3); // NL=
+		scanner.advance(3); // LS=
 		while (!scanner.isAtEnd() && isNoWhitespace() && scanner.peek() != ')')
 		{
 			scanner.advance();

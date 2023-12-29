@@ -662,4 +662,13 @@ class ParserErrors
 			ParserError.VARIABLE_QUALIFICATION_NOT_ALLOWED
 		);
 	}
+
+	public static IDiagnostic invalidInputStatementAttribute(IAttributeNode statementAttribute)
+	{
+		return ParserDiagnostic.create(
+			"%s is not a valid INPUT attribute at the statement level".formatted(statementAttribute.kind()),
+			statementAttribute,
+			ParserError.INVALID_INPUT_STATEMENT_ATTRIBUTE
+		);
+	}
 }

@@ -2135,6 +2135,18 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			consumeMandatory(input, SyntaxKind.ERASE);
 		}
 
+		if (isAttributeList())
+		{
+			input.setStatementAttributes(consumeAttributeList(input));
+			for (var statementAttribute : input.statementAttributes())
+			{
+				if (!isInputStatementAttribute(statementAttribute.kind()))
+				{
+					report(ParserErrors.invalidInputStatementAttribute(statementAttribute));
+				}
+			}
+		}
+
 		if (consumeOptionally(input, SyntaxKind.LPAREN))
 		{
 			// statement attributes?

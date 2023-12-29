@@ -244,18 +244,9 @@ abstract class AbstractParser<T>
 
 	protected IOperandNode consumeLiteralNode(BaseSyntaxNode node) throws ParseError
 	{
-		if (peekKind(SyntaxKind.LPAREN) && peek(1).kind().isAttribute())
+		if (isAttributeList())
 		{
-			var attributeList = new AttributeListNode();
-			node.addNode(attributeList);
-			consumeMandatory(attributeList, SyntaxKind.LPAREN);
-			while (!isAtEnd() && peek().kind() != SyntaxKind.RPAREN && peek().kind() != SyntaxKind.END_DEFINE)
-			{
-				var attribute = new AttributeNode(tokens.advance());
-				attributeList.addAttribute(attribute);
-			}
-			consumeMandatory(attributeList, SyntaxKind.RPAREN);
-			return attributeList;
+			return consumeAttributeList(node);
 		}
 
 		// negative numeric literals like `-1`
@@ -275,6 +266,39 @@ abstract class AbstractParser<T>
 		}
 
 		return consumeSingleLiteral(node);
+	}
+
+	protected boolean isAttributeList()
+	{
+		return peekKind(SyntaxKind.LPAREN) && peek(1).kind().isAttribute();
+	}
+
+	protected IAttributeListNode consumeAttributeList(BaseSyntaxNode node) throws ParseError
+	{
+		var attributeList = new AttributeListNode();
+		node.addNode(attributeList);
+		consumeMandatory(attributeList, SyntaxKind.LPAREN);
+		while (!isAtEnd() && peek().kind() != SyntaxKind.RPAREN && peek().kind() != SyntaxKind.END_DEFINE)
+		{
+			attributeList.addAttribute(parseAttribute());
+		}
+		consumeMandatory(attributeList, SyntaxKind.RPAREN);
+		return attributeList;
+	}
+
+	private IAttributeNode parseAttribute() throws ParseError
+	{
+		var attributeToken = tokens.advance();
+		if (attributeToken.source().endsWith("="))
+		{
+			var operandAttribute = new OperandAttributeNode(attributeToken);
+			operandAttribute.setOperand(consumeOperandNode(operandAttribute));
+			return operandAttribute;
+		}
+		else
+		{
+			return new ValueAttributeNode(attributeToken);
+		}
 	}
 
 	private static final Set<SyntaxKind> LITERAL_KINDS = Set.of(SyntaxKind.NUMBER_LITERAL, SyntaxKind.STRING_LITERAL, SyntaxKind.HEX_LITERAL, SyntaxKind.TRUE, SyntaxKind.FALSE, SyntaxKind.ASTERISK, SyntaxKind.DATE_LITERAL, SyntaxKind.TIME_LITERAL, SyntaxKind.EXTENDED_TIME_LITERAL);
@@ -1198,7 +1222,7 @@ abstract class AbstractParser<T>
 		var attributeList = new AttributeListNode();
 		node.addNode(attributeList);
 		consumeMandatory(attributeList, SyntaxKind.LPAREN);
-		attributeList.addAttribute(new AttributeNode(tokens.advance()));
+		attributeList.addAttribute(parseAttribute());
 		consumeMandatory(attributeList, SyntaxKind.RPAREN);
 		return attributeList;
 	}

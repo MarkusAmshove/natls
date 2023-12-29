@@ -1,9 +1,8 @@
 package org.amshove.natparse.parsing.statements;
 
-import org.amshove.natparse.natural.IInputStatementNode;
-import org.amshove.natparse.natural.ILiteralNode;
-import org.amshove.natparse.natural.ITokenNode;
-import org.amshove.natparse.natural.IVariableReferenceNode;
+import org.amshove.natparse.lexing.SyntaxKind;
+import org.amshove.natparse.natural.*;
+import org.amshove.natparse.parsing.ParserError;
 import org.amshove.natparse.parsing.StatementParseTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -45,7 +44,17 @@ class InputStatementParsingShould extends StatementParseTest
 	@Test
 	void consumeStatementAttributes()
 	{
-		assertParsesSingleStatement("INPUT (AD=IO) 'Hi'", IInputStatementNode.class);
+		var input = assertParsesSingleStatement("INPUT (AD=IO) 'Hi'", IInputStatementNode.class);
+		var attribute = assertNodeType(input.statementAttributes().first(), IValueAttributeNode.class);
+
+		assertThat(attribute.kind()).isEqualTo(SyntaxKind.AD);
+		assertThat(attribute.value()).isEqualTo("IO");
+	}
+
+	@Test
+	void raiseADiagnosticForInvalidStatementAttributes()
+	{
+		assertDiagnostic("INPUT (ES=ON) 'Hi'", ParserError.INVALID_INPUT_STATEMENT_ATTRIBUTE);
 	}
 
 	@ParameterizedTest
