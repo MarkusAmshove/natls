@@ -297,6 +297,11 @@ abstract class AbstractParser<T>
 		}
 		else
 		{
+			if (attributeToken.source().equalsIgnoreCase("I")) // TODO: Add all implicit attributes
+			{
+				return new ValueAttributeNode(SyntaxKind.AD, attributeToken);
+			}
+
 			return new ValueAttributeNode(attributeToken);
 		}
 	}

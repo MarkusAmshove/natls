@@ -671,4 +671,13 @@ class ParserErrors
 			ParserError.INVALID_INPUT_STATEMENT_ATTRIBUTE
 		);
 	}
+
+	public static IDiagnostic invalidInputElementAttribute(IAttributeNode attribute)
+	{
+		return ParserDiagnostic.create(
+			"%s is not a valid attribute for an INPUT operand".formatted(attribute.kind()),
+			attribute,
+			ParserError.INVALID_INPUT_ELEMENT_ATTRIBUTE
+		);
+	}
 }

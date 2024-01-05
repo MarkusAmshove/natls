@@ -114,7 +114,7 @@ class LexerForAttributeControlsShould extends AbstractLexerTest
 			"#PAGE(AD=MI)",
 			token(SyntaxKind.IDENTIFIER, "#PAGE"),
 			token(SyntaxKind.LPAREN),
-			token(SyntaxKind.AD),
+			token(SyntaxKind.AD, "AD=MI"),
 			token(SyntaxKind.RPAREN)
 		);
 	}

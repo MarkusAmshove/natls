@@ -18,6 +18,16 @@ class ValueAttributeNode extends BaseSyntaxNode implements IValueAttributeNode
 		value = splitByEqual[1];
 	}
 
+	/**
+	 * Used for implicit attributes like (I)
+	 */
+	ValueAttributeNode(SyntaxKind kind, SyntaxToken valueToken)
+	{
+		addNode(new TokenNode(valueToken));
+		this.value = valueToken.source();
+		this.kind = kind;
+	}
+
 	@Override
 	public SyntaxKind kind()
 	{

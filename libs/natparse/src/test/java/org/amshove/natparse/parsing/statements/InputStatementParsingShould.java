@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
+@SuppressWarnings("DataFlowIssue")
 class InputStatementParsingShould extends StatementParseTest
 {
 	@Test
@@ -136,10 +137,28 @@ class InputStatementParsingShould extends StatementParseTest
 		assertNodeOperand(input, 2, IVariableReferenceNode.class, "#VAR");
 	}
 
+	@Test
+	void consumeOperandAttributes()
+	{
+		var input = assertParsesSingleStatement("INPUT #VAR (AD=IO)", IInputStatementNode.class);
+		var inputOperand = input.operands().first();
+		assertIsVariableReference(inputOperand.operand(), "#VAR");
+		assertThat(inputOperand.attributeNode()).as("Attribute List for operand should not be null").isNotNull();
+		var valueAttribute = assertNodeType(inputOperand.attributeNode().attributes().first(), IValueAttributeNode.class);
+		assertThat(valueAttribute.kind()).isEqualTo(SyntaxKind.AD);
+		assertThat(valueAttribute.value()).isEqualTo("IO");
+	}
+
+	@Test
+	void raiseADiagnosticForInvalidElementAttributes()
+	{
+		assertDiagnostic("INPUT 'Hi' (LS=20)", ParserError.INVALID_INPUT_ELEMENT_ATTRIBUTE);
+	}
+
 	private void assertNodeOperand(IInputStatementNode input, int index, Class<? extends ITokenNode> operandType, String source)
 	{
 		assertThat(
-			assertNodeType(input.operands().get(index), operandType)
+			assertNodeType(input.operands().get(index).operand(), operandType)
 				.token().source()
 		).isEqualTo(source);
 	}

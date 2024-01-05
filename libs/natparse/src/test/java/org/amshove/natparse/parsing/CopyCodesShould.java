@@ -71,7 +71,8 @@ class CopyCodesShould extends ParserIntegrationTest
 		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "INCLSTR"), ISubprogram.class);
 		var include = (IIncludeNode) subprogram.body().statements().first();
 		var write = (IWriteNode) include.body().statements().first();
-		assertThat(((ILiteralNode) write.descendants().last()).token().source()).isEqualTo("\"\"\"Text\"\"\"");
+		var operand = write.operands().first().operand();
+		assertThat(((ILiteralNode) operand).token().source()).isEqualTo("\"\"\"Text\"\"\"");
 	}
 
 	@Test
@@ -80,8 +81,12 @@ class CopyCodesShould extends ParserIntegrationTest
 		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "INCLMSTR"), ISubprogram.class);
 		var include = (IIncludeNode) subprogram.body().statements().first();
 		var write = (IWriteNode) include.body().statements().first();
-		assertThat(((VariableReferenceNode) write.descendants().get(write.descendants().size() - 2)).token().source()).isEqualTo("#VAR1");
-		assertThat(((VariableReferenceNode) write.descendants().last()).token().source()).isEqualTo("#VAR2");
+
+		var firstOperand = write.operands().first().operand();
+		assertThat(((VariableReferenceNode) firstOperand).token().source()).isEqualTo("#VAR1");
+
+		var secondOperand = write.operands().last().operand();
+		assertThat(((VariableReferenceNode) secondOperand).token().source()).isEqualTo("#VAR2");
 	}
 
 	@Test
@@ -91,8 +96,9 @@ class CopyCodesShould extends ParserIntegrationTest
 		var firstInclude = (IIncludeNode) subprogram.body().statements().first();
 		var secondInclude = (IIncludeNode) firstInclude.body().statements().first();
 		var write = (IWriteNode) secondInclude.body().statements().first();
-		assertThat(write.descendants()).as("WRITE statement should only have 2 nodes. The WRITE keyword and the string operand").hasSize(2);
-		assertThat(((ILiteralNode) write.descendants().last()).token().source()).isEqualTo("\"Text\"");
+
+		var writeOperand = write.operands().first().operand();
+		assertThat(((ILiteralNode) writeOperand).token().source()).isEqualTo("\"Text\"");
 	}
 
 	@Test

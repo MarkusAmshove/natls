@@ -1,26 +1,23 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.ReadOnlyList;
-import org.amshove.natparse.natural.IAttributeListNode;
-import org.amshove.natparse.natural.IAttributeNode;
-import org.amshove.natparse.natural.IInputStatementNode;
-import org.amshove.natparse.natural.IOperandNode;
+import org.amshove.natparse.natural.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 class InputStatementNode extends StatementNode implements IInputStatementNode
 {
-	private final List<IOperandNode> operands = new ArrayList<>();
+	private final List<IInputOutputOperandNode> operands = new ArrayList<>();
 	private IAttributeListNode statementAttributes;
 
 	@Override
-	public ReadOnlyList<IOperandNode> operands()
+	public ReadOnlyList<IInputOutputOperandNode> operands()
 	{
 		return ReadOnlyList.from(operands);
 	}
 
-	void addOperand(IOperandNode operand)
+	void addOperand(InputOutputOperandNode operand)
 	{
 		if (operand == null)
 		{
@@ -28,6 +25,7 @@ class InputStatementNode extends StatementNode implements IInputStatementNode
 			return;
 		}
 
+		operand.setParent(this);
 		operands.add(operand);
 	}
 

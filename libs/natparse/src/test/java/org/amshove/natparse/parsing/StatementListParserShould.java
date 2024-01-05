@@ -14,6 +14,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
+@SuppressWarnings("DataFlowIssue")
 class StatementListParserShould extends StatementParseTest
 {
 
@@ -1823,23 +1824,43 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
-	void parseWriteWithReportSpecificationAsAttribute()
-	{
-		var write = assertParsesSingleStatement("WRITE (CC)", IWriteNode.class);
-		assertThat(write.reportSpecification()).map(SyntaxToken::source).hasValue("CC");
-	}
-
-	@Test
 	void parseWriteWithLineAdvancement()
 	{
 		assertParsesSingleStatement("WRITE (1) // 10X 'literal' (I)", IWriteNode.class);
 	}
 
 	@Test
+	void parseWriteWithArrayAccessElements()
+	{
+		var write = assertParsesSingleStatement("WRITE #ARR (1) #ARR2 (#I)", IWriteNode.class);
+
+		var firstOperand = write.operands().first().operand();
+		var firstReference = assertIsVariableReference(firstOperand, "#ARR");
+		assertThat(firstReference.dimensions()).hasSize(1);
+		assertLiteral(firstReference.dimensions().first(), SyntaxKind.NUMBER_LITERAL);
+
+		var secondOperand = write.operands().last().operand();
+		var secondReference = assertIsVariableReference(secondOperand, "#ARR2");
+		assertThat(secondReference.dimensions()).hasSize(1);
+		assertIsVariableReference(secondReference.dimensions().first(), "#I");
+	}
+
+	@Test
+	void parseWriteWithExplicitElementAttribute()
+	{
+		var write = assertParsesSingleStatement("WRITE 'literal' (I)", IWriteNode.class);
+		var attribute = assertNodeType(write.operands().first().attributes().first(), IValueAttributeNode.class);
+		assertThat(attribute.kind()).isEqualTo(SyntaxKind.AD);
+		assertThat(attribute.value()).isEqualTo("I");
+	}
+
+	@Test
 	void parseWriteWithAttributeDefinition()
 	{
 		var write = assertParsesSingleStatement("WRITE (AD=UL AL=17 NL=8)", IWriteNode.class);
-		assertThat(write.descendants()).hasSize(6);
+		assertValueAttribute(write.statementAttributes().get(0), SyntaxKind.AD, "UL");
+		assertValueAttribute(write.statementAttributes().get(1), SyntaxKind.AL, "17");
+		assertValueAttribute(write.statementAttributes().get(2), SyntaxKind.NL, "8");
 	}
 
 	@ParameterizedTest
@@ -1885,7 +1906,8 @@ class StatementListParserShould extends StatementParseTest
 	void notParseAttributeAsIsnParameter()
 	{
 		var write = assertParsesSingleStatement("WRITE *ISN(NL=8)", IWriteNode.class);
-		assertThat(write.descendants()).anyMatch(n -> n instanceof ITokenNode tNode && tNode.token().kind() == SyntaxKind.NL);
+		var firstOperand = write.operands().first();
+		assertValueAttribute(firstOperand.attributes().first(), SyntaxKind.NL, "8");
 	}
 
 	@Test
