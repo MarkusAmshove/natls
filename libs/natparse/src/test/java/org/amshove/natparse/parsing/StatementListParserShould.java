@@ -1834,12 +1834,12 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var write = assertParsesSingleStatement("WRITE #ARR (1) #ARR2 (#I)", IWriteNode.class);
 
-		var firstOperand = write.operands().first().operand();
+		var firstOperand = assertNodeType(write.operands().first(), IOutputOperandNode.class).operand();
 		var firstReference = assertIsVariableReference(firstOperand, "#ARR");
 		assertThat(firstReference.dimensions()).hasSize(1);
 		assertLiteral(firstReference.dimensions().first(), SyntaxKind.NUMBER_LITERAL);
 
-		var secondOperand = write.operands().last().operand();
+		var secondOperand = assertNodeType(write.operands().last(), IOutputOperandNode.class).operand();
 		var secondReference = assertIsVariableReference(secondOperand, "#ARR2");
 		assertThat(secondReference.dimensions()).hasSize(1);
 		assertIsVariableReference(secondReference.dimensions().first(), "#I");
@@ -1849,7 +1849,8 @@ class StatementListParserShould extends StatementParseTest
 	void parseWriteWitImplicitElementAttribute()
 	{
 		var write = assertParsesSingleStatement("WRITE 'literal' (I)", IWriteNode.class);
-		var attribute = assertNodeType(write.operands().first().attributes().first(), IValueAttributeNode.class);
+		var operand = assertNodeType(write.operands().first(), IOutputOperandNode.class);
+		var attribute = assertNodeType(operand.attributes().first(), IValueAttributeNode.class);
 		assertThat(attribute.kind()).isEqualTo(SyntaxKind.AD);
 		assertThat(attribute.value()).isEqualTo("I");
 	}
@@ -1912,7 +1913,7 @@ class StatementListParserShould extends StatementParseTest
 	void notParseAttributeAsIsnParameter()
 	{
 		var write = assertParsesSingleStatement("WRITE *ISN(NL=8)", IWriteNode.class);
-		var firstOperand = write.operands().first();
+		var firstOperand = assertNodeType(write.operands().first(), IOutputOperandNode.class);
 		assertValueAttribute(firstOperand.attributes().first(), SyntaxKind.NL, "8");
 	}
 

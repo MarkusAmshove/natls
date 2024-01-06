@@ -129,20 +129,28 @@ class InputStatementParsingShould extends StatementParseTest
 	}
 
 	@Test
+	void consumeNewLines()
+	{
+		var input = assertParsesSingleStatement("INPUT 'Hi' / 'Ho'", IInputStatementNode.class);
+		assertNodeType(input.operands().get(1), IOutputNewLineNode.class);
+	}
+
+	@Test
 	void consumeTabsAndSkips()
 	{
 		var input = assertParsesSingleStatement("INPUT 'Hi' / 'Ho' 5T #VAR", IInputStatementNode.class);
-		assertThat(input.operands()).hasSize(3);
+		assertThat(input.operands()).hasSize(4);
 		assertNodeOperand(input, 0, ILiteralNode.class, "'Hi'");
-		assertNodeOperand(input, 1, ILiteralNode.class, "'Ho'");
-		assertNodeOperand(input, 2, IVariableReferenceNode.class, "#VAR");
+		assertNodeType(input.operands().get(1), IOutputNewLineNode.class);
+		assertNodeOperand(input, 2, ILiteralNode.class, "'Ho'");
+		assertNodeOperand(input, 3, IVariableReferenceNode.class, "#VAR");
 	}
 
 	@Test
 	void consumeOperandAttributes()
 	{
 		var input = assertParsesSingleStatement("INPUT #VAR (AD=IO)", IInputStatementNode.class);
-		var inputOperand = input.operands().first();
+		var inputOperand = assertNodeType(input.operands().first(), IOutputOperandNode.class);
 		assertIsVariableReference(inputOperand.operand(), "#VAR");
 		assertThat(inputOperand.attributeNode()).as("Attribute List for operand should not be null").isNotNull();
 		var valueAttribute = assertNodeType(inputOperand.attributeNode().attributes().first(), IValueAttributeNode.class);
@@ -172,7 +180,8 @@ class InputStatementParsingShould extends StatementParseTest
 	void parseImplicitAttributes(String value, SyntaxKind expectedKind)
 	{
 		var input = assertParsesSingleStatement("INPUT 'Lit' (%s)".formatted(value), IInputStatementNode.class);
-		var attribute = input.operands().first().attributes().first();
+		var inputOperand = assertNodeType(input.operands().first(), IOutputOperandNode.class);
+		var attribute = inputOperand.attributes().first();
 		assertValueAttribute(attribute, expectedKind, value);
 	}
 
@@ -199,9 +208,9 @@ class InputStatementParsingShould extends StatementParseTest
 	void parseCharacterRepetitionWithAttributes()
 	{
 		var input = assertParsesSingleStatement("INPUT '*' (70) (AD=I)", IInputStatementNode.class);
-		var operand = input.operands().first();
 
-		assertValueAttribute(operand.attributes().first(), SyntaxKind.AD, "I");
+		var inputOperand = assertNodeType(input.operands().first(), IOutputOperandNode.class);
+		assertValueAttribute(inputOperand.attributes().first(), SyntaxKind.AD, "I");
 	}
 
 	@Test
@@ -212,8 +221,9 @@ class InputStatementParsingShould extends StatementParseTest
 
 	private void assertNodeOperand(IInputStatementNode input, int index, Class<? extends ITokenNode> operandType, String source)
 	{
+		var inputOperand = assertNodeType(input.operands().get(index), IOutputOperandNode.class);
 		assertThat(
-			assertNodeType(input.operands().get(index).operand(), operandType)
+			assertNodeType(inputOperand.operand(), operandType)
 				.token().source()
 		).isEqualTo(source);
 	}

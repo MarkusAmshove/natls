@@ -2239,19 +2239,26 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 			var operand = consumeInputOutputOperand(input);
 			input.addOperand(operand);
-			if (operand != null)
-			{
-				for (var attribute : operand.attributes())
-				{
-					if (!isInputElementAttribute(attribute.kind()))
-					{
-						report(ParserErrors.invalidInputElementAttribute(attribute));
-					}
-				}
-			}
+			checkOutputElementAttributes(operand);
 		}
 
 		return input;
+	}
+
+	private void checkOutputElementAttributes(IOutputElementNode operand)
+	{
+		if (!(operand instanceof IOutputOperandNode outputOperand))
+		{
+			return;
+		}
+
+		for (var attribute : outputOperand.attributes())
+		{
+			if (!isInputElementAttribute(attribute.kind()))
+			{
+				report(ParserErrors.invalidInputElementAttribute(attribute));
+			}
+		}
 	}
 
 	private static final Set<SyntaxKind> OPTIONAL_WRITE_FLAGS = Set.of(SyntaxKind.NOTITLE, SyntaxKind.NOTIT, SyntaxKind.NOHDR, SyntaxKind.USING, SyntaxKind.MAP, SyntaxKind.FORM, SyntaxKind.TITLE, SyntaxKind.TRAILER, SyntaxKind.LEFT, SyntaxKind.JUSTIFIED, SyntaxKind.UNDERLINED);
@@ -2290,18 +2297,23 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 			var operand = consumeInputOutputOperand(write);
 			write.addOperand(operand);
+			checkOutputElementAttributes(operand);
 		}
 
 		return write;
 	}
 
-	private OutputOperandNode consumeInputOutputOperand(BaseSyntaxNode writeLikeNode) throws ParseError
+	private IOutputElementNode consumeInputOutputOperand(BaseSyntaxNode writeLikeNode) throws ParseError
 	{
 		if (consumeOptionally(writeLikeNode, SyntaxKind.TAB_SETTING)
-			|| consumeOptionally(writeLikeNode, SyntaxKind.SLASH)
 			|| consumeOptionally(writeLikeNode, SyntaxKind.OPERAND_SKIP))
 		{
 			return null;
+		}
+
+		if (peekKind(SyntaxKind.SLASH))
+		{
+			return new OutputNewLineNode(consumeMandatory(writeLikeNode, SyntaxKind.SLASH));
 		}
 
 		var inputOperand = new OutputOperandNode();

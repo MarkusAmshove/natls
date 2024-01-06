@@ -8,16 +8,16 @@ import java.util.List;
 
 class InputStatementNode extends StatementNode implements IInputStatementNode
 {
-	private final List<IOutputOperandNode> operands = new ArrayList<>();
+	private final List<IOutputElementNode> operands = new ArrayList<>();
 	private IAttributeListNode statementAttributes;
 
 	@Override
-	public ReadOnlyList<IOutputOperandNode> operands()
+	public ReadOnlyList<IOutputElementNode> operands()
 	{
 		return ReadOnlyList.from(operands);
 	}
 
-	void addOperand(OutputOperandNode operand)
+	void addOperand(IOutputElementNode operand)
 	{
 		if (operand == null)
 		{
@@ -25,7 +25,7 @@ class InputStatementNode extends StatementNode implements IInputStatementNode
 			return;
 		}
 
-		operand.setParent(this);
+		((BaseSyntaxNode) operand).setParent(this);
 		operands.add(operand);
 	}
 

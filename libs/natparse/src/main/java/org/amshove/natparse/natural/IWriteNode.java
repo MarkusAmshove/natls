@@ -6,5 +6,5 @@ public interface IWriteNode extends IStatementNode, ICanHaveReportSpecification
 {
 	ReadOnlyList<IAttributeNode> statementAttributes();
 
-	ReadOnlyList<IOutputOperandNode> operands();
+	ReadOnlyList<IOutputElementNode> operands();
 }

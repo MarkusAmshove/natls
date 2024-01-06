@@ -11,7 +11,7 @@ import java.util.Optional;
 class WriteNode extends StatementNode implements IWriteNode, IPrintNode, ICanSetReportSpecification
 {
 	private SyntaxToken reportSpecification;
-	private final List<IOutputOperandNode> operands = new ArrayList<>();
+	private final List<IOutputElementNode> operands = new ArrayList<>();
 	private IAttributeListNode statementAttributes;
 
 	@Override
@@ -27,7 +27,7 @@ class WriteNode extends StatementNode implements IWriteNode, IPrintNode, ICanSet
 	}
 
 	@Override
-	public ReadOnlyList<IOutputOperandNode> operands()
+	public ReadOnlyList<IOutputElementNode> operands()
 	{
 		return ReadOnlyList.from(operands);
 	}
@@ -38,7 +38,7 @@ class WriteNode extends StatementNode implements IWriteNode, IPrintNode, ICanSet
 		return statementAttributes != null ? statementAttributes.attributes() : ReadOnlyList.empty();
 	}
 
-	void addOperand(OutputOperandNode operand)
+	void addOperand(IOutputElementNode operand)
 	{
 		if (operand == null)
 		{
@@ -46,7 +46,7 @@ class WriteNode extends StatementNode implements IWriteNode, IPrintNode, ICanSet
 			return;
 		}
 
-		addNode(operand);
+		addNode((BaseSyntaxNode) operand);
 		operands.add(operand);
 	}
 

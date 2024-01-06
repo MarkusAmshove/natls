@@ -71,7 +71,7 @@ class CopyCodesShould extends ParserIntegrationTest
 		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "INCLSTR"), ISubprogram.class);
 		var include = (IIncludeNode) subprogram.body().statements().first();
 		var write = (IWriteNode) include.body().statements().first();
-		var operand = write.operands().first().operand();
+		var operand = ((IOutputOperandNode) write.operands().first()).operand();
 		assertThat(((ILiteralNode) operand).token().source()).isEqualTo("\"\"\"Text\"\"\"");
 	}
 
@@ -82,10 +82,10 @@ class CopyCodesShould extends ParserIntegrationTest
 		var include = (IIncludeNode) subprogram.body().statements().first();
 		var write = (IWriteNode) include.body().statements().first();
 
-		var firstOperand = write.operands().first().operand();
+		var firstOperand = ((IOutputOperandNode) write.operands().first()).operand();
 		assertThat(((VariableReferenceNode) firstOperand).token().source()).isEqualTo("#VAR1");
 
-		var secondOperand = write.operands().last().operand();
+		var secondOperand = ((IOutputOperandNode) write.operands().last()).operand();
 		assertThat(((VariableReferenceNode) secondOperand).token().source()).isEqualTo("#VAR2");
 	}
 
@@ -97,7 +97,7 @@ class CopyCodesShould extends ParserIntegrationTest
 		var secondInclude = (IIncludeNode) firstInclude.body().statements().first();
 		var write = (IWriteNode) secondInclude.body().statements().first();
 
-		var writeOperand = write.operands().first().operand();
+		var writeOperand = ((IOutputOperandNode) write.operands().first()).operand();
 		assertThat(((ILiteralNode) writeOperand).token().source()).isEqualTo("\"Text\"");
 	}
 
