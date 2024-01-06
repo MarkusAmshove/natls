@@ -86,6 +86,12 @@ class ArithmeticParsingShould extends AbstractParserTest<IStatementListNode>
 		parseArithmetic("(SB(1) + 5) / SB(2)");
 	}
 
+	@Test
+	void parseArithmeticWithUnnecessaryParens()
+	{
+		parseArithmetic("((0 + 5))");
+	}
+
 	protected ArithmeticParsingShould()
 	{
 		super(StatementListParser::new);

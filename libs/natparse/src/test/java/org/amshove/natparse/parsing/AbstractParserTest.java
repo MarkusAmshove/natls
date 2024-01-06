@@ -159,6 +159,13 @@ public abstract class AbstractParserTest<NodeType>
 		return variable;
 	}
 
+	protected void assertValueAttribute(IAttributeNode attribute, SyntaxKind kind, String value)
+	{
+		var valueAttribute = assertNodeType(attribute, IValueAttributeNode.class);
+		assertThat(valueAttribute.kind()).isEqualTo(kind);
+		assertThat(valueAttribute.value()).isEqualTo(value);
+	}
+
 	protected ILiteralNode assertLiteral(IOperandNode operand, SyntaxKind literalType)
 	{
 		var literal = assertNodeType(operand, ILiteralNode.class);

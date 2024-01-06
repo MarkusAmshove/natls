@@ -1,0 +1,8 @@
+name: Invalid attribute for INPUT operand
+priority: BLOCKER
+tags: compile-time
+type: BUG
+description:
+The given attribute is not allowed at the operand (element) level of an INPUT statement.
+
+It might be legal to be used on the statement level.

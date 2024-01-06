@@ -9,10 +9,7 @@ import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFileType;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 abstract class AbstractParser<T>
 {
@@ -244,18 +241,9 @@ abstract class AbstractParser<T>
 
 	protected IOperandNode consumeLiteralNode(BaseSyntaxNode node) throws ParseError
 	{
-		if (peekKind(SyntaxKind.LPAREN))
+		if (isAttributeList())
 		{
-			var attribute = new AttributeNode(peek());
-			node.addNode(attribute);
-			consumeMandatory(node, SyntaxKind.LPAREN);
-			while (!isAtEnd() && peek().kind() != SyntaxKind.RPAREN && peek().kind() != SyntaxKind.END_DEFINE)
-			{
-				// TODO(attributes): Look for the actual value after the '=' as initial value token
-				consume(attribute);
-			}
-			consumeMandatory(node, SyntaxKind.RPAREN);
-			return attribute;
+			return consumeAttributeList(node);
 		}
 
 		// negative numeric literals like `-1`
@@ -275,6 +263,45 @@ abstract class AbstractParser<T>
 		}
 
 		return consumeSingleLiteral(node);
+	}
+
+	protected boolean isAttributeList()
+	{
+		return peekKind(SyntaxKind.LPAREN) && peek(1).kind().isAttribute();
+	}
+
+	protected IAttributeListNode consumeAttributeList(BaseSyntaxNode node) throws ParseError
+	{
+		var attributeList = new AttributeListNode();
+		node.addNode(attributeList);
+		consumeMandatory(attributeList, SyntaxKind.LPAREN);
+		while (!isAtEnd() && peek().kind() != SyntaxKind.RPAREN && peek().kind() != SyntaxKind.END_DEFINE)
+		{
+			attributeList.addAttribute(parseAttribute());
+		}
+		consumeMandatory(attributeList, SyntaxKind.RPAREN);
+		return attributeList;
+	}
+
+	private IAttributeNode parseAttribute() throws ParseError
+	{
+		var attributeToken = tokens.advance();
+		if (attributeToken.source().endsWith("="))
+		{
+			var operandAttribute = new OperandAttributeNode(attributeToken);
+			operandAttribute.setOperand(consumeOperandNode(operandAttribute));
+			return operandAttribute;
+		}
+		else
+		{
+			var implicitConversionKind = ImplicitAttributeConversion.getImplicitConversion(attributeToken.source());
+			if (implicitConversionKind != null)
+			{
+				return new ValueAttributeNode(implicitConversionKind, attributeToken);
+			}
+
+			return new ValueAttributeNode(attributeToken);
+		}
 	}
 
 	private static final Set<SyntaxKind> LITERAL_KINDS = Set.of(SyntaxKind.NUMBER_LITERAL, SyntaxKind.STRING_LITERAL, SyntaxKind.HEX_LITERAL, SyntaxKind.TRUE, SyntaxKind.FALSE, SyntaxKind.ASTERISK, SyntaxKind.DATE_LITERAL, SyntaxKind.TIME_LITERAL, SyntaxKind.EXTENDED_TIME_LITERAL);
@@ -481,6 +508,12 @@ abstract class AbstractParser<T>
 		// Does not take operator precedence into account. Maybe some day?
 
 		var needRParen = consumeOptionally(node, SyntaxKind.LPAREN);
+		if (needRParen && peekKind(SyntaxKind.LPAREN))
+		{
+			var arithmeticInParens = consumeArithmeticExpression(node);
+			consumeMandatory(node, SyntaxKind.RPAREN);
+			return arithmeticInParens;
+		}
 		var operand = consumeOperandNode(node);
 
 		if (needRParen && peekKind(SyntaxKind.RPAREN))
@@ -1181,7 +1214,7 @@ abstract class AbstractParser<T>
 		throw new ParseError(peek());
 	}
 
-	protected IAttributeNode consumeSingleAttribute(BaseSyntaxNode node, SyntaxKind attributeKind) throws ParseError
+	protected IAttributeListNode consumeSingleAttribute(BaseSyntaxNode node, SyntaxKind attributeKind) throws ParseError
 	{
 		if (!peekKind(SyntaxKind.LPAREN) && !peekKind(1, attributeKind))
 		{
@@ -1189,12 +1222,12 @@ abstract class AbstractParser<T>
 			throw new ParseError(peek());
 		}
 
-		var attribute = new AttributeNode(peek());
-		node.addNode(attribute);
-		consumeMandatory(attribute, SyntaxKind.LPAREN);
-		consume(attribute);
-		consumeMandatory(attribute, SyntaxKind.RPAREN);
-		return attribute;
+		var attributeList = new AttributeListNode();
+		node.addNode(attributeList);
+		consumeMandatory(attributeList, SyntaxKind.LPAREN);
+		attributeList.addAttribute(parseAttribute());
+		consumeMandatory(attributeList, SyntaxKind.RPAREN);
+		return attributeList;
 	}
 
 	protected void consumeAttributeDefinition(BaseSyntaxNode node) throws ParseError

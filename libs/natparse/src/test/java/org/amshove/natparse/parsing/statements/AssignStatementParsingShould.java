@@ -69,7 +69,7 @@ class AssignStatementParsingShould extends StatementParseTest
 			ASSIGN #TAR := (AD=IO)
 			""", IAssignStatementNode.class);
 
-		assertNodeType(assign.operand(), IAttributeNode.class);
+		assertNodeType(assign.operand(), IAttributeListNode.class);
 	}
 
 	@ParameterizedTest

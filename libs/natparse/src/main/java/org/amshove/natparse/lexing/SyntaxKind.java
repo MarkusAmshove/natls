@@ -794,18 +794,22 @@ public enum SyntaxKind
 			this == DF ||
 			this == DL ||
 			this == DY ||
-			this == EM || this == EMU ||
+			this == EM ||
+			this == EMU ||
 			this == ES ||
 			this == FC ||
 			this == FL ||
 			this == GC ||
 			this == HC ||
+			this == HE ||
 			this == HW ||
-			this == IC || this == ICU ||
+			this == IC ||
+			this == ICU ||
 			this == IP ||
 			this == IS ||
 			this == KD ||
-			this == LC || this == LCU ||
+			this == LC ||
+			this == LCU ||
 			this == LS ||
 			this == MC ||
 			this == MP ||
@@ -816,7 +820,8 @@ public enum SyntaxKind
 			this == PS ||
 			this == SB ||
 			this == SG ||
-			this == TC || this == TCU ||
+			this == TC ||
+			this == TCU ||
 			this == UC ||
 			this == ZP;
 	}

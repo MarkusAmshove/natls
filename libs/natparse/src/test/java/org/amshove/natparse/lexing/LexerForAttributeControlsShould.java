@@ -43,6 +43,7 @@ class LexerForAttributeControlsShould extends AbstractLexerTest
 			SyntaxKind.LS,
 			SyntaxKind.MC,
 			SyntaxKind.MP,
+			SyntaxKind.HE,
 			SyntaxKind.MS,
 			SyntaxKind.NL,
 			SyntaxKind.PC,
@@ -113,7 +114,7 @@ class LexerForAttributeControlsShould extends AbstractLexerTest
 			"#PAGE(AD=MI)",
 			token(SyntaxKind.IDENTIFIER, "#PAGE"),
 			token(SyntaxKind.LPAREN),
-			token(SyntaxKind.AD),
+			token(SyntaxKind.AD, "AD=MI"),
 			token(SyntaxKind.RPAREN)
 		);
 	}
@@ -355,6 +356,17 @@ class LexerForAttributeControlsShould extends AbstractLexerTest
 			token(SyntaxKind.NUMBER_LITERAL),
 			token(SyntaxKind.RPAREN),
 			token(SyntaxKind.DY, "DY='3'2'4"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
+	void consumeHelpRoutine()
+	{
+		assertTokens(
+			"(HE='STRLIT','STRLIT2   ',#VAR)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.HE, "HE='STRLIT','STRLIT2   ',#VAR"),
 			token(SyntaxKind.RPAREN)
 		);
 	}

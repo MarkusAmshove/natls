@@ -8,6 +8,8 @@ import org.amshove.natparse.natural.conditionals.ChainedCriteriaOperator;
 import org.amshove.natparse.natural.conditionals.ComparisonOperator;
 import org.amshove.natparse.natural.conditionals.IHasComparisonOperator;
 import org.amshove.natparse.natural.conditionals.ILogicalConditionCriteriaNode;
+import org.amshove.natparse.natural.output.IOutputElementNode;
+import org.amshove.natparse.natural.output.IOutputOperandNode;
 import org.amshove.natparse.natural.project.NaturalFileType;
 
 import java.io.IOException;
@@ -23,7 +25,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private List<IReferencableNode> referencableNodes;
 
-	private Set<String> currentModuleCallStack = new HashSet<>();
+	private final Set<String> currentModuleCallStack = new HashSet<>();
 
 	public List<IReferencableNode> getReferencableNodes()
 	{
@@ -2135,6 +2137,18 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			consumeMandatory(input, SyntaxKind.ERASE);
 		}
 
+		if (isAttributeList())
+		{
+			input.setStatementAttributes(consumeAttributeList(input));
+			for (var statementAttribute : input.statementAttributes())
+			{
+				if (!isInputStatementAttribute(statementAttribute.kind()))
+				{
+					report(ParserErrors.invalidInputStatementAttribute(statementAttribute));
+				}
+			}
+		}
+
 		if (consumeOptionally(input, SyntaxKind.LPAREN))
 		{
 			// statement attributes?
@@ -2210,32 +2224,43 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		while (!isAtEnd() && !isStatementStart())
 		{
-			if (peekKind(SyntaxKind.LPAREN) && getKind(1).isAttribute())
+			// coordinates in form of x/y
+			if (peekKind(SyntaxKind.NUMBER_LITERAL) && peekKind(1, SyntaxKind.SLASH))
 			{
-				consumeAttributeDefinition(input);
+				consumeLiteralNode(input, SyntaxKind.NUMBER_LITERAL);
+				consumeMandatory(input, SyntaxKind.SLASH);
+				consumeLiteralNode(input, SyntaxKind.NUMBER_LITERAL);
+				continue;
 			}
-			else
+
+			if ((consumeOptionally(input, SyntaxKind.NO) && consumeOptionally(input, SyntaxKind.PARAMETER))
+				|| !isOperand() && !peekKind(SyntaxKind.TAB_SETTING) && !peekKind(SyntaxKind.SLASH) && !peekKind(SyntaxKind.OPERAND_SKIP))
 			{
-				// coordinates in form of x/y
-				if (peekKind(SyntaxKind.NUMBER_LITERAL) && peekKind(1, SyntaxKind.SLASH))
-				{
-					consumeLiteralNode(input, SyntaxKind.NUMBER_LITERAL);
-					consumeMandatory(input, SyntaxKind.SLASH);
-					consumeLiteralNode(input, SyntaxKind.NUMBER_LITERAL);
-					continue;
-				}
-
-				if ((consumeOptionally(input, SyntaxKind.NO) && consumeOptionally(input, SyntaxKind.PARAMETER))
-					|| !isOperand() && !peekKind(SyntaxKind.TAB_SETTING) && !peekKind(SyntaxKind.SLASH) && !peekKind(SyntaxKind.OPERAND_SKIP))
-				{
-					break;
-				}
-
-				input.addOperand(consumeWriteOperand(input));
+				break;
 			}
+
+			var operand = consumeInputOutputOperand(input);
+			input.addOperand(operand);
+			checkOutputElementAttributes(operand);
 		}
 
 		return input;
+	}
+
+	private void checkOutputElementAttributes(IOutputElementNode operand)
+	{
+		if (!(operand instanceof IOutputOperandNode outputOperand))
+		{
+			return;
+		}
+
+		for (var attribute : outputOperand.attributes())
+		{
+			if (!isInputElementAttribute(attribute.kind()))
+			{
+				report(ParserErrors.invalidInputElementAttribute(attribute));
+			}
+		}
 	}
 
 	private static final Set<SyntaxKind> OPTIONAL_WRITE_FLAGS = Set.of(SyntaxKind.NOTITLE, SyntaxKind.NOTIT, SyntaxKind.NOHDR, SyntaxKind.USING, SyntaxKind.MAP, SyntaxKind.FORM, SyntaxKind.TITLE, SyntaxKind.TRAILER, SyntaxKind.LEFT, SyntaxKind.JUSTIFIED, SyntaxKind.UNDERLINED);
@@ -2244,22 +2269,20 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		var write = new WriteNode();
 		consumeMandatory(write, statementKind);
-		if (consumeOptionally(write, SyntaxKind.LPAREN))
+		if (peekKind(SyntaxKind.LPAREN))
 		{
-			if (peek().kind().canBeIdentifier() && peekKind(1, SyntaxKind.RPAREN))
+			if (isAttributeList())
 			{
-				var token = consumeMandatoryIdentifier(write);
-				write.setReportSpecification(token);
+				var attributeList = consumeAttributeList(write);
+				write.setAttributes(attributeList);
 			}
 			else
 			{
-				// currently consume everything until closing parenthesis to consume things like attribute definition etc.
-				while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
-				{
-					consume(write);
-				}
+				consumeMandatory(write, SyntaxKind.LPAREN);
+				var token = consume(write);
+				write.setReportSpecification(token);
+				consumeMandatory(write, SyntaxKind.RPAREN);
 			}
-			consumeMandatory(write, SyntaxKind.RPAREN);
 		}
 
 		while (consumeAnyOptionally(write, OPTIONAL_WRITE_FLAGS))
@@ -2268,52 +2291,60 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 		while (!isAtEnd() && !isStatementStart())
 		{
-			if (peekKind(SyntaxKind.LPAREN) && getKind(1).isAttribute())
+			if ((consumeOptionally(write, SyntaxKind.NO) && consumeOptionally(write, SyntaxKind.PARAMETER))
+				|| !isOperand() && !peekKind(SyntaxKind.TAB_SETTING) && !peekKind(SyntaxKind.SLASH) && !peekKind(SyntaxKind.OPERAND_SKIP))
 			{
-				consumeAttributeDefinition(write);
+				break;
 			}
-			else
-			{
-				if ((consumeOptionally(write, SyntaxKind.NO) && consumeOptionally(write, SyntaxKind.PARAMETER))
-					|| !isOperand() && !peekKind(SyntaxKind.TAB_SETTING) && !peekKind(SyntaxKind.SLASH) && !peekKind(SyntaxKind.OPERAND_SKIP))
-				{
-					break;
-				}
-				consumeWriteOperand(write);
-			}
+
+			var operand = consumeInputOutputOperand(write);
+			write.addOperand(operand);
+			checkOutputElementAttributes(operand);
 		}
 
-		// TODO: Actual operands to WRITE not added as operands
 		return write;
 	}
 
-	private IOperandNode consumeWriteOperand(BaseSyntaxNode writeLikeNode) throws ParseError
+	private IOutputElementNode consumeInputOutputOperand(BaseSyntaxNode writeLikeNode) throws ParseError
 	{
 		if (consumeOptionally(writeLikeNode, SyntaxKind.TAB_SETTING)
-			|| consumeOptionally(writeLikeNode, SyntaxKind.SLASH)
 			|| consumeOptionally(writeLikeNode, SyntaxKind.OPERAND_SKIP))
 		{
 			return null;
 		}
 
-		if (peekKind().isLiteralOrConst())
+		if (peekKind(SyntaxKind.SLASH))
 		{
-			var literal = consumeLiteralNode(writeLikeNode, SyntaxKind.STRING_LITERAL);
-			if (peekKind(SyntaxKind.LPAREN))
-			{
-				// currently consume everything until closing parenthesis to consume attribute definition shorthands
-				while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN))
-				{
-					consume(writeLikeNode);
-				}
-				consumeMandatory(writeLikeNode, SyntaxKind.RPAREN);
-			}
-			return literal;
+			return new OutputNewLineNode(consumeMandatory(writeLikeNode, SyntaxKind.SLASH));
 		}
-		else
+
+		var inputOperand = new OutputOperandNode();
+
+		var isLiteral = peekKind().isLiteralOrConst();
+
+		var operand = isLiteral
+			? consumeLiteralNode(inputOperand, SyntaxKind.STRING_LITERAL)
+			: consumeOperandNode(inputOperand);
+
+		inputOperand.setOperand(operand);
+		var canHaveRepetition = isLiteral && peekKind(1, SyntaxKind.NUMBER_LITERAL) && ((ILiteralNode) operand).token().stringValue().length() == 1;
+
+		if (peekKind(SyntaxKind.LPAREN) && canHaveRepetition)
 		{
-			return consumeOperandNode(writeLikeNode);
+			var repetitionOperand = new CharacterRepetitionOperandNode(inputOperand);
+			consumeMandatory(repetitionOperand, SyntaxKind.LPAREN);
+			repetitionOperand.setRepetition(consumeLiteralNode(repetitionOperand, SyntaxKind.NUMBER_LITERAL));
+			consumeMandatory(repetitionOperand, SyntaxKind.RPAREN);
+			inputOperand = repetitionOperand;
 		}
+
+		if (peekKind(SyntaxKind.LPAREN))
+		{
+			var elementAttributes = consumeAttributeList(inputOperand);
+			inputOperand.setAttributes(elementAttributes);
+		}
+
+		return inputOperand;
 	}
 
 	private static final Set<SyntaxKind> FORMAT_MODIFIERS = Set.of(
@@ -2618,9 +2649,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var opening = consumeMandatory(loopNode, SyntaxKind.FOR);
 		loopNode.setLoopControl(consumeVariableReferenceNode(loopNode));
 		consumeAnyOptionally(loopNode, List.of(SyntaxKind.COLON_EQUALS_SIGN, SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.FROM));
-		consumeOperandNode(loopNode); // TODO(arithmetic-expression): Could also be arithmetic expression
+		consumeArithmeticExpression(loopNode);
 		consumeAnyOptionally(loopNode, List.of(SyntaxKind.TO, SyntaxKind.THRU)); // According to the documentation, either TO or THRU is mandatory. However, FOR #I 1 10 also just works :)
-		var upperBound = consumeOperandNode(loopNode); // TODO(arithmetic-expression): Could also be arithmetic expression
+		var upperBound = consumeArithmeticExpression(loopNode);
 		loopNode.setUpperBound(upperBound);
 		if (consumeOptionally(loopNode, SyntaxKind.STEP))
 		{
@@ -4556,6 +4587,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			|| peekKind(SyntaxKind.POS)
 			|| peekKind(SyntaxKind.FRAC)
 			|| (peekKind(SyntaxKind.MINUS) && lookahead == SyntaxKind.NUMBER_LITERAL)
+			|| (peekKind(SyntaxKind.LPAREN) && lookahead != null && lookahead.isAttribute())
 			|| (peek().kind().canBeIdentifier() && !peekKindInLine(SyntaxKind.COLON_EQUALS_SIGN)); // hopefully this fixes `#ARR(10) :=` being recognized as operand and has no side effects :)
 	}
 
@@ -4727,5 +4759,23 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			&& (peek().kind().canBeIdentifier() || peek().kind().isSystemVariable())
 			&& (peekKind(1, SyntaxKind.COLON_EQUALS_SIGN)
 				|| (peekKind(1, SyntaxKind.LPAREN) && isKindAfterKindInSameLine(SyntaxKind.COLON_EQUALS_SIGN, SyntaxKind.RPAREN)));
+	}
+
+	private boolean isInputStatementAttribute(SyntaxKind kind)
+	{
+		return switch (kind)
+		{
+			case AD, AL, CD, CV, DF, DL, DY, EM, FL, HE, IP, LS, MC, MS, NL, PC, PM, PS, SG, ZP -> true;
+			default -> false;
+		};
+	}
+
+	private boolean isInputElementAttribute(SyntaxKind kind)
+	{
+		return switch (kind)
+		{
+			case AD, AL, CD, CV, DF, DL, DY, EM, EMU, FL, HE, IP, NL, PM, SB, SG, ZP -> true;
+			default -> false;
+		};
 	}
 }

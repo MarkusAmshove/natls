@@ -1,6 +1,5 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
 import org.junit.jupiter.api.Test;
@@ -10,24 +9,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-class OperandParsingTests extends AbstractParserTest<IStatementListNode>
+class OperandParsingTests extends AbstractOperandParsingTest
 {
-	protected OperandParsingTests()
-	{
-		super(StatementListParser::new);
-	}
-
-	private IOperandNode parseOperand(String source)
-	{
-		var statement = assertParsesWithoutDiagnostics("#I := %s".formatted(source)).statements().first();
-		return assertNodeType(statement, IAssignmentStatementNode.class).operand();
-	}
-
-	private ReadOnlyList<IOperandNode> parseOperands(String source)
-	{
-		var statement = assertParsesWithoutDiagnostics("RESET %s".formatted(source)).statements().first();
-		return assertNodeType(statement, IResetStatementNode.class).operands();
-	}
 
 	@Test
 	void parseSystemVariables()

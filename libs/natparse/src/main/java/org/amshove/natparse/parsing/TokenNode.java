@@ -42,7 +42,7 @@ class TokenNode extends BaseSyntaxNode implements ITokenNode
 	@Override
 	public String toString()
 	{
-		return "TokenNode{token=%s}".formatted(token);
+		return "%s{token=%s}".formatted(getClass().getSimpleName(), token);
 	}
 
 	@Override
