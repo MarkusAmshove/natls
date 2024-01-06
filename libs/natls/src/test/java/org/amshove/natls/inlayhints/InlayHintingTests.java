@@ -151,6 +151,31 @@ class InlayHintingTests extends LanguageServerTest
 	}
 
 	@Test
+	void inlayHintsShouldBeShownForEmptyNewLinesInInputStatements()
+	{
+		var module = createOrSaveFile("LIBONE", "SUB.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+
+			INPUT (AD=MI)
+				 /
+				 /
+				'Bye'
+			END
+			""");
+
+		var request = getContext().documentService().inlayHint(new InlayHintParams(module, LspUtil.newRange(0, 0, 8, 0)));
+		assertThat(request)
+			.succeedsWithin(1, TimeUnit.SECONDS)
+			.satisfies(
+				hints -> assertThat(hints).hasSize(3),
+				hints -> assertThat(hints.get(0).getLabel().getLeft()).isEqualTo("line 1"),
+				hints -> assertThat(hints.get(1).getLabel().getLeft()).isEqualTo("line 2"),
+				hints -> assertThat(hints.get(2).getLabel().getLeft()).isEqualTo("line 3")
+			);
+	}
+
+	@Test
 	void inlayHintsShouldShowNoHintsIfAnInputHasNoOperands()
 	{
 		var module = createOrSaveFile("LIBONE", "SUB.NSN", """

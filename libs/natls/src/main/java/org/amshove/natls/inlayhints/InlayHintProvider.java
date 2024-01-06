@@ -93,26 +93,34 @@ public class InlayHintProvider
 		firstLineOperand.setKind(InlayHintKind.Type);
 		hints.add(firstLineOperand);
 
-		// This can be switched to input.operands() once new lines are parsed as operands
 		var lineNo = 1;
-		var nextIsInNewLine = false;
-		for (var operand : input.descendants())
+		var lastWasNewLine = false;
+		for (var operand : input.operands())
 		{
-			if (nextIsInNewLine)
+			var isNewLineNode = operand instanceof IOutputNewLineNode;
+
+			if (lastWasNewLine)
 			{
+				lastWasNewLine = false;
 				var hint = new InlayHint();
 				hint.setPosition(LspUtil.toPosition(operand.position()));
 				hint.setLabel("line %d".formatted(lineNo));
-				hint.setPaddingRight(true);
+				if (isNewLineNode) // If we're in an empty new line, put the hint on the left side
+				{
+					hint.setPaddingLeft(true);
+				}
+				else
+				{
+					hint.setPaddingRight(true);
+				}
 				hints.add(hint);
 				hint.setKind(InlayHintKind.Type);
-				nextIsInNewLine = false;
 			}
 
-			if (operand instanceof ITokenNode tokenNode && tokenNode.token().kind() == SyntaxKind.SLASH)
+			if (operand instanceof IOutputNewLineNode)
 			{
-				nextIsInNewLine = true;
 				lineNo++;
+				lastWasNewLine = true;
 			}
 		}
 	}
