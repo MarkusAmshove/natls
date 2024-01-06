@@ -6,6 +6,7 @@ import org.amshove.natparse.parsing.ParserError;
 import org.amshove.natparse.parsing.StatementParseTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -147,6 +148,32 @@ class InputStatementParsingShould extends StatementParseTest
 		var valueAttribute = assertNodeType(inputOperand.attributeNode().attributes().first(), IValueAttributeNode.class);
 		assertThat(valueAttribute.kind()).isEqualTo(SyntaxKind.AD);
 		assertThat(valueAttribute.value()).isEqualTo("IO");
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"B,AD",
+			"C,AD",
+			"D,AD",
+			"I,AD",
+			"N,AD",
+			"U,AD",
+			"V,AD",
+			"BL,CD",
+			"GR,CD",
+			"NE,CD",
+			"PI,CD",
+			"RE,CD",
+			"TU,CD",
+			"YE,CD"
+		}
+	)
+	void parseImplicitAttributes(String value, SyntaxKind expectedKind)
+	{
+		var input = assertParsesSingleStatement("INPUT 'Lit' (%s)".formatted(value), IInputStatementNode.class);
+		var attribute = input.operands().first().attributes().first();
+		assertValueAttribute(attribute, expectedKind, value);
 	}
 
 	@Test

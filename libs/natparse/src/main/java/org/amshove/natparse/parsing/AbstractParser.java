@@ -9,10 +9,7 @@ import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFileType;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 abstract class AbstractParser<T>
 {
@@ -297,9 +294,10 @@ abstract class AbstractParser<T>
 		}
 		else
 		{
-			if (attributeToken.source().equalsIgnoreCase("I")) // TODO: Add all implicit attributes
+			var implicitConversionKind = ImplicitAttributeConversion.getImplicitConversion(attributeToken.source());
+			if (implicitConversionKind != null)
 			{
-				return new ValueAttributeNode(SyntaxKind.AD, attributeToken);
+				return new ValueAttributeNode(implicitConversionKind, attributeToken);
 			}
 
 			return new ValueAttributeNode(attributeToken);

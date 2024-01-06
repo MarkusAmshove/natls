@@ -1846,7 +1846,7 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
-	void parseWriteWithExplicitElementAttribute()
+	void parseWriteWitImplicitElementAttribute()
 	{
 		var write = assertParsesSingleStatement("WRITE 'literal' (I)", IWriteNode.class);
 		var attribute = assertNodeType(write.operands().first().attributes().first(), IValueAttributeNode.class);
