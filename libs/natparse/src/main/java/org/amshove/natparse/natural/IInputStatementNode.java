@@ -4,7 +4,7 @@ import org.amshove.natparse.ReadOnlyList;
 
 public interface IInputStatementNode extends IStatementNode
 {
-	ReadOnlyList<IInputOutputOperandNode> operands();
+	ReadOnlyList<IOutputOperandNode> operands();
 
 	ReadOnlyList<IAttributeNode> statementAttributes();
 }

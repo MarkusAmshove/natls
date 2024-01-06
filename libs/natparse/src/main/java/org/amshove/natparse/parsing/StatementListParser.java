@@ -2295,7 +2295,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return write;
 	}
 
-	private InputOutputOperandNode consumeInputOutputOperand(BaseSyntaxNode writeLikeNode) throws ParseError
+	private OutputOperandNode consumeInputOutputOperand(BaseSyntaxNode writeLikeNode) throws ParseError
 	{
 		if (consumeOptionally(writeLikeNode, SyntaxKind.TAB_SETTING)
 			|| consumeOptionally(writeLikeNode, SyntaxKind.SLASH)
@@ -2304,7 +2304,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			return null;
 		}
 
-		var inputOperand = new InputOutputOperandNode();
+		var inputOperand = new OutputOperandNode();
 
 		var isLiteral = peekKind().isLiteralOrConst();
 

@@ -1855,6 +1855,12 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void parseWriteWithEmAttribute()
+	{
+		assertParsesSingleStatement("WRITE(SV15) 34X #VAR (EM=99.9999)", IWriteNode.class);
+	}
+
+	@Test
 	void parseWriteWithAttributeDefinition()
 	{
 		var write = assertParsesSingleStatement("WRITE (AD=UL AL=17 NL=8)", IWriteNode.class);

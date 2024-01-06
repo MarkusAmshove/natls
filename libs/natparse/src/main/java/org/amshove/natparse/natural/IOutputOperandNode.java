@@ -4,7 +4,7 @@ import org.amshove.natparse.ReadOnlyList;
 
 import javax.annotation.Nullable;
 
-public interface IInputOutputOperandNode extends ISyntaxNode
+public interface IOutputOperandNode extends IOutputElementNode
 {
 	IOperandNode operand();
 

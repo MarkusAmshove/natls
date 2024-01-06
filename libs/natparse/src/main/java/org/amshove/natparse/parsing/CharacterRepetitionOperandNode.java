@@ -4,11 +4,11 @@ import org.amshove.natparse.natural.ICharacterRepetitionOperandNode;
 import org.amshove.natparse.natural.ILiteralNode;
 import org.amshove.natparse.natural.IOperandNode;
 
-class CharacterRepetitionOperandNode extends InputOutputOperandNode implements ICharacterRepetitionOperandNode
+class CharacterRepetitionOperandNode extends OutputOperandNode implements ICharacterRepetitionOperandNode
 {
 	private int repetition;
 
-	CharacterRepetitionOperandNode(InputOutputOperandNode inputOperand)
+	CharacterRepetitionOperandNode(OutputOperandNode inputOperand)
 	{
 		copyFrom(inputOperand);
 		setOperand(inputOperand.operand());

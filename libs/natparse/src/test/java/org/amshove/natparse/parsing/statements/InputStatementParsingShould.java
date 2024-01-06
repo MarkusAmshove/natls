@@ -177,6 +177,12 @@ class InputStatementParsingShould extends StatementParseTest
 	}
 
 	@Test
+	void parseOperandsWithNumericAttributes()
+	{
+		assertParsesSingleStatement("INPUT #NUM (EM=99.9999)", IInputStatementNode.class);
+	}
+
+	@Test
 	void parseCharacterRepetition()
 	{
 		var input = assertParsesSingleStatement("INPUT '*' (70)", IInputStatementNode.class);
