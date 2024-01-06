@@ -2,6 +2,8 @@ package org.amshove.natparse.parsing.statements;
 
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.output.IOutputNewLineNode;
+import org.amshove.natparse.natural.output.IOutputOperandNode;
 import org.amshove.natparse.parsing.ParserError;
 import org.amshove.natparse.parsing.StatementParseTest;
 import org.junit.jupiter.api.Test;

@@ -8,6 +8,8 @@ import org.amshove.natparse.natural.conditionals.ChainedCriteriaOperator;
 import org.amshove.natparse.natural.conditionals.ComparisonOperator;
 import org.amshove.natparse.natural.conditionals.IHasComparisonOperator;
 import org.amshove.natparse.natural.conditionals.ILogicalConditionCriteriaNode;
+import org.amshove.natparse.natural.output.IOutputElementNode;
+import org.amshove.natparse.natural.output.IOutputOperandNode;
 import org.amshove.natparse.natural.project.NaturalFileType;
 
 import java.io.IOException;

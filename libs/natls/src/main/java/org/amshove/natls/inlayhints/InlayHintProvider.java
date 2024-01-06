@@ -4,6 +4,7 @@ import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natls.languageserver.NaturalLanguageService;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.output.IOutputNewLineNode;
 import org.eclipse.lsp4j.InlayHint;
 import org.eclipse.lsp4j.InlayHintKind;
 import org.eclipse.lsp4j.Range;

@@ -3,6 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.output.IOutputElementNode;
 
 import java.util.ArrayList;
 import java.util.List;
