@@ -150,6 +150,28 @@ class InputStatementParsingShould extends StatementParseTest
 	}
 
 	@Test
+	void parseCharacterRepetition()
+	{
+		var input = assertParsesSingleStatement("INPUT '*' (70)", IInputStatementNode.class);
+		var operand = input.operands().first();
+		var repetition = assertNodeType(operand, ICharacterRepetitionOperandNode.class);
+
+		var literal = assertLiteral(repetition.operand(), SyntaxKind.STRING_LITERAL);
+		assertThat(literal.token().stringValue()).isEqualTo("*");
+
+		assertThat(repetition.repetition()).isEqualTo(70);
+	}
+
+	@Test
+	void parseCharacterRepetitionWithAttributes()
+	{
+		var input = assertParsesSingleStatement("INPUT '*' (70) (AD=I)", IInputStatementNode.class);
+		var operand = input.operands().first();
+
+		assertValueAttribute(operand.attributes().first(), SyntaxKind.AD, "I");
+	}
+
+	@Test
 	void raiseADiagnosticForInvalidElementAttributes()
 	{
 		assertDiagnostic("INPUT 'Hi' (LS=20)", ParserError.INVALID_INPUT_ELEMENT_ATTRIBUTE);

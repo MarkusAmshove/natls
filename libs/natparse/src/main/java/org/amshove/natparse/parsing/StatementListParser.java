@@ -23,7 +23,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private List<IReferencableNode> referencableNodes;
 
-	private Set<String> currentModuleCallStack = new HashSet<>();
+	private final Set<String> currentModuleCallStack = new HashSet<>();
 
 	public List<IReferencableNode> getReferencableNodes()
 	{
@@ -2306,13 +2306,24 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		var inputOperand = new InputOutputOperandNode();
 
-		var operand = peekKind().isLiteralOrConst()
+		var isLiteral = peekKind().isLiteralOrConst();
+
+		var operand = isLiteral
 			? consumeLiteralNode(inputOperand, SyntaxKind.STRING_LITERAL)
 			: consumeOperandNode(inputOperand);
 
 		inputOperand.setOperand(operand);
+		var canHaveRepetition = isLiteral && peekKind(1, SyntaxKind.NUMBER_LITERAL) && ((ILiteralNode) operand).token().stringValue().length() == 1;
 
-		// TODO: If Operand is String Literal with length 1 and the next is (n), then it is character repition
+		if (peekKind(SyntaxKind.LPAREN) && canHaveRepetition)
+		{
+			var repetitionOperand = new CharacterRepetitionOperandNode(inputOperand);
+			consumeMandatory(repetitionOperand, SyntaxKind.LPAREN);
+			repetitionOperand.setRepetition(consumeLiteralNode(repetitionOperand, SyntaxKind.NUMBER_LITERAL));
+			consumeMandatory(repetitionOperand, SyntaxKind.RPAREN);
+			inputOperand = repetitionOperand;
+		}
+
 		if (peekKind(SyntaxKind.LPAREN))
 		{
 			var elementAttributes = consumeAttributeList(inputOperand);
