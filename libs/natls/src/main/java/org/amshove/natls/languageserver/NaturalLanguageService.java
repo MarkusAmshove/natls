@@ -18,6 +18,8 @@ import org.amshove.natls.documentsymbol.DocumentSymbolProvider;
 import org.amshove.natls.hover.HoverContext;
 import org.amshove.natls.hover.HoverProvider;
 import org.amshove.natls.inlayhints.InlayHintProvider;
+import org.amshove.natls.languageserver.inputstructure.InputStructureParams;
+import org.amshove.natls.languageserver.inputstructure.InputStructureResponse;
 import org.amshove.natls.progress.BackgroundTasks;
 import org.amshove.natls.progress.IProgressMonitor;
 import org.amshove.natls.progress.NullProgressMonitor;
@@ -29,6 +31,7 @@ import org.amshove.natls.project.ParseStrategy;
 import org.amshove.natls.referencing.ReferenceFinder;
 import org.amshove.natls.signaturehelp.SignatureHelpProvider;
 import org.amshove.natls.snippets.SnippetEngine;
+import org.amshove.natls.viewer.InputStructureCreator;
 import org.amshove.natls.workspace.RenameFileHandler;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.NodeUtil;
@@ -810,5 +813,24 @@ public class NaturalLanguageService implements LanguageClientAware
 				publishDiagnosticsOfFile(file);
 			}
 		});
+	}
+
+	public InputStructureResponse getInputStructure(InputStructureParams params)
+	{
+		var file = findNaturalFile(LspUtil.uriToPath(params.getUri()));
+		if (file == null)
+		{
+			return null;
+		}
+
+		var module = file.module();
+		if (!(module instanceof IModuleWithBody moduleWithBody))
+		{
+			return null;
+		}
+
+		return InputStructureResponse.fromInputStructure(new InputStructureCreator()
+			.createStructure(moduleWithBody, params.getInputPosition())
+		);
 	}
 }
