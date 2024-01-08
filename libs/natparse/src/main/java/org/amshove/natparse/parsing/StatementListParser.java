@@ -2307,10 +2307,18 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private IOutputElementNode consumeInputOutputOperand(BaseSyntaxNode writeLikeNode) throws ParseError
 	{
-		if (consumeOptionally(writeLikeNode, SyntaxKind.TAB_SETTING)
-			|| consumeOptionally(writeLikeNode, SyntaxKind.OPERAND_SKIP))
+		if (consumeOptionally(writeLikeNode, SyntaxKind.TAB_SETTING))
 		{
 			return null;
+		}
+
+		if (peekKind(SyntaxKind.OPERAND_SKIP))
+		{
+			var space = new SpaceElementNode();
+			var operand = consumeMandatory(space, SyntaxKind.OPERAND_SKIP);
+			var spaces = Integer.parseInt(operand.source().substring(0, operand.source().length() - 1));
+			space.setSpaces(spaces);
+			return space;
 		}
 
 		if (peekKind(SyntaxKind.NUMBER_LITERAL) && peekKind(1, SyntaxKind.SLASH))

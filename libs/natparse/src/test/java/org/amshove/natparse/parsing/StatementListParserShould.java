@@ -8,6 +8,7 @@ import org.amshove.natparse.natural.conditionals.IIfBreakCriteriaNode;
 import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
 import org.amshove.natparse.natural.output.IOutputOperandNode;
 import org.amshove.natparse.natural.output.IOutputPositioningNode;
+import org.amshove.natparse.natural.output.ISpaceElementNode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -1864,6 +1865,14 @@ class StatementListParserShould extends StatementParseTest
 		var operand = assertNodeType(write.operands().get(1), IOutputPositioningNode.class);
 		assertThat(operand.row()).isEqualTo(5);
 		assertThat(operand.column()).isEqualTo(2);
+	}
+
+	@Test
+	void parseWriteWithSpaceElement()
+	{
+		var write = assertParsesSingleStatement("WRITE 'Hi' 5x 'Ho'", IWriteNode.class);
+		var operand = assertNodeType(write.operands().get(1), ISpaceElementNode.class);
+		assertThat(operand.spaces()).isEqualTo(5);
 	}
 
 	@Test

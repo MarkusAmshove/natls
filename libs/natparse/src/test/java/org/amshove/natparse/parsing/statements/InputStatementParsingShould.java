@@ -5,6 +5,7 @@ import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.output.IOutputNewLineNode;
 import org.amshove.natparse.natural.output.IOutputOperandNode;
 import org.amshove.natparse.natural.output.IOutputPositioningNode;
+import org.amshove.natparse.natural.output.ISpaceElementNode;
 import org.amshove.natparse.parsing.ParserError;
 import org.amshove.natparse.parsing.StatementParseTest;
 import org.junit.jupiter.api.Test;
@@ -132,6 +133,14 @@ class InputStatementParsingShould extends StatementParseTest
 	void raiseADiagnosticIfPositioningToColumnZero()
 	{
 		assertDiagnostic("INPUT 'Hi' 10/0", ParserError.INVALID_LITERAL_VALUE);
+	}
+
+	@Test
+	void parseSpaceElement()
+	{
+		var input = assertParsesSingleStatement("INPUT 'Hi' 5X 'Ho'", IInputStatementNode.class);
+		var operand = assertNodeType(input.operands().get(1), ISpaceElementNode.class);
+		assertThat(operand.spaces()).isEqualTo(5);
 	}
 
 	@Test
