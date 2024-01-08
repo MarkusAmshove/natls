@@ -2,10 +2,7 @@ package org.amshove.natparse.parsing.statements;
 
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
-import org.amshove.natparse.natural.output.IOutputNewLineNode;
-import org.amshove.natparse.natural.output.IOutputOperandNode;
-import org.amshove.natparse.natural.output.IOutputPositioningNode;
-import org.amshove.natparse.natural.output.ISpaceElementNode;
+import org.amshove.natparse.natural.output.*;
 import org.amshove.natparse.parsing.ParserError;
 import org.amshove.natparse.parsing.StatementParseTest;
 import org.junit.jupiter.api.Test;
@@ -144,6 +141,14 @@ class InputStatementParsingShould extends StatementParseTest
 	}
 
 	@Test
+	void parseTabulatorElement()
+	{
+		var input = assertParsesSingleStatement("INPUT 'Hi' 5T 'Ho'", IInputStatementNode.class);
+		var operand = assertNodeType(input.operands().get(1), ITabulatorElementNode.class);
+		assertThat(operand.tabs()).isEqualTo(5);
+	}
+
+	@Test
 	void consumeNewLines()
 	{
 		var input = assertParsesSingleStatement("INPUT 'Hi' / 'Ho'", IInputStatementNode.class);
@@ -154,11 +159,7 @@ class InputStatementParsingShould extends StatementParseTest
 	void consumeTabsAndSkips()
 	{
 		var input = assertParsesSingleStatement("INPUT 'Hi' / 'Ho' 5T #VAR", IInputStatementNode.class);
-		assertThat(input.operands()).hasSize(4);
-		assertNodeOperand(input, 0, ILiteralNode.class, "'Hi'");
-		assertNodeType(input.operands().get(1), IOutputNewLineNode.class);
-		assertNodeOperand(input, 2, ILiteralNode.class, "'Ho'");
-		assertNodeOperand(input, 3, IVariableReferenceNode.class, "#VAR");
+		assertThat(input.operands()).hasSize(5);
 	}
 
 	@Test

@@ -9,6 +9,7 @@ import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
 import org.amshove.natparse.natural.output.IOutputOperandNode;
 import org.amshove.natparse.natural.output.IOutputPositioningNode;
 import org.amshove.natparse.natural.output.ISpaceElementNode;
+import org.amshove.natparse.natural.output.ITabulatorElementNode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -1873,6 +1874,14 @@ class StatementListParserShould extends StatementParseTest
 		var write = assertParsesSingleStatement("WRITE 'Hi' 5x 'Ho'", IWriteNode.class);
 		var operand = assertNodeType(write.operands().get(1), ISpaceElementNode.class);
 		assertThat(operand.spaces()).isEqualTo(5);
+	}
+
+	@Test
+	void parseWriteWithTabulatorElement()
+	{
+		var write = assertParsesSingleStatement("WRITE 'Hi' 5T 'Ho'", IWriteNode.class);
+		var operand = assertNodeType(write.operands().get(1), ITabulatorElementNode.class);
+		assertThat(operand.tabs()).isEqualTo(5);
 	}
 
 	@Test
