@@ -311,6 +311,17 @@ abstract class AbstractParser<T>
 				return new ValueAttributeNode(implicitConversionKind, attributeToken);
 			}
 
+			if (attributeToken.source().split("=").length == 1)
+			{
+				report(
+					ParserErrors.internal(
+						"Could not determine attribute value. Current: %s Next: %s".formatted(attributeToken.source(), peek().source()),
+						attributeToken
+					)
+				);
+
+				return new ValueAttributeNode(attributeToken, tokens.advance());
+			}
 			return new ValueAttributeNode(attributeToken);
 		}
 	}
@@ -318,33 +329,40 @@ abstract class AbstractParser<T>
 	private void addImplicitAttributes(AttributeListNode attributeList)
 	{
 		var token = tokens.advance();
+
+		if (tryAddingTwoImplicitAttributesFromOneToken(attributeList, token, 1))
+		{
+			return;
+		}
+
+		if (tryAddingTwoImplicitAttributesFromOneToken(attributeList, token, 2))
+		{
+			return;
+		}
+
+		report(
+			ParserErrors.internal(
+				"Could not implicitly create two attributes from value %s".formatted(token.source()),
+				token
+			)
+		);
+	}
+
+	private boolean tryAddingTwoImplicitAttributesFromOneToken(AttributeListNode attributeList, SyntaxToken token, int secondAttributeOffset)
+	{
 		var currentSource = token.source();
 
+		var firstImplicitKind = ImplicitAttributeConversion.getImplicitConversion(currentSource.substring(0, secondAttributeOffset));
+		var lastImplicitKind = ImplicitAttributeConversion.getImplicitConversion(currentSource.substring(secondAttributeOffset));
+		if (firstImplicitKind != null && lastImplicitKind != null)
 		{
-			var firstTwoLetterImplicit = ImplicitAttributeConversion.getImplicitConversion(currentSource.substring(0, 2));
-			var lastLetterImplicit = ImplicitAttributeConversion.getImplicitConversion(currentSource.substring(2));
-			if (firstTwoLetterImplicit != null && lastLetterImplicit != null)
-			{
-				var attributes = splitTokenIntoAttributes(token, firstTwoLetterImplicit, 2, lastLetterImplicit);
-				attributeList.addAttribute(new ValueAttributeNode(firstTwoLetterImplicit, attributes.first()));
-				attributeList.addAttribute(new ValueAttributeNode(lastLetterImplicit, attributes.second()));
-				return;
-			}
+			var attributes = splitTokenIntoAttributes(token, firstImplicitKind, secondAttributeOffset, lastImplicitKind);
+			attributeList.addAttribute(new ValueAttributeNode(firstImplicitKind, attributes.first()));
+			attributeList.addAttribute(new ValueAttributeNode(lastImplicitKind, attributes.second()));
+			return true;
 		}
 
-		{
-			var firstLetterImplicit = ImplicitAttributeConversion.getImplicitConversion(currentSource.substring(0, 1));
-			var lastTwoLetterImplicit = ImplicitAttributeConversion.getImplicitConversion(currentSource.substring(1));
-			if (firstLetterImplicit != null && lastTwoLetterImplicit != null)
-			{
-				var attributes = splitTokenIntoAttributes(token, firstLetterImplicit, 1, lastTwoLetterImplicit);
-				attributeList.addAttribute(new ValueAttributeNode(firstLetterImplicit, attributes.first()));
-				attributeList.addAttribute(new ValueAttributeNode(lastTwoLetterImplicit, attributes.second()));
-				return;
-			}
-		}
-
-		// TODO: Diagnostic?!
+		return false;
 	}
 
 	private static final Set<SyntaxKind> LITERAL_KINDS = Set.of(SyntaxKind.NUMBER_LITERAL, SyntaxKind.STRING_LITERAL, SyntaxKind.HEX_LITERAL, SyntaxKind.TRUE, SyntaxKind.FALSE, SyntaxKind.ASTERISK, SyntaxKind.DATE_LITERAL, SyntaxKind.TIME_LITERAL, SyntaxKind.EXTENDED_TIME_LITERAL);

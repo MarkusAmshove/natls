@@ -207,6 +207,12 @@ class InputStatementParsingShould extends StatementParseTest
 	}
 
 	@Test
+	void raiseAnIssueIfTwoImplicitAttributesCantBeCreated()
+	{
+		assertDiagnostic("INPUT 'Lit' (RYY)", ParserError.INTERNAL);
+	}
+
+	@Test
 	void parseOperandsWithNumericAttributes()
 	{
 		assertParsesSingleStatement("INPUT #NUM (EM=99.9999)", IInputStatementNode.class);
