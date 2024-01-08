@@ -2224,15 +2224,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		while (!isAtEnd() && !isStatementStart())
 		{
-			// coordinates in form of x/y
-			if (peekKind(SyntaxKind.NUMBER_LITERAL) && peekKind(1, SyntaxKind.SLASH))
-			{
-				consumeLiteralNode(input, SyntaxKind.NUMBER_LITERAL);
-				consumeMandatory(input, SyntaxKind.SLASH);
-				consumeLiteralNode(input, SyntaxKind.NUMBER_LITERAL);
-				continue;
-			}
-
 			if ((consumeOptionally(input, SyntaxKind.NO) && consumeOptionally(input, SyntaxKind.PARAMETER))
 				|| !isOperand() && !peekKind(SyntaxKind.TAB_SETTING) && !peekKind(SyntaxKind.SLASH) && !peekKind(SyntaxKind.OPERAND_SKIP))
 			{
@@ -2307,10 +2298,37 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private IOutputElementNode consumeInputOutputOperand(BaseSyntaxNode writeLikeNode) throws ParseError
 	{
-		if (consumeOptionally(writeLikeNode, SyntaxKind.TAB_SETTING)
-			|| consumeOptionally(writeLikeNode, SyntaxKind.OPERAND_SKIP))
+		if (peekKind(SyntaxKind.TAB_SETTING))
 		{
-			return null;
+			var tab = new TabulatorElementNode();
+			var operand = consumeMandatory(tab, SyntaxKind.TAB_SETTING);
+			var tabs = Integer.parseInt(operand.source().substring(0, operand.source().length() - 1));
+			tab.setTabs(tabs);
+			return tab;
+		}
+
+		if (peekKind(SyntaxKind.OPERAND_SKIP))
+		{
+			var space = new SpaceElementNode();
+			var operand = consumeMandatory(space, SyntaxKind.OPERAND_SKIP);
+			var spaces = Integer.parseInt(operand.source().substring(0, operand.source().length() - 1));
+			space.setSpaces(spaces);
+			return space;
+		}
+
+		if (peekKind(SyntaxKind.NUMBER_LITERAL) && peekKind(1, SyntaxKind.SLASH))
+		{
+			var positioning = new OutputPositioningNode();
+			var row = consumeLiteralNode(positioning, SyntaxKind.NUMBER_LITERAL);
+			consumeMandatory(positioning, SyntaxKind.SLASH);
+			var column = consumeLiteralNode(positioning, SyntaxKind.NUMBER_LITERAL);
+
+			checkNumericRange((ILiteralNode) column, 1, 999);
+
+			positioning.setRow(((ILiteralNode) row).token().intValue());
+			positioning.setColumn(((ILiteralNode) column).token().intValue());
+
+			return positioning;
 		}
 
 		if (peekKind(SyntaxKind.SLASH))

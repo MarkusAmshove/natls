@@ -2,8 +2,7 @@ package org.amshove.natparse.parsing.statements;
 
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
-import org.amshove.natparse.natural.output.IOutputNewLineNode;
-import org.amshove.natparse.natural.output.IOutputOperandNode;
+import org.amshove.natparse.natural.output.*;
 import org.amshove.natparse.parsing.ParserError;
 import org.amshove.natparse.parsing.StatementParseTest;
 import org.junit.jupiter.api.Test;
@@ -124,10 +123,29 @@ class InputStatementParsingShould extends StatementParseTest
 	void consumeInputsWithPositions()
 	{
 		var input = assertParsesSingleStatement("INPUT 'Hi' 10/15 'Ho' 20/20 #VAR", IInputStatementNode.class);
-		assertThat(input.operands()).hasSize(3);
-		assertNodeOperand(input, 0, ILiteralNode.class, "'Hi'");
-		assertNodeOperand(input, 1, ILiteralNode.class, "'Ho'");
-		assertNodeOperand(input, 2, IVariableReferenceNode.class, "#VAR");
+		assertThat(input.operands()).hasSize(5);
+	}
+
+	@Test
+	void raiseADiagnosticIfPositioningToColumnZero()
+	{
+		assertDiagnostic("INPUT 'Hi' 10/0", ParserError.INVALID_LITERAL_VALUE);
+	}
+
+	@Test
+	void parseSpaceElement()
+	{
+		var input = assertParsesSingleStatement("INPUT 'Hi' 5X 'Ho'", IInputStatementNode.class);
+		var operand = assertNodeType(input.operands().get(1), ISpaceElementNode.class);
+		assertThat(operand.spaces()).isEqualTo(5);
+	}
+
+	@Test
+	void parseTabulatorElement()
+	{
+		var input = assertParsesSingleStatement("INPUT 'Hi' 5T 'Ho'", IInputStatementNode.class);
+		var operand = assertNodeType(input.operands().get(1), ITabulatorElementNode.class);
+		assertThat(operand.tabs()).isEqualTo(5);
 	}
 
 	@Test
@@ -141,11 +159,7 @@ class InputStatementParsingShould extends StatementParseTest
 	void consumeTabsAndSkips()
 	{
 		var input = assertParsesSingleStatement("INPUT 'Hi' / 'Ho' 5T #VAR", IInputStatementNode.class);
-		assertThat(input.operands()).hasSize(4);
-		assertNodeOperand(input, 0, ILiteralNode.class, "'Hi'");
-		assertNodeType(input.operands().get(1), IOutputNewLineNode.class);
-		assertNodeOperand(input, 2, ILiteralNode.class, "'Ho'");
-		assertNodeOperand(input, 3, IVariableReferenceNode.class, "#VAR");
+		assertThat(input.operands()).hasSize(5);
 	}
 
 	@Test
@@ -213,6 +227,16 @@ class InputStatementParsingShould extends StatementParseTest
 
 		var inputOperand = assertNodeType(input.operands().first(), IOutputOperandNode.class);
 		assertValueAttribute(inputOperand.attributes().first(), SyntaxKind.AD, "I");
+	}
+
+	@Test
+	void parseCoordinateOperands()
+	{
+		var input = assertParsesSingleStatement("INPUT 'A' 2/5 'B'", IInputStatementNode.class);
+
+		var operand = assertNodeType(input.operands().get(1), IOutputPositioningNode.class);;
+		assertThat(operand.row()).isEqualTo(2);
+		assertThat(operand.column()).isEqualTo(5);
 	}
 
 	@Test
