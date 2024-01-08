@@ -187,6 +187,25 @@ class InputStatementParsingShould extends StatementParseTest
 		assertValueAttribute(attribute, expectedKind, value);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"UYE", "YEU"
+	})
+	void parseCombinationsOfImplicitAttributes(String combination)
+	{
+		var input = assertParsesSingleStatement("INPUT 'Lit' (%s)".formatted(combination), IInputStatementNode.class);
+		var inputOperand = assertNodeType(input.operands().first(), IOutputOperandNode.class);
+		assertThat(inputOperand.attributes()).hasSize(2);
+
+		assertThat(inputOperand.attributes())
+			.as("AD=U not found")
+			.anySatisfy(a -> assertValueAttribute(a, SyntaxKind.AD, "U"));
+		assertThat(inputOperand.attributes())
+			.as("CD=YE not found")
+			.anySatisfy(a -> assertValueAttribute(a, SyntaxKind.CD, "YE"));
+	}
+
 	@Test
 	void parseOperandsWithNumericAttributes()
 	{

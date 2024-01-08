@@ -3,13 +3,17 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.ReadOnlyList;
+import org.amshove.natparse.Tuple;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFileType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 abstract class AbstractParser<T>
 {
@@ -277,7 +281,14 @@ abstract class AbstractParser<T>
 		consumeMandatory(attributeList, SyntaxKind.LPAREN);
 		while (!isAtEnd() && peek().kind() != SyntaxKind.RPAREN && peek().kind() != SyntaxKind.END_DEFINE)
 		{
-			attributeList.addAttribute(parseAttribute());
+			if (peek().source().length() == 3 && !peek().source().endsWith("="))
+			{
+				addImplicitAttributes(attributeList);
+			}
+			else
+			{
+				attributeList.addAttribute(parseAttribute());
+			}
 		}
 		consumeMandatory(attributeList, SyntaxKind.RPAREN);
 		return attributeList;
@@ -302,6 +313,38 @@ abstract class AbstractParser<T>
 
 			return new ValueAttributeNode(attributeToken);
 		}
+	}
+
+	private void addImplicitAttributes(AttributeListNode attributeList)
+	{
+		var token = tokens.advance();
+		var currentSource = token.source();
+
+		{
+			var firstTwoLetterImplicit = ImplicitAttributeConversion.getImplicitConversion(currentSource.substring(0, 2));
+			var lastLetterImplicit = ImplicitAttributeConversion.getImplicitConversion(currentSource.substring(2));
+			if (firstTwoLetterImplicit != null && lastLetterImplicit != null)
+			{
+				var attributes = splitTokenIntoAttributes(token, firstTwoLetterImplicit, 2, lastLetterImplicit);
+				attributeList.addAttribute(new ValueAttributeNode(firstTwoLetterImplicit, attributes.first()));
+				attributeList.addAttribute(new ValueAttributeNode(lastLetterImplicit, attributes.second()));
+				return;
+			}
+		}
+
+		{
+			var firstLetterImplicit = ImplicitAttributeConversion.getImplicitConversion(currentSource.substring(0, 1));
+			var lastTwoLetterImplicit = ImplicitAttributeConversion.getImplicitConversion(currentSource.substring(1));
+			if (firstLetterImplicit != null && lastTwoLetterImplicit != null)
+			{
+				var attributes = splitTokenIntoAttributes(token, firstLetterImplicit, 1, lastTwoLetterImplicit);
+				attributeList.addAttribute(new ValueAttributeNode(firstLetterImplicit, attributes.first()));
+				attributeList.addAttribute(new ValueAttributeNode(lastTwoLetterImplicit, attributes.second()));
+				return;
+			}
+		}
+
+		// TODO: Diagnostic?!
 	}
 
 	private static final Set<SyntaxKind> LITERAL_KINDS = Set.of(SyntaxKind.NUMBER_LITERAL, SyntaxKind.STRING_LITERAL, SyntaxKind.HEX_LITERAL, SyntaxKind.TRUE, SyntaxKind.FALSE, SyntaxKind.ASTERISK, SyntaxKind.DATE_LITERAL, SyntaxKind.TIME_LITERAL, SyntaxKind.EXTENDED_TIME_LITERAL);
@@ -1449,5 +1492,16 @@ abstract class AbstractParser<T>
 		}
 
 		return false;
+	}
+
+	private Tuple<SyntaxToken> splitTokenIntoAttributes(SyntaxToken token, SyntaxKind firstAttributeKind, int secondAttributeOffset, SyntaxKind secondAttributeKind)
+	{
+		var firstAttribute = new SyntaxToken(firstAttributeKind, token.offset(), token.offsetInLine(), token.line(), token.source().substring(0, secondAttributeOffset), token.filePath());
+		firstAttribute.setDiagnosticPosition(token.diagnosticPosition());
+
+		var secondAttribute = new SyntaxToken(secondAttributeKind, token.offset() + firstAttribute.length(), token.offsetInLine() + firstAttribute.length(), token.line(), token.source().substring(secondAttributeOffset), token.filePath());
+		secondAttribute.setDiagnosticPosition(token.diagnosticPosition());
+
+		return new Tuple<>(firstAttribute, secondAttribute);
 	}
 }
