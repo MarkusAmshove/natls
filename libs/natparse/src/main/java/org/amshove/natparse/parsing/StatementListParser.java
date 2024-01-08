@@ -2224,15 +2224,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		while (!isAtEnd() && !isStatementStart())
 		{
-			// coordinates in form of x/y
-			//			if (peekKind(SyntaxKind.NUMBER_LITERAL) && peekKind(1, SyntaxKind.SLASH))
-			//			{
-			//				consumeLiteralNode(input, SyntaxKind.NUMBER_LITERAL);
-			//				consumeMandatory(input, SyntaxKind.SLASH);
-			//				consumeLiteralNode(input, SyntaxKind.NUMBER_LITERAL);
-			//				continue;
-			//			}
-
 			if ((consumeOptionally(input, SyntaxKind.NO) && consumeOptionally(input, SyntaxKind.PARAMETER))
 				|| !isOperand() && !peekKind(SyntaxKind.TAB_SETTING) && !peekKind(SyntaxKind.SLASH) && !peekKind(SyntaxKind.OPERAND_SKIP))
 			{
