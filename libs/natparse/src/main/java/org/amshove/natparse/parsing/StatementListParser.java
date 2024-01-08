@@ -2225,13 +2225,13 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		while (!isAtEnd() && !isStatementStart())
 		{
 			// coordinates in form of x/y
-			if (peekKind(SyntaxKind.NUMBER_LITERAL) && peekKind(1, SyntaxKind.SLASH))
-			{
-				consumeLiteralNode(input, SyntaxKind.NUMBER_LITERAL);
-				consumeMandatory(input, SyntaxKind.SLASH);
-				consumeLiteralNode(input, SyntaxKind.NUMBER_LITERAL);
-				continue;
-			}
+			//			if (peekKind(SyntaxKind.NUMBER_LITERAL) && peekKind(1, SyntaxKind.SLASH))
+			//			{
+			//				consumeLiteralNode(input, SyntaxKind.NUMBER_LITERAL);
+			//				consumeMandatory(input, SyntaxKind.SLASH);
+			//				consumeLiteralNode(input, SyntaxKind.NUMBER_LITERAL);
+			//				continue;
+			//			}
 
 			if ((consumeOptionally(input, SyntaxKind.NO) && consumeOptionally(input, SyntaxKind.PARAMETER))
 				|| !isOperand() && !peekKind(SyntaxKind.TAB_SETTING) && !peekKind(SyntaxKind.SLASH) && !peekKind(SyntaxKind.OPERAND_SKIP))
@@ -2311,6 +2311,21 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			|| consumeOptionally(writeLikeNode, SyntaxKind.OPERAND_SKIP))
 		{
 			return null;
+		}
+
+		if (peekKind(SyntaxKind.NUMBER_LITERAL) && peekKind(1, SyntaxKind.SLASH))
+		{
+			var positioning = new OutputPositioningNode();
+			var row = consumeLiteralNode(positioning, SyntaxKind.NUMBER_LITERAL);
+			consumeMandatory(positioning, SyntaxKind.SLASH);
+			var column = consumeLiteralNode(positioning, SyntaxKind.NUMBER_LITERAL);
+
+			checkNumericRange((ILiteralNode) column, 1, 999);
+
+			positioning.setRow(((ILiteralNode) row).token().intValue());
+			positioning.setColumn(((ILiteralNode) column).token().intValue());
+
+			return positioning;
 		}
 
 		if (peekKind(SyntaxKind.SLASH))

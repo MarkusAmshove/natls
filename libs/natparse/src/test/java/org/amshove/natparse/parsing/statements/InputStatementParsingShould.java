@@ -4,6 +4,7 @@ import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.output.IOutputNewLineNode;
 import org.amshove.natparse.natural.output.IOutputOperandNode;
+import org.amshove.natparse.natural.output.IOutputPositioningNode;
 import org.amshove.natparse.parsing.ParserError;
 import org.amshove.natparse.parsing.StatementParseTest;
 import org.junit.jupiter.api.Test;
@@ -124,10 +125,13 @@ class InputStatementParsingShould extends StatementParseTest
 	void consumeInputsWithPositions()
 	{
 		var input = assertParsesSingleStatement("INPUT 'Hi' 10/15 'Ho' 20/20 #VAR", IInputStatementNode.class);
-		assertThat(input.operands()).hasSize(3);
-		assertNodeOperand(input, 0, ILiteralNode.class, "'Hi'");
-		assertNodeOperand(input, 1, ILiteralNode.class, "'Ho'");
-		assertNodeOperand(input, 2, IVariableReferenceNode.class, "#VAR");
+		assertThat(input.operands()).hasSize(5);
+	}
+
+	@Test
+	void raiseADiagnosticIfPositioningToColumnZero()
+	{
+		assertDiagnostic("INPUT 'Hi' 10/0", ParserError.INVALID_LITERAL_VALUE);
 	}
 
 	@Test
@@ -213,6 +217,16 @@ class InputStatementParsingShould extends StatementParseTest
 
 		var inputOperand = assertNodeType(input.operands().first(), IOutputOperandNode.class);
 		assertValueAttribute(inputOperand.attributes().first(), SyntaxKind.AD, "I");
+	}
+
+	@Test
+	void parseCoordinateOperands()
+	{
+		var input = assertParsesSingleStatement("INPUT 'A' 2/5 'B'", IInputStatementNode.class);
+
+		var operand = assertNodeType(input.operands().get(1), IOutputPositioningNode.class);;
+		assertThat(operand.row()).isEqualTo(2);
+		assertThat(operand.column()).isEqualTo(5);
 	}
 
 	@Test

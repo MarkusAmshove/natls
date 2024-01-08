@@ -7,6 +7,7 @@ import org.amshove.natparse.natural.conditionals.IConditionNode;
 import org.amshove.natparse.natural.conditionals.IIfBreakCriteriaNode;
 import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
 import org.amshove.natparse.natural.output.IOutputOperandNode;
+import org.amshove.natparse.natural.output.IOutputPositioningNode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -1854,6 +1855,15 @@ class StatementListParserShould extends StatementParseTest
 		var attribute = assertNodeType(operand.attributes().first(), IValueAttributeNode.class);
 		assertThat(attribute.kind()).isEqualTo(SyntaxKind.AD);
 		assertThat(attribute.value()).isEqualTo("I");
+	}
+
+	@Test
+	void parseWriteWithPositioningElement()
+	{
+		var write = assertParsesSingleStatement("WRITE 'literal' 5/2 'literal2'", IWriteNode.class);
+		var operand = assertNodeType(write.operands().get(1), IOutputPositioningNode.class);
+		assertThat(operand.row()).isEqualTo(5);
+		assertThat(operand.column()).isEqualTo(2);
 	}
 
 	@Test
