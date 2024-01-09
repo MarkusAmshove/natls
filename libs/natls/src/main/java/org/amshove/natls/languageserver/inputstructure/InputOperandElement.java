@@ -1,6 +1,7 @@
 package org.amshove.natls.languageserver.inputstructure;
 
 import org.amshove.natparse.NodeUtil;
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.output.IOutputOperandNode;
@@ -32,8 +33,40 @@ public class InputOperandElement extends InputResponseElement
 				continue;
 			}
 
+			if (valueAttributeNode.kind() == SyntaxKind.AL)
+			{
+				this.length = Integer.parseInt(valueAttributeNode.value());
+			}
+			if (valueAttributeNode.kind() == SyntaxKind.NL)
+			{
+				var lengthValue = valueAttributeNode.value();
+				var dataType = new DataType(DataFormat.NUMERIC, Double.parseDouble(lengthValue.replace(",", ".")));
+				this.length = dataType.sumOfDigits() + 1; // + separator
+				if (includesNumericSign(operand.attributes()))
+				{
+					this.length += 1;
+				}
+			}
 			this.attributes.add(new InputAttributeElement(attribute.kind().name(), valueAttributeNode.value()));
 		}
+	}
+
+	private boolean includesNumericSign(ReadOnlyList<IAttributeNode> attributes)
+	{
+		for (var attribute : attributes)
+		{
+			if (!(attribute instanceof IValueAttributeNode valueAttribute))
+			{
+				continue;
+			}
+
+			if (valueAttribute.kind() == SyntaxKind.SG)
+			{
+				return valueAttribute.value().equalsIgnoreCase("on");
+			}
+		}
+
+		return false;
 	}
 
 	private void extractOperandValue(IOperandNode operand)
