@@ -22,7 +22,13 @@ public class InputOperandElement extends InputResponseElement
 	protected InputOperandElement(IOutputOperandNode operand)
 	{
 		super("operand");
+
 		extractOperandValue(operand.operand());
+		if (operand instanceof ICharacterRepetitionOperandNode repetition)
+		{
+			this.length = repetition.repetition();
+			this.operand = this.getOperand().repeat(this.length);
+		}
 
 		this.attributes = new ArrayList<>();
 		for (var attribute : operand.attributes())
