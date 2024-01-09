@@ -523,7 +523,7 @@ class ParserErrors
 	public static IDiagnostic internal(String message, SyntaxToken token)
 	{
 		return ParserDiagnostic.create(
-			"%s. This is an internal error, if you see this please raise an issue.".formatted(message),
+			"%s. If you see this, please raise an issue.".formatted(message),
 			token,
 			ParserError.INTERNAL
 		);
