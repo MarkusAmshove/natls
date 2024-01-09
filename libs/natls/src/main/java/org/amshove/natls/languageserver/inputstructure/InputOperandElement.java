@@ -11,6 +11,7 @@ import java.util.List;
 public class InputOperandElement extends InputResponseElement
 {
 	private String operand;
+	private String type;
 	private int length;
 	private int sourceLine;
 	private int sourceColumnStart;
@@ -31,7 +32,6 @@ public class InputOperandElement extends InputResponseElement
 				continue;
 			}
 
-
 			this.attributes.add(new InputAttributeElement(attribute.kind().name(), valueAttributeNode.value()));
 		}
 	}
@@ -44,8 +44,9 @@ public class InputOperandElement extends InputResponseElement
 			this.sourceColumnStart = varRef.referencingToken().offsetInLine();
 			this.sourceColumnEnd = varRef.referencingToken().endOffset();
 
-			this.length = ((ITypedVariableNode)varRef.reference()).type().sumOfDigits();
+			this.length = ((ITypedVariableNode) varRef.reference()).type().alphanumericLength();
 			this.operand = varRef.referencingToken().symbolName();
+			this.type = "reference";
 			return;
 		}
 
@@ -54,6 +55,7 @@ public class InputOperandElement extends InputResponseElement
 			this.sourceLine = literal.position().line();
 			this.sourceColumnStart = literal.position().offsetInLine();
 			this.sourceColumnEnd = literal.position().endOffset();
+			this.type = "literal";
 
 			if (literal.token().kind() == SyntaxKind.STRING_LITERAL)
 			{
@@ -70,6 +72,7 @@ public class InputOperandElement extends InputResponseElement
 
 		var token = ((ITokenNode) NodeUtil.deepFindLeaf(operand)).token();
 		this.operand = token.source();
+		this.type = "unknown";
 		this.sourceLine = token.line();
 		this.sourceColumnStart = token.offsetInLine();
 		this.sourceColumnEnd = token.endOffset();
@@ -104,5 +107,10 @@ public class InputOperandElement extends InputResponseElement
 	public int getSourceColumnEnd()
 	{
 		return sourceColumnEnd;
+	}
+
+	public String getType()
+	{
+		return type;
 	}
 }
