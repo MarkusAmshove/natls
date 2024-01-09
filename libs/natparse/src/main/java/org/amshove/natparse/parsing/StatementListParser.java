@@ -469,6 +469,20 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				// TODO: Add a ErrorRecoveryNode which eats every token until `isStatementStart()` returns true?
 				tokens.advance();
 			}
+			catch (Exception e)
+			{
+				report(
+					ParserErrors.internal(
+						"Unhandled exception: %s: %s".formatted(e.getClass().getSimpleName(), e.getMessage()),
+						previousToken() != null ? previousToken() : tokens.peek()
+					)
+				);
+
+				while (!isAtEnd() && !isStatementStart())
+				{
+					tokens.advance();
+				}
+			}
 		}
 
 		return statementList;
