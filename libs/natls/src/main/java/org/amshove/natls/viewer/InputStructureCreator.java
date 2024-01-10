@@ -6,12 +6,16 @@ import org.amshove.natparse.natural.IModuleWithBody;
 
 public class InputStructureCreator
 {
-	public InputStructure createStructure(IModuleWithBody module, int inputPosition)
+	public InputStructure createStructure(IModuleWithBody module, int inputIndex)
 	{
-		var inputs = NodeUtil.findFirstStatementOfType(IInputStatementNode.class, module.body());
+		var inputs = NodeUtil.findNodesOfType(module.body(), IInputStatementNode.class);
+		if (inputIndex > inputs.size() - 1)
+		{
+			return null;
+		}
 
 		var structure = new InputStructure();
-		structure.setOperands(inputs.operands());
+		structure.setOperands(inputs.get(inputIndex).operands());
 
 		return structure;
 	}

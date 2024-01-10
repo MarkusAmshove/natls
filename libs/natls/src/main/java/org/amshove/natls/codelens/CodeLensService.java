@@ -17,6 +17,7 @@ public class CodeLensService
 		registeredProviders.add(new ModuleReferencesCodeLens());
 		registeredProviders.add(new InternalSubroutineReferencesCodeLens());
 		registeredProviders.add(new NatUnitCodeLensProvider());
+		registeredProviders.add(new InputPreviewCodeLensProvider()); // TODO: Conditional based on Capabilities
 	}
 
 	public List<CodeLens> provideCodeLens(LanguageServerFile file)

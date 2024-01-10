@@ -3,7 +3,7 @@ package org.amshove.natls.languageserver.inputstructure;
 public class InputStructureParams
 {
 	private String uri;
-	private int inputPosition;
+	private int inputIndex;
 
 	public void setUri(String uri)
 	{
@@ -15,13 +15,13 @@ public class InputStructureParams
 		return this.uri;
 	}
 
-	public int getInputPosition()
+	public int getInputIndex()
 	{
-		return inputPosition;
+		return inputIndex;
 	}
 
-	public void setInputPosition(int inputPosition)
+	public void setInputIndex(int inputIndex)
 	{
-		this.inputPosition = inputPosition;
+		this.inputIndex = inputIndex;
 	}
 }

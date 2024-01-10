@@ -831,7 +831,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 		return InputStructureResponse.fromInputStructure(
 			new InputStructureCreator()
-				.createStructure(moduleWithBody, params.getInputPosition())
+				.createStructure(moduleWithBody, params.getInputIndex())
 		);
 	}
 }
