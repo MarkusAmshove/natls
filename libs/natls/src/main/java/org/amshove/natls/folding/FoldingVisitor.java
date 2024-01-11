@@ -36,7 +36,10 @@ public class FoldingVisitor implements ISyntaxNodeVisitor
 			return;
 		}
 
-		if (node instanceof IStatementWithBodyNode)
+		if (node instanceof IStatementWithBodyNode
+			|| node instanceof IDecideOnNode
+			|| node instanceof IDecideForConditionNode
+			|| node instanceof IDefineData)
 		{
 			createFolding(node);
 		}
