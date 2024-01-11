@@ -15,6 +15,7 @@ import org.amshove.natls.codelens.CodeLensService;
 import org.amshove.natls.completion.CompletionProvider;
 import org.amshove.natls.config.LSConfiguration;
 import org.amshove.natls.documentsymbol.DocumentSymbolProvider;
+import org.amshove.natls.folding.FoldingVisitor;
 import org.amshove.natls.hover.HoverContext;
 import org.amshove.natls.hover.HoverProvider;
 import org.amshove.natls.inlayhints.InlayHintProvider;
@@ -810,5 +811,13 @@ public class NaturalLanguageService implements LanguageClientAware
 				publishDiagnosticsOfFile(file);
 			}
 		});
+	}
+
+	public List<FoldingRange> folding(FoldingRangeRequestParams params)
+	{
+		var file = findNaturalFile(params.getTextDocument());
+		var visitor = new FoldingVisitor(file.module());
+		file.module().syntaxTree().acceptNodeVisitor(visitor);
+		return visitor.getFoldings();
 	}
 }
