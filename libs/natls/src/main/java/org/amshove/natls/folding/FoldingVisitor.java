@@ -36,6 +36,11 @@ public class FoldingVisitor implements ISyntaxNodeVisitor
 			return;
 		}
 
+		if (node instanceof IIncludeNode)
+		{
+			return;
+		}
+
 		if (node instanceof IStatementWithBodyNode
 			|| node instanceof IDecideOnNode
 			|| node instanceof IDecideForConditionNode

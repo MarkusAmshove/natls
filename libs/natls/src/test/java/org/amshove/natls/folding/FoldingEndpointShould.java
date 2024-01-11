@@ -116,6 +116,24 @@ class FoldingEndpointShould extends EmptyProjectTest
 		assertFolding(0, 2, foldings);
 	}
 
+	@Test
+	void notProvideFoldingsForDifferentFiles()
+	{
+		createOrSaveFile("LIBONE", "CCODE.NSC", """
+		IF 5 = 5
+		IGNORE
+		END-IF
+		""");
+
+		var foldings = getFoldings("""
+			INCLUDE CCODE
+
+			END
+		""");
+
+		assertThat(foldings).isEmpty();
+	}
+
 	private List<FoldingRange> getFoldings(String source)
 	{
 		try
