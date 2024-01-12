@@ -11,7 +11,6 @@ class ValueAttributeNode extends BaseSyntaxNode implements IValueAttributeNode
 
 	ValueAttributeNode(SyntaxToken token)
 	{
-		// TODO: Make this more safe. Does every Attribute have an equals?
 		addNode(new TokenNode(token));
 		var splitByEqual = token.source().split("=");
 		kind = SyntaxKind.valueOf(splitByEqual[0].toUpperCase());
