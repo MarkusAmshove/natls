@@ -17,14 +17,6 @@ class ValueAttributeNode extends BaseSyntaxNode implements IValueAttributeNode
 		value = splitByEqual[1];
 	}
 
-	ValueAttributeNode(SyntaxToken token, SyntaxToken nextToken)
-	{
-		addNode(new TokenNode(token));
-		var sourceWithoutEquals = token.source().replace("=", "");
-		kind = SyntaxKind.valueOf(sourceWithoutEquals.toUpperCase());
-		value = nextToken.source();
-	}
-
 	/**
 	 * Used for implicit attributes like (I)
 	 */

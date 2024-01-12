@@ -265,6 +265,15 @@ class InputStatementParsingShould extends StatementParseTest
 	}
 
 	@Test
+	void parseAttributesWithWhitespace()
+	{
+		var input = assertParsesSingleStatement("INPUT 'A' (AD = I)", IInputStatementNode.class);
+
+		var inputOperand = assertNodeType(input.operands().first(), IOutputOperandNode.class);
+		assertValueAttribute(inputOperand.attributes().first(), SyntaxKind.AD, "I");
+	}
+
+	@Test
 	void raiseADiagnosticForInvalidElementAttributes()
 	{
 		assertDiagnostic("INPUT 'Hi' (LS=20)", ParserError.INVALID_INPUT_ELEMENT_ATTRIBUTE);

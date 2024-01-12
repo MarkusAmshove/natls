@@ -305,23 +305,19 @@ abstract class AbstractParser<T>
 		}
 		else
 		{
+			if (peekKind(SyntaxKind.EQUALS_SIGN)) // this should be the general handling of attributes, but the lexer has to be rewritten
+			{
+				var combined = attributeToken.combine(tokens.advance(), attributeToken.kind()); // Add the =
+				combined = combined.combine(tokens.advance(), attributeToken.kind()); // Add the value
+				return new ValueAttributeNode(combined);
+			}
+
 			var implicitConversionKind = ImplicitAttributeConversion.getImplicitConversion(attributeToken.source());
 			if (implicitConversionKind != null)
 			{
 				return new ValueAttributeNode(implicitConversionKind, attributeToken);
 			}
 
-			if (attributeToken.source().split("=").length == 1)
-			{
-				report(
-					ParserErrors.internal(
-						"Could not determine attribute value. Current: %s Next: %s".formatted(attributeToken.source(), peek().source()),
-						attributeToken
-					)
-				);
-
-				return new ValueAttributeNode(attributeToken, tokens.advance());
-			}
 			return new ValueAttributeNode(attributeToken);
 		}
 	}
