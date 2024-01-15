@@ -158,7 +158,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 		log.info("initialized() called");
 		if (NaturalLanguageService.getConfig().getInitialization().isAsync())
 		{
-			client.showMessage(ClientMessage.info("Background initialization started"));
+			client.showMessage(ClientMessage.info("Natural project is initializing"));
 			var fileReferences = languageService.parseFileReferencesAsync();
 			var dataAreas = languageService.preparseDataAreasAsync();
 			CompletableFuture.allOf(fileReferences, dataAreas)
@@ -166,12 +166,12 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 				{
 					if (error == null)
 					{
-						client.showMessage(ClientMessage.info("Background initialization done"));
+						client.showMessage(ClientMessage.info("Natural project initialization done"));
 						client.refreshCodeLenses();
 					}
 					else
 					{
-						client.showMessage(ClientMessage.error("Background initialization failed"));
+						client.showMessage(ClientMessage.error("Natural project initialization failed"));
 					}
 					languageService.setInitialized();
 				});
