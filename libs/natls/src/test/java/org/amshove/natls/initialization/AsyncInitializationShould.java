@@ -28,8 +28,8 @@ class AsyncInitializationShould extends LanguageServerTest
 		var messages = context.getClient().getShownMessages();
 		assertThat(messages)
 			.containsSubsequence(
-				"Background initialization started",
-				"Background initialization done"
+				"Natural project is initializing",
+				"Natural project initialization done"
 			);
 	}
 
