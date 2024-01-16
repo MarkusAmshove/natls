@@ -6,7 +6,7 @@ public class InputSpaceElement extends InputResponseElement
 
 	protected InputSpaceElement(int spaces)
 	{
-		super("spaces");
+		super(InputStructureElementKind.SPACES);
 		this.spaces = spaces;
 	}
 

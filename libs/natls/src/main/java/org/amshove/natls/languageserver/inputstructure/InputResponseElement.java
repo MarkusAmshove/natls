@@ -21,7 +21,7 @@ public class InputResponseElement
 
 		if (element instanceof IOutputNewLineNode)
 		{
-			return new InputResponseElement("newline");
+			return new InputResponseElement(InputStructureElementKind.NEW_LINE);
 		}
 
 		if (element instanceof ISpaceElementNode spaceElement)
@@ -31,7 +31,7 @@ public class InputResponseElement
 
 		if (element instanceof ITabulatorElementNode tabElement)
 		{
-			return new InputTabElement(tabElement.tabs());
+			return new InputColumnPositionElement(tabElement.tabs());
 		}
 
 		return null;

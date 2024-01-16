@@ -16,6 +16,11 @@ public class InputStructureResponse
 
 	public static InputStructureResponse fromInputStructure(InputStructure structure)
 	{
+		if (structure == null)
+		{
+			return null;
+		}
+
 		var response = new InputStructureResponse();
 		response.elements = new ArrayList<>();
 		int elementId = 1;

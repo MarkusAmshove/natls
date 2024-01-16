@@ -21,7 +21,7 @@ public class InputOperandElement extends InputResponseElement
 
 	protected InputOperandElement(IOutputOperandNode operand)
 	{
-		super("operand");
+		super(InputStructureElementKind.OPERAND);
 
 		extractOperandValue(operand.operand());
 		if (operand instanceof ICharacterRepetitionOperandNode repetition)
