@@ -157,6 +157,12 @@ public class NaturalDocumentService implements TextDocumentService
 		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.format(params)));
 	}
 
+	@Override
+	public CompletableFuture<List<FoldingRange>> foldingRange(FoldingRangeRequestParams params)
+	{
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.folding(params)));
+	}
+
 	public void setLanguageService(NaturalLanguageService languageService)
 	{
 		this.languageService = languageService;

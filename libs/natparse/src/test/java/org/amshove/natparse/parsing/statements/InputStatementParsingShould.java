@@ -201,6 +201,31 @@ class InputStatementParsingShould extends StatementParseTest
 		assertValueAttribute(attribute, expectedKind, value);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"UYE", "YEU"
+	})
+	void parseCombinationsOfImplicitAttributes(String combination)
+	{
+		var input = assertParsesSingleStatement("INPUT 'Lit' (%s)".formatted(combination), IInputStatementNode.class);
+		var inputOperand = assertNodeType(input.operands().first(), IOutputOperandNode.class);
+		assertThat(inputOperand.attributes()).hasSize(2);
+
+		assertThat(inputOperand.attributes())
+			.as("AD=U not found")
+			.anySatisfy(a -> assertValueAttribute(a, SyntaxKind.AD, "U"));
+		assertThat(inputOperand.attributes())
+			.as("CD=YE not found")
+			.anySatisfy(a -> assertValueAttribute(a, SyntaxKind.CD, "YE"));
+	}
+
+	@Test
+	void raiseAnIssueIfTwoImplicitAttributesCantBeCreated()
+	{
+		assertDiagnostic("INPUT 'Lit' (RYY)", ParserError.INTERNAL);
+	}
+
 	@Test
 	void parseOperandsWithNumericAttributes()
 	{
@@ -237,6 +262,15 @@ class InputStatementParsingShould extends StatementParseTest
 		var operand = assertNodeType(input.operands().get(1), IOutputPositioningNode.class);;
 		assertThat(operand.row()).isEqualTo(2);
 		assertThat(operand.column()).isEqualTo(5);
+	}
+
+	@Test
+	void parseAttributesWithWhitespace()
+	{
+		var input = assertParsesSingleStatement("INPUT 'A' (AD = I)", IInputStatementNode.class);
+
+		var inputOperand = assertNodeType(input.operands().first(), IOutputOperandNode.class);
+		assertValueAttribute(inputOperand.attributes().first(), SyntaxKind.AD, "I");
 	}
 
 	@Test

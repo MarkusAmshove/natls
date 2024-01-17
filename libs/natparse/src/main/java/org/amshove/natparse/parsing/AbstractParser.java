@@ -3,13 +3,17 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.ReadOnlyList;
+import org.amshove.natparse.Tuple;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFileType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 abstract class AbstractParser<T>
 {
@@ -277,7 +281,14 @@ abstract class AbstractParser<T>
 		consumeMandatory(attributeList, SyntaxKind.LPAREN);
 		while (!isAtEnd() && peek().kind() != SyntaxKind.RPAREN && peek().kind() != SyntaxKind.END_DEFINE)
 		{
-			attributeList.addAttribute(parseAttribute());
+			if (peek().source().length() == 3 && !peek().source().endsWith("="))
+			{
+				addImplicitAttributes(attributeList);
+			}
+			else
+			{
+				attributeList.addAttribute(parseAttribute());
+			}
 		}
 		consumeMandatory(attributeList, SyntaxKind.RPAREN);
 		return attributeList;
@@ -294,6 +305,13 @@ abstract class AbstractParser<T>
 		}
 		else
 		{
+			if (peekKind(SyntaxKind.EQUALS_SIGN)) // this should be the general handling of attributes, but the lexer has to be rewritten
+			{
+				var combined = attributeToken.combine(tokens.advance(), attributeToken.kind()); // Add the =
+				combined = combined.combine(tokens.advance(), attributeToken.kind()); // Add the value
+				return new ValueAttributeNode(combined);
+			}
+
 			var implicitConversionKind = ImplicitAttributeConversion.getImplicitConversion(attributeToken.source());
 			if (implicitConversionKind != null)
 			{
@@ -302,6 +320,45 @@ abstract class AbstractParser<T>
 
 			return new ValueAttributeNode(attributeToken);
 		}
+	}
+
+	private void addImplicitAttributes(AttributeListNode attributeList)
+	{
+		var token = tokens.advance();
+
+		if (tryAddingTwoImplicitAttributesFromOneToken(attributeList, token, 1))
+		{
+			return;
+		}
+
+		if (tryAddingTwoImplicitAttributesFromOneToken(attributeList, token, 2))
+		{
+			return;
+		}
+
+		report(
+			ParserErrors.internal(
+				"Could not implicitly create two attributes from value %s".formatted(token.source()),
+				token
+			)
+		);
+	}
+
+	private boolean tryAddingTwoImplicitAttributesFromOneToken(AttributeListNode attributeList, SyntaxToken token, int secondAttributeOffset)
+	{
+		var currentSource = token.source();
+
+		var firstImplicitKind = ImplicitAttributeConversion.getImplicitConversion(currentSource.substring(0, secondAttributeOffset));
+		var lastImplicitKind = ImplicitAttributeConversion.getImplicitConversion(currentSource.substring(secondAttributeOffset));
+		if (firstImplicitKind != null && lastImplicitKind != null)
+		{
+			var attributes = splitTokenIntoAttributes(token, firstImplicitKind, secondAttributeOffset, lastImplicitKind);
+			attributeList.addAttribute(new ValueAttributeNode(firstImplicitKind, attributes.first()));
+			attributeList.addAttribute(new ValueAttributeNode(lastImplicitKind, attributes.second()));
+			return true;
+		}
+
+		return false;
 	}
 
 	private static final Set<SyntaxKind> LITERAL_KINDS = Set.of(SyntaxKind.NUMBER_LITERAL, SyntaxKind.STRING_LITERAL, SyntaxKind.HEX_LITERAL, SyntaxKind.TRUE, SyntaxKind.FALSE, SyntaxKind.ASTERISK, SyntaxKind.DATE_LITERAL, SyntaxKind.TIME_LITERAL, SyntaxKind.EXTENDED_TIME_LITERAL);
@@ -1449,5 +1506,16 @@ abstract class AbstractParser<T>
 		}
 
 		return false;
+	}
+
+	private Tuple<SyntaxToken> splitTokenIntoAttributes(SyntaxToken token, SyntaxKind firstAttributeKind, int secondAttributeOffset, SyntaxKind secondAttributeKind)
+	{
+		var firstAttribute = new SyntaxToken(firstAttributeKind, token.offset(), token.offsetInLine(), token.line(), token.source().substring(0, secondAttributeOffset), token.filePath());
+		firstAttribute.setDiagnosticPosition(token.diagnosticPosition());
+
+		var secondAttribute = new SyntaxToken(secondAttributeKind, token.offset() + firstAttribute.length(), token.offsetInLine() + firstAttribute.length(), token.line(), token.source().substring(secondAttributeOffset), token.filePath());
+		secondAttribute.setDiagnosticPosition(token.diagnosticPosition());
+
+		return new Tuple<>(firstAttribute, secondAttribute);
 	}
 }
