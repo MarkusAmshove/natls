@@ -33,7 +33,6 @@ public class InputOperandElement extends InputResponseElement
 		this.attributes = new ArrayList<>();
 		for (var attribute : operand.attributes())
 		{
-			// TODO: Others?
 			if (!(attribute instanceof IValueAttributeNode valueAttributeNode))
 			{
 				continue;
