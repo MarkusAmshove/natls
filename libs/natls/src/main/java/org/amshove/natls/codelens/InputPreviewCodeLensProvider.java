@@ -1,5 +1,6 @@
 package org.amshove.natls.codelens;
 
+import org.amshove.natls.CustomCommands;
 import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natls.languageserver.inputstructure.InputStructureParams;
 import org.amshove.natls.project.LanguageServerFile;
@@ -33,7 +34,7 @@ public class InputPreviewCodeLensProvider implements ICodeLensProvider
 			var params = new InputStructureParams();
 			params.setUri(file.getUri());
 			params.setInputIndex(i);
-			lens.setCommand(new Command("$(open-preview) Open Preview", "natls.previewInput", List.of(params)));
+			lens.setCommand(new Command("$(open-preview) Open Preview", CustomCommands.CODELENS_PREVIEW_INPUT_STATEMENT, List.of(params)));
 			lenses.add(lens);
 		}
 
