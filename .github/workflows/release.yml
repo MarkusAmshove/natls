@@ -49,7 +49,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build
-        run: ./gradlew check shadowJar --no-daemon
+        run: ./gradlew check fatJar --no-daemon
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2

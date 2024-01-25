@@ -1,7 +1,3 @@
-// plugins {
-//     id 'com.github.johnrengelman.shadow' version '7.1.0'
-// }
-
 dependencies {
     compileOnly libraries.sonarqube_api
     compileOnly libraries.slf4j_api
@@ -52,15 +48,38 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
 }
 
-// shadowJar {
-//     setArchivesBaseName('natqube')
-//     archiveClassifier.set('')
-//     archiveVersion.set('')
-//     exclude 'META-INF/**/*'
-// }
+tasks.register('fatJar', Jar) {
+    def buildDate = new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+    manifest {
+        attributes(
+                'Build-Time': buildDate,
+                'Plugin-BuildDate': buildDate,
+                'Plugin-ChildFirstClassLoader': 'false',
+                'Plugin-Class': 'org.amshove.natqube.NaturalPlugin',
+                'Plugin-Description': 'Natural language integration for SonarQube, featuring static code analasys',
+                'Plugin-Developers': 'Markus Amshove',
+                'Plugin-Display-Version': archiveVersion,
+                'Plugin-Homepage': 'https://github.com/MarkusAmshove/NatLS',
+                'Plugin-IssueTrackerUrl': 'https://github.com/MarkusAmshove/NatLS',
+                'Plugin-Key': 'natural',
+                'Plugin-License': 'MIT',
+                'Plugin-Name': 'NatQube',
+                'Plugin-SourcesUrl': 'https://github.com/MarkusAmshove/NatLS',
+                'Plugin-Version': archiveVersion,
+                'Sonar-Version': "${SONAR_VERSION}",
+                'SonarLint-Supported': 'false',
+                'Version': "${archiveVersion}",
+        )
+    }
+    archiveFileName = 'natqube.jar'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    dependsOn(':natparse:jar', ':natlint:jar')
+    from {configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
 
-// artifacts {
-//     shadowJar
-// }
+artifacts {
+    jar
+}
 
 compileJava.dependsOn(':ruletranslator:run')

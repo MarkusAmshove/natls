@@ -1,7 +1,3 @@
-// plugins {
-//     id 'com.github.johnrengelman.shadow' version '5.2.0' // do not update unless https://github.com/johnrengelman/shadow/issues/651 is fixed
-// }
-
 dependencies {
     implementation libraries.lsp4j
     implementation libraries.reflections
@@ -14,11 +10,20 @@ dependencies {
     testImplementation 'org.awaitility:awaitility:4.2.0'
 }
 
-// shadowJar {
-//     archiveBaseName.set('natls')
-//     archiveClassifier.set('')
-//     archiveVersion.set('')
-// }
+tasks.register('fatJar', Jar) {
+    manifest {
+        attributes(
+                'Main-Class': 'org.amshove.natls.App',
+                'Implementation-Title': project.name,
+                'Implementation-Version': project.version
+        )
+    }
+    archiveFileName = 'natls.jar'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    dependsOn(':natparse:jar', ':natlint:jar')
+    from {configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
 
 configurations.testImplementation {
     exclude group: 'org.slf4j', module: libraries.slf4j_utillogging.split(':')[1]
@@ -34,3 +39,6 @@ jar {
     }
 }
 
+artifacts {
+    jar
+}

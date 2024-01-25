@@ -84,7 +84,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build
-        run: ./gradlew check cover shadowJar -x spotlessCheck --no-daemon
+        run: ./gradlew check cover fatJar -x spotlessCheck --no-daemon
 
       - name: Upload Test Report
         uses: actions/upload-artifact@v3

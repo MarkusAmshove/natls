@@ -61,7 +61,7 @@ All projects are aggregated as Gradle modules into a single Gradle project.
 
 To build the project and run tests use `./gradlew build`.
 
-To create standalone jar files (fat jars that include all dependencies) run `./gradlew shadowJar`.
+To create standalone jar files (fat jars that include all dependencies) run `./gradlew fatJar`.
 
 ## Project state/Limitations
 
@@ -154,7 +154,7 @@ The language server is tested primarily with two clients:
 
 The plugin is currently not distributed the SonarQube marketplace.
 Starting from v0.10 you can grab the [natqube.jar from the Releases page](https://github.com/MarkusAmshove/natls/releases) and put it into the plugins folder as described in [the SonarQube documentation](https://docs.sonarqube.org/latest/setup-and-upgrade/install-a-plugin/#manually-installing-plugins).
-Alternatively you can build the jar yourself (`gradlew shadowJar`) and put the file from `libs/natqube/build/libs/natqube.jar` into the plugin folder.
+Alternatively you can build the jar yourself (`gradlew fatJar`) and put the file from `libs/natqube/build/libs/natqube.jar` into the plugin folder.
 
 To run an analysis after setting up the SonarQube backend, grab the [SonarScanner](https://docs.sonarsource.com/sonarqube/latest/analyzing-source-code/scanners/sonarscanner/) and run your first analysis. The Natural plugin will autmatically be pulled from the backend.
 
