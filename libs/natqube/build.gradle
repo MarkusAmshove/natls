@@ -1,6 +1,6 @@
-plugins {
-    id 'com.github.johnrengelman.shadow' version '7.1.0'
-}
+// plugins {
+//     id 'com.github.johnrengelman.shadow' version '7.1.0'
+// }
 
 dependencies {
     compileOnly libraries.sonarqube_api
@@ -14,7 +14,7 @@ dependencies {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    options.release.set(17)
+    options.release.set(21)
 }
 
 configurations.testImplementation {
@@ -52,15 +52,15 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
 }
 
-shadowJar {
-    setArchivesBaseName('natqube')
-    archiveClassifier.set('')
-    archiveVersion.set('')
-    exclude 'META-INF/**/*'
-}
+// shadowJar {
+//     setArchivesBaseName('natqube')
+//     archiveClassifier.set('')
+//     archiveVersion.set('')
+//     exclude 'META-INF/**/*'
+// }
 
-artifacts {
-    shadowJar
-}
+// artifacts {
+//     shadowJar
+// }
 
 compileJava.dependsOn(':ruletranslator:run')

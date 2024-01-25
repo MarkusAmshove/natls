@@ -1,12 +1,12 @@
-plugins {
-    id 'com.github.johnrengelman.shadow' version '7.1.0'
-}
+// plugins {
+//     id 'com.github.johnrengelman.shadow' version '7.1.0'
+// }
 
-shadowJar {
-    archiveBaseName.set('diffcsv')
-    archiveClassifier.set('')
-    archiveVersion.set('')
-}
+// shadowJar {
+//     archiveBaseName.set('diffcsv')
+//     archiveClassifier.set('')
+//     archiveVersion.set('')
+// }
 
 jar {
     manifest {

@@ -150,7 +150,7 @@ The language server is tested primarily with two clients:
 
 ## Running natqube
 
-`natqube` requires at least SonarQube 9.9 (which is/was a LTS release) running with Java 17.
+`natqube` requires at least SonarQube 9.9 (which is/was a LTS release) running with Java 21.
 
 The plugin is currently not distributed the SonarQube marketplace.
 Starting from v0.10 you can grab the [natqube.jar from the Releases page](https://github.com/MarkusAmshove/natls/releases) and put it into the plugins folder as described in [the SonarQube documentation](https://docs.sonarqube.org/latest/setup-and-upgrade/install-a-plugin/#manually-installing-plugins).
