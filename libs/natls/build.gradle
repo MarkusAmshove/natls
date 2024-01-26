@@ -21,7 +21,7 @@ tasks.register('fatJar', Jar) {
     archiveFileName = 'natls.jar'
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     dependsOn(':natparse:jar', ':natlint:jar')
-    from {configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    from {configurations.runtimeClasspath.collect { (it.isDirectory() ? it : zipTree(it)).matching { exclude "**/*.SF", "**/*.DSA", "**/*.RSA" } } }
     with jar
 }
 
