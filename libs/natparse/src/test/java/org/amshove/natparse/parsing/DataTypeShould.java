@@ -4,6 +4,8 @@ import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.DataType;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.List;
 
@@ -22,6 +24,18 @@ class DataTypeShould
 			test("N12,7", DataFormat.NUMERIC, 12.7),
 			test("N12.7", DataFormat.NUMERIC, 12.7)
 		);
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"A10,10", "B10,10", "N12,12", "N12.2,15", "U8,8", "C,1", "L,1", "D,8", "T,8", "F4,13", "F8,22", "I1,3", "I2,5", "I4,10", "P8,5", "P12,7"
+		}
+	)
+	void calculateTheAlphanumericLengthOfDataTypes(String datatype, int expectedLength)
+	{
+		var type = DataType.fromString(datatype);
+		assertThat(type.alphanumericLength()).isEqualTo(expectedLength);
 	}
 
 	private DynamicTest test(String source, DataFormat expectedFormat, double expectedLength)

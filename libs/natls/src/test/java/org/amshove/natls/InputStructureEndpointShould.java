@@ -107,6 +107,20 @@ class InputStructureEndpointShould extends EmptyProjectTest
 	}
 
 	@Test
+	void returnAStructureWithElementForNewLine()
+	{
+		var structure = callEndpoint("""
+				   DEFINE DATA PARAMETER
+				   1 #VAR (A10)
+				   END-DEFINE
+				   INPUT 'Hi' / 'Ho'
+				   END
+			""", 0);
+
+		assertThat(structure.getElements().get(1).getKind()).isEqualTo(InputStructureElementKind.NEW_LINE);
+	}
+
+	@Test
 	void returnAStructureWithElementForRepetition()
 	{
 		var structure = callEndpoint("""

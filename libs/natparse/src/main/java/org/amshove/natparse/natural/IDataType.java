@@ -153,7 +153,12 @@ public interface IDataType
 	{
 		return switch (format())
 		{
-			case ALPHANUMERIC, BINARY, NUMERIC, UNICODE -> sumOfDigits();
+			case ALPHANUMERIC, BINARY, UNICODE -> sumOfDigits();
+			case NUMERIC ->
+			{
+				var digits = sumOfDigits();
+				yield ((int) length()) == calculateNumericSize() ? digits : digits + 1; // Takes the decimal separator into account
+			}
 			case CONTROL, LOGIC, NONE -> 1;
 			case DATE, TIME -> 8;
 			case FLOAT -> sumOfDigits() == 4 ? 13 : 22;
