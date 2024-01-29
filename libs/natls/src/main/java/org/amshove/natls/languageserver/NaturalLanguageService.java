@@ -13,12 +13,15 @@ import org.amshove.natls.codeactions.RefactoringContext;
 import org.amshove.natls.codeactions.RenameSymbolAction;
 import org.amshove.natls.codelens.CodeLensService;
 import org.amshove.natls.completion.CompletionProvider;
+import org.amshove.natls.config.IConfigChangedSubscriber;
 import org.amshove.natls.config.LSConfiguration;
 import org.amshove.natls.documentsymbol.DocumentSymbolProvider;
 import org.amshove.natls.folding.FoldingVisitor;
 import org.amshove.natls.hover.HoverContext;
 import org.amshove.natls.hover.HoverProvider;
 import org.amshove.natls.inlayhints.InlayHintProvider;
+import org.amshove.natls.languageserver.inputstructure.InputStructureParams;
+import org.amshove.natls.languageserver.inputstructure.InputStructureResponse;
 import org.amshove.natls.progress.BackgroundTasks;
 import org.amshove.natls.progress.IProgressMonitor;
 import org.amshove.natls.progress.NullProgressMonitor;
@@ -30,6 +33,7 @@ import org.amshove.natls.project.ParseStrategy;
 import org.amshove.natls.referencing.ReferenceFinder;
 import org.amshove.natls.signaturehelp.SignatureHelpProvider;
 import org.amshove.natls.snippets.SnippetEngine;
+import org.amshove.natls.viewer.InputStructureCreator;
 import org.amshove.natls.workspace.RenameFileHandler;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.NodeUtil;
@@ -63,6 +67,7 @@ public class NaturalLanguageService implements LanguageClientAware
 {
 	private static final Logger log = Logger.getAnonymousLogger();
 	private static final CodeActionRegistry codeActionRegistry = CodeActionRegistry.INSTANCE;
+	private static final List<IConfigChangedSubscriber> configChangedSubscribers = new ArrayList<>();
 	private NaturalProject project; // TODO: Replace
 	private LanguageServerProject languageServerProject;
 	private LanguageClient client;
@@ -73,7 +78,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	private HoverProvider hoverProvider;
 	private final RenameSymbolAction renameComputer = new RenameSymbolAction();
 	private final RenameFileHandler renameFileHandler = new RenameFileHandler();
-	private final CodeLensService codeLensService = new CodeLensService();
+	private CodeLensService codeLensService;
 
 	private static LSConfiguration config = LSConfiguration.createDefault();
 	private final ReferenceFinder referenceFinder = new ReferenceFinder();
@@ -114,6 +119,9 @@ public class NaturalLanguageService implements LanguageClientAware
 		hoverProvider = new HoverProvider();
 		completionProvider = new CompletionProvider(new SnippetEngine(languageServerProject), hoverProvider);
 		callHierarchyProvider = new CallHierarchyProvider(languageServerProject);
+		codeLensService = new CodeLensService(getConfig());
+
+		configChangedSubscribers.add(codeLensService);
 	}
 
 	public void loadEditorConfig(Path path)
@@ -150,6 +158,17 @@ public class NaturalLanguageService implements LanguageClientAware
 	public static void setConfiguration(LSConfiguration configuration)
 	{
 		config = configuration;
+		for (var sub : configChangedSubscribers)
+		{
+			try
+			{
+				sub.configChanged(configuration);
+			}
+			catch (Exception e)
+			{
+				log.severe("Exception on config changed event in %s: %s".formatted(sub.getClass().getSimpleName(), e.getMessage()));
+			}
+		}
 	}
 
 	public List<? extends SymbolInformation> findWorkspaceSymbols(String query, CancelChecker cancelChecker)
@@ -813,6 +832,26 @@ public class NaturalLanguageService implements LanguageClientAware
 		});
 	}
 
+	public InputStructureResponse getInputStructure(InputStructureParams params)
+	{
+		var file = findNaturalFile(LspUtil.uriToPath(params.getUri()));
+		if (file == null)
+		{
+			return null;
+		}
+
+		var module = file.module();
+		if (!(module instanceof IModuleWithBody moduleWithBody))
+		{
+			return null;
+		}
+
+		return InputStructureResponse.fromInputStructure(
+			new InputStructureCreator()
+				.createStructure(moduleWithBody, params.getInputIndex())
+		);
+	}
+
 	public List<FoldingRange> folding(FoldingRangeRequestParams params)
 	{
 		var file = findNaturalFile(params.getTextDocument());
@@ -820,4 +859,5 @@ public class NaturalLanguageService implements LanguageClientAware
 		file.module().syntaxTree().acceptNodeVisitor(visitor);
 		return visitor.getFoldings();
 	}
+
 }

@@ -81,7 +81,7 @@ public enum NaturalFileType
 	{
 		return switch (this)
 		{
-			case SUBPROGRAM, PROGRAM, SUBROUTINE, HELPROUTINE, LDA, PDA, GDA, FUNCTION -> true;
+			case SUBPROGRAM, PROGRAM, SUBROUTINE, HELPROUTINE, LDA, PDA, GDA, FUNCTION, MAP -> true;
 			default -> false;
 		};
 	}
@@ -90,7 +90,7 @@ public enum NaturalFileType
 	{
 		return switch (this)
 		{
-			case SUBPROGRAM, PROGRAM, SUBROUTINE, HELPROUTINE, FUNCTION, COPYCODE -> true;
+			case SUBPROGRAM, PROGRAM, SUBROUTINE, HELPROUTINE, FUNCTION, COPYCODE, MAP -> true;
 			default -> false;
 		};
 	}

@@ -6,6 +6,7 @@ public class LSConfiguration
 	private CompletionConfiguration completion;
 	private InlayHintsConfiguration inlayhints;
 	private InitilizationConfiguration initialization;
+	private MapsConfiguration maps;
 
 	public static LSConfiguration createDefault()
 	{
@@ -22,6 +23,10 @@ public class LSConfiguration
 		var init = new InitilizationConfiguration();
 		init.setAsync(false);
 		config.setInitialization(init);
+
+		var maps = new MapsConfiguration();
+		maps.setEnablePreview(false);
+		config.setMaps(maps);
 
 		return config;
 	}
@@ -54,5 +59,15 @@ public class LSConfiguration
 	public void setInitialization(InitilizationConfiguration initialization)
 	{
 		this.initialization = initialization;
+	}
+
+	public MapsConfiguration getMaps()
+	{
+		return maps;
+	}
+
+	public void setMaps(MapsConfiguration maps)
+	{
+		this.maps = maps;
 	}
 }
