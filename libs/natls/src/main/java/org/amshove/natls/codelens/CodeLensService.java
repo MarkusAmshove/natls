@@ -36,7 +36,7 @@ public class CodeLensService implements IConfigChangedSubscriber
 	@Override
 	public void configChanged(LSConfiguration newConfig)
 	{
-		var previewProvider = registeredProviders.stream().filter(p -> p instanceof InputPreviewCodeLensProvider).findAny();
+		var previewProvider = registeredProviders.stream().filter(InputPreviewCodeLensProvider.class::isInstance).findAny();
 		if (newConfig.getMaps().isPreviewEnabled() && previewProvider.isEmpty())
 		{
 			registeredProviders.add(new InputPreviewCodeLensProvider());
