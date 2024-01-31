@@ -26,7 +26,7 @@ class InputStatementNode extends StatementNode implements IInputStatementNode
 			return;
 		}
 
-		((BaseSyntaxNode) operand).setParent(this);
+		addNode((BaseSyntaxNode) operand);
 		operands.add(operand);
 	}
 
