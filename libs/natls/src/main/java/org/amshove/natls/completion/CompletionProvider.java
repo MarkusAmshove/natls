@@ -61,6 +61,47 @@ public class CompletionProvider
 			var qualifiedNameFilter = completionContext.currentToken().kind() == SyntaxKind.DOT
 				? completionContext.previousTextsCombined()
 				: completionContext.currentToken().symbolName(); // label identifier
+
+			if (completionContext.isCurrentTokenKind(SyntaxKind.LABEL_IDENTIFIER))
+			{
+				var identifierName = completionContext.currentToken().symbolName().substring(0, completionContext.currentToken().symbolName().length() - 1);
+				var arrayToSnippet = module.referencableNodes().stream()
+					.filter(IVariableNode.class::isInstance)
+					.map(IVariableNode.class::cast)
+					.filter(v -> v.name().equals(identifierName))
+					.filter(IVariableNode::isArray)
+					.findAny();
+
+				if (arrayToSnippet.isPresent())
+				{
+					// TODO: If group array, use any child variable for occ
+					// This works but is janky
+//					var edit2 = new TextEdit(LspUtil.toRange(completionContext.currentToken() ), """
+//								#S-%s := *OCC(%s)
+//								FOR #I-%s = 1 TO #S-%s
+//									IGNORE
+//								END-FOR
+//								""".formatted(identifierName, identifierName, identifierName, identifierName));
+//					var item = new CompletionItem("for");
+//					item.setInsertText(" ");
+//					item.setAdditionalTextEdits(List.of(edit2));
+//					item.setKind(CompletionItemKind.Snippet);
+//					return List.of(item);
+
+					// This doesn't even show up
+					var edit2 = new TextEdit(LspUtil.toRange(completionContext.currentToken() ), """
+								#S-%s := *OCC(%s)
+								FOR #I-%s = 1 TO #S-%s
+									IGNORE
+								END-FOR
+								""".formatted(identifierName, identifierName, identifierName, identifierName));
+					var item = new CompletionItem("for");
+					item.setTextEdit(Either.forLeft(edit2));
+					item.setKind(CompletionItemKind.Snippet);
+					return List.of(item);
+				}
+			}
+
 			return findVariablesToComplete(module)
 				.filter(v -> v.qualifiedName().startsWith(qualifiedNameFilter))
 				.map(v -> toVariableCompletion(v, module, file, qualifiedNameFilter))
