@@ -118,4 +118,14 @@ public record CodeCompletionContext(
 		}
 		return sb.toString();
 	}
+
+	/**
+	 * Returns true if the last token ends with a dot
+	 */
+	public boolean completesQualifiedName()
+	{
+		return isCurrentTokenKind(SyntaxKind.LABEL_IDENTIFIER) || (isCurrentTokenKind(SyntaxKind.DOT) && isPreviousTokenKind(
+			SyntaxKind.IDENTIFIER
+		));
+	}
 }
