@@ -149,12 +149,16 @@ public class CompletionProvider
 			range.setStart(range.getEnd());
 			var sanitizedName = identifierName.replace(".", "-");
 
+			var occVar = variableInvokedOn instanceof IGroupNode group
+				? group.variables().first().qualifiedName()
+				: identifierName;
+
 			var edit2 = new TextEdit(range, """
 						#S-%s := *OCC(%s)
 						FOR #I-%s := 1 TO #S-%s
 						  IGNORE
 						END-FOR
-						""".formatted(sanitizedName, identifierName, sanitizedName, sanitizedName));
+						""".formatted(sanitizedName, occVar, sanitizedName, sanitizedName));
 			var item = new CompletionItem("for");
 			item.setTextEdit(Either.forLeft(edit2));
 			item.setKind(CompletionItemKind.Snippet);

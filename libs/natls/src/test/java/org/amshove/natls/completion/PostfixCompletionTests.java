@@ -165,5 +165,32 @@ class PostfixCompletionTests extends CompletionTest
 					END
 					""");
 		}
+
+		@Test
+		void createAForLoopWhenInvokedOnAGroupArrayAndUseAChildVariable()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA LOCAL
+				1 #GRP (1:*)
+				2 #ARR (A10)
+				END-DEFINE
+				#GRP.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("for", """
+					DEFINE DATA LOCAL
+					1 #S-#GRP (I4)
+					1 #I-#GRP (I4)
+					1 #GRP (1:*)
+					2 #ARR (A10)
+					END-DEFINE
+					#S-#GRP := *OCC(#GRP.#ARR)
+					FOR #I-#GRP := 1 TO #S-#GRP
+					  IGNORE
+					END-FOR
+
+					END
+					""");
+		}
 	}
 }
