@@ -123,7 +123,11 @@ public class CompletionProvider
 	)
 	{
 		assert completionContext.currentToken() != null;
-		var identifierName = completionContext.currentToken().symbolName().substring(0, completionContext.currentToken().symbolName().length() - 1).toUpperCase();
+		assert completionContext.previousToken() != null;
+
+		var identifierName = completionContext.isCurrentTokenKind(SyntaxKind.DOT)
+			? completionContext.previousToken().symbolName()
+			: completionContext.currentToken().symbolName().substring(0, completionContext.currentToken().symbolName().length() - 1).toUpperCase();
 
 		var maybeVariableInvokedOn = module.referencableNodes().stream()
 			.filter(IVariableNode.class::isInstance)
@@ -155,8 +159,12 @@ public class CompletionProvider
 			item.setTextEdit(Either.forLeft(edit2));
 			item.setKind(CompletionItemKind.Snippet);
 
+			var rangeToDelete = completionContext.currentToken().kind() == SyntaxKind.DOT
+				? LspUtil.toRangeSpanning(completionContext.previousToken(), completionContext.currentToken())
+				: LspUtil.toRange(completionContext.currentToken());
+
 			var additionalEdits = new ArrayList<TextEdit>();
-			additionalEdits.add(new TextEdit(LspUtil.toRange(completionContext.currentToken()), "")); // delete token that is being completed
+			additionalEdits.add(new TextEdit(rangeToDelete, "")); // delete token that is being completed
 			additionalEdits.add(FileEdits.addVariable(file, "#S-%s".formatted(sanitizedName), "(I4)", VariableScope.LOCAL).textEdit());
 			additionalEdits.add(FileEdits.addVariable(file, "#I-%s".formatted(sanitizedName), "(I4)", VariableScope.LOCAL).textEdit());
 			item.setAdditionalTextEdits(additionalEdits);
