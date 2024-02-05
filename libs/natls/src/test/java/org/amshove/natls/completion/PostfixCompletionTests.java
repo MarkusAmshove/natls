@@ -34,6 +34,33 @@ class PostfixCompletionTests extends CompletionTest
 		}
 
 		@Test
+		void createAForLoopWhenInvokedOnAQualifiedArray()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA LOCAL
+				1 GRP
+				2 ARR (A10/*)
+				END-DEFINE
+				GRP.ARR.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("for", """
+					DEFINE DATA LOCAL
+					1 #S-GRP-ARR (I4)
+					1 #I-GRP-ARR (I4)
+					1 GRP
+					2 ARR (A10/*)
+					END-DEFINE
+					#S-GRP-ARR := *OCC(GRP.ARR)
+					FOR #I-GRP-ARR := 1 TO #S-GRP-ARR
+					  IGNORE
+					END-FOR
+
+					END
+					""");
+		}
+
+		@Test
 		void createAForLoopWhenInvokedOnAnArrayWithPoundName()
 		{
 			assertCompletions("LIBONE", "SUB.NSN", ".", """
@@ -51,6 +78,87 @@ class PostfixCompletionTests extends CompletionTest
 					END-DEFINE
 					#S-#ARR := *OCC(#ARR)
 					FOR #I-#ARR := 1 TO #S-#ARR
+					  IGNORE
+					END-FOR
+
+					END
+					""");
+		}
+
+		@Test
+		void createAForLoopWhenInvokedOnAQualifiedArrayWithVarPound()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA LOCAL
+				1 GRP
+				2 #ARR (A10/*)
+				END-DEFINE
+				GRP.#ARR.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("for", """
+					DEFINE DATA LOCAL
+					1 #S-GRP-#ARR (I4)
+					1 #I-GRP-#ARR (I4)
+					1 GRP
+					2 #ARR (A10/*)
+					END-DEFINE
+					#S-GRP-#ARR := *OCC(GRP.#ARR)
+					FOR #I-GRP-#ARR := 1 TO #S-GRP-#ARR
+					  IGNORE
+					END-FOR
+
+					END
+					""");
+		}
+
+		@Test
+		void createAForLoopWhenInvokedOnAQualifiedArrayWithGroupPound()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA LOCAL
+				1 #GRP
+				2 ARR (A10/*)
+				END-DEFINE
+				#GRP.ARR.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("for", """
+					DEFINE DATA LOCAL
+					1 #S-#GRP-ARR (I4)
+					1 #I-#GRP-ARR (I4)
+					1 #GRP
+					2 ARR (A10/*)
+					END-DEFINE
+					#S-#GRP-ARR := *OCC(#GRP.ARR)
+					FOR #I-#GRP-ARR := 1 TO #S-#GRP-ARR
+					  IGNORE
+					END-FOR
+
+					END
+					""");
+		}
+
+		@Test
+		void createAForLoopWhenInvokedOnAQualifiedArrayWithBothPound()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA LOCAL
+				1 #GRP
+				2 #ARR (A10/*)
+				END-DEFINE
+				#GRP.#ARR.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("for", """
+					DEFINE DATA LOCAL
+					1 #S-#GRP-#ARR (I4)
+					1 #I-#GRP-#ARR (I4)
+					1 #GRP
+					2 #ARR (A10/*)
+					END-DEFINE
+					#S-#GRP-#ARR := *OCC(#GRP.#ARR)
+					FOR #I-#GRP-#ARR := 1 TO #S-#GRP-#ARR
 					  IGNORE
 					END-FOR
 
