@@ -29,41 +29,40 @@ public class TextEditApplier
 
 			var line = lines[lineNumber];
 
-				// appended inline
-				for (var charIndex = 0; charIndex < line.length(); charIndex++)
+			// appended inline
+			for (var charIndex = 0; charIndex < line.length(); charIndex++)
+			{
+				if (lineNumber == startLine && charIndex < startLineOffset)
 				{
-					if (lineNumber == startLine && charIndex < startLineOffset)
-					{
-						resultingSource.append(line.charAt(charIndex));
-						continue;
-					}
-
-					if (lineNumber == startLine && charIndex == startLineOffset)
-					{
-						if (edit.getNewText().isEmpty())
-						{
-							deletedLines++;
-						}
-						if (edit.getNewText().contains("\n"))
-						{
-							deletedLines--;
-						}
-
-						resultingSource.append(edit.getNewText());
-					}
-
-					if (lineNumber == endLine && charIndex >= endLineOffset)
-					{
-						resultingSource.append(line.charAt(charIndex));
-					}
+					resultingSource.append(line.charAt(charIndex));
+					continue;
 				}
 
-				// appended to end
-				if (startLineOffset == line.length())
+				if (lineNumber == startLine && charIndex == startLineOffset)
 				{
+					if (edit.getNewText().isEmpty() && endLine > lineNumber)
+					{
+						deletedLines++;
+					}
+					if (edit.getNewText().contains("\n"))
+					{
+						deletedLines--;
+					}
+
 					resultingSource.append(edit.getNewText());
 				}
 
+				if (lineNumber == endLine && charIndex >= endLineOffset)
+				{
+					resultingSource.append(line.charAt(charIndex));
+				}
+			}
+
+			// appended to end
+			if (startLineOffset == line.length())
+			{
+				resultingSource.append(edit.getNewText());
+			}
 
 			if (lineNumber >= endLine)
 			{

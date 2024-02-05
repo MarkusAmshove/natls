@@ -80,7 +80,6 @@ public class CompletionProvider
 					range.setStart(range.getEnd());
 					var sanitizedName = identifierName.replace(".", "-");
 
-
 					var edit2 = new TextEdit(range, """
 								#S-%s := *OCC(%s)
 								FOR #I-%s := 1 TO #S-%s
