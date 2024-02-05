@@ -1,5 +1,6 @@
 package org.amshove.natls.completion;
 
+import org.amshove.natls.codemutation.FileEdits;
 import org.amshove.natls.config.LSConfiguration;
 import org.amshove.natls.hover.HoverContext;
 import org.amshove.natls.hover.HoverProvider;
@@ -78,17 +79,24 @@ public class CompletionProvider
 					Range range = LspUtil.toRange(completionContext.currentToken());
 					range.setStart(range.getEnd());
 					var sanitizedName = identifierName.replace(".", "-");
+
+
 					var edit2 = new TextEdit(range, """
 								#S-%s := *OCC(%s)
-								FOR #I-%s = 1 TO #S-%s
-									IGNORE
+								FOR #I-%s := 1 TO #S-%s
+								  IGNORE
 								END-FOR
 								""".formatted(sanitizedName, identifierName, sanitizedName, sanitizedName));
 					var item = new CompletionItem("for");
 					item.setTextEdit(Either.forLeft(edit2));
 					item.setKind(CompletionItemKind.Snippet);
-					var deleteEdit = new TextEdit(LspUtil.toRange(completionContext.currentToken()), "");
-					item.setAdditionalTextEdits(List.of(deleteEdit));
+
+					var additionalEdits = new ArrayList<TextEdit>();
+					additionalEdits.add(new TextEdit(LspUtil.toRange(completionContext.currentToken()), "")); // delete token that is being completed
+					additionalEdits.add(FileEdits.addVariable(file, "#S-%s".formatted(sanitizedName), "(I4)", VariableScope.LOCAL).textEdit());
+					additionalEdits.add(FileEdits.addVariable(file, "#I-%s".formatted(sanitizedName), "(I4)", VariableScope.LOCAL).textEdit());
+					item.setAdditionalTextEdits(additionalEdits);
+
 					completionItems.add(item);
 				}
 			}

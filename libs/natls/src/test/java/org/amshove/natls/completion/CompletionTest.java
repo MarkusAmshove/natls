@@ -2,6 +2,7 @@ package org.amshove.natls.completion;
 
 import org.amshove.natls.testlifecycle.EmptyProjectTest;
 import org.amshove.natls.testlifecycle.SourceWithCursor;
+import org.amshove.natls.testlifecycle.TextEditApplier;
 import org.eclipse.lsp4j.*;
 
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ public abstract class CompletionTest extends EmptyProjectTest
 				var resolved = getContext().languageService().resolveComplete(unresolved);
 				resolvedCompletes.add(resolved);
 			}
-			return new CompletionAssertion(resolvedCompletes);
+			return new CompletionAssertion(resolvedCompletes, cursor.source());
 		}
 		catch (Exception e)
 		{
@@ -49,7 +50,7 @@ public abstract class CompletionTest extends EmptyProjectTest
 		return assertCompletions(libName, fileName, null, sourceWithCursor);
 	}
 
-	record CompletionAssertion(List<CompletionItem> items)
+	record CompletionAssertion(List<CompletionItem> items, String source)
 	{
 		CompletionAssertion assertContainsVariable(String label)
 		{
@@ -89,6 +90,25 @@ public abstract class CompletionTest extends EmptyProjectTest
 						)
 				)
 				.anyMatch(ci -> ci.getLabel().equals(label) && ci.getKind() == kind && isCompleting(ci, completion));
+			return this;
+		}
+
+		CompletionAssertion assertContainsCompletionResultingIn(String label, String expectedSource)
+		{
+			var matchingCompletions = items.stream().filter(i -> i.getLabel().equalsIgnoreCase(label)).toList();
+			assertThat(matchingCompletions).as("Did not find exactly one completion with label %s", label)
+				.hasSize(1);
+
+			var completion = matchingCompletions.get(0);
+			assertThat(completion.getTextEdit()).as("Expected the completion to contain a TextEdit").isNotNull();
+
+			var edits = new ArrayList<TextEdit>();
+			edits.add(completion.getTextEdit().getLeft());
+			edits.addAll(completion.getAdditionalTextEdits());
+			var sourceAfter = new TextEditApplier().applyAll(edits, source);
+
+			assertThat(sourceAfter).isEqualTo(expectedSource);
+
 			return this;
 		}
 

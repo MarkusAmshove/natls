@@ -28,33 +28,42 @@ public class TextEditApplier
 			}
 
 			var line = lines[lineNumber];
-			for (var charIndex = 0; charIndex < line.length(); charIndex++)
-			{
-				if (lineNumber == startLine && charIndex < startLineOffset)
+
+				// appended inline
+				for (var charIndex = 0; charIndex < line.length(); charIndex++)
 				{
-					resultingSource.append(line.charAt(charIndex));
-					continue;
+					if (lineNumber == startLine && charIndex < startLineOffset)
+					{
+						resultingSource.append(line.charAt(charIndex));
+						continue;
+					}
+
+					if (lineNumber == startLine && charIndex == startLineOffset)
+					{
+						if (edit.getNewText().isEmpty())
+						{
+							deletedLines++;
+						}
+						if (edit.getNewText().contains("\n"))
+						{
+							deletedLines--;
+						}
+
+						resultingSource.append(edit.getNewText());
+					}
+
+					if (lineNumber == endLine && charIndex >= endLineOffset)
+					{
+						resultingSource.append(line.charAt(charIndex));
+					}
 				}
 
-				if (lineNumber == startLine && charIndex == startLineOffset)
+				// appended to end
+				if (startLineOffset == line.length())
 				{
-					if (edit.getNewText().isEmpty())
-					{
-						deletedLines++;
-					}
-					if (edit.getNewText().contains("\n"))
-					{
-						deletedLines--;
-					}
-
 					resultingSource.append(edit.getNewText());
 				}
 
-				if (lineNumber == endLine && charIndex >= endLineOffset)
-				{
-					resultingSource.append(line.charAt(charIndex));
-				}
-			}
 
 			if (lineNumber >= endLine)
 			{
