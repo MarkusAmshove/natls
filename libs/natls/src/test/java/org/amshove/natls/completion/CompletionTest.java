@@ -122,6 +122,16 @@ public abstract class CompletionTest extends EmptyProjectTest
 			return item.getTextEdit().getLeft().getNewText().equals(expectedCompletion);
 		}
 
+		CompletionAssertion assertDoesNotContain(String label)
+		{
+			assertThat(items)
+				.as(
+					"Expected completions to not contain item with label %s"
+				)
+				.noneMatch(ci -> ci.getLabel().equalsIgnoreCase(label));
+			return this;
+		}
+
 		CompletionAssertion assertDoesNotContainVariable(String label)
 		{
 			assertThat(items)

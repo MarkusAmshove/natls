@@ -211,4 +211,152 @@ class PostfixCompletionTests extends CompletionTest
 					""");
 		}
 	}
+
+	@Nested
+	class TheIfDefaultSnippetShould
+	{
+		@ParameterizedTest
+		@ValueSource(strings =
+		{
+			"N12", "I4", "P8", "F8"
+		})
+		void createADefaultValueCheckForNumerics(String type)
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA LOCAL
+				1 #VAR (%s)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""".formatted(type))
+				.assertContainsCompletionResultingIn("ifDefault", """
+					DEFINE DATA LOCAL
+					1 #VAR (%s)
+					END-DEFINE
+					IF #VAR = 0
+					  ${0:IGNORE}
+					END-IF
+
+					END
+					""".formatted(type));
+		}
+
+		@ParameterizedTest
+		@ValueSource(strings =
+		{
+			"A", "B", "U"
+		})
+		void createADefaultValueCheckForAlphanumerics(String type)
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA LOCAL
+				1 #VAR (%s10)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""".formatted(type))
+				.assertContainsCompletionResultingIn("ifDefault", """
+					DEFINE DATA LOCAL
+					1 #VAR (%s10)
+					END-DEFINE
+					IF #VAR = ' '
+					  ${0:IGNORE}
+					END-IF
+
+					END
+					""".formatted(type));
+		}
+
+		@Test
+		void createADefaultValueCheckForAlphanumericDynamic()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA LOCAL
+				1 #VAR (A) DYNAMIC
+				END-DEFINE
+				#VAR.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("ifDefault", """
+					DEFINE DATA LOCAL
+					1 #VAR (A) DYNAMIC
+					END-DEFINE
+					IF #VAR = ' '
+					  ${0:IGNORE}
+					END-IF
+
+					END
+					""");
+		}
+
+		@Test
+		void createADefaultValueCheckForLogicVariables()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA LOCAL
+				1 #VAR (L)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("ifDefault", """
+					DEFINE DATA LOCAL
+					1 #VAR (L)
+					END-DEFINE
+					IF #VAR = FALSE
+					  ${0:IGNORE}
+					END-IF
+
+					END
+					""");
+		}
+
+		@ParameterizedTest
+		@ValueSource(strings =
+		{
+			"D", "T"
+		})
+		void createADefaultValueCheckForTimeRelatedTypes(String type)
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA LOCAL
+				1 #VAR (%s)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""".formatted(type))
+				.assertContainsCompletionResultingIn("ifDefault", """
+					DEFINE DATA LOCAL
+					1 #VAR (%s)
+					END-DEFINE
+					IF #VAR = 0
+					  ${0:IGNORE}
+					END-IF
+
+					END
+					""".formatted(type));
+		}
+
+		@Test
+		void createADefaultValueCheckForAllArrayElementsWhenInvokedWithoutArrayAccess()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA LOCAL
+				1 #VAR (A1/*)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("ifDefault", """
+					DEFINE DATA LOCAL
+					1 #VAR (A1/*)
+					END-DEFINE
+					IF #VAR(*) = ' '
+					  ${0:IGNORE}
+					END-IF
+
+					END
+					""");
+		}
+	}
 }

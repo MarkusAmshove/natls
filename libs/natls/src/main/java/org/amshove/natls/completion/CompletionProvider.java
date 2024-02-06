@@ -139,20 +139,30 @@ public class CompletionProvider
 		{
 			return;
 		}
+
 		var variableInvokedOn = maybeVariableInvokedOn.get();
+
+		// We append to the end of the token that is being completed
+		// and delete the token afterwards in an "additionalTextEdit".
+		// That way the LSP specification for single line modification of
+		// the range that the completion is invoked on is fullfilled.
+		var rangeToInsert = LspUtil.toRange(completionContext.currentToken());
+		rangeToInsert.setStart(rangeToInsert.getEnd());
+
+		var rangeToDelete = completionContext.currentToken().kind() == SyntaxKind.DOT
+			? LspUtil.toRangeSpanning(completionContext.previousToken(), completionContext.currentToken())
+			: LspUtil.toRange(completionContext.currentToken());
 
 		// .for
 		if (variableInvokedOn.isArray())
 		{
-			var range = LspUtil.toRange(completionContext.currentToken());
-			range.setStart(range.getEnd());
 			var sanitizedName = identifierName.replace(".", "-");
 
 			var occVar = variableInvokedOn instanceof IGroupNode group
 				? group.variables().first().qualifiedName()
 				: identifierName;
 
-			var edit = new TextEdit(range, """
+			var edit = new TextEdit(rangeToInsert, """
 						#S-%s := *OCC(%s)
 						FOR #I-%s := 1 TO #S-%s
 						  ${0:IGNORE}
@@ -161,16 +171,39 @@ public class CompletionProvider
 			var item = new CompletionItem("for");
 			item.setTextEdit(Either.forLeft(edit));
 			item.setKind(CompletionItemKind.Snippet);
-
-			var rangeToDelete = completionContext.currentToken().kind() == SyntaxKind.DOT
-				? LspUtil.toRangeSpanning(completionContext.previousToken(), completionContext.currentToken())
-				: LspUtil.toRange(completionContext.currentToken());
+			item.setInsertTextFormat(InsertTextFormat.Snippet);
 
 			var additionalEdits = new ArrayList<TextEdit>();
 			additionalEdits.add(new TextEdit(rangeToDelete, "")); // delete token that is being completed
 			additionalEdits.add(FileEdits.addVariable(file, "#S-%s".formatted(sanitizedName), "(I4)", VariableScope.LOCAL).textEdit());
 			additionalEdits.add(FileEdits.addVariable(file, "#I-%s".formatted(sanitizedName), "(I4)", VariableScope.LOCAL).textEdit());
 			item.setAdditionalTextEdits(additionalEdits);
+
+			completionItems.add(item);
+		}
+
+		// .ifDefault
+		if (variableInvokedOn instanceof ITypedVariableNode typedVar && typedVar.type().emptyValue() != null)
+		{
+			var defaultValue = typedVar.type().emptyValue();
+			var identifierAccess = identifierName;
+
+			if (typedVar.isArray())
+			{
+				identifierAccess += "(*)";
+			}
+
+			var edit = new TextEdit(rangeToInsert, """
+				IF %s = %s
+				  ${0:IGNORE}
+				END-IF
+				""".formatted(identifierAccess, defaultValue));
+
+			var item = new CompletionItem("ifDefault");
+			item.setTextEdit(Either.forLeft(edit));
+			item.setKind(CompletionItemKind.Snippet);
+			item.setInsertTextFormat(InsertTextFormat.Snippet);
+			item.setAdditionalTextEdits(List.of(new TextEdit(rangeToDelete, ""))); // delete token that is being completed
 
 			completionItems.add(item);
 		}
