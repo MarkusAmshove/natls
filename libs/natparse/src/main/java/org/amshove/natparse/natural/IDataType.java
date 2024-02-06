@@ -229,8 +229,8 @@ public interface IDataType
 	{
 		return switch (format())
 		{
-			case FLOAT, INTEGER, NUMERIC, PACKED, DATE, TIME -> "0";
-			case ALPHANUMERIC, BINARY, UNICODE -> "' '";
+			case FLOAT, INTEGER, NUMERIC, PACKED, DATE, TIME, BINARY -> "0";
+			case ALPHANUMERIC, UNICODE -> "' '";
 			case LOGIC -> "FALSE";
 			case NONE, CONTROL -> null;
 		};

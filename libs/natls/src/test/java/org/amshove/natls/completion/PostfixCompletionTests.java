@@ -218,7 +218,7 @@ class PostfixCompletionTests extends CompletionTest
 		@ParameterizedTest
 		@ValueSource(strings =
 		{
-			"N12", "I4", "P8", "F8"
+			"N12", "I4", "P8", "F8", "B4"
 		})
 		void createADefaultValueCheckForNumerics(String type)
 		{
@@ -244,7 +244,7 @@ class PostfixCompletionTests extends CompletionTest
 		@ParameterizedTest
 		@ValueSource(strings =
 		{
-			"A", "B", "U"
+			"A", "U"
 		})
 		void createADefaultValueCheckForAlphanumerics(String type)
 		{
@@ -357,6 +357,19 @@ class PostfixCompletionTests extends CompletionTest
 
 					END
 					""");
+		}
+
+		@Test
+		void notCreateACompletionItemForTypesWithUnknownDefaultValue()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA LOCAL
+				1 #VAR (C)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""")
+				.assertDoesNotContain("ifDefault");
 		}
 	}
 }
