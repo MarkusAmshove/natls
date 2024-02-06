@@ -27,7 +27,6 @@ class PostfixCompletionTests extends CompletionTest
 				IF VAR$1
 				  ${0:IGNORE}
 				END-IF
-
 				END
 				""");
 		}
@@ -49,7 +48,6 @@ class PostfixCompletionTests extends CompletionTest
 				IF #VAR$1
 				  ${0:IGNORE}
 				END-IF
-
 				END
 				""");
 		}
@@ -73,7 +71,6 @@ class PostfixCompletionTests extends CompletionTest
 				IF GRP.#VAR$1
 				  ${0:IGNORE}
 				END-IF
-
 				END
 				""");
 		}
@@ -97,7 +94,6 @@ class PostfixCompletionTests extends CompletionTest
 				IF #GRP.#VAR$1
 				  ${0:IGNORE}
 				END-IF
-
 				END
 				""");
 		}
@@ -142,7 +138,6 @@ class PostfixCompletionTests extends CompletionTest
 					FOR #I-ARR := 1 TO #S-ARR
 					  ${0:IGNORE}
 					END-FOR
-
 					END
 					""");
 		}
@@ -169,7 +164,6 @@ class PostfixCompletionTests extends CompletionTest
 					FOR #I-GRP-ARR := 1 TO #S-GRP-ARR
 					  ${0:IGNORE}
 					END-FOR
-
 					END
 					""");
 		}
@@ -194,7 +188,6 @@ class PostfixCompletionTests extends CompletionTest
 					FOR #I-#ARR := 1 TO #S-#ARR
 					  ${0:IGNORE}
 					END-FOR
-
 					END
 					""");
 		}
@@ -221,7 +214,6 @@ class PostfixCompletionTests extends CompletionTest
 					FOR #I-GRP-#ARR := 1 TO #S-GRP-#ARR
 					  ${0:IGNORE}
 					END-FOR
-
 					END
 					""");
 		}
@@ -248,7 +240,6 @@ class PostfixCompletionTests extends CompletionTest
 					FOR #I-#GRP-ARR := 1 TO #S-#GRP-ARR
 					  ${0:IGNORE}
 					END-FOR
-
 					END
 					""");
 		}
@@ -275,7 +266,6 @@ class PostfixCompletionTests extends CompletionTest
 					FOR #I-#GRP-#ARR := 1 TO #S-#GRP-#ARR
 					  ${0:IGNORE}
 					END-FOR
-
 					END
 					""");
 		}
@@ -302,7 +292,6 @@ class PostfixCompletionTests extends CompletionTest
 					FOR #I-#GRP := 1 TO #S-#GRP
 					  ${0:IGNORE}
 					END-FOR
-
 					END
 					""");
 		}
@@ -332,7 +321,6 @@ class PostfixCompletionTests extends CompletionTest
 					IF #VAR = 0
 					  ${0:IGNORE}
 					END-IF
-
 					END
 					""".formatted(type));
 		}
@@ -358,7 +346,6 @@ class PostfixCompletionTests extends CompletionTest
 					IF #VAR = ' '
 					  ${0:IGNORE}
 					END-IF
-
 					END
 					""".formatted(type));
 		}
@@ -380,7 +367,6 @@ class PostfixCompletionTests extends CompletionTest
 					IF #VAR = ' '
 					  ${0:IGNORE}
 					END-IF
-
 					END
 					""");
 		}
@@ -402,7 +388,6 @@ class PostfixCompletionTests extends CompletionTest
 					IF #VAR = FALSE
 					  ${0:IGNORE}
 					END-IF
-
 					END
 					""");
 		}
@@ -428,7 +413,6 @@ class PostfixCompletionTests extends CompletionTest
 					IF #VAR = 0
 					  ${0:IGNORE}
 					END-IF
-
 					END
 					""".formatted(type));
 		}
@@ -450,7 +434,6 @@ class PostfixCompletionTests extends CompletionTest
 					IF #VAR(*) = ' '
 					  ${0:IGNORE}
 					END-IF
-
 					END
 					""");
 		}

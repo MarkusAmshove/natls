@@ -183,8 +183,7 @@ public class CompletionProvider
 		var edit = new TextEdit(rangeToInsert, """
 			IF %s$1
 			  ${0:IGNORE}
-			END-IF
-			""".formatted(identifierName));
+			END-IF""".formatted(identifierName));
 		var item = new CompletionItem("if");
 		item.setTextEdit(Either.forLeft(edit));
 		item.setKind(CompletionItemKind.Snippet);
@@ -208,8 +207,7 @@ public class CompletionProvider
 			#S-%s := *OCC(%s)
 			FOR #I-%s := 1 TO #S-%s
 			  ${0:IGNORE}
-			END-FOR
-			""".formatted(sanitizedName, occVar, sanitizedName, sanitizedName));
+			END-FOR""".formatted(sanitizedName, occVar, sanitizedName, sanitizedName));
 		var item = new CompletionItem("for");
 		item.setTextEdit(Either.forLeft(edit));
 		item.setKind(CompletionItemKind.Snippet);
@@ -244,8 +242,7 @@ public class CompletionProvider
 		var edit = new TextEdit(rangeToInsert, """
 			IF %s = %s
 			  ${0:IGNORE}
-			END-IF
-			""".formatted(identifierAccess, defaultValue));
+			END-IF""".formatted(identifierAccess, defaultValue));
 
 		var item = new CompletionItem("ifDefault");
 		item.setTextEdit(Either.forLeft(edit));
