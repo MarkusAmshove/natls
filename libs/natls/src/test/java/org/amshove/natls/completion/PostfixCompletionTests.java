@@ -489,4 +489,63 @@ class PostfixCompletionTests extends CompletionTest
 						""");
 		}
 	}
+
+	@Nested
+	class TheOccSnippetShould
+	{
+		@Test
+		void notBeApplicableOnVariablesThatAreNotArrays()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""")
+				.assertDoesNotContain("occ");
+		}
+
+		@Test
+		void createAnOccInvocationForArrays()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10/*)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("occ", """
+					DEFINE DATA
+					LOCAL 1 #VAR (A10/*)
+					END-DEFINE
+					*OCC(#VAR)
+					END
+					""");
+		}
+
+		@Test
+		void createAnOccInvocationForArraysWhenInvokedOnGroup()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL
+				1 GRP (1:*)
+				2 #VAR (A10)
+				END-DEFINE
+				GRP.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("occ", """
+					DEFINE DATA
+					LOCAL
+					1 GRP (1:*)
+					2 #VAR (A10)
+					END-DEFINE
+					*OCC(GRP.#VAR)
+					END
+					""");
+		}
+	}
 }

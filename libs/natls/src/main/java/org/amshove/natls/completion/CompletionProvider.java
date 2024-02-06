@@ -167,6 +167,7 @@ public class CompletionProvider
 		if (variableInvokedOn.isArray())
 		{
 			addForLoopPostfix(file, completionItems, identifierName, variableInvokedOn, rangeToInsert, deleteEdit);
+			addOccPostfix(completionItems, identifierName, variableInvokedOn, rangeToInsert, deleteEdit);
 		}
 
 		if (variableInvokedOn instanceof ITypedVariableNode typedVar && typedVar.type().emptyValue() != null)
@@ -178,6 +179,21 @@ public class CompletionProvider
 		{
 			addIfSpecifiedPostfix(completionItems, identifierName, rangeToInsert, deleteEdit);
 		}
+	}
+
+	private static void addOccPostfix(ArrayList<CompletionItem> completionItems, String identifierName, IVariableNode variableInvokedOn, Range rangeToInsert, TextEdit deleteEdit)
+	{
+		var occVar = variableInvokedOn instanceof IGroupNode group
+			? group.variables().first().qualifiedName()
+			: identifierName;
+
+		var edit = new TextEdit(rangeToInsert, "*OCC(%s)".formatted(occVar));
+		var item = new CompletionItem("occ");
+		item.setTextEdit(Either.forLeft(edit));
+		item.setKind(CompletionItemKind.Snippet);
+		item.setInsertTextFormat(InsertTextFormat.Snippet);
+		item.setAdditionalTextEdits(List.of(deleteEdit));
+		completionItems.add(item);
 	}
 
 	private static void addIfSpecifiedPostfix(ArrayList<CompletionItem> completionItems, String identifierName, Range rangeToInsert, TextEdit deleteEdit)
