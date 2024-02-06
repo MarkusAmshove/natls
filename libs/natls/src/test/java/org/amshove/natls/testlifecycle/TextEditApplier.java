@@ -28,6 +28,8 @@ public class TextEditApplier
 			}
 
 			var line = lines[lineNumber];
+
+			// appended inline
 			for (var charIndex = 0; charIndex < line.length(); charIndex++)
 			{
 				if (lineNumber == startLine && charIndex < startLineOffset)
@@ -38,7 +40,7 @@ public class TextEditApplier
 
 				if (lineNumber == startLine && charIndex == startLineOffset)
 				{
-					if (edit.getNewText().isEmpty())
+					if (edit.getNewText().isEmpty() && endLine > lineNumber)
 					{
 						deletedLines++;
 					}
@@ -54,6 +56,12 @@ public class TextEditApplier
 				{
 					resultingSource.append(line.charAt(charIndex));
 				}
+			}
+
+			// appended to end
+			if (startLineOffset == line.length())
+			{
+				resultingSource.append(edit.getNewText());
 			}
 
 			if (lineNumber >= endLine)

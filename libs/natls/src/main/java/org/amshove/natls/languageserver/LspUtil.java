@@ -108,6 +108,16 @@ public class LspUtil
 		);
 	}
 
+	public static Range toRangeSpanning(IPosition... positions)
+	{
+		var firstPosition = positions[0];
+		var lastPosition = positions[positions.length - 1];
+		return new Range(
+			toRange(firstPosition).getStart(),
+			toRange(lastPosition).getEnd()
+		);
+	}
+
 	public static Range toRangeAfter(IPosition position)
 	{
 		return new Range(

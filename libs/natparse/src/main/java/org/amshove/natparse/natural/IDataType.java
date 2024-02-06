@@ -224,4 +224,15 @@ public interface IDataType
 			default -> false;
 		};
 	}
+
+	default String emptyValue()
+	{
+		return switch (format())
+		{
+			case FLOAT, INTEGER, NUMERIC, PACKED, DATE, TIME, BINARY -> "0";
+			case ALPHANUMERIC, UNICODE -> "' '";
+			case LOGIC -> "FALSE";
+			case NONE, CONTROL -> null;
+		};
+	}
 }
