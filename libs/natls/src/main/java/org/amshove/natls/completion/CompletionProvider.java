@@ -1,6 +1,6 @@
 package org.amshove.natls.completion;
 
-import org.amshove.natls.codemutation.FileEdits;
+import org.amshove.natls.WorkspaceEditBuilder;
 import org.amshove.natls.config.LSConfiguration;
 import org.amshove.natls.hover.HoverContext;
 import org.amshove.natls.hover.HoverProvider;
@@ -250,12 +250,16 @@ public class CompletionProvider
 
 		var additionalEdits = new ArrayList<TextEdit>();
 		additionalEdits.add(deleteEdit);
-		additionalEdits.add(
-			FileEdits.addVariable(file, "#S-%s".formatted(sanitizedName), "(I4)", VariableScope.LOCAL).textEdit()
-		);
-		additionalEdits.add(
-			FileEdits.addVariable(file, "#I-%s".formatted(sanitizedName), "(I4)", VariableScope.LOCAL).textEdit()
-		);
+
+		var editBuilder = new WorkspaceEditBuilder();
+		editBuilder
+			.addsVariable(file, "#S-%s".formatted(sanitizedName), "(I4)", VariableScope.LOCAL)
+			.addsVariable(file, "#I-%s".formatted(sanitizedName), "(I4)", VariableScope.LOCAL);
+		var workspaceEdit = editBuilder.build();
+		if (workspaceEdit.getChanges().containsKey(file.getUri()))
+		{
+			additionalEdits.addAll(workspaceEdit.getChanges().get(file.getUri()));
+		}
 		item.setAdditionalTextEdits(additionalEdits);
 
 		completionItems.add(item);

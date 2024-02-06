@@ -143,6 +143,32 @@ class PostfixCompletionTests extends CompletionTest
 		}
 
 		@Test
+		void notCreateIteratorVariablesIfTheyAlreadyExist()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA LOCAL
+				1 ARR (A10/*)
+				1 #S-ARR (I4)
+				1 #I-ARR (I4)
+				END-DEFINE
+				ARR.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("for", """
+					DEFINE DATA LOCAL
+					1 ARR (A10/*)
+					1 #S-ARR (I4)
+					1 #I-ARR (I4)
+					END-DEFINE
+					#S-ARR := *OCC(ARR)
+					FOR #I-ARR := 1 TO #S-ARR
+					  ${0:IGNORE}
+					END-FOR
+					END
+					""");
+		}
+
+		@Test
 		void createAForLoopWhenInvokedOnAQualifiedArray()
 		{
 			assertCompletions("LIBONE", "SUB.NSN", ".", """
