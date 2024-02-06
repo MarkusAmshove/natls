@@ -144,7 +144,6 @@ public class CompletionProvider
 		// .for
 		if (variableInvokedOn.isArray())
 		{
-			// TODO: If group array, use any child variable for occ
 			var range = LspUtil.toRange(completionContext.currentToken());
 			range.setStart(range.getEnd());
 			var sanitizedName = identifierName.replace(".", "-");
@@ -153,14 +152,14 @@ public class CompletionProvider
 				? group.variables().first().qualifiedName()
 				: identifierName;
 
-			var edit2 = new TextEdit(range, """
+			var edit = new TextEdit(range, """
 						#S-%s := *OCC(%s)
 						FOR #I-%s := 1 TO #S-%s
-						  IGNORE
+						  ${0:IGNORE}
 						END-FOR
 						""".formatted(sanitizedName, occVar, sanitizedName, sanitizedName));
 			var item = new CompletionItem("for");
-			item.setTextEdit(Either.forLeft(edit2));
+			item.setTextEdit(Either.forLeft(edit));
 			item.setKind(CompletionItemKind.Snippet);
 
 			var rangeToDelete = completionContext.currentToken().kind() == SyntaxKind.DOT

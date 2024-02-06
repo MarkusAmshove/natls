@@ -2,12 +2,30 @@ package org.amshove.natls.completion;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class PostfixCompletionTests extends CompletionTest
 {
 	@Nested
 	class TheForSnippetShould
 	{
+		@ParameterizedTest
+		@ValueSource(strings =
+		{
+			"A10", "N5", "L", "C"
+		})
+		void notBeApplicableWhenNotInvokedOnAnArray(String type)
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA LOCAL
+				1 #VAR (%s)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""".formatted(type)).assertDoesNotContain("for");
+		}
+
 		@Test
 		void createAForLoopWhenInvokedOnAnArray()
 		{
@@ -26,7 +44,7 @@ class PostfixCompletionTests extends CompletionTest
 					END-DEFINE
 					#S-ARR := *OCC(ARR)
 					FOR #I-ARR := 1 TO #S-ARR
-					  IGNORE
+					  ${0:IGNORE}
 					END-FOR
 
 					END
@@ -53,7 +71,7 @@ class PostfixCompletionTests extends CompletionTest
 					END-DEFINE
 					#S-GRP-ARR := *OCC(GRP.ARR)
 					FOR #I-GRP-ARR := 1 TO #S-GRP-ARR
-					  IGNORE
+					  ${0:IGNORE}
 					END-FOR
 
 					END
@@ -78,7 +96,7 @@ class PostfixCompletionTests extends CompletionTest
 					END-DEFINE
 					#S-#ARR := *OCC(#ARR)
 					FOR #I-#ARR := 1 TO #S-#ARR
-					  IGNORE
+					  ${0:IGNORE}
 					END-FOR
 
 					END
@@ -105,7 +123,7 @@ class PostfixCompletionTests extends CompletionTest
 					END-DEFINE
 					#S-GRP-#ARR := *OCC(GRP.#ARR)
 					FOR #I-GRP-#ARR := 1 TO #S-GRP-#ARR
-					  IGNORE
+					  ${0:IGNORE}
 					END-FOR
 
 					END
@@ -132,7 +150,7 @@ class PostfixCompletionTests extends CompletionTest
 					END-DEFINE
 					#S-#GRP-ARR := *OCC(#GRP.ARR)
 					FOR #I-#GRP-ARR := 1 TO #S-#GRP-ARR
-					  IGNORE
+					  ${0:IGNORE}
 					END-FOR
 
 					END
@@ -159,7 +177,7 @@ class PostfixCompletionTests extends CompletionTest
 					END-DEFINE
 					#S-#GRP-#ARR := *OCC(#GRP.#ARR)
 					FOR #I-#GRP-#ARR := 1 TO #S-#GRP-#ARR
-					  IGNORE
+					  ${0:IGNORE}
 					END-FOR
 
 					END
@@ -186,7 +204,7 @@ class PostfixCompletionTests extends CompletionTest
 					END-DEFINE
 					#S-#GRP := *OCC(#GRP.#ARR)
 					FOR #I-#GRP := 1 TO #S-#GRP
-					  IGNORE
+					  ${0:IGNORE}
 					END-FOR
 
 					END
