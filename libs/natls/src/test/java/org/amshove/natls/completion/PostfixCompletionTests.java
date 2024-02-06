@@ -451,4 +451,42 @@ class PostfixCompletionTests extends CompletionTest
 				.assertDoesNotContain("ifDefault");
 		}
 	}
+
+	@Nested
+	class TheIfSpecifiedSnippedShould
+	{
+		@Test
+		void notBeApplicableOnParametersThatAreNotOptional()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				PARAMETER 1 #PARAM (A10)
+				END-DEFINE
+				#PARAM.${}$
+				END
+				""")
+				.assertDoesNotContain("ifSpecified");
+		}
+
+		@Test
+		void createAnIfSpecifiedForOptionalParameter()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				PARAMETER 1 #PARAM (A10) OPTIONAL
+				END-DEFINE
+				#PARAM.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("ifSpecified", """
+						DEFINE DATA
+						PARAMETER 1 #PARAM (A10) OPTIONAL
+						END-DEFINE
+						IF #PARAM SPECIFIED
+						  ${0:IGNORE}
+						END-IF
+						END
+						""");
+		}
+	}
 }

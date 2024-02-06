@@ -149,9 +149,9 @@ public class CompletionProvider
 		var variableInvokedOn = maybeVariableInvokedOn.get();
 
 		// We append to the end of the token that is being completed
-		// and delete the token afterwards in an "additionalTextEdit".
+		// and delete the token afterward in an "additionalTextEdit".
 		// That way the LSP specification for single line modification of
-		// the range that the completion is invoked on is fullfilled.
+		// the range that the completion is invoked on is fulfilled.
 		var rangeToInsert = LspUtil.toRange(completionContext.currentToken());
 		rangeToInsert.setStart(rangeToInsert.getEnd());
 
@@ -173,6 +173,25 @@ public class CompletionProvider
 		{
 			addIsDefaultPostfix(completionItems, typedVar, identifierName, rangeToInsert, deleteEdit);
 		}
+
+		if (variableInvokedOn.scope().isParameter() && variableInvokedOn.findDescendantToken(SyntaxKind.OPTIONAL) != null)
+		{
+			addIfSpecifiedPostfix(completionItems, identifierName, rangeToInsert, deleteEdit);
+		}
+	}
+
+	private static void addIfSpecifiedPostfix(ArrayList<CompletionItem> completionItems, String identifierName, Range rangeToInsert, TextEdit deleteEdit)
+	{
+		var edit = new TextEdit(rangeToInsert, """
+			IF %s SPECIFIED
+			  ${0:IGNORE}
+			END-IF""".formatted(identifierName));
+		var item = new CompletionItem("ifSpecified");
+		item.setTextEdit(Either.forLeft(edit));
+		item.setKind(CompletionItemKind.Snippet);
+		item.setInsertTextFormat(InsertTextFormat.Snippet);
+		item.setAdditionalTextEdits(List.of(deleteEdit));
+		completionItems.add(item);
 	}
 
 	private static void addIfPostfix(
