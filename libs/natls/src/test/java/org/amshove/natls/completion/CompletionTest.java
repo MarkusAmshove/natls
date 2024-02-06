@@ -107,7 +107,7 @@ public abstract class CompletionTest extends EmptyProjectTest
 			edits.addAll(completion.getAdditionalTextEdits());
 			var sourceAfter = new TextEditApplier().applyAll(edits, source);
 
-			assertThat(sourceAfter).isEqualTo(expectedSource);
+			assertThat(sourceAfter).isEqualToNormalizingNewlines(expectedSource);
 
 			return this;
 		}
