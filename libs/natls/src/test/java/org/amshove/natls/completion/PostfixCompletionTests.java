@@ -8,6 +8,102 @@ import org.junit.jupiter.params.provider.ValueSource;
 class PostfixCompletionTests extends CompletionTest
 {
 	@Nested
+	class TheIfSnippetShould
+	{
+		@Test
+		void addTheSnippetWhenInvokedOnAVariable()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA LOCAL
+				1 VAR (A10)
+				END-DEFINE
+				VAR.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("if", """
+				DEFINE DATA LOCAL
+				1 VAR (A10)
+				END-DEFINE
+				IF VAR$1
+				  ${0:IGNORE}
+				END-IF
+
+				END
+				""");
+		}
+
+		@Test
+		void addTheSnippetWhenInvokedOnAPoundedVariable()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA LOCAL
+				1 #VAR (A10)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("if", """
+				DEFINE DATA LOCAL
+				1 #VAR (A10)
+				END-DEFINE
+				IF #VAR$1
+				  ${0:IGNORE}
+				END-IF
+
+				END
+				""");
+		}
+
+		@Test
+		void addTheSnippetWhenInvokedOnAPoundedQualifiedVariable()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA LOCAL
+				1 GRP
+				2 #VAR (A10)
+				END-DEFINE
+				GRP.#VAR.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("if", """
+				DEFINE DATA LOCAL
+				1 GRP
+				2 #VAR (A10)
+				END-DEFINE
+				IF GRP.#VAR$1
+				  ${0:IGNORE}
+				END-IF
+
+				END
+				""");
+		}
+
+		@Test
+		void addTheSnippetWhenInvokedOnAPoundedQualifiedVariableWithPoundedGroup()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA LOCAL
+				1 #GRP
+				2 #VAR (A10)
+				END-DEFINE
+				#GRP.#VAR.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("if", """
+				DEFINE DATA LOCAL
+				1 #GRP
+				2 #VAR (A10)
+				END-DEFINE
+				IF #GRP.#VAR$1
+				  ${0:IGNORE}
+				END-IF
+
+				END
+				""");
+		}
+	}
+
+	@Nested
 	class TheForSnippetShould
 	{
 		@ParameterizedTest

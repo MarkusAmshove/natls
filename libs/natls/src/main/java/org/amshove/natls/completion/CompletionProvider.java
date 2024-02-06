@@ -37,7 +37,10 @@ public class CompletionProvider
 		this.hoverProvider = hoverProvider;
 	}
 
-	public List<CompletionItem> prepareCompletion(LanguageServerFile file, CompletionParams params, LSConfiguration config)
+	public List<CompletionItem> prepareCompletion(
+		LanguageServerFile file, CompletionParams params,
+		LSConfiguration config
+	)
 	{
 		this.config = config;
 		if (!file.getType().canHaveBody())
@@ -54,7 +57,9 @@ public class CompletionProvider
 			return dataAreaCompletions(file.getLibrary());
 		}
 
-		var isTriggeredByDot = params.getContext().getTriggerKind() == CompletionTriggerKind.TriggerCharacter && ".".equals(params.getContext().getTriggerCharacter());
+		var isTriggeredByDot = params.getContext().getTriggerKind() == CompletionTriggerKind.TriggerCharacter && ".".equals(
+			params.getContext().getTriggerCharacter()
+		);
 		if (isTriggeredByDot || completionContext.completesQualifiedName())
 		{
 			assert completionContext.currentToken() != null;
@@ -127,7 +132,8 @@ public class CompletionProvider
 
 		var identifierName = completionContext.isCurrentTokenKind(SyntaxKind.DOT)
 			? completionContext.previousToken().symbolName()
-			: completionContext.currentToken().symbolName().substring(0, completionContext.currentToken().symbolName().length() - 1).toUpperCase();
+			: completionContext.currentToken().symbolName()
+				.substring(0, completionContext.currentToken().symbolName().length() - 1).toUpperCase();
 
 		var maybeVariableInvokedOn = module.referencableNodes().stream()
 			.filter(IVariableNode.class::isInstance)
@@ -153,20 +159,43 @@ public class CompletionProvider
 			? LspUtil.toRangeSpanning(completionContext.previousToken(), completionContext.currentToken())
 			: LspUtil.toRange(completionContext.currentToken());
 
+		// delete token that is being completed
+		var deleteEdit = new TextEdit(rangeToDelete, "");
+
+		addIfPostfix(completionItems, identifierName, rangeToInsert, deleteEdit);
+
 		if (variableInvokedOn.isArray())
 		{
-			addForLoopPostfix(file, completionItems, identifierName, variableInvokedOn, rangeToInsert, rangeToDelete);
+			addForLoopPostfix(file, completionItems, identifierName, variableInvokedOn, rangeToInsert, deleteEdit);
 		}
 
 		if (variableInvokedOn instanceof ITypedVariableNode typedVar && typedVar.type().emptyValue() != null)
 		{
-			addIsDefaultPostfix(completionItems, typedVar, identifierName, rangeToInsert, rangeToDelete);
+			addIsDefaultPostfix(completionItems, typedVar, identifierName, rangeToInsert, deleteEdit);
 		}
 	}
 
+	private static void addIfPostfix(
+		List<CompletionItem> completionItems, String identifierName, Range rangeToInsert,
+		TextEdit deleteEdit
+	)
+	{
+		var edit = new TextEdit(rangeToInsert, """
+			IF %s$1
+			  ${0:IGNORE}
+			END-IF
+			""".formatted(identifierName));
+		var item = new CompletionItem("if");
+		item.setTextEdit(Either.forLeft(edit));
+		item.setKind(CompletionItemKind.Snippet);
+		item.setInsertTextFormat(InsertTextFormat.Snippet);
+		item.setAdditionalTextEdits(List.of(deleteEdit));
+		completionItems.add(item);
+	}
+
 	private static void addForLoopPostfix(
-		LanguageServerFile file, ArrayList<CompletionItem> completionItems,
-		String identifierName, IVariableNode variableInvokedOn, Range rangeToInsert, Range rangeToDelete
+		LanguageServerFile file, List<CompletionItem> completionItems,
+		String identifierName, IVariableNode variableInvokedOn, Range rangeToInsert, TextEdit deleteEdit
 	)
 	{
 		var sanitizedName = identifierName.replace(".", "-");
@@ -176,28 +205,32 @@ public class CompletionProvider
 			: identifierName;
 
 		var edit = new TextEdit(rangeToInsert, """
-					#S-%s := *OCC(%s)
-					FOR #I-%s := 1 TO #S-%s
-					  ${0:IGNORE}
-					END-FOR
-					""".formatted(sanitizedName, occVar, sanitizedName, sanitizedName));
+			#S-%s := *OCC(%s)
+			FOR #I-%s := 1 TO #S-%s
+			  ${0:IGNORE}
+			END-FOR
+			""".formatted(sanitizedName, occVar, sanitizedName, sanitizedName));
 		var item = new CompletionItem("for");
 		item.setTextEdit(Either.forLeft(edit));
 		item.setKind(CompletionItemKind.Snippet);
 		item.setInsertTextFormat(InsertTextFormat.Snippet);
 
 		var additionalEdits = new ArrayList<TextEdit>();
-		additionalEdits.add(new TextEdit(rangeToDelete, "")); // delete token that is being completed
-		additionalEdits.add(FileEdits.addVariable(file, "#S-%s".formatted(sanitizedName), "(I4)", VariableScope.LOCAL).textEdit());
-		additionalEdits.add(FileEdits.addVariable(file, "#I-%s".formatted(sanitizedName), "(I4)", VariableScope.LOCAL).textEdit());
+		additionalEdits.add(deleteEdit);
+		additionalEdits.add(
+			FileEdits.addVariable(file, "#S-%s".formatted(sanitizedName), "(I4)", VariableScope.LOCAL).textEdit()
+		);
+		additionalEdits.add(
+			FileEdits.addVariable(file, "#I-%s".formatted(sanitizedName), "(I4)", VariableScope.LOCAL).textEdit()
+		);
 		item.setAdditionalTextEdits(additionalEdits);
 
 		completionItems.add(item);
 	}
 
 	private static void addIsDefaultPostfix(
-		ArrayList<CompletionItem> completionItems, ITypedVariableNode typedVar,
-		String identifierName, Range rangeToInsert, Range rangeToDelete
+		List<CompletionItem> completionItems, ITypedVariableNode typedVar,
+		String identifierName, Range rangeToInsert, TextEdit deleteEdit
 	)
 	{
 		var defaultValue = typedVar.type().emptyValue();
@@ -218,7 +251,7 @@ public class CompletionProvider
 		item.setTextEdit(Either.forLeft(edit));
 		item.setKind(CompletionItemKind.Snippet);
 		item.setInsertTextFormat(InsertTextFormat.Snippet);
-		item.setAdditionalTextEdits(List.of(new TextEdit(rangeToDelete, ""))); // delete token that is being completed
+		item.setAdditionalTextEdits(List.of(deleteEdit));
 
 		completionItems.add(item);
 	}
@@ -249,7 +282,10 @@ public class CompletionProvider
 			.toList();
 	}
 
-	public CompletionItem resolveComplete(CompletionItem item, LanguageServerFile calledModulesFile, UnresolvedCompletionInfo info, LSConfiguration config)
+	public CompletionItem resolveComplete(
+		CompletionItem item, LanguageServerFile calledModulesFile,
+		UnresolvedCompletionInfo info, LSConfiguration config
+	)
 	{
 		this.config = config;
 
@@ -274,7 +310,8 @@ public class CompletionProvider
 					yield item;
 				}
 
-				var variableNode = hasDefineData.defineData().variables().stream().filter(v -> v.qualifiedName().equals(info.getQualifiedName())).findFirst().orElse(null);
+				var variableNode = hasDefineData.defineData().variables().stream()
+					.filter(v -> v.qualifiedName().equals(info.getQualifiedName())).findFirst().orElse(null);
 				if (variableNode == null)
 				{
 					yield item;
@@ -283,7 +320,10 @@ public class CompletionProvider
 				item.setDocumentation(
 					new MarkupContent(
 						MarkupKind.MARKDOWN,
-						hoverProvider.createHover(new HoverContext(variableNode, variableNode.declaration(), calledModulesFile)).getContents().getRight().getValue()
+						hoverProvider.createHover(
+							new HoverContext(variableNode, variableNode.declaration(), calledModulesFile)
+						).getContents()
+							.getRight().getValue()
 					)
 				);
 				yield item;
@@ -297,7 +337,12 @@ public class CompletionProvider
 						hoverProvider.hoverModule(module).getContents().getRight().getValue()
 					)
 				);
-				item.setInsertText("%s(<%s>)$0".formatted(calledModulesFile.getReferableName(), functionParameterListAsSnippet(calledModulesFile)));
+				item.setInsertText(
+					"%s(<%s>)$0".formatted(
+						calledModulesFile.getReferableName(),
+						functionParameterListAsSnippet(calledModulesFile)
+					)
+				);
 				yield item;
 			}
 			case Event ->
@@ -310,7 +355,12 @@ public class CompletionProvider
 					)
 				);
 				var perform = info.hasPreviousText("PERFORM") ? "" : "PERFORM ";
-				item.setInsertText("%s%s%s%n$0".formatted(perform, calledModulesFile.getReferableName(), externalModuleParameterListAsSnippet(calledModulesFile)));
+				item.setInsertText(
+					"%s%s%s%n$0".formatted(
+						perform, calledModulesFile.getReferableName(),
+						externalModuleParameterListAsSnippet(calledModulesFile)
+					)
+				);
 				yield item;
 			}
 			case Class ->
@@ -326,12 +376,20 @@ public class CompletionProvider
 				if (item.getTextEdit() != null && item.getTextEdit().isLeft())
 				{
 					item.getTextEdit().getLeft().setNewText(
-						"%s'%s%n$0".formatted(calledModulesFile.getReferableName(), externalModuleParameterListAsSnippet(calledModulesFile))
+						"%s'%s%n$0".formatted(
+							calledModulesFile.getReferableName(),
+							externalModuleParameterListAsSnippet(calledModulesFile)
+						)
 					);
 				}
 				else
 				{
-					item.setInsertText("%s'%s'%s%n$0".formatted(callnat, calledModulesFile.getReferableName(), externalModuleParameterListAsSnippet(calledModulesFile)));
+					item.setInsertText(
+						"%s'%s'%s%n$0".formatted(
+							callnat, calledModulesFile.getReferableName(),
+							externalModuleParameterListAsSnippet(calledModulesFile)
+						)
+					);
 				}
 				yield item;
 			}
@@ -339,7 +397,10 @@ public class CompletionProvider
 		};
 	}
 
-	private CompletionItem toVariableCompletion(IVariableNode variableNode, INaturalModule module, LanguageServerFile file, String alreadyPresentText)
+	private CompletionItem toVariableCompletion(
+		IVariableNode variableNode, INaturalModule module,
+		LanguageServerFile file, String alreadyPresentText
+	)
 	{
 		try
 		{
@@ -365,7 +426,9 @@ public class CompletionProvider
 		return module.referencableNodes().stream()
 			.filter(IVariableNode.class::isInstance)
 			.map(IVariableNode.class::cast)
-			.filter(v -> !(v instanceof IRedefinitionNode)); // this is the `REDEFINE #VAR`, which results in the variable being doubled in completion
+			.filter(
+				v -> !(v instanceof IRedefinitionNode)
+			); // this is the `REDEFINE #VAR`, which results in the variable being doubled in completion
 	}
 
 	private Collection<? extends CompletionItem> functionCompletions(LanguageServerLibrary library)
@@ -435,7 +498,10 @@ public class CompletionProvider
 		return builder.toString();
 	}
 
-	private Collection<? extends CompletionItem> subprogramCompletions(LanguageServerLibrary library, CodeCompletionContext context)
+	private Collection<? extends CompletionItem> subprogramCompletions(
+		LanguageServerLibrary library,
+		CodeCompletionContext context
+	)
 	{
 		return library.getModulesOfType(NaturalFileType.SUBPROGRAM, true)
 			.stream()
@@ -470,7 +536,10 @@ public class CompletionProvider
 			.toList();
 	}
 
-	private Collection<? extends CompletionItem> externalSubroutineCompletions(LanguageServerLibrary library, CodeCompletionContext context)
+	private Collection<? extends CompletionItem> externalSubroutineCompletions(
+		LanguageServerLibrary library,
+		CodeCompletionContext context
+	)
 	{
 		return library.getModulesOfType(NaturalFileType.SUBROUTINE, true)
 			.stream()
@@ -494,12 +563,16 @@ public class CompletionProvider
 			.toList();
 	}
 
-	private CompletionItem createCompletionItem(IVariableNode variableNode, LanguageServerFile openFile, ReadOnlyList<IReferencableNode> referencableNodes, boolean forceQualification)
+	private CompletionItem createCompletionItem(
+		IVariableNode variableNode, LanguageServerFile openFile,
+		ReadOnlyList<IReferencableNode> referencableNodes, boolean forceQualification
+	)
 	{
 		var item = new CompletionItem();
 		var variableName = variableNode.name();
 
-		if (forceQualification || config.getCompletion().isQualify() || referencableNodes.stream().filter(n -> n.declaration().symbolName().equals(variableNode.name())).count() > 1)
+		if (forceQualification || config.getCompletion().isQualify() || referencableNodes.stream()
+			.filter(n -> n.declaration().symbolName().equals(variableNode.name())).count() > 1)
 		{
 			variableName = variableNode.qualifiedName();
 		}
@@ -541,7 +614,10 @@ public class CompletionProvider
 		return item;
 	}
 
-	private CompletionItem createLocalSubroutineCompletionItem(ISubroutineNode subroutineNode, CodeCompletionContext context)
+	private CompletionItem createLocalSubroutineCompletionItem(
+		ISubroutineNode subroutineNode,
+		CodeCompletionContext context
+	)
 	{
 		var item = new CompletionItem();
 		item.setKind(CompletionItemKind.Method);
@@ -575,7 +651,8 @@ public class CompletionProvider
 				); // if alreadyContainsAsterisk, bring them to the front. else to the end.
 
 				completionItem.setInsertText(insertion);
-				if (definition instanceof SystemFunctionDefinition functionDefinition && !functionDefinition.parameter().isEmpty())
+				if (definition instanceof SystemFunctionDefinition functionDefinition && !functionDefinition.parameter()
+					.isEmpty())
 				{
 					completionItem.setInsertText(insertion + "($1)$0");
 					completionItem.setInsertTextFormat(InsertTextFormat.Snippet);
