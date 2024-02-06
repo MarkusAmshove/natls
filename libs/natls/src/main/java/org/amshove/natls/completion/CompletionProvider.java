@@ -153,60 +153,74 @@ public class CompletionProvider
 			? LspUtil.toRangeSpanning(completionContext.previousToken(), completionContext.currentToken())
 			: LspUtil.toRange(completionContext.currentToken());
 
-		// .for
 		if (variableInvokedOn.isArray())
 		{
-			var sanitizedName = identifierName.replace(".", "-");
-
-			var occVar = variableInvokedOn instanceof IGroupNode group
-				? group.variables().first().qualifiedName()
-				: identifierName;
-
-			var edit = new TextEdit(rangeToInsert, """
-						#S-%s := *OCC(%s)
-						FOR #I-%s := 1 TO #S-%s
-						  ${0:IGNORE}
-						END-FOR
-						""".formatted(sanitizedName, occVar, sanitizedName, sanitizedName));
-			var item = new CompletionItem("for");
-			item.setTextEdit(Either.forLeft(edit));
-			item.setKind(CompletionItemKind.Snippet);
-			item.setInsertTextFormat(InsertTextFormat.Snippet);
-
-			var additionalEdits = new ArrayList<TextEdit>();
-			additionalEdits.add(new TextEdit(rangeToDelete, "")); // delete token that is being completed
-			additionalEdits.add(FileEdits.addVariable(file, "#S-%s".formatted(sanitizedName), "(I4)", VariableScope.LOCAL).textEdit());
-			additionalEdits.add(FileEdits.addVariable(file, "#I-%s".formatted(sanitizedName), "(I4)", VariableScope.LOCAL).textEdit());
-			item.setAdditionalTextEdits(additionalEdits);
-
-			completionItems.add(item);
+			addForLoopPostfix(file, completionItems, identifierName, variableInvokedOn, rangeToInsert, rangeToDelete);
 		}
 
-		// .ifDefault
 		if (variableInvokedOn instanceof ITypedVariableNode typedVar && typedVar.type().emptyValue() != null)
 		{
-			var defaultValue = typedVar.type().emptyValue();
-			var identifierAccess = identifierName;
-
-			if (typedVar.isArray())
-			{
-				identifierAccess += "(*)";
-			}
-
-			var edit = new TextEdit(rangeToInsert, """
-				IF %s = %s
-				  ${0:IGNORE}
-				END-IF
-				""".formatted(identifierAccess, defaultValue));
-
-			var item = new CompletionItem("ifDefault");
-			item.setTextEdit(Either.forLeft(edit));
-			item.setKind(CompletionItemKind.Snippet);
-			item.setInsertTextFormat(InsertTextFormat.Snippet);
-			item.setAdditionalTextEdits(List.of(new TextEdit(rangeToDelete, ""))); // delete token that is being completed
-
-			completionItems.add(item);
+			addIsDefaultPostfix(completionItems, typedVar, identifierName, rangeToInsert, rangeToDelete);
 		}
+	}
+
+	private static void addForLoopPostfix(
+		LanguageServerFile file, ArrayList<CompletionItem> completionItems,
+		String identifierName, IVariableNode variableInvokedOn, Range rangeToInsert, Range rangeToDelete
+	)
+	{
+		var sanitizedName = identifierName.replace(".", "-");
+
+		var occVar = variableInvokedOn instanceof IGroupNode group
+			? group.variables().first().qualifiedName()
+			: identifierName;
+
+		var edit = new TextEdit(rangeToInsert, """
+					#S-%s := *OCC(%s)
+					FOR #I-%s := 1 TO #S-%s
+					  ${0:IGNORE}
+					END-FOR
+					""".formatted(sanitizedName, occVar, sanitizedName, sanitizedName));
+		var item = new CompletionItem("for");
+		item.setTextEdit(Either.forLeft(edit));
+		item.setKind(CompletionItemKind.Snippet);
+		item.setInsertTextFormat(InsertTextFormat.Snippet);
+
+		var additionalEdits = new ArrayList<TextEdit>();
+		additionalEdits.add(new TextEdit(rangeToDelete, "")); // delete token that is being completed
+		additionalEdits.add(FileEdits.addVariable(file, "#S-%s".formatted(sanitizedName), "(I4)", VariableScope.LOCAL).textEdit());
+		additionalEdits.add(FileEdits.addVariable(file, "#I-%s".formatted(sanitizedName), "(I4)", VariableScope.LOCAL).textEdit());
+		item.setAdditionalTextEdits(additionalEdits);
+
+		completionItems.add(item);
+	}
+
+	private static void addIsDefaultPostfix(
+		ArrayList<CompletionItem> completionItems, ITypedVariableNode typedVar,
+		String identifierName, Range rangeToInsert, Range rangeToDelete
+	)
+	{
+		var defaultValue = typedVar.type().emptyValue();
+		var identifierAccess = identifierName;
+
+		if (typedVar.isArray())
+		{
+			identifierAccess += "(*)";
+		}
+
+		var edit = new TextEdit(rangeToInsert, """
+			IF %s = %s
+			  ${0:IGNORE}
+			END-IF
+			""".formatted(identifierAccess, defaultValue));
+
+		var item = new CompletionItem("ifDefault");
+		item.setTextEdit(Either.forLeft(edit));
+		item.setKind(CompletionItemKind.Snippet);
+		item.setInsertTextFormat(InsertTextFormat.Snippet);
+		item.setAdditionalTextEdits(List.of(new TextEdit(rangeToDelete, ""))); // delete token that is being completed
+
+		completionItems.add(item);
 	}
 
 	private List<CompletionItem> localSubroutineCompletions(INaturalModule module, CodeCompletionContext context)
