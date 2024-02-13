@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
@@ -108,9 +109,10 @@ public class CliAnalyzer
 		var indexEndTime = System.currentTimeMillis();
 
 		var startCheck = System.currentTimeMillis();
+		var executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 		for (var library : project.getLibraries())
 		{
-			library.files().parallelStream().forEach(file ->
+			library.files().parallelStream().forEach(file -> executor.submit(() ->
 			{
 				if (file.getFiletype() == NaturalFileType.DDM)
 				{
@@ -164,13 +166,17 @@ public class CliAnalyzer
 				totalDiagnostics.addAndGet(allDiagnosticsInFile.size());
 				diagnosticSink.printDiagnostics(filesChecked.get(), file.getPath(), allDiagnosticsInFile);
 				fileStatusSink.printStatus(file.getPath(), MessageType.SUCCESS);
-			});
+			}));
+
 			var currentMemory = Runtime.getRuntime().totalMemory();
 			if (currentMemory > maxMemoryInBytes)
 			{
 				maxMemoryInBytes = currentMemory;
 			}
+
 		}
+		executor.shutdown();
+		executor.close();
 
 		var endCheck = System.currentTimeMillis();
 
