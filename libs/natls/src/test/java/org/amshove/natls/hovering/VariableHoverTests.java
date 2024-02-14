@@ -223,4 +223,24 @@ LOCAL 2 #VARINGROUP (N4)
 ```"""
 		);
 	}
+
+	@Test
+	void hoverOverVariablesInInputsShouldShowTheHover()
+	{
+		assertHover(
+			"""
+			DEFINE DATA
+			LOCAL 1 #MYVAR (A10)
+			END-DEFINE
+
+			INPUT #MY${}$VAR
+
+			END
+			""",
+			"""
+```natural
+LOCAL 1 #MYVAR (A10)
+```"""
+		);
+	}
 }

@@ -99,7 +99,10 @@ public abstract class AbstractParserTest<NodeType>
 	protected <T extends ISyntaxNode> T assertNodeType(ISyntaxNode node, Class<T> expectedType)
 	{
 		assertThat(node).isInstanceOf(expectedType);
+		assertThat(node.parent()).as("Every node should have a parent").isNotNull();
 		var castedNode = (T) node;
+		assertThat(node.parent().descendants().toList().contains(node)).as("Every node should be a descendant of its parent")
+			.isTrue();
 		return assertValidNode(castedNode);
 	}
 

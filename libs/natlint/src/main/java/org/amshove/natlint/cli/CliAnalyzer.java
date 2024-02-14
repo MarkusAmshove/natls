@@ -17,6 +17,7 @@ import org.amshove.natparse.natural.project.*;
 import org.amshove.natparse.parsing.NaturalParser;
 import org.amshove.natparse.parsing.project.BuildFileProjectReader;
 
+import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -206,7 +207,20 @@ public class CliAnalyzer
 		System.out.println("Slowest lexed module: " + slowestLexedModule);
 		System.out.println("Slowest parsed module: " + slowestParsedModule);
 		System.out.println("Slowest linted module: " + (disableLinting ? "disabled" : slowestLintedModule));
+		System.out.println();
 		System.out.printf("Peak memory usage: %.2f Mib%n", maxMemoryInBytes / 1024.0 / 1024.0);
+		var gcs = 0L;
+		var gcTime = 0L;
+		for (var bean : ManagementFactory.getGarbageCollectorMXBeans())
+		{
+			gcs += bean.getCollectionCount();
+			if (bean.getCollectionTime() > 0)
+			{
+				gcTime += bean.getCollectionTime();
+			}
+		}
+		System.out.printf("Number of GCs: %d%n", gcs);
+		System.out.printf("GC time: %ds%n", (gcTime / 1000));
 
 		System.out.println();
 

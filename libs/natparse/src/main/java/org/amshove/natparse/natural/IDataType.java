@@ -146,6 +146,35 @@ public interface IDataType
 		return Math.max(1, digitsBeforeDecimalPoint + digitsAfterDecimalPoint);
 	}
 
+	/**
+	 * Returns the length that an alphanumeric field needs to have to fit the types max size.
+	 */
+	default int alphanumericLength()
+	{
+		return switch (format())
+		{
+			case ALPHANUMERIC, BINARY, UNICODE -> sumOfDigits();
+			case NUMERIC ->
+			{
+				var digits = sumOfDigits();
+				yield ((int) length()) == calculateNumericSize() ? digits : digits + 1; // Takes the decimal separator into account
+			}
+			case CONTROL, LOGIC, NONE -> 1;
+			case DATE, TIME -> 8;
+			case FLOAT -> sumOfDigits() == 4 ? 13 : 22;
+			case INTEGER -> switch (sumOfDigits())
+				{
+					case 1:
+						yield 3;
+					case 2:
+						yield 5;
+					default:
+						yield 10;
+				};
+			case PACKED -> calculatePackedSize();
+		};
+	}
+
 	default int calculatePackedSize()
 	{
 		return Math.max(1, (int) (Math.round((calculateNumericSize() + 1) / 2.0)));
@@ -193,6 +222,17 @@ public interface IDataType
 			case FLOAT -> true;
 			case NUMERIC, PACKED -> calculateDigitsAfterDecimalPoint() > 0;
 			default -> false;
+		};
+	}
+
+	default String emptyValue()
+	{
+		return switch (format())
+		{
+			case FLOAT, INTEGER, NUMERIC, PACKED, DATE, TIME, BINARY -> "0";
+			case ALPHANUMERIC, UNICODE -> "' '";
+			case LOGIC -> "FALSE";
+			case NONE, CONTROL -> null;
 		};
 	}
 }
