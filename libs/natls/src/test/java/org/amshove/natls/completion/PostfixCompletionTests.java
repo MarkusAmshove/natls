@@ -1,5 +1,6 @@
 package org.amshove.natls.completion;
 
+import org.eclipse.lsp4j.CompletionItemKind;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -572,6 +573,120 @@ class PostfixCompletionTests extends CompletionTest
 					*OCC(GRP.#VAR)
 					END
 					""");
+		}
+	}
+
+	@Nested
+	class TheToLowerCaseSnippetShould
+	{
+		@ParameterizedTest
+		@ValueSource(strings =
+		{
+			"N2", "P4", "I4", "L", "C"
+		})
+		void notBeApplicableOnVariablesThatAreNotAlphanumericFamily(String type)
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (%s)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""".formatted(type))
+				.assertDoesNotContain("toLowerCase");
+		}
+
+		@ParameterizedTest
+		@ValueSource(strings =
+		{
+			"A10", "U10", "B4"
+		})
+		void beApplicableOnVariablesThatAreAlphanumericFamily(String type)
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (%s)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""".formatted(type))
+				.assertContains("toLowerCase", CompletionItemKind.Snippet);
+		}
+
+		@Test
+		void createATranslateLowerCall()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("toLowerCase", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10)
+				END-DEFINE
+				*TRANSLATE(#VAR, LOWER)
+				END
+				""");
+		}
+	}
+
+	@Nested
+	class TheToUpperCaseSnippetShould
+	{
+		@ParameterizedTest
+		@ValueSource(strings =
+		{
+			"N2", "P4", "I4", "L", "C"
+		})
+		void notBeApplicableOnVariablesThatAreAlphanumericFamily(String type)
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (%s)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""".formatted(type))
+				.assertDoesNotContain("toUpperCase");
+		}
+
+		@ParameterizedTest
+		@ValueSource(strings =
+		{
+			"A10", "U10", "B4"
+		})
+		void beApplicableOnVariablesThatAreAlphanumericFamily(String type)
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (%s)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""".formatted(type))
+				.assertContains("toUpperCase", CompletionItemKind.Snippet);
+		}
+
+		@Test
+		void createATranslateUpperCall()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("toUpperCase", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10)
+				END-DEFINE
+				*TRANSLATE(#VAR, UPPER)
+				END
+				""");
 		}
 	}
 }
