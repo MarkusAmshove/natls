@@ -174,12 +174,33 @@ public class CompletionProvider
 		{
 			addIsDefaultPostfix(completionItems, typedVar, identifierName, rangeToInsert, deleteEdit);
 			addCaseTranslationPostfix(completionItems, typedVar, identifierName, rangeToInsert, deleteEdit);
+			addValPostfix(completionItems, typedVar, identifierName, rangeToInsert, deleteEdit);
 		}
 
 		if (variableInvokedOn.scope().isParameter() && variableInvokedOn.findDescendantToken(SyntaxKind.OPTIONAL) != null)
 		{
 			addIfSpecifiedPostfix(completionItems, identifierName, rangeToInsert, deleteEdit);
 		}
+	}
+
+	private static void addValPostfix(
+		ArrayList<CompletionItem> completionItems, ITypedVariableNode typedVar,
+		String identifierName, Range rangeToInsert, TextEdit deleteEdit
+	)
+	{
+		if (!typedVar.type().isAlphaNumericFamily())
+		{
+			return;
+		}
+
+		var edit = new TextEdit(rangeToInsert, "VAL(%s)".formatted(identifierName));
+
+		var upperItem = new CompletionItem("val");
+		upperItem.setTextEdit(Either.forLeft(edit));
+		upperItem.setKind(CompletionItemKind.Snippet);
+		upperItem.setInsertTextFormat(InsertTextFormat.PlainText);
+		upperItem.setAdditionalTextEdits(List.of(deleteEdit));
+		completionItems.add(upperItem);
 	}
 
 	private static void addCaseTranslationPostfix(
