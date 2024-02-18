@@ -752,4 +752,105 @@ class PostfixCompletionTests extends CompletionTest
 				""");
 		}
 	}
+
+	@Nested
+	class TrimSnippetsShould
+	{
+		@ParameterizedTest
+		@ValueSource(
+			strings =
+			{
+				"N2", "P4", "I4", "L", "C"
+			}
+		)
+		void notBeApplicableOnVariablesThatAreAlphanumericFamily(String type)
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (%s)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""".formatted(type))
+				.assertDoesNotContain("trim")
+				.assertDoesNotContain("trimTrailing")
+				.assertDoesNotContain("trimLeading");
+		}
+
+		@ParameterizedTest
+		@ValueSource(strings =
+		{
+			"A10", "U10", "B4"
+		})
+		void beApplicableOnVariablesThatAreAlphanumericFamily(String type)
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (%s)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""".formatted(type))
+				.assertContains("trim", CompletionItemKind.Snippet)
+				.assertContains("trimTrailing", CompletionItemKind.Snippet)
+				.assertContains("trimLeading", CompletionItemKind.Snippet);
+		}
+
+		@Test
+		void createATrimCall()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("trim", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10)
+				END-DEFINE
+				*TRIM(#VAR)
+				END
+				""");
+		}
+
+		@Test
+		void createATrimLeadingCall()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("trimLeading", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10)
+				END-DEFINE
+				*TRIM(#VAR, LEADING)
+				END
+				""");
+		}
+
+		@Test
+		void createATrimTrailingCall()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("trimTrailing", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10)
+				END-DEFINE
+				*TRIM(#VAR, TRAILING)
+				END
+				""");
+		}
+	}
 }
