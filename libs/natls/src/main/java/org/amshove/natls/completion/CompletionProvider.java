@@ -173,12 +173,41 @@ public class CompletionProvider
 		if (variableInvokedOn instanceof ITypedVariableNode typedVar && typedVar.type().emptyValue() != null)
 		{
 			addIsDefaultPostfix(completionItems, typedVar, identifierName, rangeToInsert, deleteEdit);
+			addCaseTranslationPostfix(completionItems, typedVar, identifierName, rangeToInsert, deleteEdit);
 		}
 
 		if (variableInvokedOn.scope().isParameter() && variableInvokedOn.findDescendantToken(SyntaxKind.OPTIONAL) != null)
 		{
 			addIfSpecifiedPostfix(completionItems, identifierName, rangeToInsert, deleteEdit);
 		}
+	}
+
+	private static void addCaseTranslationPostfix(
+		ArrayList<CompletionItem> completionItems, ITypedVariableNode typedVar,
+		String identifierName, Range rangeToInsert, TextEdit deleteEdit
+	)
+	{
+		if (!typedVar.type().isAlphaNumericFamily())
+		{
+			return;
+		}
+
+		var upperEdit = new TextEdit(rangeToInsert, "*TRANSLATE(%s, UPPER)".formatted(identifierName));
+		var lowerEdit = new TextEdit(rangeToInsert, "*TRANSLATE(%s, LOWER)".formatted(identifierName));
+
+		var upperItem = new CompletionItem("toUpperCase");
+		upperItem.setTextEdit(Either.forLeft(upperEdit));
+		upperItem.setKind(CompletionItemKind.Snippet);
+		upperItem.setInsertTextFormat(InsertTextFormat.PlainText);
+		upperItem.setAdditionalTextEdits(List.of(deleteEdit));
+		completionItems.add(upperItem);
+
+		var lowerItem = new CompletionItem("toLowerCase");
+		lowerItem.setTextEdit(Either.forLeft(lowerEdit));
+		lowerItem.setKind(CompletionItemKind.Snippet);
+		lowerItem.setInsertTextFormat(InsertTextFormat.PlainText);
+		lowerItem.setAdditionalTextEdits(List.of(deleteEdit));
+		completionItems.add(lowerItem);
 	}
 
 	private static void addOccPostfix(ArrayList<CompletionItem> completionItems, String identifierName, IVariableNode variableInvokedOn, Range rangeToInsert, TextEdit deleteEdit)
