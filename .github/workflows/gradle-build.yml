@@ -97,7 +97,7 @@ jobs:
           cache: 'gradle'
 
       - name: Cache SonarCloud packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: matrix.os == 'ubuntu-latest'
         with:
           path: ~/.sonar/cache
@@ -111,7 +111,7 @@ jobs:
         run: ./gradlew check cover fatJar -x spotlessCheck --no-daemon
 
       - name: Upload Test Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: junit-test-results-${{ matrix.os }}
@@ -124,7 +124,7 @@ jobs:
 
       - name: Archive PR number
         if: github.event_name == 'pull_request'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: PR_NUMBER
           path: PR_NUMBER.txt
