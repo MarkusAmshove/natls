@@ -1,5 +1,7 @@
 package org.amshove.natls.languageserver.inputstructure;
 
+import org.amshove.natparse.ReadOnlyList;
+import org.amshove.natparse.natural.IAttributeNode;
 import org.amshove.natparse.natural.output.*;
 
 public class InputResponseElement
@@ -12,11 +14,11 @@ public class InputResponseElement
 		this.kind = kind;
 	}
 
-	public static InputResponseElement fromOutputElement(IOutputElementNode element)
+	public static InputResponseElement fromOutputElement(IOutputElementNode element, ReadOnlyList<IAttributeNode> statementAttributes)
 	{
 		if (element instanceof IOutputOperandNode operandNode)
 		{
-			return new InputOperandElement(operandNode);
+			return new InputOperandElement(operandNode, statementAttributes);
 		}
 
 		if (element instanceof IOutputNewLineNode)

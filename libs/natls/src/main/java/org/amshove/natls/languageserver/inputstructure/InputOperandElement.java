@@ -19,7 +19,7 @@ public class InputOperandElement extends InputResponseElement
 	private int sourceColumnEnd;
 	private final List<InputAttributeElement> attributes;
 
-	protected InputOperandElement(IOutputOperandNode operand)
+	protected InputOperandElement(IOutputOperandNode operand, ReadOnlyList<IAttributeNode> statementAttributes)
 	{
 		super(InputStructureElementKind.OPERAND);
 
@@ -31,29 +31,43 @@ public class InputOperandElement extends InputResponseElement
 		}
 
 		this.attributes = new ArrayList<>();
+
+		for (var statementAttribute : statementAttributes)
+		{
+			addAttribute(operand, statementAttribute);
+		}
+
 		for (var attribute : operand.attributes())
 		{
-			if (!(attribute instanceof IValueAttributeNode valueAttributeNode))
-			{
-				continue;
-			}
-
-			if (valueAttributeNode.kind() == SyntaxKind.AL)
-			{
-				this.length = Integer.parseInt(valueAttributeNode.value());
-			}
-			if (valueAttributeNode.kind() == SyntaxKind.NL)
-			{
-				var lengthValue = valueAttributeNode.value();
-				var dataType = new DataType(DataFormat.NUMERIC, Double.parseDouble(lengthValue.replace(",", ".")));
-				this.length = dataType.sumOfDigits() + 1; // + separator
-				if (includesNumericSign(operand.attributes()))
-				{
-					this.length += 1;
-				}
-			}
-			this.attributes.add(new InputAttributeElement(attribute.kind().name(), valueAttributeNode.value()));
+			addAttribute(operand, attribute);
 		}
+	}
+
+	private void addAttribute(IOutputOperandNode operand, IAttributeNode attributeNode)
+	{
+		if (!(attributeNode instanceof IValueAttributeNode valueAttributeNode))
+		{
+			return;
+		}
+
+		if (valueAttributeNode.kind() == SyntaxKind.AL)
+		{
+			this.length = Integer.parseInt(valueAttributeNode.value());
+		}
+
+		if (valueAttributeNode.kind() == SyntaxKind.NL)
+		{
+			var lengthValue = valueAttributeNode.value();
+			var dataType = new DataType(DataFormat.NUMERIC, Double.parseDouble(lengthValue.replace(",", ".")));
+			this.length = dataType.sumOfDigits() + 1; // + separator
+			if (includesNumericSign(operand.attributes()))
+			{
+				this.length += 1;
+			}
+		}
+
+		this.attributes.removeIf(a -> a.getKind().equalsIgnoreCase(attributeNode.kind().name()));
+		this.attributes.add(new InputAttributeElement(attributeNode.kind().name(), valueAttributeNode.value()));
 	}
 
 	private boolean includesNumericSign(ReadOnlyList<IAttributeNode> attributes)
@@ -150,5 +164,11 @@ public class InputOperandElement extends InputResponseElement
 	public String getType()
 	{
 		return type;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "%s { operand: %s, kind: %s }".formatted(getClass().getSimpleName(), getOperand(), getKind());
 	}
 }

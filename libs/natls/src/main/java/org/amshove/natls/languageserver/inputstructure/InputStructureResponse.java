@@ -26,7 +26,7 @@ public class InputStructureResponse
 		int elementId = 1;
 		for (var operand : structure.getOperands())
 		{
-			var responseElement = InputResponseElement.fromOutputElement(operand);
+			var responseElement = InputResponseElement.fromOutputElement(operand, structure.statementAttributes());
 			responseElement.setId(elementId++);
 			response.elements.add(responseElement);
 		}
