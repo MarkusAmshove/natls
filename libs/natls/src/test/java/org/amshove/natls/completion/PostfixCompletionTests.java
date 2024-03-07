@@ -1,5 +1,6 @@
 package org.amshove.natls.completion;
 
+import org.eclipse.lsp4j.CompletionItemKind;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -572,6 +573,284 @@ class PostfixCompletionTests extends CompletionTest
 					*OCC(GRP.#VAR)
 					END
 					""");
+		}
+	}
+
+	@Nested
+	class TheToLowerCaseSnippetShould
+	{
+		@ParameterizedTest
+		@ValueSource(strings =
+		{
+			"N2", "P4", "I4", "L", "C"
+		})
+		void notBeApplicableOnVariablesThatAreNotAlphanumericFamily(String type)
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (%s)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""".formatted(type))
+				.assertDoesNotContain("toLowerCase");
+		}
+
+		@ParameterizedTest
+		@ValueSource(strings =
+		{
+			"A10", "U10", "B4"
+		})
+		void beApplicableOnVariablesThatAreAlphanumericFamily(String type)
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (%s)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""".formatted(type))
+				.assertContains("toLowerCase", CompletionItemKind.Snippet);
+		}
+
+		@Test
+		void createATranslateLowerCall()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("toLowerCase", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10)
+				END-DEFINE
+				*TRANSLATE(#VAR, LOWER)
+				END
+				""");
+		}
+	}
+
+	@Nested
+	class TheToUpperCaseSnippetShould
+	{
+		@ParameterizedTest
+		@ValueSource(strings =
+		{
+			"N2", "P4", "I4", "L", "C"
+		})
+		void notBeApplicableOnVariablesThatAreAlphanumericFamily(String type)
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (%s)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""".formatted(type))
+				.assertDoesNotContain("toUpperCase");
+		}
+
+		@ParameterizedTest
+		@ValueSource(strings =
+		{
+			"A10", "U10", "B4"
+		})
+		void beApplicableOnVariablesThatAreAlphanumericFamily(String type)
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (%s)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""".formatted(type))
+				.assertContains("toUpperCase", CompletionItemKind.Snippet);
+		}
+
+		@Test
+		void createATranslateUpperCall()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("toUpperCase", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10)
+				END-DEFINE
+				*TRANSLATE(#VAR, UPPER)
+				END
+				""");
+		}
+	}
+
+	@Nested
+	class TheValSnippetShould
+	{
+		@ParameterizedTest
+		@ValueSource(
+			strings =
+			{
+				"N2", "P4", "I4", "L", "C"
+			}
+		)
+		void notBeApplicableOnVariablesThatAreAlphanumericFamily(String type)
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (%s)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""".formatted(type))
+				.assertDoesNotContain("val");
+		}
+
+		@ParameterizedTest
+		@ValueSource(strings =
+		{
+			"A10", "U10", "B4"
+		})
+		void beApplicableOnVariablesThatAreAlphanumericFamily(String type)
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (%s)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""".formatted(type))
+				.assertContains("val", CompletionItemKind.Snippet);
+		}
+
+		@Test
+		void createAValCall()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL
+				1 #VARA (A10)
+				1 #VARN (A10)
+				END-DEFINE
+				#VARN := #VARA.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("val", """
+				DEFINE DATA
+				LOCAL
+				1 #VARA (A10)
+				1 #VARN (A10)
+				END-DEFINE
+				#VARN := VAL(#VARA)
+				END
+				""");
+		}
+	}
+
+	@Nested
+	class TrimSnippetsShould
+	{
+		@ParameterizedTest
+		@ValueSource(
+			strings =
+			{
+				"N2", "P4", "I4", "L", "C"
+			}
+		)
+		void notBeApplicableOnVariablesThatAreAlphanumericFamily(String type)
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (%s)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""".formatted(type))
+				.assertDoesNotContain("trim")
+				.assertDoesNotContain("trimTrailing")
+				.assertDoesNotContain("trimLeading");
+		}
+
+		@ParameterizedTest
+		@ValueSource(strings =
+		{
+			"A10", "U10", "B4"
+		})
+		void beApplicableOnVariablesThatAreAlphanumericFamily(String type)
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (%s)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""".formatted(type))
+				.assertContains("trim", CompletionItemKind.Snippet)
+				.assertContains("trimTrailing", CompletionItemKind.Snippet)
+				.assertContains("trimLeading", CompletionItemKind.Snippet);
+		}
+
+		@Test
+		void createATrimCall()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("trim", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10)
+				END-DEFINE
+				*TRIM(#VAR)
+				END
+				""");
+		}
+
+		@Test
+		void createATrimLeadingCall()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("trimLeading", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10)
+				END-DEFINE
+				*TRIM(#VAR, LEADING)
+				END
+				""");
+		}
+
+		@Test
+		void createATrimTrailingCall()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("trimTrailing", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10)
+				END-DEFINE
+				*TRIM(#VAR, TRAILING)
+				END
+				""");
 		}
 	}
 }

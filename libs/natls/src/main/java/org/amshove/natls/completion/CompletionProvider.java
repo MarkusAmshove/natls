@@ -173,12 +173,102 @@ public class CompletionProvider
 		if (variableInvokedOn instanceof ITypedVariableNode typedVar && typedVar.type().emptyValue() != null)
 		{
 			addIsDefaultPostfix(completionItems, typedVar, identifierName, rangeToInsert, deleteEdit);
+			addCaseTranslationPostfix(completionItems, typedVar, identifierName, rangeToInsert, deleteEdit);
+			addValPostfix(completionItems, typedVar, identifierName, rangeToInsert, deleteEdit);
+			addTrimPostfixes(completionItems, typedVar, identifierName, rangeToInsert, deleteEdit);
 		}
 
 		if (variableInvokedOn.scope().isParameter() && variableInvokedOn.findDescendantToken(SyntaxKind.OPTIONAL) != null)
 		{
 			addIfSpecifiedPostfix(completionItems, identifierName, rangeToInsert, deleteEdit);
 		}
+	}
+
+	private static void addTrimPostfixes(
+		ArrayList<CompletionItem> completionItems, ITypedVariableNode typedVar,
+		String identifierName, Range rangeToInsert, TextEdit deleteEdit
+	)
+	{
+		if (!typedVar.type().isAlphaNumericFamily())
+		{
+			return;
+		}
+
+		var trimTrailingEdit = new TextEdit(rangeToInsert, "*TRIM(%s, TRAILING)".formatted(identifierName));
+		var trimLeadingEdit = new TextEdit(rangeToInsert, "*TRIM(%s, LEADING)".formatted(identifierName));
+		var trimEdit = new TextEdit(rangeToInsert, "*TRIM(%s)".formatted(identifierName));
+
+		completionItems.add(
+			createPlainTextPostfixCompletionItem(
+				"trim", trimEdit, deleteEdit
+			)
+		);
+		completionItems.add(
+			createPlainTextPostfixCompletionItem(
+				"trimLeading", trimLeadingEdit, deleteEdit
+			)
+		);
+		completionItems.add(
+			createPlainTextPostfixCompletionItem(
+				"trimTrailing", trimTrailingEdit, deleteEdit
+			)
+		);
+	}
+
+	private static CompletionItem createPlainTextPostfixCompletionItem(String label, TextEdit edit, TextEdit deleteEdit)
+	{
+		var item = new CompletionItem(label);
+		item.setTextEdit(Either.forLeft(edit));
+		item.setKind(CompletionItemKind.Snippet);
+		item.setInsertTextFormat(InsertTextFormat.PlainText);
+		var additionalTextEdits = new ArrayList<TextEdit>();
+		additionalTextEdits.add(deleteEdit);
+		item.setAdditionalTextEdits(additionalTextEdits);
+		return item;
+	}
+
+	private static CompletionItem createSnippetPostfixCompletionItem(String label, TextEdit edit, TextEdit deleteEdit)
+	{
+		var item = createPlainTextPostfixCompletionItem(label, edit, deleteEdit);
+		item.setInsertTextFormat(InsertTextFormat.Snippet);
+		return item;
+	}
+
+	private static void addValPostfix(
+		ArrayList<CompletionItem> completionItems, ITypedVariableNode typedVar,
+		String identifierName, Range rangeToInsert, TextEdit deleteEdit
+	)
+	{
+		if (!typedVar.type().isAlphaNumericFamily())
+		{
+			return;
+		}
+
+		var edit = new TextEdit(rangeToInsert, "VAL(%s)".formatted(identifierName));
+		completionItems.add(
+			createPlainTextPostfixCompletionItem("val", edit, deleteEdit)
+		);
+	}
+
+	private static void addCaseTranslationPostfix(
+		ArrayList<CompletionItem> completionItems, ITypedVariableNode typedVar,
+		String identifierName, Range rangeToInsert, TextEdit deleteEdit
+	)
+	{
+		if (!typedVar.type().isAlphaNumericFamily())
+		{
+			return;
+		}
+
+		var upperEdit = new TextEdit(rangeToInsert, "*TRANSLATE(%s, UPPER)".formatted(identifierName));
+		var lowerEdit = new TextEdit(rangeToInsert, "*TRANSLATE(%s, LOWER)".formatted(identifierName));
+
+		completionItems.add(
+			createPlainTextPostfixCompletionItem("toUpperCase", upperEdit, deleteEdit)
+		);
+		completionItems.add(
+			createPlainTextPostfixCompletionItem("toLowerCase", lowerEdit, deleteEdit)
+		);
 	}
 
 	private static void addOccPostfix(ArrayList<CompletionItem> completionItems, String identifierName, IVariableNode variableInvokedOn, Range rangeToInsert, TextEdit deleteEdit)
@@ -188,12 +278,9 @@ public class CompletionProvider
 			: identifierName;
 
 		var edit = new TextEdit(rangeToInsert, "*OCC(%s)".formatted(occVar));
-		var item = new CompletionItem("occ");
-		item.setTextEdit(Either.forLeft(edit));
-		item.setKind(CompletionItemKind.Snippet);
-		item.setInsertTextFormat(InsertTextFormat.Snippet);
-		item.setAdditionalTextEdits(List.of(deleteEdit));
-		completionItems.add(item);
+		completionItems.add(
+			createSnippetPostfixCompletionItem("occ", edit, deleteEdit)
+		);
 	}
 
 	private static void addIfSpecifiedPostfix(ArrayList<CompletionItem> completionItems, String identifierName, Range rangeToInsert, TextEdit deleteEdit)
@@ -202,12 +289,9 @@ public class CompletionProvider
 			IF %s SPECIFIED
 			  ${0:IGNORE}
 			END-IF""".formatted(identifierName));
-		var item = new CompletionItem("ifSpecified");
-		item.setTextEdit(Either.forLeft(edit));
-		item.setKind(CompletionItemKind.Snippet);
-		item.setInsertTextFormat(InsertTextFormat.Snippet);
-		item.setAdditionalTextEdits(List.of(deleteEdit));
-		completionItems.add(item);
+		completionItems.add(
+			createSnippetPostfixCompletionItem("ifSpecified", edit, deleteEdit)
+		);
 	}
 
 	private static void addIfPostfix(
@@ -219,12 +303,9 @@ public class CompletionProvider
 			IF %s$1
 			  ${0:IGNORE}
 			END-IF""".formatted(identifierName));
-		var item = new CompletionItem("if");
-		item.setTextEdit(Either.forLeft(edit));
-		item.setKind(CompletionItemKind.Snippet);
-		item.setInsertTextFormat(InsertTextFormat.Snippet);
-		item.setAdditionalTextEdits(List.of(deleteEdit));
-		completionItems.add(item);
+		completionItems.add(
+			createSnippetPostfixCompletionItem("if", edit, deleteEdit)
+		);
 	}
 
 	private static void addForLoopPostfix(
@@ -243,14 +324,7 @@ public class CompletionProvider
 			FOR #I-%s := 1 TO #S-%s
 			  ${0:IGNORE}
 			END-FOR""".formatted(sanitizedName, occVar, sanitizedName, sanitizedName));
-		var item = new CompletionItem("for");
-		item.setTextEdit(Either.forLeft(edit));
-		item.setKind(CompletionItemKind.Snippet);
-		item.setInsertTextFormat(InsertTextFormat.Snippet);
-
-		var additionalEdits = new ArrayList<TextEdit>();
-		additionalEdits.add(deleteEdit);
-
+		var item = createSnippetPostfixCompletionItem("for", edit, deleteEdit);
 		var editBuilder = new WorkspaceEditBuilder();
 		editBuilder
 			.addsVariable(file, "#S-%s".formatted(sanitizedName), "(I4)", VariableScope.LOCAL)
@@ -258,9 +332,8 @@ public class CompletionProvider
 		var workspaceEdit = editBuilder.build();
 		if (workspaceEdit.getChanges().containsKey(file.getUri()))
 		{
-			additionalEdits.addAll(workspaceEdit.getChanges().get(file.getUri()));
+			item.getAdditionalTextEdits().addAll(workspaceEdit.getChanges().get(file.getUri()));
 		}
-		item.setAdditionalTextEdits(additionalEdits);
 
 		completionItems.add(item);
 	}
@@ -283,13 +356,9 @@ public class CompletionProvider
 			  ${0:IGNORE}
 			END-IF""".formatted(identifierAccess, defaultValue));
 
-		var item = new CompletionItem("ifDefault");
-		item.setTextEdit(Either.forLeft(edit));
-		item.setKind(CompletionItemKind.Snippet);
-		item.setInsertTextFormat(InsertTextFormat.Snippet);
-		item.setAdditionalTextEdits(List.of(deleteEdit));
-
-		completionItems.add(item);
+		completionItems.add(
+			createSnippetPostfixCompletionItem("ifDefault", edit, deleteEdit)
+		);
 	}
 
 	private List<CompletionItem> localSubroutineCompletions(INaturalModule module, CodeCompletionContext context)
