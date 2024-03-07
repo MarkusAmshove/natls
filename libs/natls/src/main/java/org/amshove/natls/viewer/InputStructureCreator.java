@@ -15,6 +15,7 @@ public class InputStructureCreator
 		}
 
 		var structure = new InputStructure();
+		structure.setAttributes(inputs.get(inputIndex).statementAttributes());
 		structure.setOperands(inputs.get(inputIndex).operands());
 
 		return structure;

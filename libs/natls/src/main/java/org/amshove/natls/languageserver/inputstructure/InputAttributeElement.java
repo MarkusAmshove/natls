@@ -20,4 +20,10 @@ public class InputAttributeElement
 	{
 		return value;
 	}
+
+	@Override
+	public String toString()
+	{
+		return "%s { kind: %s, value: %s }".formatted(getClass().getSimpleName(), getKind(), getValue());
+	}
 }
