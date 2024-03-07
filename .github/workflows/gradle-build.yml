@@ -119,11 +119,11 @@ jobs:
           retention-days: 1
 
       - name: Save PR number
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-latest'
         run: echo ${{ github.event.number }} > PR_NUMBER.txt
 
       - name: Archive PR number
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
         with:
           name: PR_NUMBER
