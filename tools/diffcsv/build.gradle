@@ -1,11 +1,15 @@
-plugins {
-    id 'com.github.johnrengelman.shadow' version '7.1.0'
-}
-
-shadowJar {
-    archiveBaseName.set('diffcsv')
-    archiveClassifier.set('')
-    archiveVersion.set('')
+tasks.register('fatJar', Jar) {
+    manifest {
+        attributes(
+                'Main-Class': 'org.amshove.natls.diffcsv.App',
+                'Implementation-Title': project.name,
+                'Implementation-Version': project.version
+        )
+    }
+    archiveFileName = 'diffcsv.jar'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from {configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
 }
 
 jar {

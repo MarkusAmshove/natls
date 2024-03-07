@@ -9,6 +9,7 @@ import org.amshove.natparse.natural.project.NaturalProgrammingMode;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Lexer
 {
@@ -1171,14 +1172,7 @@ public class Lexer
 
 		var lexeme = scanner.lexemeText();
 		var kind = KeywordTable.getKeyword(lexeme);
-		if (kind != null)
-		{
-			createAndAdd(kind);
-		}
-		else
-		{
-			createAndAdd(SyntaxKind.IDENTIFIER);
-		}
+		createAndAdd(Objects.requireNonNullElse(kind, SyntaxKind.IDENTIFIER));
 	}
 
 	private void controlVariableAttribute()

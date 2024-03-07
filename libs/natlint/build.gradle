@@ -1,6 +1,5 @@
 plugins {
     id 'maven-publish'
-    id 'com.github.johnrengelman.shadow' version '5.2.0' // do not update unless https://github.com/johnrengelman/shadow/issues/651 is fixed
 }
 
 dependencies {
@@ -12,12 +11,6 @@ dependencies {
     testImplementation project(':testhelpers')
 }
 
-shadowJar {
-    archiveBaseName.set('natlint')
-    archiveClassifier.set('')
-    archiveVersion.set('')
-}
-
 jar {
     manifest {
         attributes(
@@ -26,6 +19,21 @@ jar {
             'Implementation-Version': project.version
         )
     }
+}
+
+tasks.register('fatJar', Jar) {
+    manifest {
+        attributes(
+                'Main-Class': 'org.amshove.natlint.App',
+                'Implementation-Title': project.name,
+                'Implementation-Version': project.version
+        )
+    }
+    archiveFileName = 'natlint.jar'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    dependsOn(':natparse:jar')
+    from {configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
 }
 
 java {
@@ -72,3 +80,6 @@ signing {
     sign publishing.publications.mavenNatlint
 }
 
+artifacts {
+    jar
+}
