@@ -51,8 +51,8 @@ jobs:
       - name: Check Formatting
         run: ./gradlew javadoc
 
-  test-maven-central-release:
-    name: Test Release to Maven Central
+  test-maven-release:
+    name: Test Maven publish
     runs-on: ubuntu-latest
 
     steps:
@@ -67,7 +67,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Publish with Gradle
+      - name: Publish to Maven local
         env:
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
