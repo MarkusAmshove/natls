@@ -3980,4 +3980,20 @@ class StatementListParserShould extends StatementParseTest
 			END-DECIDE
 			""".formatted(branch), ParserError.STATEMENT_HAS_EMPTY_BODY);
 	}
+
+	@Test
+	void consumeIncDir()
+	{
+		assertParsesSingleStatement("""
+               INCDIR #VAR #VAR1 #VAR2;
+            """, IIncDirNode.class);
+	}
+
+	@Test
+	void consumeRuleVar()
+	{
+		assertParsesSingleStatement("""
+               RULEVAR DDM.FIELD;
+            """, IRuleVarNode.class);
+	}
 }

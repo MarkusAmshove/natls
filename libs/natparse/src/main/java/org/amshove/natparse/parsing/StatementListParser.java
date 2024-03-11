@@ -382,6 +382,12 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case TERMINATE:
 						statementList.addStatement(terminate());
 						break;
+					case RULEVAR:
+						statementList.addStatement(rulevar());
+						break;
+					case INCDIR:
+						statementList.addStatement(incdir());
+						break;
 					case DECIDE:
 						if (peekKind(1, SyntaxKind.FOR))
 						{
@@ -4116,6 +4122,30 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return statement;
 	}
 
+	private RuleVarNode rulevar() throws ParseError
+	{
+		var node = new RuleVarNode();
+		consumeMandatory(node, SyntaxKind.RULEVAR);
+		while (!isAtEnd() && !isStatementStart())
+		{
+			consume(node);
+		}
+
+		return node;
+	}
+
+	private IncDirNode incdir() throws ParseError
+	{
+		var node = new IncDirNode();
+		consumeMandatory(node, SyntaxKind.INCDIR);
+		while (!isAtEnd() && !isStatementStart())
+		{
+			consume(node);
+		}
+
+		return node;
+	}
+
 	private static final Set<SyntaxKind> READ_SYNTAXES = Set
 		.of(SyntaxKind.BY, SyntaxKind.WITH, SyntaxKind.KW_ISN, SyntaxKind.IN, SyntaxKind.PHYSICAL, SyntaxKind.LOGICAL, SyntaxKind.SEQUENCE);
 	private static final List<SyntaxKind> READ_SEQUENCES = List
@@ -4704,7 +4734,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		return switch (currentKind)
 		{
-			case ACCEPT, ADD, ASSIGN, BEFORE, BACKOUT, CALL, CALLNAT, CLOSE, COMMIT, COMPOSE, COMPRESS, COMPUTE, DECIDE, DEFINE, DELETE, DISPLAY, DIVIDE, DO, DOEND, DOWNLOAD, EJECT, END, ESCAPE, EXAMINE, EXPAND, FETCH, FIND, FOR, FORMAT, GET, HISTOGRAM, IF, IGNORE, INCLUDE, INPUT, INSERT, INTERFACE, LOOP, METHOD, MOVE, MULTIPLY, NEWPAGE, OBTAIN, OPTIONS, PASSW, PERFORM, PRINT, PROCESS, PROPERTY, READ, REDEFINE, REDUCE, REINPUT, REJECT, RELEASE, REPEAT, RESET, RESIZE, RETRY, ROLLBACK, RUN, SELECT, SEPARATE, SET, SKIP, SORT, STACK, STOP, STORE, SUBTRACT, TERMINATE, UPDATE, WRITE -> true;
+			case ACCEPT, ADD, ASSIGN, BEFORE, BACKOUT, CALL, CALLNAT, CLOSE, COMMIT, COMPOSE, COMPRESS, COMPUTE, DECIDE, DEFINE, DELETE, DISPLAY, DIVIDE, DO, DOEND, DOWNLOAD, EJECT, END, ESCAPE, EXAMINE, EXPAND, FETCH, FIND, FOR, FORMAT, GET, HISTOGRAM, IF, IGNORE, INCLUDE, INPUT, INSERT, INTERFACE, LOOP, METHOD, MOVE, MULTIPLY, NEWPAGE, OBTAIN, OPTIONS, PASSW, PERFORM, PRINT, PROCESS, PROPERTY, READ, REDEFINE, REDUCE, REINPUT, REJECT, RELEASE, REPEAT, RESET, RESIZE, RETRY, ROLLBACK, RUN, SELECT, SEPARATE, SET, SKIP, SORT, STACK, STOP, STORE, SUBTRACT, TERMINATE, UPDATE, WRITE, INCDIR, RULEVAR -> true;
 			case ON -> peekKind(1, SyntaxKind.ERROR);
 			case OPEN -> peekKind(1, SyntaxKind.CONVERSATION);
 			case PARSE -> peekKind(1, SyntaxKind.XML);
