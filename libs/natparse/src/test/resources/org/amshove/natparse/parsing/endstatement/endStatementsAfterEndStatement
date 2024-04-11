@@ -1,0 +1,6 @@
+END
+* This is a comment
+/* Comment another way
+**Yet another
+**ISN this is not *ISN
+END /* !{D:ERROR:NPP054}
