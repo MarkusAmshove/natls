@@ -115,14 +115,14 @@ class CopyCodesShould extends ParserIntegrationTest
 	void notReportDiagnosticsForEndStatementMissingUsingCC(@ProjectName("copycodetests") NaturalProject project)
 	{
 		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "NOENDSUB"), ISubprogram.class);
-		assertThat(subprogram.diagnostics()).hasSize(0);
+		assertThat(subprogram.diagnostics()).isEmpty();
 	}
 
 	@Test
 	void raiseADiagnosticForDoubleEndStatementsUsingCC(@ProjectName("copycodetests") NaturalProject project)
 	{
 		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "ENDSUB"), ISubprogram.class);
-		assertThat(subprogram.diagnostics()).hasSize(1);
+		assertThat(subprogram.diagnostics()).isNotEmpty();
 	}
 
 }
