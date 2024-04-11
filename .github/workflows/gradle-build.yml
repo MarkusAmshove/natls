@@ -52,9 +52,9 @@ jobs:
         run: ./gradlew javadoc
 
   test-maven-release:
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     name: Test Maven publish
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'MarkusAmshove'
 
     steps:
       - uses: actions/checkout@v4
