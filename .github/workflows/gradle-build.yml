@@ -54,6 +54,7 @@ jobs:
   test-maven-release:
     name: Test Maven publish
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'MarkusAmshove'
 
     steps:
       - uses: actions/checkout@v4
