@@ -122,7 +122,7 @@ class CopyCodesShould extends ParserIntegrationTest
 	void raiseADiagnosticForDoubleEndStatementsUsingCC(@ProjectName("copycodetests") NaturalProject project)
 	{
 		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "ENDSUB"), ISubprogram.class);
-		assertThat(subprogram.diagnostics()).hasSize(0);
+		assertThat(subprogram.diagnostics()).hasSize(1);
 	}
 
 }
