@@ -221,7 +221,7 @@ public class NaturalParser
 				}
 				endStatementFound = endStatementFound || (statement instanceof IEndNode);
 			}
-			if (!endStatementFound)
+			if (!endStatementFound && naturalModule.body().statements().hasItems())
 			{
 				reportEndStatementMissing(naturalModule, naturalModule.body().statements().last());
 			}
