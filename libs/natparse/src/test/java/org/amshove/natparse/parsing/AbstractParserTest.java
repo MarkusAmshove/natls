@@ -175,4 +175,11 @@ public abstract class AbstractParserTest<NodeType>
 		assertThat(literal.token().kind()).isEqualTo(literalType);
 		return literal;
 	}
+
+	protected ILiteralNode assertLiteral(IOperandNode operand, SyntaxKind literalType, String source)
+	{
+		var literal = assertLiteral(operand, literalType);
+		assertThat(literal.token().source()).isEqualTo(source);
+		return literal;
+	}
 }

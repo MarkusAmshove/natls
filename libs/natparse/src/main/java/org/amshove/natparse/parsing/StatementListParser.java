@@ -286,6 +286,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 							statementList.addStatement(parseAtPositionOf(SyntaxKind.END, SyntaxKind.DATA, SyntaxKind.END_ENDDATA, true, new EndOfDataNode()));
 							break;
 						}
+						if (peekKind(1, SyntaxKind.TRANSACTION) || (peekKind(1, SyntaxKind.OF) && peekKind(2, SyntaxKind.TRANSACTION)))
+						{
+							statementList.addStatement(endTransaction());
+							break;
+						}
 
 						statementList.addStatement(end());
 						break;
@@ -2840,6 +2845,21 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		{
 			report(ParserErrors.emptyBodyDisallowed(reportingToken));
 		}
+	}
+
+	private StatementNode endTransaction() throws ParseError
+	{
+		var endTransaction = new EndTransactionNode();
+		consumeMandatory(endTransaction, SyntaxKind.END);
+		consumeOptionally(endTransaction, SyntaxKind.OF);
+		consumeMandatory(endTransaction, SyntaxKind.TRANSACTION);
+
+		while (!isAtEnd() && isOperand())
+		{
+			endTransaction.addOperand(consumeOperandNode(endTransaction));
+		}
+
+		return endTransaction;
 	}
 
 	private StatementNode end() throws ParseError
