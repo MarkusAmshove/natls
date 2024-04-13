@@ -55,7 +55,7 @@ partial - partially implemented to prevent false positives (14)
 | DOWNLOAD PC FILE | :white_check_mark: |
 | EJECT | :white_check_mark: |
 | END | :white_check_mark: |
-| END TRANSACTION | :x:                |
+| END TRANSACTION | :white_check_mark:                |
 | ESCAPE | :white_check_mark: |
 | EXAMINE | :white_check_mark: |
 | EXPAND | :white_check_mark: |

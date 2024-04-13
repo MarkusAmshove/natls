@@ -4003,4 +4003,34 @@ class StatementListParserShould extends StatementParseTest
                RULEVAR DDM.FIELD;
             """, IRuleVarNode.class);
 	}
+
+	@Test
+	void parseSimpleEndTransaction()
+	{
+		var et = assertParsesSingleStatement("END TRANSACTION", IEndTransactionNode.class);
+		assertThat(et.operands()).isEmpty();
+	}
+
+	@Test
+	void parseSimpleEndOfTransaction()
+	{
+		var et = assertParsesSingleStatement("END OF TRANSACTION", IEndTransactionNode.class);
+		assertThat(et.operands()).isEmpty();
+	}
+
+	@Test
+	void parseEndTransactionWithAnOperand()
+	{
+		var et = assertParsesSingleStatement("END TRANSACTION #VAR", IEndTransactionNode.class);
+		assertIsVariableReference(et.operands().first(), "#VAR");
+	}
+
+	@Test
+	void parseEndTransactionWithMultipleOperands()
+	{
+		var et = assertParsesSingleStatement("END TRANSACTION #VAR 1000 #VAR2", IEndTransactionNode.class);
+		assertIsVariableReference(et.operands().first(), "#VAR");
+		assertLiteral(et.operands().get(1), SyntaxKind.NUMBER_LITERAL, "1000");
+		assertIsVariableReference(et.operands().last(), "#VAR2");
+	}
 }
