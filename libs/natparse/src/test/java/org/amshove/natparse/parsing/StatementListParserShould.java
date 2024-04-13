@@ -246,7 +246,14 @@ class StatementListParserShould extends StatementParseTest
 	void parseAnEndNode()
 	{
 		var endNode = assertParsesSingleStatement("END", IEndNode.class);
-		assertThat(endNode.descendants()).isNotEmpty();
+		assertThat(endNode.token().kind()).isEqualTo(SyntaxKind.END);
+	}
+
+	@Test
+	void parseAnEndNodeWithDot()
+	{
+		var endNode = assertParsesSingleStatement(".", IEndNode.class);
+		assertThat(endNode.token().kind()).isEqualTo(SyntaxKind.DOT);
 	}
 
 	@Test

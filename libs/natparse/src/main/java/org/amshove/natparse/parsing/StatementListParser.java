@@ -272,6 +272,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case DISPLAY:
 						statementList.addStatement(display());
 						break;
+					case DOT:
+						statementList.addStatement(dotEnd());
+						break;
 					case END:
 						if (peekKind(1, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE))
 						{
@@ -2842,7 +2845,14 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private StatementNode end() throws ParseError
 	{
 		var endNode = new EndNode();
-		consumeMandatory(endNode, SyntaxKind.END);
+		endNode.setEndToken(consumeMandatory(endNode, SyntaxKind.END));
+		return endNode;
+	}
+
+	private StatementNode dotEnd() throws ParseError
+	{
+		var endNode = new EndNode();
+		endNode.setEndToken(consumeMandatory(endNode, SyntaxKind.DOT));
 		return endNode;
 	}
 
