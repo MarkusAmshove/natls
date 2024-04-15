@@ -246,7 +246,14 @@ class StatementListParserShould extends StatementParseTest
 	void parseAnEndNode()
 	{
 		var endNode = assertParsesSingleStatement("END", IEndNode.class);
-		assertThat(endNode.descendants()).isNotEmpty();
+		assertThat(endNode.token().kind()).isEqualTo(SyntaxKind.END);
+	}
+
+	@Test
+	void parseAnEndNodeWithDot()
+	{
+		var endNode = assertParsesSingleStatement(".", IEndNode.class);
+		assertThat(endNode.token().kind()).isEqualTo(SyntaxKind.DOT);
 	}
 
 	@Test
@@ -3995,5 +4002,35 @@ class StatementListParserShould extends StatementParseTest
 		assertParsesSingleStatement("""
                RULEVAR DDM.FIELD;
             """, IRuleVarNode.class);
+	}
+
+	@Test
+	void parseSimpleEndTransaction()
+	{
+		var et = assertParsesSingleStatement("END TRANSACTION", IEndTransactionNode.class);
+		assertThat(et.operands()).isEmpty();
+	}
+
+	@Test
+	void parseSimpleEndOfTransaction()
+	{
+		var et = assertParsesSingleStatement("END OF TRANSACTION", IEndTransactionNode.class);
+		assertThat(et.operands()).isEmpty();
+	}
+
+	@Test
+	void parseEndTransactionWithAnOperand()
+	{
+		var et = assertParsesSingleStatement("END TRANSACTION #VAR", IEndTransactionNode.class);
+		assertIsVariableReference(et.operands().first(), "#VAR");
+	}
+
+	@Test
+	void parseEndTransactionWithMultipleOperands()
+	{
+		var et = assertParsesSingleStatement("END TRANSACTION #VAR 1000 #VAR2", IEndTransactionNode.class);
+		assertIsVariableReference(et.operands().first(), "#VAR");
+		assertLiteral(et.operands().get(1), SyntaxKind.NUMBER_LITERAL, "1000");
+		assertIsVariableReference(et.operands().last(), "#VAR2");
 	}
 }

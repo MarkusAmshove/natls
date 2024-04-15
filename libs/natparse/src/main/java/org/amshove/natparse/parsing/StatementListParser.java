@@ -272,6 +272,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case DISPLAY:
 						statementList.addStatement(display());
 						break;
+					case DOT:
+						statementList.addStatement(dotEnd());
+						break;
 					case END:
 						if (peekKind(1, SyntaxKind.PAGE) || peekKind(2, SyntaxKind.PAGE))
 						{
@@ -281,6 +284,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						if (peekKind(1, SyntaxKind.DATA) || peekKind(2, SyntaxKind.DATA))
 						{
 							statementList.addStatement(parseAtPositionOf(SyntaxKind.END, SyntaxKind.DATA, SyntaxKind.END_ENDDATA, true, new EndOfDataNode()));
+							break;
+						}
+						if (peekKind(1, SyntaxKind.TRANSACTION) || (peekKind(1, SyntaxKind.OF) && peekKind(2, SyntaxKind.TRANSACTION)))
+						{
+							statementList.addStatement(endTransaction());
 							break;
 						}
 
@@ -2839,10 +2847,32 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 	}
 
+	private StatementNode endTransaction() throws ParseError
+	{
+		var endTransaction = new EndTransactionNode();
+		consumeMandatory(endTransaction, SyntaxKind.END);
+		consumeOptionally(endTransaction, SyntaxKind.OF);
+		consumeMandatory(endTransaction, SyntaxKind.TRANSACTION);
+
+		while (!isAtEnd() && isOperand())
+		{
+			endTransaction.addOperand(consumeOperandNode(endTransaction));
+		}
+
+		return endTransaction;
+	}
+
 	private StatementNode end() throws ParseError
 	{
 		var endNode = new EndNode();
-		consumeMandatory(endNode, SyntaxKind.END);
+		endNode.setEndToken(consumeMandatory(endNode, SyntaxKind.END));
+		return endNode;
+	}
+
+	private StatementNode dotEnd() throws ParseError
+	{
+		var endNode = new EndNode();
+		endNode.setEndToken(consumeMandatory(endNode, SyntaxKind.DOT));
 		return endNode;
 	}
 
