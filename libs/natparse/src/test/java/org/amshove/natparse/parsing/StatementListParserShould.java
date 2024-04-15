@@ -2281,11 +2281,18 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(newPage.descendants()).hasSize(11);
 	}
 
-	@Test
-	void parseNewPageWithTitle()
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"(05) WITH TITLE LEFT 30T 'I N F O R M A T I O N' 65T *DATD /,13,",
+			"(10) TITLE LEFT UNDERLINED (AD=R) *PAGE-NUMBER (SG=OFF) 30T 'I N F O R M A T I O N' 65T *DATD //,17,",
+			"TITLE UNDERLINED (AD=L),4",
+		}
+	)
+	void parseNewPageWithTitle(String statement, int expectedDescendants)
 	{
-		var newPage = assertParsesSingleStatement(" NEWPAGE (05) WITH TITLE LEFT 30T 'I N F O R M A T I O N' 65T *DATD /", INewPageNode.class);
-		assertThat(newPage.descendants()).hasSize(13);
+		var newPage = assertParsesSingleStatement(" NEWPAGE %s".formatted(statement), INewPageNode.class);
+		assertThat(newPage.descendants()).hasSize(expectedDescendants);
 	}
 
 	@Test
