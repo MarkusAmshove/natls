@@ -2282,6 +2282,13 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void parseNewPageWithTitle()
+	{
+		var newPage = assertParsesSingleStatement(" NEWPAGE (05) WITH TITLE LEFT 30T 'I N F O R M A T I O N' 65T *DATD /", INewPageNode.class);
+		assertThat(newPage.descendants()).hasSize(13);
+	}
+
+	@Test
 	void parseNewPageWithoutTitle()
 	{
 		var newPage = assertParsesSingleStatement("NEWPAGE WHEN LESS THAN 10 LINES", INewPageNode.class);
