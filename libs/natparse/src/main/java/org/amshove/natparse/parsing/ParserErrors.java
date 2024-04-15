@@ -680,4 +680,23 @@ class ParserErrors
 			ParserError.INVALID_INPUT_ELEMENT_ATTRIBUTE
 		);
 	}
+
+	public static IDiagnostic noSourceCodeAllowedAfterEnd(IStatementNode statement)
+	{
+		return ParserDiagnostic.create(
+			"No source code allowed after the END statement",
+			statement,
+			ParserError.NO_SOURCE_ALLOWED_AFTER_END_STATEMENT
+		);
+	}
+
+	public static IDiagnostic endStatementMissing(IStatementNode statement)
+	{
+		return ParserDiagnostic.create(
+			"END statement missing after",
+			statement,
+			ParserError.END_STATEMENT_MISSING
+		);
+	}
+
 }

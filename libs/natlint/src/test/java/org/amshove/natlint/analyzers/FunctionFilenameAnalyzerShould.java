@@ -19,6 +19,7 @@ class FunctionFilenameAnalyzerShould extends AbstractAnalyzerTest
 			RETURNS (L)
 			FUNC := TRUE
 			END-FUNCTION
+			END
 			""",
 			expectDiagnostic(0, FunctionFilenameAnalyzer.FUNCTION_FILE_NAME_MISMATCH)
 		);
@@ -33,6 +34,7 @@ class FunctionFilenameAnalyzerShould extends AbstractAnalyzerTest
 			RETURNS (L)
 			FUNC := TRUE
 			END-FUNCTION
+			END
 			""",
 			expectNoDiagnosticOfType(FunctionFilenameAnalyzer.FUNCTION_FILE_NAME_MISMATCH)
 		);

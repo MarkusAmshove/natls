@@ -1,0 +1,3 @@
+END
+* This is a comment
+WRITE 'Hello' /* !{D:ERROR:NPP054}

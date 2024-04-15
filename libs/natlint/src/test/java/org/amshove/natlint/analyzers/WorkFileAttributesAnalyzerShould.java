@@ -20,6 +20,7 @@ class WorkFileAttributesAnalyzerShould extends AbstractAnalyzerTest
 			DEFINE DATA LOCAL
 			END-DEFINE
 			DEFINE WORK FILE 1
+			END
 			""",
 			expectNoDiagnosticOfType(WorkFileAttributesAnalyzer.MULTIPLE_ATTRIBUTES_OF_SAME_TYPE)
 		);
@@ -34,6 +35,7 @@ class WorkFileAttributesAnalyzerShould extends AbstractAnalyzerTest
 			1 #VAR (A10)
 			END-DEFINE
 			DEFINE WORK FILE 1 ATTRIBUTES #VAR
+			END
 			""",
 			expectNoDiagnosticOfType(WorkFileAttributesAnalyzer.MULTIPLE_ATTRIBUTES_OF_SAME_TYPE)
 		);
@@ -53,6 +55,7 @@ class WorkFileAttributesAnalyzerShould extends AbstractAnalyzerTest
 			DEFINE DATA LOCAL
 			END-DEFINE
 			DEFINE WORK FILE 1 ATTRIBUTES '%s'
+			END
 			""".formatted(attributes),
 			expectNoDiagnosticOfType(WorkFileAttributesAnalyzer.MULTIPLE_ATTRIBUTES_OF_SAME_TYPE)
 		);
@@ -66,6 +69,7 @@ class WorkFileAttributesAnalyzerShould extends AbstractAnalyzerTest
 			DEFINE DATA LOCAL
 			END-DEFINE
 			DEFINE WORK FILE 1 ATTRIBUTES 'BOM,NOBOM'
+			END
 			""",
 			expectDiagnostic(2, WorkFileAttributesAnalyzer.MULTIPLE_ATTRIBUTES_OF_SAME_TYPE)
 		);
