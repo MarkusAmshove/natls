@@ -6,6 +6,7 @@ import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.conditionals.IConditionNode;
 import org.amshove.natparse.natural.conditionals.IIfBreakCriteriaNode;
 import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
+import org.amshove.natparse.natural.output.IOutputNewLineNode;
 import org.amshove.natparse.natural.output.IOutputOperandNode;
 import org.amshove.natparse.natural.output.IOutputPositioningNode;
 import org.amshove.natparse.natural.output.ISpaceElementNode;
@@ -2293,6 +2294,15 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var newPage = assertParsesSingleStatement(" NEWPAGE %s".formatted(statement), INewPageNode.class);
 		assertThat(newPage.descendants()).hasSize(expectedDescendants);
+	}
+
+	@Test
+	void parseNewPageWithTitleOperandCheck()
+	{
+		var newPage = assertParsesSingleStatement("NEWPAGE WITH TITLE 'The Title' '='#X /", INewPageNode.class);
+		assertThat(newPage.operands()).hasSize(4);
+		assertNodeType(newPage.operands().first(), IOutputOperandNode.class);
+		assertNodeType(newPage.operands().last(), IOutputNewLineNode.class);
 	}
 
 	@Test
