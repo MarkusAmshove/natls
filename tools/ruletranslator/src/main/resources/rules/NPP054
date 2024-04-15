@@ -1,0 +1,12 @@
+name: No source allowed after the END statement
+priority: BLOCKER
+tags: compile-time
+type: BUG
+description:
+The END statement indicates the end of the source of a Natural object.
+No other statements or comment lines are allowed after the END
+statement.
+
+A probable cause of this error is the misspelling of a name or the
+omission of 'PAGE', 'DATA', 'TRANSACTION' from the statements
+AT END OF PAGE, AT END OF DATA, END TRANSACTION respectively.

@@ -1,0 +1,3 @@
+END
+* This is a comment
+ABC := 0 /* !{D:ERROR:NPP054}

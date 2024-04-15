@@ -211,6 +211,21 @@ public class NaturalParser
 
 		if (naturalModule.body() != null && naturalModule.file().getFiletype() != NaturalFileType.COPYCODE)
 		{
+			var endStatementFound = false;
+			for (var statement : naturalModule.body().statements())
+			{
+				if (endStatementFound)
+				{
+					reportNoSourceCodeAfterEndStatementAllowed(naturalModule, statement);
+					break;
+				}
+				endStatementFound = endStatementFound || (statement instanceof IEndNode);
+			}
+			if (!endStatementFound && naturalModule.body().statements().hasItems())
+			{
+				reportEndStatementMissing(naturalModule, naturalModule.body().statements().last());
+			}
+
 			var typer = new TypeChecker();
 			for (var diagnostic : typer.check(naturalModule.body()))
 			{
@@ -358,6 +373,18 @@ public class NaturalParser
 		{
 			diagnostic = diagnostic.relocate(unresolvedReference.diagnosticPosition());
 		}
+		module.addDiagnostic(diagnostic);
+	}
+
+	private void reportNoSourceCodeAfterEndStatementAllowed(NaturalModule module, IStatementNode statement)
+	{
+		var diagnostic = ParserErrors.noSourceCodeAllowedAfterEnd(statement);
+		module.addDiagnostic(diagnostic);
+	}
+
+	private void reportEndStatementMissing(NaturalModule module, IStatementNode statement)
+	{
+		var diagnostic = ParserErrors.endStatementMissing(statement);
 		module.addDiagnostic(diagnostic);
 	}
 
