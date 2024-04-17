@@ -1835,7 +1835,18 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				consumeOptionally(newPage, SyntaxKind.JUSTIFIED);
 			}
 			consumeOptionally(newPage, SyntaxKind.UNDERLINED);
-			consumeOperandNode(newPage);
+
+			while (!isAtEnd() && !isStatementStart())
+			{
+				if (!isOperand() && !peekKind(SyntaxKind.TAB_SETTING) && !peekKind(SyntaxKind.SLASH))
+				{
+					break;
+				}
+
+				var operand = consumeInputOutputOperand(newPage);
+				newPage.addOperand(operand);
+				checkOutputElementAttributes(operand);
+			}
 		}
 
 		return newPage;

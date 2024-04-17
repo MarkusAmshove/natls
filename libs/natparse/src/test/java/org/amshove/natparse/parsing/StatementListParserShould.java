@@ -6,6 +6,7 @@ import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.conditionals.IConditionNode;
 import org.amshove.natparse.natural.conditionals.IIfBreakCriteriaNode;
 import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
+import org.amshove.natparse.natural.output.IOutputNewLineNode;
 import org.amshove.natparse.natural.output.IOutputOperandNode;
 import org.amshove.natparse.natural.output.IOutputPositioningNode;
 import org.amshove.natparse.natural.output.ISpaceElementNode;
@@ -2279,6 +2280,29 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var newPage = assertParsesSingleStatement("NEWPAGE EVEN IF TOP OF PAGE WITH TITLE LEFT JUSTIFIED 'The Title'", INewPageNode.class);
 		assertThat(newPage.descendants()).hasSize(11);
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"(05) WITH TITLE LEFT 30T 'I N F O R M A T I O N' 65T *DATD /,13,",
+			"(10) TITLE LEFT UNDERLINED (AD=R) *PAGE-NUMBER (SG=OFF) 30T 'I N F O R M A T I O N' 65T *DATD //,17,",
+			"TITLE UNDERLINED (AD=L),4",
+		}
+	)
+	void parseNewPageWithTitle(String statement, int expectedDescendants)
+	{
+		var newPage = assertParsesSingleStatement(" NEWPAGE %s".formatted(statement), INewPageNode.class);
+		assertThat(newPage.descendants()).hasSize(expectedDescendants);
+	}
+
+	@Test
+	void parseNewPageWithTitleOperandCheck()
+	{
+		var newPage = assertParsesSingleStatement("NEWPAGE WITH TITLE 'The Title' '='#X /", INewPageNode.class);
+		assertThat(newPage.operands()).hasSize(4);
+		assertNodeType(newPage.operands().first(), IOutputOperandNode.class);
+		assertNodeType(newPage.operands().last(), IOutputNewLineNode.class);
 	}
 
 	@Test
