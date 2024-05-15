@@ -41,7 +41,7 @@ public class LspProjectNameResolver implements ParameterResolver
 			var server = new NaturalLanguageServer();
 			var params = new InitializeParams();
 			params.setCapabilities(createCapabilities());
-			params.setWorkspaceFolders(List.of(new WorkspaceFolder(tempDir.getPath().toUri().toString())));
+			params.setWorkspaceFolders(List.of(new WorkspaceFolder(tempDir.getPath().toUri().toString(), "Natural")));
 			params.setRootUri(tempDir.getPath().toUri().toString());
 			var client = new StubClient();
 
