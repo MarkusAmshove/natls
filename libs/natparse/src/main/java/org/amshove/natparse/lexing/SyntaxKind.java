@@ -51,6 +51,7 @@ public enum SyntaxKind
 	APPLIC_NAME(false, true, false),
 	INIT_ID(false, true, false),
 	SV_TIME(false, true, false),
+	SV_SUBROUTINE(false, true, false),
 	TIMX(false, true, false),
 	TIMD(false, false, true),
 	TIMN(false, true, false),

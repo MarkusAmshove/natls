@@ -32,6 +32,12 @@ class NaturalProjectFileIndexerShould extends ParserIntegrationTest
 	}
 
 	@Test
+	void indexExternalSubroutinesWithNoDefineDataAndNoSubroutineKeyword()
+	{
+		assertCanFindModule("SPECIAL-EXTERNAL", "SUBNODDD", NaturalFileType.SUBROUTINE);
+	}
+
+	@Test
 	void indexFunctions()
 	{
 		assertCanFindModule("MYFUNC", "FUNC", NaturalFileType.FUNCTION);
