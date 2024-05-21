@@ -490,4 +490,10 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 		assertTokens("*TIME", token(SyntaxKind.SV_TIME, "*TIME"));
 	}
 
+	@Test
+	void lexSubroutine()
+	{
+		assertTokens("*SUBROUTINE", token(SyntaxKind.SV_SUBROUTINE, "*SUBROUTINE"));
+	}
+
 }
