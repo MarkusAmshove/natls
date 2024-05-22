@@ -146,7 +146,12 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 	void addDimension(ArrayDimension dimension)
 	{
 		dimensions.add(dimension);
-		addNode(dimension);
+
+		// If we get a new dimension that is defined for a parent variable, we don't take its ownership
+		if (dimension.parent() == null)
+		{
+			addNode(dimension);
+		}
 	}
 
 	/**
@@ -158,7 +163,7 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 		{
 			if (!this.dimensions.contains(dimension))
 			{
-				this.dimensions.add(0, dimension); // add inhereted dimensions first, as they're defined first
+				this.dimensions.addFirst(dimension); // add inhereted dimensions first, as they're defined first
 			}
 		}
 	}
