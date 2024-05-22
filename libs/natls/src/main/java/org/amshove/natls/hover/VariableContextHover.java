@@ -1,8 +1,6 @@
 package org.amshove.natls.hover;
 
 import org.amshove.natls.markupcontent.IMarkupContentBuilder;
-import org.amshove.natparse.NodeUtil;
-import org.amshove.natparse.natural.IHasDefineData;
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.IUsingNode;
 import org.amshove.natparse.natural.IVariableNode;

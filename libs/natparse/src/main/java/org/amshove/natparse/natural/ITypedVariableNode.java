@@ -1,7 +1,5 @@
 package org.amshove.natparse.natural;
 
-import java.util.stream.Collectors;
-
 public interface ITypedVariableNode extends IVariableNode
 {
 	IVariableType type();
