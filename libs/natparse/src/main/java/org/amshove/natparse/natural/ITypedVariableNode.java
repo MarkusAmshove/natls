@@ -18,10 +18,7 @@ public interface ITypedVariableNode extends IVariableNode
 
 		if (isArray())
 		{
-			details += "/";
-			details += dimensions().stream()
-				.map(IArrayDimension::displayFormat)
-				.collect(Collectors.joining(", "));
+			details += "/" + formatDimensionList();
 		}
 
 		details += ")";

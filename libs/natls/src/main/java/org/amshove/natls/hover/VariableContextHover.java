@@ -24,10 +24,10 @@ class VariableContextHover
 		var variableContext = new StringBuilder();
 
 		appendUsingComment(variableContext);
-		if (variable.level() > 1)
+		var parents = variable.getVariableParentsAscending();
+		for (var parent : parents)
 		{
-			var group = NodeUtil.findLevelOneParentOf(variable);
-			appendVariableComment(group, variableContext, true);
+			appendVariableComment(parent, variableContext, true);
 		}
 
 		appendVariableComment(variable, variableContext, !variableContext.isEmpty());
@@ -53,6 +53,26 @@ class VariableContextHover
 	{
 		var source = "%d %s".formatted(variable.level(), variable.name());
 		var comment = declaringModule.extractLineComment(variable.position().line());
+
+		if (variable.isArray())
+		{
+			var formattedDimensions = new StringBuilder();
+			for (var dimension : variable.dimensions())
+			{
+				if (dimension.parent() == variable)
+				{
+					if (!formattedDimensions.isEmpty())
+					{
+						formattedDimensions.append(",");
+					}
+					formattedDimensions.append(dimension.displayFormat());
+				}
+			}
+			if (!formattedDimensions.isEmpty())
+			{
+				source += " (%s)".formatted(formattedDimensions);
+			}
+		}
 		if (alwaysInclude || !comment.isEmpty())
 		{
 			appendComment("%s %s".formatted(source, comment), chain);
