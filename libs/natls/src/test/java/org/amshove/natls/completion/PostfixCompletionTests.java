@@ -700,7 +700,7 @@ class PostfixCompletionTests extends CompletionTest
 				"N2", "P4", "I4", "L", "C"
 			}
 		)
-		void notBeApplicableOnVariablesThatAreAlphanumericFamily(String type)
+		void notBeApplicableOnVariablesThatAreNumericFamily(String type)
 		{
 			assertCompletions("LIBONE", "SUB.NSN", ".", """
 				DEFINE DATA
@@ -851,6 +851,98 @@ class PostfixCompletionTests extends CompletionTest
 				*TRIM(#VAR, TRAILING)
 				END
 				""");
+		}
+	}
+
+	@Nested
+	class NumericOperationSnippetsShould
+	{
+		@ParameterizedTest
+		@ValueSource(
+			strings =
+			{
+				"N2", "P4", "I4"
+			}
+		)
+		void containIncrementSnippetForNumericTypes(String type)
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (%s)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""".formatted(type))
+				.assertContainsCompletionResultingIn("increment", """
+				DEFINE DATA
+				LOCAL 1 #VAR (%s)
+				END-DEFINE
+				ADD 1 TO #VAR
+				END
+				""".formatted(type));
+		}
+
+		@ParameterizedTest
+		@ValueSource(
+			strings =
+			{
+				"N2", "P4", "I4"
+			}
+		)
+		void containDecrementSnippetForNumericTypes(String type)
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (%s)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""".formatted(type))
+				.assertContainsCompletionResultingIn("decrement", """
+				DEFINE DATA
+				LOCAL 1 #VAR (%s)
+				END-DEFINE
+				SUBTRACT 1 FROM #VAR
+				END
+				""".formatted(type));
+		}
+
+		@ParameterizedTest
+		@ValueSource(
+			strings =
+			{
+				"A4", "B4", "U4", "L", "C", "T", "D"
+			}
+		)
+		void notContainIncrementSnippetForNonNumericTypes(String type)
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (%s)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""".formatted(type))
+				.assertDoesNotContain("increment");
+		}
+
+		@ParameterizedTest
+		@ValueSource(
+			strings =
+			{
+				"A4", "B4", "U4", "L", "C", "T", "D"
+			}
+		)
+		void notContainDecrementSnippetForNonNumericTypes(String type)
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (%s)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""".formatted(type))
+				.assertDoesNotContain("decrement");
 		}
 	}
 }

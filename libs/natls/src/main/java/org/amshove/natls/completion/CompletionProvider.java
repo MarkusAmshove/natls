@@ -175,6 +175,7 @@ public class CompletionProvider
 			addIsDefaultPostfix(completionItems, typedVar, identifierName, rangeToInsert, deleteEdit);
 			addCaseTranslationPostfix(completionItems, typedVar, identifierName, rangeToInsert, deleteEdit);
 			addValPostfix(completionItems, typedVar, identifierName, rangeToInsert, deleteEdit);
+			addIncrementDecrementPostfix(completionItems, typedVar, identifierName, rangeToInsert, deleteEdit);
 			addTrimPostfixes(completionItems, typedVar, identifierName, rangeToInsert, deleteEdit);
 		}
 
@@ -182,6 +183,31 @@ public class CompletionProvider
 		{
 			addIfSpecifiedPostfix(completionItems, identifierName, rangeToInsert, deleteEdit);
 		}
+	}
+
+	private static void addIncrementDecrementPostfix(
+		ArrayList<CompletionItem> completionItems,
+		ITypedVariableNode typedVar, String identifierName, Range rangeToInsert, TextEdit deleteEdit
+	)
+	{
+		if (!typedVar.type().isNumericFamily())
+		{
+			return;
+		}
+
+		var incrementEdit = new TextEdit(rangeToInsert, "ADD 1 TO %s".formatted(identifierName));
+		var decrementEdit = new TextEdit(rangeToInsert, "SUBTRACT 1 FROM %s".formatted(identifierName));
+
+		completionItems.add(
+			createPlainTextPostfixCompletionItem(
+				"increment", incrementEdit, deleteEdit
+			)
+		);
+		completionItems.add(
+			createPlainTextPostfixCompletionItem(
+				"decrement", decrementEdit, deleteEdit
+			)
+		);
 	}
 
 	private static void addTrimPostfixes(
