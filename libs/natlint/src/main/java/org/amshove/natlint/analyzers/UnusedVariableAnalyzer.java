@@ -1,16 +1,11 @@
 package org.amshove.natlint.analyzers;
 
-import org.amshove.natlint.api.AbstractAnalyzer;
-import org.amshove.natlint.api.DiagnosticDescription;
-import org.amshove.natlint.api.IAnalyzeContext;
-import org.amshove.natlint.api.ILinterContext;
+import org.amshove.natlint.api.*;
+import org.amshove.natparse.AdditionalDiagnosticInfo;
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
-import org.amshove.natparse.natural.IGroupNode;
-import org.amshove.natparse.natural.IRedefinitionNode;
-import org.amshove.natparse.natural.ISyntaxNode;
-import org.amshove.natparse.natural.IVariableNode;
+import org.amshove.natparse.natural.*;
 
 public class UnusedVariableAnalyzer extends AbstractAnalyzer
 {
@@ -18,6 +13,11 @@ public class UnusedVariableAnalyzer extends AbstractAnalyzer
 		"NL001",
 		"Variable %s is unused",
 		DiagnosticSeverity.WARNING
+	);
+	public static final DiagnosticDescription ONLY_RESET = DiagnosticDescription.create(
+		"NL101",
+		"Variable %s is changed but never accessed",
+		DiagnosticSeverity.INFO
 	);
 
 	@Override
@@ -45,12 +45,37 @@ public class UnusedVariableAnalyzer extends AbstractAnalyzer
 		}
 
 		var variable = (IVariableNode) syntaxNode;
-		if (computeReferenceCount(variable) == 0
+		var references = computeReferenceCount(variable);
+		if (references == 0
 			&& computeParentReferenceCount(variable) == 0
 			&& (!(variable.parent()instanceof IRedefinitionNode redefine) || noMembersAfterAreReferenced(redefine, variable)))
 		{
 			context.report(UNUSED_VARIABLE.createFormattedDiagnostic(variable.position(), variable.name()));
 
+		}
+
+		if (references > 0 && !(variable instanceof IGroupNode))
+		{
+			var onlyResets = true;
+			for (var reference : variable.references())
+			{
+				if (NodeUtil.findFirstParentOfType(reference, IResetStatementNode.class) == null)
+				{
+					onlyResets = false;
+					break;
+				}
+			}
+
+			if (onlyResets)
+			{
+				var diagnostic = ONLY_RESET.createFormattedDiagnostic(variable.position(), variable.name());
+				for (var reference : variable.references())
+				{
+					diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("Changed here", reference.diagnosticPosition()));
+				}
+
+				context.report(diagnostic);
+			}
 		}
 	}
 
@@ -60,7 +85,7 @@ public class UnusedVariableAnalyzer extends AbstractAnalyzer
 		var memberIndex = redefineMembers.indexOf(variable);
 		for (var i = memberIndex + 1; i < redefineMembers.size(); i++)
 		{
-			if (redefineMembers.get(i).references().size() > 0)
+			if (!redefineMembers.get(i).references().isEmpty())
 			{
 				return false;
 			}
