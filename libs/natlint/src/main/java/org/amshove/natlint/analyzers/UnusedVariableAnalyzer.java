@@ -59,6 +59,7 @@ public class UnusedVariableAnalyzer extends AbstractAnalyzer
 			var onlyResets = true;
 			for (var reference : variable.references())
 			{
+				// TODO: Should actually look for `IMutateVariables` and check if `IMutateVariables::operands()` contains the variable
 				if (NodeUtil.findFirstParentOfType(reference, IResetStatementNode.class) == null)
 				{
 					onlyResets = false;
