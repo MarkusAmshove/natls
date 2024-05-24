@@ -54,30 +54,71 @@ public class UnusedVariableAnalyzer extends AbstractAnalyzer
 
 		}
 
-		if (references > 0 && !(variable instanceof IGroupNode))
+		checkIfVariableIsMutatedOnly(variable, context);
+	}
+
+	private void checkIfVariableIsMutatedOnly(IVariableNode variable, IAnalyzeContext context)
+	{
+		if (variable.references().size() == 0)
 		{
-			var onlyResets = true;
-			for (var reference : variable.references())
+			return;
+		}
+
+		if (variable instanceof IGroupNode)
+		{
+			return;
+		}
+
+		if (!variable.scope().isLocal())
+		{
+			return;
+		}
+
+		if (variable.isInView())
+		{
+			return;
+		}
+
+		if (variable.level() > 1)
+		{
+			// Just assume that any parent group that is referenced is read
+			for (var parent : variable.getVariableParentsAscending())
 			{
-				// TODO: Should actually look for `IMutateVariables` and check if `IMutateVariables::operands()` contains the variable
-				if (NodeUtil.findFirstParentOfType(reference, IResetStatementNode.class) == null)
+				if (parent.references().size() > 0)
 				{
-					onlyResets = false;
-					break;
+					return;
 				}
 			}
 
-			if (onlyResets)
+			if (NodeUtil.findFirstParentOfType(variable, IRedefinitionNode.class)instanceof IRedefinitionNode redefine && redefine.reference().references().size() > 0)
 			{
-				var diagnostic = ONLY_RESET.createFormattedDiagnostic(variable.position(), variable.name());
-				for (var reference : variable.references())
-				{
-					diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("Changed here", reference.diagnosticPosition()));
-				}
-
-				context.report(diagnostic);
+				return;
 			}
 		}
+
+		for (var reference : variable.references())
+		{
+			// There are too many edge cases where a variable can be read that we can't grasp correctly.
+			// We only look for common cases where you remove reads to a variable but forget writes, like RESET,
+			// which would then prevent you from knowing that you can clean up the variable.
+
+			var isResetted = NodeUtil.findFirstParentOfType(reference, IResetStatementNode.class) != null;
+			var isAssigned = NodeUtil.findFirstParentOfType(reference, IAssignmentStatementNode.class)instanceof IAssignmentStatementNode assignment && assignment.target() == reference
+				|| NodeUtil.findFirstParentOfType(reference, IAssignStatementNode.class)instanceof IAssignmentStatementNode assign && assign.target() == reference;
+
+			if (!isAssigned && !isResetted)
+			{
+				return;
+			}
+		}
+
+		var diagnostic = ONLY_RESET.createFormattedDiagnostic(variable.position(), variable.name());
+		for (var reference : variable.references())
+		{
+			diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("Changed here", reference.diagnosticPosition()));
+		}
+
+		context.report(diagnostic);
 	}
 
 	private boolean noMembersAfterAreReferenced(IRedefinitionNode redefine, IVariableNode variable)
