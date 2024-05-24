@@ -2960,9 +2960,10 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.IDENTIFIER), tokens));
 		}
 
-		if (consumeOptionally(callnat, SyntaxKind.IDENTIFIER))
+		if (peekKind(SyntaxKind.IDENTIFIER))
 		{
-			callnat.setReferencingToken(previousToken());
+			var ref = consumeVariableReferenceNode(callnat);
+			callnat.setReferencingToken(ref.referencingToken());
 		}
 		else
 			if (consumeOptionally(callnat, SyntaxKind.STRING_LITERAL))
