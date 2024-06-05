@@ -19,16 +19,30 @@ class FormattingEndpointShould extends EmptyProjectTest
 	{
 		assertFormattedSource("""
 			write 'Hi' /* don't translate comments or string literals
-						""", """
+			""", """
 			WRITE 'Hi' /* don't translate comments or string literals
-						""");
+			""");
 	}
 
-	protected void assertFormattedSource(String previousSource, String expectedSource)
+	@Test
+	void notFormatDdms()
+	{
+		assertFormattedSource(
+			"MYDDM.NSD",
+			"""
+T L DB Name                              F Leng  S D Remark
+			""",
+			"""
+T L DB Name                              F Leng  S D Remark
+			"""
+		);
+	}
+
+	protected void assertFormattedSource(String file, String previousSource, String expectedSource)
 	{
 		try
 		{
-			var docId = createOrSaveFile("LIBONE", "SUB.NSN", previousSource);
+			var docId = createOrSaveFile("LIBONE", file, previousSource);
 			var edits = getContext()
 				.documentService()
 				.formatting(
@@ -42,5 +56,10 @@ class FormattingEndpointShould extends EmptyProjectTest
 		{
 			throw new RuntimeException(e);
 		}
+	}
+
+	protected void assertFormattedSource(String previousSource, String expectedSource)
+	{
+		assertFormattedSource("SUB.NSN", previousSource, expectedSource);
 	}
 }
