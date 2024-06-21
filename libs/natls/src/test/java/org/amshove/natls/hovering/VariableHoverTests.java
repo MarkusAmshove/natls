@@ -79,6 +79,91 @@ LOCAL 1 #MYVAR (A/1:*,1:5) DYNAMIC
 	}
 
 	@Test
+	void byValueParameterShouldBeFormatted()
+	{
+		assertHover(
+			"""
+			DEFINE DATA
+			PARAMETER 1 #MY${}$PAR (A10) BY VALUE
+			END-DEFINE
+			END
+			""",
+			"""
+```natural
+PARAMETER 1 #MYPAR (A10) BY VALUE
+```"""
+		);
+	}
+
+	@Test
+	void byValueResultParameterShouldBeFormatted()
+	{
+		assertHover(
+			"""
+			DEFINE DATA
+			PARAMETER 1 #MY${}$PAR (A10) BY VALUE RESULT
+			END-DEFINE
+			END
+			""",
+			"""
+```natural
+PARAMETER 1 #MYPAR (A10) BY VALUE RESULT
+```"""
+		);
+	}
+
+	@Test
+	void dynamicByValueParameterShouldBeFormatted()
+	{
+		assertHover(
+			"""
+			DEFINE DATA
+			PARAMETER 1 #MY${}$PAR (A) DYNAMIC BY VALUE
+			END-DEFINE
+			END
+			""",
+			"""
+```natural
+PARAMETER 1 #MYPAR (A) DYNAMIC BY VALUE
+```"""
+		);
+	}
+
+	@Test
+	void dynamicByValueResultParameterShouldBeFormatted()
+	{
+		assertHover(
+			"""
+			DEFINE DATA
+			PARAMETER 1 #MY${}$PAR (A) DYNAMIC BY VALUE RESULT
+			END-DEFINE
+			END
+			""",
+			"""
+```natural
+PARAMETER 1 #MYPAR (A) DYNAMIC BY VALUE RESULT
+```"""
+		);
+	}
+
+	@Test
+	void dynamicByValueResultOptionalParameterShouldBeFormatted()
+	{
+		assertHover(
+			"""
+			DEFINE DATA
+			PARAMETER 1 #MY${}$PAR (A) DYNAMIC BY VALUE RESULT OPTIONAL
+			END-DEFINE
+			END
+			""",
+			"""
+```natural
+PARAMETER 1 #MYPAR (A) DYNAMIC BY VALUE RESULT OPTIONAL
+```"""
+		);
+	}
+
+	@Test
 	void levelOneVariablesShouldBeHoveredCorrectlyEvenWhenHoveringTheReference()
 	{
 		assertHover(
