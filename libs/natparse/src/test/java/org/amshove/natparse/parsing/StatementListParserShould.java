@@ -1974,7 +1974,7 @@ class StatementListParserShould extends StatementParseTest
 	{
 		"PR2",
 		"CC",
-		"AL"
+		"ZD"
 	})
 	void parseDisplayWithReportSpecification(String rep)
 	{
