@@ -274,6 +274,11 @@ abstract class AbstractParser<T>
 		return peekKind(SyntaxKind.LPAREN) && peek(1).kind().isAttribute();
 	}
 
+	protected boolean isOutputAttributeList()
+	{
+		return peekKind(SyntaxKind.LPAREN) && peek(1).kind().isOutputAttribute();
+	}
+
 	protected IAttributeListNode consumeAttributeList(BaseSyntaxNode node) throws ParseError
 	{
 		var attributeList = new AttributeListNode();

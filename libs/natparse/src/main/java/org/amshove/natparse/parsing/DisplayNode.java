@@ -1,13 +1,21 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxToken;
+import org.amshove.natparse.natural.IAttributeListNode;
+import org.amshove.natparse.natural.IAttributeNode;
 import org.amshove.natparse.natural.IDisplayNode;
+import org.amshove.natparse.natural.output.IOutputElementNode;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 class DisplayNode extends StatementNode implements IDisplayNode, ICanSetReportSpecification
 {
 	private SyntaxToken reportSpecification;
+	private final List<IOutputElementNode> operands = new ArrayList<>();
+	private IAttributeListNode statementAttributes;
 
 	@Override
 	public Optional<SyntaxToken> reportSpecification()
@@ -19,5 +27,34 @@ class DisplayNode extends StatementNode implements IDisplayNode, ICanSetReportSp
 	public void setReportSpecification(SyntaxToken token)
 	{
 		reportSpecification = token;
+	}
+
+	@Override
+	public ReadOnlyList<IOutputElementNode> operands()
+	{
+		return ReadOnlyList.from(operands);
+	}
+
+	@Override
+	public ReadOnlyList<IAttributeNode> statementAttributes()
+	{
+		return statementAttributes != null ? statementAttributes.attributes() : ReadOnlyList.empty();
+	}
+
+	void addOperand(IOutputElementNode operand)
+	{
+		if (operand == null)
+		{
+			// stuff like tab setting, line skip etc.
+			return;
+		}
+
+		addNode((BaseSyntaxNode) operand);
+		operands.add(operand);
+	}
+
+	void setAttributes(IAttributeListNode attributes)
+	{
+		statementAttributes = attributes;
 	}
 }

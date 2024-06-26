@@ -2132,30 +2132,43 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return examine;
 	}
 
+	private static final Set<SyntaxKind> OPTIONAL_DISPLAY_FLAGS = Set.of(SyntaxKind.NOTITLE, SyntaxKind.NOTIT, SyntaxKind.NOHDR, SyntaxKind.AND, SyntaxKind.GIVE, SyntaxKind.SYSTEM, SyntaxKind.FUNCTIONS);
+
 	private StatementNode display() throws ParseError
 	{
 		var display = new DisplayNode();
 		consumeMandatory(display, SyntaxKind.DISPLAY);
 
-		if (consumeOptionally(display, SyntaxKind.LPAREN))
+		if (peekKind(SyntaxKind.LPAREN) && !isOutputAttributeList())
 		{
-			if (peek().kind().canBeIdentifier() && peekKind(1, SyntaxKind.RPAREN))
-			{
-				var token = consumeMandatoryIdentifier(display);
-				display.setReportSpecification(token);
-			}
-			else
-			{
-				// currently consume everything until closing parenthesis to consume things like attribute definition etc.
-				while (!peekKind(SyntaxKind.RPAREN))
-				{
-					consume(display);
-				}
-			}
+			consumeMandatory(display, SyntaxKind.LPAREN);
+			var token = consume(display);
+			display.setReportSpecification(token);
 			consumeMandatory(display, SyntaxKind.RPAREN);
 		}
 
-		// TODO: Parse options
+		if (peekKind(SyntaxKind.LPAREN) && isOutputAttributeList())
+		{
+			var attributeList = consumeAttributeList(display);
+			display.setAttributes(attributeList);
+		}
+
+		while (consumeAnyOptionally(display, OPTIONAL_DISPLAY_FLAGS))
+		{
+			// advances automatically
+		}
+
+		while (!isAtEnd() && !isStatementStart())
+		{
+			if (!(isOperand() || peekKind(SyntaxKind.TAB_SETTING) || peekKind(SyntaxKind.SLASH) || peekKind(SyntaxKind.OPERAND_SKIP)))
+			{
+				break;
+			}
+
+			var operand = consumeInputOutputOperand(display);
+			display.addOperand(operand);
+			checkOutputElementAttributes(operand);
+		}
 
 		return display;
 	}

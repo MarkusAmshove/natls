@@ -820,6 +820,44 @@ public enum SyntaxKind
 			this == PM ||
 			this == PS ||
 			this == SB ||
+			this == SF ||
+			this == SG ||
+			this == TC ||
+			this == TCU ||
+			this == UC ||
+			this == ZP;
+	}
+
+	public boolean isOutputAttribute()
+	{
+		return this == AD ||
+			this == AL ||
+			this == CD ||
+			this == CV ||
+			this == DF ||
+			this == DL ||
+			this == DY ||
+			this == EM ||
+			this == EMU ||
+			this == ES ||
+			this == FC ||
+			this == FL ||
+			this == GC ||
+			this == HC ||
+			this == HW ||
+			this == IC ||
+			this == ICU ||
+			this == IS ||
+			this == LC ||
+			this == LCU ||
+			this == LS ||
+			this == MC ||
+			this == MP ||
+			this == NL ||
+			this == PC ||
+			this == PM ||
+			this == PS ||
+			this == SF ||
 			this == SG ||
 			this == TC ||
 			this == TCU ||

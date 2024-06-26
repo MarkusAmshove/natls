@@ -50,7 +50,7 @@ partial - partially implemented to prevent false positives (14)
 | DEFINE WORK FILE | :white_check_mark: |
 | DELETE | :x:                |
 | DELETE (SQL) | partial            |
-| DISPLAY | :x:                |
+| DISPLAY | :white_check_mark: |
 | DIVIDE | :white_check_mark: |
 | DOWNLOAD PC FILE | :white_check_mark: |
 | EJECT | :white_check_mark: |

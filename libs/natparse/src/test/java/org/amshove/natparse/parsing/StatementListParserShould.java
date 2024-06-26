@@ -1969,22 +1969,55 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(display.descendants()).hasSize(1);
 	}
 
-	@Test
-	void parseDisplayWithReportSpecification()
+	@ParameterizedTest
+	@ValueSource(strings =
 	{
-		var display = assertParsesSingleStatement("DISPLAY (PR2)", IDisplayNode.class);
+		"PR2",
+		"CC",
+		"AL"
+	})
+	void parseDisplayWithReportSpecification(String rep)
+	{
+		var display = assertParsesSingleStatement("DISPLAY (%s)".formatted(rep), IDisplayNode.class);
 		assertThat(display.reportSpecification()).isPresent();
-		assertThat(display.reportSpecification().get().symbolName()).isEqualTo("PR2");
+		assertThat(display.reportSpecification().get().symbolName()).isEqualTo("%s".formatted(rep));
 		assertThat(display.descendants()).hasSize(4);
 	}
 
-	@Test
-	void parseDisplayWithReportSpecificationAsAttribute()
+	@ParameterizedTest
+	@ValueSource(strings =
 	{
-		var display = assertParsesSingleStatement("DISPLAY (CC)", IDisplayNode.class);
+		"(01) (AL=L) #VAR1 #VAR2",
+		"(00) NOTIT NOHDR #VAR1 #VAR2",
+		"NOTIT NOHDR (ZP=OFF SG=ON) #VAR1 #VAR2",
+	})
+	void parseMoreComplexDisplays(String statement)
+	{
+		assertParsesSingleStatement("DISPLAY %s".formatted(statement), IDisplayNode.class);
+	}
+
+	@Test
+	void parseAVeryComplexDisplay()
+	{
+		var display = assertParsesSingleStatement("""
+			DISPLAY (10) (ZP=ON) NOTITLE NOHDR AND GIVE FUNCTIONS #VAR1 (2,#IX)
+  				/// T*#VAR1 '='#VAR2
+  				10X 'Hey'
+ 				'>'(20) '=' #VAR3
+ 				2/47 'Yes!'
+ 				/ VERT '=' #VAR4
+				/ P*#VAR 'X' (I)
+			""", IDisplayNode.class);
+
+		var firstOperand = assertNodeType(display.operands().first(), IOutputOperandNode.class).operand();
+		var firstReference = assertIsVariableReference(firstOperand, "#VAR1");
+		assertThat(firstReference.dimensions()).hasSize(2);
+		assertLiteral(firstReference.dimensions().first(), SyntaxKind.NUMBER_LITERAL);
+		var firstAttr = assertNodeType(display.statementAttributes().first(), IValueAttributeNode.class);
+		assertThat(firstAttr.kind().name().equals("ZP"));
+		assertThat(firstAttr.value().equals("ON"));
 		assertThat(display.reportSpecification()).isPresent();
-		assertThat(display.reportSpecification().get().symbolName()).isEqualTo("CC");
-		assertThat(display.descendants()).hasSize(4);
+		assertThat(display.reportSpecification().get().symbolName()).isEqualTo("10");
 	}
 
 	@Test
