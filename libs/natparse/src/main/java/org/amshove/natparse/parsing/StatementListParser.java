@@ -2132,47 +2132,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return examine;
 	}
 
-	private static final Set<SyntaxKind> OPTIONAL_DISPLAY_FLAGS = Set.of(SyntaxKind.NOTITLE, SyntaxKind.NOTIT, SyntaxKind.NOHDR, SyntaxKind.AND, SyntaxKind.GIVE, SyntaxKind.SYSTEM, SyntaxKind.FUNCTIONS);
-
-	private StatementNode display() throws ParseError
-	{
-		var display = new DisplayNode();
-		consumeMandatory(display, SyntaxKind.DISPLAY);
-
-		if (peekKind(SyntaxKind.LPAREN) && !isOutputAttributeList())
-		{
-			consumeMandatory(display, SyntaxKind.LPAREN);
-			var token = consume(display);
-			display.setReportSpecification(token);
-			consumeMandatory(display, SyntaxKind.RPAREN);
-		}
-
-		if (peekKind(SyntaxKind.LPAREN) && isOutputAttributeList())
-		{
-			var attributeList = consumeAttributeList(display);
-			display.setAttributes(attributeList);
-		}
-
-		while (consumeAnyOptionally(display, OPTIONAL_DISPLAY_FLAGS))
-		{
-			// advances automatically
-		}
-
-		while (!isAtEnd() && !isStatementStart())
-		{
-			if (!(isOperand() || peekKind(SyntaxKind.TAB_SETTING) || peekKind(SyntaxKind.SLASH) || peekKind(SyntaxKind.OPERAND_SKIP)))
-			{
-				break;
-			}
-
-			var operand = consumeInputOutputOperand(display);
-			display.addOperand(operand);
-			checkOutputElementAttributes(operand);
-		}
-
-		return display;
-	}
-
 	private StatementNode inputStatement() throws ParseError
 	{
 		var input = new InputStatementNode();
@@ -2346,6 +2305,47 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return write;
+	}
+
+	private static final Set<SyntaxKind> OPTIONAL_DISPLAY_FLAGS = Set.of(SyntaxKind.NOTITLE, SyntaxKind.NOTIT, SyntaxKind.NOHDR, SyntaxKind.AND, SyntaxKind.GIVE, SyntaxKind.SYSTEM, SyntaxKind.FUNCTIONS);
+
+	private StatementNode display() throws ParseError
+	{
+		var display = new DisplayNode();
+		consumeMandatory(display, SyntaxKind.DISPLAY);
+
+		if (peekKind(SyntaxKind.LPAREN) && !isOutputAttributeList())
+		{
+			consumeMandatory(display, SyntaxKind.LPAREN);
+			var token = consume(display);
+			display.setReportSpecification(token);
+			consumeMandatory(display, SyntaxKind.RPAREN);
+		}
+
+		if (peekKind(SyntaxKind.LPAREN) && isOutputAttributeList())
+		{
+			var attributeList = consumeAttributeList(display);
+			display.setAttributes(attributeList);
+		}
+
+		while (consumeAnyOptionally(display, OPTIONAL_DISPLAY_FLAGS))
+		{
+			// advances automatically
+		}
+
+		while (!isAtEnd() && !isStatementStart())
+		{
+			if (!(isOperand() || peekKind(SyntaxKind.TAB_SETTING) || peekKind(SyntaxKind.SLASH) || peekKind(SyntaxKind.OPERAND_SKIP)))
+			{
+				break;
+			}
+
+			var operand = consumeInputOutputOperand(display);
+			display.addOperand(operand);
+			checkOutputElementAttributes(operand);
+		}
+
+		return display;
 	}
 
 	private IOutputElementNode consumeInputOutputOperand(BaseSyntaxNode writeLikeNode) throws ParseError
