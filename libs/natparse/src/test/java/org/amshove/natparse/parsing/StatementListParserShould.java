@@ -1987,6 +1987,7 @@ class StatementListParserShould extends StatementParseTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
+		"'HDR' #VAR1",
 		"(01) (AL=L) #VAR1 #VAR2",
 		"(00) NOTIT NOHDR #VAR1 #VAR2",
 		"NOTIT NOHDR (ZP=OFF SG=ON) #VAR1 #VAR2",

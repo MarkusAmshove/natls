@@ -2314,7 +2314,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var display = new DisplayNode();
 		consumeMandatory(display, SyntaxKind.DISPLAY);
 
-		if (peekKind(SyntaxKind.LPAREN) && !isOutputAttributeList())
+		if (peekKind(SyntaxKind.LPAREN) && !isOutputElementAttribute(peek(1).kind()))
 		{
 			consumeMandatory(display, SyntaxKind.LPAREN);
 			var token = consume(display);
@@ -2322,7 +2322,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			consumeMandatory(display, SyntaxKind.RPAREN);
 		}
 
-		if (peekKind(SyntaxKind.LPAREN) && isOutputAttributeList())
+		if (peekKind(SyntaxKind.LPAREN) && isOutputElementAttribute(peek(1).kind()))
 		{
 			var attributeList = consumeAttributeList(display);
 			display.setAttributes(attributeList);
@@ -4894,4 +4894,14 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			default -> false;
 		};
 	}
+
+	private boolean isOutputElementAttribute(SyntaxKind kind)
+	{
+		return switch (kind)
+		{
+			case AD, AL, CD, CV, DF, DL, DY, EM, EMU, ES, FC, FL, GC, HC, HW, IC, ICU, IS, LC, LCU, LS, MC, MP, NL, PC, PM, PS, SF, SG, TC, TCU, UC, ZP -> true;
+			default -> false;
+		};
+	}
+
 }
