@@ -1,0 +1,6 @@
+name: IGNORE is unnecessary
+priority: MINOR
+tags: pitfall,confusing
+type: CODE_SMELL
+description:
+If an ``IGNORE`` is not the only statement in a block, it is unnecessary and can be removed.
