@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-class OutputStatementNode extends StatementNode implements IOutputStatementNode, IPrintNode, ICanSetReportSpecification
+class OutputStatementNode extends StatementNode implements IOutputStatementNode, ICanSetReportSpecification
 {
 	private SyntaxToken reportSpecification;
 	private final List<IOutputElementNode> operands = new ArrayList<>();
