@@ -1,4 +1,6 @@
 package org.amshove.natparse.parsing;
 
-class DisplayNode extends OutputStatementNode
+import org.amshove.natparse.natural.IDisplayNode;
+
+class DisplayNode extends OutputStatementNode implements IDisplayNode
 {}

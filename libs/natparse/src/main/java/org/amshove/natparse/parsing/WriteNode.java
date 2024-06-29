@@ -1,4 +1,6 @@
 package org.amshove.natparse.parsing;
 
-class WriteNode extends OutputStatementNode
+import org.amshove.natparse.natural.IWriteNode;
+
+class WriteNode extends OutputStatementNode implements IWriteNode
 {}
