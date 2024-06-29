@@ -2269,7 +2269,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private StatementNode write(SyntaxKind statementKind) throws ParseError
 	{
-		var write = new WriteNode();
+		OutputStatementNode write = statementKind == SyntaxKind.WRITE ? new WriteNode() : new PrintNode();
 		consumeMandatory(write, statementKind);
 		if (peekKind(SyntaxKind.LPAREN))
 		{
