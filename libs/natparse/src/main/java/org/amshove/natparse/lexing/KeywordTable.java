@@ -62,6 +62,7 @@ public class KeywordTable
 			case "calling" -> SyntaxKind.CALLING;
 			case "callnat" -> SyntaxKind.CALLNAT;
 			case "cap" -> SyntaxKind.CAP;
+			case "capt" -> SyntaxKind.CAPT;
 			case "captioned" -> SyntaxKind.CAPTIONED;
 			case "case" -> SyntaxKind.CASE;
 			case "cc" -> SyntaxKind.CC;

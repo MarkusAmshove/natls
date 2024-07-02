@@ -75,6 +75,7 @@ class LexerForKeywordsShould extends AbstractLexerTest
 			keywordTest("CALLING", SyntaxKind.CALLING),
 			keywordTest("CALLNAT", SyntaxKind.CALLNAT),
 			keywordTest("CAP", SyntaxKind.CAP),
+			keywordTest("CAPT", SyntaxKind.CAPT),
 			keywordTest("CAPTIONED", SyntaxKind.CAPTIONED),
 			keywordTest("CASE", SyntaxKind.CASE),
 			keywordTest("CC", SyntaxKind.CC),

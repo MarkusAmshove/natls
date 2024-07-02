@@ -50,6 +50,7 @@ class LexerForAttributeControlsShould extends AbstractLexerTest
 			SyntaxKind.PM,
 			SyntaxKind.PS,
 			SyntaxKind.SB,
+			SyntaxKind.SF,
 			SyntaxKind.SG,
 			SyntaxKind.TC,
 			SyntaxKind.TCU,
