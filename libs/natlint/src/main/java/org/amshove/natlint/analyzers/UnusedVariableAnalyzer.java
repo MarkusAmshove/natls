@@ -14,9 +14,9 @@ public class UnusedVariableAnalyzer extends AbstractAnalyzer
 		"Variable %s is unused",
 		DiagnosticSeverity.WARNING
 	);
-	public static final DiagnosticDescription ONLY_RESET = DiagnosticDescription.create(
+	public static final DiagnosticDescription VARIABLE_MODIFIED_ONLY = DiagnosticDescription.create(
 		"NL101",
-		"Variable %s is changed but never accessed",
+		"Variable %s is modified but never accessed",
 		DiagnosticSeverity.INFO
 	);
 
@@ -102,20 +102,20 @@ public class UnusedVariableAnalyzer extends AbstractAnalyzer
 			// We only look for common cases where you remove reads to a variable but forget writes, like RESET,
 			// which would then prevent you from knowing that you can clean up the variable.
 
-			var isResetted = NodeUtil.findFirstParentOfType(reference, IResetStatementNode.class) != null;
+			var isReset = NodeUtil.findFirstParentOfType(reference, IResetStatementNode.class) != null;
 			var isAssigned = NodeUtil.findFirstParentOfType(reference, IAssignmentStatementNode.class)instanceof IAssignmentStatementNode assignment && assignment.target() == reference
 				|| NodeUtil.findFirstParentOfType(reference, IAssignStatementNode.class)instanceof IAssignmentStatementNode assign && assign.target() == reference;
 
-			if (!isAssigned && !isResetted)
+			if (!isAssigned && !isReset)
 			{
 				return;
 			}
 		}
 
-		var diagnostic = ONLY_RESET.createFormattedDiagnostic(variable.position(), variable.name());
+		var diagnostic = VARIABLE_MODIFIED_ONLY.createFormattedDiagnostic(variable.position(), variable.name());
 		for (var reference : variable.references())
 		{
-			diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("Changed here", reference.diagnosticPosition()));
+			diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("Modified here", reference.diagnosticPosition()));
 		}
 
 		context.report(diagnostic);
