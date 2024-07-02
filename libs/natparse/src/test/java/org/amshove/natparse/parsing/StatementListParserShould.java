@@ -2006,7 +2006,8 @@ class StatementListParserShould extends StatementParseTest
   				10X 'Hey'
  				'>'(20) '=' #VAR3
  				2/47 'Yes!'
- 				/ VERT '=' #VAR4
+ 				/ VERT '=' #VAR4 CAPTIONED
+				/ HORIZ AS #VAR5 CAPT
 				/ P*#VAR 'X' (I)
 			""", IDisplayNode.class);
 

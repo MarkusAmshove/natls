@@ -2308,6 +2308,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	}
 
 	private static final Set<SyntaxKind> OPTIONAL_DISPLAY_FLAGS = Set.of(SyntaxKind.NOTITLE, SyntaxKind.NOTIT, SyntaxKind.NOHDR, SyntaxKind.AND, SyntaxKind.GIVE, SyntaxKind.SYSTEM, SyntaxKind.FUNCTIONS);
+	private static final Set<SyntaxKind> DISPLAY_OUTPUT_FORMATS = Set.of(SyntaxKind.VERT, SyntaxKind.VERTICALLY, SyntaxKind.HORIZ, SyntaxKind.HORIZONTALLY, SyntaxKind.AS, SyntaxKind.CAPT, SyntaxKind.CAPTIONED);
 
 	private StatementNode display() throws ParseError
 	{
@@ -2335,6 +2336,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		while (!isAtEnd() && !isStatementStart())
 		{
+			consumeAnyOptionally(display, DISPLAY_OUTPUT_FORMATS);
 			if (!(isOperand() || peekKind(SyntaxKind.TAB_SETTING) || peekKind(SyntaxKind.SLASH) || peekKind(SyntaxKind.OPERAND_SKIP)))
 			{
 				break;
@@ -2350,6 +2352,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private IOutputElementNode consumeInputOutputOperand(BaseSyntaxNode writeLikeNode) throws ParseError
 	{
+
 		if (peekKind(SyntaxKind.TAB_SETTING))
 		{
 			var tab = new TabulatorElementNode();
