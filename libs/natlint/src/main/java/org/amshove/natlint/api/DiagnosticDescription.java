@@ -18,11 +18,6 @@ public class DiagnosticDescription
 		return message;
 	}
 
-	public DiagnosticSeverity getSeverity()
-	{
-		return severity;
-	}
-
 	private DiagnosticDescription(String id, String message, DiagnosticSeverity severity)
 	{
 		this.id = id;
