@@ -1440,9 +1440,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				continue;
 			}
 
-			// FETCH FIRST clause
-			if (peekKind(SyntaxKind.FETCH) && peekKind(1, SyntaxKind.FIRST))
+			if (peekKind(SyntaxKind.FETCH) && peekKind(1, SyntaxKind.FIRST) ||
+				peekKind(SyntaxKind.IF) && peekKind(1, SyntaxKind.NO) ||
+				peekKind(SyntaxKind.OPTIMIZE) && peekKind(1, SyntaxKind.FOR))
 			{
+				consume(select);
 				consume(select);
 				continue;
 			}
