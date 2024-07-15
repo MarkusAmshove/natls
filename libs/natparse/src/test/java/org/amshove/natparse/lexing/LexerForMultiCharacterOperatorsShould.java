@@ -94,6 +94,7 @@ class LexerForMultiCharacterOperatorsShould extends AbstractLexerTest
 	{
 		assertTokens("<>", token(SyntaxKind.LESSER_GREATER, "<>"));
 		assertTokens("^=", token(SyntaxKind.CIRCUMFLEX_EQUAL, "^="));
+		assertTokens("¬=", token(SyntaxKind.NOT_SIGN_EQUAL, "¬="));
 	}
 
 	@TestFactory
