@@ -22,6 +22,14 @@ public class ReadOnlyList<T> implements Iterable<T>
 		this.collection = new ArrayList<>(collection);
 	}
 
+	/**
+	 * Does NOT create a defensive copy.
+	 */
+	private ReadOnlyList(ArrayList<T> collection)
+	{
+		this.collection = collection;
+	}
+
 	public static <T> ReadOnlyList<T> from(Collection<T> collection)
 	{
 		if (collection == null)
@@ -72,6 +80,19 @@ public class ReadOnlyList<T> implements Iterable<T>
 			}
 		}
 		return ReadOnlyList.from(includedItems);
+	}
+
+	/**
+	 * Creates a new ReadOnlyList in reversed order.
+	 */
+	public ReadOnlyList<T> reverse()
+	{
+		var newList = new ArrayList<T>();
+		for (var i = collection.size() - 1; i >= 0; i--)
+		{
+			newList.add(collection.get(i));
+		}
+		return new ReadOnlyList<>(newList);
 	}
 
 	@Override

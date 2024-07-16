@@ -221,17 +221,6 @@ public class HoverProvider
 		var declaration = formatVariableDeclaration(context.file().module(), variable);
 		contentBuilder.appendCode(declaration.declaration);
 
-		if (variable.isArray())
-		{
-			contentBuilder.appendSection("dimensions", nested ->
-			{
-				for (var dimension : variable.dimensions())
-				{
-					nested.appendBullet(dimension.displayFormat());
-				}
-			});
-		}
-
 		var pathToVariableHover = VariableContextHover.create(context, variable);
 		pathToVariableHover.addVariableContext(contentBuilder);
 
@@ -243,7 +232,7 @@ public class HoverProvider
 		var declaration = "%s %d %s".formatted(variable.scope().toString(), variable.level(), variable.name());
 		if (variable instanceof ITypedVariableNode typedVariableNode)
 		{
-			declaration += " %s".formatted(typedVariableNode.type().toShortString());
+			declaration += " %s".formatted(typedVariableNode.formatTypeForDisplay());
 			if (typedVariableNode.type().initialValue() != null)
 			{
 				var initValue = typedVariableNode.type().initialValue()instanceof ITokenNode tokenNode
@@ -253,6 +242,15 @@ public class HoverProvider
 					typedVariableNode.type().isConstant() ? "CONST" : "INIT",
 					initValue
 				);
+			}
+		}
+
+		if (variable.findDescendantToken(SyntaxKind.VALUE) != null)
+		{
+			declaration += " BY VALUE";
+			if (variable.findDescendantToken(SyntaxKind.RESULT) != null)
+			{
+				declaration += " RESULT";
 			}
 		}
 

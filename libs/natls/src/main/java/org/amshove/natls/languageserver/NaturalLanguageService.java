@@ -765,6 +765,12 @@ public class NaturalLanguageService implements LanguageClientAware
 	public List<TextEdit> format(DocumentFormattingParams params)
 	{
 		var file = findNaturalFile(LspUtil.uriToPath(params.getTextDocument().getUri()));
+
+		if (file.getType() == NaturalFileType.DDM)
+		{
+			return List.of();
+		}
+
 		var edits = new ArrayList<TextEdit>();
 		file.tokens().forEach(t ->
 		{

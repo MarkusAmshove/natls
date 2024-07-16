@@ -2,6 +2,7 @@ package org.amshove.natparse.infrastructure;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -51,7 +52,8 @@ public class ActualFilesystem implements IFilesystem
 	{
 		try
 		{
-			return Files.walk(startPath, Integer.MAX_VALUE).filter(p -> p.toFile().isFile());
+			return Files.walk(startPath, Integer.MAX_VALUE, FileVisitOption.FOLLOW_LINKS)
+				.filter(p -> p.toFile().isFile());
 		}
 		catch (IOException e)
 		{

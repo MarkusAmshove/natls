@@ -1,7 +1,5 @@
 package org.amshove.natparse.natural;
 
-import java.util.stream.Collectors;
-
 public interface ITypedVariableNode extends IVariableNode
 {
 	IVariableType type();
@@ -18,10 +16,7 @@ public interface ITypedVariableNode extends IVariableNode
 
 		if (isArray())
 		{
-			details += "/";
-			details += dimensions().stream()
-				.map(IArrayDimension::displayFormat)
-				.collect(Collectors.joining(", "));
+			details += "/" + formatDimensionList();
 		}
 
 		details += ")";

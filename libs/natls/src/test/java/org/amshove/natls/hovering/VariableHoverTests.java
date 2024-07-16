@@ -56,12 +56,110 @@ LOCAL 1 #MYVAR (A10) %s<'ABC'>
 			""",
 			"""
 ```natural
-LOCAL 1 #MYVAR (A10)
-```
+LOCAL 1 #MYVAR (A10/1:*,1:5)
+```"""
+		);
+	}
 
-*dimensions:*
-- 1:*
-- 1:5"""
+	@Test
+	void dynamicAlphanumericArraysShouldBeFormatted()
+	{
+		assertHover(
+			"""
+			DEFINE DATA
+			LOCAL 1 #MY${}$VAR (A/1:*,1:5) DYNAMIC
+			END-DEFINE
+			END
+			""",
+			"""
+```natural
+LOCAL 1 #MYVAR (A/1:*,1:5) DYNAMIC
+```"""
+		);
+	}
+
+	@Test
+	void byValueParameterShouldBeFormatted()
+	{
+		assertHover(
+			"""
+			DEFINE DATA
+			PARAMETER 1 #MY${}$PAR (A10) BY VALUE
+			END-DEFINE
+			END
+			""",
+			"""
+```natural
+PARAMETER 1 #MYPAR (A10) BY VALUE
+```"""
+		);
+	}
+
+	@Test
+	void byValueResultParameterShouldBeFormatted()
+	{
+		assertHover(
+			"""
+			DEFINE DATA
+			PARAMETER 1 #MY${}$PAR (A10) BY VALUE RESULT
+			END-DEFINE
+			END
+			""",
+			"""
+```natural
+PARAMETER 1 #MYPAR (A10) BY VALUE RESULT
+```"""
+		);
+	}
+
+	@Test
+	void dynamicByValueParameterShouldBeFormatted()
+	{
+		assertHover(
+			"""
+			DEFINE DATA
+			PARAMETER 1 #MY${}$PAR (A) DYNAMIC BY VALUE
+			END-DEFINE
+			END
+			""",
+			"""
+```natural
+PARAMETER 1 #MYPAR (A) DYNAMIC BY VALUE
+```"""
+		);
+	}
+
+	@Test
+	void dynamicByValueResultParameterShouldBeFormatted()
+	{
+		assertHover(
+			"""
+			DEFINE DATA
+			PARAMETER 1 #MY${}$PAR (A) DYNAMIC BY VALUE RESULT
+			END-DEFINE
+			END
+			""",
+			"""
+```natural
+PARAMETER 1 #MYPAR (A) DYNAMIC BY VALUE RESULT
+```"""
+		);
+	}
+
+	@Test
+	void dynamicByValueResultOptionalParameterShouldBeFormatted()
+	{
+		assertHover(
+			"""
+			DEFINE DATA
+			PARAMETER 1 #MY${}$PAR (A) DYNAMIC BY VALUE RESULT OPTIONAL
+			END-DEFINE
+			END
+			""",
+			"""
+```natural
+PARAMETER 1 #MYPAR (A) DYNAMIC BY VALUE RESULT OPTIONAL
+```"""
 		);
 	}
 
@@ -119,7 +217,7 @@ LOCAL 1 #MYVAR (A10)
 			DEFINE DATA
 			LOCAL USING MYLDA
 			END-DEFINE
-			
+
 			WRITE #MY${}$VAR
 			END""",
 			"""
@@ -150,7 +248,7 @@ LOCAL USING MYLDA
 			DEFINE DATA
 			LOCAL USING MYLDA /* My using
 			END-DEFINE
-			
+
 			WRITE #MY${}$VAR
 			END""",
 			"""
@@ -182,7 +280,7 @@ LOCAL USING MYLDA /* My using
 			DEFINE DATA
 			LOCAL USING MYLDA /* My using
 			END-DEFINE
-			
+
 			WRITE #MY${}$VAR
 			END""",
 			"""
@@ -220,6 +318,38 @@ LOCAL 2 #VARINGROUP (N4)
 ```natural
 1 #MYGROUP
 2 #VARINGROUP
+```"""
+		);
+	}
+
+	@Test
+	void hoveringAVariableMultipleLevelsDownShouldShowTheCompleteContext()
+	{
+		assertHover(
+			"""
+			DEFINE DATA
+			LOCAL
+			1 #MYGROUP /* Comment 1
+			  2 #GROUP2(1:*)
+			    3 #GROUP3 /* Comment 2
+			      4 #GROUP4(1:5) /* Comment 3
+				    5 #VAR (A10)
+			END-DEFINE
+			WRITE #V${}$AR
+			END
+			""",
+			"""
+```natural
+LOCAL 5 #VAR (A10/1:*,1:5)
+```
+
+*context:*
+```natural
+1 #MYGROUP /* Comment 1
+2 #GROUP2 (1:*)
+3 #GROUP3 /* Comment 2
+4 #GROUP4 (1:5) /* Comment 3
+5 #VAR
 ```"""
 		);
 	}

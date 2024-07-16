@@ -53,7 +53,7 @@ class ExternalModuleHoverShould extends HoveringTest
 			DEFINE DATA
 			LOCAL
 			END-DEFINE
-			
+
 			PERFORM THE-E${}$XTERNAL-SUB 'AAA'
 			END
 			""", """
@@ -123,11 +123,11 @@ class ExternalModuleHoverShould extends HoveringTest
 			DEFINE DATA
 			LOCAL
 			END-DEFINE
-			
+
 			IF F${}$UNC(<'A'>)
 			IGNORE
 			END-IF
-			
+
 			END
 			""", """
 			**LIBONE.FUNC**
@@ -146,7 +146,48 @@ class ExternalModuleHoverShould extends HoveringTest
 
 			*Parameter:*
 			```natural
-			PARAMETER 1 P-PARAM (A10)
+			PARAMETER 1 P-PARAM (A10) BY VALUE
+			```""");
+	}
+
+	@Test
+	void includeParameterWithAllModifiers()
+	{
+		createOrSaveFile("LIBONE", "FUNC.NS7", """
+			DEFINE FUNCTION FUNC
+			RETURNS (L)
+			DEFINE DATA
+			PARAMETER
+			1 P-PARAM (A) DYNAMIC BY VALUE RESULT OPTIONAL
+			END-DEFINE
+			FUNC := TRUE
+			END-FUNCTION
+			""");
+
+		assertHover("""
+			DEFINE DATA
+			LOCAL
+			END-DEFINE
+
+			IF F${}$UNC(<'A'>)
+			IGNORE
+			END-IF
+
+			END
+			""", """
+			**LIBONE.FUNC**
+
+			*Result:*
+			```natural
+			RETURNS (L)
+			```
+
+
+
+
+			*Parameter:*
+			```natural
+			PARAMETER 1 P-PARAM (A) DYNAMIC BY VALUE RESULT OPTIONAL
 			```""");
 	}
 

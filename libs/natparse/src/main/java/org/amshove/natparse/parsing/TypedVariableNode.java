@@ -62,7 +62,12 @@ class TypedVariableNode extends VariableNode implements ITypedVariableNode
 	@Override
 	void addDimension(ArrayDimension dimension)
 	{
-		addNode(dimension);
+		// If we get a new dimension that is defined for a parent variable, we don't take its ownership
+		if (dimension.parent() == null)
+		{
+			addNode(dimension);
+		}
+
 		if (dimension.isUpperVariable())
 		{
 			if (type == null)

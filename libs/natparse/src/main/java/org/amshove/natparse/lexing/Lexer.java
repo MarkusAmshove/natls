@@ -856,6 +856,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.SV_TIME);
 			return;
 		}
+		if (scanner.advanceIfIgnoreCase("SUBROUTINE"))
+		{
+			createAndAdd(SyntaxKind.SV_SUBROUTINE);
+			return;
+		}
 		scanner.rollbackCurrentLexeme();
 		createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
 	}
