@@ -5,6 +5,7 @@ import org.amshove.natlint.api.DiagnosticDescription;
 import org.amshove.natlint.api.IAnalyzeContext;
 import org.amshove.natlint.api.ILinterContext;
 import org.amshove.natparse.DiagnosticSeverity;
+import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
@@ -12,11 +13,17 @@ import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class NatUnitTestNameAnalyzer extends AbstractAnalyzer
+public class NatUnitAnalyzer extends AbstractAnalyzer
 {
 	public static final DiagnosticDescription DUPLICATED_TEST_NAME = DiagnosticDescription.create(
 		"NL008",
 		"Test with the same name is already defined in line %d",
+		DiagnosticSeverity.ERROR
+	);
+
+	public static final DiagnosticDescription TEST_CASE_NOT_IN_TEST_ROUTINE = DiagnosticDescription.create(
+		"NL102",
+		"Test result is ignored, because test case is not enclosed in subroutine TEST",
 		DiagnosticSeverity.ERROR
 	);
 
@@ -25,7 +32,7 @@ public class NatUnitTestNameAnalyzer extends AbstractAnalyzer
 	@Override
 	public ReadOnlyList<DiagnosticDescription> getDiagnosticDescriptions()
 	{
-		return ReadOnlyList.of(DUPLICATED_TEST_NAME);
+		return ReadOnlyList.of(DUPLICATED_TEST_NAME, TEST_CASE_NOT_IN_TEST_ROUTINE);
 	}
 
 	@Override
@@ -68,6 +75,12 @@ public class NatUnitTestNameAnalyzer extends AbstractAnalyzer
 		if (!(relationalNode.right()instanceof ILiteralNode nameNode))
 		{
 			return;
+		}
+
+		if (!(NodeUtil.findFirstParentOfType(ifStatement, ISubroutineNode.class)instanceof ISubroutineNode subroutine)
+			|| !subroutine.declaration().symbolName().equalsIgnoreCase("TEST"))
+		{
+			context.report(TEST_CASE_NOT_IN_TEST_ROUTINE.createDiagnostic(ifStatement));
 		}
 
 		var nameToken = nameNode.token();
