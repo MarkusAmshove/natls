@@ -36,9 +36,11 @@ P 1 BA PERIODIC-GROUP
 *      -------- SOURCE FIELD(S) -------
 *      SOME-NUMBER (1-5)
 *      TOP-LEVEL-GROUP-CHILD (5-12)
-  1 AI UNIQUE-SUPER-WITH-SUBRANGE        A   32  N U
+  1 AJ UNIQUE-SUPER-WITH-SUBRANGE        A   32  N U
 *      -------- SOURCE FIELD(S) -------
 *      SOME-NUMBER (1-5)
 *      ANOTHER-NUMBER(1-12)
 *      ALPHA-FIELD   (1-8)
+  1 AK HYPERDESCRIPTOR                   A   32  N H
+  1 AL NONDESCRIPTOR                     A   32  N N
 ******DDM OUTPUT TERMINATED******

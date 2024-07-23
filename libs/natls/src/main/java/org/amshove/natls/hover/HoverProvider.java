@@ -245,6 +245,15 @@ public class HoverProvider
 			}
 		}
 
+		if (variable.findDescendantToken(SyntaxKind.VALUE) != null)
+		{
+			declaration += " BY VALUE";
+			if (variable.findDescendantToken(SyntaxKind.RESULT) != null)
+			{
+				declaration += " RESULT";
+			}
+		}
+
 		if (variable.findDescendantToken(SyntaxKind.OPTIONAL) != null)
 		{
 			declaration += " OPTIONAL";
