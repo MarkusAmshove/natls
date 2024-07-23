@@ -53,7 +53,7 @@ class DdmParserShould
 
 		var fields = ddm.fields();
 
-		assertThat(ddm.fields()).hasSize(12);
+		assertThat(ddm.fields()).hasSize(14);
 		var topLevelFields = fields.stream().map(IDdmField::name).collect(Collectors.toList());
 
 		assertThat(topLevelFields)
@@ -68,7 +68,9 @@ class DdmParserShould
 					"A-SUPERDESCRIPTOR",
 					"ANOTHER-SUPERDESCRIPTOR",
 					"SUPERDESCRIPTOR-WITH-SUBRANGE",
-					"UNIQUE-SUPER-WITH-SUBRANGE"
+					"UNIQUE-SUPER-WITH-SUBRANGE",
+					"HYPERDESCRIPTOR",
+					"NONDESCRIPTOR"
 				)
 			);
 
@@ -103,6 +105,11 @@ class DdmParserShould
 		assertThat(superdescriptorWithSubrange.fields()).hasSize(2);
 		assertSuperdescriptorHasField(superdescriptorWithSubrange, "SOME-NUMBER", 1, 5);
 		assertSuperdescriptorHasField(superdescriptorWithSubrange, "TOP-LEVEL-GROUP-CHILD", 5, 12);
+
+		var aHyperdescriptor = findField(ddm, "HYPERDESCRIPTOR");
+		assertThat(aHyperdescriptor.descriptor()).isEqualTo(DescriptorType.HYPERDESCRIPTOR);
+		var aNondescriptor = findField(ddm, "NONDESCRIPTOR");
+		assertThat(aNondescriptor.descriptor()).isEqualTo(DescriptorType.NONDESCRIPTOR);
 	}
 
 	@Test
