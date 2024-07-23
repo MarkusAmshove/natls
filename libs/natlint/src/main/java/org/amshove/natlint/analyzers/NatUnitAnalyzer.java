@@ -22,7 +22,7 @@ public class NatUnitAnalyzer extends AbstractAnalyzer
 	);
 
 	public static final DiagnosticDescription TEST_CASE_NOT_IN_TEST_ROUTINE = DiagnosticDescription.create(
-		"NL102",
+		"NL024",
 		"Test result is ignored, because test case is not enclosed in subroutine TEST",
 		DiagnosticSeverity.ERROR
 	);
