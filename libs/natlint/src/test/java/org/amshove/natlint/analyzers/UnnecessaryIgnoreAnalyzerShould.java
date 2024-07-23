@@ -44,6 +44,20 @@ class UnnecessaryIgnoreAnalyzerShould extends AbstractAnalyzerTest
 	}
 
 	@Test
+	void reportADiagnosticIfIgnoreIsTheOnlyStatementInAModule()
+	{
+		testDiagnostics(
+			"""
+				DEFINE DATA LOCAL
+				END-DEFINE
+				IGNORE
+				END
+				""",
+			expectDiagnostic(2, UnnecessaryIgnoreAnalyzer.UNNECESSARY_IGNORE)
+		);
+	}
+
+	@Test
 	void reportNoDiagnosticIfIgnoreIsNeccessaryInDecideBlcosk()
 	{
 		testDiagnostics(

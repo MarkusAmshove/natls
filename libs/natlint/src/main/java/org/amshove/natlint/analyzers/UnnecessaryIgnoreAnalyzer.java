@@ -14,7 +14,7 @@ import org.amshove.natparse.natural.ISyntaxNode;
 public class UnnecessaryIgnoreAnalyzer extends AbstractAnalyzer
 {
 	public static final DiagnosticDescription UNNECESSARY_IGNORE = DiagnosticDescription.create(
-		"NL024",
+		"NL025",
 		"IGNORE is unnecessary",
 		DiagnosticSeverity.INFO
 	);
