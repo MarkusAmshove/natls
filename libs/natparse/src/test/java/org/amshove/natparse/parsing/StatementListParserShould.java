@@ -2747,6 +2747,24 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void parseSelectWithFunnyKeywords()
+	{
+		assertParsesSingleStatement("""
+			SELECT
+    			A.MFE_NR1
+  			INTO
+    			KUPINTGA.MFE-NR
+  			FROM VMFE_MFE A
+  			WHERE A.MFE_NR2 = WORK.FFNR
+    	      AND A.MFE_REL_TYPE IN ('01', '05')
+  			OPTIMIZE FOR 1 ROW
+			IF NO RECORDS FOUND
+			IGNORE END-NOREC
+			END-SELECT
+			""", ISelectNode.class);
+	}
+
+	@Test
 	void parseDb2Insert()
 	{
 		assertParsesSingleStatement("""
