@@ -7,7 +7,7 @@ import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.*;
 
-public class UnusedVariableAnalyzer extends AbstractAnalyzer
+public class VariableReferenceAnalyzer extends AbstractAnalyzer
 {
 	public static final DiagnosticDescription UNUSED_VARIABLE = DiagnosticDescription.create(
 		"NL001",
@@ -165,7 +165,7 @@ public class UnusedVariableAnalyzer extends AbstractAnalyzer
 	{
 		if (variable instanceof IGroupNode groupNode)
 		{
-			return variable.references().size() + groupNode.variables().stream().mapToInt(UnusedVariableAnalyzer::computeReferenceCount).sum();
+			return variable.references().size() + groupNode.variables().stream().mapToInt(VariableReferenceAnalyzer::computeReferenceCount).sum();
 		}
 
 		return variable.references().size();
