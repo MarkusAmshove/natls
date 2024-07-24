@@ -11,7 +11,7 @@ import org.amshove.natparse.natural.*;
 public class UnreachableCodeAnalyzer extends AbstractAnalyzer
 {
 	public static final DiagnosticDescription UNREACHABLE_CODE = DiagnosticDescription.create(
-		"NL100",
+		"NL026",
 		"Unreachable code",
 		DiagnosticSeverity.WARNING
 	);
@@ -45,8 +45,6 @@ public class UnreachableCodeAnalyzer extends AbstractAnalyzer
 		}
 
 		var nextStatement = parent.statements().get(indexOfEscapeInBlock + 1);
-		// TODO: Add an interface to these nodes to make them easier recognizabale as nodes that
-		// don't follow the default sequential control flow? Are there more?
 		if (nextStatement instanceof ISubroutineNode || nextStatement instanceof IOnErrorNode || nextStatement instanceof IEndNode)
 		{
 			return;
