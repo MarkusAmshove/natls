@@ -15,7 +15,7 @@ public class UnusedVariableAnalyzer extends AbstractAnalyzer
 		DiagnosticSeverity.WARNING
 	);
 	public static final DiagnosticDescription VARIABLE_MODIFIED_ONLY = DiagnosticDescription.create(
-		"NL101",
+		"NL027",
 		"Variable %s is modified but never accessed",
 		DiagnosticSeverity.INFO
 	);
