@@ -23,7 +23,7 @@ public class UnusedVariableAnalyzer extends AbstractAnalyzer
 	@Override
 	public ReadOnlyList<DiagnosticDescription> getDiagnosticDescriptions()
 	{
-		return ReadOnlyList.of(UNUSED_VARIABLE);
+		return ReadOnlyList.of(UNUSED_VARIABLE, VARIABLE_MODIFIED_ONLY);
 	}
 
 	@Override

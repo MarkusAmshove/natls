@@ -153,4 +153,50 @@ class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
 			expectDiagnostic(6, UnusedVariableAnalyzer.UNUSED_VARIABLE)
 		);
 	}
+
+	@Test
+	void reportADiagnosticForVariablesThatAreOnlyModifiedByReset()
+	{
+		testDiagnostics(
+			"""
+			define data local
+			1 #var (a10)
+			end-define
+			reset #var
+			end
+			""",
+			expectDiagnostic(1, UnusedVariableAnalyzer.VARIABLE_MODIFIED_ONLY)
+		);
+	}
+
+	@Test
+	void reportADiagnosticForVariablesThatAreOnlyModifiedByAssignment()
+	{
+		testDiagnostics(
+			"""
+			define data local
+			1 #var (a10)
+			end-define
+			#var := 'A'
+			end
+			""",
+			expectDiagnostic(1, UnusedVariableAnalyzer.VARIABLE_MODIFIED_ONLY)
+		);
+	}
+
+	@Test
+	void notReportADiagnosticIfAVariableIsModifiedAndRead()
+	{
+		testDiagnostics(
+			"""
+			define data local
+			1 #var (a10)
+			end-define
+			#var := 'A'
+			WRITE #var
+			end
+			""",
+			expectNoDiagnosticOfType(UnusedVariableAnalyzer.VARIABLE_MODIFIED_ONLY)
+		);
+	}
 }
