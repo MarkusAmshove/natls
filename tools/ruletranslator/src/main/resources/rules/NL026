@@ -1,0 +1,6 @@
+name: Unreachable code
+priority: MINOR
+tags: pitfall,suspicious
+type: CODE_SMELL
+description:
+This code can not be reached.
