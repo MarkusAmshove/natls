@@ -1,0 +1,6 @@
+name: Variable is modified but never read
+priority: MINOR
+tags: unused
+type: CODE_SMELL
+description:
+This rule is raised when there is a variable that has its value changed but is never read.

@@ -1,7 +1,7 @@
 package org.amshove.natls.quickfixes;
 
 import org.amshove.natlint.analyzers.UnusedImportAnalyzer;
-import org.amshove.natlint.analyzers.UnusedVariableAnalyzer;
+import org.amshove.natlint.analyzers.VariableReferenceAnalyzer;
 import org.amshove.natls.WorkspaceEditBuilder;
 import org.amshove.natls.codeactions.AbstractQuickFix;
 import org.amshove.natls.codeactions.QuickFixContext;
@@ -16,9 +16,9 @@ public class RemoveUnusedVariableQuickfix extends AbstractQuickFix
 	@Override
 	protected void registerQuickfixes()
 	{
-		registerQuickFix(UnusedVariableAnalyzer.UNUSED_VARIABLE, this::fixUnusedVariable);
+		registerQuickFix(VariableReferenceAnalyzer.UNUSED_VARIABLE, this::fixUnusedVariable);
 		registerQuickFix(UnusedImportAnalyzer.UNUSED_IMPORT, this::fixUnusedImport);
-		registerFixAll(UnusedVariableAnalyzer.UNUSED_VARIABLE.getId(), this::removeAllUnused);
+		registerFixAll(VariableReferenceAnalyzer.UNUSED_VARIABLE.getId(), this::removeAllUnused);
 		registerFixAll(UnusedImportAnalyzer.UNUSED_IMPORT.getId(), this::removeAllUnused);
 	}
 
@@ -28,7 +28,7 @@ public class RemoveUnusedVariableQuickfix extends AbstractQuickFix
 
 		Stream.concat(
 			languageServerFile.diagnosticsInFileOfType(UnusedImportAnalyzer.UNUSED_IMPORT.getId()).stream(),
-			languageServerFile.diagnosticsInFileOfType(UnusedVariableAnalyzer.UNUSED_VARIABLE.getId()).stream()
+			languageServerFile.diagnosticsInFileOfType(VariableReferenceAnalyzer.UNUSED_VARIABLE.getId()).stream()
 		)
 			.forEach(d -> editBuilder.removesLine(languageServerFile.getUri(), toLine(d.getRange())));
 

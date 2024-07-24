@@ -3,11 +3,11 @@ package org.amshove.natlint.analyzers;
 import org.amshove.natlint.linter.AbstractAnalyzerTest;
 import org.junit.jupiter.api.Test;
 
-class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
+class VariableReferenceAnalyzerShould extends AbstractAnalyzerTest
 {
-	protected UnusedVariableAnalyzerShould()
+	protected VariableReferenceAnalyzerShould()
 	{
-		super(new UnusedVariableAnalyzer());
+		super(new VariableReferenceAnalyzer());
 	}
 
 	@Test
@@ -22,7 +22,7 @@ class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
 				write #myvar
 				end
 				""",
-			expectNoDiagnostic(2, UnusedVariableAnalyzer.UNUSED_VARIABLE)
+			expectNoDiagnostic(2, VariableReferenceAnalyzer.UNUSED_VARIABLE)
 		);
 	}
 
@@ -37,7 +37,7 @@ class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
 				end-define
 				end
 				""",
-			expectDiagnostic(2, UnusedVariableAnalyzer.UNUSED_VARIABLE, "Variable #MYVAR is unused")
+			expectDiagnostic(2, VariableReferenceAnalyzer.UNUSED_VARIABLE, "Variable #MYVAR is unused")
 		);
 	}
 
@@ -54,7 +54,7 @@ class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
 				write #used
 				end
 				""",
-			expectNoDiagnosticOfType(UnusedVariableAnalyzer.UNUSED_VARIABLE)
+			expectNoDiagnosticOfType(VariableReferenceAnalyzer.UNUSED_VARIABLE)
 		);
 	}
 
@@ -72,9 +72,9 @@ class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
 			write #used
 			end
 			""",
-			expectNoDiagnostic(2, UnusedVariableAnalyzer.UNUSED_VARIABLE),
-			expectNoDiagnostic(3, UnusedVariableAnalyzer.UNUSED_VARIABLE),
-			expectNoDiagnostic(4, UnusedVariableAnalyzer.UNUSED_VARIABLE)
+			expectNoDiagnostic(2, VariableReferenceAnalyzer.UNUSED_VARIABLE),
+			expectNoDiagnostic(3, VariableReferenceAnalyzer.UNUSED_VARIABLE),
+			expectNoDiagnostic(4, VariableReferenceAnalyzer.UNUSED_VARIABLE)
 		);
 	}
 
@@ -91,7 +91,7 @@ class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
                write #group
                end
             """,
-			expectNoDiagnostic(3, UnusedVariableAnalyzer.UNUSED_VARIABLE)
+			expectNoDiagnostic(3, VariableReferenceAnalyzer.UNUSED_VARIABLE)
 		);
 	}
 
@@ -111,7 +111,7 @@ class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
                
                end
             """,
-			expectNoDiagnosticOfType(UnusedVariableAnalyzer.UNUSED_VARIABLE)
+			expectNoDiagnosticOfType(VariableReferenceAnalyzer.UNUSED_VARIABLE)
 		);
 	}
 
@@ -130,7 +130,7 @@ class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
                write #var2
                end
             """,
-			expectNoDiagnosticOfType(UnusedVariableAnalyzer.UNUSED_VARIABLE)
+			expectNoDiagnosticOfType(VariableReferenceAnalyzer.UNUSED_VARIABLE)
 		);
 	}
 
@@ -150,7 +150,53 @@ class UnusedVariableAnalyzerShould extends AbstractAnalyzerTest
                write #var2
                end
             """,
-			expectDiagnostic(6, UnusedVariableAnalyzer.UNUSED_VARIABLE)
+			expectDiagnostic(6, VariableReferenceAnalyzer.UNUSED_VARIABLE)
+		);
+	}
+
+	@Test
+	void reportADiagnosticForVariablesThatAreOnlyModifiedByReset()
+	{
+		testDiagnostics(
+			"""
+			define data local
+			1 #var (a10)
+			end-define
+			reset #var
+			end
+			""",
+			expectDiagnostic(1, VariableReferenceAnalyzer.VARIABLE_MODIFIED_ONLY)
+		);
+	}
+
+	@Test
+	void reportADiagnosticForVariablesThatAreOnlyModifiedByAssignment()
+	{
+		testDiagnostics(
+			"""
+			define data local
+			1 #var (a10)
+			end-define
+			#var := 'A'
+			end
+			""",
+			expectDiagnostic(1, VariableReferenceAnalyzer.VARIABLE_MODIFIED_ONLY)
+		);
+	}
+
+	@Test
+	void notReportADiagnosticIfAVariableIsModifiedAndRead()
+	{
+		testDiagnostics(
+			"""
+			define data local
+			1 #var (a10)
+			end-define
+			#var := 'A'
+			WRITE #var
+			end
+			""",
+			expectNoDiagnosticOfType(VariableReferenceAnalyzer.VARIABLE_MODIFIED_ONLY)
 		);
 	}
 }

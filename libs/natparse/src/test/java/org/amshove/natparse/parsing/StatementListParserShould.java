@@ -127,6 +127,14 @@ class StatementListParserShould extends StatementParseTest
 		assertIsVariableReference(callnat.providedParameter().get(0), "#VAR");
 	}
 
+	@Test
+	void parseCallnatWithVariableReference()
+	{
+		var callnat = assertParsesSingleStatement("CALLNAT #SUBPROGRAM", ICallnatNode.class);
+		assertThat(callnat.referencingToken()).isNotNull();
+		assertThat(callnat.reference()).isNull();
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
