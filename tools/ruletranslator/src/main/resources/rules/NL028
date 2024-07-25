@@ -1,0 +1,8 @@
+name: Use of DEFINE DATA INDEPENDENT is discouraged
+priority: MINOR
+tags: bad-practice
+type: CODE_SMELL
+description:
+Because of the nature of INDEPENDENT variables, you should refrain from using them whenever possible.
+
+This behavior can be configured using the ``natls.style.independent`` option in the [analyzer configuration](/docs/analyzer-config.md)

@@ -9,7 +9,7 @@ public abstract class AbstractAnalyzer
 {
 	public static final String OPTION_TRUE = "true";
 	public static final String OPTION_FALSE = "false";
-	protected static final List<NaturalFileType> UNWANTED_FILETYPES = List.of(NaturalFileType.MAP, NaturalFileType.COPYCODE, NaturalFileType.GDA, NaturalFileType.PDA, NaturalFileType.DDM, NaturalFileType.LDA);
+	protected static final List<NaturalFileType> UNWANTED_FILETYPES = List.of(NaturalFileType.MAP, NaturalFileType.COPYCODE, NaturalFileType.GDA, NaturalFileType.PDA, NaturalFileType.LDA, NaturalFileType.DDM);
 
 	/**
 	 * This returns all {@link DiagnosticDescription}s that an analyzer can raise.
