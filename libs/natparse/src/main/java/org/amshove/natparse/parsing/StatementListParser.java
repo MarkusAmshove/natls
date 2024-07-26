@@ -2336,7 +2336,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		while (!isAtEnd() && !isStatementStart())
 		{
-			consumeAnyOptionally(display, DISPLAY_OUTPUT_FORMATS);
+			while (consumeAnyOptionally(display, DISPLAY_OUTPUT_FORMATS))
+			{
+				// advances automatically
+			}
+
 			if (!(isOperand() || peekKind(SyntaxKind.TAB_SETTING) || peekKind(SyntaxKind.SLASH) || peekKind(SyntaxKind.OPERAND_SKIP)))
 			{
 				break;
