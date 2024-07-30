@@ -895,7 +895,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		return hasDefineData.defineData()
 			.variables()
 			.stream()
-			.filter(v -> v instanceof ITypedVariableNode)
+			.filter(ITypedVariableNode.class::isInstance)
 			.map(v -> ((ITypedVariableNode) v))
 			.filter(tv -> tv.type().isConstant());
 	}
