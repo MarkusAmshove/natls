@@ -11,7 +11,7 @@ import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.ISubroutineNode;
 
-class BetweenSubroutinesAnalyzer extends AbstractAnalyzer
+public class BetweenSubroutinesAnalyzer extends AbstractAnalyzer
 {
 	public static final DiagnosticDescription DISCOURAGED_CODE_BETWEEN_SUBROUTINES = DiagnosticDescription.create(
 		"NL029",
