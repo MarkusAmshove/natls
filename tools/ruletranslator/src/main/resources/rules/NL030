@@ -1,0 +1,6 @@
+name: Use of Gitmarkers in comments is discouraged
+priority: MINOR
+tags: confusing
+type: CODE_SMELL
+description:
+Gitmarkers in comments can be confusing, remove any '<<' or '>>'.
