@@ -10,6 +10,9 @@ import org.amshove.natls.languageserver.inputstructure.InputStructureResponse;
 import org.amshove.natls.markupcontent.MarkdownContentBuilder;
 import org.amshove.natls.markupcontent.MarkupContentBuilderFactory;
 import org.amshove.natls.progress.*;
+import org.amshove.natls.project.LanguageServerFile;
+import org.amshove.natparse.natural.IHasDefineData;
+import org.amshove.natparse.natural.ITypedVariableNode;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -24,6 +27,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 public class NaturalLanguageServer implements LanguageServer, LanguageClientAware
 {
@@ -277,6 +281,13 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 	public CompletableFuture<InputStructureResponse> inputStructure(InputStructureParams params)
 	{
 		return CompletableFuture.supplyAsync(() -> languageService.getInputStructure(params));
+	}
+
+	@JsonRequest
+	@SuppressWarnings("unused")
+	public CompletableFuture<FindConstantsResponse> findConstants(FindConstantsParams params)
+	{
+		return CompletableFuture.supplyAsync(() -> languageService.findConstants(params));
 	}
 
 	@Override

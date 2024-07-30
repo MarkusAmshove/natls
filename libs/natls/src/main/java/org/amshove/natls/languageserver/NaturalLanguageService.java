@@ -62,6 +62,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class NaturalLanguageService implements LanguageClientAware
 {
@@ -856,6 +857,47 @@ public class NaturalLanguageService implements LanguageClientAware
 			new InputStructureCreator()
 				.createStructure(moduleWithBody, params.getInputIndex())
 		);
+	}
+
+	public FindConstantsResponse findConstants(FindConstantsParams params)
+	{
+		var response = new FindConstantsResponse();
+
+		var currentFile = getProject().findFile(LspUtil.uriToPath(params.getIdentifier().getUri()));
+		if (currentFile == null)
+		{
+			return null;
+		}
+
+		var constants = currentFile.getLibrary().getModulesOfType(NaturalFileType.LDA, true)
+			.stream()
+			.flatMap(
+				file -> extractConstants(file).map(
+					tv -> new FindConstantsResponse.FoundConstant(tv.declaration().symbolName(), file.getReferableName())
+				)
+			)
+			.toList();
+
+		response.setConstants(constants);
+
+		return response;
+	}
+
+	private Stream<ITypedVariableNode> extractConstants(LanguageServerFile file)
+	{
+		if (file.getType() != NaturalFileType.LDA
+			|| !(file.module()instanceof IHasDefineData hasDefineData)
+			|| hasDefineData.defineData() == null)
+		{
+			return Stream.of();
+		}
+
+		return hasDefineData.defineData()
+			.variables()
+			.stream()
+			.filter(v -> v instanceof ITypedVariableNode)
+			.map(v -> ((ITypedVariableNode) v))
+			.filter(tv -> tv.type().isConstant());
 	}
 
 	public List<FoldingRange> folding(FoldingRangeRequestParams params)
