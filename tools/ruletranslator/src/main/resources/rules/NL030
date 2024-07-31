@@ -3,4 +3,6 @@ priority: MINOR
 tags: confusing
 type: CODE_SMELL
 description:
-Gitmarkers in comments can be confusing, remove any '<<' or '>>'.
+Gitmarkers in comments can be confusing, remove any '<<<<<<<', '>>>>>>>' or '======='.
+
+This behavior can be configured using the ``natls.style.discouraged_gitmarkers`` option in the [analyzer configuration](/docs/analyzer-config.md)

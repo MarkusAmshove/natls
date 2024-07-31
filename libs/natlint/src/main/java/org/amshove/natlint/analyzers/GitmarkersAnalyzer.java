@@ -14,9 +14,11 @@ public class GitmarkersAnalyzer extends AbstractAnalyzer
 {
 	public static final DiagnosticDescription DISCOURAGED_GITMARKERS_IN_COMMENT = DiagnosticDescription.create(
 		"NL030",
-		"Gitmarkers in comments can be confusing, remove any '<<' or '>>'",
-		DiagnosticSeverity.WARNING
+		"Gitmarkers in comments can be confusing, remove any '<<<<<<<', '>>>>>>>' or '======='",
+		DiagnosticSeverity.INFO
 	);
+
+	private boolean isMarkersOff;
 
 	@Override
 	public ReadOnlyList<DiagnosticDescription> getDiagnosticDescriptions()
@@ -30,8 +32,19 @@ public class GitmarkersAnalyzer extends AbstractAnalyzer
 		context.registerModuleAnalyzer(this::analyzeModule);
 	}
 
+	@Override
+	public void beforeAnalyzing(IAnalyzeContext context)
+	{
+		isMarkersOff = !context.getConfiguration(context.getModule().file(), "natls.style.discouraged_gitmarkers", OPTION_FALSE).equalsIgnoreCase(OPTION_TRUE);
+	}
+
 	private void analyzeModule(INaturalModule module, IAnalyzeContext context)
 	{
+		if (isMarkersOff)
+		{
+			return;
+		}
+
 		if (module.file().getFiletype().equals(NaturalFileType.MAP)) /* Maps are unpredictable */
 		{
 			return;
@@ -39,7 +52,9 @@ public class GitmarkersAnalyzer extends AbstractAnalyzer
 
 		for (SyntaxToken comment : module.comments())
 		{
-			if (comment.source().contains("<<") || comment.source().contains(">>"))
+			if (comment.source().contains("<<<<<<<") ||
+				comment.source().contains(">>>>>>>") ||
+				comment.source().contains("======="))
 			{
 				context.report(DISCOURAGED_GITMARKERS_IN_COMMENT.createDiagnostic(comment));
 				return;

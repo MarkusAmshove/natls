@@ -13,12 +13,17 @@ class GitmarkersAnalyzerShould extends AbstractAnalyzerTest
 	@Test
 	void reportDiagnosticsForGitmarkersInLineComment()
 	{
+		configureEditorConfig("""
+			[*]
+			natls.style.discouraged_gitmarkers=true
+			""");
+
 		testDiagnostics(
 			"""
             DEFINE DATA LOCAL
             1 A(A1)
             END-DEFINE
-			* << >>
+			* =======
 			""",
 			expectDiagnostic(3, GitmarkersAnalyzer.DISCOURAGED_GITMARKERS_IN_COMMENT)
 		);
@@ -27,9 +32,14 @@ class GitmarkersAnalyzerShould extends AbstractAnalyzerTest
 	@Test
 	void reportDiagnosticsForGitmarkersInInlineComment()
 	{
+		configureEditorConfig("""
+			[*]
+			natls.style.discouraged_gitmarkers=true
+			""");
+
 		testDiagnostics(
 			"""
-            DEFINE DATA LOCAL /* <<< >>>
+            DEFINE DATA LOCAL /* <<<<<<< >>>>>>>
             1 A(A1)
             END-DEFINE
 			""",
@@ -40,12 +50,17 @@ class GitmarkersAnalyzerShould extends AbstractAnalyzerTest
 	@Test
 	void reportNoDiagnosticsForNonGitmarkersInLineComment()
 	{
+		configureEditorConfig("""
+			[*]
+			natls.style.discouraged_gitmarkers=true
+			""");
+
 		testDiagnostics(
 			"""
             DEFINE DATA LOCAL
             1 A(A1)
             END-DEFINE
-			* < >
+			* << >>
 			""",
 			expectNoDiagnosticOfType(GitmarkersAnalyzer.DISCOURAGED_GITMARKERS_IN_COMMENT)
 		);
@@ -54,9 +69,14 @@ class GitmarkersAnalyzerShould extends AbstractAnalyzerTest
 	@Test
 	void reportNoDiagnosticsForNonGitmarkersInInlineComment()
 	{
+		configureEditorConfig("""
+			[*]
+			natls.style.discouraged_gitmarkers=true
+			""");
+
 		testDiagnostics(
 			"""
-            DEFINE DATA LOCAL /* < >
+            DEFINE DATA LOCAL /* << >>
             1 A(A1)
             END-DEFINE
 			""",
