@@ -1,0 +1,6 @@
+name: Code in between subroutines is strongly discouraged
+priority: MAJOR
+tags: clumsy, brain-overload, confusing, bad-practice
+type: CODE_SMELL
+description:
+The Natural language accepts code in between definitions of subroutines. This is strongly discouraged, as it is confusing, hides functionality and greatly lessens readability and ease of maintenance.

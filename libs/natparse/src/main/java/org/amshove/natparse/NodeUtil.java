@@ -49,7 +49,7 @@ public class NodeUtil
 
 	/**
 	 * Checks whether the module contains the given node. The comparison is done by the DiagnosticPosition, which is
-	 * e.g. the copy code name in an INCULDE.
+	 * e.g. the copy code name in an INCLUDE.
 	 */
 	public static boolean moduleContainsNodeByDiagnosticPosition(INaturalModule module, ISyntaxNode node)
 	{
