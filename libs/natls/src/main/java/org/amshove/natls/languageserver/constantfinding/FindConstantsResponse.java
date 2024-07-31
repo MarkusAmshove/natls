@@ -1,4 +1,4 @@
-package org.amshove.natls.languageserver;
+package org.amshove.natls.languageserver.constantfinding;
 
 import java.util.List;
 
@@ -6,6 +6,11 @@ import java.util.List;
 public class FindConstantsResponse
 {
 	private List<FoundConstant> constants;
+
+	public FindConstantsResponse()
+	{
+		constants = List.of();
+	}
 
 	public List<FoundConstant> getConstants()
 	{
@@ -17,6 +22,4 @@ public class FindConstantsResponse
 		this.constants = constants;
 	}
 
-	public record FoundConstant(String name, String source)
-	{}
 }

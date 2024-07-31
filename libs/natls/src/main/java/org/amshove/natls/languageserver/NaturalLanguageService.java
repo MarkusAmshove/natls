@@ -20,6 +20,9 @@ import org.amshove.natls.folding.FoldingVisitor;
 import org.amshove.natls.hover.HoverContext;
 import org.amshove.natls.hover.HoverProvider;
 import org.amshove.natls.inlayhints.InlayHintProvider;
+import org.amshove.natls.languageserver.constantfinding.ConstantsFinder;
+import org.amshove.natls.languageserver.constantfinding.FindConstantsParams;
+import org.amshove.natls.languageserver.constantfinding.FindConstantsResponse;
 import org.amshove.natls.languageserver.inputstructure.InputStructureParams;
 import org.amshove.natls.languageserver.inputstructure.InputStructureResponse;
 import org.amshove.natls.progress.BackgroundTasks;
@@ -62,7 +65,6 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class NaturalLanguageService implements LanguageClientAware
 {
@@ -862,42 +864,15 @@ public class NaturalLanguageService implements LanguageClientAware
 	public FindConstantsResponse findConstants(FindConstantsParams params)
 	{
 		var response = new FindConstantsResponse();
-
 		var currentFile = getProject().findFile(LspUtil.uriToPath(params.getIdentifier().getUri()));
-		if (currentFile == null)
+
+		if (currentFile != null)
 		{
-			return null;
+			var finder = new ConstantsFinder();
+			response.setConstants(finder.findConstants(currentFile));
 		}
-
-		var constants = currentFile.getLibrary().getModulesOfType(NaturalFileType.LDA, true)
-			.stream()
-			.flatMap(
-				file -> extractConstants(file).map(
-					tv -> new FindConstantsResponse.FoundConstant(tv.declaration().symbolName(), file.getReferableName())
-				)
-			)
-			.toList();
-
-		response.setConstants(constants);
 
 		return response;
-	}
-
-	private Stream<ITypedVariableNode> extractConstants(LanguageServerFile file)
-	{
-		if (file.getType() != NaturalFileType.LDA
-			|| !(file.module()instanceof IHasDefineData hasDefineData)
-			|| hasDefineData.defineData() == null)
-		{
-			return Stream.of();
-		}
-
-		return hasDefineData.defineData()
-			.variables()
-			.stream()
-			.filter(ITypedVariableNode.class::isInstance)
-			.map(v -> ((ITypedVariableNode) v))
-			.filter(tv -> tv.type().isConstant());
 	}
 
 	public List<FoldingRange> folding(FoldingRangeRequestParams params)

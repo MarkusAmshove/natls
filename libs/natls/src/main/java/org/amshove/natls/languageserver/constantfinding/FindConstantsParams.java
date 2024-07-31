@@ -1,4 +1,4 @@
-package org.amshove.natls.languageserver;
+package org.amshove.natls.languageserver.constantfinding;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 
