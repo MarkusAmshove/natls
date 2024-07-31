@@ -15,8 +15,8 @@ public class BetweenSubroutinesAnalyzer extends AbstractAnalyzer
 {
 	public static final DiagnosticDescription DISCOURAGED_CODE_BETWEEN_SUBROUTINES = DiagnosticDescription.create(
 		"NL029",
-		"Code in between subroutines is strongly discouraged",
-		DiagnosticSeverity.ERROR
+		"Code in between subroutines is discouraged",
+		DiagnosticSeverity.WARNING
 	);
 
 	@Override
