@@ -68,6 +68,25 @@ class FindConstantsEndpointShould extends EmptyProjectTest
 		assertConstantWithValue(response, "C-CONCAT", "'abcdef'");
 	}
 
+	@Test
+	void notBailOutWhenConstantsAreArrays() throws ExecutionException, InterruptedException, TimeoutException
+	{
+		createOrSaveFile("LIBONE", "CONSTLDA.NSL", """
+			DEFINE DATA LOCAL
+			1 C-A (A1/1:2) CONST<'A', 'B'>
+			END-DEFINE
+			""");
+
+		var identifier = createOrSaveFile("LIBONE", "SUB.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+			END
+			""");
+
+		var response = getContext().server().findConstants(new FindConstantsParams(identifier)).get(1, TimeUnit.MINUTES);
+		assertConstantWithValue(response, "C-A", "");
+	}
+
 	private static void assertConstantWithValue(FindConstantsResponse response, String name, String value)
 	{
 		assertThat(response.getConstants())
