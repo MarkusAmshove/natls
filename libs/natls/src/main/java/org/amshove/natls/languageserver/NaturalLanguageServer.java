@@ -5,6 +5,8 @@ import com.google.gson.JsonObject;
 import org.amshove.natls.App;
 import org.amshove.natls.codeactions.CodeActionRegistry;
 import org.amshove.natls.config.LSConfiguration;
+import org.amshove.natls.languageserver.constantfinding.FindConstantsParams;
+import org.amshove.natls.languageserver.constantfinding.FindConstantsResponse;
 import org.amshove.natls.languageserver.inputstructure.InputStructureParams;
 import org.amshove.natls.languageserver.inputstructure.InputStructureResponse;
 import org.amshove.natls.markupcontent.MarkdownContentBuilder;
@@ -277,6 +279,13 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 	public CompletableFuture<InputStructureResponse> inputStructure(InputStructureParams params)
 	{
 		return CompletableFuture.supplyAsync(() -> languageService.getInputStructure(params));
+	}
+
+	@JsonRequest
+	@SuppressWarnings("unused")
+	public CompletableFuture<FindConstantsResponse> findConstants(FindConstantsParams params)
+	{
+		return CompletableFuture.supplyAsync(() -> languageService.findConstants(params));
 	}
 
 	@Override
