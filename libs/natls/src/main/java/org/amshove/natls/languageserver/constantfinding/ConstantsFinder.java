@@ -35,7 +35,7 @@ public class ConstantsFinder
 		{
 			case ILiteralNode literal -> literal.token().source();
 			case IStringConcatOperandNode concat -> "'" + concat.stringValue() + "'";
-			default -> "";
+			case null, default -> "";
 		};
 	}
 
