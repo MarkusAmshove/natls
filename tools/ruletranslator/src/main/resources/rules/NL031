@@ -1,0 +1,8 @@
+name: Use of inline parameter is discouraged
+priority: NORMAL
+tags: bad-practice
+type: CODE_SMELL
+description:
+When using inline parameters, you have to ensure that every calling module is modified as well in the case where you modify the parameter list. If you use Parameter Data areas only, you correct the PDA and then recompile all the callers instead. This is a much safer approach, and therefore the use of inline parameters is discouraged.
+
+This behavior can be configured using the ``natls.style.disallowinlineparameters`` option in the [analyzer configuration](/docs/analyzer-config.md)

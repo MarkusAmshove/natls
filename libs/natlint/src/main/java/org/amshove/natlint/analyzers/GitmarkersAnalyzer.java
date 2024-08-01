@@ -35,7 +35,7 @@ public class GitmarkersAnalyzer extends AbstractAnalyzer
 	@Override
 	public void beforeAnalyzing(IAnalyzeContext context)
 	{
-		isMarkersOff = !context.getConfiguration(context.getModule().file(), "natls.style.discourage_gitmarkers", OPTION_FALSE).equalsIgnoreCase(OPTION_TRUE);
+		isMarkersOff = !context.getConfiguration(context.getModule().file(), "natls.style.disallowgitmarkers", OPTION_FALSE).equalsIgnoreCase(OPTION_TRUE);
 	}
 
 	private void analyzeModule(INaturalModule module, IAnalyzeContext context)
