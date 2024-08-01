@@ -7,7 +7,8 @@ import org.eclipse.lsp4j.services.TextDocumentService;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
+
+import static org.amshove.natls.SafeWrap.wrapSafe;
 
 @SuppressWarnings("deprecation")
 public class NaturalDocumentService implements TextDocumentService
@@ -166,31 +167,5 @@ public class NaturalDocumentService implements TextDocumentService
 	public void setLanguageService(NaturalLanguageService languageService)
 	{
 		this.languageService = languageService;
-	}
-
-	private <R> CompletableFuture<R> wrapSafe(Supplier<CompletableFuture<R>> function)
-	{
-		return function.get().handle((r, e) ->
-		{
-			if (e != null)
-			{
-				// TODO: log exception
-				return null;
-			}
-
-			return r;
-		});
-	}
-
-	private void wrapSafe(Runnable runnable)
-	{
-		try
-		{
-			runnable.run();
-		}
-		catch (Exception e)
-		{
-			// TODO: log exception
-		}
 	}
 }
