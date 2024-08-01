@@ -1,0 +1,8 @@
+name: Use of Gitmarkers in comments is discouraged
+priority: MINOR
+tags: confusing
+type: CODE_SMELL
+description:
+Gitmarkers in comments can be confusing, remove any '<<<<<<<', '>>>>>>>' or '======='.
+
+This behavior can be configured using the ``natls.style.discourage_gitmarkers`` option in the [analyzer configuration](/docs/analyzer-config.md)

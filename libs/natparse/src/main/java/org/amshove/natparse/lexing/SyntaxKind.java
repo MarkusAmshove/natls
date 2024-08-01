@@ -838,4 +838,10 @@ public enum SyntaxKind
 	{
 		return this == IF || this == DEFINE || this == DECIDE || this == REPEAT || this == READ || this == FIND || this == FOR;
 	}
+
+	@Override
+	public String toString()
+	{
+		return name().replace("SV_", "*").replace("KW_", "").replace("_", "-");
+	}
 }

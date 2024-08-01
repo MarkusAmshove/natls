@@ -1,6 +1,6 @@
 package org.amshove.natls.quickfixes;
 
-import org.amshove.natlint.analyzers.UnusedVariableAnalyzer;
+import org.amshove.natlint.analyzers.VariableReferenceAnalyzer;
 import org.amshove.natls.codeactions.ICodeActionProvider;
 import org.amshove.natls.testlifecycle.CodeActionTest;
 import org.amshove.natls.testlifecycle.LspProjectName;
@@ -43,7 +43,7 @@ class RemoveUnusedVariableQuickfixShould extends CodeActionTest
 			   END
 			""")
 			.deletesLine(2)
-			.fixes(UnusedVariableAnalyzer.UNUSED_VARIABLE.getId())
+			.fixes(VariableReferenceAnalyzer.UNUSED_VARIABLE.getId())
 			.resultsApplied("""
 			   DEFINE DATA
 			   LOCAL
@@ -63,7 +63,7 @@ class RemoveUnusedVariableQuickfixShould extends CodeActionTest
 			   END
 			""")
 			.deletesLine(2)
-			.fixes(UnusedVariableAnalyzer.UNUSED_VARIABLE.getId());
+			.fixes(VariableReferenceAnalyzer.UNUSED_VARIABLE.getId());
 	}
 
 	@Test

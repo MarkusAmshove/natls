@@ -65,7 +65,7 @@ class LexerForAttributeControlsShould extends AbstractLexerTest
 			.filter(sk -> !attributes.contains(sk))
 			.map(
 				sk -> dynamicTest(
-					"%s should not be an attribute", () -> assertThat(sk.isAttribute())
+					"%s should not be an attribute".formatted(sk), () -> assertThat(sk.isAttribute())
 						.as(sk + " returns true for isAttribute() but is not tested to be an attribute via the attributes list in this test. Is this correct?")
 						.isFalse()
 				)

@@ -1440,9 +1440,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				continue;
 			}
 
-			// FETCH FIRST clause
-			if (peekKind(SyntaxKind.FETCH) && peekKind(1, SyntaxKind.FIRST))
+			if (peekKind(SyntaxKind.FETCH) && peekKind(1, SyntaxKind.FIRST) ||
+				peekKind(SyntaxKind.IF) && peekKind(1, SyntaxKind.NO) ||
+				peekKind(SyntaxKind.OPTIMIZE) && peekKind(1, SyntaxKind.FOR))
 			{
+				consume(select);
 				consume(select);
 				continue;
 			}
@@ -2980,9 +2982,10 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.IDENTIFIER), tokens));
 		}
 
-		if (consumeOptionally(callnat, SyntaxKind.IDENTIFIER))
+		if (peekKind(SyntaxKind.IDENTIFIER))
 		{
-			callnat.setReferencingToken(previousToken());
+			var ref = consumeVariableReferenceNode(callnat);
+			callnat.setReferencingToken(ref.referencingToken());
 		}
 		else
 			if (consumeOptionally(callnat, SyntaxKind.STRING_LITERAL))

@@ -127,6 +127,14 @@ class StatementListParserShould extends StatementParseTest
 		assertIsVariableReference(callnat.providedParameter().get(0), "#VAR");
 	}
 
+	@Test
+	void parseCallnatWithVariableReference()
+	{
+		var callnat = assertParsesSingleStatement("CALLNAT #SUBPROGRAM", ICallnatNode.class);
+		assertThat(callnat.referencingToken()).isNotNull();
+		assertThat(callnat.reference()).isNull();
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
@@ -2771,6 +2779,24 @@ class StatementListParserShould extends StatementParseTest
 		assertParsesSingleStatement("""
 			SELECT * FROM DB2_TABLE WHERE COLUMN = 'search' AND (SELECT MAX(X) FROM ANOTHER_TABLE WHERE COL2 = 'search')
 			END-SELECT""", ISelectNode.class);
+	}
+
+	@Test
+	void parseSelectWithFunnyKeywords()
+	{
+		assertParsesSingleStatement("""
+			SELECT
+    			A.MFE_NR1
+  			INTO
+    			KUPINTGA.MFE-NR
+  			FROM VMFE_MFE A
+  			WHERE A.MFE_NR2 = WORK.FFNR
+    	      AND A.MFE_REL_TYPE IN ('01', '05')
+  			OPTIMIZE FOR 1 ROW
+			IF NO RECORDS FOUND
+			IGNORE END-NOREC
+			END-SELECT
+			""", ISelectNode.class);
 	}
 
 	@Test
