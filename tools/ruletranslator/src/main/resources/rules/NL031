@@ -1,5 +1,5 @@
 name: Use of inline parameter is discouraged
-priority: NORMAL
+priority: MAJOR
 tags: bad-practice
 type: CODE_SMELL
 description:
