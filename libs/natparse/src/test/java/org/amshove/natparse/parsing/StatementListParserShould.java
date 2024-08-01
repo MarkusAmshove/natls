@@ -1977,6 +1977,13 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(display.descendants()).hasSize(1);
 	}
 
+	@Test
+	void parseDisplayWithIsEqualsOn()
+	{
+		var display = assertParsesSingleStatement("DISPLAY #VAR (IS=ON)", IDisplayNode.class);
+		assertThat(display.descendants()).hasSize(2);
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{

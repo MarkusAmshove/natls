@@ -4900,7 +4900,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		return switch (kind)
 		{
-			case AD, AL, CD, CV, DF, DL, DY, EM, EMU, FL, HE, IP, NL, PM, SB, SG, ZP -> true;
+			case AD, AL, CD, CV, DF, DL, DY, EM, EMU, FL, HE, IP, IS, NL, PM, SB, SG, ZP -> true;
 			default -> false;
 		};
 	}
