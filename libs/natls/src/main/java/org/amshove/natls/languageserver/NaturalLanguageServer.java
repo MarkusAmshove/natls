@@ -27,6 +27,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static org.amshove.natls.SafeWrap.wrapSafe;
+
 public class NaturalLanguageServer implements LanguageServer, LanguageClientAware
 {
 	private static final Logger log = Logger.getAnonymousLogger();
@@ -257,35 +259,35 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			languageService.parseFileReferencesAsync();
 		}
 
-		return CompletableFuture.completedFuture(null);
+		return wrapSafe(() -> CompletableFuture.completedFuture(null));
 	}
 
 	@JsonRequest
 	@SuppressWarnings("unused")
 	public CompletableFuture<ReferableFileExistsResponse> referableFileExists(ReferableFileExistsParams params)
 	{
-		return CompletableFuture.completedFuture(new ReferableFileExistsResponse(languageService.findReferableName(params.getLibrary(), params.getReferableName()) != null));
+		return wrapSafe(() -> CompletableFuture.completedFuture(new ReferableFileExistsResponse(languageService.findReferableName(params.getLibrary(), params.getReferableName()) != null)));
 	}
 
 	@JsonRequest
 	@SuppressWarnings("unused")
 	public CompletableFuture<CalledModulesResponse> calledModules(CalledModulesParams params)
 	{
-		return CompletableFuture.supplyAsync(() -> languageService.getCalledModules(params.getIdentifier()));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.getCalledModules(params.getIdentifier())));
 	}
 
 	@JsonRequest
 	@SuppressWarnings("unused")
 	public CompletableFuture<InputStructureResponse> inputStructure(InputStructureParams params)
 	{
-		return CompletableFuture.supplyAsync(() -> languageService.getInputStructure(params));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.getInputStructure(params)));
 	}
 
 	@JsonRequest
 	@SuppressWarnings("unused")
 	public CompletableFuture<FindConstantsResponse> findConstants(FindConstantsParams params)
 	{
-		return CompletableFuture.supplyAsync(() -> languageService.findConstants(params));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.findConstants(params)));
 	}
 
 	@Override
