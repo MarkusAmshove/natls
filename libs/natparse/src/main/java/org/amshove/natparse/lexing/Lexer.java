@@ -180,6 +180,13 @@ public class Lexer
 					}
 					createAndAddCurrentSingleToken(SyntaxKind.CARET);
 					continue;
+				case '¬':
+					if (tryCreateIfFollowedBy('=', SyntaxKind.NOT_SIGN_EQUAL))
+					{
+						continue;
+					}
+					createAndAddCurrentSingleToken(SyntaxKind.NOT_SIGN);
+					continue;
 				case '!':
 					if (tryCreateIfFollowedBy('!', SyntaxKind.SQL_CONCAT))
 					{
