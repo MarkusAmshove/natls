@@ -41,7 +41,7 @@ class CreateUnresolvedSubroutineQuickFixShould extends CodeActionTest
 			
 			END
 			""")
-			.fixes(ParserError.UNRESOLVED_IMPORT.id())
+			.fixes(ParserError.UNRESOLVED_MODULE.id())
 			.resultsApplied("""
 				DEFINE DATA LOCAL
 				END-DEFINE
@@ -73,7 +73,7 @@ class CreateUnresolvedSubroutineQuickFixShould extends CodeActionTest
 			
 			END
 			""")
-			.fixes(ParserError.UNRESOLVED_IMPORT.id())
+			.fixes(ParserError.UNRESOLVED_MODULE.id())
 			.resultsApplied("""
 				DEFINE DATA LOCAL
 				END-DEFINE
@@ -111,7 +111,7 @@ class CreateUnresolvedSubroutineQuickFixShould extends CodeActionTest
 			END-FUNCTION
 			END
 			""")
-			.fixes(ParserError.UNRESOLVED_IMPORT.id())
+			.fixes(ParserError.UNRESOLVED_MODULE.id())
 			.resultsApplied("""
 			DEFINE FUNCTION MYFUNC
 
@@ -147,7 +147,7 @@ class CreateUnresolvedSubroutineQuickFixShould extends CodeActionTest
 			END-SUBROUTINE
 			END
 			""")
-			.fixes(ParserError.UNRESOLVED_IMPORT.id())
+			.fixes(ParserError.UNRESOLVED_MODULE.id())
 			.resultsApplied("""
 				DEFINE DATA LOCAL
 				END-DEFINE

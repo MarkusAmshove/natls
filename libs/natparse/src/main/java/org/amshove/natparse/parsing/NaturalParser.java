@@ -240,7 +240,7 @@ public class NaturalParser
 	{
 		for (var diagnostic : result.diagnostics())
 		{
-			if (diagnostic.id().equals(ParserError.UNRESOLVED_IMPORT.id()))
+			if (diagnostic.id().equals(ParserError.UNRESOLVED_MODULE.id()))
 			{
 				if (naturalModule.isTestCase() && diagnostic.message().contains("module TEARDOWN") || diagnostic.message().contains("module SETUP"))
 				{

@@ -366,7 +366,7 @@ class ParserErrors
 		return ParserDiagnostic.create(
 			"Could not resolve DDM %s".formatted(token.symbolName()),
 			token,
-			ParserError.UNRESOLVED_IMPORT
+			ParserError.UNRESOLVED_MODULE
 		);
 	}
 
@@ -375,7 +375,7 @@ class ParserErrors
 		return ParserDiagnostic.create(
 			"Could not resolve external module %s".formatted(token.symbolName()),
 			token,
-			ParserError.UNRESOLVED_IMPORT
+			ParserError.UNRESOLVED_MODULE
 		);
 	}
 

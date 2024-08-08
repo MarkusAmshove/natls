@@ -26,18 +26,39 @@ public class UnreachableCodeAnalyzer extends AbstractAnalyzer
 	public void initialize(ILinterContext context)
 	{
 		context.registerNodeAnalyzer(IEscapeNode.class, this::analyzeEscape);
+		context.registerNodeAnalyzer(ITerminateNode.class, this::analyzeTerminate);
+		context.registerNodeAnalyzer(IFetchNode.class, this::analyzeFetch);
 	}
 
 	private void analyzeEscape(ISyntaxNode node, IAnalyzeContext context)
 	{
-		var escape = (IEscapeNode) node;
+		reportIfNotLastStatement(context, (IEscapeNode) node);
+	}
 
-		if (!(escape.parent()instanceof IStatementListNode parent))
+	private void analyzeTerminate(ISyntaxNode node, IAnalyzeContext context)
+	{
+		reportIfNotLastStatement(context, (ITerminateNode) node);
+	}
+
+	private void analyzeFetch(ISyntaxNode node, IAnalyzeContext context)
+	{
+		var fetch = (IFetchNode) node;
+		if (fetch.isFetchReturn())
 		{
 			return;
 		}
 
-		var indexOfEscapeInBlock = parent.statements().indexOf(escape);
+		reportIfNotLastStatement(context, fetch);
+	}
+
+	private static void reportIfNotLastStatement(IAnalyzeContext context, IStatementNode statement)
+	{
+		if (!(statement.parent()instanceof IStatementListNode parent))
+		{
+			return;
+		}
+
+		var indexOfEscapeInBlock = parent.statements().indexOf(statement);
 		var escapeIsLastStatementInBlock = indexOfEscapeInBlock == parent.statements().size() - 1;
 		if (escapeIsLastStatementInBlock)
 		{

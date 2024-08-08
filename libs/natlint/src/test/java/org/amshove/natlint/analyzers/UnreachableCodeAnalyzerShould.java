@@ -1,6 +1,7 @@
 package org.amshove.natlint.analyzers;
 
 import org.amshove.natlint.linter.AbstractAnalyzerTest;
+import org.amshove.natparse.parsing.ParserError;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -99,4 +100,52 @@ class UnreachableCodeAnalyzerShould extends AbstractAnalyzerTest
 			expectNoDiagnosticOfType(UnreachableCodeAnalyzer.UNREACHABLE_CODE)
 		);
 	}
+
+	@Test
+	void raiseADiagnosticWhenCodeIsUnreachableAfterTerminate()
+	{
+		testDiagnostics(
+			"""
+			DEFINE DATA LOCAL
+			END-DEFINE
+			TERMINATE 1
+			WRITE 'Hi'
+			END
+			""",
+			expectDiagnostic(3, UnreachableCodeAnalyzer.UNREACHABLE_CODE)
+		);
+	}
+
+	@Test
+	void raiseADiagnosticWhenCodeIsUnreachableAfterFetch()
+	{
+		allowParserError(ParserError.UNRESOLVED_MODULE.id());
+		testDiagnostics(
+			"""
+			DEFINE DATA LOCAL
+			END-DEFINE
+			FETCH 'MODULE'
+			WRITE 'Hi'
+			END
+			""",
+			expectDiagnostic(3, UnreachableCodeAnalyzer.UNREACHABLE_CODE)
+		);
+	}
+
+	@Test
+	void notRaiseADiagnosticForStatementsAfterFetchReturn()
+	{
+		allowParserError(ParserError.UNRESOLVED_MODULE.id());
+		testDiagnostics(
+			"""
+			DEFINE DATA LOCAL
+			END-DEFINE
+			FETCH RETURN 'MODULE'
+			WRITE 'Hi'
+			END
+			""",
+			expectNoDiagnosticOfType(UnreachableCodeAnalyzer.UNREACHABLE_CODE)
+		);
+	}
+
 }
