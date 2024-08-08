@@ -148,4 +148,20 @@ class UnreachableCodeAnalyzerShould extends AbstractAnalyzerTest
 		);
 	}
 
+	@Test
+	void notRaiseADiagnosticOnFetchOnArrayAccess()
+	{
+		//
+		testDiagnostics(
+			"""
+			DEFINE DATA LOCAL
+			1 #ARR(A8/1:2)
+			END-DEFINE
+			FETCH #ARR(1)
+			END
+			""",
+			expectNoDiagnosticOfType(UnreachableCodeAnalyzer.UNREACHABLE_CODE)
+		);
+	}
+
 }
