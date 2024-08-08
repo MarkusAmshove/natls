@@ -14,7 +14,7 @@ public class CreateUnresolvedSubroutineQuickFix extends AbstractQuickFix
 	@Override
 	protected void registerQuickfixes()
 	{
-		registerQuickFix(ParserError.UNRESOLVED_IMPORT.id(), this::createUnresolvedSubroutine);
+		registerQuickFix(ParserError.UNRESOLVED_MODULE.id(), this::createUnresolvedSubroutine);
 	}
 
 	private CodeAction createUnresolvedSubroutine(QuickFixContext context)

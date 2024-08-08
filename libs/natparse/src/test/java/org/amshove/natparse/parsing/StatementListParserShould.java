@@ -211,6 +211,15 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(fetch.referencingToken().stringValue()).isEqualTo("PROG");
 	}
 
+	@Test
+	void parseAFetchOnArrayAccess()
+	{
+		ignoreModuleProvider();
+		var fetch = assertParsesSingleStatement("FETCH #ARR(1)", IFetchNode.class);
+		assertThat(fetch.referencingToken().kind()).isEqualTo(SyntaxKind.IDENTIFIER);
+		assertThat(fetch.referencingToken().symbolName()).isEqualTo("#ARR");
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{

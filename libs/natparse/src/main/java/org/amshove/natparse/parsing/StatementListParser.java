@@ -3131,29 +3131,29 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.IDENTIFIER), tokens));
 		}
 
-		if (consumeOptionally(fetch, SyntaxKind.IDENTIFIER))
+		if (consumeOptionally(fetch, SyntaxKind.STRING_LITERAL))
 		{
 			fetch.setReferencingToken(previousToken());
+			var referencedModule = sideloadModule(fetch.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token());
+			if (referencedModule != null
+				&& referencedModule.file() != null
+				&& referencedModule.file().getFiletype() != NaturalFileType.PROGRAM)
+			{
+				report(
+					ParserErrors.invalidModuleType(
+						"Only PROGRAMs can be called with FETCH",
+						previousToken()
+					)
+				);
+			}
+
+			fetch.setReferencedModule((NaturalModule) referencedModule);
 		}
 		else
-			if (consumeOptionally(fetch, SyntaxKind.STRING_LITERAL))
-			{
-				fetch.setReferencingToken(previousToken());
-				var referencedModule = sideloadModule(fetch.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token());
-				if (referencedModule != null
-					&& referencedModule.file() != null
-					&& referencedModule.file().getFiletype() != NaturalFileType.PROGRAM)
-				{
-					report(
-						ParserErrors.invalidModuleType(
-							"Only PROGRAMs can be called with FETCH",
-							previousToken()
-						)
-					);
-				}
-
-				fetch.setReferencedModule((NaturalModule) referencedModule);
-			}
+		{
+			var ref = consumeVariableReferenceNode(fetch);
+			fetch.setReferencingToken(ref.referencingToken());
+		}
 
 		return fetch;
 	}

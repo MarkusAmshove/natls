@@ -82,7 +82,7 @@ public abstract class ResourceFolderBasedTest
 
 				var parseResult = parser.parse(new NaturalFile(testFileName, testFilePath, fileType), tokens);
 				parseResult.diagnostics().stream()
-					.filter(d -> !d.id().equals(ParserError.UNRESOLVED_IMPORT.id()))
+					.filter(d -> !d.id().equals(ParserError.UNRESOLVED_MODULE.id()))
 					.forEach(diagnostics::add);
 
 				for (var diagnostic : diagnostics)

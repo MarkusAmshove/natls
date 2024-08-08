@@ -154,7 +154,7 @@ public class ExploreController
 			}
 		}
 
-		var allDiagnostics = module.diagnostics().stream().filter(d -> !d.id().equals(ParserError.UNRESOLVED_IMPORT.id())).toList();
+		var allDiagnostics = module.diagnostics().stream().filter(d -> !d.id().equals(ParserError.UNRESOLVED_MODULE.id())).toList();
 		var sortedDiagnostics = allDiagnostics.stream().sorted((d1, d2) -> d2.line() - d1.line()).toList();
 		for (var diagnostic : sortedDiagnostics)
 		{
