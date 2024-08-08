@@ -1,0 +1,9 @@
+* >Natural Source Header 000000
+* :Mode S
+* :CP
+* <Natural Source Header
+DEFINE DATA PARAMETER
+1 SOMEPDA
+2 P-GROUP(*)
+3 P-INSIDE-GROUP (A10)
+END-DEFINE

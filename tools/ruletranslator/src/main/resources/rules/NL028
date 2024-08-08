@@ -5,4 +5,4 @@ type: CODE_SMELL
 description:
 Because of the nature of INDEPENDENT variables, you should refrain from using them whenever possible.
 
-This behavior can be configured using the ``natls.style.discourage_independent`` option in the [analyzer configuration](/docs/analyzer-config.md)
+This behavior can be configured using the ``natls.style.disallowindependent`` option in the [analyzer configuration](/docs/analyzer-config.md)

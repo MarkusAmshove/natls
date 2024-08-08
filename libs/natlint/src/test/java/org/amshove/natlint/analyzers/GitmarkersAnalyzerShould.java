@@ -15,7 +15,7 @@ class GitmarkersAnalyzerShould extends AbstractAnalyzerTest
 	{
 		configureEditorConfig("""
 			[*]
-			natls.style.discourage_gitmarkers=true
+			natls.style.disallowgitmarkers=true
 			""");
 
 		testDiagnostics(
@@ -34,7 +34,7 @@ class GitmarkersAnalyzerShould extends AbstractAnalyzerTest
 	{
 		configureEditorConfig("""
 			[*]
-			natls.style.discourage_gitmarkers=true
+			natls.style.disallowgitmarkers=true
 			""");
 
 		testDiagnostics(
@@ -52,7 +52,7 @@ class GitmarkersAnalyzerShould extends AbstractAnalyzerTest
 	{
 		configureEditorConfig("""
 			[*]
-			natls.style.discourage_gitmarkers=true
+			natls.style.disallowgitmarkers=true
 			""");
 
 		testDiagnostics(
@@ -71,7 +71,7 @@ class GitmarkersAnalyzerShould extends AbstractAnalyzerTest
 	{
 		configureEditorConfig("""
 			[*]
-			natls.style.discourage_gitmarkers=true
+			natls.style.disallowgitmarkers=true
 			""");
 
 		testDiagnostics(

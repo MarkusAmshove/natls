@@ -10,37 +10,37 @@ import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.IScopeNode;
 
-public class DefineDataIndependentAnalyzer extends AbstractAnalyzer
+public class DefineDataParameterAnalyzer extends AbstractAnalyzer
 {
-	public static final DiagnosticDescription USE_OF_INDEPENDENT_IS_DISCOURAGED = DiagnosticDescription.create(
-		"NL028",
-		"Use of INDEPENDENT is discouraged.",
+	public static final DiagnosticDescription USE_OF_INLINE_PARAMETER_IS_DISCOURAGED = DiagnosticDescription.create(
+		"NL031",
+		"Use of inline parameter is discouraged.",
 		DiagnosticSeverity.WARNING
 	);
 
-	private boolean isIndependentAnalyserOff;
+	private boolean isParameterAnalyserOff;
 
 	@Override
 	public ReadOnlyList<DiagnosticDescription> getDiagnosticDescriptions()
 	{
-		return ReadOnlyList.of(USE_OF_INDEPENDENT_IS_DISCOURAGED);
+		return ReadOnlyList.of(USE_OF_INLINE_PARAMETER_IS_DISCOURAGED);
 	}
 
 	@Override
 	public void initialize(ILinterContext context)
 	{
-		context.registerNodeAnalyzer(IScopeNode.class, this::analyzeDefineDataIndependent);
+		context.registerNodeAnalyzer(IScopeNode.class, this::analyzeDefineDataParameter);
 	}
 
 	@Override
 	public void beforeAnalyzing(IAnalyzeContext context)
 	{
-		isIndependentAnalyserOff = !context.getConfiguration(context.getModule().file(), "natls.style.disallowindependent", OPTION_FALSE).equalsIgnoreCase(OPTION_TRUE);
+		isParameterAnalyserOff = !context.getConfiguration(context.getModule().file(), "natls.style.disallowinlineparameters", OPTION_FALSE).equalsIgnoreCase(OPTION_TRUE);
 	}
 
-	private void analyzeDefineDataIndependent(ISyntaxNode node, IAnalyzeContext context)
+	private void analyzeDefineDataParameter(ISyntaxNode node, IAnalyzeContext context)
 	{
-		if (isIndependentAnalyserOff)
+		if (isParameterAnalyserOff)
 		{
 			return;
 		}
@@ -56,9 +56,9 @@ public class DefineDataIndependentAnalyzer extends AbstractAnalyzer
 		}
 
 		var scope = (IScopeNode) node;
-		if (scope.scope().isIndependent())
+		if (scope.scope().isParameter())
 		{
-			context.report(USE_OF_INDEPENDENT_IS_DISCOURAGED.createDiagnostic(node));
+			context.report(USE_OF_INLINE_PARAMETER_IS_DISCOURAGED.createDiagnostic(node));
 		}
 	}
 }
