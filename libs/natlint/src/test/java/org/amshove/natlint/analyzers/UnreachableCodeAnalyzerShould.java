@@ -1,6 +1,7 @@
 package org.amshove.natlint.analyzers;
 
 import org.amshove.natlint.linter.AbstractAnalyzerTest;
+import org.amshove.natparse.parsing.ParserError;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -94,6 +95,98 @@ class UnreachableCodeAnalyzerShould extends AbstractAnalyzerTest
 			ON ERROR
 			IGNORE
 			END-ERROR
+			END
+			""",
+			expectNoDiagnosticOfType(UnreachableCodeAnalyzer.UNREACHABLE_CODE)
+		);
+	}
+
+	@Test
+	void raiseADiagnosticWhenCodeIsUnreachableAfterTerminate()
+	{
+		testDiagnostics(
+			"""
+			DEFINE DATA LOCAL
+			END-DEFINE
+			TERMINATE 1
+			WRITE 'Hi'
+			END
+			""",
+			expectDiagnostic(3, UnreachableCodeAnalyzer.UNREACHABLE_CODE)
+		);
+	}
+
+	@Test
+	void raiseADiagnosticWhenCodeIsUnreachableAfterFetch()
+	{
+		allowParserError(ParserError.UNRESOLVED_MODULE.id());
+		testDiagnostics(
+			"""
+			DEFINE DATA LOCAL
+			END-DEFINE
+			FETCH 'MODULE'
+			WRITE 'Hi'
+			END
+			""",
+			expectDiagnostic(3, UnreachableCodeAnalyzer.UNREACHABLE_CODE)
+		);
+	}
+
+	@Test
+	void notRaiseADiagnosticForStatementsAfterFetchReturn()
+	{
+		allowParserError(ParserError.UNRESOLVED_MODULE.id());
+		testDiagnostics(
+			"""
+			DEFINE DATA LOCAL
+			END-DEFINE
+			FETCH RETURN 'MODULE'
+			WRITE 'Hi'
+			END
+			""",
+			expectNoDiagnosticOfType(UnreachableCodeAnalyzer.UNREACHABLE_CODE)
+		);
+	}
+
+	@Test
+	void notRaiseADiagnosticOnFetchOnArrayAccess()
+	{
+		testDiagnostics(
+			"""
+			DEFINE DATA LOCAL
+			1 #ARR(A8/1:2)
+			END-DEFINE
+			FETCH #ARR(1)
+			END
+			""",
+			expectNoDiagnosticOfType(UnreachableCodeAnalyzer.UNREACHABLE_CODE)
+		);
+	}
+
+	@Test
+	void raiseADiagnosticWhenCodeIsUnreachableAfterStop()
+	{
+		testDiagnostics(
+			"""
+			DEFINE DATA LOCAL
+			END-DEFINE
+			STOP
+			WRITE 'Hi'
+			END
+			""",
+			expectDiagnostic(3, UnreachableCodeAnalyzer.UNREACHABLE_CODE)
+		);
+	}
+
+	@Test
+	void notRaiseADiagnosticWhenStopIsTheLastStatementInScope()
+	{
+		testDiagnostics(
+			"""
+			DEFINE DATA LOCAL
+			END-DEFINE
+			WRITE 'Hi'
+			STOP
 			END
 			""",
 			expectNoDiagnosticOfType(UnreachableCodeAnalyzer.UNREACHABLE_CODE)

@@ -211,6 +211,15 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(fetch.referencingToken().stringValue()).isEqualTo("PROG");
 	}
 
+	@Test
+	void parseAFetchOnArrayAccess()
+	{
+		ignoreModuleProvider();
+		var fetch = assertParsesSingleStatement("FETCH #ARR(1)", IFetchNode.class);
+		assertThat(fetch.referencingToken().kind()).isEqualTo(SyntaxKind.IDENTIFIER);
+		assertThat(fetch.referencingToken().symbolName()).isEqualTo("#ARR");
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
@@ -4124,5 +4133,11 @@ class StatementListParserShould extends StatementParseTest
 		assertIsVariableReference(et.operands().first(), "#VAR");
 		assertLiteral(et.operands().get(1), SyntaxKind.NUMBER_LITERAL, "1000");
 		assertIsVariableReference(et.operands().last(), "#VAR2");
+	}
+
+	@Test
+	void parseStopStatement()
+	{
+		assertParsesSingleStatement("STOP", IStopNode.class);
 	}
 }

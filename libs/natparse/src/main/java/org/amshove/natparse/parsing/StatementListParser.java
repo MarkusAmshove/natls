@@ -228,6 +228,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case START:
 						statementList.addStatement(parseAtPositionOf(SyntaxKind.START, SyntaxKind.DATA, SyntaxKind.END_START, true, new StartOfDataNode()));
 						break;
+					case STOP:
+						statementList.addStatement(stop());
+						break;
 					case INCLUDE:
 						statementList.addStatement(include());
 						break;
@@ -3021,6 +3024,13 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return callnat;
 	}
 
+	private StopNode stop() throws ParseError
+	{
+		var stop = new StopNode();
+		consumeMandatory(stop, SyntaxKind.STOP);
+		return stop;
+	}
+
 	private IncludeNode include() throws ParseError
 	{
 		var include = new IncludeNode();
@@ -3131,29 +3141,29 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.IDENTIFIER), tokens));
 		}
 
-		if (consumeOptionally(fetch, SyntaxKind.IDENTIFIER))
+		if (consumeOptionally(fetch, SyntaxKind.STRING_LITERAL))
 		{
 			fetch.setReferencingToken(previousToken());
+			var referencedModule = sideloadModule(fetch.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token());
+			if (referencedModule != null
+				&& referencedModule.file() != null
+				&& referencedModule.file().getFiletype() != NaturalFileType.PROGRAM)
+			{
+				report(
+					ParserErrors.invalidModuleType(
+						"Only PROGRAMs can be called with FETCH",
+						previousToken()
+					)
+				);
+			}
+
+			fetch.setReferencedModule((NaturalModule) referencedModule);
 		}
 		else
-			if (consumeOptionally(fetch, SyntaxKind.STRING_LITERAL))
-			{
-				fetch.setReferencingToken(previousToken());
-				var referencedModule = sideloadModule(fetch.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token());
-				if (referencedModule != null
-					&& referencedModule.file() != null
-					&& referencedModule.file().getFiletype() != NaturalFileType.PROGRAM)
-				{
-					report(
-						ParserErrors.invalidModuleType(
-							"Only PROGRAMs can be called with FETCH",
-							previousToken()
-						)
-					);
-				}
-
-				fetch.setReferencedModule((NaturalModule) referencedModule);
-			}
+		{
+			var ref = consumeVariableReferenceNode(fetch);
+			fetch.setReferencingToken(ref.referencingToken());
+		}
 
 		return fetch;
 	}

@@ -28,7 +28,7 @@ public enum ParserError
 	REDEFINE_TARGET_CANT_BE_DYNAMIC("NPP023"),
 	REDEFINE_TARGET_CANT_CONTAIN_DYNAMIC("NPP024"),
 	INVALID_LENGTH_FOR_DATA_TYPE("NPP025"),
-	UNRESOLVED_IMPORT("NPP026"),
+	UNRESOLVED_MODULE("NPP026"),
 	DUPLICATED_SYMBOL("NPP027"),
 	DUPLICATED_IMPORT("NPP028"),
 	AMBIGUOUS_VARIABLE_REFERENCE("NPP029"),
@@ -77,6 +77,6 @@ public enum ParserError
 	 */
 	public static boolean isUnresolvedError(String id)
 	{
-		return id.equals(ParserError.UNRESOLVED_IMPORT.id) || id.equals(ParserError.UNRESOLVED_REFERENCE.id);
+		return id.equals(ParserError.UNRESOLVED_MODULE.id) || id.equals(ParserError.UNRESOLVED_REFERENCE.id);
 	}
 }
