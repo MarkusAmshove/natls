@@ -228,6 +228,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case START:
 						statementList.addStatement(parseAtPositionOf(SyntaxKind.START, SyntaxKind.DATA, SyntaxKind.END_START, true, new StartOfDataNode()));
 						break;
+					case STOP:
+						statementList.addStatement(stop());
+						break;
 					case INCLUDE:
 						statementList.addStatement(include());
 						break;
@@ -3019,6 +3022,13 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return callnat;
+	}
+
+	private StopNode stop() throws ParseError
+	{
+		var stop = new StopNode();
+		consumeMandatory(stop, SyntaxKind.STOP);
+		return stop;
 	}
 
 	private IncludeNode include() throws ParseError

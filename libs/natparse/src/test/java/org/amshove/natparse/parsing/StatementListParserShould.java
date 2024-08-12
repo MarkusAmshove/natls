@@ -4134,4 +4134,10 @@ class StatementListParserShould extends StatementParseTest
 		assertLiteral(et.operands().get(1), SyntaxKind.NUMBER_LITERAL, "1000");
 		assertIsVariableReference(et.operands().last(), "#VAR2");
 	}
+
+	@Test
+	void parseStopStatement()
+	{
+		assertParsesSingleStatement("STOP", IStopNode.class);
+	}
 }

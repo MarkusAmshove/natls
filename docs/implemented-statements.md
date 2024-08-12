@@ -55,7 +55,7 @@ partial - partially implemented to prevent false positives (14)
 | DOWNLOAD PC FILE | :white_check_mark: |
 | EJECT | :white_check_mark: |
 | END | :white_check_mark: |
-| END TRANSACTION | :white_check_mark:                |
+| END TRANSACTION | :white_check_mark: |
 | ESCAPE | :white_check_mark: |
 | EXAMINE | :white_check_mark: |
 | EXPAND | :white_check_mark: |
@@ -117,7 +117,7 @@ partial - partially implemented to prevent false positives (14)
 | SKIP | :white_check_mark: |
 | SORT | :x:                |
 | STACK | :white_check_mark: |
-| STOP | :x:                |
+| STOP | :white_check_mark: |
 | STORE | :x:                |
 | SUBTRACT | :white_check_mark: |
 | SUSPEND IDENTICAL SUPPRESS | :x:                |

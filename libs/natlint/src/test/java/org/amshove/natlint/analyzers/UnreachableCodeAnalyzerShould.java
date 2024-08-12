@@ -151,7 +151,6 @@ class UnreachableCodeAnalyzerShould extends AbstractAnalyzerTest
 	@Test
 	void notRaiseADiagnosticOnFetchOnArrayAccess()
 	{
-		//
 		testDiagnostics(
 			"""
 			DEFINE DATA LOCAL
@@ -164,4 +163,33 @@ class UnreachableCodeAnalyzerShould extends AbstractAnalyzerTest
 		);
 	}
 
+	@Test
+	void raiseADiagnosticWhenCodeIsUnreachableAfterStop()
+	{
+		testDiagnostics(
+			"""
+			DEFINE DATA LOCAL
+			END-DEFINE
+			STOP
+			WRITE 'Hi'
+			END
+			""",
+			expectDiagnostic(3, UnreachableCodeAnalyzer.UNREACHABLE_CODE)
+		);
+	}
+
+	@Test
+	void notRaiseADiagnosticWhenStopIsTheLastStatementInScope()
+	{
+		testDiagnostics(
+			"""
+			DEFINE DATA LOCAL
+			END-DEFINE
+			WRITE 'Hi'
+			STOP
+			END
+			""",
+			expectNoDiagnosticOfType(UnreachableCodeAnalyzer.UNREACHABLE_CODE)
+		);
+	}
 }

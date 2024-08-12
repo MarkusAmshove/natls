@@ -28,6 +28,7 @@ public class UnreachableCodeAnalyzer extends AbstractAnalyzer
 		context.registerNodeAnalyzer(IEscapeNode.class, this::analyzeEscape);
 		context.registerNodeAnalyzer(ITerminateNode.class, this::analyzeTerminate);
 		context.registerNodeAnalyzer(IFetchNode.class, this::analyzeFetch);
+		context.registerNodeAnalyzer(IStopNode.class, this::analyzeStop);
 	}
 
 	private void analyzeEscape(ISyntaxNode node, IAnalyzeContext context)
@@ -38,6 +39,11 @@ public class UnreachableCodeAnalyzer extends AbstractAnalyzer
 	private void analyzeTerminate(ISyntaxNode node, IAnalyzeContext context)
 	{
 		reportIfNotLastStatement(context, (ITerminateNode) node);
+	}
+
+	private void analyzeStop(ISyntaxNode node, IAnalyzeContext context)
+	{
+		reportIfNotLastStatement(context, (IStopNode) node);
 	}
 
 	private void analyzeFetch(ISyntaxNode node, IAnalyzeContext context)
