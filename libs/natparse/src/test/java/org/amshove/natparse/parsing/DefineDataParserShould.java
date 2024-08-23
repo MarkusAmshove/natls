@@ -42,7 +42,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	{
 		assertDiagnostic("DEFINE DATA\nLOCAL USING SOMELDA\n", ParserError.MISSING_END_DEFINE);
 	}
-
+	
 	@Test
 	void setTheCorrectStartAndEndNodes()
 	{

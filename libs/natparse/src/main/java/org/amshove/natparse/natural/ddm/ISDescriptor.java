@@ -2,7 +2,7 @@ package org.amshove.natparse.natural.ddm;
 
 import com.google.common.collect.ImmutableList;
 
-public interface ISuperdescriptor extends IDdmField
+public interface ISDescriptor extends IDdmField
 {
 	ImmutableList<ISDescriptorChild> fields();
 }

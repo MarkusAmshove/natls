@@ -43,4 +43,8 @@ P 1 BA PERIODIC-GROUP
 *      ALPHA-FIELD   (1-8)
   1 AK HYPERDESCRIPTOR                   A   32  N H
   1 AL NONDESCRIPTOR                     A   32  N N
+  1 AM A-SUBDESCRIPTOR                   A   20  N S
+*      -------- SOURCE FIELD(S) -------
+*      SUBDESCRIPTOR-FIELD-ONE(1-12)
+*      SUBDESCRIPTOR-FIELD-TWO(1-8)
 ******DDM OUTPUT TERMINATED******

@@ -7,7 +7,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.*;
 
-public class SuperdescriptorChildParserShould
+public class SDescriptorChildParserShould
 {
 	private final SDescriptorChildParser sut = new SDescriptorChildParser();
 

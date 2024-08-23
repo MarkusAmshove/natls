@@ -4,10 +4,10 @@ import com.google.common.collect.ImmutableList;
 
 import org.amshove.natparse.NaturalParseException;
 import org.amshove.natparse.natural.ddm.DescriptorType;
-import org.amshove.natparse.natural.ddm.ISuperdescriptor;
+import org.amshove.natparse.natural.ddm.ISDescriptor;
 import org.amshove.natparse.natural.ddm.ISDescriptorChild;
 
-class SDescriptor extends DdmField implements ISuperdescriptor
+class SDescriptor extends DdmField implements ISDescriptor
 {
 	private ImmutableList<ISDescriptorChild> children;
 	private DescriptorType resolvedDescriptorType;
