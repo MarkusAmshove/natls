@@ -1,16 +1,16 @@
 package org.amshove.natparse.parsing.ddm;
 
 import org.amshove.natparse.natural.ddm.IDdmField;
-import org.amshove.natparse.natural.ddm.ISuperdescriptorChild;
+import org.amshove.natparse.natural.ddm.ISDescriptorChild;
 
-class SuperdescriptorChild implements ISuperdescriptorChild
+class SDescriptorChild implements ISDescriptorChild
 {
 	private IDdmField field;
 	private final String name;
 	private final int rangeFrom;
 	private final int rangeTo;
 
-	public SuperdescriptorChild(String name, int rangeFrom, int rangeTo)
+	public SDescriptorChild(String name, int rangeFrom, int rangeTo)
 	{
 		this.name = name;
 		this.rangeFrom = rangeFrom;

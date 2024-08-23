@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.*;
 
 public class SuperdescriptorChildParserShould
 {
-	private final SuperdescriptorChildParser sut = new SuperdescriptorChildParser();
+	private final SDescriptorChildParser sut = new SDescriptorChildParser();
 
 	@Test
 	void parseTheName()

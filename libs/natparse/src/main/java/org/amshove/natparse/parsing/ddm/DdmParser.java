@@ -17,7 +17,7 @@ public class DdmParser
 	private static final DdmMetadataParser metadataParser = new DdmMetadataParser();
 	private static final FieldParser adabasFieldParser = new FieldParser();
 	private static final SqlFieldParser sqlFieldParser = new SqlFieldParser();
-	private static final SuperdescriptorChildParser superdescriptorChildParser = new SuperdescriptorChildParser();
+	private static final SDescriptorChildParser superdescriptorChildParser = new SDescriptorChildParser();
 
 	private FieldParser fieldParser;
 
@@ -35,7 +35,7 @@ public class DdmParser
 	);
 
 	private DataDefinitionModule ddm;
-	private List<SuperdescriptorChild> childrenToReference;
+	private List<SDescriptor> sDescriptorsToResolve;
 
 	public IDataDefinitionModule parseDdm(String content)
 	{
@@ -78,7 +78,7 @@ public class DdmParser
 
 			var field = parseField(scanner);
 			if ((field.fieldType() == FieldType.GROUP || field.fieldType() == FieldType.PERIODIC)
-				&& field.descriptor() != DescriptorType.SUPERDESCRIPTOR)
+				&& field.descriptor() != DescriptorType._S_DESCRIPTOR)
 			{
 				var groupField = new GroupField(field);
 				scanner.advance();
@@ -89,9 +89,9 @@ public class DdmParser
 				continue;
 			}
 
-			if (field.descriptor() == DescriptorType.SUPERDESCRIPTOR)
+			if (field.descriptor() == DescriptorType._S_DESCRIPTOR)
 			{
-				field = parseSuperdescriptor(scanner, new Superdescriptor(field));
+				field = parseSuperdescriptor(scanner, new SDescriptor(field));
 				ddmFields.add(field);
 				continue;
 			}
@@ -102,23 +102,44 @@ public class DdmParser
 
 		ddm.setFields(ddmFields.build());
 
-		for (var child : childrenToReference)
+		for (var sDescriptor : sDescriptorsToResolve)
 		{
-			if (!setMatchingReference(child, ddm.fields()))
+			var matchCount = 0;
+			var notFound = new ArrayList<String>();
+			for (var child : sDescriptor.fields()) {
+				if (setMatchingReference(child, ddm.fields()))
+				{
+					matchCount += 1;
+				} else {
+					notFound.add(child.name());
+				}
+			}
+
+			if (matchCount == 0)
+			{
+				sDescriptor.resolveDescriptorType(DescriptorType.SUBDESCRIPTOR);
+				// TODO: Add the fields?
+			}
+			else if (matchCount == sDescriptor.fields().size())
+			{
+				sDescriptor.resolveDescriptorType(DescriptorType.SUPERDESCRIPTOR);
+			}
+			else
 			{
 				throw new NaturalParseException(
 					String.format(
-						"Could not find field referenced by superdescriptor child \"%s\"",
-						child.name()
+						"Could not find field(s) referenced by superdescriptor children [\"%s\"]",
+						String.join("\",\"", notFound)
 					)
 				);
 			}
+
 		}
 
 		return ddm;
 	}
 
-	private boolean setMatchingReference(SuperdescriptorChild child, List<IDdmField> fields)
+	private boolean setMatchingReference(ISDescriptorChild child, List<IDdmField> fields)
 	{
 		for (var field : fields)
 		{
@@ -130,7 +151,7 @@ public class DdmParser
 
 			if (field.name().equals(child.name()))
 			{
-				child.setField(field);
+				((SDescriptorChild) child).setField(field);
 				return true;
 			}
 		}
@@ -192,39 +213,39 @@ public class DdmParser
 		}
 	}
 
-	private Superdescriptor parseSuperdescriptor(LinewiseTextScanner scanner, DdmField field)
+	private SDescriptor parseSuperdescriptor(LinewiseTextScanner scanner, DdmField field)
 	{
 		scanner.advance();
 		// SOURCE FIELD(S) comment from predic
 		scanner.advance();
 
-		var superdescriptor = new Superdescriptor(field);
-		ImmutableList.Builder<ISuperdescriptorChild> children = ImmutableList.builder();
+		var superdescriptor = new SDescriptor(field);
+		ImmutableList.Builder<ISDescriptorChild> children = ImmutableList.builder();
 
 		while (!scanner.isAtEnd() && containsSuperdescriptorSourceFieldRange(scanner.peek()))
 		{
 			var child = superdescriptorChildParser.parse(scanner.peek());
 			children.add(child);
-			childrenToReference.add(child);
 			scanner.advance();
 		}
 
 		superdescriptor.setChildren(children.build());
+		sDescriptorsToResolve.add(superdescriptor);
 
 		return superdescriptor;
 	}
 
-	private static final Pattern SUPERDESCRIPTOR_CHILD_RANGE_PATTERN = Pattern.compile("^.*\\(\\d+-\\d+\\).*$");
+	private static final Pattern _S_DESCRIPTOR_CHILD_RANGE_PATTERN = Pattern.compile("^.*\\(\\d+-\\d+\\).*$");
 
 	private static boolean containsSuperdescriptorSourceFieldRange(String line)
 	{
-		return SUPERDESCRIPTOR_CHILD_RANGE_PATTERN.matcher(line).matches();
+		return _S_DESCRIPTOR_CHILD_RANGE_PATTERN.matcher(line).matches();
 	}
 
 	private void resetParser()
 	{
 		ddm = null;
-		childrenToReference = new ArrayList<>();
+		sDescriptorsToResolve = new ArrayList<>();
 	}
 
 	private boolean isLineToSkip(String line)

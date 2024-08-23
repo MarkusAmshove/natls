@@ -5,19 +5,19 @@ import org.amshove.natparse.NaturalParseException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class SuperdescriptorChildParser
+class SDescriptorChildParser
 {
-	private static final Pattern SUPERDESCRIPTOR_CHILD_PATTERN = Pattern.compile("\\*\\s*(?<NAME>[^(]*)\\((?<RANGEFROM>\\d+)-(?<RANGETO>\\d+)\\)\\s*");
+	private static final Pattern S_DESCRIPTOR_CHILD_PATTERN = Pattern.compile("\\*\\s*(?<NAME>[^(]*)\\((?<RANGEFROM>\\d+)-(?<RANGETO>\\d+)\\)\\s*");
 
-	public SuperdescriptorChild parse(String line)
+	public SDescriptorChild parse(String line)
 	{
-		var matcher = SUPERDESCRIPTOR_CHILD_PATTERN.matcher(line);
+		var matcher = S_DESCRIPTOR_CHILD_PATTERN.matcher(line);
 		if (!matcher.matches())
 		{
 			throw new NaturalParseException(String.format("Can't parse Superdescriptorchild from \"%s\"", line));
 		}
 
-		return new SuperdescriptorChild(getName(matcher), getRangeFrom(matcher), getRangeTo(matcher));
+		return new SDescriptorChild(getName(matcher), getRangeFrom(matcher), getRangeTo(matcher));
 	}
 
 	private static String getName(Matcher matcher)

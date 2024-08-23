@@ -4,5 +4,5 @@ import com.google.common.collect.ImmutableList;
 
 public interface ISuperdescriptor extends IDdmField
 {
-	ImmutableList<ISuperdescriptorChild> fields();
+	ImmutableList<ISDescriptorChild> fields();
 }

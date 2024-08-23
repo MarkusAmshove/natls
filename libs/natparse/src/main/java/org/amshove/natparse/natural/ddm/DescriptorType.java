@@ -6,7 +6,9 @@ public enum DescriptorType
 {
 	NONE,
 	DESCRIPTOR,
+	_S_DESCRIPTOR,
 	SUPERDESCRIPTOR,
+	SUBDESCRIPTOR,
 	PHONETIC,
 	UNIQUE,
 	HYPERDESCRIPTOR,
@@ -23,7 +25,7 @@ public enum DescriptorType
 		return switch (source)
 		{
 			case "D" -> DESCRIPTOR;
-			case "S" -> SUPERDESCRIPTOR;
+			case "S" -> _S_DESCRIPTOR;
 			case "P" -> PHONETIC;
 			case "U" -> UNIQUE;
 			case "H" -> HYPERDESCRIPTOR;

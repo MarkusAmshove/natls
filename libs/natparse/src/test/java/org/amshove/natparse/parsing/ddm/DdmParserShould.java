@@ -177,13 +177,35 @@ P 1 AG A-SUPERDESCRIPTOR                 A   25  N S
 		assertThat(descriptor.descriptor()).isEqualTo(DescriptorType.SUPERDESCRIPTOR);
 		assertThat(descriptor.fieldType()).isEqualTo(FieldType.PERIODIC);
 	}
+	
+	@Test
+	void parseASubdescriptor() {
+		var ddm = new DdmParser().parseDdm("""
+DB: 000 FILE: 100  - COMPLETE-DDM                      DEFAULT SEQUENCE: 
+TYPE: ADABAS
+
+T L DB Name                              F Leng  S D Remark
+- - -- --------------------------------  - ----  - - ------------------------
+  1 AC ALPHA-FIELD                       A    8  N
+  1 AB ANOTHER-NUMBER                    N   12  N
+  1 AG A-SUBDESCRIPTOR                   A   20  N S
+*      -------- SOURCE FIELD(S) -------
+*      A-SUB-FIELD   (1-8)
+*      SUB-FIELD-TWO (1-12)
+		""");
+
+		var subDescriptor = findField(ddm, "A-SUBDESCRIPTOR");
+		assertThat(subDescriptor.format()).isEqualTo(DataFormat.ALPHANUMERIC);
+		assertThat(subDescriptor.length()).isEqualTo(20);
+		assertThat(subDescriptor.descriptor()).isEqualTo(DescriptorType.SUBDESCRIPTOR);
+	}
 
 	@Test
 	void throwAnExceptionIfNoMatchingFieldToReferenceIsFound()
 	{
 		assertThatExceptionOfType(NaturalParseException.class)
-			.isThrownBy(() -> parseFromResource("SuperdescriptorChildMissingReference.NSD"))
-			.withMessage("Could not find field referenced by superdescriptor child \"ANOTHER-NUMBER\"");
+			.isThrownBy(() -> parseFromResource("SDescriptorChildMissingReference.NSD"))
+			.withMessage("Could not find field(s) referenced by superdescriptor children [\"ANOTHER-NUMBER\"]");
 	}
 
 	private IDataDefinitionModule parseFromResource(String resourceName)
@@ -252,7 +274,7 @@ P 1 AG A-SUPERDESCRIPTOR                 A   25  N S
 		assertThat(child.rangeTo()).isEqualTo(expectedRangeTo);
 	}
 
-	private ISuperdescriptorChild findSuperdescriptorChild(ISuperdescriptor superdescriptor, String fieldname)
+	private ISDescriptorChild findSuperdescriptorChild(ISuperdescriptor superdescriptor, String fieldname)
 	{
 		var foundChild = superdescriptor.fields().stream().filter(f -> f.name().equals(fieldname)).findFirst();
 		assertThat(foundChild).isPresent();

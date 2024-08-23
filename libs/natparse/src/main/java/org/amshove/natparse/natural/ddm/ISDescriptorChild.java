@@ -1,6 +1,6 @@
 package org.amshove.natparse.natural.ddm;
 
-public interface ISuperdescriptorChild
+public interface ISDescriptorChild
 {
 	String name();
 
