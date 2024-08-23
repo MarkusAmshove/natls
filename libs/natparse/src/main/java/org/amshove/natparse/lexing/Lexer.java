@@ -180,13 +180,6 @@ public class Lexer
 					}
 					createAndAddCurrentSingleToken(SyntaxKind.CARET);
 					continue;
-				case '¬':
-					if (tryCreateIfFollowedBy('=', SyntaxKind.NOT_SIGN_EQUAL))
-					{
-						continue;
-					}
-					createAndAddCurrentSingleToken(SyntaxKind.NOT_SIGN);
-					continue;
 				case '!':
 					if (tryCreateIfFollowedBy('!', SyntaxKind.SQL_CONCAT))
 					{
@@ -323,6 +316,12 @@ public class Lexer
 				case '9':
 					consumeNumber();
 					continue;
+				case '¬':
+					if (tryCreateIfFollowedBy('=', SyntaxKind.NOT_SIGN_EQUAL))
+					{
+						continue;
+					}
+					// Fall through, `¬` is only valid with an `=` after
 				default:
 					diagnostics.add(
 						LexerDiagnostic.create(

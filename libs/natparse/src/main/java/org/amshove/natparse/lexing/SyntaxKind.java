@@ -12,7 +12,6 @@ public enum SyntaxKind
 	COLON_EQUALS_SIGN(false, false, false),
 	DOT(false, false, false),
 	CARET(false, false, false),
-	NOT_SIGN(false, false, false),
 	COMMA(false, false, false),
 	PLUS(false, false, false),
 	EXPONENT_OPERATOR(false, false, false),
