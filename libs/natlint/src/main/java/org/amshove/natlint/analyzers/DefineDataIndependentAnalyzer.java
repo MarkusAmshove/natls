@@ -35,7 +35,7 @@ public class DefineDataIndependentAnalyzer extends AbstractAnalyzer
 	@Override
 	public void beforeAnalyzing(IAnalyzeContext context)
 	{
-		isIndependentAnalyserOff = !context.getConfiguration(context.getModule().file(), "natls.style.disallowindependent", OPTION_FALSE).equalsIgnoreCase(OPTION_TRUE);
+		isIndependentAnalyserOff = !context.getConfiguration(context.getModule().file(), "natls.style.discourageindependent", OPTION_FALSE).equalsIgnoreCase(OPTION_TRUE);
 	}
 
 	private void analyzeDefineDataIndependent(ISyntaxNode node, IAnalyzeContext context)

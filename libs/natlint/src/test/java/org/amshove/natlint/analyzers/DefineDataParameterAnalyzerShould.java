@@ -17,7 +17,7 @@ class DefineDataParameterAnalyzerShould extends AbstractAnalyzerTest
 	{
 		configureEditorConfig("""
 			[*]
-			natls.style.disallowinlineparameters=true
+			natls.style.discourageinlineparameters=true
 			""");
 
 		testDiagnostics(
@@ -37,7 +37,7 @@ class DefineDataParameterAnalyzerShould extends AbstractAnalyzerTest
 	{
 		configureEditorConfig("""
 			[*]
-			natls.style.disallowinlineparameters=true
+			natls.style.discourageinlineparameters=true
 			""");
 
 		// This subprogram should raise a diagnostic, because it uses inline parameters along side
@@ -53,7 +53,7 @@ class DefineDataParameterAnalyzerShould extends AbstractAnalyzerTest
 	{
 		configureEditorConfig("""
 			[*]
-			natls.style.disallowinlineparameters=true
+			natls.style.discourageinlineparameters=true
 			""");
 
 		// This subprogram should not raise a diagnostic, because it only uses a PDA

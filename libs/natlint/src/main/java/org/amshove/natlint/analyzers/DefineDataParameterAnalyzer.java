@@ -35,7 +35,7 @@ public class DefineDataParameterAnalyzer extends AbstractAnalyzer
 	@Override
 	public void beforeAnalyzing(IAnalyzeContext context)
 	{
-		isParameterAnalyserOff = !context.getConfiguration(context.getModule().file(), "natls.style.disallowinlineparameters", OPTION_FALSE).equalsIgnoreCase(OPTION_TRUE);
+		isParameterAnalyserOff = !context.getConfiguration(context.getModule().file(), "natls.style.discourageinlineparameters", OPTION_FALSE).equalsIgnoreCase(OPTION_TRUE);
 	}
 
 	private void analyzeDefineDataParameter(ISyntaxNode node, IAnalyzeContext context)
