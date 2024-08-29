@@ -20,6 +20,9 @@ import org.amshove.natls.folding.FoldingVisitor;
 import org.amshove.natls.hover.HoverContext;
 import org.amshove.natls.hover.HoverProvider;
 import org.amshove.natls.inlayhints.InlayHintProvider;
+import org.amshove.natls.languageserver.constantfinding.ConstantsFinder;
+import org.amshove.natls.languageserver.constantfinding.FindConstantsParams;
+import org.amshove.natls.languageserver.constantfinding.FindConstantsResponse;
 import org.amshove.natls.languageserver.inputstructure.InputStructureParams;
 import org.amshove.natls.languageserver.inputstructure.InputStructureResponse;
 import org.amshove.natls.progress.BackgroundTasks;
@@ -856,6 +859,20 @@ public class NaturalLanguageService implements LanguageClientAware
 			new InputStructureCreator()
 				.createStructure(moduleWithBody, params.getInputIndex())
 		);
+	}
+
+	public FindConstantsResponse findConstants(FindConstantsParams params)
+	{
+		var response = new FindConstantsResponse();
+		var currentFile = getProject().findFile(LspUtil.uriToPath(params.getIdentifier().getUri()));
+
+		if (currentFile != null)
+		{
+			var finder = new ConstantsFinder();
+			response.setConstants(finder.findConstants(currentFile));
+		}
+
+		return response;
 	}
 
 	public List<FoldingRange> folding(FoldingRangeRequestParams params)

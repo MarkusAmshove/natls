@@ -2243,7 +2243,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			1 AVIEW VIEW OF UNRESOLVED
 			2 DDM-VAR
 			END-DEFINE
-			""", ParserError.UNRESOLVED_IMPORT);
+			""", ParserError.UNRESOLVED_MODULE);
 	}
 
 	@Test

@@ -228,6 +228,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case START:
 						statementList.addStatement(parseAtPositionOf(SyntaxKind.START, SyntaxKind.DATA, SyntaxKind.END_START, true, new StartOfDataNode()));
 						break;
+					case STOP:
+						statementList.addStatement(stop());
+						break;
 					case INCLUDE:
 						statementList.addStatement(include());
 						break;
@@ -2134,34 +2137,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return examine;
 	}
 
-	private StatementNode display() throws ParseError
-	{
-		var display = new DisplayNode();
-		consumeMandatory(display, SyntaxKind.DISPLAY);
-
-		if (consumeOptionally(display, SyntaxKind.LPAREN))
-		{
-			if (peek().kind().canBeIdentifier() && peekKind(1, SyntaxKind.RPAREN))
-			{
-				var token = consumeMandatoryIdentifier(display);
-				display.setReportSpecification(token);
-			}
-			else
-			{
-				// currently consume everything until closing parenthesis to consume things like attribute definition etc.
-				while (!peekKind(SyntaxKind.RPAREN))
-				{
-					consume(display);
-				}
-			}
-			consumeMandatory(display, SyntaxKind.RPAREN);
-		}
-
-		// TODO: Parse options
-
-		return display;
-	}
-
 	private StatementNode inputStatement() throws ParseError
 	{
 		var input = new InputStatementNode();
@@ -2299,7 +2274,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private StatementNode write(SyntaxKind statementKind) throws ParseError
 	{
-		var write = new WriteNode();
+		OutputStatementNode write = statementKind == SyntaxKind.WRITE ? new WriteNode() : new PrintNode();
 		consumeMandatory(write, statementKind);
 		if (peekKind(SyntaxKind.LPAREN))
 		{
@@ -2337,8 +2312,56 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return write;
 	}
 
+	private static final Set<SyntaxKind> OPTIONAL_DISPLAY_FLAGS = Set.of(SyntaxKind.NOTITLE, SyntaxKind.NOTIT, SyntaxKind.NOHDR, SyntaxKind.AND, SyntaxKind.GIVE, SyntaxKind.SYSTEM, SyntaxKind.FUNCTIONS);
+	private static final Set<SyntaxKind> DISPLAY_OUTPUT_FORMATS = Set.of(SyntaxKind.VERT, SyntaxKind.VERTICALLY, SyntaxKind.HORIZ, SyntaxKind.HORIZONTALLY, SyntaxKind.AS, SyntaxKind.CAPT, SyntaxKind.CAPTIONED);
+
+	private StatementNode display() throws ParseError
+	{
+		var display = new DisplayNode();
+		consumeMandatory(display, SyntaxKind.DISPLAY);
+
+		if (peekKind(SyntaxKind.LPAREN) && !isOutputElementAttribute(peek(1).kind()))
+		{
+			consumeMandatory(display, SyntaxKind.LPAREN);
+			var token = consume(display);
+			display.setReportSpecification(token);
+			consumeMandatory(display, SyntaxKind.RPAREN);
+		}
+
+		if (peekKind(SyntaxKind.LPAREN) && isOutputElementAttribute(peek(1).kind()))
+		{
+			var attributeList = consumeAttributeList(display);
+			display.setAttributes(attributeList);
+		}
+
+		while (consumeAnyOptionally(display, OPTIONAL_DISPLAY_FLAGS))
+		{
+			// advances automatically
+		}
+
+		while (!isAtEnd() && !isStatementStart())
+		{
+			while (consumeAnyOptionally(display, DISPLAY_OUTPUT_FORMATS))
+			{
+				// advances automatically
+			}
+
+			if (!(isOperand() || peekKind(SyntaxKind.TAB_SETTING) || peekKind(SyntaxKind.SLASH) || peekKind(SyntaxKind.OPERAND_SKIP)))
+			{
+				break;
+			}
+
+			var operand = consumeInputOutputOperand(display);
+			display.addOperand(operand);
+			checkOutputElementAttributes(operand);
+		}
+
+		return display;
+	}
+
 	private IOutputElementNode consumeInputOutputOperand(BaseSyntaxNode writeLikeNode) throws ParseError
 	{
+
 		if (peekKind(SyntaxKind.TAB_SETTING))
 		{
 			var tab = new TabulatorElementNode();
@@ -3001,6 +3024,13 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return callnat;
 	}
 
+	private StopNode stop() throws ParseError
+	{
+		var stop = new StopNode();
+		consumeMandatory(stop, SyntaxKind.STOP);
+		return stop;
+	}
+
 	private IncludeNode include() throws ParseError
 	{
 		var include = new IncludeNode();
@@ -3111,29 +3141,29 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.IDENTIFIER), tokens));
 		}
 
-		if (consumeOptionally(fetch, SyntaxKind.IDENTIFIER))
+		if (consumeOptionally(fetch, SyntaxKind.STRING_LITERAL))
 		{
 			fetch.setReferencingToken(previousToken());
+			var referencedModule = sideloadModule(fetch.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token());
+			if (referencedModule != null
+				&& referencedModule.file() != null
+				&& referencedModule.file().getFiletype() != NaturalFileType.PROGRAM)
+			{
+				report(
+					ParserErrors.invalidModuleType(
+						"Only PROGRAMs can be called with FETCH",
+						previousToken()
+					)
+				);
+			}
+
+			fetch.setReferencedModule((NaturalModule) referencedModule);
 		}
 		else
-			if (consumeOptionally(fetch, SyntaxKind.STRING_LITERAL))
-			{
-				fetch.setReferencingToken(previousToken());
-				var referencedModule = sideloadModule(fetch.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token());
-				if (referencedModule != null
-					&& referencedModule.file() != null
-					&& referencedModule.file().getFiletype() != NaturalFileType.PROGRAM)
-				{
-					report(
-						ParserErrors.invalidModuleType(
-							"Only PROGRAMs can be called with FETCH",
-							previousToken()
-						)
-					);
-				}
-
-				fetch.setReferencedModule((NaturalModule) referencedModule);
-			}
+		{
+			var ref = consumeVariableReferenceNode(fetch);
+			fetch.setReferencingToken(ref.referencingToken());
+		}
 
 		return fetch;
 	}
@@ -4880,8 +4910,18 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		return switch (kind)
 		{
-			case AD, AL, CD, CV, DF, DL, DY, EM, EMU, FL, HE, IP, NL, PM, SB, SG, ZP -> true;
+			case AD, AL, CD, CV, DF, DL, DY, EM, EMU, FL, HE, IP, IS, NL, PM, SB, SG, ZP -> true;
 			default -> false;
 		};
 	}
+
+	private boolean isOutputElementAttribute(SyntaxKind kind)
+	{
+		return switch (kind)
+		{
+			case AD, AL, CD, CV, DF, DL, DY, EM, EMU, ES, FC, FL, GC, HC, HW, IC, ICU, IS, LC, LCU, LS, MC, MP, NL, PC, PM, PS, SF, SG, TC, TCU, UC, ZP -> true;
+			default -> false;
+		};
+	}
+
 }

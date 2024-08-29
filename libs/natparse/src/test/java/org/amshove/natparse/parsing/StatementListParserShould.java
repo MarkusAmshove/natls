@@ -211,6 +211,15 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(fetch.referencingToken().stringValue()).isEqualTo("PROG");
 	}
 
+	@Test
+	void parseAFetchOnArrayAccess()
+	{
+		ignoreModuleProvider();
+		var fetch = assertParsesSingleStatement("FETCH #ARR(1)", IFetchNode.class);
+		assertThat(fetch.referencingToken().kind()).isEqualTo(SyntaxKind.IDENTIFIER);
+		assertThat(fetch.referencingToken().symbolName()).isEqualTo("#ARR");
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
@@ -1978,21 +1987,63 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
-	void parseDisplayWithReportSpecification()
+	void parseDisplayWithIsEqualsOn()
 	{
-		var display = assertParsesSingleStatement("DISPLAY (PR2)", IDisplayNode.class);
+		var display = assertParsesSingleStatement("DISPLAY #VAR (IS=ON)", IDisplayNode.class);
+		assertThat(display.descendants()).hasSize(2);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"PR2",
+		"CC",
+		"ZD"
+	})
+	void parseDisplayWithReportSpecification(String rep)
+	{
+		var display = assertParsesSingleStatement("DISPLAY (%s)".formatted(rep), IDisplayNode.class);
 		assertThat(display.reportSpecification()).isPresent();
-		assertThat(display.reportSpecification().get().symbolName()).isEqualTo("PR2");
+		assertThat(display.reportSpecification().get().symbolName()).isEqualTo("%s".formatted(rep));
 		assertThat(display.descendants()).hasSize(4);
 	}
 
-	@Test
-	void parseDisplayWithReportSpecificationAsAttribute()
+	@ParameterizedTest
+	@ValueSource(strings =
 	{
-		var display = assertParsesSingleStatement("DISPLAY (CC)", IDisplayNode.class);
+		"'HDR' #VAR1",
+		"(01) (AL=L) #VAR1 #VAR2",
+		"(00) NOTIT NOHDR #VAR1 #VAR2",
+		"NOTIT NOHDR (ZP=OFF SG=ON) #VAR1 #VAR2",
+	})
+	void parseMoreComplexDisplays(String statement)
+	{
+		assertParsesSingleStatement("DISPLAY %s".formatted(statement), IDisplayNode.class);
+	}
+
+	@Test
+	void parseAVeryComplexDisplay()
+	{
+		var display = assertParsesSingleStatement("""
+			DISPLAY (10) (ZP=ON) NOTITLE NOHDR AND GIVE FUNCTIONS #VAR1 (2,#IX)
+  				/// T*#VAR1 '='#VAR2
+  				10X 'Hey'
+ 				'>'(20) '=' #VAR3
+ 				2/47 'Yes!'
+ 				/ VERTICALLY AS '=' #VAR4 CAPTIONED
+				/ HORIZ AS #VAR5 CAPT
+				/ P*#VAR 'X' (I)
+			""", IDisplayNode.class);
+
+		var firstOperand = assertNodeType(display.operands().first(), IOutputOperandNode.class).operand();
+		var firstReference = assertIsVariableReference(firstOperand, "#VAR1");
+		assertThat(firstReference.dimensions()).hasSize(2);
+		assertLiteral(firstReference.dimensions().first(), SyntaxKind.NUMBER_LITERAL);
+		var firstAttr = assertNodeType(display.statementAttributes().first(), IValueAttributeNode.class);
+		assertThat(firstAttr.kind().name().equals("ZP"));
+		assertThat(firstAttr.value().equals("ON"));
 		assertThat(display.reportSpecification()).isPresent();
-		assertThat(display.reportSpecification().get().symbolName()).isEqualTo("CC");
-		assertThat(display.descendants()).hasSize(4);
+		assertThat(display.reportSpecification().get().symbolName()).isEqualTo("10");
 	}
 
 	@Test
@@ -4082,5 +4133,11 @@ class StatementListParserShould extends StatementParseTest
 		assertIsVariableReference(et.operands().first(), "#VAR");
 		assertLiteral(et.operands().get(1), SyntaxKind.NUMBER_LITERAL, "1000");
 		assertIsVariableReference(et.operands().last(), "#VAR2");
+	}
+
+	@Test
+	void parseStopStatement()
+	{
+		assertParsesSingleStatement("STOP", IStopNode.class);
 	}
 }

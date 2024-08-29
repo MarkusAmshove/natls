@@ -5,6 +5,8 @@ import com.google.gson.JsonObject;
 import org.amshove.natls.App;
 import org.amshove.natls.codeactions.CodeActionRegistry;
 import org.amshove.natls.config.LSConfiguration;
+import org.amshove.natls.languageserver.constantfinding.FindConstantsParams;
+import org.amshove.natls.languageserver.constantfinding.FindConstantsResponse;
 import org.amshove.natls.languageserver.inputstructure.InputStructureParams;
 import org.amshove.natls.languageserver.inputstructure.InputStructureResponse;
 import org.amshove.natls.markupcontent.MarkdownContentBuilder;
@@ -24,6 +26,8 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static org.amshove.natls.SafeWrap.wrapSafe;
 
 public class NaturalLanguageServer implements LanguageServer, LanguageClientAware
 {
@@ -255,28 +259,35 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			languageService.parseFileReferencesAsync();
 		}
 
-		return CompletableFuture.completedFuture(null);
+		return wrapSafe(() -> CompletableFuture.completedFuture(null));
 	}
 
 	@JsonRequest
 	@SuppressWarnings("unused")
 	public CompletableFuture<ReferableFileExistsResponse> referableFileExists(ReferableFileExistsParams params)
 	{
-		return CompletableFuture.completedFuture(new ReferableFileExistsResponse(languageService.findReferableName(params.getLibrary(), params.getReferableName()) != null));
+		return wrapSafe(() -> CompletableFuture.completedFuture(new ReferableFileExistsResponse(languageService.findReferableName(params.getLibrary(), params.getReferableName()) != null)));
 	}
 
 	@JsonRequest
 	@SuppressWarnings("unused")
 	public CompletableFuture<CalledModulesResponse> calledModules(CalledModulesParams params)
 	{
-		return CompletableFuture.supplyAsync(() -> languageService.getCalledModules(params.getIdentifier()));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.getCalledModules(params.getIdentifier())));
 	}
 
 	@JsonRequest
 	@SuppressWarnings("unused")
 	public CompletableFuture<InputStructureResponse> inputStructure(InputStructureParams params)
 	{
-		return CompletableFuture.supplyAsync(() -> languageService.getInputStructure(params));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.getInputStructure(params)));
+	}
+
+	@JsonRequest
+	@SuppressWarnings("unused")
+	public CompletableFuture<FindConstantsResponse> findConstants(FindConstantsParams params)
+	{
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> languageService.findConstants(params)));
 	}
 
 	@Override
