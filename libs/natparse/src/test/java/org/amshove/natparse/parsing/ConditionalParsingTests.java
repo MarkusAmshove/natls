@@ -100,6 +100,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 			Map.entry("EQUAL TO", ComparisonOperator.EQUAL),
 			Map.entry("<>", ComparisonOperator.NOT_EQUAL),
 			Map.entry("^=", ComparisonOperator.NOT_EQUAL),
+			Map.entry("¬=", ComparisonOperator.NOT_EQUAL),
 			Map.entry("NE", ComparisonOperator.NOT_EQUAL),
 			Map.entry("NOT =", ComparisonOperator.NOT_EQUAL),
 			Map.entry("NOT EQ ", ComparisonOperator.NOT_EQUAL),
@@ -186,7 +187,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"GT", "LT", "<", ">", ">=", "<=", "NE", "<>", "^=", "NOTEQUAL", "NOT EQUAL", "NOT EQUAL TO"
+		"GT", "LT", "<", ">", ">=", "<=", "NE", "<>", "^=", "¬=", "NOTEQUAL", "NOT EQUAL", "NOT EQUAL TO"
 	})
 	void reportADiagnosticIfExtendedRelationalExpressionIsNotUsedWithEqualComparison(String operator)
 	{
@@ -223,7 +224,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"GT", "LT", "<", ">", ">=", "<=", "NE", "<>", "^=", "NOTEQUAL", "NOT EQUAL", "NOT EQUAL TO", "NOT LT", "NOT GT"
+		"GT", "LT", "<", ">", ">=", "<=", "NE", "<>", "^=", "¬=", "NOTEQUAL", "NOT EQUAL", "NOT EQUAL TO", "NOT LT", "NOT GT"
 	})
 	void reportADiagnosticIfRangedExtendedRelationalExpressionIsNotUsedWithEqualComparison(String operator)
 	{
@@ -256,7 +257,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"GT", "LT", "<", ">", ">=", "<=", "NE", "<>", "^=", "NOTEQUAL", "NOT EQUAL", "NOT EQUAL TO", "NOT LT", "NOT GT"
+		"GT", "LT", "<", ">", ">=", "<=", "NE", "<>", "^=", "¬=", "NOTEQUAL", "NOT EQUAL", "NOT EQUAL TO", "NOT LT", "NOT GT"
 	})
 	void parseARelationalExpressionWithSubstring(String operator)
 	{
@@ -437,7 +438,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"=", "EQ", "EQUAL", "EQUAL TO", "NE", "NOTEQUAL", "NOT EQUAL", "<>", "^="
+		"=", "EQ", "EQUAL", "EQUAL TO", "NE", "NOTEQUAL", "NOT EQUAL", "<>", "^=", "¬="
 	})
 	void parseMaskWithConstantDefinition(String operator)
 	{
@@ -453,7 +454,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"=", "EQ", "EQUAL", "EQUAL TO", "NE", "NOTEQUAL", "NOT EQUAL", "<>", "^="
+		"=", "EQ", "EQUAL", "EQUAL TO", "NE", "NOTEQUAL", "NOT EQUAL", "<>", "^=", "¬="
 	})
 	void parseScanWithVariableReference(String operator)
 	{

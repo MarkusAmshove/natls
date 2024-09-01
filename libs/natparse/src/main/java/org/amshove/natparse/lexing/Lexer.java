@@ -316,6 +316,12 @@ public class Lexer
 				case '9':
 					consumeNumber();
 					continue;
+				case '¬':
+					if (tryCreateIfFollowedBy('=', SyntaxKind.NOT_SIGN_EQUAL))
+					{
+						continue;
+					}
+					// Fall through, `¬` is only valid with an `=` after
 				default:
 					diagnostics.add(
 						LexerDiagnostic.create(
