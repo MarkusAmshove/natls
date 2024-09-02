@@ -111,7 +111,7 @@ class DdmParserShould
 		assertThat(aHyperdescriptor.descriptor()).isEqualTo(DescriptorType.HYPERDESCRIPTOR);
 		var aNondescriptor = findField(ddm, "NONDESCRIPTOR");
 		assertThat(aNondescriptor.descriptor()).isEqualTo(DescriptorType.NONDESCRIPTOR);
-		
+
 		var aSubdescriptor = assertIsSubDescriptor(findField(ddm, "A-SUBDESCRIPTOR"));
 		assertThat(aSubdescriptor.fields()).hasSize(2);
 		assertSDescriptorHasField(aSubdescriptor, "SUBDESCRIPTOR-FIELD-ONE", 1, 12);
@@ -184,9 +184,10 @@ P 1 AG A-SUPERDESCRIPTOR                 A   25  N S
 		assertThat(descriptor.descriptor()).isEqualTo(DescriptorType.SUPERDESCRIPTOR);
 		assertThat(descriptor.fieldType()).isEqualTo(FieldType.PERIODIC);
 	}
-	
+
 	@Test
-	void parseASubdescriptor() {
+	void parseASubdescriptor()
+	{
 		var ddm = new DdmParser().parseDdm("""
 DB: 000 FILE: 100  - COMPLETE-DDM                      DEFAULT SEQUENCE: 
 TYPE: ADABAS
@@ -279,7 +280,6 @@ T L DB Name                              F Leng  S D Remark
 		assertThat(field).isInstanceOf(ISDescriptor.class);
 		return (ISDescriptor) field;
 	}
-
 
 	private void assertSDescriptorHasField(ISDescriptor superdescriptor, String fieldname, int expectedRangeFrom, int expectedRangeTo)
 	{

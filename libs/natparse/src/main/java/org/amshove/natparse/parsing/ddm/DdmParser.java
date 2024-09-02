@@ -106,11 +106,14 @@ public class DdmParser
 		{
 			var matchCount = 0;
 			var notFound = new ArrayList<String>();
-			for (var child : sDescriptor.fields()) {
+			for (var child : sDescriptor.fields())
+			{
 				if (setMatchingReference(child, ddm.fields()))
 				{
 					matchCount += 1;
-				} else {
+				}
+				else
+				{
 					notFound.add(child.name());
 				}
 			}
@@ -120,19 +123,20 @@ public class DdmParser
 				sDescriptor.resolveDescriptorType(DescriptorType.SUBDESCRIPTOR);
 				// TODO: Add the fields?
 			}
-			else if (matchCount == sDescriptor.fields().size())
-			{
-				sDescriptor.resolveDescriptorType(DescriptorType.SUPERDESCRIPTOR);
-			}
 			else
-			{
-				throw new NaturalParseException(
-					String.format(
-						"Could not find field(s) referenced by superdescriptor children [\"%s\"]",
-						String.join("\",\"", notFound)
-					)
-				);
-			}
+				if (matchCount == sDescriptor.fields().size())
+				{
+					sDescriptor.resolveDescriptorType(DescriptorType.SUPERDESCRIPTOR);
+				}
+				else
+				{
+					throw new NaturalParseException(
+						String.format(
+							"Could not find field(s) referenced by superdescriptor children [\"%s\"]",
+							String.join("\",\"", notFound)
+						)
+					);
+				}
 
 		}
 

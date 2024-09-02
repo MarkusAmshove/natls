@@ -20,13 +20,15 @@ class SDescriptor extends DdmField implements ISDescriptor
 			throw new NaturalParseException(String.format("Can't promote Field with DescriptorType %s to superdescriptor", field.descriptor()));
 		}
 	}
-	
+
 	@Override
-	public DescriptorType descriptor() {
+	public DescriptorType descriptor()
+	{
 		return resolvedDescriptorType == null ? DescriptorType._S_DESCRIPTOR : resolvedDescriptorType;
 	}
-	
-	public void resolveDescriptorType(DescriptorType resolved) {
+
+	public void resolveDescriptorType(DescriptorType resolved)
+	{
 		this.resolvedDescriptorType = resolved;
 	}
 
