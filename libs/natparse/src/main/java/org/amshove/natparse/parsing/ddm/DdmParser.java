@@ -35,7 +35,6 @@ public class DdmParser
 	);
 
 	private DataDefinitionModule ddm;
-	private List<SuperdescriptorChild> childrenToReference;
 
 	public IDataDefinitionModule parseDdm(String content)
 	{
@@ -91,7 +90,7 @@ public class DdmParser
 
 			if (field.descriptor() == DescriptorType.SUPERDESCRIPTOR)
 			{
-				field = parseSuperdescriptor(scanner, new Superdescriptor(field));
+				field = parseSuperdescriptor(scanner, field, ddmFields);
 				ddmFields.add(field);
 				continue;
 			}
@@ -101,19 +100,6 @@ public class DdmParser
 		}
 
 		ddm.setFields(ddmFields.build());
-
-		for (var child : childrenToReference)
-		{
-			if (!setMatchingReference(child, ddm.fields()))
-			{
-				throw new NaturalParseException(
-					String.format(
-						"Could not find field referenced by superdescriptor child \"%s\"",
-						child.name()
-					)
-				);
-			}
-		}
 
 		return ddm;
 	}
@@ -192,26 +178,68 @@ public class DdmParser
 		}
 	}
 
-	private Superdescriptor parseSuperdescriptor(LinewiseTextScanner scanner, DdmField field)
+	private DdmField parseSuperdescriptor(LinewiseTextScanner scanner, DdmField field, ImmutableList.Builder<IDdmField> alreadyParsedFields)
 	{
 		scanner.advance();
-		// SOURCE FIELD(S) comment from predic
+		// SOURCE FIELD(S) comment from predict
 		scanner.advance();
 
-		var superdescriptor = new Superdescriptor(field);
-		ImmutableList.Builder<ISuperdescriptorChild> children = ImmutableList.builder();
+		var previouslyParsedFields = alreadyParsedFields.build();
 
+		var superdescriptor = new Superdescriptor(field);
+		List<ISuperdescriptorChild> children = new ArrayList<>();
+
+		var isSubdescriptor = false;
 		while (!scanner.isAtEnd() && containsSuperdescriptorSourceFieldRange(scanner.peek()))
 		{
 			var child = superdescriptorChildParser.parse(scanner.peek());
 			children.add(child);
-			childrenToReference.add(child);
+
+			if (!setMatchingReference(child, previouslyParsedFields))
+			{
+				isSubdescriptor = true;
+			}
 			scanner.advance();
 		}
 
-		superdescriptor.setChildren(children.build());
+		if (!isSubdescriptor)
+		{
+			superdescriptor.setChildren(ImmutableList.copyOf(children));
+			return superdescriptor;
+		}
+		else
+		{
+			// sub-descriptor children become fields themselves
+			for (var child : children)
+			{
+				alreadyParsedFields.add(
+					new DdmField(
+						field.fieldType(),
+						field.level(),
+						field.shortname(),
+						child.name(),
+						field.format(),
+						child.rangeTo() - child.rangeFrom() + 1, // +1 == inclusive
+						field.suppression(),
+						DescriptorType.SUBDESCRIPTOR,
+						""
+					)
+				);
+			}
 
-		return superdescriptor;
+			// Make a normal elementary field out of the descriptor definition
+			return new DdmField(
+				field.fieldType(),
+				field.level(),
+				field.shortname(),
+				field.name(),
+				field.format(),
+				field.length(),
+				field.suppression(),
+				DescriptorType.NONE,
+				field.remark()
+			);
+		}
 	}
 
 	private static final Pattern SUPERDESCRIPTOR_CHILD_RANGE_PATTERN = Pattern.compile("^.*\\(\\d+-\\d+\\).*$");
@@ -224,7 +252,6 @@ public class DdmParser
 	private void resetParser()
 	{
 		ddm = null;
-		childrenToReference = new ArrayList<>();
 	}
 
 	private boolean isLineToSkip(String line)
