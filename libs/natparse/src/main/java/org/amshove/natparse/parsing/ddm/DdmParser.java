@@ -219,7 +219,7 @@ public class DdmParser
 						field.shortname(),
 						child.name(),
 						field.format(),
-						child.rangeTo() - child.rangeFrom() + 1, // +1 == inclusive
+						child.rangeTo() - child.rangeFrom() + 1.0, // +1 == inclusive
 						field.suppression(),
 						DescriptorType.SUBDESCRIPTOR,
 						""
