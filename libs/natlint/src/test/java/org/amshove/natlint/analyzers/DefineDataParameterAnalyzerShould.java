@@ -53,7 +53,7 @@ class DefineDataParameterAnalyzerShould extends AbstractAnalyzerTest
 	{
 		configureEditorConfig("""
 			[*]
-			natls.style.discourageinlineparameters=true
+			natls.style.discourage_inlineparameters=true
 			""");
 
 		// This subprogram should not raise a diagnostic, because it only uses a PDA
