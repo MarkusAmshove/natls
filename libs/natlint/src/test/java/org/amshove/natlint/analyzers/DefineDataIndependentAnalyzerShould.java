@@ -15,7 +15,7 @@ class DefineDataIndependentAnalyzerShould extends AbstractAnalyzerTest
 	{
 		configureEditorConfig("""
 			[*]
-			natls.style.discourageindependent=true
+			natls.style.discourage_independent=true
 			""");
 
 		testDiagnostics(

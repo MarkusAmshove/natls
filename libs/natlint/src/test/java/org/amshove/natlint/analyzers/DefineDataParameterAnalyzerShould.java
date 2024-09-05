@@ -17,7 +17,7 @@ class DefineDataParameterAnalyzerShould extends AbstractAnalyzerTest
 	{
 		configureEditorConfig("""
 			[*]
-			natls.style.discourageinlineparameters=true
+			natls.style.discourage_inlineparameters=true
 			""");
 
 		testDiagnostics(
@@ -37,7 +37,7 @@ class DefineDataParameterAnalyzerShould extends AbstractAnalyzerTest
 	{
 		configureEditorConfig("""
 			[*]
-			natls.style.discourageinlineparameters=true
+			natls.style.discourage_inlineparameters=true
 			""");
 
 		// This subprogram should raise a diagnostic, because it uses inline parameters along side
