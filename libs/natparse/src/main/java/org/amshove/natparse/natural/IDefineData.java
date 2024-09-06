@@ -23,7 +23,7 @@ public interface IDefineData extends ISyntaxNode
 	 *
 	 * @return Non-expanded parameter in order
 	 */
-	ReadOnlyList<IParameterDefinitionNode> parameterInOrder();
+	ReadOnlyList<IParameterDefinitionNode> unexpandedParameterInOrder();
 
 	ReadOnlyList<IVariableNode> variables();
 

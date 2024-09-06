@@ -35,7 +35,7 @@ class DefineDataNode extends BaseSyntaxNode implements IDefineData
 	}
 
 	@Override
-	public ReadOnlyList<IParameterDefinitionNode> parameterInOrder()
+	public ReadOnlyList<IParameterDefinitionNode> unexpandedParameterInOrder()
 	{
 		var allParameter = Stream.of(
 			parameterUsings().stream(),

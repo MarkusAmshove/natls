@@ -2153,7 +2153,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			end-define
 			""");
 
-		var parameterInOrder = defineData.parameterInOrder();
+		var parameterInOrder = defineData.unexpandedParameterInOrder();
 
 		assertParameter(parameterInOrder.first(), IVariableNode.class, "#FIRSTPARAM");
 		assertParameter(parameterInOrder.get(1), IUsingNode.class, "PDA1");
