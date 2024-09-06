@@ -234,6 +234,39 @@ LOCAL USING MYLDA
 	}
 
 	@Test
+	void viewDefinitionsShouldBeInTheContext()
+	{
+		createOrSaveFile("LIBONE", "MYLDA.NSL", """
+			DEFINE DATA
+			LOCAL
+			1 MY-DB VIEW OF MY-DDM /* Super Database!
+			2 #MYVAR (A10)
+			END-DEFINE
+			""");
+
+		assertHover(
+			"""
+			DEFINE DATA
+			LOCAL USING MYLDA
+			END-DEFINE
+
+			WRITE #MY${}$VAR
+			END""",
+			"""
+```natural
+LOCAL 2 #MYVAR (A10)
+```
+
+*context:*
+```natural
+LOCAL USING MYLDA
+1 MY-DB VIEW OF MY-DDM /* Super Database!
+2 #MYVAR
+```"""
+		);
+	}
+
+	@Test
 	void commentsOnTheUsingOfDataAreasShouldBeIncludedForGroupMembers()
 	{
 		createOrSaveFile("LIBONE", "MYLDA.NSL", """
