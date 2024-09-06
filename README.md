@@ -21,6 +21,18 @@ The language server supports, but isn't limited to:
 - Signature Help for modules
 - [and many more](docs/lsp-features.md)
 
+## Project state/limitations
+
+The current state of the project is considered as early development.
+
+The language server can be used for driving daily development in Natural, but it does have some limitations:
+
+The parser is still [incomplete](docs/implemented-statements.md) and has some rough edges where the Natural language is context sensitive.
+It also currently uses some hard coded assumptions about the language settings that should be configurable by the `.natural` file (like thousands seperators), which means that e.g. regional settings aren't considered.
+Reporting Mode hasn't been considered yet, so currently only the structured mode syntax of statements is parsed correctly.
+
+Some analyzers assume a coding style that might not fit your needs. Some of these are [configurable](docs/analyzer-config.md). If you're missing some options, feel free to open an issue.
+
 ## Contributing
 
 Contributions in the form of code, issues and feature requests are always welcome.
@@ -34,16 +46,6 @@ There is some guidance to follow along in the form of documentation:
 - [Implementing Refactorings](docs/implementing-refactorings.md)
 
 ## Projects
-
-```mermaid
-flowchart
-    natparse
-    natlint
-    natls
-    natls-->natlint
-    natls-->natparse
-    natlint-->natparse
-```
 
 This repository contains the following projects:
 
@@ -62,18 +64,6 @@ All projects are aggregated as Gradle modules into a single Gradle project.
 To build the project and run tests use `./gradlew build`.
 
 To create standalone jar files (fat jars that include all dependencies) run `./gradlew fatJar`.
-
-## Project state/Limitations
-
-The current state of the project is considered as early development.
-
-The language server can be used for daily development in Natural, but it does have some limitations:
-
-The parser is still [incomplete](docs/implemented-statements.md) and has some rough edges where the Natural language is context sensitive.
-It also currently uses some hard coded assumptions about the language settings that should be configurable by the `.natural` file (like thousands seperators), which means that e.g. regional settings aren't considered.
-Reporting Mode hasn't been considered yet, so currently only the structured mode syntax of statements is parsed correctly.
-
-Some analyzers assume a coding style that might not fit your needs. Some of these are [configurable](docs/analyzer-config.md). If you're missing some options, feel free to open an issue.
 
 ## Running natlint
 
