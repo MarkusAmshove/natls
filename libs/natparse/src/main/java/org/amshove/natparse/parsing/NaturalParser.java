@@ -82,6 +82,8 @@ public class NaturalParser
 
 		naturalModule.setSyntaxTree(SyntaxTree.create(ReadOnlyList.from(topLevelNodes)));
 
+		ExternalParameterCheck.performParameterCheck(naturalModule);
+
 		return naturalModule;
 	}
 

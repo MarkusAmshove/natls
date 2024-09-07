@@ -4,9 +4,11 @@ import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.ddm.IDdmField;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -15,6 +17,7 @@ class DefineDataNode extends BaseSyntaxNode implements IDefineData
 {
 	private final List<IUsingNode> usings = new ArrayList<>();
 	private final List<IVariableNode> variables = new ArrayList<>();
+	private ReadOnlyList<ITypedVariableNode> cachedEffectiveParameter;
 
 	@Override
 	public ReadOnlyList<IUsingNode> localUsings()
@@ -35,7 +38,7 @@ class DefineDataNode extends BaseSyntaxNode implements IDefineData
 	}
 
 	@Override
-	public ReadOnlyList<IParameterDefinitionNode> unexpandedParameterInOrder()
+	public ReadOnlyList<IParameterDefinitionNode> declaredParameterInOrder()
 	{
 		var allParameter = Stream.of(
 			parameterUsings().stream(),
@@ -215,5 +218,38 @@ class DefineDataNode extends BaseSyntaxNode implements IDefineData
 		}
 
 		return foundVariables;
+	}
+
+	@Override
+	public ReadOnlyList<ITypedVariableNode> effectiveParameterInOrder()
+	{
+		if (cachedEffectiveParameter != null)
+		{
+			return cachedEffectiveParameter;
+		}
+
+		var unexpandedParameter = declaredParameterInOrder();
+		if (unexpandedParameter.isEmpty())
+		{
+			cachedEffectiveParameter = ReadOnlyList.empty();
+			return cachedEffectiveParameter;
+		}
+
+		var parametersInOrder = new ArrayList<ITypedVariableNode>();
+		for (var parameter : unexpandedParameter)
+		{
+			if (parameter instanceof ITypedVariableNode typedVar)
+			{
+				parametersInOrder.add(typedVar);
+			}
+
+			if (parameter instanceof IUsingNode using)
+			{
+				parametersInOrder.addAll(using.defineData().effectiveParameterInOrder().toList());
+			}
+		}
+
+		cachedEffectiveParameter = ReadOnlyList.from(parametersInOrder);
+		return cachedEffectiveParameter;
 	}
 }

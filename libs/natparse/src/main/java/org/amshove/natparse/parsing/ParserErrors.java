@@ -699,4 +699,32 @@ class ParserErrors
 		);
 	}
 
+	public static IDiagnostic parameterCountMismatch(ISyntaxNode node, int providedParameter, int expectedParameter)
+	{
+		return ParserDiagnostic.create(
+			"Parameter count mismatch. Expected %d parameter but got %d".formatted(expectedParameter, providedParameter),
+			node,
+			ParserError.PARAMETER_COUNT_MISMATCH
+		);
+	}
+
+	public static IDiagnostic leftOverParameter(ISyntaxNode node, int parameterCount)
+	{
+		return ParserDiagnostic.create(
+			"Trailing parameter. Module only expects %d parameter".formatted(parameterCount),
+			node,
+			ParserError.PARAMETER_COUNT_MISMATCH // TODO: Specific id
+		);
+	}
+
+	public static IDiagnostic missingParameter(ISyntaxNode node, ITypedVariableNode expectedParameter)
+	{
+		var diagnostic = ParserDiagnostic.create(
+			"Expected parameter %s %s not provided".formatted(expectedParameter.qualifiedName(), expectedParameter.formatTypeForDisplay()),
+			node,
+			ParserError.PARAMETER_COUNT_MISMATCH // TODO: Specific id
+		);
+		diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("This parameter is missing", expectedParameter.position()));
+		return diagnostic;
+	}
 }
