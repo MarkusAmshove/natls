@@ -727,4 +727,13 @@ class ParserErrors
 		diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("This parameter is missing", expectedParameter.position()));
 		return diagnostic;
 	}
+
+	public static IDiagnostic cantSkipParameter(ISkipOperandNode node, ITypedVariableNode expectedParameter)
+	{
+		return ParserDiagnostic.create(
+			"Parameter %s %s can not be skipped".formatted(expectedParameter.qualifiedName(), expectedParameter.formatTypeForDisplay()),
+			node,
+			ParserError.PARAMETER_COUNT_MISMATCH // TODO: Specific error (same as missing parameter?)
+		);
+	}
 }

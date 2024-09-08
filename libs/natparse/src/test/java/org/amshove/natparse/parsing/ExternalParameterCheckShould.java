@@ -75,6 +75,69 @@ class ExternalParameterCheckShould
 		assertNoDiagnostic();
 	}
 
+	@Test
+	void notReportADiagnosticWhenPassingSkipOperandForOptionalParameter()
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER 1 #PARM (A10) OPTIONAL
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+			CALLNAT 'CALLED' 1X
+			END
+			""");
+
+		assertNoDiagnostic();
+	}
+
+	@Test
+	void notReportADiagnosticWhenPassingSkipOperandForOptionalParameterInBetween()
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #PARM (A10) OPTIONAL
+			1 #PARM2 (N2)
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+			CALLNAT 'CALLED' 1X 10
+			END
+			""");
+
+		assertNoDiagnostic();
+	}
+
+	@Test
+	void reportADiagnosticWhenPassingASkipOperandForNonOptionalParameter()
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #PARM (A10)
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+			CALLNAT 'CALLED' 1X
+			END
+			""");
+
+		assertDiagnostic("Parameter #PARM (A10) can not be skipped");
+	}
+
 	private void assertNoDiagnostic()
 	{
 		var messages = lastParsedModule.diagnostics().stream().map(IDiagnostic::message).toList();

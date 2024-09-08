@@ -57,16 +57,32 @@ public class ExternalParameterCheck
 				var passedParameter = i < passedParameters.size() ? passedParameters.get(i) : null;
 				var expectedParameter = i < expectedParameters.size() ? expectedParameters.get(i) : null;
 
+				// Make flow analysis happy
+				if (passedParameter == null && expectedParameter == null)
+				{
+					continue;
+				}
+
 				if (passedParameter != null && expectedParameter == null)
 				{
 					naturalModule.addDiagnostic(ParserErrors.leftOverParameter(passedParameters.get(i).position(), expectedParameters.size()));
 					continue;
 				}
 
-				if (passedParameter == null && expectedParameter != null && expectedParameter.findDescendantToken(SyntaxKind.OPTIONAL) == null)
+				var expectedParameterIsOptional = expectedParameter.findDescendantToken(SyntaxKind.OPTIONAL) != null;
+				if (passedParameter == null && !expectedParameterIsOptional)
 				{
 					naturalModule.addDiagnostic(ParserErrors.missingParameter(moduleRef, expectedParameter));
 					continue;
+				}
+
+				if (passedParameter instanceof ProvidedOperand providedOperand)
+				{
+					if (providedOperand.operand instanceof ISkipOperandNode skipOperand && !expectedParameterIsOptional)
+					{
+						naturalModule.addDiagnostic(ParserErrors.cantSkipParameter(skipOperand, expectedParameter));
+						continue;
+					}
 				}
 			}
 		});
