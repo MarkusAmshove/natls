@@ -138,6 +138,31 @@ class ExternalParameterCheckShould
 		assertDiagnostic("Parameter #PARM (A10) can not be skipped");
 	}
 
+	@Test
+	void notMistakeRedefineChildrenAsParameter()
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #PARM (A10)
+			1 REDEFINE #PARM
+			2 #P-1 (A5)
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			1 #VAR (A10)
+			END-DEFINE
+			#VAR := 'Hi'
+			CALLNAT 'CALLED' #VAR
+			END
+			""");
+
+		assertNoDiagnostic();
+	}
+
 	private void assertNoDiagnostic()
 	{
 		var messages = lastParsedModule.diagnostics().stream().map(IDiagnostic::message).toList();

@@ -66,6 +66,20 @@ class DefineDataParameterExpansionShould extends AbstractParserTest<IDefineData>
 		);
 	}
 
+	@Test
+	void notExpandRedefineMembers()
+	{
+		assertParameterInOrder(
+			"""
+			PARAMETER
+			1 #P-PARM-1 (A10)
+			1 REDEFINE #P-PARM-1
+			2 #P-DEF (A5)
+			""",
+			"#P-PARM-1"
+		);
+	}
+
 	private void assertParameterInOrder(String defineDataSource, String... variableNames)
 	{
 		var defineData = assertParsesWithoutDiagnostics("""

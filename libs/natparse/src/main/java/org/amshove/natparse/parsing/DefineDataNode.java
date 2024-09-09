@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.ddm.IDdmField;
@@ -238,7 +239,8 @@ class DefineDataNode extends BaseSyntaxNode implements IDefineData
 		var parametersInOrder = new ArrayList<ITypedVariableNode>();
 		for (var parameter : unexpandedParameter)
 		{
-			if (parameter instanceof ITypedVariableNode typedVar)
+			var isRedefineChild = NodeUtil.findFirstParentOfType(parameter, IRedefinitionNode.class) != null;
+			if (parameter instanceof ITypedVariableNode typedVar && !isRedefineChild)
 			{
 				parametersInOrder.add(typedVar);
 			}

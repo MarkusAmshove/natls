@@ -49,7 +49,7 @@ public class ExternalParameterCheck
 			}
 
 			var expectedParameters = theirDefineData.effectiveParameterInOrder();
-			var passedParameters = flatternProvidedParameter(moduleRef.providedParameter());
+			var passedParameters = flattenProvidedParameter(moduleRef.providedParameter());
 			var upperbound = Math.max(expectedParameters.size(), passedParameters.size());
 
 			for (var i = 0; i < upperbound; i++)
@@ -88,14 +88,14 @@ public class ExternalParameterCheck
 		});
 	}
 
-	private static List<ProvidedParameter> flatternProvidedParameter(ReadOnlyList<IOperandNode> providedParameter)
+	private static List<ProvidedParameter> flattenProvidedParameter(ReadOnlyList<IOperandNode> providedParameter)
 	{
 		var flattenedParameter = new ArrayList<ProvidedParameter>(providedParameter.size());
 		for (var parameter : providedParameter)
 		{
 			if (parameter instanceof IVariableReferenceNode refNode)
 			{
-				if (refNode.reference()instanceof IGroupNode group)
+				if (refNode.reference()instanceof IGroupNode group && !(group instanceof IRedefinitionNode))
 				{
 					for (var variable : group.flattenVariables())
 					{
