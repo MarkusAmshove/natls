@@ -708,10 +708,10 @@ class ParserErrors
 		);
 	}
 
-	public static IDiagnostic leftOverParameter(ISyntaxNode node, int parameterCount)
+	public static IDiagnostic leftOverParameter(ISyntaxNode node, int providedParameter, int parameterCount)
 	{
 		return ParserDiagnostic.create(
-			"Trailing parameter. Module only expects %d parameter".formatted(parameterCount),
+			"Trailing parameter number %d. Module only expects %d parameter".formatted(providedParameter, parameterCount),
 			node,
 			ParserError.PARAMETER_COUNT_MISMATCH // TODO: Specific id
 		);

@@ -32,7 +32,7 @@ class ExternalParameterCheckShould
 			END
 			""");
 
-		assertDiagnostic("Trailing parameter. Module only expects 0 parameter");
+		assertDiagnostic("Trailing parameter number 1. Module only expects 0 parameter");
 	}
 
 	@Test
@@ -157,6 +157,36 @@ class ExternalParameterCheckShould
 			END-DEFINE
 			#VAR := 'Hi'
 			CALLNAT 'CALLED' #VAR
+			END
+			""");
+
+		assertNoDiagnostic();
+	}
+
+	@Test
+	void notCountPassedRedefineChildMember()
+	{
+		addDataArea("MYPDA.NSA", """
+			DEFINE DATA PARAMETER
+			1 MYPDA
+			2 #PARM-1 (A20)
+			2 REDEFINE #PARM-1
+			3 #PARM-1-1 (A5)
+			END-DEFINE
+		""");
+
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER USING MYPDA
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA
+			LOCAL USING MYPDA
+			END-DEFINE
+			CALLNAT 'CALLED' MYPDA
 			END
 			""");
 
