@@ -66,7 +66,7 @@ public class ExternalParameterCheck
 
 				if (passedParameter != null && expectedParameter == null)
 				{
-					naturalModule.addDiagnostic(ParserErrors.leftOverParameter(passedParameters.get(i).position(), i + 1, expectedParameters.size()));
+					naturalModule.addDiagnostic(ParserErrors.trailingParameter(passedParameters.get(i).position(), passedParameter.position(), i + 1, expectedParameters.size()));
 					continue;
 				}
 
@@ -106,7 +106,7 @@ public class ExternalParameterCheck
 							continue;
 						}
 
-						flattenedParameter.add(new ProvidedVariable((ITypedVariableNode) variable, refNode)); // TODO: They should all be typed. Right?...
+						flattenedParameter.add(new ProvidedVariable((ITypedVariableNode) variable, refNode));
 					}
 				}
 				else

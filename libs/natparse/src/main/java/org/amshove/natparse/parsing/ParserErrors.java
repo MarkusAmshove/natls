@@ -708,13 +708,15 @@ class ParserErrors
 		);
 	}
 
-	public static IDiagnostic leftOverParameter(ISyntaxNode node, int providedParameter, int parameterCount)
+	public static IDiagnostic trailingParameter(ISyntaxNode node, ISyntaxNode passedParameter, int parameterIndex, int expectedParameterCount)
 	{
-		return ParserDiagnostic.create(
-			"Trailing parameter number %d. Module only expects %d parameter".formatted(providedParameter, parameterCount),
+		var diagnostic = ParserDiagnostic.create(
+			"Trailing parameter number %d. Module only expects %d parameter".formatted(parameterIndex, expectedParameterCount),
 			node,
 			ParserError.PARAMETER_COUNT_MISMATCH // TODO: Specific id
 		);
+		diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("This parameter is trailing", passedParameter.position()));
+		return diagnostic;
 	}
 
 	public static IDiagnostic missingParameter(ISyntaxNode node, ITypedVariableNode expectedParameter)
