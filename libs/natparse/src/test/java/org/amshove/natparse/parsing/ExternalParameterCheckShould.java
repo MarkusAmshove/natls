@@ -193,6 +193,28 @@ class ExternalParameterCheckShould
 		assertNoDiagnostic();
 	}
 
+	@Test
+	void notCheckParameterInCopycodes()
+	{
+		// Copycodes will be analyzed in context of their includer.
+		// Analyzing them doesn't make sense, because we can't check parameter
+		// types etc.
+
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #DEF-ONE-PARAM (A10)
+			END-DEFINE
+			END
+			""");
+
+		parse("COPYC.NSC", """
+			CALLNAT 'CALLED' /* Nothing provided */
+			""");
+
+		assertNoDiagnostic();
+	}
+
 	private void assertNoDiagnostic()
 	{
 		var messages = lastParsedModule.diagnostics().stream().map(IDiagnostic::message).toList();
