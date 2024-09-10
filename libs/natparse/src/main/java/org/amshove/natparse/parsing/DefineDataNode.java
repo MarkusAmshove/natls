@@ -243,7 +243,7 @@ class DefineDataNode extends BaseSyntaxNode implements IDefineData
 				parametersInOrder.add(typedVar);
 			}
 
-			if (parameter instanceof IUsingNode using)
+			if (parameter instanceof IUsingNode using && using.defineData() != null)
 			{
 				parametersInOrder.addAll(using.defineData().effectiveParameterInOrder().toList());
 			}
