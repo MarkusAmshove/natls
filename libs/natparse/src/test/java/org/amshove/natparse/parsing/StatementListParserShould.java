@@ -4062,6 +4062,38 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void reportADiagnosticForDecideOnWithWhen()
+	{
+		assertDiagnostic("""
+			DECIDE ON FIRST #VAR
+			VALUE 'Hi'
+			IGNORE
+			WHEN 'Hello'
+			IGNORE
+			NONE
+			IGNORE
+			END-DECIDE
+			""", ParserError.ERROR_IN_CONTRUCTION_OF_DECIDE);
+	}
+
+	@Test
+	void reportADiagnosticForDecideForWithValue()
+	{
+		assertDiagnostic("""
+			DECIDE FOR EVERY CONDITION
+			WHEN 1 > 2
+			IGNORE
+			VALUE 'Hi'
+			IGNORE
+			VALUES 'Hello'
+			IGNORE
+			NONE
+			IGNORE
+			END-DECIDE
+			""", ParserError.ERROR_IN_CONTRUCTION_OF_DECIDE);
+	}
+
+	@Test
 	void parseOptions()
 	{
 		assertParsesWithoutDiagnostics("OPTIONS TQMARK=OFF");

@@ -3719,7 +3719,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return statement;
 	}
 
-	private static final Set<SyntaxKind> DECIDE_ON_STOP_KINDS = Set.of(SyntaxKind.END_DECIDE, SyntaxKind.NONE, SyntaxKind.ANY, SyntaxKind.ALL, SyntaxKind.VALUE, SyntaxKind.VALUES);
+	private static final Set<SyntaxKind> DECIDE_ON_STOP_KINDS = Set.of(SyntaxKind.END_DECIDE, SyntaxKind.NONE, SyntaxKind.ANY, SyntaxKind.ALL, SyntaxKind.VALUE, SyntaxKind.VALUES, SyntaxKind.WHEN);
 	private static final List<SyntaxKind> DECIDE_ON_VALUE_KEYWORDS = List.of(SyntaxKind.VALUE, SyntaxKind.VALUES);
 
 	private DecideOnNode decideOn() throws ParseError
@@ -3765,6 +3765,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				continue;
 			}
 
+			if (peekKind(SyntaxKind.WHEN))
+			{
+				report(ParserErrors.errorInContructionOfDecide(decideOn));
+			}
+
 			decideOn.addBranch(decideOnBranch());
 		}
 
@@ -3803,7 +3808,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return branch;
 	}
 
-	private static final Set<SyntaxKind> DECIDE_FOR_STOP_KINDS = Set.of(SyntaxKind.END_DECIDE, SyntaxKind.WHEN);
+	private static final Set<SyntaxKind> DECIDE_FOR_STOP_KINDS = Set.of(SyntaxKind.END_DECIDE, SyntaxKind.WHEN, SyntaxKind.VALUE, SyntaxKind.VALUES);
 
 	private DecideForConditionNode decideFor() throws ParseError
 	{
@@ -3812,10 +3817,15 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(decide, SyntaxKind.FOR);
 		consumeEitherOptionally(decide, SyntaxKind.FIRST, SyntaxKind.EVERY);
 		consumeMandatory(decide, SyntaxKind.CONDITION);
+		var whenBranch = consumeMandatory(decide, SyntaxKind.WHEN);
 
-		while (!isAtEnd() && peekKind(SyntaxKind.WHEN))
+		while (!isAtEnd() && !peekKind(SyntaxKind.END_DECIDE))
+		/*while (!isAtEnd() && peekKind(SyntaxKind.WHEN))*/
 		{
-			var whenBranch = consumeMandatory(decide, SyntaxKind.WHEN);
+			if (peekKind(SyntaxKind.WHEN))
+			{
+				whenBranch = consumeMandatory(decide, SyntaxKind.WHEN);
+			}
 
 			if (peekKind(SyntaxKind.ANY))
 			{
@@ -3842,6 +3852,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				decide.setWhenNone(whenNone);
 				checkForEmptyBody(whenNone, whenBranch);
 				continue;
+			}
+
+			if (peekKind(SyntaxKind.VALUE) || (peekKind(SyntaxKind.VALUES)))
+			{
+				report(ParserErrors.errorInContructionOfDecide(decide));
 			}
 
 			var branch = new DecideForConditionBranchNode();

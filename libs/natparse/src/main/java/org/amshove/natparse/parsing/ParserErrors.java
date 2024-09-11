@@ -45,6 +45,15 @@ class ParserErrors
 		);
 	}
 
+	public static ParserDiagnostic errorInContructionOfDecide(ISyntaxNode decideNode)
+	{
+		return ParserDiagnostic.create(
+			"Error in construction of DECIDE ON/DECIDE FOR statement",
+			decideNode,
+			ParserError.ERROR_IN_CONTRUCTION_OF_DECIDE
+		);
+	}
+
 	public static ParserDiagnostic missingClosingToken(SyntaxKind expectedClosingToken, SyntaxToken openingToken)
 	{
 		return ParserDiagnostic.create(

@@ -1,0 +1,9 @@
+name: Error in construction of DECIDE ON/DECIDE FOR statement
+priority: BLOCKER
+tags: compile-time
+type: BUG
+description:
+WHEN used in DECIDE ON or VALUE/VALUES used in DECIDE FOR
+
+See the Natural documentation for information on the correct syntax
+for the statements DECIDE FOR and DECIDE ON.
