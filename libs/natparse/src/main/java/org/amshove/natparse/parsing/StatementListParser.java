@@ -3820,7 +3820,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var whenBranch = consumeMandatory(decide, SyntaxKind.WHEN);
 
 		while (!isAtEnd() && !peekKind(SyntaxKind.END_DECIDE))
-		/*while (!isAtEnd() && peekKind(SyntaxKind.WHEN))*/
 		{
 			if (peekKind(SyntaxKind.WHEN))
 			{
