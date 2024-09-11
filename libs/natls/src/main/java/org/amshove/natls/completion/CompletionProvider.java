@@ -168,6 +168,7 @@ public class CompletionProvider
 		{
 			addForLoopPostfix(file, completionItems, identifierName, variableInvokedOn, rangeToInsert, deleteEdit);
 			addOccPostfix(completionItems, identifierName, variableInvokedOn, rangeToInsert, deleteEdit);
+			addCollectionMatchExpressionPostfix(completionItems, identifierName, variableInvokedOn, rangeToInsert, deleteEdit);
 		}
 
 		if (variableInvokedOn instanceof ITypedVariableNode typedVar && typedVar.type().emptyValue() != null)
@@ -306,6 +307,47 @@ public class CompletionProvider
 		var edit = new TextEdit(rangeToInsert, "*OCC(%s)".formatted(occVar));
 		completionItems.add(
 			createSnippetPostfixCompletionItem("occ", edit, deleteEdit)
+		);
+	}
+
+	private static void addCollectionMatchExpressionPostfix(ArrayList<CompletionItem> completionItems, String identifierName, IVariableNode variableInvokedOn, Range rangeToInsert, TextEdit deleteEdit)
+	{
+		if (!(variableInvokedOn instanceof ITypedVariableNode typed))
+		{
+			return;
+		}
+		var defaultValue = typed.type().emptyValue();
+
+		completionItems.add(
+			createPlainTextPostfixCompletionItem(
+				"contains",
+				new TextEdit(rangeToInsert, "%s(*) = %s".formatted(identifierName, defaultValue)),
+				deleteEdit
+			)
+		);
+
+		completionItems.add(
+			createPlainTextPostfixCompletionItem(
+				"noneIs",
+				new TextEdit(rangeToInsert, "NOT %s(*) = %s".formatted(identifierName, defaultValue)),
+				deleteEdit
+			)
+		);
+
+		completionItems.add(
+			createPlainTextPostfixCompletionItem(
+				"anyIsNot",
+				new TextEdit(rangeToInsert, "%s(*) <> %s".formatted(identifierName, defaultValue)),
+				deleteEdit
+			)
+		);
+
+		completionItems.add(
+			createPlainTextPostfixCompletionItem(
+				"allAre",
+				new TextEdit(rangeToInsert, "NOT %s(*) <> %s".formatted(identifierName, defaultValue)),
+				deleteEdit
+			)
 		);
 	}
 
