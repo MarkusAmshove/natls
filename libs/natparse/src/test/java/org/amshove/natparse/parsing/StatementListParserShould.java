@@ -4073,7 +4073,7 @@ class StatementListParserShould extends StatementParseTest
 			NONE
 			IGNORE
 			END-DECIDE
-			""", ParserError.ERROR_IN_CONTRUCTION_OF_DECIDE);
+			""", ParserError.UNEXPECTED_TOKEN);
 	}
 
 	@Test
@@ -4090,7 +4090,7 @@ class StatementListParserShould extends StatementParseTest
 			NONE
 			IGNORE
 			END-DECIDE
-			""", ParserError.ERROR_IN_CONTRUCTION_OF_DECIDE);
+			""", ParserError.UNEXPECTED_TOKEN_EXPECTED_OPERAND);
 	}
 
 	@Test
