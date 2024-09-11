@@ -3765,11 +3765,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				continue;
 			}
 
-			/*if (peekKind(SyntaxKind.WHEN))
-			{
-				report(ParserErrors.errorInContructionOfDecide(decideOn));
-			}*/
-
 			decideOn.addBranch(decideOnBranch());
 		}
 
@@ -3852,11 +3847,6 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				checkForEmptyBody(whenNone, whenBranch);
 				continue;
 			}
-
-			/*if (peekKind(SyntaxKind.VALUE) || (peekKind(SyntaxKind.VALUES)))
-			{
-				report(ParserErrors.errorInContructionOfDecide(decide));
-			}*/
 
 			var branch = new DecideForConditionBranchNode();
 			var criteria = conditionNode();
