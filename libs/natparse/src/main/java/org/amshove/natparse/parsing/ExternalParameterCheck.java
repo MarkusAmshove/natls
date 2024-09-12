@@ -67,14 +67,14 @@ public class ExternalParameterCheck
 				if (passedParameter != null && expectedParameter == null)
 				{
 					naturalModule.addDiagnostic(ParserErrors.trailingParameter(passedParameters.get(i).position(), passedParameter.position(), i + 1, expectedParameters.size()));
-					continue;
+					return;
 				}
 
 				var expectedParameterIsOptional = expectedParameter.findDescendantToken(SyntaxKind.OPTIONAL) != null;
 				if (passedParameter == null && !expectedParameterIsOptional)
 				{
 					naturalModule.addDiagnostic(ParserErrors.missingParameter(moduleRef, expectedParameter));
-					continue;
+					return;
 				}
 
 				if (passedParameter instanceof ProvidedOperand providedOperand)
@@ -82,7 +82,7 @@ public class ExternalParameterCheck
 					if (providedOperand.operand instanceof ISkipOperandNode skipOperand && !expectedParameterIsOptional)
 					{
 						naturalModule.addDiagnostic(ParserErrors.cantSkipParameter(skipOperand, expectedParameter));
-						continue;
+						return;
 					}
 				}
 			}
