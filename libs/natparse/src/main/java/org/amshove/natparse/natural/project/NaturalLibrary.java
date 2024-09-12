@@ -11,7 +11,7 @@ public class NaturalLibrary
 	private final Path path;
 	private final String libraryName;
 	private final List<NaturalLibrary> stepLibs = new ArrayList<>();
-	private final Map<String, NaturalFile> modulesByReferableName = new HashMap<>();
+	private final Map<String, List<NaturalFile>> modulesByReferableName = new HashMap<>();
 	private final Map<String, NaturalFile> ddmsByReferableName = new HashMap<>();
 
 	public NaturalLibrary(Path path)
@@ -43,7 +43,10 @@ public class NaturalLibrary
 	public List<NaturalFile> files()
 	{
 		var files = new ArrayList<NaturalFile>();
-		files.addAll(modulesByReferableName.values());
+		for (var modules : modulesByReferableName.values())
+		{
+			files.addAll(modules);
+		}
 		files.addAll(ddmsByReferableName.values());
 		return files;
 	}
@@ -56,7 +59,8 @@ public class NaturalLibrary
 		}
 		else
 		{
-			modulesByReferableName.put(file.getReferableName(), file);
+			modulesByReferableName.computeIfAbsent(file.getReferableName(), __ -> new ArrayList<>())
+				.add(file);
 		}
 		file.setLibrary(this);
 	}
@@ -79,7 +83,7 @@ public class NaturalLibrary
 	{
 		if (modulesByReferableName.containsKey(referableName))
 		{
-			return modulesByReferableName.get(referableName);
+			return modulesByReferableName.get(referableName).getFirst(); // TODO: For now
 		}
 
 		if (includeStepLibs)

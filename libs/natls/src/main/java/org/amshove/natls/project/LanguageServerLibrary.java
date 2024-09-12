@@ -66,7 +66,7 @@ public class LanguageServerLibrary
 		return fileByReferableName.values();
 	}
 
-	LanguageServerFile provideNaturalModule(String referableName, boolean includeStepLibs)
+	LanguageServerFile provideNaturalModule(String referableName, boolean includeStepLibs, NaturalFileType... typeHints)
 	{
 		if (fileByReferableName.containsKey(referableName))
 		{
