@@ -3,8 +3,6 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.lexing.Lexer;
-import org.amshove.natparse.natural.INaturalModule;
-import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.testhelpers.ResourceHelper;
