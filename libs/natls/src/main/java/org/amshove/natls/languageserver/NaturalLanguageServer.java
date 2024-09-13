@@ -266,7 +266,12 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 	@SuppressWarnings("unused")
 	public CompletableFuture<ReferableFileExistsResponse> referableFileExists(ReferableFileExistsParams params)
 	{
-		return wrapSafe(() -> CompletableFuture.completedFuture(new ReferableFileExistsResponse(languageService.findReferableName(params.getLibrary(), params.getReferableName()) != null)));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() ->
+		{
+			var matchingFiles = languageService.findReferableName(params.getLibrary(), params.getReferableName());
+			return new ReferableFileExistsResponse(matchingFiles != null && !matchingFiles.isEmpty());
+		})
+		);
 	}
 
 	@JsonRequest

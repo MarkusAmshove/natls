@@ -752,17 +752,17 @@ public class NaturalLanguageService implements LanguageClientAware
 		return inlayHintProvider.provideInlayHints(module, params.getRange());
 	}
 
-	public LanguageServerFile findReferableName(String libraryName, String referableName)
+	public List<LanguageServerFile> findReferableName(String libraryName, String referableName)
 	{
 		for (var library : languageServerProject.libraries())
 		{
 			if (library.name().equalsIgnoreCase(libraryName))
 			{
-				return library.findFile(referableName);
+				return library.findFilesByReferableName(referableName);
 			}
 		}
 
-		return null;
+		return List.of();
 	}
 
 	public List<TextEdit> format(DocumentFormattingParams params)

@@ -4,6 +4,7 @@ import org.amshove.natparse.IPosition;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.TokenList;
+import org.amshove.natparse.natural.project.NaturalFileType;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -28,7 +29,7 @@ public class ModuleReferenceParser
 			{
 				if (calledModule != null)
 				{
-					var calledFile = file.getLibrary().provideNaturalModule(calledModule.referredModule, true);
+					var calledFile = file.getLibrary().provideNaturalModule(calledModule.referredModule, true, calledModule.fileType);
 					if (calledFile != null)
 					{
 						ModuleReferenceCache.addEntry(calledFile, calledModule.referencingPosition);
@@ -95,7 +96,7 @@ public class ModuleReferenceParser
 	{
 		if (tokens.peek().kind().isIdentifier())
 		{
-			return new FoundReference(tokens.peek().symbolName(), tokens.peek());
+			return new FoundReference(tokens.peek().symbolName(), tokens.peek(), NaturalFileType.FUNCTION);
 		}
 
 		return null;
@@ -106,7 +107,7 @@ public class ModuleReferenceParser
 		tokens.advance(); // include
 		if (tokens.peek().kind().isIdentifier())
 		{
-			return new FoundReference(tokens.peek().symbolName(), tokens.peek());
+			return new FoundReference(tokens.peek().symbolName(), tokens.peek(), NaturalFileType.COPYCODE);
 		}
 
 		return null;
@@ -121,7 +122,7 @@ public class ModuleReferenceParser
 		}
 		if (tokens.peek().kind() == SyntaxKind.STRING_LITERAL)
 		{
-			return new FoundReference(tokens.peek().stringValue().toUpperCase(), tokens.peek());
+			return new FoundReference(tokens.peek().stringValue().toUpperCase(), tokens.peek(), NaturalFileType.PROGRAM);
 		}
 		return null; // variable
 	}
@@ -131,7 +132,7 @@ public class ModuleReferenceParser
 		tokens.advance(); // callnat
 		if (tokens.peek().kind() == SyntaxKind.STRING_LITERAL)
 		{
-			return new FoundReference(tokens.peek().stringValue().toUpperCase(), tokens.peek());
+			return new FoundReference(tokens.peek().stringValue().toUpperCase(), tokens.peek(), NaturalFileType.SUBPROGRAM);
 		}
 		return null; // variable
 	}
@@ -148,10 +149,13 @@ public class ModuleReferenceParser
 
 	private FoundReference processUsingOrPerform(TokenList tokens)
 	{
-		tokens.advance(); // using/perform
-		return new FoundReference(tokens.peek().symbolName(), tokens.peek());
+		var token = tokens.advance(); // using/perform
+		var fileTypeHint = token.kind() == SyntaxKind.PERFORM
+			? NaturalFileType.SUBROUTINE
+			: null;
+		return new FoundReference(tokens.peek().symbolName(), tokens.peek(), fileTypeHint);
 	}
 
-	record FoundReference(String referredModule, IPosition referencingPosition)
+	record FoundReference(String referredModule, IPosition referencingPosition, NaturalFileType fileType)
 	{}
 }

@@ -4062,6 +4062,38 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void reportADiagnosticForDecideOnWithWhen()
+	{
+		assertDiagnostic("""
+			DECIDE ON FIRST #VAR
+			VALUE 'Hi'
+			IGNORE
+			WHEN 'Hello'
+			IGNORE
+			NONE
+			IGNORE
+			END-DECIDE
+			""", ParserError.UNEXPECTED_TOKEN);
+	}
+
+	@Test
+	void reportADiagnosticForDecideForWithValue()
+	{
+		assertDiagnostic("""
+			DECIDE FOR EVERY CONDITION
+			WHEN 1 > 2
+			IGNORE
+			VALUE 'Hi'
+			IGNORE
+			VALUES 'Hello'
+			IGNORE
+			NONE
+			IGNORE
+			END-DECIDE
+			""", ParserError.UNEXPECTED_TOKEN_EXPECTED_OPERAND);
+	}
+
+	@Test
 	void parseOptions()
 	{
 		assertParsesWithoutDiagnostics("OPTIONS TQMARK=OFF");
