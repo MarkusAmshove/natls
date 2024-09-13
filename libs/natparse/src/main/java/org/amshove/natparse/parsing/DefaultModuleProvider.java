@@ -4,6 +4,7 @@ import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
 import org.amshove.natparse.natural.project.NaturalFile;
+import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.parsing.ddm.DdmParser;
 
 import java.nio.file.Files;
@@ -36,7 +37,7 @@ class DefaultModuleProvider implements IModuleProvider
 	}
 
 	@Override
-	public INaturalModule findNaturalModule(String referableName)
+	public INaturalModule findNaturalModule(String referableName, NaturalFileType requestedType)
 	{
 		if (referableName.startsWith("USR") && referableName.endsWith("N"))
 		{
@@ -48,7 +49,7 @@ class DefaultModuleProvider implements IModuleProvider
 		{
 			return null;
 		}
-		var foundFile = callerLib.findModuleByReferableName(referableName, true);
+		var foundFile = callerLib.findModuleByReferableName(referableName, true, requestedType);
 		if (foundFile == null)
 		{
 			return null;

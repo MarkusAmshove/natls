@@ -111,7 +111,7 @@ class VariableContextHover
 			{
 				variableContext.usingNode = using;
 				variableContext.usingComment = hoverContext.file().module().extractLineComment(using.position().line());
-				variableContext.declaringModule = hoverContext.file().findNaturalModule(using.target().symbolName());
+				variableContext.declaringModule = hoverContext.file().findNaturalModule(using.target().symbolName(), null);
 			}
 		}
 
