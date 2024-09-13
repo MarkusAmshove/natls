@@ -2,6 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
+import org.amshove.natparse.natural.project.NaturalFileType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +20,12 @@ public class ModuleProviderStub implements IModuleProvider
 
 	@Override
 	public INaturalModule findNaturalModule(String referableName)
+	{
+		return findNaturalModule(referableName, null);
+	}
+
+	@Override
+	public INaturalModule findNaturalModule(String referableName, NaturalFileType requestedType)
 	{
 		return referableModules.get(referableName);
 	}

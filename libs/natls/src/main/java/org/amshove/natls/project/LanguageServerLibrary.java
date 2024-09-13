@@ -14,16 +14,16 @@ import java.util.stream.Collectors;
 public class LanguageServerLibrary
 {
 	private final NaturalLibrary library;
-	private final Map<String, LanguageServerFile> fileByReferableName;
+	private final Map<String, List<LanguageServerFile>> filesByReferableName;
 	private final Map<String, LanguageServerFile> ddmsByReferableName;
 	private final List<LanguageServerLibrary> stepLibs = new ArrayList<>();
 
-	public LanguageServerLibrary(NaturalLibrary library, Map<String, LanguageServerFile> fileByReferableName, Map<String, LanguageServerFile> ddmsByReferableName)
+	public LanguageServerLibrary(NaturalLibrary library, Map<String, List<LanguageServerFile>> filesByReferableName, Map<String, LanguageServerFile> ddmsByReferableName)
 	{
 		this.library = library;
-		this.fileByReferableName = fileByReferableName;
+		this.filesByReferableName = filesByReferableName;
 		this.ddmsByReferableName = ddmsByReferableName;
-		fileByReferableName.values().forEach(f -> f.setLibrary(this));
+		filesByReferableName.values().forEach(files -> files.forEach(f -> f.setLibrary(this)));
 	}
 
 	public String name()
@@ -33,26 +33,33 @@ public class LanguageServerLibrary
 
 	public static LanguageServerLibrary fromLibrary(NaturalLibrary library)
 	{
+		var filesByReferableName = library.files().stream()
+			.filter(f -> f.getFiletype() != NaturalFileType.DDM)
+			.map(LanguageServerFile::fromFile)
+			.collect(Collectors.groupingBy(LanguageServerFile::getReferableName));
+
+		var ddmsByReferableName = library.files().stream()
+			.filter(f -> f.getFiletype() == NaturalFileType.DDM)
+			.collect(Collectors.toMap(NaturalFile::getReferableName, LanguageServerFile::fromFile));
+
 		return new LanguageServerLibrary(
 			library,
-			library.files().stream().filter(f -> f.getFiletype() != NaturalFileType.DDM).collect(Collectors.toMap(NaturalFile::getReferableName, LanguageServerFile::fromFile)),
-			library.files().stream().filter(f -> f.getFiletype() == NaturalFileType.DDM).collect(Collectors.toMap(NaturalFile::getReferableName, LanguageServerFile::fromFile))
+			filesByReferableName,
+			ddmsByReferableName
 		);
 	}
 
-	public LanguageServerFile findFile(NaturalFile naturalFile)
+	public LanguageServerFile findFilesByReferableName(NaturalFile naturalFile)
 	{
-		return fileByReferableName.get(naturalFile.getReferableName());
-	}
-
-	public LanguageServerFile findFile(Path path)
-	{
-		return fileByReferableName.values().stream().filter(f -> f.getPath().equals(path)).findFirst().orElse(null);
+		return filesByReferableName.get(naturalFile.getReferableName()).stream()
+			.filter(f -> f.getType() == naturalFile.getFiletype())
+			.findFirst()
+			.orElse(null);
 	}
 
 	public List<LanguageServerFile> getModulesOfType(NaturalFileType type, boolean includeStepLibs)
 	{
-		var filesOfType = fileByReferableName.values().stream().filter(f -> f.getType() == type).collect(Collectors.toCollection(ArrayList::new));
+		var filesOfType = filesByReferableName.values().stream().flatMap(Collection::stream).filter(files -> files.getType() == type).collect(Collectors.toCollection(ArrayList::new));
 		if (includeStepLibs)
 		{
 			stepLibs.forEach(l -> filesOfType.addAll(l.getModulesOfType(type, false)));
@@ -63,21 +70,31 @@ public class LanguageServerLibrary
 
 	public Collection<LanguageServerFile> files()
 	{
-		return fileByReferableName.values();
+		return filesByReferableName.values().stream().flatMap(Collection::stream).toList();
 	}
 
-	LanguageServerFile provideNaturalModule(String referableName, boolean includeStepLibs, NaturalFileType... typeHints)
+	LanguageServerFile provideNaturalModule(String referableName, boolean includeStepLibs, NaturalFileType requestedType)
 	{
-		if (fileByReferableName.containsKey(referableName))
+		if (filesByReferableName.containsKey(referableName))
 		{
-			return fileByReferableName.get(referableName);
+			if (requestedType != null)
+			{
+				for (var file : filesByReferableName.get(referableName))
+				{
+					if (file.getType() == requestedType)
+					{
+						return file;
+					}
+				}
+			}
+			return filesByReferableName.get(referableName).getFirst();
 		}
 
 		if (includeStepLibs)
 		{
 			for (var stepLib : stepLibs)
 			{
-				var foundModule = stepLib.provideNaturalModule(referableName, false);
+				var foundModule = stepLib.provideNaturalModule(referableName, false, requestedType);
 				if (foundModule != null)
 				{
 					return foundModule;
@@ -134,7 +151,8 @@ public class LanguageServerLibrary
 
 	public void addFile(LanguageServerFile languageServerFile)
 	{
-		fileByReferableName.put(languageServerFile.getReferableName(), languageServerFile);
+		filesByReferableName.computeIfAbsent(languageServerFile.getReferableName(), __ -> new ArrayList<>())
+			.add(languageServerFile);
 		languageServerFile.setLibrary(this);
 		library.addFile(languageServerFile.getNaturalFile());
 	}
@@ -149,9 +167,9 @@ public class LanguageServerLibrary
 		return library.getSourcePath();
 	}
 
-	public LanguageServerFile findFile(String referableName)
+	public List<LanguageServerFile> findFilesByReferableName(String referableName)
 	{
-		return fileByReferableName.get(referableName);
+		return filesByReferableName.computeIfAbsent(referableName, __ -> new ArrayList<>());
 	}
 
 	public void rename(LanguageServerFile oldFile, Path newPath)
@@ -159,7 +177,7 @@ public class LanguageServerLibrary
 
 		var newName = newPath.getFileName().toString().split("\\.")[0];
 		var oldFilesLsLibrary = oldFile.getLibrary();
-		oldFilesLsLibrary.fileByReferableName.remove(oldFile.getReferableName());
+		oldFilesLsLibrary.filesByReferableName.remove(oldFile.getReferableName());
 		var oldNaturalLibrary = oldFilesLsLibrary.getLibrary();
 		var newNaturalFile = new NaturalFile(newName, newPath, oldFile.getType(), oldNaturalLibrary);
 		oldNaturalLibrary.removeFile(oldFile.getNaturalFile());
@@ -170,7 +188,7 @@ public class LanguageServerLibrary
 	public void rename(LanguageServerFile oldFile, String newReferableName)
 	{
 		var oldFilesLsLibrary = oldFile.getLibrary();
-		oldFilesLsLibrary.fileByReferableName.remove(oldFile.getReferableName());
+		oldFilesLsLibrary.filesByReferableName.remove(oldFile.getReferableName());
 		var oldNaturalLibrary = oldFilesLsLibrary.getLibrary();
 		var newNaturalFile = new NaturalFile(newReferableName, oldFile.getPath(), oldFile.getType(), oldNaturalLibrary);
 		oldNaturalLibrary.removeFile(oldFile.getNaturalFile());
@@ -181,6 +199,6 @@ public class LanguageServerLibrary
 	public void remove(LanguageServerFile file)
 	{
 		file.getLibrary().library.removeFile(file.getNaturalFile());
-		file.getLibrary().fileByReferableName.remove(file.getReferableName());
+		file.getLibrary().filesByReferableName.remove(file.getReferableName());
 	}
 }

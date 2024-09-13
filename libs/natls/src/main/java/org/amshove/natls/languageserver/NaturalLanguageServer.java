@@ -12,6 +12,7 @@ import org.amshove.natls.languageserver.inputstructure.InputStructureResponse;
 import org.amshove.natls.markupcontent.MarkdownContentBuilder;
 import org.amshove.natls.markupcontent.MarkupContentBuilderFactory;
 import org.amshove.natls.progress.*;
+import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -266,7 +267,12 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 	@SuppressWarnings("unused")
 	public CompletableFuture<ReferableFileExistsResponse> referableFileExists(ReferableFileExistsParams params)
 	{
-		return wrapSafe(() -> CompletableFuture.completedFuture(new ReferableFileExistsResponse(languageService.findReferableName(params.getLibrary(), params.getReferableName()) != null)));
+		return wrapSafe(() -> CompletableFuture.supplyAsync(() ->
+		{
+			var matchingFiles = languageService.findReferableName(params.getLibrary(), params.getReferableName());
+			return new ReferableFileExistsResponse(matchingFiles != null && !matchingFiles.isEmpty());
+		})
+		);
 	}
 
 	@JsonRequest

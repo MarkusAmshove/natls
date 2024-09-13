@@ -414,7 +414,13 @@ public class LanguageServerFile implements IModuleProvider
 	@Override
 	public INaturalModule findNaturalModule(String referableName)
 	{
-		var calledFile = library.provideNaturalModule(referableName, true);
+		return findNaturalModule(referableName, null);
+	}
+
+	@Override
+	public INaturalModule findNaturalModule(String referableName, NaturalFileType requestedType)
+	{
+		var calledFile = library.provideNaturalModule(referableName, true, requestedType);
 		if (calledFile == null)
 		{
 			return null;

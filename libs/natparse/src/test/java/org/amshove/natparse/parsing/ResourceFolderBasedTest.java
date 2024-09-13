@@ -187,6 +187,12 @@ public abstract class ResourceFolderBasedTest
 		}
 
 		@Override
+		public INaturalModule findNaturalModule(String referableName, NaturalFileType requestedType)
+		{
+			return null;
+		}
+
+		@Override
 		public IDataDefinitionModule findDdm(String referableName)
 		{
 			return null;

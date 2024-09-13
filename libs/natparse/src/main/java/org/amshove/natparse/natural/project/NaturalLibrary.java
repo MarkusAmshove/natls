@@ -73,24 +73,35 @@ public class NaturalLibrary
 		}
 		else
 		{
-			modulesByReferableName.remove(file.getReferableName());
+			modulesByReferableName.computeIfAbsent(file.getReferableName(), __ -> new ArrayList<>())
+				.remove(file);
 		}
 
 		file.setLibrary(null);
 	}
 
-	public NaturalFile findModuleByReferableName(String referableName, boolean includeStepLibs)
+	public NaturalFile findModuleByReferableName(String referableName, boolean includeStepLibs, NaturalFileType requestedType)
 	{
 		if (modulesByReferableName.containsKey(referableName))
 		{
-			return modulesByReferableName.get(referableName).getFirst(); // TODO: For now
+			if (requestedType != null)
+			{
+				for (var naturalFile : modulesByReferableName.get(referableName))
+				{
+					if (naturalFile.getFiletype() == requestedType)
+					{
+						return naturalFile;
+					}
+				}
+			}
+			return modulesByReferableName.get(referableName).getFirst();
 		}
 
 		if (includeStepLibs)
 		{
 			for (var stepLib : stepLibs)
 			{
-				var foundFile = stepLib.findModuleByReferableName(referableName, false);
+				var foundFile = stepLib.findModuleByReferableName(referableName, false, requestedType);
 				if (foundFile != null)
 				{
 					return foundFile;
