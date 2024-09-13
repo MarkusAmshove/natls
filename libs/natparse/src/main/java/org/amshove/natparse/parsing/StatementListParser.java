@@ -2829,7 +2829,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				var operand = consumeModuleParameter(externalPerform);
 				externalPerform.addParameter(operand);
 			}
-			var foundModule = sideloadModule(externalPerform.referencingToken().trimmedSymbolName(32), externalPerform.referencingToken());
+			var foundModule = sideloadModule(externalPerform.referencingToken().trimmedSymbolName(32), externalPerform.referencingToken(), NaturalFileType.SUBROUTINE);
 			if (foundModule != null)
 			{
 				externalPerform.setReference(foundModule);
@@ -2994,7 +2994,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			if (consumeOptionally(callnat, SyntaxKind.STRING_LITERAL))
 			{
 				callnat.setReferencingToken(previousToken());
-				var referencedModule = sideloadModule(callnat.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token());
+				var referencedModule = sideloadModule(callnat.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token(), NaturalFileType.SUBPROGRAM);
 				callnat.setReferencedModule((NaturalModule) referencedModule);
 				if (referencedModule != null
 					&& referencedModule.file() != null && referencedModule.file().getFiletype() != null
@@ -3046,7 +3046,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			include.addParameter(parameter);
 		}
 
-		var referencedModule = sideloadModule(referencingToken.symbolName(), previousTokenNode().token());
+		var referencedModule = sideloadModule(referencingToken.symbolName(), previousTokenNode().token(), NaturalFileType.COPYCODE);
 		include.setReferencedModule((NaturalModule) referencedModule);
 
 		if (referencedModule != null && currentModuleCallStack.add(referencingToken.symbolName()))
@@ -3144,7 +3144,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		if (consumeOptionally(fetch, SyntaxKind.STRING_LITERAL))
 		{
 			fetch.setReferencingToken(previousToken());
-			var referencedModule = sideloadModule(fetch.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token());
+			var referencedModule = sideloadModule(fetch.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token(), NaturalFileType.PROGRAM);
 			if (referencedModule != null
 				&& referencedModule.file() != null
 				&& referencedModule.file().getFiletype() != NaturalFileType.PROGRAM)
@@ -4754,7 +4754,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			// external subroutines which don't pass parameter couldn't be distinguished from local subroutines up to this point
 			if (unresolvedReference instanceof InternalPerformNode internalPerformNode)
 			{
-				var foundModule = sideloadModule(unresolvedReference.token().trimmedSymbolName(32), internalPerformNode.tokenNode().token());
+				var foundModule = sideloadModule(unresolvedReference.token().trimmedSymbolName(32), internalPerformNode.tokenNode().token(), NaturalFileType.SUBROUTINE);
 				if (foundModule != null)
 				{
 					var externalPerform = new ExternalPerformNode(((InternalPerformNode) unresolvedReference));

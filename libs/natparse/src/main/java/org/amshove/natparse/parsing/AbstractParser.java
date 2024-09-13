@@ -49,14 +49,14 @@ abstract class AbstractParser<T>
 		return relocatedDiagnosticPosition != null;
 	}
 
-	protected INaturalModule sideloadModule(String referableName, SyntaxToken moduleIdentifierToken)
+	protected INaturalModule sideloadModule(String referableName, SyntaxToken moduleIdentifierToken, NaturalFileType type)
 	{
 		if (moduleProvider == null)
 		{
 			return null;
 		}
 
-		var module = moduleProvider.findNaturalModule(referableName);
+		var module = moduleProvider.findNaturalModule(referableName, type);
 
 		if (module == null
 			&& !(referableName.startsWith("USR") && referableName.endsWith("N"))
@@ -77,7 +77,7 @@ abstract class AbstractParser<T>
 
 	protected IHasDefineData sideloadDefineData(TokenNode importNode)
 	{
-		var module = sideloadModule(importNode.token().symbolName(), importNode.token());
+		var module = sideloadModule(importNode.token().symbolName(), importNode.token(), null);
 		if (module instanceof IHasDefineData hasDefineData
 			&& TYPES_FOR_USINGS.contains(module.file().getFiletype()))
 		{
@@ -526,7 +526,7 @@ abstract class AbstractParser<T>
 		var functionName = new TokenNode(token);
 		node.setReferencingToken(token);
 		node.addNode(functionName);
-		var module = sideloadModule(token.symbolName(), functionName.token());
+		var module = sideloadModule(token.symbolName(), functionName.token(), NaturalFileType.FUNCTION);
 		node.setReferencedModule((NaturalModule) module);
 
 		consumeMandatory(node, SyntaxKind.LPAREN);
