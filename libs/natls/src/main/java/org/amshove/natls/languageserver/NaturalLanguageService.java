@@ -762,7 +762,7 @@ public class NaturalLanguageService implements LanguageClientAware
 			}
 		}
 
-		return null;
+		return List.of();
 	}
 
 	public List<TextEdit> format(DocumentFormattingParams params)

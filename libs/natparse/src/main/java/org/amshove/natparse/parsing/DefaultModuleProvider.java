@@ -37,12 +37,6 @@ class DefaultModuleProvider implements IModuleProvider
 	}
 
 	@Override
-	public INaturalModule findNaturalModule(String referableName)
-	{
-		return findNaturalModule(referableName, null);
-	}
-
-	@Override
 	public INaturalModule findNaturalModule(String referableName, NaturalFileType requestedType)
 	{
 		if (referableName.startsWith("USR") && referableName.endsWith("N"))

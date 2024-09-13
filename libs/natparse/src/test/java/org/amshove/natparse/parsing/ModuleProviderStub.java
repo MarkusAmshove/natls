@@ -19,12 +19,6 @@ public class ModuleProviderStub implements IModuleProvider
 	}
 
 	@Override
-	public INaturalModule findNaturalModule(String referableName)
-	{
-		return findNaturalModule(referableName, null);
-	}
-
-	@Override
 	public INaturalModule findNaturalModule(String referableName, NaturalFileType requestedType)
 	{
 		return referableModules.get(referableName);

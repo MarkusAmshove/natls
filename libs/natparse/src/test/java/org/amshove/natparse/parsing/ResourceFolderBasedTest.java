@@ -176,26 +176,4 @@ public abstract class ResourceFolderBasedTest
 			return "ExpectedDiagnostic{line=" + line + ", id='" + id + '\'' + ", severity=" + severity + '}';
 		}
 	}
-
-	private static class NullModuleProvider implements IModuleProvider
-	{
-
-		@Override
-		public INaturalModule findNaturalModule(String referableName)
-		{
-			return null;
-		}
-
-		@Override
-		public INaturalModule findNaturalModule(String referableName, NaturalFileType requestedType)
-		{
-			return null;
-		}
-
-		@Override
-		public IDataDefinitionModule findDdm(String referableName)
-		{
-			return null;
-		}
-	}
 }

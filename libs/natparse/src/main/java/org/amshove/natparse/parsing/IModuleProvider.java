@@ -8,9 +8,6 @@ import javax.annotation.Nullable;
 
 public interface IModuleProvider
 {
-	// TODO: Deprecated?
-	INaturalModule findNaturalModule(String referableName);
-
 	INaturalModule findNaturalModule(String referableName, @Nullable NaturalFileType requestedType);
 
 	IDataDefinitionModule findDdm(String referableName);

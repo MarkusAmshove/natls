@@ -59,7 +59,7 @@ class FindReferencesTests extends LanguageServerTest
 		return referenceTests.stream()
 			.map(rT -> DynamicContainer.dynamicContainer(rT.file.getReferableName(), rT.expectedReferences.stream().map(ref ->
 			{
-				var theModule = rT.file.findNaturalModule(ref.modulename);
+				var theModule = rT.file.findNaturalModule(ref.modulename, null);
 
 				var params = new ReferenceParams();
 				params.setTextDocument(rT.identifier());
