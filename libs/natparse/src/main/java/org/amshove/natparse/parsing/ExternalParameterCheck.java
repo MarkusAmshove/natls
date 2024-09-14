@@ -77,6 +77,11 @@ public class ExternalParameterCheck
 					return;
 				}
 
+				if (passedParameter == null || expectedParameterIsOptional)
+				{
+					continue;
+				}
+
 				if (passedParameter instanceof ProvidedOperand providedOperand)
 				{
 					if (providedOperand.operand instanceof ISkipOperandNode skipOperand && !expectedParameterIsOptional)
@@ -84,9 +89,34 @@ public class ExternalParameterCheck
 						naturalModule.addDiagnostic(ParserErrors.cantSkipParameter(skipOperand, expectedParameter));
 						return;
 					}
+
+					var passedType = TypeInference.inferType(providedOperand.operand());
+					if (passedType.isEmpty())
+					{
+						continue;
+					}
+
+					typeCheckParameter(naturalModule, passedParameter, passedType.get(), expectedParameter);
+				}
+				else
+				{
+					typeCheckParameter(naturalModule, passedParameter, ((ProvidedVariable) passedParameter).variable().type(), expectedParameter);
 				}
 			}
 		});
+	}
+
+	private static void typeCheckParameter(NaturalModule module, ProvidedParameter providedParameter, IDataType passedType, ITypedVariableNode receiver)
+	{
+		var receiverType = receiver.type();
+		var expectedParameterIsByValue = receiver.findDescendantToken(SyntaxKind.VALUE) != null;
+		var expectedParameterIsByReference = !expectedParameterIsByValue;
+
+		if (expectedParameterIsByReference && !receiverType.fitsInto(passedType))
+		{
+			module.addDiagnostic(ParserErrors.parameterTypeMismatch(providedParameter.position(), passedType, receiver));
+			return;
+		}
 	}
 
 	private static List<ProvidedParameter> flattenProvidedParameter(ReadOnlyList<IOperandNode> providedParameter)

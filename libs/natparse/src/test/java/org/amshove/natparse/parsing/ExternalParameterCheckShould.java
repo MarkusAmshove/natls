@@ -102,7 +102,7 @@ class ExternalParameterCheckShould
 			DEFINE DATA
 			PARAMETER
 			1 #PARM (A10) OPTIONAL
-			1 #PARM2 (N2)
+			1 #PARM2 (N2) BY VALUE
 			END-DEFINE
 			END
 			""");
@@ -213,6 +213,28 @@ class ExternalParameterCheckShould
 			""");
 
 		assertNoDiagnostic();
+	}
+
+	@Test
+	void raiseADiagnosticWhenPassingAParameterByReferenceButTheReceiverTypeIsBigger()
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #RECEIVER (A15)
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			1 #PASSED (A10)
+			END-DEFINE
+			CALLNAT 'CALLED' #PASSED
+			END
+			""");
+
+		assertDiagnostic("Parameter is passed BY REFERENCE but type of parameter (A15) does not fit into passed type (A10)");
 	}
 
 	private void assertNoDiagnostic()

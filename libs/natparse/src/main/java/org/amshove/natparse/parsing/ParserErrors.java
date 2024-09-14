@@ -738,4 +738,16 @@ class ParserErrors
 			ParserError.PARAMETER_COUNT_MISMATCH // TODO: Specific error (same as missing parameter?)
 		);
 	}
+
+	public static IDiagnostic parameterTypeMismatch(ISyntaxNode node, IDataType passedType, ITypedVariableNode receiver)
+	{
+		var receiverType = receiver.type();
+		var diagnostic = ParserDiagnostic.create(
+			"Parameter is passed BY REFERENCE but type of parameter %s does not fit into passed type %s".formatted(receiverType.toShortString(), passedType.toShortString()),
+			node,
+			ParserError.PARAMETER_COUNT_MISMATCH // TODO: Specific error (same as missing parameter?)
+		);
+		diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("Receiver", receiver.position()));
+		return diagnostic;
+	}
 }
