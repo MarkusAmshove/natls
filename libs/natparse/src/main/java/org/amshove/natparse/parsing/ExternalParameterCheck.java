@@ -90,6 +90,12 @@ public class ExternalParameterCheck
 						return;
 					}
 
+					if (providedOperand.operand()instanceof ILiteralNode literal)
+					{
+						typeCheckParameter(naturalModule, passedParameter, literal.reInferType(expectedParameter.type()), expectedParameter);
+						continue;
+					}
+
 					var passedType = TypeInference.inferType(providedOperand.operand());
 					if (passedType.isEmpty())
 					{

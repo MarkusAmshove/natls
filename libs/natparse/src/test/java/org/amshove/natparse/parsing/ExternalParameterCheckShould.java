@@ -237,6 +237,27 @@ class ExternalParameterCheckShould
 		assertDiagnostic("Parameter is passed BY REFERENCE but type of parameter (A15) does not fit into passed type (A10)");
 	}
 
+	@Test
+	void useTheUntrimmedLengthOfPassedStringLiteralsForLengthChecks()
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #RECEIVER (A8)
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+			CALLNAT 'CALLED' 'A       '
+			END
+			""");
+
+		assertNoDiagnostic();
+	}
+
 	private void assertNoDiagnostic()
 	{
 		var messages = lastParsedModule.diagnostics().stream().map(IDiagnostic::message).toList();
