@@ -82,6 +82,12 @@ public class ExternalParameterCheck
 					continue;
 				}
 
+				if (passedParameter instanceof ProvidedVariable providedVar && (providedVar.variable() == null || providedVar.variable().type() == null))
+				{
+					// Passed parameter is not resolvable. This is already handled by a different diagnostic.
+					continue;
+				}
+
 				if (passedParameter instanceof ProvidedOperand providedOperand)
 				{
 					if (providedOperand.operand instanceof ISkipOperandNode skipOperand && !expectedParameterIsOptional)
