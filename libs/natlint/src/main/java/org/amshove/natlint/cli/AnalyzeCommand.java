@@ -154,8 +154,9 @@ public class AnalyzeCommand implements Callable<Integer>
 		if (relativePaths != null)
 		{
 			relativePaths.stream()
+				.map(p -> p.replace("./", "").replace(".\\", ""))
 				.map(Paths::get)
-				.forEach(p -> modulePredicates.add(f -> f.getProjectRelativePath().equals(p)));
+				.forEach(p -> modulePredicates.add(f -> f.getProjectRelativePath().startsWith(p)));
 		}
 
 		if (libraries != null)
