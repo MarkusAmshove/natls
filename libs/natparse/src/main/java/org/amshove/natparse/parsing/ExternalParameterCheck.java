@@ -60,7 +60,7 @@ public class ExternalParameterCheck
 
 				if (passedParameter != null && expectedParameter == null)
 				{
-					naturalModule.addDiagnostic(ParserErrors.trailingParameter(passedParameters.get(i).position(), passedParameter.position(), i + 1, expectedParameters.size()));
+					naturalModule.addDiagnostic(ParserErrors.trailingParameter(passedParameters.get(i).usagePosition(), passedParameter.usagePosition(), i + 1, expectedParameters.size()));
 					return;
 				}
 
@@ -120,7 +120,7 @@ public class ExternalParameterCheck
 
 		if (expectedParameterIsByReference && !receiverType.fitsInto(passedType))
 		{
-			module.addDiagnostic(ParserErrors.parameterTypeMismatch(providedParameter.position(), passedType, receiver));
+			module.addDiagnostic(ParserErrors.parameterTypeMismatch(providedParameter.usagePosition(), providedParameter.declarationPosition(), passedType, receiver));
 			return;
 		}
 	}
@@ -142,12 +142,12 @@ public class ExternalParameterCheck
 							continue;
 						}
 
-						flattenedParameter.add(new ProvidedVariable((ITypedVariableNode) variable, refNode));
+						flattenedParameter.add(new ProvidedVariable((ITypedVariableNode) variable, variable, refNode));
 					}
 				}
 				else
 				{
-					flattenedParameter.add(new ProvidedVariable((ITypedVariableNode) refNode.reference(), refNode));
+					flattenedParameter.add(new ProvidedVariable((ITypedVariableNode) refNode.reference(), refNode.reference(), refNode));
 				}
 			}
 			else
@@ -160,16 +160,31 @@ public class ExternalParameterCheck
 
 	private sealed interface ProvidedParameter permits ProvidedVariable,ProvidedOperand
 	{
-		ISyntaxNode position();
+		/**
+		 * Where the passed parameter is used on the calling side (the parameter list to the module)
+		 */
+		ISyntaxNode usagePosition();
+
+		/**
+		 * Where the parameter is declared precisely (e.g. differs from usagePosition() when usagePosition() points to a
+		 * passed group)
+		 */
+		ISyntaxNode declarationPosition();
 	}
 
-	private record ProvidedVariable(ITypedVariableNode variable, IVariableReferenceNode position) implements ProvidedParameter
+	private record ProvidedVariable(ITypedVariableNode variable, ISyntaxNode declarationPosition, IVariableReferenceNode usagePosition) implements ProvidedParameter
 	{}
 
 	private record ProvidedOperand(IOperandNode operand) implements ProvidedParameter
 	{
 		@Override
-		public ISyntaxNode position()
+		public ISyntaxNode usagePosition()
+		{
+			return operand;
+		}
+
+		@Override
+		public ISyntaxNode declarationPosition()
 		{
 			return operand;
 		}

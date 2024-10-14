@@ -739,15 +739,19 @@ class ParserErrors
 		);
 	}
 
-	public static IDiagnostic parameterTypeMismatch(ISyntaxNode node, IDataType passedType, ITypedVariableNode receiver)
+	public static IDiagnostic parameterTypeMismatch(ISyntaxNode usagePosition, ISyntaxNode declarationPosition, IDataType passedType, ITypedVariableNode receiver)
 	{
 		var receiverType = receiver.type();
 		var diagnostic = ParserDiagnostic.create(
 			"Parameter is passed BY REFERENCE but type of parameter %s does not fit into passed type %s".formatted(receiverType.toShortString(), passedType.toShortString()),
-			node,
+			usagePosition,
 			ParserError.PARAMETER_TYPE_MISMATCH_BY_REFERENCE
 		);
-		diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("Receiver", receiver.position()));
+		if (usagePosition != declarationPosition)
+		{
+			diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("Passed variable is declared here", declarationPosition.position()));
+		}
+		diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("Received parameter is declared here", receiver.position()));
 		return diagnostic;
 	}
 }

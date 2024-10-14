@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.AdditionalDiagnosticInfo;
 import org.amshove.natparse.IDiagnostic;
 import org.amshove.natparse.infrastructure.IFilesystem;
 import org.amshove.natparse.lexing.Lexer;
@@ -234,7 +235,38 @@ class ExternalParameterCheckShould
 			END
 			""");
 
-		assertDiagnostic("Parameter is passed BY REFERENCE but type of parameter (A15) does not fit into passed type (A10)");
+		assertDiagnostic(
+			"Parameter is passed BY REFERENCE but type of parameter (A15) does not fit into passed type (A10)",
+			"Passed variable is declared here",
+			"Received parameter is declared here"
+		);
+	}
+
+	@Test
+	void includeTheDeclarationAndReferencePositionsInAdditionalInfosWhenPassingAGroupToATypeMismatch()
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #RECEIVER (A15)
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			1 #GRP
+				2 #PASSED (A10)
+			END-DEFINE
+			CALLNAT 'CALLED' #GRP
+			END
+			""");
+
+		assertDiagnostic(
+			"Parameter is passed BY REFERENCE but type of parameter (A15) does not fit into passed type (A10)",
+			"Passed variable is declared here",
+			"Received parameter is declared here"
+		);
 	}
 
 	@Test
@@ -264,10 +296,23 @@ class ExternalParameterCheckShould
 		assertThat(messages).isEmpty();
 	}
 
-	private void assertDiagnostic(String message)
+	private void assertDiagnostic(String message, String... additionalInfos)
 	{
 		var messages = lastParsedModule.diagnostics().stream().map(IDiagnostic::message).toList();
 		assertThat(messages).contains(message);
+		if (additionalInfos.length > 0)
+		{
+			var diagnostic = lastParsedModule.diagnostics().stream().filter(d -> d.message().equals(message)).findAny().orElseThrow();
+			var gottenAdditionalInfos = diagnostic.additionalInfo().stream().map(AdditionalDiagnosticInfo::message).toList();
+			for (var additionalInfo : additionalInfos)
+			{
+				assertThat(gottenAdditionalInfos).contains(additionalInfo);
+			}
+
+			assertThat(gottenAdditionalInfos)
+				.as("Not all additional infos have been asserted")
+				.hasSize(additionalInfos.length);
+		}
 	}
 
 	// TODO: Heavily Refactor test setup please, thanks.
@@ -278,7 +323,7 @@ class ExternalParameterCheckShould
 	}
 
 	private ModuleProviderStub moduleProvider;
-	private INaturalModule lastParsedModule; // Conenvience
+	private INaturalModule lastParsedModule; // Convenience
 
 	private void addDataArea(String name, String source)
 	{
