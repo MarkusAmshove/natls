@@ -1,21 +1,20 @@
 package org.amshove.natlint.cli;
 
 import org.amshove.natlint.cli.git.GitStatusPredicateParser;
+import org.amshove.natlint.cli.predicates.DiagnosticPredicate;
+import org.amshove.natlint.cli.predicates.FilePredicate;
+import org.amshove.natlint.cli.predicates.GlobFilePredicate;
 import org.amshove.natlint.cli.sinks.FileStatusSink;
 import org.amshove.natparse.DiagnosticSeverity;
-import org.amshove.natparse.IDiagnostic;
-import org.amshove.natparse.natural.project.NaturalFile;
 import picocli.CommandLine;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.FileSystems;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.function.Predicate;
 
 @CommandLine.Command(name = "analyze", description = "Analyze the Natural project in the current working directory", mixinStandardHelpOptions = true)
 @SuppressWarnings("java:S106")
@@ -87,15 +86,12 @@ public class AnalyzeCommand implements Callable<Integer>
 	}, description = "Skips analyzing with natlint", defaultValue = "false")
 	boolean disableLinting;
 
-	private static final List<Predicate<NaturalFile>> DEFAULT_MODULE_PREDICATES = List.of(f -> true);
-	private static final List<Predicate<IDiagnostic>> DEFAULT_DIAGNOSTIC_PREDICATES = List.of(d -> true);
-
-	private final List<Predicate<NaturalFile>> modulePredicates = new ArrayList<>();
-	private final List<Predicate<IDiagnostic>> diagnosticPredicates = new ArrayList<>();
+	private AnalyzerPredicates predicates;
 
 	@Override
 	public Integer call()
 	{
+		predicates = new AnalyzerPredicates(minimumSeverity);
 		configureModulePredicates();
 		configureDiagnosticPredicates();
 		configureSinkType();
@@ -108,6 +104,7 @@ public class AnalyzeCommand implements Callable<Integer>
 	@SuppressWarnings("unused")
 	public int analyzeFromGitStatus() throws IOException
 	{
+		predicates = new AnalyzerPredicates(minimumSeverity);
 		configureModulePredicates();
 		configureDiagnosticPredicates();
 		configureSinkType();
@@ -135,7 +132,7 @@ public class AnalyzeCommand implements Callable<Integer>
 		}
 
 		var filePredicates = new GitStatusPredicateParser().parseStatusToPredicates(gitChanges);
-		modulePredicates.addAll(filePredicates);
+		filePredicates.forEach(fp -> predicates.addFilePredicate(new FilePredicate("git", fp)));
 
 		var analyzer = createAnalyzer();
 		var exitCode = analyzer.run();
@@ -148,7 +145,7 @@ public class AnalyzeCommand implements Callable<Integer>
 		{
 			qualifiedNames.stream()
 				.map(QualifiedModuleName::from)
-				.forEach(qn -> modulePredicates.add(f -> f.getFilenameWithoutExtension().equalsIgnoreCase(qn.filename) && f.getLibrary().getName().equalsIgnoreCase(qn.library)));
+				.forEach(qn -> predicates.addFilePredicate(new FilePredicate("file %s in library %s".formatted(qn.filename, qn.library), f -> f.getFilenameWithoutExtension().equalsIgnoreCase(qn.filename) && f.getLibrary().getName().equalsIgnoreCase(qn.library))));
 		}
 
 		if (relativePaths != null)
@@ -156,31 +153,29 @@ public class AnalyzeCommand implements Callable<Integer>
 			relativePaths.stream()
 				.map(p -> p.replace("./", "").replace(".\\", ""))
 				.map(Paths::get)
-				.forEach(p -> modulePredicates.add(f -> f.getProjectRelativePath().startsWith(p)));
+				.forEach(p -> predicates.addFilePredicate(new FilePredicate("modules relative to %s".formatted(p), f -> f.getProjectRelativePath().startsWith(p))));
 		}
 
 		if (libraries != null)
 		{
 			libraries
-				.forEach(l -> modulePredicates.add(f -> f.getLibrary().getName().equalsIgnoreCase(l)));
+				.forEach(l -> predicates.addFilePredicate(new FilePredicate("modules in library %s".formatted(l), f -> f.getLibrary().getName().equalsIgnoreCase(l))));
 		}
 
 		if (globs != null)
 		{
 			globs.stream()
-				.map(g -> FileSystems.getDefault().getPathMatcher("glob:" + g))
-				.forEach(gp -> modulePredicates.add(f -> gp.matches(f.getPath())));
+				.map(GlobFilePredicate::new)
+				.forEach(predicates::addFilePredicate);
 		}
 	}
 
 	private void configureDiagnosticPredicates()
 	{
-		diagnosticPredicates.add(d -> d.severity().isWorseOrEqualTo(minimumSeverity));
-
 		if (diagnosticIds != null)
 		{
 			diagnosticIds
-				.forEach(id -> diagnosticPredicates.add(d -> d.id().equals(id)));
+				.forEach(id -> predicates.addDiagnosticPredicate(new DiagnosticPredicate("id " + id, d -> d.id().equals(id))));
 		}
 	}
 
@@ -201,8 +196,7 @@ public class AnalyzeCommand implements Callable<Integer>
 			theWorkingDirectory,
 			sinkType.createSink(theWorkingDirectory),
 			fileStatusMode ? FileStatusSink.create() : FileStatusSink.dummy(),
-			modulePredicates.isEmpty() ? DEFAULT_MODULE_PREDICATES : modulePredicates,
-			diagnosticPredicates.isEmpty() ? DEFAULT_DIAGNOSTIC_PREDICATES : diagnosticPredicates,
+			predicates,
 			disableLinting
 		);
 	}
