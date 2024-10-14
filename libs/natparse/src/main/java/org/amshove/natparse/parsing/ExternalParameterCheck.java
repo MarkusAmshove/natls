@@ -19,15 +19,9 @@ public class ExternalParameterCheck
 				return;
 			}
 
-			if (node instanceof IIncludeNode)
+			if (node instanceof IIncludeNode || node instanceof IUsingNode)
 			{
-				// TODO: Includes only take string literals, this can be handled in
-				// StatementListParser
-				return;
-			}
-
-			if (node instanceof IUsingNode)
-			{
+				// USINGs have no parameter and INCLUDE validation is done in StatementListParser
 				return;
 			}
 
