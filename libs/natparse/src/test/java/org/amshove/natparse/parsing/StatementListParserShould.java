@@ -424,6 +424,20 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void parseExternalPerformCallsAndNotMistakeNegativeNumbersAsStringConcat()
+	{
+		var calledSubroutine = new NaturalModule(null);
+		moduleProvider.addModule("EXTERNAL-SUB", calledSubroutine);
+
+		var perform = assertParsesSingleStatement("PERFORM EXTERNAL-SUB 'String literal' -1", IExternalPerformNode.class);
+		assertThat(perform.providedParameter())
+			.as("Only two parameter were expected")
+			.hasSize(2);
+		assertLiteral(perform.providedParameter().first(), SyntaxKind.STRING_LITERAL, "'String literal'");
+		assertNodeType(perform.providedParameter().last(), IPrefixUnaryArithmeticExpressionNode.class);
+	}
+
+	@Test
 	void parseAndResolveExternalPerformCallsWithParameter()
 	{
 		var calledSubroutine = new NaturalModule(null);
