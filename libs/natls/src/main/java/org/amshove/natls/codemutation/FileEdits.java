@@ -70,14 +70,14 @@ public class FileEdits
 		var insertion = rangeFinder.findInsertionPositionForStatementAtStart(inFile);
 
 		var defineDataBlock = "";
-		var parameter = calledFunction.defineData().parameterInOrder();
+		var parameter = calledFunction.defineData().declaredParameterInOrder();
 		if (!parameter.isEmpty())
 		{
 			defineDataBlock = """
 				%n  DEFINE DATA
 				%s
 				  END-DEFINE""".formatted(
-				calledFunction.defineData().parameterInOrder().stream().map(p ->
+				calledFunction.defineData().declaredParameterInOrder().stream().map(p ->
 				{
 					if (p instanceof IUsingNode using)
 					{

@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.ddm.IDdmField;
@@ -15,6 +16,7 @@ class DefineDataNode extends BaseSyntaxNode implements IDefineData
 {
 	private final List<IUsingNode> usings = new ArrayList<>();
 	private final List<IVariableNode> variables = new ArrayList<>();
+	private ReadOnlyList<ITypedVariableNode> cachedEffectiveParameter;
 
 	@Override
 	public ReadOnlyList<IUsingNode> localUsings()
@@ -35,7 +37,7 @@ class DefineDataNode extends BaseSyntaxNode implements IDefineData
 	}
 
 	@Override
-	public ReadOnlyList<IParameterDefinitionNode> parameterInOrder()
+	public ReadOnlyList<IParameterDefinitionNode> declaredParameterInOrder()
 	{
 		var allParameter = Stream.of(
 			parameterUsings().stream(),
@@ -215,5 +217,39 @@ class DefineDataNode extends BaseSyntaxNode implements IDefineData
 		}
 
 		return foundVariables;
+	}
+
+	@Override
+	public ReadOnlyList<ITypedVariableNode> effectiveParameterInOrder()
+	{
+		if (cachedEffectiveParameter != null)
+		{
+			return cachedEffectiveParameter;
+		}
+
+		var unexpandedParameter = declaredParameterInOrder();
+		if (unexpandedParameter.isEmpty())
+		{
+			cachedEffectiveParameter = ReadOnlyList.empty();
+			return cachedEffectiveParameter;
+		}
+
+		var parametersInOrder = new ArrayList<ITypedVariableNode>();
+		for (var parameter : unexpandedParameter)
+		{
+			var isRedefineChild = NodeUtil.findFirstParentOfType(parameter, IRedefinitionNode.class) != null;
+			if (parameter instanceof ITypedVariableNode typedVar && !isRedefineChild)
+			{
+				parametersInOrder.add(typedVar);
+			}
+
+			if (parameter instanceof IUsingNode using && using.defineData() != null)
+			{
+				parametersInOrder.addAll(using.defineData().effectiveParameterInOrder().toList());
+			}
+		}
+
+		cachedEffectiveParameter = ReadOnlyList.from(parametersInOrder);
+		return cachedEffectiveParameter;
 	}
 }

@@ -637,7 +637,7 @@ public class CompletionProvider
 
 		var builder = new StringBuilder();
 		var index = 1;
-		for (var parameter : hasDefineData.defineData().parameterInOrder())
+		for (var parameter : hasDefineData.defineData().declaredParameterInOrder())
 		{
 			if (index > 1)
 			{
@@ -660,7 +660,7 @@ public class CompletionProvider
 
 		var builder = new StringBuilder();
 		var index = 1;
-		for (var parameter : hasDefineData.defineData().parameterInOrder())
+		for (var parameter : hasDefineData.defineData().declaredParameterInOrder())
 		{
 			builder.append(" ");
 			var parameterName = parameter instanceof IUsingNode using ? using.target().symbolName() : ((IVariableNode) parameter).name();

@@ -699,4 +699,59 @@ class ParserErrors
 		);
 	}
 
+	public static IDiagnostic parameterCountMismatch(ISyntaxNode node, int providedParameter, int expectedParameter)
+	{
+		return ParserDiagnostic.create(
+			"Parameter count mismatch. Expected %d parameter but got %d".formatted(expectedParameter, providedParameter),
+			node,
+			ParserError.PARAMETER_COUNT_MISMATCH
+		);
+	}
+
+	public static IDiagnostic trailingParameter(ISyntaxNode node, ISyntaxNode passedParameter, int parameterIndex, int expectedParameterCount)
+	{
+		var diagnostic = ParserDiagnostic.create(
+			"Trailing parameter number %d. Module only expects %d parameter".formatted(parameterIndex, expectedParameterCount),
+			node,
+			ParserError.PARAMETER_COUNT_MISMATCH
+		);
+		diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("This parameter is trailing", passedParameter.position()));
+		return diagnostic;
+	}
+
+	public static IDiagnostic missingParameter(ISyntaxNode node, ITypedVariableNode expectedParameter)
+	{
+		var diagnostic = ParserDiagnostic.create(
+			"Expected parameter %s %s not provided".formatted(expectedParameter.qualifiedName(), expectedParameter.formatTypeForDisplay()),
+			node,
+			ParserError.PARAMETER_COUNT_MISMATCH
+		);
+		diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("This parameter is missing", expectedParameter.position()));
+		return diagnostic;
+	}
+
+	public static IDiagnostic cantSkipParameter(ISkipOperandNode node, ITypedVariableNode expectedParameter)
+	{
+		return ParserDiagnostic.create(
+			"Parameter %s %s can not be skipped".formatted(expectedParameter.qualifiedName(), expectedParameter.formatTypeForDisplay()),
+			node,
+			ParserError.PARAMETER_NOT_OPTIONAL
+		);
+	}
+
+	public static IDiagnostic parameterTypeMismatch(ISyntaxNode usagePosition, ISyntaxNode declarationPosition, IDataType passedType, ITypedVariableNode receiver)
+	{
+		var receiverType = receiver.type();
+		var diagnostic = ParserDiagnostic.create(
+			"Parameter is passed BY REFERENCE but type of parameter %s does not fit into passed type %s".formatted(receiverType.toShortString(), passedType.toShortString()),
+			usagePosition,
+			ParserError.PARAMETER_TYPE_MISMATCH_BY_REFERENCE
+		);
+		if (usagePosition != declarationPosition)
+		{
+			diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("Passed variable is declared here", declarationPosition.position()));
+		}
+		diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("Received parameter is declared here", receiver.position()));
+		return diagnostic;
+	}
 }

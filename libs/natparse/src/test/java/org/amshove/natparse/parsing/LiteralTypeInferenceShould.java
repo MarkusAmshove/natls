@@ -125,6 +125,15 @@ class LiteralTypeInferenceShould
 		assertCompatibleType(targetType, source);
 	}
 
+	@Test
+	void reInferTheTypeOfUntrimmedStringLiteralsWhenTargetTypeIsBiggerThanTrimmedSize()
+	{
+		// The literal has a possible length of 1-10, depending on if it gets
+		// trimmed by the runtime. If we take the target type A8 into account,
+		// then it has to be seen as the biggest possible type.
+		assertReInferredType("A8", "'A         '", "A10");
+	}
+
 	private void assertInferredType(String targetType, String source, String expectedInferredType)
 	{
 		var typedTarget = createType(targetType);

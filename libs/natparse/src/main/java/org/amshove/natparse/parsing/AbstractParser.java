@@ -261,7 +261,7 @@ abstract class AbstractParser<T>
 			return literal;
 		}
 
-		if (peekAny(List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.HEX_LITERAL)) && peekKind(1, SyntaxKind.MINUS))
+		if (peekAny(List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.HEX_LITERAL)) && peekKind(1, SyntaxKind.MINUS) && peekAny(2, List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.HEX_LITERAL)))
 		{
 			return consumeStringConcat(node);
 		}
