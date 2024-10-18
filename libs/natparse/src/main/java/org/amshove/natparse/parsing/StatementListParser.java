@@ -673,7 +673,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private StatementNode backout() throws ParseError
 	{
-		var stmt = new BackoutNode();
+		var stmt = new BackoutTransactionNode();
 		consumeMandatory(stmt, SyntaxKind.BACKOUT);
 		consumeOptionally(stmt, SyntaxKind.TRANSACTION);
 		return stmt;
