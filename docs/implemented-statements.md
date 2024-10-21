@@ -63,9 +63,9 @@ partial - partially implemented to prevent false positives (14)
 | FIND | :white_check_mark: |
 | FOR | :white_check_mark: |
 | FORMAT | partial            |
-| GET | :x:                |
-| GET SAME | :x:                |
-| GET TRANSACTION DATA | :x:                |
+| GET | :white_check_mark: |
+| GET SAME | :white_check_mark: |
+| GET TRANSACTION DATA | :white_check_mark: |
 | HISTOGRAM | :partial:          |
 | IF | :white_check_mark: |
 | IF SELECTION | :white_check_mark: |
