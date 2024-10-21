@@ -83,6 +83,7 @@ partial - partially implemented to prevent false positives (14)
 | OPEN CONVERSATION | :x:                |
 | OPTIONS | :partial:          |
 | PARSE XML | :x:                |
+| PARSE JSON | :x:                |
 | PASSW | :x:                |
 | PERFORM | :white_check_mark: |
 | PERFORM BREAK PROCESSING | :white_check_mark: |
