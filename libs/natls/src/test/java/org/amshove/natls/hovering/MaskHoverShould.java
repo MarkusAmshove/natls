@@ -2,7 +2,7 @@ package org.amshove.natls.hovering;
 
 import org.junit.jupiter.api.Test;
 
-public class MaskHoverShould extends HoveringTest
+class MaskHoverShould extends HoveringTest
 {
 	@Test
 	void provideDocumentationWhenHoveringMask()
