@@ -178,12 +178,42 @@ public class CompletionProvider
 			addValPostfix(completionItems, typedVar, identifierName, rangeToInsert, deleteEdit);
 			addIncrementDecrementPostfix(completionItems, typedVar, identifierName, rangeToInsert, deleteEdit);
 			addTrimPostfixes(completionItems, typedVar, identifierName, rangeToInsert, deleteEdit);
+			addScanAndMask(completionItems, typedVar, identifierName, rangeToInsert, deleteEdit);
 		}
 
 		if (variableInvokedOn.scope().isParameter() && variableInvokedOn.findDescendantToken(SyntaxKind.OPTIONAL) != null)
 		{
 			addIfSpecifiedPostfix(completionItems, identifierName, rangeToInsert, deleteEdit);
 		}
+	}
+
+	private static void addScanAndMask(
+		ArrayList<CompletionItem> completionItems, ITypedVariableNode typedVar,
+		String identifierName, Range rangeToInsert, TextEdit deleteEdit
+	)
+	{
+		if (!typedVar.type().isAlphaNumericFamily() || typedVar.isArray())
+		{
+			return;
+		}
+
+		var scanEdit = new TextEdit(rangeToInsert, "%s = SCAN ${1:'VALUE'}${0}".formatted(identifierName));
+		completionItems.add(
+			createSnippetPostfixCompletionItem(
+				"contains",
+				scanEdit,
+				deleteEdit
+			)
+		);
+
+		var maskEdit = new TextEdit(rangeToInsert, "%s = MASK (${1:*})${0}".formatted(identifierName));
+		completionItems.add(
+			createSnippetPostfixCompletionItem(
+				"matches",
+				maskEdit,
+				deleteEdit
+			)
+		);
 	}
 
 	private static void addIncrementDecrementPostfix(

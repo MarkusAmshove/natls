@@ -3454,7 +3454,7 @@ class StatementListParserShould extends StatementParseTest
 	})
 	void parseBackoutTransaction(String statement)
 	{
-		assertParsesSingleStatement(statement, IBackoutNode.class);
+		assertParsesSingleStatement(statement, IBackoutTransactionNode.class);
 	}
 
 	@ParameterizedTest
