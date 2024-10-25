@@ -2,6 +2,7 @@ package org.amshove.natlint.analyzers;
 
 import org.amshove.natlint.linter.AbstractAnalyzerTest;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -54,7 +55,8 @@ class HiddenWorkfileAnalyzerShould extends AbstractAnalyzerTest
 		"READ WORK FILE 1 #RECORD;END-WORK",
 		"READ WORK FILE 1 ONCE #RECORD",
 		"WRITE WORK FILE 1 #RECORD",
-		"CLOSE WORK FILE 1"
+		"CLOSE WORK FILE 1",
+		"STOP"
 	})
 	void notRaiseADiagnosticForETInProgram(String statement)
 	{
@@ -69,6 +71,23 @@ class HiddenWorkfileAnalyzerShould extends AbstractAnalyzerTest
             END
 			""".formatted(statement),
 			expectNoDiagnostic(0, HiddenWorkfileAnalyzer.HIDDEN_WORKFILE_STATEMENT_IS_DISCOURAGED)
+		);
+	}
+
+	@Test
+	void raiseNoDiagnosticIfOptionIsFalse()
+	{
+		configureEditorConfig("""
+			[*]
+			natls.style.discourage_hiddenworkfiles=false
+			""");
+
+		testDiagnostics(
+			"OBJECT.NSN", """
+			CLOSE WORK FILE 1
+			END
+			""",
+			expectNoDiagnosticOfType(HiddenWorkfileAnalyzer.HIDDEN_WORKFILE_STATEMENT_IS_DISCOURAGED)
 		);
 	}
 }
