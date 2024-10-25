@@ -54,7 +54,15 @@ public class LongLinesAnalyzer extends AbstractAnalyzer
 
 		while (!scanner.isAtEnd())
 		{
-			int advanceBy = (scanner.peek() == '\r' && scanner.peek(1) == '\n') ? 2 : (scanner.peek() == '\n') ? 1 : 0;
+			int advanceBy = 0;
+			if (scanner.peek() == '\r' && scanner.peek(1) == '\n')
+			{
+				advanceBy = 2;
+			} else if (scanner.peek() == '\n')
+			{
+				advanceBy = 1;
+			}
+
 			if (advanceBy > 0)
 			{
 				if (scanner.lexemeLength() > 72)

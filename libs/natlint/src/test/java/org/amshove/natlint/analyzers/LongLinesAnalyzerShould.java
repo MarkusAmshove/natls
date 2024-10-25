@@ -3,7 +3,7 @@ package org.amshove.natlint.analyzers;
 import org.amshove.natlint.linter.AbstractAnalyzerTest;
 import org.junit.jupiter.api.Test;
 
-public class LongLinesAnalyzerShould extends AbstractAnalyzerTest
+class LongLinesAnalyzerShould extends AbstractAnalyzerTest
 {
 	protected LongLinesAnalyzerShould()
 	{
