@@ -11,6 +11,7 @@ The following configurations can be set in a `.editorconfig` file to configure p
 | `natls.style.discourage_gitmarkers`           | `true`, `false` | [`NL030`](../tools/ruletranslator/src/main/resources/rules/NL030)|
 | `natls.style.discourage_inlineparameters`     | `true`, `false` | [`NL031`](../tools/ruletranslator/src/main/resources/rules/NL031)|
 | `natls.style.discourage_hiddentransactions`   | `true`, `false` | [`NL032`](../tools/ruletranslator/src/main/resources/rules/NL032)|
+| `natls.style.discourage_hiddenworkfiles`      | `true`, `false` | [`NL033`](../tools/ruletranslator/src/main/resources/rules/NL033)|
 
 # Example
 
