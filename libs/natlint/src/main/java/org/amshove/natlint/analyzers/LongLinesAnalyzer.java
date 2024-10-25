@@ -58,10 +58,12 @@ public class LongLinesAnalyzer extends AbstractAnalyzer
 			if (scanner.peek() == '\r' && scanner.peek(1) == '\n')
 			{
 				advanceBy = 2;
-			} else if (scanner.peek() == '\n')
-			{
-				advanceBy = 1;
 			}
+			else
+				if (scanner.peek() == '\n')
+				{
+					advanceBy = 1;
+				}
 
 			if (advanceBy > 0)
 			{
