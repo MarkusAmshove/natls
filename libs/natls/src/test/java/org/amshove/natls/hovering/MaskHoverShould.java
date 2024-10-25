@@ -55,7 +55,11 @@ Tests if the value matches a mask/pattern
 
 **JJJ**  Julian day, 001-366, dependent on YY or YYYY
 
-**P**  Displayable character (U, L, N or S)**S**  Special character according to the active character set**H**  Hexadecimal content, A-F and 0-9
+**P**  Displayable character (U, L, N or S)
+
+**S**  Special character according to the active character set
+
+**H**  Hexadecimal content, A-F and 0-9
 
 **Z**  Character whose left half-byte or whose right half-byte is hexadecimal""");
 	}
