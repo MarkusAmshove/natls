@@ -471,6 +471,86 @@ class PostfixCompletionTests extends CompletionTest
 	}
 
 	@Nested
+	class MaskAndScanSnippetsShould
+	{
+		@ParameterizedTest
+		@ValueSource(
+			strings =
+			{
+				"N2", "P4", "I4", "L", "C"
+			}
+		)
+		void notBeApplicableOnVariablesThatAreNotAlphanumericFamily(String type)
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (%s)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""".formatted(type))
+				.assertDoesNotContain("contains")
+				.assertDoesNotContain("matches");
+		}
+
+		@ParameterizedTest
+		@ValueSource(strings =
+		{
+			"A10", "U10", "B4"
+		})
+		void beApplicableOnVariablesThatAreAlphanumericFamily(String type)
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (%s)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""".formatted(type))
+				.assertContains("contains", CompletionItemKind.Snippet)
+				.assertContains("matches", CompletionItemKind.Snippet);
+		}
+
+		@Test
+		void createAScanExpression()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("contains", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10)
+				END-DEFINE
+				#VAR = SCAN ${1:'VALUE'}${0}
+				END
+				""");
+		}
+
+		@Test
+		void createAMaskExpression()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10)
+				END-DEFINE
+				#VAR.${}$
+				END
+				""")
+				.assertContainsCompletionResultingIn("matches", """
+				DEFINE DATA
+				LOCAL 1 #VAR (A10)
+				END-DEFINE
+				#VAR = MASK (${1:*})${0}
+				END
+				""");
+		}
+	}
+
+	@Nested
 	class TrimSnippetsShould
 	{
 		@ParameterizedTest

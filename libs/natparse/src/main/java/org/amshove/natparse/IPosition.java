@@ -4,16 +4,34 @@ import org.amshove.natparse.natural.project.NaturalFileType;
 
 import java.nio.file.Path;
 
+/**
+ * Points to a position in a document. A position can be more than one character, given the {@code length} property.
+ */
 public interface IPosition
 {
+	/**
+	 * 0-based offset of the start of this position in its file.
+	 */
 	int offset();
 
+	/**
+	 * 0-based offset of the start of this position in its line.
+	 */
 	int offsetInLine();
 
+	/**
+	 * 0-based line number.
+	 */
 	int line();
 
+	/**
+	 * length of the position.
+	 */
 	int length();
 
+	/**
+	 * path of the enclosing file.
+	 */
 	Path filePath();
 
 	default NaturalFileType fileType()
