@@ -16,18 +16,23 @@ class HiddenWorkfileAnalyzerShould extends AbstractAnalyzerTest
 	@ParameterizedTest
 	@CsvSource(
 		{
+			"C,DEFINE WORK FILE 1",
 			"C,READ WORK FILE 1 #RECORD;END-WORK",
 			"C,WRITE WORK FILE 1 #RECORD",
 			"C,CLOSE WORK FILE 1 TRANSACTION",
+			"H,DEFINE WORK FILE 1",
 			"H,READ WORK FILE 1 #RECORD;END-WORK",
 			"H,WRITE WORK FILE 1 #RECORD",
 			"H,CLOSE WORK FILE 1",
+			"M,DEFINE WORK FILE 1",
 			"M,READ WORK FILE 1 #RECORD;END-WORK",
 			"M,WRITE WORK FILE 1 #RECORD",
 			"M,CLOSE WORK FILE 1",
+			"N,DEFINE WORK FILE 1",
 			"N,READ WORK FILE 1 ONCE #RECORD",
 			"N,WRITE WORK FILE 1 #RECORD",
 			"N,CLOSE WORK FILE 1",
+			"S,DEFINE WORK FILE 1",
 			"S,READ WORK FILE 1 #RECORD;END-WORK",
 			"S,WRITE WORK FILE 1 #RECORD",
 			"S,CLOSE WORK FILE 1"
@@ -52,6 +57,7 @@ class HiddenWorkfileAnalyzerShould extends AbstractAnalyzerTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
+		"DEFINE WORK FILE 1",
 		"READ WORK FILE 1 #RECORD;END-WORK",
 		"READ WORK FILE 1 ONCE #RECORD",
 		"WRITE WORK FILE 1 #RECORD",

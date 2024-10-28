@@ -12,12 +12,13 @@ import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.natural.IReadWorkNode;
 import org.amshove.natparse.natural.IWriteWorkNode;
 import org.amshove.natparse.natural.ICloseWorkNode;
+import org.amshove.natparse.natural.IDefineWorkFileNode;
 
 public class HiddenWorkfileAnalyzer extends AbstractAnalyzer
 {
 	public static final DiagnosticDescription HIDDEN_WORKFILE_STATEMENT_IS_DISCOURAGED = DiagnosticDescription.create(
 		"NL033",
-		"Use of [READ|WRITE|CLOSE] WORK FILE statement outside Program is discouraged.",
+		"Use of [DEFINE|READ|WRITE|CLOSE] WORK FILE statement outside Program is discouraged.",
 		DiagnosticSeverity.WARNING
 	);
 
@@ -32,6 +33,7 @@ public class HiddenWorkfileAnalyzer extends AbstractAnalyzer
 	@Override
 	public void initialize(ILinterContext context)
 	{
+		context.registerNodeAnalyzer(IDefineWorkFileNode.class, this::analyzeTransaction);
 		context.registerNodeAnalyzer(IReadWorkNode.class, this::analyzeTransaction);
 		context.registerNodeAnalyzer(IWriteWorkNode.class, this::analyzeTransaction);
 		context.registerNodeAnalyzer(ICloseWorkNode.class, this::analyzeTransaction);
