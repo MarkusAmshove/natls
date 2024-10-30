@@ -275,7 +275,7 @@ class ExternalParameterCheckShould
 		parse("CALLED.NSN", """
 			DEFINE DATA
 			PARAMETER
-			1 #RECEIVER (A8)
+			1 #RECEIVER (A8) BY VALUE
 			END-DEFINE
 			END
 			""");
@@ -288,6 +288,30 @@ class ExternalParameterCheckShould
 			""");
 
 		assertNoDiagnostic();
+	}
+
+	@Test
+	void notAllowToPassALiteralToAByReferenceParameter()
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #RECEIVER (A5) /* This is not BY VALUE
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+			CALLNAT 'CALLED' 'Hello' /* Length matches, but is literal
+			END
+			""");
+
+		assertDiagnostic(
+			"Constant values can't be passed to parameters which are not declared BY VALUE",
+			"Received parameter is declared here"
+		);
 	}
 
 	private void assertNoDiagnostic()

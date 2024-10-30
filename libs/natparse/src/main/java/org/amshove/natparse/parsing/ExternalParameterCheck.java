@@ -123,6 +123,11 @@ public class ExternalParameterCheck
 			module.addDiagnostic(ParserErrors.parameterTypeMismatch(providedParameter.usagePosition(), providedParameter.declarationPosition(), passedType, receiver));
 			return;
 		}
+
+		if (expectedParameterIsByReference && providedParameter.usagePosition()instanceof ILiteralNode literal)
+		{
+			module.addDiagnostic(ParserErrors.providedParameterCantBeLiteral(literal, receiver));
+		}
 	}
 
 	private static List<ProvidedParameter> flattenProvidedParameter(ReadOnlyList<IOperandNode> providedParameter)
