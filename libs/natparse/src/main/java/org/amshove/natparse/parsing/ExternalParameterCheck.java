@@ -118,15 +118,31 @@ public class ExternalParameterCheck
 		var expectedParameterIsByValue = receiver.findDescendantToken(SyntaxKind.VALUE) != null;
 		var expectedParameterIsByReference = !expectedParameterIsByValue;
 
-		if (expectedParameterIsByReference && !receiverType.fitsInto(passedType))
+		if (!receiverType.fitsInto(passedType))
 		{
-			module.addDiagnostic(ParserErrors.parameterTypeMismatch(providedParameter.usagePosition(), providedParameter.declarationPosition(), passedType, receiver));
-			return;
+			if (expectedParameterIsByReference)
+			{
+				module.addDiagnostic(
+					ParserErrors.parameterTypeMismatch(
+						providedParameter.usagePosition(),
+						providedParameter.declarationPosition(), passedType, receiver
+					)
+				);
+				return;
+			}
 		}
 
-		if (expectedParameterIsByReference && providedParameter.usagePosition()instanceof ILiteralNode literal)
+		if (!passedType.fitsInto(receiverType))
 		{
-			module.addDiagnostic(ParserErrors.providedParameterCantBeLiteral(literal, receiver));
+			if (expectedParameterIsByReference)
+			{
+				module.addDiagnostic(
+					ParserErrors.parameterTypeMismatch(
+						providedParameter.usagePosition(),
+						providedParameter.declarationPosition(), passedType, receiver
+					)
+				);
+			}
 		}
 	}
 

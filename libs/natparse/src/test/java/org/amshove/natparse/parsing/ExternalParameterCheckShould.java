@@ -9,6 +9,8 @@ import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.nio.file.Paths;
 
@@ -236,7 +238,7 @@ class ExternalParameterCheckShould
 			""");
 
 		assertDiagnostic(
-			"Parameter is passed BY REFERENCE but type of parameter (A15) does not fit into passed type (A10)",
+			"Parameter is passed BY REFERENCE but type of parameter (A15) does not match passed type (A10)",
 			"Passed variable is declared here",
 			"Received parameter is declared here"
 		);
@@ -263,7 +265,7 @@ class ExternalParameterCheckShould
 			""");
 
 		assertDiagnostic(
-			"Parameter is passed BY REFERENCE but type of parameter (A15) does not fit into passed type (A10)",
+			"Parameter is passed BY REFERENCE but type of parameter (A15) does not match passed type (A10)",
 			"Passed variable is declared here",
 			"Received parameter is declared here"
 		);
@@ -291,7 +293,53 @@ class ExternalParameterCheckShould
 	}
 
 	@Test
-	void notAllowToPassALiteralToAByReferenceParameter()
+	void notAllowToPassALiteralToAByReferenceParameterIfThePassedValueIsTooSmall()
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #RECEIVER (A6) /* This is not BY VALUE
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+			CALLNAT 'CALLED' 'Hello' /* Length doesn't match
+			END
+			""");
+
+		assertDiagnostic(
+			"Parameter is passed BY REFERENCE but type of parameter (A6) does not match passed type (A5)"
+		);
+	}
+
+	@Test
+	void notAllowToPassALiteralToAByReferenceParameterIfThePassedValueIsTooBig()
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #RECEIVER (A6) /* This is not BY VALUE
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+			CALLNAT 'CALLED' 'Hello World' /* Length doesn't match
+			END
+			""");
+
+		assertDiagnostic(
+			"Parameter is passed BY REFERENCE but type of parameter (A6) does not match passed type (A11)"
+		);
+	}
+
+	@Test
+	void allowToPassALiteralToAByReferenceParameterIfTheTypesMatch()
 	{
 		parse("CALLED.NSN", """
 			DEFINE DATA
@@ -304,13 +352,63 @@ class ExternalParameterCheckShould
 		parse("CALLER.NSN", """
 			DEFINE DATA LOCAL
 			END-DEFINE
-			CALLNAT 'CALLED' 'Hello' /* Length matches, but is literal
+			CALLNAT 'CALLED' 'Hello' /* Length matches the receiver, all good
 			END
 			""");
 
+		assertNoDiagnostic();
+	}
+
+	@Test
+	void allowToPassAVariableToAByReferenceParameterWhenTheTypesAreCompatible()
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #RECEIVER (A5)
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			1 #PASSER (A5)
+			END-DEFINE
+			CALLNAT 'CALLED' #PASSER
+			END
+			""");
+
+		assertNoDiagnostic();
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"A5,A10",
+			"A10,A5"
+		}
+	)
+	void notAllowToPassAVariableToAByReferenceParameterWhenTheTypesAreIncompatible(String receiverType, String passerType)
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #RECEIVER (%s)
+			END-DEFINE
+			END
+			""".formatted(receiverType));
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			1 #PASSER (%s)
+			END-DEFINE
+			CALLNAT 'CALLED' #PASSER
+			END
+			""".formatted(passerType));
+
 		assertDiagnostic(
-			"Constant values can't be passed to parameters which are not declared BY VALUE",
-			"Received parameter is declared here"
+			"Parameter is passed BY REFERENCE but type of parameter (%s) does not match passed type (%s)"
+				.formatted(receiverType, passerType)
 		);
 	}
 

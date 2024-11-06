@@ -743,7 +743,7 @@ class ParserErrors
 	{
 		var receiverType = receiver.type();
 		var diagnostic = ParserDiagnostic.create(
-			"Parameter is passed BY REFERENCE but type of parameter %s does not fit into passed type %s".formatted(receiverType.toShortString(), passedType.toShortString()),
+			"Parameter is passed BY REFERENCE but type of parameter %s does not match passed type %s".formatted(receiverType.toShortString(), passedType.toShortString()),
 			usagePosition,
 			ParserError.PARAMETER_TYPE_MISMATCH_BY_REFERENCE
 		);
@@ -755,15 +755,4 @@ class ParserErrors
 		return diagnostic;
 	}
 
-	public static IDiagnostic providedParameterCantBeLiteral(ISyntaxNode literalNode, ITypedVariableNode receiver)
-	{
-		var diagnostic = ParserDiagnostic.create(
-			"Constant values can't be passed to parameters which are not declared BY VALUE",
-			literalNode,
-			ParserError.CONSTANT_VALUE_CANT_BE_PASSED_BY_VALUE
-		);
-		diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("Received parameter is declared here", receiver.position()));
-
-		return diagnostic;
-	}
 }
