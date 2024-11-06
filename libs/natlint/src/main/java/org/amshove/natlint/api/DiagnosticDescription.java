@@ -1,8 +1,11 @@
 package org.amshove.natlint.api;
 
+import java.nio.file.Path;
+
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.ModuleLevelPosition;
+import org.amshove.natparse.lexing.PlainPosition;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.ISyntaxNode;
@@ -43,6 +46,18 @@ public class DiagnosticDescription
 	public LinterDiagnostic createDiagnostic(ISyntaxNode node)
 	{
 		return createFormattedDiagnostic(node.diagnosticPosition(), node);
+	}
+
+	public LinterDiagnostic createPlainDiagnostic(ISyntaxNode node)
+	{
+		int offset = node.position().offset();
+		int offsetInLine = node.position().offsetInLine();
+		int line = node.position().line();
+		int length = node.descendants().last().position().totalEndOffset() - node.position().offset();
+		Path filePath = node.position().filePath();
+
+		PlainPosition position = new PlainPosition(offset, offsetInLine, line, length, filePath);
+		return new LinterDiagnostic(id, position, severity, message);
 	}
 
 	/**
