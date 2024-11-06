@@ -31,7 +31,7 @@ public class ExternalParameterCheck
 				return;
 			}
 
-			var theirDefineData = moduleRef.reference()instanceof IHasDefineData hasDD ? hasDD.defineData() : null;
+			var theirDefineData = moduleRef.reference() instanceof IHasDefineData hasDD ? hasDD.defineData() : null;
 
 			var numberOfPassedParameter = moduleRef.providedParameter().size();
 			if (theirDefineData == null)
@@ -60,7 +60,8 @@ public class ExternalParameterCheck
 
 				if (passedParameter != null && expectedParameter == null)
 				{
-					naturalModule.addDiagnostic(ParserErrors.trailingParameter(passedParameters.get(i).usagePosition(), passedParameter.usagePosition(), i + 1, expectedParameters.size()));
+					naturalModule.addDiagnostic(ParserErrors.trailingParameter(passedParameters.get(i).usagePosition(),
+						passedParameter.usagePosition(), i + 1, expectedParameters.size()));
 					return;
 				}
 
@@ -76,7 +77,8 @@ public class ExternalParameterCheck
 					continue;
 				}
 
-				if (passedParameter instanceof ProvidedVariable providedVar && (providedVar.variable() == null || providedVar.variable().type() == null))
+				if (passedParameter instanceof ProvidedVariable providedVar && (providedVar.variable() == null || providedVar.variable()
+					.type() == null))
 				{
 					// Passed parameter is not resolvable. This is already handled by a different diagnostic.
 					continue;
@@ -90,9 +92,10 @@ public class ExternalParameterCheck
 						return;
 					}
 
-					if (providedOperand.operand()instanceof ILiteralNode literal)
+					if (providedOperand.operand() instanceof ILiteralNode literal)
 					{
-						typeCheckParameter(naturalModule, passedParameter, literal.reInferType(expectedParameter.type()), expectedParameter);
+						typeCheckParameter(naturalModule, passedParameter,
+							literal.reInferType(expectedParameter.type()), expectedParameter);
 						continue;
 					}
 
@@ -106,43 +109,39 @@ public class ExternalParameterCheck
 				}
 				else
 				{
-					typeCheckParameter(naturalModule, passedParameter, ((ProvidedVariable) passedParameter).variable().type(), expectedParameter);
+					typeCheckParameter(naturalModule, passedParameter,
+						((ProvidedVariable) passedParameter).variable().type(), expectedParameter);
 				}
 			}
 		});
 	}
 
-	private static void typeCheckParameter(NaturalModule module, ProvidedParameter providedParameter, IDataType passedType, ITypedVariableNode receiver)
+	private static void typeCheckParameter(NaturalModule module, ProvidedParameter providedParameter,
+		IDataType passedType, ITypedVariableNode receiver)
 	{
 		var receiverType = receiver.type();
 		var expectedParameterIsByValue = receiver.findDescendantToken(SyntaxKind.VALUE) != null;
 		var expectedParameterIsByReference = !expectedParameterIsByValue;
 
-		if (!receiverType.fitsInto(passedType))
+		if (!receiverType.fitsInto(passedType) && expectedParameterIsByReference)
 		{
-			if (expectedParameterIsByReference)
-			{
-				module.addDiagnostic(
-					ParserErrors.parameterTypeMismatch(
-						providedParameter.usagePosition(),
-						providedParameter.declarationPosition(), passedType, receiver
-					)
-				);
-				return;
-			}
+			module.addDiagnostic(
+				ParserErrors.parameterTypeMismatch(
+					providedParameter.usagePosition(),
+					providedParameter.declarationPosition(), passedType, receiver
+				)
+			);
+			return;
 		}
 
-		if (!passedType.fitsInto(receiverType))
+		if (!passedType.fitsInto(receiverType) && expectedParameterIsByReference)
 		{
-			if (expectedParameterIsByReference)
-			{
-				module.addDiagnostic(
-					ParserErrors.parameterTypeMismatch(
-						providedParameter.usagePosition(),
-						providedParameter.declarationPosition(), passedType, receiver
-					)
-				);
-			}
+			module.addDiagnostic(
+				ParserErrors.parameterTypeMismatch(
+					providedParameter.usagePosition(),
+					providedParameter.declarationPosition(), passedType, receiver
+				)
+			);
 		}
 	}
 
@@ -153,12 +152,13 @@ public class ExternalParameterCheck
 		{
 			if (parameter instanceof IVariableReferenceNode refNode)
 			{
-				if (refNode.reference()instanceof IGroupNode group && !(group instanceof IRedefinitionNode))
+				if (refNode.reference() instanceof IGroupNode group && !(group instanceof IRedefinitionNode))
 				{
 					for (var variable : group.flattenVariables())
 					{
 						// REDEFINEs and their member are not parameter themselves
-						if (variable instanceof IRedefinitionNode || NodeUtil.findFirstParentOfType(variable, IRedefinitionNode.class) != null)
+						if (variable instanceof IRedefinitionNode || NodeUtil.findFirstParentOfType(variable,
+							IRedefinitionNode.class) != null)
 						{
 							continue;
 						}
@@ -168,7 +168,8 @@ public class ExternalParameterCheck
 				}
 				else
 				{
-					flattenedParameter.add(new ProvidedVariable((ITypedVariableNode) refNode.reference(), refNode.reference(), refNode));
+					flattenedParameter.add(
+						new ProvidedVariable((ITypedVariableNode) refNode.reference(), refNode.reference(), refNode));
 				}
 			}
 			else
@@ -179,7 +180,7 @@ public class ExternalParameterCheck
 		return flattenedParameter;
 	}
 
-	private sealed interface ProvidedParameter permits ProvidedVariable,ProvidedOperand
+	private sealed interface ProvidedParameter permits ProvidedVariable, ProvidedOperand
 	{
 		/**
 		 * Where the passed parameter is used on the calling side (the parameter list to the module)
@@ -193,8 +194,10 @@ public class ExternalParameterCheck
 		ISyntaxNode declarationPosition();
 	}
 
-	private record ProvidedVariable(ITypedVariableNode variable, ISyntaxNode declarationPosition, IVariableReferenceNode usagePosition) implements ProvidedParameter
-	{}
+	private record ProvidedVariable(ITypedVariableNode variable, ISyntaxNode declarationPosition,
+									IVariableReferenceNode usagePosition) implements ProvidedParameter
+	{
+	}
 
 	private record ProvidedOperand(IOperandNode operand) implements ProvidedParameter
 	{

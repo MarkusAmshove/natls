@@ -412,6 +412,50 @@ class ExternalParameterCheckShould
 		);
 	}
 
+	@Test
+	void allowToPassBiggerTypesIfPassedByValue()
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #RECEIVER (A5) BY VALUE
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			1 #PASSER (A10)
+			END-DEFINE
+			CALLNAT 'CALLED' #PASSER
+			END
+			""");
+
+		assertNoDiagnostic();
+	}
+
+	@Test
+	void allowToPassSmallerTypesIfPassedByValue()
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #RECEIVER (A5) BY VALUE
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			1 #PASSER (A2)
+			END-DEFINE
+			CALLNAT 'CALLED' #PASSER
+			END
+			""");
+
+		assertNoDiagnostic();
+	}
+
 	private void assertNoDiagnostic()
 	{
 		var messages = lastParsedModule.diagnostics().stream().map(IDiagnostic::message).toList();
