@@ -7,6 +7,8 @@ import org.amshove.natlint.api.ILinterContext;
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
+import org.amshove.natparse.lexing.PlainPosition;
+import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.natural.IReadWorkNode;
@@ -62,6 +64,14 @@ public class HiddenWorkfileAnalyzer extends AbstractAnalyzer
 			return;
 		}
 
-		context.report(HIDDEN_WORKFILE_STATEMENT_IS_DISCOURAGED.createDiagnostic(node));
+		var work = node.findDescendantToken(SyntaxKind.WORK);
+		if (work != null)
+		{
+			context.report(HIDDEN_WORKFILE_STATEMENT_IS_DISCOURAGED.createDiagnostic(PlainPosition.spanning(node, work)));
+		}
+		else
+		{
+			context.report(HIDDEN_WORKFILE_STATEMENT_IS_DISCOURAGED.createDiagnostic(node));
+		}
 	}
 }
