@@ -2,6 +2,7 @@ package org.amshove.natlint.analyzers;
 
 import org.amshove.natlint.linter.AbstractAnalyzerTest;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -73,4 +74,22 @@ class HiddenTransactionAnalyzerShould extends AbstractAnalyzerTest
 			expectNoDiagnostic(0, HiddenTransactionAnalyzer.HIDDEN_TRANSACTION_STATEMENT_IS_DISCOURAGED)
 		);
 	}
+
+	@Test
+	void raiseNoDiagnosticIfOptionIsFalse()
+	{
+		configureEditorConfig("""
+			[*]
+			natls.style.discourage_hiddentransactions=false
+			""");
+
+		testDiagnostics(
+			"OBJECT.NSN", """
+			END TRANSACTION
+			END
+			""",
+			expectNoDiagnosticOfType(HiddenTransactionAnalyzer.HIDDEN_TRANSACTION_STATEMENT_IS_DISCOURAGED)
+		);
+	}
+
 }

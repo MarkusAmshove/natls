@@ -1,0 +1,6 @@
+name: Use of DEFINE/READ/WRITE/CLOSE WORK FILE statements outside of Natural Program is discouraged
+priority: MAJOR
+tags: clumsy, confusing, bad-practice, pitfall
+type: CODE_SMELL
+description:
+Similar to transaction logic, work file handling should only be placed in Natural Programs, because this is the top layer of Natural objects. If you put them in other Natural objects, these can be called from other objects, and then you have little control over work file handling, anymore. However, there can be exceptions to this - so not as strongly discouraged as transaction logic.
