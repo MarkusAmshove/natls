@@ -1,6 +1,6 @@
-name: Long lines will not be visible immediately on Mainframe systems
-priority: MINOR
-tags: confusing
+name: Use of DEFINE/READ/WRITE/CLOSE WORK FILE statements outside of Natural Program is discouraged
+priority: MAJOR
+tags: clumsy, confusing, bad-practice, pitfall
 type: CODE_SMELL
 description:
-Long lines will not be visible immediately on Mainframe systems, split them to make the readability better.
+Similar to transaction logic, work file handling should only be placed in Natural Programs, because this is the top layer of Natural objects. If you put them in other Natural objects, these can be called from other objects, and then you have little control over work file handling, anymore. However, there can be exceptions to this - so not as strongly discouraged as transaction logic.
