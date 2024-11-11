@@ -154,22 +154,11 @@ public class ExternalParameterCheck
 			{
 				if (refNode.reference() instanceof IGroupNode group && !(group instanceof IRedefinitionNode))
 				{
-					for (var variable : group.flattenVariables())
-					{
-						// REDEFINEs and their member are not parameter themselves
-						if (variable instanceof IRedefinitionNode || NodeUtil.findFirstParentOfType(variable,
-							IRedefinitionNode.class) != null)
-						{
-							continue;
-						}
-
-						flattenedParameter.add(new ProvidedVariable((ITypedVariableNode) variable, variable, refNode));
-					}
+					addAllGroupMemberAsParameter(group, refNode, flattenedParameter);
 				}
 				else
 				{
-					flattenedParameter.add(
-						new ProvidedVariable((ITypedVariableNode) refNode.reference(), refNode.reference(), refNode));
+					flattenedParameter.add(createPlainVariable(refNode));
 				}
 			}
 			else
@@ -178,6 +167,26 @@ public class ExternalParameterCheck
 			}
 		}
 		return flattenedParameter;
+	}
+
+	private static ProvidedVariable createPlainVariable(IVariableReferenceNode variableReference)
+	{
+		return new ProvidedVariable((ITypedVariableNode) variableReference.reference(), variableReference.reference(), variableReference);
+	}
+
+	private static void addAllGroupMemberAsParameter(IGroupNode group, IVariableReferenceNode variableReference, List<ProvidedParameter> gatheredParameter)
+	{
+		for (var variable : group.flattenVariables())
+		{
+			// REDEFINEs and their member are not parameter themselves
+			if (variable instanceof IRedefinitionNode || NodeUtil.findFirstParentOfType(variable,
+				IRedefinitionNode.class) != null)
+			{
+				continue;
+			}
+
+			gatheredParameter.add(new ProvidedVariable((ITypedVariableNode) variable, variable, variableReference));
+		}
 	}
 
 	private sealed interface ProvidedParameter permits ProvidedVariable, ProvidedOperand
