@@ -14,7 +14,7 @@ import org.amshove.natparse.lexing.text.SourceTextScanner;
 public class LongLinesAnalyzer extends AbstractAnalyzer
 {
 	public static final DiagnosticDescription MAINFRAME_LONG_LINE = DiagnosticDescription.create(
-		"NL033",
+		"NL034",
 		"Long line found, it will not be visible immediately on Mainframes",
 		DiagnosticSeverity.INFO
 	);
