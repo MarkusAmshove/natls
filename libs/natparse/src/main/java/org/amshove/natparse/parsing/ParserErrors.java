@@ -703,7 +703,7 @@ class ParserErrors
 	{
 		return ParserDiagnostic.create(
 			"Parameter count mismatch. Expected %d parameter but got %d".formatted(expectedParameter, providedParameter),
-			node,
+			node.diagnosticPosition(),
 			ParserError.PARAMETER_COUNT_MISMATCH
 		);
 	}
@@ -712,7 +712,7 @@ class ParserErrors
 	{
 		var diagnostic = ParserDiagnostic.create(
 			"Trailing parameter number %d. Module only expects %d parameter".formatted(parameterIndex, expectedParameterCount),
-			node,
+			node.diagnosticPosition(),
 			ParserError.PARAMETER_COUNT_MISMATCH
 		);
 		diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("This parameter is trailing", passedParameter.position()));
@@ -723,7 +723,7 @@ class ParserErrors
 	{
 		var diagnostic = ParserDiagnostic.create(
 			"Expected parameter %s %s not provided".formatted(expectedParameter.qualifiedName(), expectedParameter.formatTypeForDisplay()),
-			node,
+			node.diagnosticPosition(),
 			ParserError.PARAMETER_COUNT_MISMATCH
 		);
 		diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("This parameter is missing", expectedParameter.position()));
@@ -734,7 +734,7 @@ class ParserErrors
 	{
 		return ParserDiagnostic.create(
 			"Parameter %s %s can not be skipped".formatted(expectedParameter.qualifiedName(), expectedParameter.formatTypeForDisplay()),
-			node,
+			node.diagnosticPosition(),
 			ParserError.PARAMETER_NOT_OPTIONAL
 		);
 	}
@@ -744,12 +744,12 @@ class ParserErrors
 		var receiverType = receiver.type();
 		var diagnostic = ParserDiagnostic.create(
 			"Parameter is passed BY REFERENCE but type of parameter %s does not match passed type %s".formatted(receiverType.toShortString(), passedType.toShortString()),
-			usagePosition,
+			usagePosition.diagnosticPosition(),
 			ParserError.PARAMETER_TYPE_MISMATCH_BY_REFERENCE
 		);
 		if (usagePosition != declarationPosition)
 		{
-			diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("Passed variable is declared here", declarationPosition.position()));
+			diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("Passed variable is declared here", declarationPosition.diagnosticPosition()));
 		}
 		diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("Received parameter is declared here", receiver.position()));
 		return diagnostic;
