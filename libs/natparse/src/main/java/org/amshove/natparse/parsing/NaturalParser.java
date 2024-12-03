@@ -82,6 +82,14 @@ public class NaturalParser
 
 		naturalModule.setSyntaxTree(SyntaxTree.create(ReadOnlyList.from(topLevelNodes)));
 
+		if (file.getFiletype().canHaveBody() && file.getFiletype() != NaturalFileType.COPYCODE)
+		{
+			// Copycodes will be analyzed in context of their includer.
+			// Analyzing them doesn't make sense, because we can't check parameter
+			// types etc.
+			ExternalParameterCheck.performParameterCheck(naturalModule);
+		}
+
 		return naturalModule;
 	}
 

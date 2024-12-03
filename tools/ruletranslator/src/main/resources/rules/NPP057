@@ -1,0 +1,6 @@
+name: Parameter is not optional
+priority: BLOCKER
+tags: runtime-error
+type: BUG
+description:
+Can't skip this parameter, because it is not declared as ``OPTIONAL``.
