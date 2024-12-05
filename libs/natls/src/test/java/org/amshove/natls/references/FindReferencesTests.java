@@ -73,7 +73,7 @@ class FindReferencesTests extends LanguageServerTest
 					return dynamicTest(
 						"%d:%d -> %s:%d:%d".formatted(rT.line, rT.col, ref.modulename, ref.line, ref.col),
 						() -> assertThat(references)
-							.as("No given reference matches expected location")
+							.as("No given reference matches expected location %d:%d in %s".formatted(ref.line, ref.col, ref.modulename))
 							.anyMatch(
 								l -> l.getUri().equals(theModule.file().getPath().toUri().toString())
 									&& l.getRange().getStart().getLine() == ref.line
