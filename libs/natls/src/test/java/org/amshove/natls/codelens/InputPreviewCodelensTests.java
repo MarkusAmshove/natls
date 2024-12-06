@@ -86,6 +86,7 @@ class InputPreviewCodelensTests extends CodeLensTest
 			document,
 			// all on the line of the INCLUDE
 			lenses -> assertThat(lenses.stream().filter(l -> l.getCommand().getTitle().contains("Open Preview")))
+				.isNotEmpty()
 				.allMatch(l -> l.getRange().getStart().getLine() == 2)
 		);
 	}
