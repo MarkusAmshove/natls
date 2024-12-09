@@ -84,4 +84,28 @@ class GroupNode extends VariableNode implements IGroupNode
 
 		return null;
 	}
+
+	@Override
+	public ReadOnlyList<IVariableNode> flattenVariables()
+	{
+		return ReadOnlyList.from(flattenGroup(this));
+	}
+
+	private List<IVariableNode> flattenGroup(IGroupNode group)
+	{
+		var flattened = new ArrayList<IVariableNode>(group.variables().size());
+		for (var variable : group.variables())
+		{
+			if (variable instanceof IGroupNode nestedGroup)
+			{
+				flattened.addAll(flattenGroup(nestedGroup));
+			}
+			else
+			{
+				flattened.add(variable);
+			}
+		}
+
+		return flattened;
+	}
 }

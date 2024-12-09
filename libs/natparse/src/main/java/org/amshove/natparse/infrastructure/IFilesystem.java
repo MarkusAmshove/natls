@@ -18,4 +18,10 @@ public interface IFilesystem
 	Optional<Path> findFile(String name, Path root);
 
 	Stream<String> peekFile(Path path);
+
+	static String filenameWithoutExtension(Path path)
+	{
+		var split = path.getFileName().toString().split("\\.");
+		return split[0];
+	}
 }

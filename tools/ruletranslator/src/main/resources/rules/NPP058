@@ -1,0 +1,8 @@
+name: Parameter type does not fit into passed variable
+priority: BLOCKER
+tags: runtime-error
+type: BUG
+description:
+Receiving parameter is by reference (not ``BY VALUE``) but does not fit into the passed variable.
+
+This happens when a module expects, for example, a parameter with type ``A10`` but you pass a variable with type ``A8``.
