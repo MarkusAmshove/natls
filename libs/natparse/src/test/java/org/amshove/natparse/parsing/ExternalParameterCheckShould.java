@@ -238,7 +238,7 @@ class ExternalParameterCheckShould
 			""");
 
 		assertDiagnostic(
-			"Parameter is passed BY REFERENCE but type of parameter (A15) does not match passed type (A10)",
+			"Parameter type mismatch. Expected (A15) by reference but got (A10)",
 			"Passed variable is declared here",
 			"Received parameter is declared here"
 		);
@@ -265,7 +265,7 @@ class ExternalParameterCheckShould
 			""");
 
 		assertDiagnostic(
-			"Parameter is passed BY REFERENCE but type of parameter (A15) does not match passed type (A10)",
+			"Parameter type mismatch. Expected (A15) by reference but got (A10)",
 			"Passed variable is declared here",
 			"Received parameter is declared here"
 		);
@@ -311,7 +311,7 @@ class ExternalParameterCheckShould
 			""");
 
 		assertDiagnostic(
-			"Parameter is passed BY REFERENCE but type of parameter (A6) does not match passed type (A5)"
+			"Parameter type mismatch. Expected (A6) by reference but got (A5)"
 		);
 	}
 
@@ -334,7 +334,7 @@ class ExternalParameterCheckShould
 			""");
 
 		assertDiagnostic(
-			"Parameter is passed BY REFERENCE but type of parameter (A6) does not match passed type (A11)"
+			"Parameter type mismatch. Expected (A6) by reference but got (A11)"
 		);
 	}
 
@@ -407,7 +407,7 @@ class ExternalParameterCheckShould
 			""".formatted(passerType));
 
 		assertDiagnostic(
-			"Parameter is passed BY REFERENCE but type of parameter (%s) does not match passed type (%s)"
+			"Parameter type mismatch. Expected (%s) by reference but got (%s)"
 				.formatted(receiverType, passerType)
 		);
 	}

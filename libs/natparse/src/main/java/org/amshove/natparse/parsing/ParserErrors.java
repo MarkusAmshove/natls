@@ -743,7 +743,7 @@ class ParserErrors
 	{
 		var receiverType = receiver.type();
 		var diagnostic = ParserDiagnostic.create(
-			"Parameter is passed BY REFERENCE but type of parameter %s does not match passed type %s".formatted(receiverType.toShortString(), passedType.toShortString()),
+			"Parameter type mismatch. Expected %s by reference but got %s".formatted(receiverType.toShortString(), passedType.toShortString()),
 			usagePosition.diagnosticPosition(),
 			ParserError.PARAMETER_TYPE_MISMATCH_BY_REFERENCE
 		);
