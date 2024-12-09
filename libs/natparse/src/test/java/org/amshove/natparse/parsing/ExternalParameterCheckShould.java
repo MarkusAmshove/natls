@@ -456,6 +456,58 @@ class ExternalParameterCheckShould
 		assertNoDiagnostic();
 	}
 
+	@Test
+	void allowPassingArraysWithSameLength()
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #RECEIVER (A5/1:10)
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			1 #PASSER (A5/1:10)
+			END-DEFINE
+			CALLNAT 'CALLED' #PASSER(*)
+			END
+			""");
+
+		assertNoDiagnostic();
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"A10/1:10,A10/1:15",
+			"A10/1:15,A10/1:10"
+		}
+	)
+	void notAllowDifferentArrayLengths(String received, String passed)
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #RECEIVER (%s)
+			END-DEFINE
+			END
+			""".formatted(received));
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			1 #PASSER (%s)
+			END-DEFINE
+			CALLNAT 'CALLED' #PASSER(*)
+			END
+			""".formatted(passed));
+
+		assertDiagnostic(
+			"Parameter array length mismatch. Expected (%s) but got (%s)".formatted(received, passed)
+		);
+	}
+
 	private void assertNoDiagnostic()
 	{
 		var messages = lastParsedModule.diagnostics().stream().map(IDiagnostic::message).toList();
