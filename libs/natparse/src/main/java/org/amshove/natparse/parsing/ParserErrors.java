@@ -831,7 +831,7 @@ class ParserErrors
 	}
 
 	public static IDiagnostic passedParameterNotArray(
-		ISyntaxNode diagnosticPosition, int expectedDimensions,
+		ISyntaxNode node, int expectedDimensions,
 		int passedDimensions, ITypedVariableNode receiver, ISyntaxNode declarationPosition
 	)
 	{
@@ -839,7 +839,7 @@ class ParserErrors
 			"Parameter dimension mismatch. Expected an array with %d dimensions but got %d instead".formatted(
 				expectedDimensions, passedDimensions
 			),
-			diagnosticPosition,
+			node.diagnosticPosition(),
 			ParserError.PARAMETER_TYPE_MISMATCH_BY_REFERENCE
 		);
 		diagnostic.addAdditionalInfo(
@@ -852,7 +852,7 @@ class ParserErrors
 	}
 
 	public static IDiagnostic parameterDimensionLengthMismatch(
-		ISyntaxNode diagnosticPosition,
+		ISyntaxNode node,
 		int dimensionNumber,
 		IArrayDimension expectedDimension, IArrayDimension passedDimension,
 		ITypedVariableNode receiver, ISyntaxNode declarationPosition
@@ -862,7 +862,7 @@ class ParserErrors
 			"Parameter array length mismatch. Expected (%s) but got (%s) in dimension %d".formatted(
 				expectedDimension.displayFormat(), passedDimension.displayFormat(), dimensionNumber
 			),
-			diagnosticPosition,
+			node.diagnosticPosition(),
 			ParserError.PARAMETER_TYPE_MISMATCH_BY_REFERENCE
 		);
 		diagnostic.addAdditionalInfo(
