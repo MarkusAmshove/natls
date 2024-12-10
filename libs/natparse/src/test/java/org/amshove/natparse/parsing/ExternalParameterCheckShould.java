@@ -667,6 +667,30 @@ class ExternalParameterCheckShould
 		assertNoDiagnostic();
 	}
 
+	@Test
+	void notRaiseADiagnosticWhenPassingGroupsWithChildArrays()
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #GRP
+			2 #ARR (A10/1:*)
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			1 #GRP
+			2 #ARR (A10/1:*)
+			END-DEFINE
+			CALLNAT 'CALLED' #GRP
+			END
+			""");
+
+		assertNoDiagnostic();
+	}
+
 	private void assertNoDiagnostic()
 	{
 		var messages = lastParsedModule.diagnostics().stream().map(IDiagnostic::message).toList();
