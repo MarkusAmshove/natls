@@ -166,10 +166,11 @@ public class ExternalParameterCheck
 		var expectedDimensions = receiver.dimensions();
 		var numberOfExpectedDimensions = expectedDimensions.size();
 
-		ReadOnlyList<IArrayDimension> passedDimensions = providedParameter instanceof ProvidedVariable passedVar ? passedVar.variable().dimensions() : null;
-		var numberOfPassedDimensions = passedDimensions == null ? 0 : passedDimensions.size();
+		var passedDimensions = providedParameter.passedDimensions();
+		var numberOfPassedDimensions = passedDimensions.size();
 
-		if (numberOfPassedDimensions != numberOfExpectedDimensions)
+		// Fewer dimensions passed than expected
+		if (numberOfPassedDimensions == 0 && numberOfExpectedDimensions > 0)
 		{
 			module.addDiagnostic(
 				ParserErrors.passedParameterNotArray(
@@ -177,39 +178,66 @@ public class ExternalParameterCheck
 					providedParameter.declarationPosition()
 				)
 			);
-			return;
 		}
 
-		if (passedDimensions == null)
+		for (int i = 0; i < passedDimensions.size(); i++)
 		{
-			return;
-		}
-
-		for (var i = 0; i < numberOfExpectedDimensions; i++)
-		{
-			var expectedDimension = expectedDimensions.get(i);
 			var passedDimension = passedDimensions.get(i);
-
-			var expectedIsXArray = expectedDimension.isLowerUnbound() || expectedDimension.isUpperUnbound();
-			var passedIsXArray = passedDimension.isLowerUnbound() || passedDimension.isUpperUnbound();
-
-			if (expectedIsXArray || passedIsXArray)
+			if (!(passedDimension instanceof IRangedArrayAccessNode rangedArrayAccessNode))
 			{
 				continue;
 			}
 
-			if (expectedDimension.lowerBound() != passedDimension.lowerBound() || expectedDimension.upperBound() != passedDimension.upperBound())
+			// More dimensions passed than expected
+			if (i > numberOfExpectedDimensions - 1)
 			{
 				module.addDiagnostic(
-					ParserErrors.parameterDimensionLengthMismatch(
-						providedParameter.declarationPosition(),
-						i + 1,
-						expectedDimension,
-						passedDimension,
+					ParserErrors.passedParameterNotArray(
+						providedParameter.usagePosition(), numberOfExpectedDimensions, numberOfPassedDimensions,
 						receiver,
 						providedParameter.declarationPosition()
 					)
 				);
+				return;
+			}
+
+			var declaredVariable = ((ProvidedVariable) providedParameter).variable;
+			if (declaredVariable.dimensions().size() < i - 1)
+			{
+				// When we try to pass more dimension accesses than the variable
+				// is declared with, the error gets caught while parsing.
+				continue;
+			}
+
+			var declaredDimension = declaredVariable.dimensions().get(i);
+			var expectedDimension = expectedDimensions.get(i);
+			// If the receiving parameter is an XArray, we can't do a static check
+			if (expectedDimension.isLowerUnbound() || expectedDimension.isUpperUnbound())
+			{
+				continue;
+			}
+
+			// We're passing part of the whole dimension (e.g. * or 1:*), so we can check
+			if (rangedArrayAccessNode.isAnyUnbound())
+			{
+				if (declaredDimension.isLowerUnbound() || declaredDimension.isUpperUnbound())
+				{
+					continue;
+				}
+
+				if (declaredDimension.lowerBound() != expectedDimension.lowerBound() || declaredDimension.upperBound() != expectedDimension.upperBound())
+				{
+					module.addDiagnostic(
+						ParserErrors.parameterDimensionLengthMismatch(
+							providedParameter.declarationPosition(),
+							i + 1,
+							expectedDimension,
+							declaredDimension,
+							receiver,
+							providedParameter.declarationPosition()
+						)
+					);
+				}
 			}
 		}
 	}
@@ -240,10 +268,16 @@ public class ExternalParameterCheck
 
 	private static ProvidedVariable createPlainVariable(IVariableReferenceNode variableReference)
 	{
-		return new ProvidedVariable((ITypedVariableNode) variableReference.reference(), variableReference.reference(), variableReference);
+		return new ProvidedVariable(
+			(ITypedVariableNode) variableReference.reference(), variableReference.reference(),
+			variableReference
+		);
 	}
 
-	private static void addAllGroupMemberAsParameter(IGroupNode group, IVariableReferenceNode variableReference, List<ProvidedParameter> gatheredParameter)
+	private static void addAllGroupMemberAsParameter(
+		IGroupNode group, IVariableReferenceNode variableReference,
+		List<ProvidedParameter> gatheredParameter
+	)
 	{
 		for (var variable : group.flattenVariables())
 		{
@@ -272,13 +306,22 @@ public class ExternalParameterCheck
 		 * passed group)
 		 */
 		ISyntaxNode declarationPosition();
+
+		ReadOnlyList<IOperandNode> passedDimensions();
 	}
 
 	private record ProvidedVariable(
-		ITypedVariableNode variable, ISyntaxNode declarationPosition,
+		ITypedVariableNode variable,
+		ISyntaxNode declarationPosition,
 		IVariableReferenceNode usagePosition
 	) implements ProvidedParameter
-	{}
+	{
+		@Override
+		public ReadOnlyList<IOperandNode> passedDimensions()
+		{
+			return usagePosition.dimensions();
+		}
+	}
 
 	private record ProvidedOperand(IOperandNode operand) implements ProvidedParameter
 	{
@@ -292,6 +335,12 @@ public class ExternalParameterCheck
 		public ISyntaxNode declarationPosition()
 		{
 			return operand;
+		}
+
+		@Override
+		public ReadOnlyList<IOperandNode> passedDimensions()
+		{
+			return ReadOnlyList.empty();
 		}
 	}
 }

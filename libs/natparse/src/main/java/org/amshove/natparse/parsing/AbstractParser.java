@@ -1120,7 +1120,7 @@ abstract class AbstractParser<T>
 
 	protected IOperandNode consumeArrayAccess(BaseSyntaxNode reference) throws ParseError
 	{
-		if (peekKind(SyntaxKind.ASTERISK) && peekKind(1, SyntaxKind.RPAREN))
+		if (peekKind(SyntaxKind.ASTERISK) && (peekKind(1, SyntaxKind.RPAREN) || peekKind(1, SyntaxKind.COMMA)))
 		{
 			var rangedAccess = new RangedArrayAccessNode();
 			reference.addNode(rangedAccess);

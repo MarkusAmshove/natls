@@ -622,7 +622,7 @@ class ExternalParameterCheckShould
 	}
 
 	@Test
-	void raiseADiagnosticIfTheLowerBoundHasAMitmatch()
+	void raiseADiagnosticIfTheLowerBoundHasAMismatch()
 	{
 		parse("CALLED.NSN", """
 			DEFINE DATA
@@ -643,6 +643,28 @@ class ExternalParameterCheckShould
 		assertDiagnostic(
 			"Parameter array length mismatch. Expected (1:10) but got (2:10) in dimension 1"
 		);
+	}
+
+	@Test
+	void notRaiseADiagnosticIfAnArrayElementIsPassedToAScalarField()
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #RECEIVER (A10)
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			1 #PASSER (A10/1:10)
+			END-DEFINE
+			CALLNAT 'CALLED' #PASSER(1)
+			END
+			""");
+
+		assertNoDiagnostic();
 	}
 
 	private void assertNoDiagnostic()
