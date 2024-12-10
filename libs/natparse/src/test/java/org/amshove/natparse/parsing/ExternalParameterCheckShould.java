@@ -15,6 +15,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import java.nio.file.Paths;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 class ExternalParameterCheckShould
 {
@@ -478,14 +479,66 @@ class ExternalParameterCheckShould
 		assertNoDiagnostic();
 	}
 
+	@Test
+	void raiseADiagnosticIfAnArrayIsExpectedButNotPassed()
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #RECEIVER (A5/1:10)
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			1 #PASSER (A5)
+			END-DEFINE
+			CALLNAT 'CALLED' #PASSER
+			END
+			""");
+
+		assertDiagnostic(
+			"Parameter dimension mismatch. Expected an array with 1 dimensions but got 0 instead"
+		);
+	}
+
+	@Test
+	void raiseADiagnosticIfAnArrayIsPassedButNotExpected()
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #RECEIVER (A5)
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			1 #PASSER (A5/1:10)
+			END-DEFINE
+			CALLNAT 'CALLED' #PASSER(*)
+			END
+			""");
+
+		assertDiagnostic(
+			"Parameter dimension mismatch. Expected an array with 0 dimensions but got 1 instead"
+		);
+	}
+
 	@ParameterizedTest
 	@CsvSource(
 		{
-			"A10/1:10,A10/1:15",
-			"A10/1:15,A10/1:10"
+			"A10/1:*,A10/1:15",
+			"A10/*:15,A10/1:15",
+			"A10/*,A10/1:15",
+			"A10/1:15,A10/1:*",
+			"A10/1:15,A10/*:15",
+			"A10/1:15,A10/*",
 		}
 	)
-	void notAllowDifferentArrayLengths(String received, String passed)
+	void notRaiseDiagnosticsAboutLengthsIfEitherSideIsAnXArrayDimension(String received, String passed)
 	{
 		parse("CALLED.NSN", """
 			DEFINE DATA
@@ -503,8 +556,92 @@ class ExternalParameterCheckShould
 			END
 			""".formatted(passed));
 
+		assertNoDiagnostic();
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"1:10,1:15",
+			"1:15,1:10"
+		}
+	)
+	void notAllowDifferentArrayLengths(String received, String passed)
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #RECEIVER (A10/%s)
+			END-DEFINE
+			END
+			""".formatted(received));
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			1 #PASSER (A10/%s)
+			END-DEFINE
+			CALLNAT 'CALLED' #PASSER(*)
+			END
+			""".formatted(passed));
+
 		assertDiagnostic(
-			"Parameter array length mismatch. Expected (%s) but got (%s)".formatted(received, passed)
+			"Parameter array length mismatch. Expected (%s) but got (%s) in dimension 1".formatted(received, passed)
+		);
+	}
+
+	@Test
+	void raiseADiagnosticForMismatchedDimensionsOnEveryDimensions()
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #RECEIVER (A10/1:10,1:15,1:20)
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			1 #PASSER (A10/1:5,1:10,1:15)
+			END-DEFINE
+			CALLNAT 'CALLED' #PASSER(*, *, *)
+			END
+			""");
+
+		assertAll(
+			() -> assertDiagnostic(
+				"Parameter array length mismatch. Expected (1:10) but got (1:5) in dimension 1"
+			),
+			() -> assertDiagnostic(
+				"Parameter array length mismatch. Expected (1:15) but got (1:10) in dimension 2"
+			),
+			() -> assertDiagnostic(
+				"Parameter array length mismatch. Expected (1:20) but got (1:15) in dimension 3"
+			)
+		);
+	}
+
+	@Test
+	void raiseADiagnosticIfTheLowerBoundHasAMitmatch()
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #RECEIVER (A10/1:10)
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			1 #PASSER (A10/2:10)
+			END-DEFINE
+			CALLNAT 'CALLED' #PASSER(*)
+			END
+			""");
+
+		assertDiagnostic(
+			"Parameter array length mismatch. Expected (1:10) but got (2:10) in dimension 1"
 		);
 	}
 

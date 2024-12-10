@@ -109,7 +109,9 @@ class ParserErrors
 	public static ParserDiagnostic initValueMismatch(TypedVariableNode variable, SyntaxKind expectedKind)
 	{
 		return ParserDiagnostic.create(
-			"Type mismatch on initial value. Got <%s> but expected <%s>".formatted(getKindFromInitialValue(variable.type().initialValue()), expectedKind),
+			"Type mismatch on initial value. Got <%s> but expected <%s>".formatted(
+				getKindFromInitialValue(variable.type().initialValue()), expectedKind
+			),
 			variable.identifierNode(),
 			ParserError.INITIAL_VALUE_TYPE_MISMATCH
 		);
@@ -123,7 +125,10 @@ class ParserErrors
 		}
 
 		return ParserDiagnostic.create(
-			"Type mismatch on initial value. Got <%s> but expected one of <%s>".formatted(getKindFromInitialValue(variable.type().initialValue()), Arrays.stream(expectedKinds).map(Enum::toString).collect(Collectors.joining(","))),
+			"Type mismatch on initial value. Got <%s> but expected one of <%s>".formatted(
+				getKindFromInitialValue(variable.type().initialValue()),
+				Arrays.stream(expectedKinds).map(Enum::toString).collect(Collectors.joining(","))
+			),
 			variable.identifierNode(),
 			ParserError.INITIAL_VALUE_TYPE_MISMATCH
 		);
@@ -143,7 +148,10 @@ class ParserErrors
 		var dynamicToken = variable.findDescendantToken(SyntaxKind.DYNAMIC);
 		if (dynamicToken != null)
 		{
-			return ParserDiagnostic.create("A variable with a fixed length can't also have dynamic length", dynamicToken, ParserError.DYNAMIC_AND_FIXED_LENGTH);
+			return ParserDiagnostic.create(
+				"A variable with a fixed length can't also have dynamic length",
+				dynamicToken, ParserError.DYNAMIC_AND_FIXED_LENGTH
+			);
 		}
 		return null;
 	}
@@ -207,10 +215,16 @@ class ParserErrors
 		);
 	}
 
-	public static ParserDiagnostic redefinitionLengthIsTooLong(IRedefinitionNode node, double redefinitionLength, double maxLength)
+	public static ParserDiagnostic redefinitionLengthIsTooLong(
+		IRedefinitionNode node, double redefinitionLength,
+		double maxLength
+	)
 	{
 		return ParserDiagnostic.create(
-			"Length of redefinition (%s bytes) exceeds target length (%s bytes) of %s".formatted(DataFormat.formatLength(redefinitionLength), DataFormat.formatLength(maxLength), node.declaration().source()),
+			"Length of redefinition (%s bytes) exceeds target length (%s bytes) of %s".formatted(
+				DataFormat.formatLength(redefinitionLength), DataFormat.formatLength(maxLength),
+				node.declaration().source()
+			),
 			node.identifierNode(),
 			ParserError.REDEFINE_LENGTH_EXCEEDS_TARGET_LENGTH
 		);
@@ -327,7 +341,10 @@ class ParserErrors
 		);
 	}
 
-	public static IDiagnostic invalidLengthForDataTypeRange(ITypedVariableNode typeNode, int lowestValue, int highestValue)
+	public static IDiagnostic invalidLengthForDataTypeRange(
+		ITypedVariableNode typeNode, int lowestValue,
+		int highestValue
+	)
 	{
 		return ParserDiagnostic.create(
 			"Invalid length: %s. Has to be in range of %d to %d".formatted(
@@ -355,7 +372,9 @@ class ParserErrors
 	public static IDiagnostic typeCantHaveLength(ITypedVariableNode typeNode, int... possibleValues)
 	{
 		return ParserDiagnostic.create(
-			"Invalid length: Length for %s can not be specified".formatted(DataFormat.formatLength(typeNode.type().length())),
+			"Invalid length: Length for %s can not be specified".formatted(
+				DataFormat.formatLength(typeNode.type().length())
+			),
 			typeNode.identifierNode(),
 			ParserError.INVALID_LENGTH_FOR_DATA_TYPE
 		);
@@ -379,7 +398,10 @@ class ParserErrors
 		);
 	}
 
-	public static IDiagnostic duplicatedSymbols(ISymbolNode duplicatedSymbol, ISymbolNode firstDeclaration, ISyntaxNode diagnosticPosition)
+	public static IDiagnostic duplicatedSymbols(
+		ISymbolNode duplicatedSymbol, ISymbolNode firstDeclaration,
+		ISyntaxNode diagnosticPosition
+	)
 	{
 		return ParserDiagnostic.create(
 			"Symbol with name %s already declared in %s".formatted(
@@ -400,10 +422,15 @@ class ParserErrors
 		);
 	}
 
-	public static IDiagnostic ambiguousSymbolReference(ISymbolReferenceNode symbolReferenceNode, String possibleQualifications)
+	public static IDiagnostic ambiguousSymbolReference(
+		ISymbolReferenceNode symbolReferenceNode,
+		String possibleQualifications
+	)
 	{
 		return ParserDiagnostic.create(
-			"Reference %s is ambiguous and needs to be qualified. Ambiguous with: %s".formatted(symbolReferenceNode.referencingToken().symbolName(), possibleQualifications.trim()),
+			"Reference %s is ambiguous and needs to be qualified. Ambiguous with: %s".formatted(
+				symbolReferenceNode.referencingToken().symbolName(), possibleQualifications.trim()
+			),
 			symbolReferenceNode,
 			ParserError.AMBIGUOUS_VARIABLE_REFERENCE
 		);
@@ -412,7 +439,9 @@ class ParserErrors
 	public static IDiagnostic invalidPrinterOutputFormat(SyntaxToken token)
 	{
 		return ParserDiagnostic.create(
-			"Printer output '%s' is invalid. It has to be in the form of 'LTPn' ('LTP1' - 'LTP31'), DUMMY, INFOLINE, SOURCE or NOM".formatted(token.kind()),
+			"Printer output '%s' is invalid. It has to be in the form of 'LTPn' ('LTP1' - 'LTP31'), DUMMY, INFOLINE, SOURCE or NOM".formatted(
+				token.kind()
+			),
 			token,
 			ParserError.INVALID_PRINTER_OUTPUT_FORMAT
 		);
@@ -454,10 +483,16 @@ class ParserErrors
 		);
 	}
 
-	public static IDiagnostic invalidOperand(IOperandNode operand, String message, StatementListParser.AllowedOperand... allowedOperands)
+	public static IDiagnostic invalidOperand(
+		IOperandNode operand, String message,
+		StatementListParser.AllowedOperand... allowedOperands
+	)
 	{
 		return ParserDiagnostic.create(
-			"Invalid operand: %s (Allowed operands: %s)".formatted(message, Arrays.stream(allowedOperands).map(Enum::name).collect(Collectors.joining(", "))),
+			"Invalid operand: %s (Allowed operands: %s)".formatted(
+				message,
+				Arrays.stream(allowedOperands).map(Enum::name).collect(Collectors.joining(", "))
+			),
 			operand,
 			ParserError.INVALID_OPERAND
 		);
@@ -496,7 +531,10 @@ class ParserErrors
 	public static IDiagnostic invalidNumericRange(ILiteralNode node, int actualValue, int lowestValue, int highestValue)
 	{
 		return ParserDiagnostic.create(
-			"Constant %d is not within the allowed range of %d to %d (both inclusive)".formatted(actualValue, lowestValue, highestValue),
+			"Constant %d is not within the allowed range of %d to %d (both inclusive)".formatted(
+				actualValue,
+				lowestValue, highestValue
+			),
 			node,
 			ParserError.INVALID_LITERAL_VALUE
 		);
@@ -621,7 +659,9 @@ class ParserErrors
 	public static IDiagnostic cyclomaticInclude(SyntaxToken referencingToken)
 	{
 		return ParserDiagnostic.create(
-			"Cyclomatic INCLUDE found. %s is recursively included multiple times.".formatted(referencingToken.symbolName()),
+			"Cyclomatic INCLUDE found. %s is recursively included multiple times.".formatted(
+				referencingToken.symbolName()
+			),
 			referencingToken,
 			ParserError.CYCLOMATIC_INCLUDE
 		);
@@ -645,7 +685,10 @@ class ParserErrors
 		);
 	}
 
-	public static ParserDiagnostic invalidScopeForFileType(SyntaxKind expectedScope, SyntaxKind actualScope, SyntaxToken position)
+	public static ParserDiagnostic invalidScopeForFileType(
+		SyntaxKind expectedScope, SyntaxKind actualScope,
+		SyntaxToken position
+	)
 	{
 		return ParserDiagnostic.create(
 			"Invalid scope for file type. Expected: %s but got %s".formatted(expectedScope, actualScope),
@@ -702,57 +745,132 @@ class ParserErrors
 	public static IDiagnostic parameterCountMismatch(ISyntaxNode node, int providedParameter, int expectedParameter)
 	{
 		return ParserDiagnostic.create(
-			"Parameter count mismatch. Expected %d parameter but got %d".formatted(expectedParameter, providedParameter),
+			"Parameter count mismatch. Expected %d parameter but got %d".formatted(
+				expectedParameter,
+				providedParameter
+			),
 			node.diagnosticPosition(),
 			ParserError.PARAMETER_COUNT_MISMATCH
 		);
 	}
 
-	public static IDiagnostic trailingParameter(ISyntaxNode node, ISyntaxNode passedParameter, int parameterIndex, int expectedParameterCount)
+	public static IDiagnostic trailingParameter(
+		ISyntaxNode node, ISyntaxNode passedParameter, int parameterIndex,
+		int expectedParameterCount
+	)
 	{
 		var diagnostic = ParserDiagnostic.create(
-			"Trailing parameter number %d. Module only expects %d parameter".formatted(parameterIndex, expectedParameterCount),
+			"Trailing parameter number %d. Module only expects %d parameter".formatted(
+				parameterIndex,
+				expectedParameterCount
+			),
 			node.diagnosticPosition(),
 			ParserError.PARAMETER_COUNT_MISMATCH
 		);
-		diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("This parameter is trailing", passedParameter.position()));
+		diagnostic.addAdditionalInfo(
+			new AdditionalDiagnosticInfo("This parameter is trailing", passedParameter.position())
+		);
 		return diagnostic;
 	}
 
 	public static IDiagnostic missingParameter(ISyntaxNode node, ITypedVariableNode expectedParameter)
 	{
 		var diagnostic = ParserDiagnostic.create(
-			"Expected parameter %s %s not provided".formatted(expectedParameter.qualifiedName(), expectedParameter.formatTypeForDisplay()),
+			"Expected parameter %s %s not provided".formatted(
+				expectedParameter.qualifiedName(),
+				expectedParameter.formatTypeForDisplay()
+			),
 			node.diagnosticPosition(),
 			ParserError.PARAMETER_COUNT_MISMATCH
 		);
-		diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("This parameter is missing", expectedParameter.position()));
+		diagnostic.addAdditionalInfo(
+			new AdditionalDiagnosticInfo("This parameter is missing", expectedParameter.position())
+		);
 		return diagnostic;
 	}
 
 	public static IDiagnostic cantSkipParameter(ISkipOperandNode node, ITypedVariableNode expectedParameter)
 	{
 		return ParserDiagnostic.create(
-			"Parameter %s %s can not be skipped".formatted(expectedParameter.qualifiedName(), expectedParameter.formatTypeForDisplay()),
+			"Parameter %s %s can not be skipped".formatted(
+				expectedParameter.qualifiedName(),
+				expectedParameter.formatTypeForDisplay()
+			),
 			node.diagnosticPosition(),
 			ParserError.PARAMETER_NOT_OPTIONAL
 		);
 	}
 
-	public static IDiagnostic parameterTypeMismatch(ISyntaxNode usagePosition, ISyntaxNode declarationPosition, IDataType passedType, ITypedVariableNode receiver)
+	public static IDiagnostic parameterTypeMismatch(
+		ISyntaxNode usagePosition, ISyntaxNode declarationPosition,
+		IDataType passedType, ITypedVariableNode receiver
+	)
 	{
 		var receiverType = receiver.type();
 		var diagnostic = ParserDiagnostic.create(
-			"Parameter type mismatch. Expected %s by reference but got %s".formatted(receiverType.toShortString(), passedType.toShortString()),
+			"Parameter type mismatch. Expected %s by reference but got %s".formatted(
+				receiverType.toShortString(),
+				passedType.toShortString()
+			),
 			usagePosition.diagnosticPosition(),
 			ParserError.PARAMETER_TYPE_MISMATCH_BY_REFERENCE
 		);
 		if (usagePosition != declarationPosition)
 		{
-			diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("Passed variable is declared here", declarationPosition.diagnosticPosition()));
+			diagnostic.addAdditionalInfo(
+				new AdditionalDiagnosticInfo(
+					"Passed variable is declared here",
+					declarationPosition.diagnosticPosition()
+				)
+			);
 		}
-		diagnostic.addAdditionalInfo(new AdditionalDiagnosticInfo("Received parameter is declared here", receiver.position()));
+		diagnostic.addAdditionalInfo(
+			new AdditionalDiagnosticInfo("Received parameter is declared here", receiver.position())
+		);
 		return diagnostic;
 	}
 
+	public static IDiagnostic passedParameterNotArray(
+		ISyntaxNode diagnosticPosition, int expectedDimensions,
+		int passedDimensions, ITypedVariableNode receiver, ISyntaxNode declarationPosition
+	)
+	{
+		var diagnostic = ParserDiagnostic.create(
+			"Parameter dimension mismatch. Expected an array with %d dimensions but got %d instead".formatted(
+				expectedDimensions, passedDimensions
+			),
+			diagnosticPosition,
+			ParserError.PARAMETER_TYPE_MISMATCH_BY_REFERENCE
+		);
+		diagnostic.addAdditionalInfo(
+			new AdditionalDiagnosticInfo("Passed variable is declared here", declarationPosition.diagnosticPosition())
+		);
+		diagnostic.addAdditionalInfo(
+			new AdditionalDiagnosticInfo("Received parameter is declared here", receiver.position())
+		);
+		return diagnostic;
+	}
+
+	public static IDiagnostic parameterDimensionLengthMismatch(
+		ISyntaxNode diagnosticPosition,
+		int dimensionNumber,
+		IArrayDimension expectedDimension, IArrayDimension passedDimension,
+		ITypedVariableNode receiver, ISyntaxNode declarationPosition
+	)
+	{
+		var diagnostic = ParserDiagnostic.create(
+			"Parameter array length mismatch. Expected (%s) but got (%s) in dimension %d".formatted(
+				expectedDimension.displayFormat(), passedDimension.displayFormat(), dimensionNumber
+			),
+			diagnosticPosition,
+			ParserError.PARAMETER_TYPE_MISMATCH_BY_REFERENCE
+		);
+		diagnostic.addAdditionalInfo(
+			new AdditionalDiagnosticInfo("Passed variable is declared here", declarationPosition.diagnosticPosition())
+		);
+		diagnostic.addAdditionalInfo(
+			new AdditionalDiagnosticInfo("Received parameter is declared here", receiver.position())
+		);
+		return diagnostic;
+	}
 }

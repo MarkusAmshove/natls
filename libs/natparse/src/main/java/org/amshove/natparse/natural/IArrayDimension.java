@@ -41,7 +41,7 @@ public interface IArrayDimension extends ISyntaxNode
 		return upperBound() == VARIABLE_BOUND;
 	}
 
-	default int occurerences()
+	default int occurrences()
 	{
 		if (isLowerUnbound() || isUpperUnbound())
 		{

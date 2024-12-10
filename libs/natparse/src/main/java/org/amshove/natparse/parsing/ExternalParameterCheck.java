@@ -153,6 +153,65 @@ public class ExternalParameterCheck
 				)
 			);
 		}
+
+		checkArrayDimensions(module, providedParameter, receiver);
+	}
+
+	private static void checkArrayDimensions(
+		NaturalModule module,
+		ProvidedParameter providedParameter,
+		ITypedVariableNode receiver
+	)
+	{
+		var expectedDimensions = receiver.dimensions();
+		var numberOfExpectedDimensions = expectedDimensions.size();
+
+		ReadOnlyList<IArrayDimension> passedDimensions = providedParameter instanceof ProvidedVariable passedVar ? passedVar.variable().dimensions() : null;
+		var numberOfPassedDimensions = passedDimensions == null ? 0 : passedDimensions.size();
+
+		if (numberOfPassedDimensions != numberOfExpectedDimensions)
+		{
+			module.addDiagnostic(
+				ParserErrors.passedParameterNotArray(
+					providedParameter.usagePosition(), numberOfExpectedDimensions, numberOfPassedDimensions, receiver,
+					providedParameter.declarationPosition()
+				)
+			);
+			return;
+		}
+
+		if (passedDimensions == null)
+		{
+			return;
+		}
+
+		for (var i = 0; i < numberOfExpectedDimensions; i++)
+		{
+			var expectedDimension = expectedDimensions.get(i);
+			var passedDimension = passedDimensions.get(i);
+
+			var expectedIsXArray = expectedDimension.isLowerUnbound() || expectedDimension.isUpperUnbound();
+			var passedIsXArray = passedDimension.isLowerUnbound() || passedDimension.isUpperUnbound();
+
+			if (expectedIsXArray || passedIsXArray)
+			{
+				continue;
+			}
+
+			if (expectedDimension.lowerBound() != passedDimension.lowerBound() || expectedDimension.upperBound() != passedDimension.upperBound())
+			{
+				module.addDiagnostic(
+					ParserErrors.parameterDimensionLengthMismatch(
+						providedParameter.declarationPosition(),
+						i + 1,
+						expectedDimension,
+						passedDimension,
+						receiver,
+						providedParameter.declarationPosition()
+					)
+				);
+			}
+		}
 	}
 
 	private static List<ProvidedParameter> flattenProvidedParameter(ReadOnlyList<IOperandNode> providedParameter)
