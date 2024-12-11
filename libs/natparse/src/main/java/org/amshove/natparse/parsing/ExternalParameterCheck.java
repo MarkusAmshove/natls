@@ -88,15 +88,15 @@ public class ExternalParameterCheck
 					continue;
 				}
 
-				if (passedParameter instanceof ProvidedOperand providedOperand)
+				if (passedParameter instanceof ProvidedOperand(var operand))
 				{
-					if (providedOperand.operand instanceof ISkipOperandNode skipOperand && !expectedParameterIsOptional)
+					if (operand instanceof ISkipOperandNode skipOperand)
 					{
 						naturalModule.addDiagnostic(ParserErrors.cantSkipParameter(skipOperand, expectedParameter));
 						return;
 					}
 
-					if (providedOperand.operand()instanceof ILiteralNode literal)
+					if (operand instanceof ILiteralNode literal)
 					{
 						typeCheckParameter(
 							naturalModule, passedParameter,
@@ -105,7 +105,7 @@ public class ExternalParameterCheck
 						continue;
 					}
 
-					var passedType = TypeInference.inferType(providedOperand.operand());
+					var passedType = TypeInference.inferType(operand);
 					if (passedType.isEmpty())
 					{
 						continue;
@@ -163,6 +163,13 @@ public class ExternalParameterCheck
 		ITypedVariableNode receiver
 	)
 	{
+		if (providedParameter.isPassedAsGroupMember())
+		{
+			// When not this variable itself is passed as parameter, but the group that contains it
+			// then we don't have to check for array stuff, as it is implicit.
+			return;
+		}
+
 		var expectedDimensions = receiver.dimensions();
 		var numberOfExpectedDimensions = expectedDimensions.size();
 
@@ -270,7 +277,8 @@ public class ExternalParameterCheck
 	{
 		return new ProvidedVariable(
 			(ITypedVariableNode) variableReference.reference(), variableReference.reference(),
-			variableReference
+			variableReference,
+			false
 		);
 	}
 
@@ -290,7 +298,7 @@ public class ExternalParameterCheck
 				continue;
 			}
 
-			gatheredParameter.add(new ProvidedVariable((ITypedVariableNode) variable, variable, variableReference));
+			gatheredParameter.add(new ProvidedVariable((ITypedVariableNode) variable, variable, variableReference, true));
 		}
 	}
 
@@ -307,13 +315,16 @@ public class ExternalParameterCheck
 		 */
 		ISyntaxNode declarationPosition();
 
+		boolean isPassedAsGroupMember();
+
 		ReadOnlyList<IOperandNode> passedDimensions();
 	}
 
 	private record ProvidedVariable(
 		ITypedVariableNode variable,
 		ISyntaxNode declarationPosition,
-		IVariableReferenceNode usagePosition
+		IVariableReferenceNode usagePosition,
+		boolean isPassedAsGroupMember
 	) implements ProvidedParameter
 	{
 		@Override
@@ -335,6 +346,12 @@ public class ExternalParameterCheck
 		public ISyntaxNode declarationPosition()
 		{
 			return operand;
+		}
+
+		@Override
+		public boolean isPassedAsGroupMember()
+		{
+			return false;
 		}
 
 		@Override
