@@ -238,7 +238,7 @@ public class ExternalParameterCheck
 				{
 					module.addDiagnostic(
 						ParserErrors.parameterDimensionLengthMismatch(
-							providedParameter.declarationPosition(),
+							providedParameter.usagePosition(),
 							i + 1,
 							expectedDimension,
 							declaredDimension,
@@ -296,7 +296,7 @@ public class ExternalParameterCheck
 			{
 				module.addDiagnostic(
 					ParserErrors.parameterDimensionLengthMismatch(
-						providedParameter.declarationPosition(),
+						providedParameter.usagePosition(),
 						i + 1,
 						expectedDimension,
 						providedDimension,
