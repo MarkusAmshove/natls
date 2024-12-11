@@ -166,7 +166,9 @@ public class ExternalParameterCheck
 		if (providedParameter.isPassedAsGroupMember())
 		{
 			// When not this variable itself is passed as parameter, but the group that contains it
-			// then we don't have to check for array stuff, as it is implicit.
+			// then we don't have to check for the access to the array (e.g. #ARR(*)) but the declaration on both sides
+			// in the DEFINE DATA.
+			checkArrayDeclarationDimensions(module, providedParameter, receiver);
 			return;
 		}
 
@@ -245,6 +247,63 @@ public class ExternalParameterCheck
 						)
 					);
 				}
+			}
+		}
+	}
+
+	private static void checkArrayDeclarationDimensions(
+		NaturalModule module, ProvidedParameter providedParameter,
+		ITypedVariableNode receiver
+	)
+	{
+		if (!(providedParameter instanceof ProvidedVariable providedVariable))
+		{
+			return;
+		}
+
+		var expectedDimensions = receiver.dimensions();
+		var providedDeclaredDimensions = providedVariable.variable().dimensions();
+
+		var numberOfExpectedDimensions = expectedDimensions.size();
+		var numberOfPassedDimensions = providedDeclaredDimensions.size();
+
+		// Fewer dimensions passed than expected
+		if (numberOfPassedDimensions != numberOfExpectedDimensions)
+		{
+			module.addDiagnostic(
+				ParserErrors.passedParameterNotArray(
+					providedParameter.usagePosition(), numberOfExpectedDimensions, numberOfPassedDimensions, receiver,
+					providedParameter.declarationPosition()
+				)
+			);
+			return;
+		}
+
+		for (int i = 0; i < numberOfExpectedDimensions; i++)
+		{
+			var expectedDimension = expectedDimensions.get(i);
+			var providedDimension = providedDeclaredDimensions.get(i);
+
+			var expectedIsXArray = expectedDimension.isLowerUnbound() || expectedDimension.isUpperUnbound();
+			var providedIsXArray = providedDimension.isLowerUnbound() || providedDimension.isUpperUnbound();
+
+			if (expectedIsXArray || providedIsXArray)
+			{
+				continue;
+			}
+
+			if (providedDimension.lowerBound() != expectedDimension.lowerBound() || providedDimension.upperBound() != expectedDimension.upperBound())
+			{
+				module.addDiagnostic(
+					ParserErrors.parameterDimensionLengthMismatch(
+						providedParameter.declarationPosition(),
+						i + 1,
+						expectedDimension,
+						providedDimension,
+						receiver,
+						providedParameter.declarationPosition()
+					)
+				);
 			}
 		}
 	}

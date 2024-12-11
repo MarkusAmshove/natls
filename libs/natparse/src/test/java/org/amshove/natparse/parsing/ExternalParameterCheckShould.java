@@ -691,6 +691,60 @@ class ExternalParameterCheckShould
 		assertNoDiagnostic();
 	}
 
+	@Test
+	void raiseADiagnosticWhenPassingGroupsWithChildsWhereDimensionsMismatch()
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #GRP
+			2 #ARR (A10/1:10)
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			1 #GRP
+			2 #ARR (A10/1:15)
+			END-DEFINE
+			CALLNAT 'CALLED' #GRP
+			END
+			""");
+
+		assertDiagnostic(
+			"Parameter array length mismatch. Expected (1:10) but got (1:15) in dimension 1",
+			"Passed variable is declared here",
+			"Received parameter is declared here"
+		);
+	}
+
+	@Test
+	void raiseADiagnosticWhenPassingGroupsWithChildsWhereDimensionsCountMismatch()
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #GRP
+			2 #ARR (A10/1:10,1:*)
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			1 #GRP
+			2 #ARR (A10/1:15)
+			END-DEFINE
+			CALLNAT 'CALLED' #GRP
+			END
+			""");
+
+		assertDiagnostic(
+			"Parameter dimension mismatch. Expected an array with 2 dimensions but got 1 instead"
+		);
+	}
+
 	private void assertNoDiagnostic()
 	{
 		var messages = lastParsedModule.diagnostics().stream().map(IDiagnostic::message).toList();
