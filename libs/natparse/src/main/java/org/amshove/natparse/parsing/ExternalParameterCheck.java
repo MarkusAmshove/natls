@@ -229,7 +229,7 @@ public class ExternalParameterCheck
 			// We're passing part of the whole dimension (e.g. * or 1:*), so we can check
 			if (rangedArrayAccessNode.isAnyUnbound())
 			{
-				if (declaredDimension.isLowerUnbound() || declaredDimension.isUpperUnbound())
+				if (declaredDimension.isLowerUnbound() || declaredDimension.isUpperUnbound() || expectedDimension.isLowerUnbound() || expectedDimension.isUpperUnbound() || expectedDimension.isUpperVariable())
 				{
 					continue;
 				}
@@ -284,8 +284,8 @@ public class ExternalParameterCheck
 			var expectedDimension = expectedDimensions.get(i);
 			var providedDimension = providedDeclaredDimensions.get(i);
 
-			var expectedIsXArray = expectedDimension.isLowerUnbound() || expectedDimension.isUpperUnbound();
-			var providedIsXArray = providedDimension.isLowerUnbound() || providedDimension.isUpperUnbound();
+			var expectedIsXArray = expectedDimension.isLowerUnbound() || expectedDimension.isUpperUnbound() || expectedDimension.isUpperVariable();
+			var providedIsXArray = providedDimension.isLowerUnbound() || providedDimension.isUpperUnbound() || providedDimension.isUpperVariable();
 
 			if (expectedIsXArray || providedIsXArray)
 			{

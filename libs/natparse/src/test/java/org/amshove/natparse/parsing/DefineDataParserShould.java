@@ -1106,6 +1106,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		assertThat(parameter).isNotNull();
 		assert parameter != null;
 		assertThat(parameter.dimensions().first().upperBound()).isEqualTo(10);
+		assertThat(parameter.dimensions().first().isUpperVariable()).isTrue();
 	}
 
 	@Test

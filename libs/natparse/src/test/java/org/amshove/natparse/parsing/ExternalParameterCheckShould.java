@@ -559,6 +559,28 @@ class ExternalParameterCheckShould
 		assertNoDiagnostic();
 	}
 
+	@Test
+	void notRaiseADiagnosticIfTheReceivingSideIsVariadicArray()
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #RECEIVER (A8/1:V)
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			1 #PASSER (A8/1:10)
+			END-DEFINE
+			CALLNAT 'CALLED' #PASSER(*)
+			END
+			""");
+
+		assertNoDiagnostic();
+	}
+
 	@ParameterizedTest
 	@CsvSource(
 		{

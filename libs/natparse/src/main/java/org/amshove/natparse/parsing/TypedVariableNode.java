@@ -78,6 +78,7 @@ class TypedVariableNode extends VariableNode implements ITypedVariableNode
 			var boundDimension = new ArrayDimension();
 			boundDimension.setLowerBound(dimension.lowerBound());
 			boundDimension.setUpperBound(type.byteSize());
+			boundDimension.setUpperVariable();
 			dimensions.add(boundDimension);
 		}
 		else
