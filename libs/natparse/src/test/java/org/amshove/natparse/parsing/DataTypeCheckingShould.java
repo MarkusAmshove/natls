@@ -1,6 +1,7 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.natural.DataFormat;
+import org.amshove.natparse.natural.DataType;
 import org.amshove.natparse.natural.IDataType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -229,6 +230,22 @@ class DataTypeCheckingShould
 		);
 	}
 
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"N6.2,N8",
+			"N8,N6.2",
+			"N4.1,N12"
+		}
+	)
+	void notSeeNumericWithAndWithoutFloatingPrecisionAsCompatible(String firstType, String secondType)
+	{
+		assertNotCompatible(
+			DataType.fromString(firstType),
+			DataType.fromString(secondType)
+		);
+	}
+
 	private void assertSameFamily(String firstFormat, String secondFormat)
 	{
 		assertThat(type(DataFormat.fromSource(firstFormat), IDataType.ONE_GIGABYTE).hasSameFamily(type(DataFormat.fromSource(secondFormat), IDataType.ONE_GIGABYTE)))
@@ -259,15 +276,15 @@ class DataTypeCheckingShould
 
 	private IDataType type(DataFormat format, double length)
 	{
-		return new DataType(format, length);
+		return new CheckedDataType(format, length);
 	}
 
 	private IDataType dynamicType(DataFormat format)
 	{
-		return new DataType(format, IDataType.ONE_GIGABYTE);
+		return new CheckedDataType(format, IDataType.ONE_GIGABYTE);
 	}
 
-	record DataType(DataFormat format, double length) implements IDataType
+	record CheckedDataType(DataFormat format, double length) implements IDataType
 	{
 		@Override
 		public boolean hasDynamicLength()

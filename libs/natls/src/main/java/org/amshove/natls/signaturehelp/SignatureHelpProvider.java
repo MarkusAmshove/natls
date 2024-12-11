@@ -71,7 +71,7 @@ public class SignatureHelpProvider
 			signatureInformation.setDocumentation(MarkupContentBuilderFactory.newBuilder().appendCode(moduleDocumentation).build());
 		}
 
-		hasDefineData.defineData().parameterInOrder().stream()
+		hasDefineData.defineData().declaredParameterInOrder().stream()
 			.map(pi -> mapToParameterInformation(calledModule, pi))
 			.forEach(p -> signatureInformation.getParameters().add(p));
 

@@ -505,6 +505,20 @@ class OperandParsingTests extends AbstractOperandParsingTest
 	}
 
 	@Test
+	void parseMultipleUnboundArrayRanges()
+	{
+		var operand = parseOperand("#VAR(*,*)");
+		var access = assertNodeType(operand, IVariableReferenceNode.class);
+		assertThat(access.dimensions()).hasSize(2);
+		var rangedAccess = assertNodeType(access.dimensions().first(), IRangedArrayAccessNode.class);
+		assertThat(assertNodeType(rangedAccess.lowerBound(), ITokenNode.class).token().kind()).isEqualTo(SyntaxKind.ASTERISK);
+		assertThat(assertNodeType(rangedAccess.upperBound(), ITokenNode.class).token().kind()).isEqualTo(SyntaxKind.ASTERISK);
+		var secondRangedAccess = assertNodeType(access.dimensions().last(), IRangedArrayAccessNode.class);
+		assertThat(assertNodeType(secondRangedAccess.lowerBound(), ITokenNode.class).token().kind()).isEqualTo(SyntaxKind.ASTERISK);
+		assertThat(assertNodeType(secondRangedAccess.upperBound(), ITokenNode.class).token().kind()).isEqualTo(SyntaxKind.ASTERISK);
+	}
+
+	@Test
 	void parseArrayAccessWithVariableRanges()
 	{
 		var operand = parseOperand("#VAR(#LOW:50)");

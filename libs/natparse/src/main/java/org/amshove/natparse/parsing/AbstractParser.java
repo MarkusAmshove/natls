@@ -261,7 +261,7 @@ abstract class AbstractParser<T>
 			return literal;
 		}
 
-		if (peekAny(List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.HEX_LITERAL)) && peekKind(1, SyntaxKind.MINUS))
+		if (peekAny(List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.HEX_LITERAL)) && peekKind(1, SyntaxKind.MINUS) && peekAny(2, List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.HEX_LITERAL)))
 		{
 			return consumeStringConcat(node);
 		}
@@ -1120,7 +1120,7 @@ abstract class AbstractParser<T>
 
 	protected IOperandNode consumeArrayAccess(BaseSyntaxNode reference) throws ParseError
 	{
-		if (peekKind(SyntaxKind.ASTERISK) && peekKind(1, SyntaxKind.RPAREN))
+		if (peekKind(SyntaxKind.ASTERISK) && (peekKind(1, SyntaxKind.RPAREN) || peekKind(1, SyntaxKind.COMMA)))
 		{
 			var rangedAccess = new RangedArrayAccessNode();
 			reference.addNode(rangedAccess);

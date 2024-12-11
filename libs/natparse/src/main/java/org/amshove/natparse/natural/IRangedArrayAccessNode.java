@@ -5,4 +5,6 @@ public interface IRangedArrayAccessNode extends IOperandNode
 	IOperandNode lowerBound();
 
 	IOperandNode upperBound();
+
+	boolean isAnyUnbound();
 }

@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IDataType;
@@ -140,6 +141,13 @@ class LiteralNode extends TokenNode implements ILiteralNode
 		if (targetType.format() == DataFormat.ALPHANUMERIC && inferredType.format() == DataFormat.INTEGER)
 		{
 			return reInferNumericWithoutDecimals();
+		}
+
+		if (inferredType.format() == DataFormat.ALPHANUMERIC && targetType.format() == DataFormat.ALPHANUMERIC
+			&& inferredType.length() < targetType.length())
+		{
+			// Re-interpret type without trimming the literal string value
+			return new LiteralType(DataFormat.ALPHANUMERIC, token().stringValue().length());
 		}
 
 		if (!targetType.hasSameFamily(inferredType))
