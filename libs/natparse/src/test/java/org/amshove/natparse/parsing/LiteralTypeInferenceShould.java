@@ -25,6 +25,7 @@ class LiteralTypeInferenceShould
 			"12345,I2",
 			"2147483647,I4",
 			"2147483648,N10",
+			"1,I4"
 		}
 	)
 	void inferTheCorrectTypeBasedOnTargetTypeForIntegers(String source, String targetType)
@@ -118,11 +119,18 @@ class LiteralTypeInferenceShould
 			"2147483647,I4",
 			"2147483648,N10",
 			"2147483648.123,N10.3",
+			"1,N8"
 		}
 	)
 	void inferTheCorrectTypeForNumericLiterals(String source, String targetType)
 	{
 		assertCompatibleType(targetType, source);
+	}
+
+	@Test
+	void reInferTheTypeOfNumericLiteralsToTheBiggerTargetType()
+	{
+		assertReInferredType("N8", "1", "N8");
 	}
 
 	@Test

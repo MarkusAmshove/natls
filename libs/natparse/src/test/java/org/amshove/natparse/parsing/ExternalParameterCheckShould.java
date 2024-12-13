@@ -767,6 +767,29 @@ class ExternalParameterCheckShould
 		);
 	}
 
+	@Test
+	void notRaiseADiagnosticIfTheSourceLiteralFitsIntoTheTargetParameter()
+	{
+		// The passed value should get the target type by re-infering it
+
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER
+			1 #NUM (I4)
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+			CALLNAT 'CALLED' 1
+			END
+			""");
+
+		assertNoDiagnostic();
+	}
+
 	private void assertNoDiagnostic()
 	{
 		var messages = lastParsedModule.diagnostics().stream().map(IDiagnostic::message).toList();
