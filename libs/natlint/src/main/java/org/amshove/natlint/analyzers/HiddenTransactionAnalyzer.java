@@ -7,6 +7,8 @@ import org.amshove.natlint.api.ILinterContext;
 import org.amshove.natparse.DiagnosticSeverity;
 import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
+import org.amshove.natparse.lexing.PlainPosition;
+import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.natural.IEndTransactionNode;
@@ -60,6 +62,14 @@ public class HiddenTransactionAnalyzer extends AbstractAnalyzer
 			return;
 		}
 
-		context.report(HIDDEN_TRANSACTION_STATEMENT_IS_DISCOURAGED.createDiagnostic(node));
+		var transaction = node.findDescendantToken(SyntaxKind.TRANSACTION);
+		if (transaction != null)
+		{
+			context.report(HIDDEN_TRANSACTION_STATEMENT_IS_DISCOURAGED.createDiagnostic(PlainPosition.spanning(node, transaction)));
+		}
+		else
+		{
+			context.report(HIDDEN_TRANSACTION_STATEMENT_IS_DISCOURAGED.createDiagnostic(node));
+		}
 	}
 }
