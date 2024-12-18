@@ -1500,6 +1500,19 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void allowEmHdPmInViewVariablesWithoutExplicitType()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data
+			local
+			1 myview view of myddm
+				2 withtype (n2) (hd='Header')
+				2 withouttype (hd='Header')
+			end-define
+		""");
+	}
+
+	@Test
 	void parseViewWithOptionalOf()
 	{
 		assertParsesWithoutDiagnostics("""

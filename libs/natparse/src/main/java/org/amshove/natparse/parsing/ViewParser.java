@@ -111,6 +111,13 @@ class ViewParser extends AbstractParser<ViewNode>
 				return typedDdmArrayVariable;
 			}
 
+			if (peekKind(SyntaxKind.EM) || peekKind(SyntaxKind.HD) || peekKind(SyntaxKind.PM))
+			{
+				consumeEmHdPm(variable);
+				// The parens we're in is for attributes, not the type, so the type has to be inferred from the DDM.
+				return typedVariableFromDdm(variable, enclosingGroup);
+			}
+
 			return typedVariable(variable);
 		}
 
@@ -120,6 +127,15 @@ class ViewParser extends AbstractParser<ViewNode>
 		}
 
 		return typedVariableFromDdm(variable, enclosingGroup);
+	}
+
+	private void consumeEmHdPm(VariableNode variable) throws ParseError
+	{
+		while (!isAtEnd() && !peekKind(SyntaxKind.RPAREN) && !peekKind(SyntaxKind.END_DEFINE))
+		{
+			consume(variable);
+		}
+		consumeMandatory(variable, SyntaxKind.RPAREN);
 	}
 
 	private TypedVariableNode typedVariable(VariableNode variable) throws ParseError
@@ -174,14 +190,10 @@ class ViewParser extends AbstractParser<ViewNode>
 			type.setDynamicLength();
 		}
 
-		// Consume optional emhdpm
+		// Consume optional EMHDPM
 		if (consumeOptionally(typedVariable, SyntaxKind.LPAREN))
 		{
-			while (!isAtEnd() && peek().kind() != SyntaxKind.RPAREN && peek().kind() != SyntaxKind.END_DEFINE)
-			{
-				consume(typedVariable);
-			}
-			consumeMandatory(typedVariable, SyntaxKind.RPAREN);
+			consumeEmHdPm(typedVariable);
 		}
 
 		typedVariable.setType(type);
@@ -239,7 +251,7 @@ class ViewParser extends AbstractParser<ViewNode>
 
 	// This is used when there is no type specified in the view.
 	// Type is loaded from DDM.
-	private VariableNode typedVariableFromDdm(VariableNode variable, GroupNode enclosingGroup)
+	private VariableNode typedVariableFromDdm(VariableNode variable, GroupNode enclosingGroup) throws ParseError
 	{
 		// unresolved DDM
 		if (view.ddm() == null)
@@ -248,6 +260,16 @@ class ViewParser extends AbstractParser<ViewNode>
 		}
 
 		var typedVariable = new TypedVariableNode(variable);
+
+		// Consume optional EMHDPM
+		if (consumeOptionally(typedVariable, SyntaxKind.LPAREN))
+		{
+			while (!isAtEnd() && peek().kind() != SyntaxKind.RPAREN && peek().kind() != SyntaxKind.END_DEFINE)
+			{
+				consume(typedVariable);
+			}
+			consumeMandatory(typedVariable, SyntaxKind.RPAREN);
+		}
 
 		var isCountVariable = variable.name().startsWith("C*");
 		var fieldName = isCountVariable ? variable.name().substring(2) : variable.name();
