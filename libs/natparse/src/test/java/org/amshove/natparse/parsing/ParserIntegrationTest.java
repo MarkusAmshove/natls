@@ -1,16 +1,13 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.infrastructure.IFilesystem;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.project.NaturalFile;
-import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.testhelpers.IntegrationTest;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 

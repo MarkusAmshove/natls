@@ -37,18 +37,18 @@ public interface IDataType
 		var byteSizeFits = ourByteSize <= theirByteSize;
 
 		var floatingPrecisionMatches = true;
-		var wereFloating = isFloating();
+		var weAreFloating = isFloating();
 		var targetIsFloating = target.isFloating();
 
 		if (targetIsFloating)
 		{
 			floatingPrecisionMatches = byteSizeFits && length() <= target.length();
 		}
-		else
-			if (wereFloating)
-			{
-				floatingPrecisionMatches = targetIsFloating && length() <= target.length();
-			}
+
+		if (weAreFloating)
+		{
+			floatingPrecisionMatches = targetIsFloating && length() <= target.length();
+		}
 
 		var formatIsCompatible = hasCompatibleFormat(target);
 		return byteSizeFits && formatIsCompatible && floatingPrecisionMatches;

@@ -17,6 +17,10 @@ import java.util.stream.Collectors;
 
 class ParserErrors
 {
+
+	private static final String PASSED_VARIABLE_DECLARED_HERE = "Passed variable is declared here";
+	private static final String RECEIVED_PARAMETER_DECLARED_HERE = "Received parameter is declared here";
+
 	private static SyntaxKind getKindFromInitialValue(IOperandNode node)
 	{
 		if (node instanceof IStringConcatOperandNode)
@@ -819,13 +823,13 @@ class ParserErrors
 		{
 			diagnostic.addAdditionalInfo(
 				new AdditionalDiagnosticInfo(
-					"Passed variable is declared here",
+					PASSED_VARIABLE_DECLARED_HERE,
 					declarationPosition.diagnosticPosition()
 				)
 			);
 		}
 		diagnostic.addAdditionalInfo(
-			new AdditionalDiagnosticInfo("Received parameter is declared here", receiver.position())
+			new AdditionalDiagnosticInfo(RECEIVED_PARAMETER_DECLARED_HERE, receiver.position())
 		);
 		return diagnostic;
 	}
@@ -843,10 +847,10 @@ class ParserErrors
 			ParserError.PARAMETER_TYPE_MISMATCH_BY_REFERENCE
 		);
 		diagnostic.addAdditionalInfo(
-			new AdditionalDiagnosticInfo("Passed variable is declared here", declarationPosition.diagnosticPosition())
+			new AdditionalDiagnosticInfo(PASSED_VARIABLE_DECLARED_HERE, declarationPosition.diagnosticPosition())
 		);
 		diagnostic.addAdditionalInfo(
-			new AdditionalDiagnosticInfo("Received parameter is declared here", receiver.position())
+			new AdditionalDiagnosticInfo(RECEIVED_PARAMETER_DECLARED_HERE, receiver.position())
 		);
 		return diagnostic;
 	}
@@ -866,10 +870,10 @@ class ParserErrors
 			ParserError.PARAMETER_TYPE_MISMATCH_BY_REFERENCE
 		);
 		diagnostic.addAdditionalInfo(
-			new AdditionalDiagnosticInfo("Passed variable is declared here", declarationPosition.diagnosticPosition())
+			new AdditionalDiagnosticInfo(PASSED_VARIABLE_DECLARED_HERE, declarationPosition.diagnosticPosition())
 		);
 		diagnostic.addAdditionalInfo(
-			new AdditionalDiagnosticInfo("Received parameter is declared here", receiver.position())
+			new AdditionalDiagnosticInfo(RECEIVED_PARAMETER_DECLARED_HERE, receiver.position())
 		);
 		return diagnostic;
 	}

@@ -9,6 +9,7 @@ import org.amshove.natparse.natural.project.NaturalFile;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("java:S106")
 public class AnalyzerPredicates
 {
 	private final List<IFilePredicate> filePredicates = new ArrayList<>();
