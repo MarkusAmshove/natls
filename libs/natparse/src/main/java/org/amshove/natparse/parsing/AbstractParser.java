@@ -20,14 +20,15 @@ abstract class AbstractParser<T>
 	protected IModuleProvider moduleProvider;
 	protected TokenList tokens;
 	protected List<ISymbolReferenceNode> unresolvedReferences;
-	private TokenNode previousNode;
-
-	private List<IDiagnostic> diagnostics = new ArrayList<>();
 	protected IPosition relocatedDiagnosticPosition;
+	protected List<IModuleReferencingNode> externalModuleReferences;
+
+	private TokenNode previousNode;
+	private List<IDiagnostic> diagnostics;
 
 	protected static final Set<SyntaxKind> END_KINDS_THAT_END_ALL_ENDS = Set.of(SyntaxKind.END_REPEAT, SyntaxKind.END_FOR, SyntaxKind.END_FILE, SyntaxKind.END_LOOP, SyntaxKind.END_SORT, SyntaxKind.END_WORK, SyntaxKind.END_READ, SyntaxKind.END_FIND, SyntaxKind.END_HISTOGRAM);
 
-	public AbstractParser(IModuleProvider moduleProvider)
+	protected AbstractParser(IModuleProvider moduleProvider)
 	{
 		this.moduleProvider = moduleProvider;
 	}
@@ -36,6 +37,7 @@ abstract class AbstractParser<T>
 	{
 		this.tokens = tokens;
 		diagnostics = new ArrayList<>();
+		externalModuleReferences = new ArrayList<>();
 
 		var result = parseInternal();
 
@@ -47,6 +49,11 @@ abstract class AbstractParser<T>
 	protected boolean shouldRelocateDiagnostics()
 	{
 		return relocatedDiagnosticPosition != null;
+	}
+
+	public List<IModuleReferencingNode> moduleReferencingNodes()
+	{
+		return externalModuleReferences;
 	}
 
 	protected INaturalModule sideloadModule(String referableName, SyntaxToken moduleIdentifierToken, NaturalFileType type)
@@ -528,6 +535,7 @@ abstract class AbstractParser<T>
 		node.addNode(functionName);
 		var module = sideloadModule(token.symbolName(), functionName.token(), NaturalFileType.FUNCTION);
 		node.setReferencedModule((NaturalModule) module);
+		externalModuleReferences.add(node);
 
 		consumeMandatory(node, SyntaxKind.LPAREN);
 		if (peekKind(SyntaxKind.LESSER_GREATER) && peekKind(1, SyntaxKind.RPAREN))

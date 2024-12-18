@@ -158,7 +158,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						}
 						break;
 					case CALLNAT:
-						statementList.addStatement(callnat());
+						var callnat = callnat();
+						statementList.addStatement(callnat);
+						externalModuleReferences.add(callnat);
 						break;
 					case COMPRESS:
 						statementList.addStatement(compress());
@@ -235,7 +237,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(include());
 						break;
 					case FETCH:
-						statementList.addStatement(fetch());
+						var fetch = fetch();
+						statementList.addStatement(fetch);
+						externalModuleReferences.add(fetch);
 						break;
 					case MULTIPLY:
 						statementList.addStatement(multiply());
@@ -2835,6 +2839,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				externalPerform.setReference(foundModule);
 			}
 
+			externalModuleReferences.add(externalPerform);
 			return externalPerform;
 		}
 
@@ -3093,6 +3098,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						report(diagnostic);
 					}
 				}
+
+				externalModuleReferences.addAll(nestedParser.externalModuleReferences);
+
 				unresolvedReferences.addAll(nestedParser.unresolvedReferences);
 				referencableNodes.addAll(nestedParser.referencableNodes);
 				include.setBody(
@@ -4760,6 +4768,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					var externalPerform = new ExternalPerformNode(((InternalPerformNode) unresolvedReference));
 					((BaseSyntaxNode) unresolvedReference.parent()).replaceChild((BaseSyntaxNode) unresolvedReference, externalPerform);
 					externalPerform.setReference(foundModule);
+					externalModuleReferences.add(externalPerform);
 				}
 
 				// We mark the reference as resolved even though it might not be found.

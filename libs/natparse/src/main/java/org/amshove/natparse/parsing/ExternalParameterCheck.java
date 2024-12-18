@@ -10,9 +10,10 @@ import java.util.List;
 
 public class ExternalParameterCheck
 {
-	public static void performParameterCheck(NaturalModule naturalModule)
+	public static void performParameterCheck(NaturalModule naturalModule,
+		List<IModuleReferencingNode> moduleRefs)
 	{
-		naturalModule.syntaxTree().acceptNodeVisitor((node) ->
+		for (var node : moduleRefs)
 		{
 			if (!(node instanceof IModuleReferencingNode moduleRef))
 			{
@@ -31,7 +32,7 @@ public class ExternalParameterCheck
 				return;
 			}
 
-			var theirDefineData = moduleRef.reference()instanceof IHasDefineData hasDD ? hasDD.defineData() : null;
+			var theirDefineData = moduleRef.reference() instanceof IHasDefineData hasDD ? hasDD.defineData() : null;
 
 			var numberOfPassedParameter = moduleRef.providedParameter().size();
 			if (theirDefineData == null)
@@ -121,7 +122,7 @@ public class ExternalParameterCheck
 					);
 				}
 			}
-		});
+		}
 	}
 
 	private static void typeCheckParameter(
@@ -357,7 +358,9 @@ public class ExternalParameterCheck
 				continue;
 			}
 
-			gatheredParameter.add(new ProvidedVariable((ITypedVariableNode) variable, variable, variableReference, true));
+			gatheredParameter.add(
+				new ProvidedVariable((ITypedVariableNode) variable, variable, variableReference, true)
+			);
 		}
 	}
 
