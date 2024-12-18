@@ -288,7 +288,7 @@ public class NaturalParser
 		}
 
 		var unresolvedAdabasArrayAccess = new ArrayList<ISymbolReferenceNode>();
-		for (var unresolvedReference : statementParser.getUnresolvedReferences())
+		for (var unresolvedReference : statementParser.unresolvedSymbols())
 		{
 			if (unresolvedReference.parent() instanceof IAdabasIndexAccess)
 			{

@@ -19,7 +19,7 @@ abstract class AbstractParser<T>
 {
 	protected IModuleProvider moduleProvider;
 	protected TokenList tokens;
-	protected List<ISymbolReferenceNode> unresolvedReferences;
+	protected List<ISymbolReferenceNode> unresolvedSymbols;
 	protected IPosition relocatedDiagnosticPosition;
 	protected List<IModuleReferencingNode> externalModuleReferences;
 
@@ -37,6 +37,7 @@ abstract class AbstractParser<T>
 	{
 		this.tokens = tokens;
 		diagnostics = new ArrayList<>();
+		unresolvedSymbols = new ArrayList<>();
 		externalModuleReferences = new ArrayList<>();
 
 		var result = parseInternal();
@@ -49,6 +50,11 @@ abstract class AbstractParser<T>
 	protected boolean shouldRelocateDiagnostics()
 	{
 		return relocatedDiagnosticPosition != null;
+	}
+
+	public List<ISymbolReferenceNode> unresolvedSymbols()
+	{
+		return unresolvedSymbols;
 	}
 
 	public List<IModuleReferencingNode> moduleReferencingNodes()
@@ -495,7 +501,7 @@ abstract class AbstractParser<T>
 	protected SymbolReferenceNode symbolReferenceNode(SyntaxToken token)
 	{
 		var node = new SymbolReferenceNode(token);
-		unresolvedReferences.add(node);
+		unresolvedSymbols.add(node);
 		return node;
 	}
 
@@ -1122,7 +1128,7 @@ abstract class AbstractParser<T>
 			consumeMandatory(reference, SyntaxKind.RPAREN);
 		}
 
-		unresolvedReferences.add(reference);
+		unresolvedSymbols.add(reference);
 		return reference;
 	}
 
@@ -1171,7 +1177,7 @@ abstract class AbstractParser<T>
 			// Get rid of the previous node
 			((BaseSyntaxNode) qualifiedRef.parent()).removeNode((BaseSyntaxNode) qualifiedRef);
 			((BaseSyntaxNode) qualifiedRef).setParent(null);
-			unresolvedReferences.remove(qualifiedRef);
+			unresolvedSymbols.remove(qualifiedRef);
 
 			var qualifiedToken = qualifiedRef.referencingToken();
 			var tokenSplit = qualifiedToken.source().split("\\.");
@@ -1206,8 +1212,8 @@ abstract class AbstractParser<T>
 			access.addOperand(firstRef);
 			access.addNode(dot);
 			access.addOperand(secondRef);
-			unresolvedReferences.add(firstRef);
-			unresolvedReferences.add(secondRef);
+			unresolvedSymbols.add(firstRef);
+			unresolvedSymbols.add(secondRef);
 		}
 		else
 		{

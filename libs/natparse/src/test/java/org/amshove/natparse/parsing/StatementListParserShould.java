@@ -409,7 +409,7 @@ class StatementListParserShould extends StatementParseTest
 			""");
 
 		assertThat(statements.statements()).hasSize(2);
-		assertThat(((StatementListParser) sut).getUnresolvedReferences()).isEmpty();
+		assertThat(((StatementListParser) sut).unresolvedSymbols()).isEmpty();
 	}
 
 	@Test
