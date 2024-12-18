@@ -13,8 +13,8 @@ public class ExternalParameterCheck
 	public static void performParameterCheck(NaturalModule naturalModule,
 		List<IModuleReferencingNode> moduleRefs)
 	{
-		for (var node : moduleRefs)
-		{
+		moduleRefs.forEach(node -> {
+
 			if (!(node instanceof IModuleReferencingNode moduleRef))
 			{
 				return;
@@ -122,7 +122,7 @@ public class ExternalParameterCheck
 					);
 				}
 			}
-		}
+		});
 	}
 
 	private static void typeCheckParameter(
