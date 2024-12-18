@@ -143,6 +143,40 @@ class ExternalParameterCheckShould
 	}
 
 	@Test
+	void reportADiagnosticIfParameterArePassedWhileTheCalledModuleHasNoDefineData()
+	{
+		parse("CALLED.NSN", """
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+			CALLNAT 'CALLED' 'Hi'
+			END
+			""");
+
+		assertDiagnostic("Parameter count mismatch. Expected 0 parameter but got 1");
+	}
+
+	@Test
+	void notReportDiagnosticsInCopyCodesThemself()
+	{
+		parse("CALLED.NSN", """
+			DEFINE DATA
+			PARAMETER 1 #PARM (A10)
+			END-DEFINE
+			END
+			""");
+
+		parse("CALLER.NSC", """
+			CALLNAT 'CALLED' /* Missing parameter
+			""");
+
+		assertNoDiagnostic();
+	}
+
+	@Test
 	void notMistakeRedefineChildrenAsParameter()
 	{
 		parse("CALLED.NSN", """
