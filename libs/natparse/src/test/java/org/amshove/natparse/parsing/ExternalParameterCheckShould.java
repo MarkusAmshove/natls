@@ -204,14 +204,7 @@ class ExternalParameterCheckShould
 	@Test
 	void notCountPassedRedefineChildMember()
 	{
-		addDataArea("MYPDA.NSA", """
-			DEFINE DATA PARAMETER
-			1 MYPDA
-			2 #PARM-1 (A20)
-			2 REDEFINE #PARM-1
-			3 #PARM-1-1 (A5)
-			END-DEFINE
-		""");
+		addPda();
 
 		parse("CALLED.NSN", """
 			DEFINE DATA
@@ -849,7 +842,6 @@ class ExternalParameterCheckShould
 		}
 	}
 
-	// TODO: Heavily Refactor test setup please, thanks.
 	@BeforeEach
 	void setup()
 	{
@@ -859,16 +851,23 @@ class ExternalParameterCheckShould
 	private ModuleProviderStub moduleProvider;
 	private INaturalModule lastParsedModule; // Convenience
 
-	private void addDataArea(String name, String source)
+	private void addPda()
 	{
-		var path = Paths.get(name);
-		var file = new NaturalFile(name, path, NaturalFileType.fromPath(path));
+		var path = Paths.get("MYPDA.NSA");
+		var file = new NaturalFile("MYPDA.NSA", path, NaturalFileType.fromPath(path));
 		var module = new NaturalModule(file);
-		module.setDefineData(new DefineDataParser(moduleProvider).parse(new Lexer().lex(source, path)).result());
+		module.setDefineData(new DefineDataParser(moduleProvider).parse(new Lexer().lex("""
+				DEFINE DATA PARAMETER
+				1 MYPDA
+				2 #PARM-1 (A20)
+				2 REDEFINE #PARM-1
+				3 #PARM-1-1 (A5)
+				END-DEFINE
+			""", path)).result());
 		moduleProvider.addModule(IFilesystem.filenameWithoutExtension(path), module);
 	}
 
-	private INaturalModule parse(String filename, String source)
+	private void parse(String filename, String source)
 	{
 		var path = Paths.get(filename);
 		var tokens = new Lexer().lex(source, path);
@@ -879,6 +878,5 @@ class ExternalParameterCheckShould
 		var module = new NaturalParser(moduleProvider).parse(file, tokens);
 		moduleProvider.addModule(IFilesystem.filenameWithoutExtension(path), module);
 		lastParsedModule = module;
-		return module;
 	}
 }
