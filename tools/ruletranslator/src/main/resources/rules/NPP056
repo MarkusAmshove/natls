@@ -1,0 +1,6 @@
+name: Parameter count mismatch
+priority: BLOCKER
+tags: runtime-error
+type: BUG
+description:
+The number of parameters passed to the external module is does not match the number of expected parameters.

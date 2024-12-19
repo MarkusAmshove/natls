@@ -233,7 +233,7 @@ public class HoverProvider
 		contentBuilder.appendSection("Parameter", nested ->
 		{
 			var parameterBlock = new StringBuilder();
-			for (var parameterDefinition : hasDefineData.defineData().parameterInOrder())
+			for (var parameterDefinition : hasDefineData.defineData().declaredParameterInOrder())
 			{
 				if (parameterDefinition instanceof IUsingNode using)
 				{

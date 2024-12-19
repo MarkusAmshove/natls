@@ -32,12 +32,26 @@ public interface IDataType
 	 */
 	default boolean fitsInto(IDataType target)
 	{
-		var ourLength = this.hasDynamicLength() ? ONE_GIGABYTE : byteSize();
-		var theirLength = target.hasDynamicLength() ? ONE_GIGABYTE : target.byteSize();
-		var lengthFits = ourLength <= theirLength;
-		var formatIsCompatible = hasCompatibleFormat(target);
+		var ourByteSize = this.hasDynamicLength() ? ONE_GIGABYTE : byteSize();
+		var theirByteSize = target.hasDynamicLength() ? ONE_GIGABYTE : target.byteSize();
+		var byteSizeFits = ourByteSize <= theirByteSize;
 
-		return lengthFits && formatIsCompatible;
+		var floatingPrecisionMatches = true;
+		var weAreFloating = isFloating();
+		var targetIsFloating = target.isFloating();
+
+		if (targetIsFloating)
+		{
+			floatingPrecisionMatches = byteSizeFits && length() <= target.length();
+		}
+
+		if (weAreFloating)
+		{
+			floatingPrecisionMatches = targetIsFloating && length() <= target.length();
+		}
+
+		var formatIsCompatible = hasCompatibleFormat(target);
+		return byteSizeFits && formatIsCompatible && floatingPrecisionMatches;
 	}
 
 	/**
