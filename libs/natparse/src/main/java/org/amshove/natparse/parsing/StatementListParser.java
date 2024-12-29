@@ -37,15 +37,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		super(moduleProvider);
 	}
 
-	public List<ISymbolReferenceNode> getUnresolvedReferences()
-	{
-		return unresolvedReferences;
-	}
-
 	@Override
 	protected IStatementListNode parseInternal()
 	{
-		unresolvedReferences = new ArrayList<>();
 		referencableNodes = new ArrayList<>();
 		var statementList = statementList();
 		resolveUnresolvedInternalPerforms();
@@ -158,7 +152,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						}
 						break;
 					case CALLNAT:
-						statementList.addStatement(callnat());
+						var callnat = callnat();
+						statementList.addStatement(callnat);
+						externalModuleReferences.add(callnat);
 						break;
 					case COMPRESS:
 						statementList.addStatement(compress());
@@ -235,7 +231,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(include());
 						break;
 					case FETCH:
-						statementList.addStatement(fetch());
+						var fetch = fetch();
+						statementList.addStatement(fetch);
+						externalModuleReferences.add(fetch);
 						break;
 					case MULTIPLY:
 						statementList.addStatement(multiply());
@@ -2835,10 +2833,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				externalPerform.setReference(foundModule);
 			}
 
+			externalModuleReferences.add(externalPerform);
 			return externalPerform;
 		}
 
-		unresolvedReferences.add(internalPerform);
+		unresolvedSymbols.add(internalPerform);
 		return internalPerform;
 	}
 
@@ -3093,7 +3092,10 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						report(diagnostic);
 					}
 				}
-				unresolvedReferences.addAll(nestedParser.unresolvedReferences);
+
+				externalModuleReferences.addAll(nestedParser.externalModuleReferences);
+
+				unresolvedSymbols.addAll(nestedParser.unresolvedSymbols);
 				referencableNodes.addAll(nestedParser.referencableNodes);
 				include.setBody(
 					statementList.result(),
@@ -4748,7 +4750,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		var resolvedReferences = new ArrayList<ISymbolReferenceNode>();
 
-		for (var unresolvedReference : unresolvedReferences)
+		for (var unresolvedReference : unresolvedSymbols)
 		{
 
 			// external subroutines which don't pass parameter couldn't be distinguished from local subroutines up to this point
@@ -4760,6 +4762,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					var externalPerform = new ExternalPerformNode(((InternalPerformNode) unresolvedReference));
 					((BaseSyntaxNode) unresolvedReference.parent()).replaceChild((BaseSyntaxNode) unresolvedReference, externalPerform);
 					externalPerform.setReference(foundModule);
+					externalModuleReferences.add(externalPerform);
 				}
 
 				// We mark the reference as resolved even though it might not be found.
@@ -4768,7 +4771,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			}
 		}
 
-		unresolvedReferences.removeAll(resolvedReferences);
+		unresolvedSymbols.removeAll(resolvedReferences);
 	}
 
 	private void resolveUnresolvedInternalPerforms()
@@ -4776,7 +4779,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var resolvedReferences = new ArrayList<ISymbolReferenceNode>();
 		for (var referencableNode : referencableNodes)
 		{
-			for (var unresolvedReference : unresolvedReferences)
+			for (var unresolvedReference : unresolvedSymbols)
 			{
 				if (!(unresolvedReference instanceof InternalPerformNode))
 				{
@@ -4792,7 +4795,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			}
 		}
 
-		unresolvedReferences.removeAll(resolvedReferences);
+		unresolvedSymbols.removeAll(resolvedReferences);
 	}
 
 	@SuppressWarnings(

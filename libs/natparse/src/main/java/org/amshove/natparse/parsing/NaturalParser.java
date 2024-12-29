@@ -77,7 +77,16 @@ public class NaturalParser
 
 		if (file.getFiletype().canHaveBody())
 		{
-			topLevelNodes.add(parseBody(tokens, moduleProvider, naturalModule));
+			var bodyParseResult = parseBody(tokens, moduleProvider, naturalModule);
+			topLevelNodes.add(bodyParseResult.body());
+
+			if (file.getFiletype() != NaturalFileType.COPYCODE)
+			{
+				// Copycodes will be analyzed in context of their including module.
+				// Analyzing them doesn't make sense, because we can't check parameter
+				// types etc.
+				ExternalParameterCheck.performParameterCheck(naturalModule, bodyParseResult.moduleRefs());
+			}
 		}
 
 		naturalModule.setSyntaxTree(SyntaxTree.create(ReadOnlyList.from(topLevelNodes)));
@@ -191,7 +200,7 @@ public class NaturalParser
 		return defineData;
 	}
 
-	private IStatementListNode parseBody(TokenList tokens, IModuleProvider moduleProvider, NaturalModule naturalModule)
+	private BodyParseResult parseBody(TokenList tokens, IModuleProvider moduleProvider, NaturalModule naturalModule)
 	{
 		var statementParser = new StatementListParser(moduleProvider);
 		var result = statementParser.parse(tokens);
@@ -219,7 +228,7 @@ public class NaturalParser
 					reportNoSourceCodeAfterEndStatementAllowed(naturalModule, statement);
 					break;
 				}
-				endStatementFound = endStatementFound || (statement instanceof IEndNode);
+				endStatementFound = statement instanceof IEndNode;
 			}
 			if (!endStatementFound && naturalModule.body().statements().hasItems())
 			{
@@ -233,7 +242,7 @@ public class NaturalParser
 			}
 		}
 
-		return result.result();
+		return new BodyParseResult(result.result(), statementParser.moduleReferencingNodes());
 	}
 
 	private void addRelevantParserDiagnostics(NaturalModule naturalModule, ParseResult<IStatementListNode> result)
@@ -279,7 +288,7 @@ public class NaturalParser
 		}
 
 		var unresolvedAdabasArrayAccess = new ArrayList<ISymbolReferenceNode>();
-		for (var unresolvedReference : statementParser.getUnresolvedReferences())
+		for (var unresolvedReference : statementParser.unresolvedSymbols())
 		{
 			if (unresolvedReference.parent() instanceof IAdabasIndexAccess)
 			{
@@ -476,4 +485,7 @@ public class NaturalParser
 
 		return true;
 	}
+
+	private record BodyParseResult(IStatementListNode body, List<IModuleReferencingNode> moduleRefs)
+	{}
 }

@@ -409,7 +409,7 @@ class StatementListParserShould extends StatementParseTest
 			""");
 
 		assertThat(statements.statements()).hasSize(2);
-		assertThat(((StatementListParser) sut).getUnresolvedReferences()).isEmpty();
+		assertThat(((StatementListParser) sut).unresolvedSymbols()).isEmpty();
 	}
 
 	@Test
@@ -421,6 +421,20 @@ class StatementListParserShould extends StatementParseTest
 		var perform = assertParsesSingleStatement("PERFORM EXTERNAL-SUB", IExternalPerformNode.class);
 		assertThat(perform.reference()).isEqualTo(calledSubroutine);
 		assertThat(calledSubroutine.callers()).contains(perform);
+	}
+
+	@Test
+	void parseExternalPerformCallsAndNotMistakeNegativeNumbersAsStringConcat()
+	{
+		var calledSubroutine = new NaturalModule(null);
+		moduleProvider.addModule("EXTERNAL-SUB", calledSubroutine);
+
+		var perform = assertParsesSingleStatement("PERFORM EXTERNAL-SUB 'String literal' -1", IExternalPerformNode.class);
+		assertThat(perform.providedParameter())
+			.as("Only two parameter were expected")
+			.hasSize(2);
+		assertLiteral(perform.providedParameter().first(), SyntaxKind.STRING_LITERAL, "'String literal'");
+		assertNodeType(perform.providedParameter().last(), IPrefixUnaryArithmeticExpressionNode.class);
 	}
 
 	@Test
