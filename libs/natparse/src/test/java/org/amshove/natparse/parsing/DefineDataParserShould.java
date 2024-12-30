@@ -1507,8 +1507,8 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			define data
 			local
 			1 myview view of myddm
-				2 withtype (n2) (hd='Header')
 				2 withouttype (hd='Header')
+				2 withtype (n2) (hd='Header')
 			end-define
 		""");
 	}

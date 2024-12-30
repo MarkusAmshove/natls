@@ -261,16 +261,6 @@ class ViewParser extends AbstractParser<ViewNode>
 
 		var typedVariable = new TypedVariableNode(variable);
 
-		// Consume optional EMHDPM
-		if (consumeOptionally(typedVariable, SyntaxKind.LPAREN))
-		{
-			while (!isAtEnd() && peek().kind() != SyntaxKind.RPAREN && peek().kind() != SyntaxKind.END_DEFINE)
-			{
-				consume(typedVariable);
-			}
-			consumeMandatory(typedVariable, SyntaxKind.RPAREN);
-		}
-
 		var isCountVariable = variable.name().startsWith("C*");
 		var fieldName = isCountVariable ? variable.name().substring(2) : variable.name();
 		var ddmField = view.ddm().findField(fieldName);
