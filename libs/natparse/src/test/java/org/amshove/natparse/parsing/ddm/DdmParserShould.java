@@ -179,11 +179,42 @@ P 1 AG A-SUPERDESCRIPTOR                 A   25  N S
 	}
 
 	@Test
-	void throwAnExceptionIfNoMatchingFieldToReferenceIsFound()
+	void parseASubdescriptor()
 	{
-		assertThatExceptionOfType(NaturalParseException.class)
-			.isThrownBy(() -> parseFromResource("SuperdescriptorChildMissingReference.NSD"))
-			.withMessage("Could not find field referenced by superdescriptor child \"ANOTHER-NUMBER\"");
+		var ddm = new DdmParser().parseDdm("""
+DB: 000 FILE: 100  - MY-DDM                      DEFAULT SEQUENCE:
+TYPE: ADABAS
+
+T L DB Name                              F Leng  S D Remark
+- - -- --------------------------------  - ----  - - ------------------------
+  1 AG A-SUBDESCRIPTOR                   A   25  N S
+*      -------- SOURCE FIELD(S) -------
+*      SUB-ONE (1-15)
+*      SUB-TWO (15-25)
+*      SUB-THREE (1-1)
+			""");
+
+		var descriptor = findField(ddm, "A-SUBDESCRIPTOR");
+		assertThat(descriptor.format()).isEqualTo(DataFormat.ALPHANUMERIC);
+		assertThat(descriptor.length()).isEqualTo(25);
+		// TODO: We assume that it is not a descriptor itself? What does predict do?
+		// 	The documentation says "A subdescriptor is a descriptor derived from a portion of an elementary field. The elementary field may or may not be a descriptor itself. "
+		assertThat(descriptor.descriptor()).isEqualTo(DescriptorType.NONE);
+
+		var subOne = findField(ddm, "SUB-ONE");
+		assertThat(subOne.format()).isEqualTo(DataFormat.ALPHANUMERIC);
+		assertThat(subOne.length()).isEqualTo(15);
+		assertThat(subOne.descriptor()).isEqualTo(DescriptorType.SUBDESCRIPTOR);
+
+		var subTwo = findField(ddm, "SUB-TWO");
+		assertThat(subTwo.format()).isEqualTo(DataFormat.ALPHANUMERIC);
+		assertThat(subTwo.length()).isEqualTo(11);
+		assertThat(subTwo.descriptor()).isEqualTo(DescriptorType.SUBDESCRIPTOR);
+
+		var subThree = findField(ddm, "SUB-THREE");
+		assertThat(subThree.format()).isEqualTo(DataFormat.ALPHANUMERIC);
+		assertThat(subThree.length()).isEqualTo(1);
+		assertThat(subThree.descriptor()).isEqualTo(DescriptorType.SUBDESCRIPTOR);
 	}
 
 	private IDataDefinitionModule parseFromResource(String resourceName)
