@@ -16,7 +16,7 @@ jobs:
         os: [ ubuntu-latest, windows-latest ]
     steps:
       - name: Download Test Report from ${{ matrix.os }}
-        uses: dawidd6/action-download-artifact@v2
+        uses: dawidd6/action-download-artifact@v6
         with:
           name: junit-test-results-${{ matrix.os }}
           workflow: ${{ github.event.workflow.id }}
