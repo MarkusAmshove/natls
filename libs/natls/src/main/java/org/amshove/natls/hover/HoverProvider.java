@@ -32,18 +32,18 @@ public class HoverProvider
 		{
 			if (context.tokenToHover().kind() == SyntaxKind.ATTRIBUTES)
 			{
-				return hoverWorkfileAttributes();
+				return StaticHovers.WORKFILE_ATTRIBUTE_HOVER;
 			}
 
 			if (context.tokenToHover().kind() == SyntaxKind.TYPE)
 			{
-				return hoverWorkfileType();
+				return StaticHovers.WORKFILE_TYPE_HOVER;
 			}
 		}
 
-		if (context.nodeToHover() == null)
+		if (context.tokenToHover().kind() == SyntaxKind.MASK)
 		{
-			return EMPTY_HOVER;
+			return StaticHovers.MASK_HOVER;
 		}
 
 		// TODO: This should use nodes instead of tokens, but does not work currently in every case, as they're only created when parsing operands
@@ -85,58 +85,6 @@ public class HoverProvider
 		}
 
 		return EMPTY_HOVER;
-	}
-
-	private Hover hoverWorkfileType()
-	{
-		var contentBuilder = MarkupContentBuilderFactory.newBuilder();
-		contentBuilder.appendParagraph("Specifies the type of the work file.");
-		contentBuilder.appendSection(
-			"Possible types", b -> b
-				.appendBullet("`DEFAULT` - Determines the file type from the file extension.")
-				.appendBullet("`TRANSFER`- Data connection for ENTIRE CONNECTION.")
-				.appendBullet("`SAG` - Binary format.")
-				.appendBullet("`ASCII` - Text files terminated by a carriage return (windows) and line feed.")
-				.appendBullet("`ASCII-COMPRESSED` - ASCII but all whitespace removed.")
-				.appendBullet("`ENTIRECONNECTION` - Data connection for ENTIRE CONNECTION.")
-				.appendBullet("`UNFORMATTED` - Unformatted file, no format information is implied.")
-				.appendBullet("`PORTABLE` - Portable file type between endian types.")
-				.appendBullet("`CSV` - CSV file where each record is written to its own line.")
-		);
-
-		return new Hover(contentBuilder.build());
-	}
-
-	private Hover hoverWorkfileAttributes()
-	{
-		var contentBuilder = MarkupContentBuilderFactory.newBuilder();
-		contentBuilder.appendParagraph("Specifies file attributes for the defined work file.");
-		contentBuilder.append("Multiple attributes can be specified by separating them by comma or whitespace. ");
-		contentBuilder.append("There are 4 categories of attributes that can be applied. ");
-		contentBuilder.appendItalic("If there are two attributes of the same category specified, only the last one is applied.");
-		contentBuilder.appendNewline();
-		contentBuilder.appendSection(
-			"Appending", b -> b
-				.appendBullet("`NOAPPEND `- File is written from the start. Default value")
-				.appendBullet("`APPEND `- Content is appended to the given file.")
-		);
-		contentBuilder.appendSection(
-			"Keep/Delete", b -> b
-				.appendBullet("`KEEP `- Keep the file when on CLOSE. Default value")
-				.appendBullet("`DELETE `- Delete the work file on CLOSE.")
-		);
-		contentBuilder.appendSection(
-			"Byte Order Mark", b -> b
-				.appendBullet("`NOBOM `- Don't add a BOM. Default value")
-				.appendBullet("`BOM `- Add a BOM in front of the content.")
-		);
-		contentBuilder.appendSection(
-			"Carriage return", b -> b
-				.appendBullet("`REMOVECR` - Remove carriage return characters on ASCII files. Default value")
-				.appendBullet("`KEEPCR` - Keep carriage return characters.")
-		);
-
-		return new Hover(contentBuilder.build());
 	}
 
 	public Hover hoverModule(INaturalModule module)
@@ -285,7 +233,7 @@ public class HoverProvider
 		contentBuilder.appendSection("Parameter", nested ->
 		{
 			var parameterBlock = new StringBuilder();
-			for (var parameterDefinition : hasDefineData.defineData().parameterInOrder())
+			for (var parameterDefinition : hasDefineData.defineData().declaredParameterInOrder())
 			{
 				if (parameterDefinition instanceof IUsingNode using)
 				{

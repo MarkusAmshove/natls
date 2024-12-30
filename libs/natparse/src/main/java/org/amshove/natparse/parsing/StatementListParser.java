@@ -37,15 +37,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		super(moduleProvider);
 	}
 
-	public List<ISymbolReferenceNode> getUnresolvedReferences()
-	{
-		return unresolvedReferences;
-	}
-
 	@Override
 	protected IStatementListNode parseInternal()
 	{
-		unresolvedReferences = new ArrayList<>();
 		referencableNodes = new ArrayList<>();
 		var statementList = statementList();
 		resolveUnresolvedInternalPerforms();
@@ -158,7 +152,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						}
 						break;
 					case CALLNAT:
-						statementList.addStatement(callnat());
+						var callnat = callnat();
+						statementList.addStatement(callnat);
+						externalModuleReferences.add(callnat);
 						break;
 					case COMPRESS:
 						statementList.addStatement(compress());
@@ -235,7 +231,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(include());
 						break;
 					case FETCH:
-						statementList.addStatement(fetch());
+						var fetch = fetch();
+						statementList.addStatement(fetch);
+						externalModuleReferences.add(fetch);
 						break;
 					case MULTIPLY:
 						statementList.addStatement(multiply());
@@ -673,7 +671,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 	private StatementNode backout() throws ParseError
 	{
-		var stmt = new BackoutNode();
+		var stmt = new BackoutTransactionNode();
 		consumeMandatory(stmt, SyntaxKind.BACKOUT);
 		consumeOptionally(stmt, SyntaxKind.TRANSACTION);
 		return stmt;
@@ -2829,16 +2827,17 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				var operand = consumeModuleParameter(externalPerform);
 				externalPerform.addParameter(operand);
 			}
-			var foundModule = sideloadModule(externalPerform.referencingToken().trimmedSymbolName(32), externalPerform.referencingToken());
+			var foundModule = sideloadModule(externalPerform.referencingToken().trimmedSymbolName(32), externalPerform.referencingToken(), NaturalFileType.SUBROUTINE);
 			if (foundModule != null)
 			{
 				externalPerform.setReference(foundModule);
 			}
 
+			externalModuleReferences.add(externalPerform);
 			return externalPerform;
 		}
 
-		unresolvedReferences.add(internalPerform);
+		unresolvedSymbols.add(internalPerform);
 		return internalPerform;
 	}
 
@@ -2994,7 +2993,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			if (consumeOptionally(callnat, SyntaxKind.STRING_LITERAL))
 			{
 				callnat.setReferencingToken(previousToken());
-				var referencedModule = sideloadModule(callnat.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token());
+				var referencedModule = sideloadModule(callnat.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token(), NaturalFileType.SUBPROGRAM);
 				callnat.setReferencedModule((NaturalModule) referencedModule);
 				if (referencedModule != null
 					&& referencedModule.file() != null && referencedModule.file().getFiletype() != null
@@ -3046,7 +3045,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			include.addParameter(parameter);
 		}
 
-		var referencedModule = sideloadModule(referencingToken.symbolName(), previousTokenNode().token());
+		var referencedModule = sideloadModule(referencingToken.symbolName(), previousTokenNode().token(), NaturalFileType.COPYCODE);
 		include.setReferencedModule((NaturalModule) referencedModule);
 
 		if (referencedModule != null && currentModuleCallStack.add(referencingToken.symbolName()))
@@ -3093,7 +3092,10 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						report(diagnostic);
 					}
 				}
-				unresolvedReferences.addAll(nestedParser.unresolvedReferences);
+
+				externalModuleReferences.addAll(nestedParser.externalModuleReferences);
+
+				unresolvedSymbols.addAll(nestedParser.unresolvedSymbols);
 				referencableNodes.addAll(nestedParser.referencableNodes);
 				include.setBody(
 					statementList.result(),
@@ -3144,7 +3146,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		if (consumeOptionally(fetch, SyntaxKind.STRING_LITERAL))
 		{
 			fetch.setReferencingToken(previousToken());
-			var referencedModule = sideloadModule(fetch.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token());
+			var referencedModule = sideloadModule(fetch.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token(), NaturalFileType.PROGRAM);
 			if (referencedModule != null
 				&& referencedModule.file() != null
 				&& referencedModule.file().getFiletype() != NaturalFileType.PROGRAM)
@@ -3719,7 +3721,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return statement;
 	}
 
-	private static final Set<SyntaxKind> DECIDE_ON_STOP_KINDS = Set.of(SyntaxKind.END_DECIDE, SyntaxKind.NONE, SyntaxKind.ANY, SyntaxKind.ALL, SyntaxKind.VALUE, SyntaxKind.VALUES);
+	private static final Set<SyntaxKind> DECIDE_ON_STOP_KINDS = Set.of(SyntaxKind.END_DECIDE, SyntaxKind.NONE, SyntaxKind.ANY, SyntaxKind.ALL, SyntaxKind.VALUE, SyntaxKind.VALUES, SyntaxKind.WHEN);
 	private static final List<SyntaxKind> DECIDE_ON_VALUE_KEYWORDS = List.of(SyntaxKind.VALUE, SyntaxKind.VALUES);
 
 	private DecideOnNode decideOn() throws ParseError
@@ -3803,7 +3805,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return branch;
 	}
 
-	private static final Set<SyntaxKind> DECIDE_FOR_STOP_KINDS = Set.of(SyntaxKind.END_DECIDE, SyntaxKind.WHEN);
+	private static final Set<SyntaxKind> DECIDE_FOR_STOP_KINDS = Set.of(SyntaxKind.END_DECIDE, SyntaxKind.WHEN, SyntaxKind.VALUE, SyntaxKind.VALUES);
 
 	private DecideForConditionNode decideFor() throws ParseError
 	{
@@ -3812,10 +3814,14 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(decide, SyntaxKind.FOR);
 		consumeEitherOptionally(decide, SyntaxKind.FIRST, SyntaxKind.EVERY);
 		consumeMandatory(decide, SyntaxKind.CONDITION);
+		var whenBranch = consumeMandatory(decide, SyntaxKind.WHEN);
 
-		while (!isAtEnd() && peekKind(SyntaxKind.WHEN))
+		while (!isAtEnd() && !peekKind(SyntaxKind.END_DECIDE))
 		{
-			var whenBranch = consumeMandatory(decide, SyntaxKind.WHEN);
+			if (peekKind(SyntaxKind.WHEN))
+			{
+				whenBranch = consumeMandatory(decide, SyntaxKind.WHEN);
+			}
 
 			if (peekKind(SyntaxKind.ANY))
 			{
@@ -4744,18 +4750,19 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		var resolvedReferences = new ArrayList<ISymbolReferenceNode>();
 
-		for (var unresolvedReference : unresolvedReferences)
+		for (var unresolvedReference : unresolvedSymbols)
 		{
 
 			// external subroutines which don't pass parameter couldn't be distinguished from local subroutines up to this point
 			if (unresolvedReference instanceof InternalPerformNode internalPerformNode)
 			{
-				var foundModule = sideloadModule(unresolvedReference.token().trimmedSymbolName(32), internalPerformNode.tokenNode().token());
+				var foundModule = sideloadModule(unresolvedReference.token().trimmedSymbolName(32), internalPerformNode.tokenNode().token(), NaturalFileType.SUBROUTINE);
 				if (foundModule != null)
 				{
 					var externalPerform = new ExternalPerformNode(((InternalPerformNode) unresolvedReference));
 					((BaseSyntaxNode) unresolvedReference.parent()).replaceChild((BaseSyntaxNode) unresolvedReference, externalPerform);
 					externalPerform.setReference(foundModule);
+					externalModuleReferences.add(externalPerform);
 				}
 
 				// We mark the reference as resolved even though it might not be found.
@@ -4764,7 +4771,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			}
 		}
 
-		unresolvedReferences.removeAll(resolvedReferences);
+		unresolvedSymbols.removeAll(resolvedReferences);
 	}
 
 	private void resolveUnresolvedInternalPerforms()
@@ -4772,7 +4779,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		var resolvedReferences = new ArrayList<ISymbolReferenceNode>();
 		for (var referencableNode : referencableNodes)
 		{
-			for (var unresolvedReference : unresolvedReferences)
+			for (var unresolvedReference : unresolvedSymbols)
 			{
 				if (!(unresolvedReference instanceof InternalPerformNode))
 				{
@@ -4788,7 +4795,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			}
 		}
 
-		unresolvedReferences.removeAll(resolvedReferences);
+		unresolvedSymbols.removeAll(resolvedReferences);
 	}
 
 	@SuppressWarnings(

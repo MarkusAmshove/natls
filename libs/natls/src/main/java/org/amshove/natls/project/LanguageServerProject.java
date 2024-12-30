@@ -34,7 +34,7 @@ public class LanguageServerProject
 
 	public LanguageServerFile findFile(NaturalFile naturalFile)
 	{
-		return libraries.get(naturalFile.getLibrary().getName()).findFile(naturalFile);
+		return libraries.get(naturalFile.getLibrary().getName()).findFilesByReferableName(naturalFile);
 	}
 
 	public LanguageServerFile findFile(Path filePath)
@@ -54,9 +54,10 @@ public class LanguageServerProject
 		return null;
 	}
 
+	// Used in tests only
 	public LanguageServerFile findFileByReferableName(String library, String referableName)
 	{
-		return libraries.get(library).findFile(referableName);
+		return libraries.get(library).findFilesByReferableName(referableName).stream().findFirst().orElse(null);
 	}
 
 	// Used in tests only
@@ -64,10 +65,14 @@ public class LanguageServerProject
 	{
 		for (var lib : libraries.values())
 		{
-			var foundFile = lib.findFile(referableName);
-			if (foundFile != null)
+			var foundFiles = lib.findFilesByReferableName(referableName);
+			if (foundFiles.size() > 1)
 			{
-				return foundFile;
+				throw new RuntimeException("More than one file matches referable name \"%s\"".formatted(referableName));
+			}
+			if (!foundFiles.isEmpty())
+			{
+				return foundFiles.getFirst();
 			}
 		}
 

@@ -1106,6 +1106,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		assertThat(parameter).isNotNull();
 		assert parameter != null;
 		assertThat(parameter.dimensions().first().upperBound()).isEqualTo(10);
+		assertThat(parameter.dimensions().first().isUpperVariable()).isTrue();
 	}
 
 	@Test
@@ -1497,6 +1498,19 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 
 		var view = assertNodeType(defineData.variables().first(), IViewNode.class);
 		assertNodeType(view.variables().first(), IGroupNode.class);
+	}
+
+	@Test
+	void allowEmHdPmInViewVariablesWithoutExplicitType()
+	{
+		assertParsesWithoutDiagnostics("""
+			define data
+			local
+			1 myview view of myddm
+				2 withouttype (hd='Header')
+				2 withtype (n2) (hd='Header')
+			end-define
+		""");
 	}
 
 	@Test
@@ -2153,7 +2167,7 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 			end-define
 			""");
 
-		var parameterInOrder = defineData.parameterInOrder();
+		var parameterInOrder = defineData.declaredParameterInOrder();
 
 		assertParameter(parameterInOrder.first(), IVariableNode.class, "#FIRSTPARAM");
 		assertParameter(parameterInOrder.get(1), IUsingNode.class, "PDA1");

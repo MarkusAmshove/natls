@@ -409,7 +409,7 @@ class StatementListParserShould extends StatementParseTest
 			""");
 
 		assertThat(statements.statements()).hasSize(2);
-		assertThat(((StatementListParser) sut).getUnresolvedReferences()).isEmpty();
+		assertThat(((StatementListParser) sut).unresolvedSymbols()).isEmpty();
 	}
 
 	@Test
@@ -421,6 +421,20 @@ class StatementListParserShould extends StatementParseTest
 		var perform = assertParsesSingleStatement("PERFORM EXTERNAL-SUB", IExternalPerformNode.class);
 		assertThat(perform.reference()).isEqualTo(calledSubroutine);
 		assertThat(calledSubroutine.callers()).contains(perform);
+	}
+
+	@Test
+	void parseExternalPerformCallsAndNotMistakeNegativeNumbersAsStringConcat()
+	{
+		var calledSubroutine = new NaturalModule(null);
+		moduleProvider.addModule("EXTERNAL-SUB", calledSubroutine);
+
+		var perform = assertParsesSingleStatement("PERFORM EXTERNAL-SUB 'String literal' -1", IExternalPerformNode.class);
+		assertThat(perform.providedParameter())
+			.as("Only two parameter were expected")
+			.hasSize(2);
+		assertLiteral(perform.providedParameter().first(), SyntaxKind.STRING_LITERAL, "'String literal'");
+		assertNodeType(perform.providedParameter().last(), IPrefixUnaryArithmeticExpressionNode.class);
 	}
 
 	@Test
@@ -3440,7 +3454,7 @@ class StatementListParserShould extends StatementParseTest
 	})
 	void parseBackoutTransaction(String statement)
 	{
-		assertParsesSingleStatement(statement, IBackoutNode.class);
+		assertParsesSingleStatement(statement, IBackoutTransactionNode.class);
 	}
 
 	@ParameterizedTest
@@ -4059,6 +4073,38 @@ class StatementListParserShould extends StatementParseTest
 			NONE
 			END-DECIDE
 			""", ParserError.STATEMENT_HAS_EMPTY_BODY);
+	}
+
+	@Test
+	void reportADiagnosticForDecideOnWithWhen()
+	{
+		assertDiagnostic("""
+			DECIDE ON FIRST #VAR
+			VALUE 'Hi'
+			IGNORE
+			WHEN 'Hello'
+			IGNORE
+			NONE
+			IGNORE
+			END-DECIDE
+			""", ParserError.UNEXPECTED_TOKEN);
+	}
+
+	@Test
+	void reportADiagnosticForDecideForWithValue()
+	{
+		assertDiagnostic("""
+			DECIDE FOR EVERY CONDITION
+			WHEN 1 > 2
+			IGNORE
+			VALUE 'Hi'
+			IGNORE
+			VALUES 'Hello'
+			IGNORE
+			NONE
+			IGNORE
+			END-DECIDE
+			""", ParserError.UNEXPECTED_TOKEN_EXPECTED_OPERAND);
 	}
 
 	@Test

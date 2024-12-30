@@ -58,7 +58,7 @@ public class MarkdownContentBuilder implements IMarkupContentBuilder
 	@Override
 	public IMarkupContentBuilder appendStrong(String content)
 	{
-		return append("**%s**", content);
+		return append("**%s**", escape(content));
 	}
 
 	@Override
@@ -94,5 +94,12 @@ public class MarkdownContentBuilder implements IMarkupContentBuilder
 			MarkupKind.MARKDOWN,
 			builder.toString().stripIndent().trim()
 		);
+	}
+
+	private static String escape(String content)
+	{
+		return content.replace("_", "\\_")
+			.replace("*", "\\*")
+			.replace("#", "\\#");
 	}
 }

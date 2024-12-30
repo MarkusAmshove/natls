@@ -24,23 +24,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Predicate;
 
 public class CliAnalyzer
 {
-	private final List<Predicate<NaturalFile>> filePredicates;
-	private final List<Predicate<IDiagnostic>> diagnosticPredicates;
 	private final ActualFilesystem filesystem;
 	private final IDiagnosticSink diagnosticSink;
 	private final boolean disableLinting;
 	private Path workingDirectory;
+	private final AnalyzerPredicates predicates;
 	private final FileStatusSink fileStatusSink;
 
-	public CliAnalyzer(Path workingDirectory, IDiagnosticSink sink, FileStatusSink fileStatusSink, List<Predicate<NaturalFile>> filePredicates, List<Predicate<IDiagnostic>> diagnosticPredicates, boolean disableLinting)
+	public CliAnalyzer(Path workingDirectory, IDiagnosticSink sink, FileStatusSink fileStatusSink, AnalyzerPredicates predicates, boolean disableLinting)
 	{
 		this.workingDirectory = workingDirectory;
-		this.filePredicates = filePredicates;
-		this.diagnosticPredicates = diagnosticPredicates;
+		this.predicates = predicates;
 		filesystem = new ActualFilesystem();
 		diagnosticSink = sink;
 		this.fileStatusSink = fileStatusSink;
@@ -88,6 +85,8 @@ public class CliAnalyzer
 			editorconfigPath.toFile().exists() ? ".editorconfig picked up" : ""
 		);
 
+		predicates.printSettings();
+
 		return analyze(projectFile.get());
 	}
 
@@ -123,7 +122,8 @@ public class CliAnalyzer
 					fileStatusSink.printError(file.getPath(), MessageType.INDEX_EXCEPTION, file.getInitException());
 					return;
 				}
-				if (filePredicates.stream().noneMatch(p -> p.test(file)))
+
+				if (!predicates.shouldAnalyzeFile(file))
 				{
 					fileStatusSink.printStatus(file.getPath(), MessageType.FILE_EXCLUDED);
 					return;
@@ -223,7 +223,7 @@ public class CliAnalyzer
 
 	private List<? extends IDiagnostic> filterDiagnostics(ReadOnlyList<? extends IDiagnostic> diagnostics)
 	{
-		return diagnostics.stream().filter(d -> diagnosticPredicates.stream().allMatch(p -> p.test(d))).toList();
+		return diagnostics.stream().filter(predicates::shouldPrintDiagnostic).toList();
 	}
 
 	private TokenList lex(NaturalFile file, ArrayList<IDiagnostic> allDiagnosticsInFile)

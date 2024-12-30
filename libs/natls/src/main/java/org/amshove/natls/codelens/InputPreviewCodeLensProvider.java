@@ -30,7 +30,7 @@ public class InputPreviewCodeLensProvider implements ICodeLensProvider
 		for (int i = 0; i < inputs.size(); i++)
 		{
 			var input = inputs.get(i);
-			var lens = codeLensWithoutCommand("Open Preview", LspUtil.toRange(input));
+			var lens = codeLensWithoutCommand("Open Preview", LspUtil.toRange(input.diagnosticPosition()));
 			var params = new InputStructureParams();
 			params.setUri(file.getUri());
 			params.setInputIndex(i);

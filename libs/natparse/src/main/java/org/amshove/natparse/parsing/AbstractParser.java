@@ -19,15 +19,16 @@ abstract class AbstractParser<T>
 {
 	protected IModuleProvider moduleProvider;
 	protected TokenList tokens;
-	protected List<ISymbolReferenceNode> unresolvedReferences;
-	private TokenNode previousNode;
-
-	private List<IDiagnostic> diagnostics = new ArrayList<>();
+	protected List<ISymbolReferenceNode> unresolvedSymbols;
 	protected IPosition relocatedDiagnosticPosition;
+	protected List<IModuleReferencingNode> externalModuleReferences;
+
+	private TokenNode previousNode;
+	private List<IDiagnostic> diagnostics;
 
 	protected static final Set<SyntaxKind> END_KINDS_THAT_END_ALL_ENDS = Set.of(SyntaxKind.END_REPEAT, SyntaxKind.END_FOR, SyntaxKind.END_FILE, SyntaxKind.END_LOOP, SyntaxKind.END_SORT, SyntaxKind.END_WORK, SyntaxKind.END_READ, SyntaxKind.END_FIND, SyntaxKind.END_HISTOGRAM);
 
-	public AbstractParser(IModuleProvider moduleProvider)
+	protected AbstractParser(IModuleProvider moduleProvider)
 	{
 		this.moduleProvider = moduleProvider;
 	}
@@ -36,6 +37,8 @@ abstract class AbstractParser<T>
 	{
 		this.tokens = tokens;
 		diagnostics = new ArrayList<>();
+		unresolvedSymbols = new ArrayList<>();
+		externalModuleReferences = new ArrayList<>();
 
 		var result = parseInternal();
 
@@ -49,14 +52,24 @@ abstract class AbstractParser<T>
 		return relocatedDiagnosticPosition != null;
 	}
 
-	protected INaturalModule sideloadModule(String referableName, SyntaxToken moduleIdentifierToken)
+	public List<ISymbolReferenceNode> unresolvedSymbols()
+	{
+		return unresolvedSymbols;
+	}
+
+	public List<IModuleReferencingNode> moduleReferencingNodes()
+	{
+		return externalModuleReferences;
+	}
+
+	protected INaturalModule sideloadModule(String referableName, SyntaxToken moduleIdentifierToken, NaturalFileType type)
 	{
 		if (moduleProvider == null)
 		{
 			return null;
 		}
 
-		var module = moduleProvider.findNaturalModule(referableName);
+		var module = moduleProvider.findNaturalModule(referableName, type);
 
 		if (module == null
 			&& !(referableName.startsWith("USR") && referableName.endsWith("N"))
@@ -77,7 +90,7 @@ abstract class AbstractParser<T>
 
 	protected IHasDefineData sideloadDefineData(TokenNode importNode)
 	{
-		var module = sideloadModule(importNode.token().symbolName(), importNode.token());
+		var module = sideloadModule(importNode.token().symbolName(), importNode.token(), null);
 		if (module instanceof IHasDefineData hasDefineData
 			&& TYPES_FOR_USINGS.contains(module.file().getFiletype()))
 		{
@@ -261,7 +274,7 @@ abstract class AbstractParser<T>
 			return literal;
 		}
 
-		if (peekAny(List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.HEX_LITERAL)) && peekKind(1, SyntaxKind.MINUS))
+		if (peekAny(List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.HEX_LITERAL)) && peekKind(1, SyntaxKind.MINUS) && peekAny(2, List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.HEX_LITERAL)))
 		{
 			return consumeStringConcat(node);
 		}
@@ -488,7 +501,7 @@ abstract class AbstractParser<T>
 	protected SymbolReferenceNode symbolReferenceNode(SyntaxToken token)
 	{
 		var node = new SymbolReferenceNode(token);
-		unresolvedReferences.add(node);
+		unresolvedSymbols.add(node);
 		return node;
 	}
 
@@ -526,8 +539,9 @@ abstract class AbstractParser<T>
 		var functionName = new TokenNode(token);
 		node.setReferencingToken(token);
 		node.addNode(functionName);
-		var module = sideloadModule(token.symbolName(), functionName.token());
+		var module = sideloadModule(token.symbolName(), functionName.token(), NaturalFileType.FUNCTION);
 		node.setReferencedModule((NaturalModule) module);
+		externalModuleReferences.add(node);
 
 		consumeMandatory(node, SyntaxKind.LPAREN);
 		if (peekKind(SyntaxKind.LESSER_GREATER) && peekKind(1, SyntaxKind.RPAREN))
@@ -1114,13 +1128,13 @@ abstract class AbstractParser<T>
 			consumeMandatory(reference, SyntaxKind.RPAREN);
 		}
 
-		unresolvedReferences.add(reference);
+		unresolvedSymbols.add(reference);
 		return reference;
 	}
 
 	protected IOperandNode consumeArrayAccess(BaseSyntaxNode reference) throws ParseError
 	{
-		if (peekKind(SyntaxKind.ASTERISK) && peekKind(1, SyntaxKind.RPAREN))
+		if (peekKind(SyntaxKind.ASTERISK) && (peekKind(1, SyntaxKind.RPAREN) || peekKind(1, SyntaxKind.COMMA)))
 		{
 			var rangedAccess = new RangedArrayAccessNode();
 			reference.addNode(rangedAccess);
@@ -1163,7 +1177,7 @@ abstract class AbstractParser<T>
 			// Get rid of the previous node
 			((BaseSyntaxNode) qualifiedRef.parent()).removeNode((BaseSyntaxNode) qualifiedRef);
 			((BaseSyntaxNode) qualifiedRef).setParent(null);
-			unresolvedReferences.remove(qualifiedRef);
+			unresolvedSymbols.remove(qualifiedRef);
 
 			var qualifiedToken = qualifiedRef.referencingToken();
 			var tokenSplit = qualifiedToken.source().split("\\.");
@@ -1198,8 +1212,8 @@ abstract class AbstractParser<T>
 			access.addOperand(firstRef);
 			access.addNode(dot);
 			access.addOperand(secondRef);
-			unresolvedReferences.add(firstRef);
-			unresolvedReferences.add(secondRef);
+			unresolvedSymbols.add(firstRef);
+			unresolvedSymbols.add(secondRef);
 		}
 		else
 		{

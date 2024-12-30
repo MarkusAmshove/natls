@@ -1,0 +1,6 @@
+name: Use of END/GET/BACKOUT TRANSACTION statements outside of Natural Program is strongly discouraged
+priority: MAJOR
+tags: clumsy, brain-overload, confusing, bad-practice, pitfall
+type: CODE_SMELL
+description:
+Transaction logic should only be placed in Natural Programs, because this is the top layer of Natural objects. If you put them in other Natural objects, these can be called from other objects, and then you have little control over transaction logic, anymore.

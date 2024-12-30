@@ -6,6 +6,7 @@ class ArrayDimension extends BaseSyntaxNode implements IArrayDimension
 {
 	private int lowerBound;
 	private int upperBound;
+	private boolean upperVariable;
 
 	@Override
 	public int lowerBound()
@@ -19,6 +20,12 @@ class ArrayDimension extends BaseSyntaxNode implements IArrayDimension
 		return upperBound;
 	}
 
+	@Override
+	public boolean isUpperVariable()
+	{
+		return upperVariable || upperBound == VARIABLE_BOUND;
+	}
+
 	void setLowerBound(int bound)
 	{
 		this.lowerBound = bound;
@@ -27,5 +34,10 @@ class ArrayDimension extends BaseSyntaxNode implements IArrayDimension
 	void setUpperBound(int bound)
 	{
 		this.upperBound = bound;
+	}
+
+	void setUpperVariable()
+	{
+		this.upperVariable = true;
 	}
 }

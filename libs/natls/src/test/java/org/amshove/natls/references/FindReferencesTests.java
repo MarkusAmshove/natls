@@ -59,7 +59,7 @@ class FindReferencesTests extends LanguageServerTest
 		return referenceTests.stream()
 			.map(rT -> DynamicContainer.dynamicContainer(rT.file.getReferableName(), rT.expectedReferences.stream().map(ref ->
 			{
-				var theModule = rT.file.findNaturalModule(ref.modulename);
+				var theModule = rT.file.findNaturalModule(ref.modulename, null);
 
 				var params = new ReferenceParams();
 				params.setTextDocument(rT.identifier());
@@ -73,7 +73,7 @@ class FindReferencesTests extends LanguageServerTest
 					return dynamicTest(
 						"%d:%d -> %s:%d:%d".formatted(rT.line, rT.col, ref.modulename, ref.line, ref.col),
 						() -> assertThat(references)
-							.as("No given reference matches expected location")
+							.as("No given reference matches expected location %d:%d in %s".formatted(ref.line, ref.col, ref.modulename))
 							.anyMatch(
 								l -> l.getUri().equals(theModule.file().getPath().toUri().toString())
 									&& l.getRange().getStart().getLine() == ref.line

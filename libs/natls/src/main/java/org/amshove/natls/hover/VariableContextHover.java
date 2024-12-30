@@ -5,6 +5,7 @@ import org.amshove.natparse.natural.IHasDefineData;
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.IUsingNode;
 import org.amshove.natparse.natural.IVariableNode;
+import org.amshove.natparse.natural.IViewNode;
 
 class VariableContextHover
 {
@@ -72,6 +73,12 @@ class VariableContextHover
 				source += " (%s)".formatted(formattedDimensions);
 			}
 		}
+
+		if (variable instanceof IViewNode view)
+		{
+			source += " VIEW OF %s".formatted(view.ddmNameToken().symbolName());
+		}
+
 		if (alwaysInclude || !comment.isEmpty())
 		{
 			appendComment("%s %s".formatted(source, comment), chain);
@@ -104,7 +111,7 @@ class VariableContextHover
 			{
 				variableContext.usingNode = using;
 				variableContext.usingComment = hoverContext.file().module().extractLineComment(using.position().line());
-				variableContext.declaringModule = hoverContext.file().findNaturalModule(using.target().symbolName());
+				variableContext.declaringModule = hoverContext.file().findNaturalModule(using.target().symbolName(), null);
 			}
 		}
 
