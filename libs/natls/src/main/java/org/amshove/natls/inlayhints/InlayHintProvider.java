@@ -4,6 +4,9 @@ import org.amshove.natls.languageserver.LspUtil;
 import org.amshove.natls.languageserver.NaturalLanguageService;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
+import org.amshove.natparse.natural.conditionals.ComparisonOperator;
+import org.amshove.natparse.natural.conditionals.INegatedConditionalCriteria;
+import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
 import org.amshove.natparse.natural.output.IOutputNewLineNode;
 import org.eclipse.lsp4j.InlayHint;
 import org.eclipse.lsp4j.InlayHintKind;
@@ -73,6 +76,40 @@ public class InlayHintProvider
 				hint.setPaddingLeft(true);
 				hints.add(hint);
 				return;
+			}
+
+			// TODO: Array könnte auch rechts
+			// TODO: Was wenn beide Seiten Array? Wird aus contains dann containsAny?
+			if (n instanceof IRelationalCriteriaNode criteria
+				&& criteria.left()instanceof IVariableReferenceNode variableReference
+				&& variableReference.dimensions().hasItems())
+			{
+				var isNegatedConditional = criteria.parent() instanceof INegatedConditionalCriteria;
+
+				if (criteria.operator() == ComparisonOperator.EQUAL)
+				{
+					var label = isNegatedConditional ? "noneIs" : "contains";
+					var hint = new InlayHint();
+					hint.setPosition(LspUtil.toPositionAfter(criteria.comparisonToken()));
+					hint.setLabel(label);
+					hint.setKind(InlayHintKind.Type);
+					hint.setPaddingLeft(true);
+					hints.add(hint);
+					return;
+				}
+
+				if (criteria.operator() == ComparisonOperator.NOT_EQUAL)
+				{
+					var label = isNegatedConditional ? "allAre" : "anyIsNot";
+					var hint = new InlayHint();
+					hint.setPosition(LspUtil.toPositionAfter(criteria.comparisonToken()));
+					hint.setLabel(label);
+					hint.setKind(InlayHintKind.Type);
+					hint.setPaddingLeft(true);
+					hints.add(hint);
+					return;
+				}
+
 			}
 		});
 
