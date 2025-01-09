@@ -56,10 +56,11 @@ class LiteralTypeInferenceShould
 			"127",
 			"200",
 			"12345",
-			"2147483647"
+			"2147483647",
+			"1.5",
+			"1,8"
 		}
 	)
-	// TODO: What about actual decimal numbers?
 	void inferTheCorrectTypeBasedOnTargetTypeForFloats(String source)
 	{
 		assertCompatibleType("F8", source);
