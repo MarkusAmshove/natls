@@ -97,6 +97,28 @@ class LexerForAttributeControlsShould extends AbstractLexerTest
 	}
 
 	@Test
+	void treatDoubleQuotesInEditMasksAtStartLiterally()
+	{
+		assertTokens(
+			"(EM=\"Q999)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.EM, "EM=\"Q999"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
+	void treatDoubleQuotesInEditMasksAnywhereLiterally()
+	{
+		assertTokens(
+			"(EM=99\"9\"9)",
+			token(SyntaxKind.LPAREN),
+			token(SyntaxKind.EM, "EM=99\"9\"9"),
+			token(SyntaxKind.RPAREN)
+		);
+	}
+
+	@Test
 	void recognizeEmWhenFollowingAnIdentifier()
 	{
 		assertTokens(

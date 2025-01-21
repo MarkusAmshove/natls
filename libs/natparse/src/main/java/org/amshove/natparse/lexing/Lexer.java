@@ -1212,7 +1212,7 @@ public class Lexer
 				nestedParens--;
 			}
 
-			if (scanner.peek() == '\'' || scanner.peek() == '"')
+			if (scanner.peek() == '\'')
 			{
 				isInString = !isInString;
 			}
