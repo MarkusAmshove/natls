@@ -376,12 +376,6 @@ class CodeInsertionPlacerShould extends EmptyProjectTest
 		);
 	}
 
-	@Test
-	void findARangeForAStatementPlacingItBeforeOnError()
-	{
-
-	}
-
 	private void assertInsertion(CodeInsertion insertion, String prefix, int startLine, int offsetInStartLine, int endLine, int offsetInEndLine, String suffix)
 	{
 		var range = insertion.range();
