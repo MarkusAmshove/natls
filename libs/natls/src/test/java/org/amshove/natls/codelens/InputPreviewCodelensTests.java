@@ -63,4 +63,31 @@ class InputPreviewCodelensTests extends CodeLensTest
 		configureLSConfig(newConfig);
 		testCodeLens(document, lenses -> assertThat(lenses).noneMatch(l -> l.getCommand().getTitle().contains("Open Preview")));
 	}
+
+	@Test
+	void codeLensShouldBeShownAtTheIncludeOfACopyCode()
+	{
+		var config = LSConfiguration.createDefault();
+		config.getMaps().setEnablePreview(true);
+		configureLSConfig(config);
+		createOrSaveFile("LIBONE", "MYCC.NSC", """
+			INPUT 'Hello
+
+			INPUT 'Hello 2'
+			""");
+		var document = createOrSaveFile("LIBONE", "PROG.NSP", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+			INCLUDE MYCC
+			END
+			""");
+
+		testCodeLens(
+			document,
+			// all on the line of the INCLUDE
+			lenses -> assertThat(lenses.stream().filter(l -> l.getCommand().getTitle().contains("Open Preview")))
+				.isNotEmpty()
+				.allMatch(l -> l.getRange().getStart().getLine() == 2)
+		);
+	}
 }

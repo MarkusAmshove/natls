@@ -346,6 +346,7 @@ public class NodeUtil
 		return false;
 	}
 
+	@Nullable
 	public static <T extends IStatementNode> T findFirstStatementOfType(Class<T> statementType, ISyntaxTree tree)
 	{
 		if (statementType.isInstance(tree))

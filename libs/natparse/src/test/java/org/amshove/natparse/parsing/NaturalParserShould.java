@@ -56,7 +56,7 @@ class NaturalParserShould extends ParserIntegrationTest
 
 		var defineData = ((IFunction) module).defineData();
 		assertThat(defineData).isNotNull();
-		assertThat(defineData.parameterInOrder()).hasSize(1);
+		assertThat(defineData.declaredParameterInOrder()).hasSize(1);
 		assertThat(defineData.findVariable("#VAR1")).isNotNull();
 	}
 

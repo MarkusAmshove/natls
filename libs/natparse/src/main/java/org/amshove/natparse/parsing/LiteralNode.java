@@ -123,15 +123,18 @@ class LiteralNode extends TokenNode implements ILiteralNode
 		return bigInt.bitLength() / 8.0;
 	}
 
-	private IDataType reInferNumericWithoutDecimals()
+	private IDataType reInferNumericWithoutDecimals(IDataType targetType)
 	{
 		var digits = Long.toString(Long.parseLong(token().source())).length();
-		return new LiteralType(DataFormat.NUMERIC, digits);
+		return new LiteralType(DataFormat.NUMERIC, Math.max(digits, targetType.length()));
 	}
 
-	private IDataType reInferInteger()
+	private IDataType reInferInteger(IDataType targetType)
 	{
-		return new LiteralType(DataFormat.INTEGER, getIntegerLiteralLength(token().source()));
+		return new LiteralType(
+			DataFormat.INTEGER,
+			Math.max(getIntegerLiteralLength(token().source()), targetType.length())
+		);
 	}
 
 	@Override
@@ -139,7 +142,14 @@ class LiteralNode extends TokenNode implements ILiteralNode
 	{
 		if (targetType.format() == DataFormat.ALPHANUMERIC && inferredType.format() == DataFormat.INTEGER)
 		{
-			return reInferNumericWithoutDecimals();
+			return reInferNumericWithoutDecimals(targetType);
+		}
+
+		if (inferredType.format() == DataFormat.ALPHANUMERIC && targetType.format() == DataFormat.ALPHANUMERIC
+			&& inferredType.length() < targetType.length())
+		{
+			// Re-interpret type without trimming the literal string value
+			return new LiteralType(DataFormat.ALPHANUMERIC, token().stringValue().length());
 		}
 
 		if (!targetType.hasSameFamily(inferredType))
@@ -149,12 +159,12 @@ class LiteralNode extends TokenNode implements ILiteralNode
 
 		if (targetType.format() == DataFormat.NUMERIC && inferredType.format() == DataFormat.INTEGER)
 		{
-			return reInferNumericWithoutDecimals();
+			return reInferNumericWithoutDecimals(targetType);
 		}
 
 		if (targetType.format() == DataFormat.INTEGER)
 		{
-			return reInferInteger();
+			return reInferInteger(targetType);
 		}
 
 		return inferredType;

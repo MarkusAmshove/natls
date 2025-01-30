@@ -25,6 +25,7 @@ class LiteralTypeInferenceShould
 			"12345,I2",
 			"2147483647,I4",
 			"2147483648,N10",
+			"1,I4"
 		}
 	)
 	void inferTheCorrectTypeBasedOnTargetTypeForIntegers(String source, String targetType)
@@ -55,10 +56,11 @@ class LiteralTypeInferenceShould
 			"127",
 			"200",
 			"12345",
-			"2147483647"
+			"2147483647",
+			"1.5",
+			"1,8"
 		}
 	)
-	// TODO: What about actual decimal numbers?
 	void inferTheCorrectTypeBasedOnTargetTypeForFloats(String source)
 	{
 		assertCompatibleType("F8", source);
@@ -118,11 +120,27 @@ class LiteralTypeInferenceShould
 			"2147483647,I4",
 			"2147483648,N10",
 			"2147483648.123,N10.3",
+			"1,N8"
 		}
 	)
 	void inferTheCorrectTypeForNumericLiterals(String source, String targetType)
 	{
 		assertCompatibleType(targetType, source);
+	}
+
+	@Test
+	void reInferTheTypeOfNumericLiteralsToTheBiggerTargetType()
+	{
+		assertReInferredType("N8", "1", "N8");
+	}
+
+	@Test
+	void reInferTheTypeOfUntrimmedStringLiteralsWhenTargetTypeIsBiggerThanTrimmedSize()
+	{
+		// The literal has a possible length of 1-10, depending on if it gets
+		// trimmed by the runtime. If we take the target type A8 into account,
+		// then it has to be seen as the biggest possible type.
+		assertReInferredType("A8", "'A         '", "A10");
 	}
 
 	private void assertInferredType(String targetType, String source, String expectedInferredType)

@@ -88,7 +88,7 @@ public class CodeInsertionPlacer
 			);
 		}
 
-		var lastNodePosition = findLastNodeInFileThatCantHaveStatementsAfter(file.getType(), withBody);
+		var lastNodePosition = findLastNodeThatWeDontWantHaveStatementsAfter(file.getType(), withBody);
 
 		return new CodeInsertion(
 			lastNodePosition.filePath(),
@@ -114,13 +114,20 @@ public class CodeInsertionPlacer
 		return new CodeInsertion(file.getPath(), "", LspUtil.toRangeBefore(firstStatement.position()));
 	}
 
-	private static IPosition findLastNodeInFileThatCantHaveStatementsAfter(NaturalFileType type, IModuleWithBody withBody)
+	private static IPosition findLastNodeThatWeDontWantHaveStatementsAfter(NaturalFileType type, IModuleWithBody withBody)
 	{
 		if (type == NaturalFileType.FUNCTION)
 		{
 			var lastNode = withBody.body().statements().last();
 			var index = withBody.body().statements().indexOf(lastNode);
 			return withBody.body().statements().get(index - 1).position();
+		}
+
+		var onErrorNode = NodeUtil.findFirstStatementOfType(IOnErrorNode.class, withBody.body());
+
+		if (onErrorNode != null)
+		{
+			return onErrorNode.position();
 		}
 
 		return type == NaturalFileType.SUBROUTINE

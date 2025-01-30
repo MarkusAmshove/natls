@@ -19,11 +19,19 @@ public interface IDefineData extends ISyntaxNode
 	 * Returns all {@link IParameterDefinitionNode} in order they've been declared.<br/>
 	 * This includes `PARAMETER 1...` and `PARAMETER USING ...` in order. <br/>
 	 *
-	 * `USING`s are not "exploded", which means the variables from within the `USING` are not included.
+	 * Nodes for usings and groups are still included.
 	 *
-	 * @return Non-expanded parameter in order
+	 * @return Parameter in order
 	 */
-	ReadOnlyList<IParameterDefinitionNode> parameterInOrder();
+	ReadOnlyList<IParameterDefinitionNode> declaredParameterInOrder();
+
+	/**
+	 * Returns all {@link ITypedVariableNode} in order they've been declared.<br/>
+	 * Variables from groups and usings are included, their parents are not. <br/>
+	 *
+	 * @return All effective parameter in order
+	 */
+	ReadOnlyList<ITypedVariableNode> effectiveParameterInOrder();
 
 	ReadOnlyList<IVariableNode> variables();
 
