@@ -1,0 +1,6 @@
+name: Long lines will not be visible immediately on Mainframe systems
+priority: MINOR
+tags: confusing
+type: CODE_SMELL
+description:
+Long lines will not be visible immediately on Mainframe systems, split them to make the readability better.
