@@ -297,6 +297,29 @@ class CodeInsertionPlacerShould extends EmptyProjectTest
 	}
 
 	@Test
+	void findARangeForASubroutineInASubprogramWithEndAndOnError()
+	{
+		var file = createOrSaveLanguageServerFile("LIBONE", "SUBPROG.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+			ON ERROR
+			IF *ERROR-NR = 7
+			IGNORE
+			END-IF
+			END-ERROR
+			END
+			""");
+
+		assertInsertion(
+			sut.findInsertionPositionForStatementAtEnd(file),
+			"",
+			2, 0,
+			2, 0,
+			System.lineSeparator()
+		);
+	}
+
+	@Test
 	void findARangeForASubroutineInASubprogramWithEmptyBody()
 	{
 		var file = createOrSaveLanguageServerFile("LIBONE", "SUBPROG.NSN", """
