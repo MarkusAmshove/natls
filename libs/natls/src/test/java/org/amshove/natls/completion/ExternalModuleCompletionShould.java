@@ -464,4 +464,29 @@ class ExternalModuleCompletionShould extends CompletionTest
 			.assertContains("SUBN2", CompletionItemKind.Class)
 			.assertContainsOnlyKinds(CompletionItemKind.Class);
 	}
+	
+	@Test
+	void onlyContainCopycodesWhenInvokedAfterInclude()
+	{
+		createOrSaveFile("LIBONE", "SUBN.NSN", """
+			DEFINE DATA PARAMETER
+			1 #P-PARAM (A10)
+			END-DEFINE
+			END
+			""");
+		createOrSaveFile("LIBONE", "CPYC.NSC", """
+			WRITE "Copycodes are just compiled verbatim into your program"
+			""");
+		
+		assertCompletions("LIBONE", "PROG1.NSP", """
+			DEFINE DATA LOCAL
+			01 #LANGUAGE (A7)
+			END-DEFINE
+			IGNORE
+			INCLUDE ${}$
+			END
+			""")
+			.assertContains("CPYC", CompletionItemKind.Module)
+			.assertContainsOnlyKinds(CompletionItemKind.Module);
+	}
 }
