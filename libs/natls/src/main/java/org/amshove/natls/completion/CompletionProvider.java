@@ -56,7 +56,7 @@ public class CompletionProvider
 		{
 			return dataAreaCompletions(file.getLibrary());
 		}
-		
+
 		if (completionContext.completesInclude())
 		{
 			completionItems.addAll(copycodeCompletions(file.getLibrary(), completionContext));
@@ -82,7 +82,6 @@ public class CompletionProvider
 			completionItems.addAll(localSubroutineCompletions(module, completionContext));
 			return completionItems;
 		}
-		
 
 		if (completionContext.completesCallnat() && !completionContext.completesParameter())
 		{
@@ -755,7 +754,8 @@ public class CompletionProvider
 			.stream()
 			.map(f ->
 			{
-				try {
+				try
+				{
 					var item = new CompletionItem(f.getReferableName());
 					item.setInsertText(f.getReferableName());
 					item.setKind(CompletionItemKind.Module);

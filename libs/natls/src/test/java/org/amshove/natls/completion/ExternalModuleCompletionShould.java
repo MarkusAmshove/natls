@@ -464,7 +464,7 @@ class ExternalModuleCompletionShould extends CompletionTest
 			.assertContains("SUBN2", CompletionItemKind.Class)
 			.assertContainsOnlyKinds(CompletionItemKind.Class);
 	}
-	
+
 	@Test
 	void onlyContainCopycodesWhenInvokedAfterInclude()
 	{
@@ -477,7 +477,7 @@ class ExternalModuleCompletionShould extends CompletionTest
 		createOrSaveFile("LIBONE", "CPYC.NSC", """
 			WRITE "Copycodes are just compiled verbatim into your program"
 			""");
-		
+
 		assertCompletions("LIBONE", "PROG1.NSP", """
 			DEFINE DATA LOCAL
 			01 #LANGUAGE (A7)
