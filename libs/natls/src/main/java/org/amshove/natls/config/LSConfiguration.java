@@ -1,5 +1,7 @@
 package org.amshove.natls.config;
 
+import org.eclipse.lsp4j.InitializeParams;
+
 public class LSConfiguration
 {
 

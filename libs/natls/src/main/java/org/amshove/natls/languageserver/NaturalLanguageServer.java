@@ -47,9 +47,7 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			log.info("Starting initialization");
 			var capabilities = new ServerCapabilities();
 
-			var config = params.getInitializationOptions() != null
-				? new Gson().fromJson((JsonObject) params.getInitializationOptions(), LSConfiguration.class)
-				: LSConfiguration.createDefault();
+			var config = getInitialConfiguration(params);
 			NaturalLanguageService.setConfiguration(config);
 
 			capabilities.setWorkspaceSymbolProvider(true);
@@ -156,6 +154,20 @@ public class NaturalLanguageServer implements LanguageServer, LanguageClientAwar
 			log.info("Initialization done. Took %dms".formatted(initEnd - initStart));
 			return new InitializeResult(capabilities, new ServerInfo(lspName != null ? lspName : "natls", lspVersion != null ? lspVersion : "dev"));
 		});
+	}
+
+	private LSConfiguration getInitialConfiguration(InitializeParams params)
+	{
+		// Some clients send an empty json object by default instead of null when no options
+		// are defined.
+		if (params.getInitializationOptions()instanceof JsonObject obj && obj.isEmpty())
+		{
+			return LSConfiguration.createDefault();
+		}
+
+		return params.getInitializationOptions() != null
+			? new Gson().fromJson((JsonObject) params.getInitializationOptions(), LSConfiguration.class)
+			: LSConfiguration.createDefault();
 	}
 
 	@Override
