@@ -57,6 +57,12 @@ public class CompletionProvider
 			return dataAreaCompletions(file.getLibrary());
 		}
 
+		if (completionContext.completesInclude())
+		{
+			completionItems.addAll(copycodeCompletions(file.getLibrary(), completionContext));
+			return completionItems;
+		}
+
 		var isTriggeredByDot = params.getContext().getTriggerKind() == CompletionTriggerKind.TriggerCharacter && ".".equals(
 			params.getContext().getTriggerCharacter()
 		);
@@ -732,6 +738,32 @@ public class CompletionProvider
 				catch (Exception e)
 				{
 					log.log(Level.SEVERE, "Subprogram completion threw an exception", e);
+					return null;
+				}
+			})
+			.filter(Objects::nonNull)
+			.toList();
+	}
+
+	private Collection<? extends CompletionItem> copycodeCompletions(
+		LanguageServerLibrary library,
+		CodeCompletionContext context
+	)
+	{
+		return library.getModulesOfType(NaturalFileType.COPYCODE, true)
+			.stream()
+			.map(f ->
+			{
+				try
+				{
+					var item = new CompletionItem(f.getReferableName());
+					item.setInsertText(f.getReferableName());
+					item.setKind(CompletionItemKind.Module);
+					return item;
+				}
+				catch (Exception e)
+				{
+					log.log(Level.SEVERE, "Copycode completion threw an exception", e);
 					return null;
 				}
 			})

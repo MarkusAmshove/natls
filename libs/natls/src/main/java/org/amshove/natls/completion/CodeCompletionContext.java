@@ -63,6 +63,11 @@ public record CodeCompletionContext(
 		return isCurrentTokenKind(SyntaxKind.PERFORM) || isPreviousTokenKind(SyntaxKind.PERFORM);
 	}
 
+	public boolean completesInclude()
+	{
+		return isCurrentTokenKind(SyntaxKind.INCLUDE) || isPreviousTokenKind(SyntaxKind.INCLUDE);
+	}
+
 	public boolean completesCallnat()
 	{
 		return isCurrentTokenKind(SyntaxKind.CALLNAT) || isPreviousTokenKind(SyntaxKind.CALLNAT);
