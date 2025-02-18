@@ -2,7 +2,7 @@ package org.amshove.natls.config;
 
 public class InitilizationConfiguration
 {
-	private boolean async;
+	private boolean async = false;
 
 	public boolean isAsync()
 	{

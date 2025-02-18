@@ -3,32 +3,14 @@ package org.amshove.natls.config;
 public class LSConfiguration
 {
 
-	private CompletionConfiguration completion;
-	private InlayHintsConfiguration inlayhints;
-	private InitilizationConfiguration initialization;
-	private MapsConfiguration maps;
+	private CompletionConfiguration completion = new CompletionConfiguration();
+	private InlayHintsConfiguration inlayhints = new InlayHintsConfiguration();
+	private InitilizationConfiguration initialization = new InitilizationConfiguration();
+	private MapsConfiguration maps = new MapsConfiguration();
 
 	public static LSConfiguration createDefault()
 	{
-		var config = new LSConfiguration();
-
-		var completion = new CompletionConfiguration();
-		completion.setQualify(false);
-		config.setCompletion(completion);
-
-		var inlay = new InlayHintsConfiguration();
-		inlay.setShowAssignmentTargetType(false);
-		config.setInlayhints(inlay);
-
-		var init = new InitilizationConfiguration();
-		init.setAsync(false);
-		config.setInitialization(init);
-
-		var maps = new MapsConfiguration();
-		maps.setEnablePreview(false);
-		config.setMaps(maps);
-
-		return config;
+		return new LSConfiguration();
 	}
 
 	public CompletionConfiguration getCompletion()

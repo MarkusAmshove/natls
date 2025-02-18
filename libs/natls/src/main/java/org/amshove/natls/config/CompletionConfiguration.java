@@ -2,7 +2,7 @@ package org.amshove.natls.config;
 
 public class CompletionConfiguration
 {
-	private boolean qualify;
+	private boolean qualify = false;
 
 	public boolean isQualify()
 	{

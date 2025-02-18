@@ -66,7 +66,7 @@ public class LspProjectNameResolver implements ParameterResolver
 		}
 	}
 
-	private ClientCapabilities createCapabilities()
+	public static ClientCapabilities createCapabilities()
 	{
 		var capabilities = new ClientCapabilities();
 		var window = new WindowClientCapabilities();

@@ -2,7 +2,7 @@ package org.amshove.natls.config;
 
 public class MapsConfiguration
 {
-	private boolean enablePreview;
+	private boolean enablePreview = false;
 
 	public boolean isPreviewEnabled()
 	{
