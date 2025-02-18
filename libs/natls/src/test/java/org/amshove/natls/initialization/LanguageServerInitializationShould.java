@@ -1,5 +1,6 @@
 package org.amshove.natls.initialization;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.amshove.natls.languageserver.NaturalLanguageServer;
 import org.amshove.natls.languageserver.NaturalLanguageService;
@@ -16,6 +17,7 @@ import java.util.concurrent.TimeoutException;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
+@SuppressWarnings("deprecation") // Deprecated LSP APIs
 class LanguageServerInitializationShould extends LanguageServerTest
 {
 	private LspTestContext context;
@@ -74,6 +76,36 @@ class LanguageServerInitializationShould extends LanguageServerTest
 		assertThat(effectiveConfig.getCompletion())
 			.as("Initial configuration was not set correctly")
 			.isNotNull();
+	}
+
+	@Test
+	void useDefaultConfigurationValuesWhenOnlyPartialConfigurationIsSupplied()
+		throws ExecutionException, InterruptedException, TimeoutException
+	{
+		var params = new InitializeParams();
+		params.setCapabilities(LspProjectNameResolver.createCapabilities());
+		var projectUri = context.project().rootPath().toUri().toString();
+		params.setRootUri(projectUri);
+		params.setWorkspaceFolders(
+			List.of(new WorkspaceFolder(projectUri, "Natural"))
+		);
+
+		var jsonConfig = "{ \"completion\": { \"qualify\": true } }";
+		params.setInitializationOptions(new Gson().fromJson(jsonConfig, JsonObject.class));
+
+		var server = new NaturalLanguageServer();
+		server.connect(new StubClient());
+		server.initialize(params).get(1, TimeUnit.MINUTES);
+
+		var effectiveConfig = NaturalLanguageService.getConfig();
+
+		assertThat(effectiveConfig.getCompletion().isQualify())
+			.as("User set configuration should be set")
+			.isTrue();
+
+		assertThat(effectiveConfig.getInitialization().isAsync())
+			.as("Configuration not included in partial configuration should have default value")
+			.isFalse();
 	}
 
 	@Override
