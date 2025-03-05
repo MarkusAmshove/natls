@@ -13,8 +13,6 @@ public class NaturalPlugin implements Plugin
 	{
 		context.addExtension(Natural.class);
 		context.addExtension(NaturalMetrics.class);
-		context.addExtension(NaturalProperties.class);
-		context.addExtensions(NaturalProperties.getProperties());
 		context.addExtension(NatlintSensor.class);
 		context.addExtension(NaturalQualityProfile.class);
 		context.addExtension(NaturalRuleRepository.class);

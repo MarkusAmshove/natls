@@ -8,7 +8,8 @@ public enum DiagnosticSinkType
 {
 	STDOUT,
 	NONE,
-	CSV;
+	CSV,
+	SONAR_CSV;
 
 	public IDiagnosticSink createSink(Path workspace)
 	{
@@ -17,6 +18,7 @@ public enum DiagnosticSinkType
 			case STDOUT -> new AnsiDiagnosticSink();
 			case NONE -> new NullDiagnosticSink();
 			case CSV -> new CsvDiagnosticSink(workspace.resolve("diagnostics.csv"));
+			case SONAR_CSV -> new SonarCsvDiagnosticSink();
 		};
 	}
 }
