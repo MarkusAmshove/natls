@@ -17,5 +17,6 @@ public class NaturalPlugin implements Plugin
 		context.addExtension(NaturalQualityProfile.class);
 		context.addExtension(NaturalRuleRepository.class);
 		context.addExtension(AggregateFileTypeMeasure.class);
+		context.addExtensions(NaturalProperties.getProperties());
 	}
 }

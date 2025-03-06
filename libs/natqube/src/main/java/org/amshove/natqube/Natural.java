@@ -15,6 +15,12 @@ public class Natural extends AbstractLanguage
 	@Override
 	public String[] getFileSuffixes()
 	{
+		return Natural.fileSuffixes();
+	}
+
+	// TODO: Create enum and reuse
+	public static String[] fileSuffixes()
+	{
 		return new String[]
 		{
 			".NSN", ".NSL", ".NSP", ".NSS", ".NSD", ".NSA", ".NSG", ".NSM", ".NSC", ".NS7"
