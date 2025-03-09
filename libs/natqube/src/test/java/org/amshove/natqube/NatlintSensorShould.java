@@ -37,7 +37,7 @@ class NatlintSensorShould
 			.setContents(
 				"file;ruleId;severity;message;line;offset;length\n"
 					+ "%s;%s;%s;%s;%d;%d;%d\n".formatted(
-						projectDirectory.resolve("Natural-Libraries/LIB/SRC/SUB.NSN"),
+						projectDirectory.resolve(Path.of("Natural-Libraries/LIB/SRC/SUB.NSN")),
 						"NL001",
 						"WARNING",
 						"Variable #A is unused",
