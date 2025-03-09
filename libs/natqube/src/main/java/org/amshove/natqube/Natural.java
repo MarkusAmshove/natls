@@ -23,7 +23,7 @@ public class Natural extends AbstractLanguage
 	{
 		return new String[]
 		{
-			".NSN", ".NSL", ".NSP", ".NSS", ".NSD", ".NSA", ".NSG", ".NSM", ".NSC", ".NS7"
+			".NSN", ".NSL", ".NSP", ".NSS", ".NSD", ".NSA", ".NSG", ".NSM", ".NSC", ".NS7", ".NSH"
 		};
 	}
 }

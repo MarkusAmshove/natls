@@ -1,5 +1,6 @@
 package org.amshove.natlint.cli.sinks;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -10,14 +11,17 @@ import com.google.common.io.FileWriteMode;
 import com.google.common.io.Files;
 import org.amshove.natparse.IDiagnostic;
 
-public class SonarCsvDiagnosticSink implements IDiagnosticSink
+public class SplitCsvDiagnosticSink implements IDiagnosticSink
 {
+	private final Path directoryForCsvFiles;
 	private CharSink currentSink;
-	private int currentFileCount = 0;
+	private int currentFileCount = 1;
 	private int currentDiagnosticCount = 0;
 
-	public SonarCsvDiagnosticSink()
-	{}
+	public SplitCsvDiagnosticSink(Path projectRootDirectoryPath)
+	{
+		this.directoryForCsvFiles = projectRootDirectoryPath.resolve("natlint");
+	}
 
 	@Override
 	public synchronized void printDiagnostics(int currentFileCount, Path filePath, List<IDiagnostic> diagnostics)
@@ -52,7 +56,12 @@ public class SonarCsvDiagnosticSink implements IDiagnosticSink
 		{
 			try
 			{
-				currentSink = Files.asCharSink(Path.of("natqube-diagnostics-%d.csv".formatted(currentFileCount)).toFile(), StandardCharsets.UTF_8, FileWriteMode.APPEND);
+				var diagnosticFilePath = directoryForCsvFiles.resolve("diagnostics-%d.csv".formatted(currentFileCount));
+
+				var diagnosticFile = diagnosticFilePath.toFile();
+				Files.createParentDirs(diagnosticFile);
+
+				currentSink = Files.asCharSink(diagnosticFile, StandardCharsets.UTF_8, FileWriteMode.APPEND);
 				currentSink.write("file;ruleId;severity;message;line;offset;length%n");
 			}
 			catch (IOException e)

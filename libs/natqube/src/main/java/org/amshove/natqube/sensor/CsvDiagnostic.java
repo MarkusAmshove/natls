@@ -50,4 +50,17 @@ public class CsvDiagnostic
 	{
 		return message;
 	}
+
+	@Override
+	public String toString()
+	{
+		return "CsvDiagnostic{" +
+			"id='" + id + '\'' +
+			", fileUri=" + fileUri +
+			", line=" + line +
+			", offsetInLine=" + offsetInLine +
+			", length=" + length +
+			", message='" + message + '\'' +
+			'}';
+	}
 }

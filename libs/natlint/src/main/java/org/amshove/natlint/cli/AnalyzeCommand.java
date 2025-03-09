@@ -183,7 +183,7 @@ public class AnalyzeCommand implements Callable<Integer>
 	{
 		if (ciMode)
 		{
-			sinkType = DiagnosticSinkType.SONAR_CSV;
+			sinkType = DiagnosticSinkType.SPLIT_CSV;
 		}
 	}
 
