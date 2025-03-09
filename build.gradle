@@ -9,7 +9,7 @@ plugins {
 ext {
 	JAVA_VERSION = 21
 	SLF4J_VERSION = '1.7.32'
-    SONAR_VERSION = '10.1.0.809'
+    SONAR_VERSION = '9.9.1.69595'
     SONAR_API_VERSION = '10.1.0.809'
 	libraries = [
 		// Implementation
