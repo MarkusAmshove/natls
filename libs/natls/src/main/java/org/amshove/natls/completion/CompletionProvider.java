@@ -169,6 +169,7 @@ public class CompletionProvider
 		var deleteEdit = new TextEdit(rangeToDelete, "");
 
 		addIfPostfix(completionItems, identifierName, rangeToInsert, deleteEdit);
+		addCompressPostfix(completionItems, identifierName, variableInvokedOn, rangeToInsert, deleteEdit);
 
 		if (variableInvokedOn.isArray())
 		{
@@ -191,6 +192,35 @@ public class CompletionProvider
 		{
 			addIfSpecifiedPostfix(completionItems, identifierName, rangeToInsert, deleteEdit);
 		}
+
+	}
+
+	private static void addCompressPostfix(ArrayList<CompletionItem> completionItems, String identifierName, IVariableNode variable, Range rangeToInsert, TextEdit deleteEdit)
+	{
+		if (variable.isArray())
+		{
+			completionItems.add(
+				createSnippetPostfixCompletionItem(
+					"compress",
+					new TextEdit(rangeToInsert, "COMPRESS %s(%s) INTO ${1:#RESULT} ${2:WITH ALL DELIMITER ';'}".formatted(identifierName, createAllDimensionAccess(variable))),
+					deleteEdit
+				)
+			);
+
+			return;
+		}
+
+		if (variable instanceof IGroupNode && !(variable instanceof IRedefinitionNode))
+		{
+			completionItems.add(
+				createSnippetPostfixCompletionItem(
+					"compress",
+					new TextEdit(rangeToInsert, "COMPRESS %s INTO ${1:#RESULT} ${2:WITH ALL DELIMITER ';'}".formatted(identifierName)),
+					deleteEdit
+				)
+			);
+		}
+
 	}
 
 	private static void addScanAndMask(
@@ -904,6 +934,11 @@ public class CompletionProvider
 		var info = new UnresolvedCompletionInfo(file.getReferableName(), file.getUri());
 		info.setPreviousText(context.previousTexts());
 		return info;
+	}
+
+	private static String createAllDimensionAccess(IVariableNode node)
+	{
+		return "*" + ", *".repeat(node.dimensions().size() - 1);
 	}
 
 }
