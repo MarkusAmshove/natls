@@ -197,30 +197,17 @@ public class CompletionProvider
 
 	private static void addCompressPostfix(ArrayList<CompletionItem> completionItems, String identifierName, IVariableNode variable, Range rangeToInsert, TextEdit deleteEdit)
 	{
-		if (variable.isArray())
-		{
-			completionItems.add(
-				createSnippetPostfixCompletionItem(
-					"compress",
-					new TextEdit(rangeToInsert, "COMPRESS %s(%s) INTO ${1:#RESULT} ${2:WITH ALL DELIMITER ';'}".formatted(identifierName, createAllDimensionAccess(variable))),
-					deleteEdit
-				)
-			);
+		var isProperGroup = variable instanceof IGroupNode && !(variable instanceof IRedefinitionNode);
+		var wantsDelimiters = variable.isArray() || isProperGroup;
 
-			return;
-		}
-
-		if (variable instanceof IGroupNode && !(variable instanceof IRedefinitionNode))
-		{
-			completionItems.add(
-				createSnippetPostfixCompletionItem(
-					"compress",
-					new TextEdit(rangeToInsert, "COMPRESS %s INTO ${1:#RESULT} ${2:WITH ALL DELIMITER ';'}".formatted(identifierName)),
-					deleteEdit
-				)
-			);
-		}
-
+		var delimiters = wantsDelimiters ? " ${0:WITH ALL DELIMITER ';'}" : "${0}";
+		completionItems.add(
+			createSnippetPostfixCompletionItem(
+				"compress",
+				new TextEdit(rangeToInsert, "COMPRESS %s INTO ${1:#RESULT}%s".formatted(identifierAccess(identifierName, variable), delimiters)),
+				deleteEdit
+			)
+		);
 	}
 
 	private static void addScanAndMask(
@@ -387,7 +374,7 @@ public class CompletionProvider
 		completionItems.add(
 			createPlainTextPostfixCompletionItem(
 				"contains",
-				new TextEdit(rangeToInsert, "%s(*) = %s".formatted(identifierName, defaultValue)),
+				new TextEdit(rangeToInsert, "%s = %s".formatted(identifierAccess(identifierName, variableInvokedOn), defaultValue)),
 				deleteEdit
 			)
 		);
@@ -395,7 +382,7 @@ public class CompletionProvider
 		completionItems.add(
 			createPlainTextPostfixCompletionItem(
 				"noneIs",
-				new TextEdit(rangeToInsert, "NOT %s(*) = %s".formatted(identifierName, defaultValue)),
+				new TextEdit(rangeToInsert, "NOT %s = %s".formatted(identifierAccess(identifierName, variableInvokedOn), defaultValue)),
 				deleteEdit
 			)
 		);
@@ -403,7 +390,7 @@ public class CompletionProvider
 		completionItems.add(
 			createPlainTextPostfixCompletionItem(
 				"anyIsNot",
-				new TextEdit(rangeToInsert, "%s(*) <> %s".formatted(identifierName, defaultValue)),
+				new TextEdit(rangeToInsert, "%s <> %s".formatted(identifierAccess(identifierName, variableInvokedOn), defaultValue)),
 				deleteEdit
 			)
 		);
@@ -411,7 +398,7 @@ public class CompletionProvider
 		completionItems.add(
 			createPlainTextPostfixCompletionItem(
 				"allAre",
-				new TextEdit(rangeToInsert, "NOT %s(*) <> %s".formatted(identifierName, defaultValue)),
+				new TextEdit(rangeToInsert, "NOT %s <> %s".formatted(identifierAccess(identifierName, variableInvokedOn), defaultValue)),
 				deleteEdit
 			)
 		);
@@ -478,12 +465,7 @@ public class CompletionProvider
 	)
 	{
 		var defaultValue = typedVar.type().emptyValue();
-		var identifierAccess = identifierName;
-
-		if (typedVar.isArray())
-		{
-			identifierAccess += "(*)";
-		}
+		var identifierAccess = identifierAccess(identifierName, typedVar);
 
 		var edit = new TextEdit(rangeToInsert, """
 			IF %s = %s
@@ -936,9 +918,12 @@ public class CompletionProvider
 		return info;
 	}
 
-	private static String createAllDimensionAccess(IVariableNode node)
+	private static String identifierAccess(String identifierName, IVariableNode node)
 	{
-		return "*" + ", *".repeat(node.dimensions().size() - 1);
+		var access = identifierName;
+		return node.isArray()
+			? String.format("%s(%s)", access, "*" + ", *".repeat(node.dimensions().size() - 1))
+			: access;
 	}
 
 }

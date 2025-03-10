@@ -747,6 +747,19 @@ class PostfixCompletionTests extends CompletionTest
 	class CompressSnippetsShould
 	{
 		@Test
+		void createACompressForScalarVariables()
+		{
+			assertCompletions("LIBONE", "SUB.NSN", ".", """
+			DEFINE DATA LOCAL
+			1 #VAR (A2)
+			END-DEFINE
+			#VAR.${}$
+			END
+			""")
+				.assertContainsCompleting("compress", CompletionItemKind.Snippet, "COMPRESS #VAR INTO ${1:#RESULT}${0}");
+		}
+
+		@Test
 		void createACompressArraySnippetForArrays()
 		{
 			assertCompletions("LIBONE", "SUB.NSN", ".", """
@@ -756,7 +769,7 @@ class PostfixCompletionTests extends CompletionTest
 			#ARR.${}$
 			END
 			""")
-				.assertContainsCompleting("compress", CompletionItemKind.Snippet, "COMPRESS #ARR(*, *) INTO ${1:#RESULT} ${2:WITH ALL DELIMITER ';'}");
+				.assertContainsCompleting("compress", CompletionItemKind.Snippet, "COMPRESS #ARR(*, *) INTO ${1:#RESULT} ${0:WITH ALL DELIMITER ';'}");
 		}
 
 		@Test
@@ -771,7 +784,7 @@ class PostfixCompletionTests extends CompletionTest
 			#AGRP.${}$
 			END
 			""")
-				.assertContainsCompleting("compress", CompletionItemKind.Snippet, "COMPRESS #AGRP INTO ${1:#RESULT} ${2:WITH ALL DELIMITER ';'}");
+				.assertContainsCompleting("compress", CompletionItemKind.Snippet, "COMPRESS #AGRP INTO ${1:#RESULT} ${0:WITH ALL DELIMITER ';'}");
 		}
 	}
 }
