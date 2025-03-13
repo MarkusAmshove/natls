@@ -1,13 +1,7 @@
 package org.amshove.natqube.sensor;
 
-import java.io.IOException;
-import java.net.URI;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import org.amshove.natqube.Natural;
+import org.amshove.natqube.measures.FileTypeMeasure;
 import org.amshove.natqube.rules.NaturalRuleRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,9 +11,17 @@ import org.sonar.api.batch.sensor.SensorContext;
 import org.sonar.api.batch.sensor.SensorDescriptor;
 import org.sonar.api.rule.RuleKey;
 
+import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Collectors;
+
 public class NatlintSensor implements Sensor
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NatlintSensor.class);
+	private Map<URI, InputFile> naturalFilesByUri;
 
 	@Override
 	public void describe(SensorDescriptor descriptor)
@@ -32,13 +34,16 @@ public class NatlintSensor implements Sensor
 	public void execute(SensorContext context)
 	{
 		var diagnosticFiles = new ArrayList<InputFile>();
-		var naturalFilesByUri = new HashMap<URI, InputFile>();
+		naturalFilesByUri = new HashMap<>();
+
+		var fileTypeMeasure = new FileTypeMeasure();
 
 		for (var inputFile : context.fileSystem().inputFiles(f -> true))
 		{
 			if (isInNatlintFolder(inputFile) && inputFile.filename().matches("diagnostics-\\d+\\.csv"))
 			{
-				LOGGER.info("Found diagnostic file: {}", inputFile.filename());
+				var filename = inputFile.filename();
+				LOGGER.info("Found diagnostic file: {}", filename);
 				diagnosticFiles.add(inputFile);
 				continue;
 			}
@@ -48,40 +53,47 @@ public class NatlintSensor implements Sensor
 			{
 				LOGGER.debug("Found natural file: {}", inputFile.uri());
 				naturalFilesByUri.put(inputFile.uri(), inputFile);
+				fileTypeMeasure.measure(context, inputFile);
 			}
 		}
 
 		for (var diagnosticFile : diagnosticFiles)
 		{
-			LOGGER.info("Processing diagnostics file {}", diagnosticFile.filename());
+			processDiagnosticFile(diagnosticFile, context);
+		}
+	}
 
-			var diagnostics = readDiagnostics(diagnosticFile);
-			if (diagnostics.isEmpty())
+	private void processDiagnosticFile(InputFile diagnosticFile, SensorContext context)
+	{
+		var diagnosticFileName = diagnosticFile.filename();
+		LOGGER.info("Processing diagnostics file {}", diagnosticFileName);
+
+		var diagnostics = readDiagnostics(diagnosticFile);
+		if (diagnostics.isEmpty())
+		{
+			LOGGER.warn("No diagnostics found in file {}", diagnosticFileName);
+			return;
+		}
+
+		var diagnosticCount = 0;
+
+		for (var entry : diagnostics.entrySet())
+		{
+			diagnosticCount += entry.getValue().size();
+			var inputFile = naturalFilesByUri.get(entry.getKey());
+			if (inputFile == null)
 			{
-				LOGGER.warn("No diagnostics found in file {}", diagnosticFile.filename());
+				LOGGER.warn("Could not find input file for URI {}", entry.getKey());
 				continue;
 			}
 
-			var diagnosticCount = 0;
-
-			for (var entry : diagnostics.entrySet())
+			for (var diagnostic : entry.getValue())
 			{
-				diagnosticCount += entry.getValue().size();
-				var inputFile = naturalFilesByUri.get(entry.getKey());
-				if (inputFile == null)
-				{
-					LOGGER.warn("Could not find input file for URI {}", entry.getKey());
-					continue;
-				}
-
-				for (var diagnostic : entry.getValue())
-				{
-					saveDiagnosticAsIssue(context, inputFile, diagnostic);
-				}
+				saveDiagnosticAsIssue(context, inputFile, diagnostic);
 			}
-
-			LOGGER.info("Processed {} diagnostics from file {}", diagnosticCount, diagnosticFile.filename());
 		}
+
+		LOGGER.info("Processed {} diagnostics from file {}", diagnosticCount, diagnosticFileName);
 	}
 
 	private static boolean isInNatlintFolder(InputFile inputFile)
