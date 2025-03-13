@@ -1,0 +1,6 @@
+name: Use of DB statements inside of Natural Copycode is discouraged
+priority: MAJOR
+tags: clumsy, confusing, bad-practice
+type: CODE_SMELL
+description:
+Hides implementation for XREF, because data access is shown in all INCLUDErs of the Copycode, and not just the Copycode itself. Interface is copied amongst INCLUDErs instead of being isolated. Meaning changes in interface will affect all INCLUDErs. Access modules should be isolated in Subprograms instead.
