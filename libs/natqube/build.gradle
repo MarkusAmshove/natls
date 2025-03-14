@@ -2,6 +2,7 @@ dependencies {
     compileOnly libraries.sonarqube_api
     compileOnly libraries.slf4j_api
 
+    testImplementation libraries.slf4j_nop
     testImplementation libraries.sonarqube_test_api
     testImplementation libraries.sonarqube_test_fixtures
 }
