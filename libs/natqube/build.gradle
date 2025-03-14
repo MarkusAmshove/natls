@@ -1,16 +1,14 @@
 dependencies {
     compileOnly libraries.sonarqube_api
     compileOnly libraries.slf4j_api
-    implementation project(':natparse')
-    implementation project(':natlint')
 
-    testImplementation project(':testhelpers')
+    testImplementation libraries.slf4j_nop
     testImplementation libraries.sonarqube_test_api
     testImplementation libraries.sonarqube_test_fixtures
 }
 
 tasks.withType(JavaCompile).configureEach {
-    options.release.set(21)
+    options.release.set(17)
 }
 
 configurations.testImplementation {
@@ -36,6 +34,7 @@ jar {
                 'Plugin-Name': 'NatQube',
                 'Plugin-SourcesUrl': 'https://github.com/MarkusAmshove/NatLS',
                 'Plugin-Version': archiveVersion,
+                'Plugin-RequiredForLanguages': 'natural',
                 'Sonar-Version': "${SONAR_VERSION}",
                 'SonarLint-Supported': 'false',
                 'Version': "${archiveVersion}",
@@ -66,6 +65,7 @@ tasks.register('fatJar', Jar) {
                 'Plugin-Name': 'NatQube',
                 'Plugin-SourcesUrl': 'https://github.com/MarkusAmshove/NatLS',
                 'Plugin-Version': archiveVersion,
+                'Plugin-RequiredForLanguages': 'natural',
                 'Sonar-Version': "${SONAR_VERSION}",
                 'SonarLint-Supported': 'false',
                 'Version': "${archiveVersion}",
@@ -73,7 +73,6 @@ tasks.register('fatJar', Jar) {
     }
     archiveFileName = 'natqube.jar'
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    dependsOn(':natparse:jar', ':natlint:jar')
     from {configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }
