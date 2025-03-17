@@ -1,12 +1,12 @@
 package org.amshove.natqube;
 
-import java.nio.file.Path;
-
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-
 import org.amshove.natqube.sensor.NatlintSensor;
 import org.junit.jupiter.api.Test;
 import org.sonar.api.batch.fs.internal.TestInputFileBuilder;
+
+import java.nio.file.Path;
+
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 class NatlintSensorShould extends SonarQubeTest
 {
@@ -37,6 +37,8 @@ class NatlintSensorShould extends SonarQubeTest
 		var sensor = new NatlintSensor();
 		sensor.execute(context);
 
-		assertThat(context.allIssues()).hasSize(1);
+		assertThat(context.allIssues())
+			.as("Number of all issues in project <{}> mismatches", projectKey)
+			.hasSize(1);
 	}
 }
