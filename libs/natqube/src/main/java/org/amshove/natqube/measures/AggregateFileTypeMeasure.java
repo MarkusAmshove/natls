@@ -18,7 +18,9 @@ public class AggregateFileTypeMeasure implements MeasureComputer
 		NaturalMetrics.NUMBER_OF_PDAS.getKey(),
 		NaturalMetrics.NUMBER_OF_MAPS.getKey(),
 		NaturalMetrics.NUMBER_OF_COPYCODES.getKey(),
-		NaturalMetrics.NUMBER_OF_FUNCTIONS.getKey()
+		NaturalMetrics.NUMBER_OF_FUNCTIONS.getKey(),
+		NaturalMetrics.NUMBER_OF_TEXT_FILES.getKey(),
+		NaturalMetrics.NUMBER_OF_CLASSES.getKey()
 	};
 
 	@Override

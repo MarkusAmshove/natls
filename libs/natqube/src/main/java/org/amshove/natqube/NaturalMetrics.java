@@ -109,6 +109,24 @@ public class NaturalMetrics implements Metrics
 		.setQualitative(true)
 		.create();
 
+	private static final String NUMBER_OF_TEXT_FILES_KEY = "natural_size_number_textfiles";
+	public static final Metric<Integer> NUMBER_OF_TEXT_FILES = new Metric.Builder(
+		NUMBER_OF_TEXT_FILES_KEY, "Textfiles", Metric.ValueType.INT
+	)
+		.setDescription("Number of Textfiles")
+		.setDomain(DOMAIN_SIZE)
+		.setQualitative(true)
+		.create();
+
+	private static final String NUMBER_OF_CLASSES_KEY = "natural_size_number_classes";
+	public static final Metric<Integer> NUMBER_OF_CLASSES = new Metric.Builder(
+		NUMBER_OF_CLASSES_KEY, "Classes", Metric.ValueType.INT
+	)
+		.setDescription("Number of Classes")
+		.setDomain(DOMAIN_SIZE)
+		.setQualitative(true)
+		.create();
+
 	@Override
 	public List<Metric> getMetrics()
 	{
@@ -123,7 +141,9 @@ public class NaturalMetrics implements Metrics
 			NUMBER_OF_PDAS,
 			NUMBER_OF_MAPS,
 			NUMBER_OF_COPYCODES,
-			NUMBER_OF_FUNCTIONS
+			NUMBER_OF_FUNCTIONS,
+			NUMBER_OF_TEXT_FILES,
+			NUMBER_OF_CLASSES
 		);
 	}
 }

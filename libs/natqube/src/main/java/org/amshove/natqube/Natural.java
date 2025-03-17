@@ -7,6 +7,8 @@ public class Natural extends AbstractLanguage
 	public static final String KEY = "natural";
 	public static final String NAME = "Natural";
 
+	private static String[] fileSuffixes;
+
 	public Natural()
 	{
 		super(KEY, NAME);
@@ -15,15 +17,16 @@ public class Natural extends AbstractLanguage
 	@Override
 	public String[] getFileSuffixes()
 	{
-		return Natural.fileSuffixes();
+		return fileSuffixes();
 	}
 
-	// TODO: Create enum and reuse
 	public static String[] fileSuffixes()
 	{
-		return new String[]
+		if (fileSuffixes == null)
 		{
-			".NSN", ".NSL", ".NSP", ".NSS", ".NSD", ".NSA", ".NSG", ".NSM", ".NSC", ".NS7", ".NSH"
-		};
+			fileSuffixes = NaturalModuleType.allFileExtensions().stream().map(extension -> "." + extension).toArray(String[]::new);
+		}
+
+		return fileSuffixes;
 	}
 }

@@ -107,4 +107,22 @@ public class FileTypeMeasureShould extends SonarQubeTest
 		assertMetric(NaturalMetrics.NUMBER_OF_FUNCTIONS, 1, file);
 	}
 
+	@Test
+	void countClasses()
+	{
+		var file = addNaturalFile("CLASS.NS4", "");
+
+		sut.measure(context, file);
+		assertMetric(NaturalMetrics.NUMBER_OF_CLASSES, 1, file);
+	}
+
+	@Test
+	void countTextFiles()
+	{
+		var file = addNaturalFile("TEXT.NST", "");
+
+		sut.measure(context, file);
+		assertMetric(NaturalMetrics.NUMBER_OF_TEXT_FILES, 1, file);
+	}
+
 }
