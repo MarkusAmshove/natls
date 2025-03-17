@@ -38,7 +38,7 @@ class NatlintSensorShould extends SonarQubeTest
 		sensor.execute(context);
 
 		assertThat(context.allIssues())
-			.as("Number of all issues in project <{}> mismatches", projectKey)
+			.as("Number of all issues in project <%s> mismatches", projectKey)
 			.hasSize(1);
 	}
 }
