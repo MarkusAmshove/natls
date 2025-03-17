@@ -19,16 +19,15 @@ class NatlintSensorShould extends SonarQubeTest
 			.setProjectBaseDir(projectPath)
 			.setModuleBaseDir(projectPath)
 			.setContents(
-				"file;ruleId;severity;message;line;offset;length\n"
-					+ "%s;%s;%s;%s;%d;%d;%d\n".formatted(
-						projectPath.resolve(Path.of("Natural-Libraries/LIB/SRC/SUB.NSN")),
-						"NL001",
-						"WARNING",
-						"Variable #A is unused",
-						1,
-						2,
-						2
-					)
+				"file;ruleId;severity;message;line;offset;length%n%s;%s;%s;%s;%d;%d;%d%n".formatted(
+					projectPath.resolve(Path.of("Natural-Libraries/LIB/SRC/SUB.NSN")),
+					"NL001",
+					"WARNING",
+					"Variable #A is unused",
+					1,
+					2,
+					2
+				)
 			)
 			.build();
 
