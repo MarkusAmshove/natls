@@ -1,10 +1,6 @@
 package org.amshove.natqube;
 
-import java.io.Serializable;
-import java.nio.file.Path;
-
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-
+import org.amshove.natqube.sensor.CsvDiagnostic;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.io.TempDir;
@@ -14,6 +10,11 @@ import org.sonar.api.batch.fs.internal.TestInputFileBuilder;
 import org.sonar.api.batch.sensor.internal.SensorContextTester;
 import org.sonar.api.measures.Metric;
 
+import java.io.Serializable;
+import java.nio.file.Path;
+
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+
 public abstract class SonarQubeTest
 {
 	@TempDir
@@ -22,6 +23,8 @@ public abstract class SonarQubeTest
 	protected final String projectKey = "naturalProject";
 
 	protected SensorContextTester context;
+
+	private int diagnosticFileCounter = 1;
 
 	@BeforeEach
 	protected void setUp()
@@ -40,6 +43,27 @@ public abstract class SonarQubeTest
 
 		context.fileSystem().add(file);
 		return file;
+	}
+
+	protected void addDiagnostic(CsvDiagnostic diagnostic)
+	{
+		var diagnosticFile = new TestInputFileBuilder(projectKey, "natlint/diagnostics-%d.csv".formatted(diagnosticFileCounter++))
+			.setProjectBaseDir(projectPath)
+			.setModuleBaseDir(projectPath)
+			.setContents(
+				"file;ruleId;severity;message;line;offset;length%n%s;%s;%s;%s;%d;%d;%d%n".formatted(
+					diagnostic.getFileUri(),
+					diagnostic.getId(),
+					"WARNING", // severity within this file doesn't matter
+					diagnostic.getMessage(),
+					diagnostic.getLine(),
+					diagnostic.getOffsetInLine(),
+					diagnostic.getLength()
+				)
+			)
+			.build();
+
+		context.fileSystem().add(diagnosticFile);
 	}
 
 	protected <T extends Serializable> void assertMetric(Metric<T> metric, T value, InputComponent file)

@@ -13,7 +13,6 @@ import org.sonar.api.rule.RuleKey;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -146,7 +145,7 @@ public class NatlintSensor implements Sensor
 				{
 					return null;
 				}
-				var absolutePath = Path.of(split[0]).toUri();
+				var absolutePath = URI.create(split[0]);
 				var id = split[1];
 				var line = split[4];
 				var offset = split[5];
