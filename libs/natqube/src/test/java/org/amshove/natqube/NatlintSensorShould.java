@@ -13,7 +13,7 @@ class NatlintSensorShould extends SonarQubeTest
 	@Test
 	void addAnIssue()
 	{
-		addNaturalFile("SUB.NSN", "DEFINE DATA LOCAL\n1 #A (A1)\nEND-DEFINE\n");
+		addNaturalFile("SUB.NSN", "DEFINE DATA LOCAL%n1 #A (A1)%nEND-DEFINE%n".formatted());
 
 		var diagnosticFile = new TestInputFileBuilder(projectKey, "natlint/diagnostics-1.csv")
 			.setProjectBaseDir(projectPath)
@@ -35,6 +35,13 @@ class NatlintSensorShould extends SonarQubeTest
 
 		var sensor = new NatlintSensor();
 		sensor.execute(context);
+
+		assertThat(context.allAnalysisErrors())
+			.as("Expected no analysis errors")
+			.isEmpty();
+
+		assertThat(context.fileSystem().files(f -> true))
+			.hasSize(2);
 
 		assertThat(context.allIssues())
 			.as("Number of all issues in project <%s> mismatches", projectPath)
