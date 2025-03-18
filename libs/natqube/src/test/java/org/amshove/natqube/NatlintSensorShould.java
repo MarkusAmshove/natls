@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
+@SuppressWarnings("deprecation")
 class NatlintSensorShould extends SonarQubeTest
 {
 	@Test
@@ -16,7 +17,7 @@ class NatlintSensorShould extends SonarQubeTest
 		addDiagnostic(
 			new CsvDiagnostic(
 				"NL001",
-				subprogram.uri(),
+				subprogram.relativePath(),
 				1,
 				2,
 				2,

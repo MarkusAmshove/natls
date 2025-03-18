@@ -12,15 +12,15 @@ import org.sonar.api.batch.sensor.SensorDescriptor;
 import org.sonar.api.rule.RuleKey;
 
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("deprecation")
 public class NatlintSensor implements Sensor
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NatlintSensor.class);
-	private Map<URI, InputFile> naturalFilesByUri;
+	private Map<String, InputFile> naturalFilesByRelativePath;
 
 	@Override
 	public void describe(SensorDescriptor descriptor)
@@ -33,7 +33,7 @@ public class NatlintSensor implements Sensor
 	public void execute(SensorContext context)
 	{
 		var diagnosticFiles = new ArrayList<InputFile>();
-		naturalFilesByUri = new HashMap<>();
+		naturalFilesByRelativePath = new HashMap<>();
 
 		var fileTypeMeasure = new FileTypeMeasure();
 
@@ -51,7 +51,7 @@ public class NatlintSensor implements Sensor
 			if (language != null && language.equals(Natural.KEY))
 			{
 				LOGGER.debug("Found natural file: {}", inputFile.uri());
-				naturalFilesByUri.put(inputFile.uri(), inputFile);
+				naturalFilesByRelativePath.put(inputFile.relativePath(), inputFile);
 				fileTypeMeasure.measure(context, inputFile);
 			}
 		}
@@ -79,7 +79,7 @@ public class NatlintSensor implements Sensor
 		for (var entry : diagnostics.entrySet())
 		{
 			diagnosticCount += entry.getValue().size();
-			var inputFile = naturalFilesByUri.get(entry.getKey());
+			var inputFile = naturalFilesByRelativePath.get(entry.getKey());
 			if (inputFile == null)
 			{
 				LOGGER.warn("Could not find input file for URI {}", entry.getKey());
@@ -133,7 +133,7 @@ public class NatlintSensor implements Sensor
 		}
 	}
 
-	private static Map<URI, List<CsvDiagnostic>> readDiagnostics(InputFile diagnosticFile)
+	private static Map<String, List<CsvDiagnostic>> readDiagnostics(InputFile diagnosticFile)
 	{
 		try
 		{
@@ -145,19 +145,19 @@ public class NatlintSensor implements Sensor
 				{
 					return null;
 				}
-				var absolutePath = URI.create(split[0]);
+				var relativePath = split[0];
 				var id = split[1];
 				var line = split[4];
 				var offset = split[5];
 				var length = split[6];
 				var message = split[3];
 				return new CsvDiagnostic(
-					id, absolutePath, Integer.parseInt(line), Integer.parseInt(offset),
+					id, relativePath, Integer.parseInt(line), Integer.parseInt(offset),
 					Integer.parseInt(length), message
 				);
 			})
 				.filter(Objects::nonNull)
-				.collect(Collectors.groupingBy(CsvDiagnostic::getFileUri));
+				.collect(Collectors.groupingBy(CsvDiagnostic::getRelativePath));
 		}
 		catch (IOException e)
 		{

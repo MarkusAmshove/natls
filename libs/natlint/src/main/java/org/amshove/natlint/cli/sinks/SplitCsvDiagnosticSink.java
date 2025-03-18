@@ -13,6 +13,7 @@ import org.amshove.natparse.IDiagnostic;
 
 public class SplitCsvDiagnosticSink implements IDiagnosticSink
 {
+	private final Path projectRootDirectoryPath;
 	private final Path directoryForCsvFiles;
 	private CharSink currentSink;
 	private int currentFileCount = 1;
@@ -20,6 +21,7 @@ public class SplitCsvDiagnosticSink implements IDiagnosticSink
 
 	public SplitCsvDiagnosticSink(Path projectRootDirectoryPath)
 	{
+		this.projectRootDirectoryPath = projectRootDirectoryPath;
 		this.directoryForCsvFiles = projectRootDirectoryPath.resolve("natlint");
 	}
 
@@ -34,7 +36,7 @@ public class SplitCsvDiagnosticSink implements IDiagnosticSink
 			{
 				System.out.print("\r             ");
 				System.out.print("\r" + currentFileCount);
-				currentSink.write("%s;%s;%s;%s;%d;%d;%d%n".formatted(filePath, diagnostic.id(), diagnostic.severity(), diagnostic.message(), diagnostic.line(), diagnostic.offsetInLine(), diagnostic.length()));
+				currentSink.write("%s;%s;%s;%s;%d;%d;%d%n".formatted(projectRootDirectoryPath.relativize(filePath), diagnostic.id(), diagnostic.severity(), diagnostic.message(), diagnostic.line(), diagnostic.offsetInLine(), diagnostic.length()));
 			}
 			catch (IOException e)
 			{
@@ -62,7 +64,7 @@ public class SplitCsvDiagnosticSink implements IDiagnosticSink
 				Files.createParentDirs(diagnosticFile);
 
 				currentSink = Files.asCharSink(diagnosticFile, StandardCharsets.UTF_8, FileWriteMode.APPEND);
-				currentSink.write("file;ruleId;severity;message;line;offset;length%n");
+				currentSink.write("file;ruleId;severity;message;line;offset;length%n".formatted());
 			}
 			catch (IOException e)
 			{

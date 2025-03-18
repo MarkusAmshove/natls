@@ -1,20 +1,18 @@
 package org.amshove.natqube.sensor;
 
-import java.net.URI;
-
 public class CsvDiagnostic
 {
 	private final String id;
-	private final URI fileUri;
+	private final String relativePath;
 	private final int line;
 	private final int offsetInLine;
 	private final int length;
 	private final String message;
 
-	public CsvDiagnostic(String id, URI fileUri, int line, int offsetInLine, int length, String message)
+	public CsvDiagnostic(String id, String relativePath, int line, int offsetInLine, int length, String message)
 	{
 		this.id = id;
-		this.fileUri = fileUri;
+		this.relativePath = relativePath;
 		this.line = line;
 		this.offsetInLine = offsetInLine;
 		this.length = length;
@@ -26,9 +24,9 @@ public class CsvDiagnostic
 		return id;
 	}
 
-	public URI getFileUri()
+	public String getRelativePath()
 	{
-		return fileUri;
+		return relativePath;
 	}
 
 	public int getLine()
@@ -56,7 +54,7 @@ public class CsvDiagnostic
 	{
 		return "CsvDiagnostic{" +
 			"id='" + id + '\'' +
-			", fileUri=" + fileUri +
+			", relativePath=" + relativePath +
 			", line=" + line +
 			", offsetInLine=" + offsetInLine +
 			", length=" + length +

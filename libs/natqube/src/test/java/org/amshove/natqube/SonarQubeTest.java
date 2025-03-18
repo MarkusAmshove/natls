@@ -52,7 +52,7 @@ public abstract class SonarQubeTest
 			.setModuleBaseDir(projectPath)
 			.setContents(
 				"file;ruleId;severity;message;line;offset;length%n%s;%s;%s;%s;%d;%d;%d%n".formatted(
-					diagnostic.getFileUri(),
+					diagnostic.getRelativePath(),
 					diagnostic.getId(),
 					"WARNING", // severity within this file doesn't matter
 					diagnostic.getMessage(),
