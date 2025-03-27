@@ -862,7 +862,8 @@ public class Lexer
 			createAndAdd(SyntaxKind.SV_SUBROUTINE);
 			return;
 		}
-		if (scanner.advanceIfIgnoreCase("BROWSER-IO")) {
+		if (scanner.advanceIfIgnoreCase("BROWSER-IO"))
+		{
 			createAndAdd(SyntaxKind.BROWSER_IO);
 			return;
 		}
