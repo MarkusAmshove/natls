@@ -196,6 +196,12 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 		assertTokens("*PF-KEY", token(SyntaxKind.PF_KEY, "*PF-KEY"));
 	}
 
+    @Test
+	void lexBrowserIo()
+	{
+		assertTokens("*BROWSER-IO", token(SyntaxKind.BROWSER_IO, "*BROWSER-IO"));
+	}
+
 	@Test
 	void lexDevice()
 	{

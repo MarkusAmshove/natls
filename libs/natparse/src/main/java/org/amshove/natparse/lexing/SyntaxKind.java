@@ -129,6 +129,7 @@ public enum SyntaxKind
 	LBOUND(false, false, true),
 	UBOUND(false, false, true),
 	SERVER_TYPE(false, true, false),
+	BROWSER_IO(false, true, false),
 
 	// Kcheck reserved keywords
 	ABS(false, false, false),

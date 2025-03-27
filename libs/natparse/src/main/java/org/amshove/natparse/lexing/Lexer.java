@@ -417,6 +417,8 @@ public class Lexer
 		{
 			case 'a':
 			case 'A':
+			case 'b':
+			case 'B':
 			case 'c':
 			case 'C':
 			case 'd':
@@ -858,6 +860,10 @@ public class Lexer
 		if (scanner.advanceIfIgnoreCase("SUBROUTINE"))
 		{
 			createAndAdd(SyntaxKind.SV_SUBROUTINE);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("BROWSER-IO")) {
+			createAndAdd(SyntaxKind.BROWSER_IO);
 			return;
 		}
 		scanner.rollbackCurrentLexeme();
