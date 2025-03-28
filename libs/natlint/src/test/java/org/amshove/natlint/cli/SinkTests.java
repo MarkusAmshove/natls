@@ -31,10 +31,10 @@ class SinkTests extends CliTest
 	}
 
 	@Test
-	void ciCsvDiagnosticSinkShouldCreateACsvFile(@ProjectName("clitest") NaturalProject project)
+	void ciCsvDiagnosticSinkShouldCreateASplitCsvFile(@ProjectName("clitest") NaturalProject project)
 	{
 		var result = runNatlint("-w", project.getRootPath().toAbsolutePath().toString(), "--ci");
 		assertThat(result.stdOut()).doesNotContain("ERROR"); // no part of a diagnostic should be present
-		assertThat(project.getRootPath().resolve("diagnostics.csv")).exists();
+		assertThat(project.getRootPath().resolve("natlint").resolve("diagnostics-1.csv")).exists();
 	}
 }

@@ -7,6 +7,8 @@ public class Natural extends AbstractLanguage
 	public static final String KEY = "natural";
 	public static final String NAME = "Natural";
 
+	private static String[] fileSuffixes;
+
 	public Natural()
 	{
 		super(KEY, NAME);
@@ -15,9 +17,16 @@ public class Natural extends AbstractLanguage
 	@Override
 	public String[] getFileSuffixes()
 	{
-		return new String[]
+		return fileSuffixes();
+	}
+
+	public static String[] fileSuffixes()
+	{
+		if (fileSuffixes == null)
 		{
-			".NSN", ".NSL", ".NSP", ".NSS", ".NSD", ".NSA", ".NSG", ".NSM", ".NSC", ".NS7"
-		};
+			fileSuffixes = NaturalModuleType.allFileExtensions().stream().map(extension -> "." + extension).toArray(String[]::new);
+		}
+
+		return fileSuffixes;
 	}
 }
