@@ -4,7 +4,7 @@ import org.amshove.natqube.NaturalMetrics;
 import org.amshove.natqube.SonarQubeTest;
 import org.junit.jupiter.api.Test;
 
-public class FileTypeMeasureShould extends SonarQubeTest
+class FileTypeMeasureShould extends SonarQubeTest
 {
 	private final FileTypeMeasure sut = new FileTypeMeasure();
 

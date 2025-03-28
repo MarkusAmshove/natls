@@ -133,6 +133,14 @@ public class NatlintSensor implements Sensor
 		}
 	}
 
+	// file;ruleId;severity;message;line;offset;length
+	private static int FILE_PATH_INDEX = 0;
+	private static int RULE_ID_INDEX = 1;
+	private static int MESSAGE_INDEX = 3;
+	private static int LINE_INDEX = 4;
+	private static int OFFSET_INDEX = 5;
+	private static int LENGTH_INDEX = 6;
+
 	private static Map<String, List<CsvDiagnostic>> readDiagnostics(InputFile diagnosticFile)
 	{
 		try
@@ -140,17 +148,16 @@ public class NatlintSensor implements Sensor
 			return diagnosticFile.contents().lines().skip(1).map(l ->
 			{
 				var split = l.split(";");
-				// TODO: Magic numbers
 				if (split.length != 7)
 				{
 					return null;
 				}
-				var relativePath = split[0];
-				var id = split[1];
-				var line = split[4];
-				var offset = split[5];
-				var length = split[6];
-				var message = split[3];
+				var relativePath = split[FILE_PATH_INDEX];
+				var id = split[RULE_ID_INDEX];
+				var line = split[LINE_INDEX];
+				var offset = split[OFFSET_INDEX];
+				var length = split[LENGTH_INDEX];
+				var message = split[MESSAGE_INDEX];
 				return new CsvDiagnostic(
 					id, relativePath, Integer.parseInt(line), Integer.parseInt(offset),
 					Integer.parseInt(length), message

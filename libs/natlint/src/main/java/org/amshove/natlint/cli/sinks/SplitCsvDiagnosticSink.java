@@ -1,7 +1,7 @@
 package org.amshove.natlint.cli.sinks;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
@@ -40,7 +40,7 @@ public class SplitCsvDiagnosticSink implements IDiagnosticSink
 			}
 			catch (IOException e)
 			{
-				throw new RuntimeException(e);
+				throw new UncheckedIOException(e);
 			}
 		}
 	}
@@ -68,7 +68,7 @@ public class SplitCsvDiagnosticSink implements IDiagnosticSink
 			}
 			catch (IOException e)
 			{
-				throw new RuntimeException(e);
+				throw new UncheckedIOException(e);
 			}
 		}
 	}

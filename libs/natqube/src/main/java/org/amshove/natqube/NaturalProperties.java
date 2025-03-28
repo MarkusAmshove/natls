@@ -28,4 +28,7 @@ public class NaturalProperties
 	{
 		return propertyDefinitions;
 	}
+
+	private NaturalProperties()
+	{}
 }
