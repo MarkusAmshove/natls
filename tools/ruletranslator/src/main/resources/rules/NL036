@@ -1,0 +1,8 @@
+name: Called function has no prototype definition
+priority: MAJOR
+tags: pitfall,confusing
+type: CODE_SMELL
+description:
+When a function is called from within another function it adds an implicit dependency onto the catalog order.
+
+Defining a prototype for the called function can prevent errors while cataloging.
