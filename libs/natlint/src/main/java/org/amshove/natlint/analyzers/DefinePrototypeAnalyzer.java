@@ -23,13 +23,13 @@ public class DefinePrototypeAnalyzer extends AbstractAnalyzer
 	);
 
 	public static final DiagnosticDescription PROTOTYPE_UNDEFINED = DiagnosticDescription.create(
-		"NL099",
+		"NL036",
 		"Called function %s has no prototype definition. This may lead to compile errors",
 		DiagnosticSeverity.INFO
 	);
 
 	public static final DiagnosticDescription PROTOTYPE_UNUSED = DiagnosticDescription.create(
-		"NL098",
+		"NL037",
 		"Prototype %s is defined but not used",
 		DiagnosticSeverity.WARNING
 	);
@@ -37,7 +37,7 @@ public class DefinePrototypeAnalyzer extends AbstractAnalyzer
 	@Override
 	public ReadOnlyList<DiagnosticDescription> getDiagnosticDescriptions()
 	{
-		return ReadOnlyList.of(PROTOTYPE_DEFINED_MORE_THAN_ONCE);
+		return ReadOnlyList.of(PROTOTYPE_DEFINED_MORE_THAN_ONCE, PROTOTYPE_UNDEFINED, PROTOTYPE_UNUSED);
 	}
 
 	@Override
