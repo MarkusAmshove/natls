@@ -57,6 +57,12 @@ public class CompletionProvider
 			return dataAreaCompletions(file.getLibrary());
 		}
 
+		if (completionContext.completesInclude())
+		{
+			completionItems.addAll(copycodeCompletions(file.getLibrary(), completionContext));
+			return completionItems;
+		}
+
 		var isTriggeredByDot = params.getContext().getTriggerKind() == CompletionTriggerKind.TriggerCharacter && ".".equals(
 			params.getContext().getTriggerCharacter()
 		);
@@ -163,6 +169,7 @@ public class CompletionProvider
 		var deleteEdit = new TextEdit(rangeToDelete, "");
 
 		addIfPostfix(completionItems, identifierName, rangeToInsert, deleteEdit);
+		addCompressPostfix(completionItems, identifierName, variableInvokedOn, rangeToInsert, deleteEdit);
 
 		if (variableInvokedOn.isArray())
 		{
@@ -185,6 +192,22 @@ public class CompletionProvider
 		{
 			addIfSpecifiedPostfix(completionItems, identifierName, rangeToInsert, deleteEdit);
 		}
+
+	}
+
+	private static void addCompressPostfix(ArrayList<CompletionItem> completionItems, String identifierName, IVariableNode variable, Range rangeToInsert, TextEdit deleteEdit)
+	{
+		var isProperGroup = variable instanceof IGroupNode && !(variable instanceof IRedefinitionNode);
+		var wantsDelimiters = variable.isArray() || isProperGroup;
+
+		var delimiters = wantsDelimiters ? " ${0:WITH ALL DELIMITER ';'}" : "${0}";
+		completionItems.add(
+			createSnippetPostfixCompletionItem(
+				"compress",
+				new TextEdit(rangeToInsert, "COMPRESS %s INTO ${1:#RESULT}%s".formatted(identifierAccess(identifierName, variable), delimiters)),
+				deleteEdit
+			)
+		);
 	}
 
 	private static void addScanAndMask(
@@ -351,7 +374,7 @@ public class CompletionProvider
 		completionItems.add(
 			createPlainTextPostfixCompletionItem(
 				"contains",
-				new TextEdit(rangeToInsert, "%s(*) = %s".formatted(identifierName, defaultValue)),
+				new TextEdit(rangeToInsert, "%s = %s".formatted(identifierAccess(identifierName, variableInvokedOn), defaultValue)),
 				deleteEdit
 			)
 		);
@@ -359,7 +382,7 @@ public class CompletionProvider
 		completionItems.add(
 			createPlainTextPostfixCompletionItem(
 				"noneIs",
-				new TextEdit(rangeToInsert, "NOT %s(*) = %s".formatted(identifierName, defaultValue)),
+				new TextEdit(rangeToInsert, "NOT %s = %s".formatted(identifierAccess(identifierName, variableInvokedOn), defaultValue)),
 				deleteEdit
 			)
 		);
@@ -367,7 +390,7 @@ public class CompletionProvider
 		completionItems.add(
 			createPlainTextPostfixCompletionItem(
 				"anyIsNot",
-				new TextEdit(rangeToInsert, "%s(*) <> %s".formatted(identifierName, defaultValue)),
+				new TextEdit(rangeToInsert, "%s <> %s".formatted(identifierAccess(identifierName, variableInvokedOn), defaultValue)),
 				deleteEdit
 			)
 		);
@@ -375,7 +398,7 @@ public class CompletionProvider
 		completionItems.add(
 			createPlainTextPostfixCompletionItem(
 				"allAre",
-				new TextEdit(rangeToInsert, "NOT %s(*) <> %s".formatted(identifierName, defaultValue)),
+				new TextEdit(rangeToInsert, "NOT %s <> %s".formatted(identifierAccess(identifierName, variableInvokedOn), defaultValue)),
 				deleteEdit
 			)
 		);
@@ -442,12 +465,7 @@ public class CompletionProvider
 	)
 	{
 		var defaultValue = typedVar.type().emptyValue();
-		var identifierAccess = identifierName;
-
-		if (typedVar.isArray())
-		{
-			identifierAccess += "(*)";
-		}
+		var identifierAccess = identifierAccess(identifierName, typedVar);
 
 		var edit = new TextEdit(rangeToInsert, """
 			IF %s = %s
@@ -739,6 +757,32 @@ public class CompletionProvider
 			.toList();
 	}
 
+	private Collection<? extends CompletionItem> copycodeCompletions(
+		LanguageServerLibrary library,
+		CodeCompletionContext context
+	)
+	{
+		return library.getModulesOfType(NaturalFileType.COPYCODE, true)
+			.stream()
+			.map(f ->
+			{
+				try
+				{
+					var item = new CompletionItem(f.getReferableName());
+					item.setInsertText(f.getReferableName());
+					item.setKind(CompletionItemKind.Module);
+					return item;
+				}
+				catch (Exception e)
+				{
+					log.log(Level.SEVERE, "Copycode completion threw an exception", e);
+					return null;
+				}
+			})
+			.filter(Objects::nonNull)
+			.toList();
+	}
+
 	private Collection<? extends CompletionItem> externalSubroutineCompletions(
 		LanguageServerLibrary library,
 		CodeCompletionContext context
@@ -872,6 +916,14 @@ public class CompletionProvider
 		var info = new UnresolvedCompletionInfo(file.getReferableName(), file.getUri());
 		info.setPreviousText(context.previousTexts());
 		return info;
+	}
+
+	private static String identifierAccess(String identifierName, IVariableNode node)
+	{
+		var access = identifierName;
+		return node.isArray()
+			? String.format("%s(%s)", access, "*" + ", *".repeat(node.dimensions().size() - 1))
+			: access;
 	}
 
 }

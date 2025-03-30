@@ -197,6 +197,12 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 	}
 
 	@Test
+	void lexBrowserIo()
+	{
+		assertTokens("*BROWSER-IO", token(SyntaxKind.BROWSER_IO, "*BROWSER-IO"));
+	}
+
+	@Test
 	void lexDevice()
 	{
 		assertTokens("*DEVICE", token(SyntaxKind.DEVICE, "*DEVICE"));

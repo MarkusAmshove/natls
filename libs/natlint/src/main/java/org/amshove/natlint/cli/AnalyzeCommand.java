@@ -71,7 +71,7 @@ public class AnalyzeCommand implements Callable<Integer>
 	@CommandLine.Option(names =
 	{
 		"--ci"
-	}, description = "Analyzer will return exit code 0, even when diagnostics are found. Will also use the CSV sink", defaultValue = "false")
+	}, description = "Analyzer will return exit code 0, even when diagnostics are found. Will also use the SonarQube CSV sink", defaultValue = "false")
 	boolean ciMode;
 
 	@CommandLine.Option(names =
@@ -183,7 +183,7 @@ public class AnalyzeCommand implements Callable<Integer>
 	{
 		if (ciMode)
 		{
-			sinkType = DiagnosticSinkType.CSV;
+			sinkType = DiagnosticSinkType.SPLIT_CSV;
 		}
 	}
 

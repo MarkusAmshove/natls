@@ -1,126 +1,128 @@
 package org.amshove.natqube.measures;
 
-import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.natqube.NaturalMetrics;
-import org.amshove.natqube.TestContext;
-import org.amshove.testhelpers.IntegrationTest;
-import org.amshove.testhelpers.ProjectName;
-import org.junit.jupiter.api.BeforeEach;
+import org.amshove.natqube.SonarQubeTest;
 import org.junit.jupiter.api.Test;
-import org.sonar.api.ce.measure.Component;
-import org.sonar.api.measures.Metric;
-import org.sonar.api.testfixtures.measure.TestComponent;
-import org.sonar.api.testfixtures.measure.TestMeasureComputerContext;
-import org.sonar.api.testfixtures.measure.TestMeasureComputerDefinitionContext;
-import org.sonar.api.testfixtures.measure.TestSettings;
 
-import java.util.Objects;
-
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-
-@IntegrationTest
-class FileTypeMeasureShould
+class FileTypeMeasureShould extends SonarQubeTest
 {
-	private TestContext context;
-
-	@BeforeEach
-	void setUp(@ProjectName("filetypemeasure") NaturalProject project)
-	{
-		context = TestContext.fromProject(project);
-	}
+	private final FileTypeMeasure sut = new FileTypeMeasure();
 
 	@Test
 	void countDdms()
 	{
-		assertCountedMeasure("MY-DDM", NaturalMetrics.NUMBER_OF_DDMS);
+		var file = addNaturalFile("MYDDM.NSD", "");
+
+		sut.measure(context, file);
+		assertMetric(NaturalMetrics.NUMBER_OF_DDMS, 1, file);
 	}
 
 	@Test
 	void countSubprograms()
 	{
-		assertCountedMeasure("SUBPROG", NaturalMetrics.NUMBER_OF_SUBPROGRAMS);
+		var file = addNaturalFile("MYDDM.NSN", "");
+
+		sut.measure(context, file);
+		assertMetric(NaturalMetrics.NUMBER_OF_SUBPROGRAMS, 1, file);
 	}
 
 	@Test
 	void countPrograms()
 	{
-		assertCountedMeasure("PROGRAM", NaturalMetrics.NUMBER_OF_PROGRAMS);
+		var file = addNaturalFile("MYDDM.NSP", "");
+
+		sut.measure(context, file);
+		assertMetric(NaturalMetrics.NUMBER_OF_PROGRAMS, 1, file);
 	}
 
 	@Test
 	void countExternalSubroutines()
 	{
-		assertCountedMeasure("EXT-SUB", NaturalMetrics.NUMBER_OF_EXTERNAL_SUBROUTINES);
+		var file = addNaturalFile("EXT.NSS", "");
+
+		sut.measure(context, file);
+		assertMetric(NaturalMetrics.NUMBER_OF_EXTERNAL_SUBROUTINES, 1, file);
 	}
 
 	@Test
-	void countHelproutines()
+	void countHelpRoutines()
 	{
-		assertCountedMeasure("HELPR", NaturalMetrics.NUMBER_OF_HELPROUTINES);
+		var file = addNaturalFile("HELP.NSH", "");
+
+		sut.measure(context, file);
+		assertMetric(NaturalMetrics.NUMBER_OF_HELPROUTINES, 1, file);
 	}
 
 	@Test
 	void countGdas()
 	{
-		assertCountedMeasure("MYGDA", NaturalMetrics.NUMBER_OF_GDAS);
+		var file = addNaturalFile("MYGDA.NSG", "");
+
+		sut.measure(context, file);
+		assertMetric(NaturalMetrics.NUMBER_OF_GDAS, 1, file);
 	}
 
 	@Test
 	void countLdas()
 	{
-		assertCountedMeasure("MYLDA", NaturalMetrics.NUMBER_OF_LDAS);
+		var file = addNaturalFile("LALDA.NSL", "");
+
+		sut.measure(context, file);
+		assertMetric(NaturalMetrics.NUMBER_OF_LDAS, 1, file);
 	}
 
 	@Test
 	void countPdas()
 	{
-		assertCountedMeasure("MYPDA", NaturalMetrics.NUMBER_OF_PDAS);
+		var file = addNaturalFile("UNEPDA.NSA", "");
+
+		sut.measure(context, file);
+		assertMetric(NaturalMetrics.NUMBER_OF_PDAS, 1, file);
 	}
 
 	@Test
 	void countMaps()
 	{
-		assertCountedMeasure("MYMAP", NaturalMetrics.NUMBER_OF_MAPS);
+		var file = addNaturalFile("MAPPI.NSM", "");
+
+		sut.measure(context, file);
+		assertMetric(NaturalMetrics.NUMBER_OF_MAPS, 1, file);
 	}
 
 	@Test
-	void countCopyCodes()
+	void countCopycodes()
 	{
-		assertCountedMeasure("CCODE", NaturalMetrics.NUMBER_OF_COPYCODES);
+		var file = addNaturalFile("COPY.NSC", "");
+
+		sut.measure(context, file);
+		assertMetric(NaturalMetrics.NUMBER_OF_COPYCODES, 1, file);
 	}
 
 	@Test
 	void countFunctions()
 	{
-		assertCountedMeasure("MYFUNC", NaturalMetrics.NUMBER_OF_FUNCTIONS);
+		var file = addNaturalFile("FUNC.NS7", "");
+
+		sut.measure(context, file);
+		assertMetric(NaturalMetrics.NUMBER_OF_FUNCTIONS, 1, file);
 	}
 
 	@Test
-	void aggregateMeasuresOnFolderLevel()
+	void countClasses()
 	{
-		var aggregator = new AggregateFileTypeMeasure();
+		var file = addNaturalFile("CLASS.NS4", "");
 
-		var context = new TestMeasureComputerContext(
-			new TestComponent(TestContext.MODULE_KEY + ":Natural-Libraries/LIB", Component.Type.DIRECTORY, null),
-			new TestSettings(),
-			aggregator.define(new TestMeasureComputerDefinitionContext())
-		);
-		context.addChildrenMeasures(NaturalMetrics.NUMBER_OF_COPYCODES.key(), 10, 5);
-		context.addChildrenMeasures(NaturalMetrics.NUMBER_OF_SUBPROGRAMS.key(), 2, 2, 3);
-
-		aggregator.compute(context);
-		assertThat(Objects.requireNonNull(context.getMeasure(NaturalMetrics.NUMBER_OF_COPYCODES.key())).getIntValue()).isEqualTo(15);
-		assertThat(Objects.requireNonNull(context.getMeasure(NaturalMetrics.NUMBER_OF_SUBPROGRAMS.key())).getIntValue()).isEqualTo(7);
+		sut.measure(context, file);
+		assertMetric(NaturalMetrics.NUMBER_OF_CLASSES, 1, file);
 	}
 
-	private void assertCountedMeasure(String filename, Metric<Integer> metric)
+	@Test
+	void countTextFiles()
 	{
-		var sut = new FileTypeMeasure();
-		var naturalFile = context.findNaturalFile("LIB", filename);
-		var inputFile = context.findInputFile("LIB", filename);
+		var file = addNaturalFile("TEXT.NST", "");
 
-		sut.measure(context.sensorContext(), naturalFile, inputFile);
-
-		context.assertMeasure(inputFile, metric, 1);
+		sut.measure(context, file);
+		assertMetric(NaturalMetrics.NUMBER_OF_TEXT_FILES, 1, file);
 	}
+
 }

@@ -71,7 +71,9 @@ Natlint ships with a CLI interface to run it within a Natural project for in a C
 
 To use the jar, simply run `java -jar natlint.jar` within your Natural project root directory.
 
-To run via docker, use `docker run -w "/workspace" -v "$PWD:/workspace" ghcr.io/markusamshove/natlint:latest`.
+The Natural plugin will autmatically be pulled from the backend.
+
+To run via docker, use `docker run --rm -u $(id -u):$(id -g) -v $PWD:/work ghcr.io/markusamshove/natlint:latest`.
 
 Given no arguments, the program will analyze all Natural sources that can be found in the Natural project of the working directory. The project is identified by either a `.natural` or `_naturalBuild` file.
 
@@ -140,13 +142,18 @@ The language server is tested primarily with two clients:
 
 ## Running natqube
 
-`natqube` requires at least SonarQube 9.9 (which is/was a LTS release) running with Java 21.
+`natqube` requires at least SonarQube 9.9 (which is/was a LTS release).
 
 The plugin is currently not distributed the SonarQube marketplace.
 Starting from v0.10 you can grab the [natqube.jar from the Releases page](https://github.com/MarkusAmshove/natls/releases) and put it into the plugins folder as described in [the SonarQube documentation](https://docs.sonarqube.org/latest/setup-and-upgrade/install-a-plugin/#manually-installing-plugins).
 Alternatively you can build the jar yourself (`gradlew fatJar`) and put the file from `libs/natqube/build/libs/natqube.jar` into the plugin folder.
 
-To run an analysis after setting up the SonarQube backend, grab the [SonarScanner](https://docs.sonarsource.com/sonarqube/latest/analyzing-source-code/scanners/sonarscanner/) and run your first analysis. The Natural plugin will autmatically be pulled from the backend.
+With a running SonarQube instance, you can analyze your project by following these steps:
+
+- Run natlint in CI mode through Docker or the jar file:
+-- `java -jar natlint.jar --ci`
+-- `docker run --rm -u $(id -u):$(id -g) -v $PWD:/work ghcr.io/markusamshove/natlint:latest --ci`
+- Run the [SonarQube scanner](https://docs.sonarsource.com/sonarqube/latest/analyzing-source-code/scanners/sonarscanner/) in your project directory
 
 ## Configuration
 

@@ -2,7 +2,7 @@ package org.amshove.natls.config;
 
 public class InlayHintsConfiguration
 {
-	private boolean showAssignmentTargetType;
+	private boolean showAssignmentTargetType = false;
 
 	public boolean isShowAssignmentTargetType()
 	{

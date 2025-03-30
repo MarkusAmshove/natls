@@ -177,6 +177,15 @@ public class BuiltInFunctionTable
 				""", PACKED, 3),
 			unmodifiableVariable(SyntaxKind.PARSE_COL, "Column where the parser is currently working at", INTEGER, 4),
 			unmodifiableVariable(SyntaxKind.PARSE_ROW, "Row where the parser is currently working at", INTEGER, 4),
+			unmodifiableVariable(SyntaxKind.BROWSER_IO, """
+					Returns whether the application is running in a web browser via WebIO or Natural for Ajax.
+					
+					It can contain one of the following values:
+
+					empty     : The application is not running in a browser
+					`WEB`     : The application is running in WebIO
+					`RICHGUI` : The application is running in Natural for Ajax (e.g. HA)
+					""", ALPHANUMERIC, 8),
 			unmodifiableVariable(SyntaxKind.DEVICE, """
 				Returns the type or mode of the device from which Natural was started.
 
