@@ -25,12 +25,14 @@ public class InlayHintProvider
 				return;
 			}
 
-			if (n.diagnosticPosition().line() < range.getStart().getLine() || n.diagnosticPosition().line() > range.getEnd().getLine())
+			if (n.diagnosticPosition().line() < range.getStart().getLine() || n.diagnosticPosition()
+				.line() > range.getEnd().getLine())
 			{
 				return;
 			}
 
-			if (NaturalLanguageService.getConfig().getInlayhints().isShowAssignmentTargetType() && n instanceof IAssignmentStatementNode assignment && assignment.target()instanceof IVariableReferenceNode reference && reference.reference()instanceof ITypedVariableNode typedRef && typedRef.type() != null)
+			if (NaturalLanguageService.getConfig().getInlayhints()
+				.isShowAssignmentTargetType() && n instanceof IAssignmentStatementNode assignment && assignment.target()instanceof IVariableReferenceNode reference && reference.reference()instanceof ITypedVariableNode typedRef && typedRef.type() != null)
 			{
 				var hint = new InlayHint();
 				hint.setPosition(LspUtil.toPositionAfter(reference.diagnosticPosition()));
@@ -64,7 +66,8 @@ public class InlayHintProvider
 				return;
 			}
 
-			if (n instanceof IInternalPerformNode internalPerform && !internalPerform.reference().isInFile(module.file().getPath()))
+			if (n instanceof IInternalPerformNode internalPerform && !internalPerform.reference()
+				.isInFile(module.file().getPath()))
 			{
 				var hint = new InlayHint();
 				hint.setPosition(LspUtil.toPositionAfter(internalPerform.position()));
@@ -74,9 +77,61 @@ public class InlayHintProvider
 				hints.add(hint);
 				return;
 			}
+
+			if (n instanceof IModuleReferencingNode moduleReferencingNode)
+			{
+				addInlayHintsToParameter(moduleReferencingNode, hints);
+			}
 		});
 
 		return hints;
+	}
+
+	private void addInlayHintsToParameter(IModuleReferencingNode moduleReferencingNode, ArrayList<InlayHint> hints)
+	{
+		if (moduleReferencingNode.reference() == null || moduleReferencingNode.providedParameter().isEmpty())
+		{
+			return;
+		}
+
+		var theirDefineData = moduleReferencingNode.reference()instanceof IHasDefineData hasDD ? hasDD.defineData() : null;
+
+		if (theirDefineData == null)
+		{
+			return;
+		}
+
+		var theirParameterInDeclarationOrder = theirDefineData.declaredParameterInOrder();
+		if (theirParameterInDeclarationOrder.isEmpty())
+		{
+			return;
+		}
+
+		var parameterIndex = 0;
+		for (var passedParameter : moduleReferencingNode.providedParameter())
+		{
+			if (passedParameter instanceof ISkipOperandNode skip)
+			{
+				var numberOfSkippedParameter = skip.skipAmount();
+
+				for (var i = 0; i < numberOfSkippedParameter; i++)
+				{
+					var skippedParameter = theirParameterInDeclarationOrder.get(parameterIndex + i);
+					var skippedParameterName = skippedParameter instanceof IVariableNode variable ? variable.name() : "Unknown";
+					var hint = new InlayHint();
+					hint.setPosition(LspUtil.toPositionAfter(passedParameter.position()));
+					hint.setLabel(skippedParameterName);
+					hint.setKind(InlayHintKind.Parameter);
+					hint.setPaddingLeft(true);
+					hints.add(hint);
+				}
+
+				parameterIndex += numberOfSkippedParameter;
+				continue;
+			}
+
+			parameterIndex++;
+		}
 	}
 
 	private void addInputLineHints(IInputStatementNode input, ArrayList<InlayHint> hints)
