@@ -31,51 +31,25 @@ public class InlayHintProvider
 				return;
 			}
 
-			if (NaturalLanguageService.getConfig().getInlayhints()
-				.isShowAssignmentTargetType() && n instanceof IAssignmentStatementNode assignment && assignment.target()instanceof IVariableReferenceNode reference && reference.reference()instanceof ITypedVariableNode typedRef && typedRef.type() != null)
+			if (n instanceof IAssignmentStatementNode assignment)
 			{
-				var hint = new InlayHint();
-				hint.setPosition(LspUtil.toPositionAfter(reference.diagnosticPosition()));
-				hint.setLabel(typedRef.formatTypeForDisplay());
-				hint.setKind(InlayHintKind.Type);
-				hint.setPaddingLeft(true);
-				hints.add(hint);
-				return;
+				addTypeHintToAssignment(assignment, hints);
 			}
 
 			if (n instanceof ISubroutineNode subroutineNode)
 			{
-				var endSubroutine = subroutineNode.findDescendantToken(SyntaxKind.END_SUBROUTINE);
-				if (endSubroutine == null)
-				{
-					return;
-				}
-
-				var hint = new InlayHint();
-				hint.setPosition(LspUtil.toPositionAfter(endSubroutine.diagnosticPosition()));
-				hint.setLabel(subroutineNode.declaration().symbolName());
-				hint.setKind(InlayHintKind.Type);
-				hint.setPaddingLeft(true);
-				hints.add(hint);
-				return;
+				addInlayHintToEndSubroutine(subroutineNode, hints);
 			}
 
 			if (n instanceof IInputStatementNode input)
 			{
 				addInputLineHints(input, hints);
-				return;
 			}
 
 			if (n instanceof IInternalPerformNode internalPerform && !internalPerform.reference()
 				.isInFile(module.file().getPath()))
 			{
-				var hint = new InlayHint();
-				hint.setPosition(LspUtil.toPositionAfter(internalPerform.position()));
-				hint.setLabel(internalPerform.reference().position().fileNameWithoutExtension());
-				hint.setKind(InlayHintKind.Type);
-				hint.setPaddingLeft(true);
-				hints.add(hint);
-				return;
+				addFileNameInlayHintToInternalPerform(internalPerform, hints);
 			}
 
 			if (n instanceof IModuleReferencingNode moduleReferencingNode)
@@ -85,6 +59,63 @@ public class InlayHintProvider
 		});
 
 		return hints;
+	}
+
+	private static void addFileNameInlayHintToInternalPerform(IInternalPerformNode internalPerform, ArrayList<InlayHint> hints)
+	{
+		var hint = new InlayHint();
+		hint.setPosition(LspUtil.toPositionAfter(internalPerform.position()));
+		hint.setLabel(internalPerform.reference().position().fileNameWithoutExtension());
+		hint.setKind(InlayHintKind.Type);
+		hint.setPaddingLeft(true);
+		hints.add(hint);
+	}
+
+	private void addInlayHintToEndSubroutine(ISubroutineNode subroutineNode, ArrayList<InlayHint> hints)
+	{
+		var endSubroutine = subroutineNode.findDescendantToken(SyntaxKind.END_SUBROUTINE);
+		if (endSubroutine == null)
+		{
+			return;
+		}
+
+		var hint = new InlayHint();
+		hint.setPosition(LspUtil.toPositionAfter(endSubroutine.diagnosticPosition()));
+		hint.setLabel(subroutineNode.declaration().symbolName());
+		hint.setKind(InlayHintKind.Type);
+		hint.setPaddingLeft(true);
+		hints.add(hint);
+	}
+
+	private void addTypeHintToAssignment(IAssignmentStatementNode assignment, ArrayList<InlayHint> hints)
+	{
+		// TODO: No singleton?
+		if (!NaturalLanguageService.getConfig().getInlayhints().isShowAssignmentTargetType())
+		{
+			return;
+		}
+
+		if (!(assignment.target()instanceof IVariableReferenceNode variableReference))
+		{
+			return;
+		}
+
+		if (!(variableReference.reference()instanceof ITypedVariableNode typedRef))
+		{
+			return;
+		}
+
+		if (typedRef.type() == null)
+		{
+			return;
+		}
+
+		var hint = new InlayHint();
+		hint.setPosition(LspUtil.toPositionAfter(variableReference.diagnosticPosition()));
+		hint.setLabel(typedRef.formatTypeForDisplay());
+		hint.setKind(InlayHintKind.Type);
+		hint.setPaddingLeft(true);
+		hints.add(hint);
 	}
 
 	private void addInlayHintsToParameter(IModuleReferencingNode moduleReferencingNode, ArrayList<InlayHint> hints)
