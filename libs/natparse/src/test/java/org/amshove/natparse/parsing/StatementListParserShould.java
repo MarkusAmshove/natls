@@ -98,6 +98,21 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void parseSkipOperandParameter()
+	{
+		var calledSubprogram = new NaturalModule(null);
+		moduleProvider.addModule("A-MODULE", calledSubprogram);
+
+		var callnat = assertParsesSingleStatement("CALLNAT 'A-module' 1X 2X", ICallnatNode.class);
+
+		var firstSkip = assertNodeType(callnat.providedParameter().get(0), ISkipOperandNode.class);
+		assertThat(firstSkip.skipAmount()).isEqualTo(1);
+
+		var secondSkip = assertNodeType(callnat.providedParameter().get(1), ISkipOperandNode.class);
+		assertThat(secondSkip.skipAmount()).isEqualTo(2);
+	}
+
+	@Test
 	void parseParameterForCallnatsWithAttributeDefinition()
 	{
 		var calledSubprogram = new NaturalModule(null);
