@@ -194,6 +194,65 @@ class InlayHintingTests extends LanguageServerTest
 			);
 	}
 
+	@Test
+	void parameterInlayHintsShouldBeProvidedForSkippedParameter()
+	{
+		createOrSaveFile("LIBONE", "CALLED.NSN", """
+			DEFINE DATA PARAMETER
+			1 #NONOPT (A10) BY VALUE
+			1 #OPT (A10) OPTIONAL
+			END-DEFINE
+			END
+			""");
+		var module = createOrSaveFile("LIBONE", "SUB.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+
+			CALLNAT 'CALLED' 'Test' 1X
+			END
+			""");
+
+		var request = getContext().documentService().inlayHint(new InlayHintParams(module, LspUtil.newRange(0, 0, 8, 0)));
+		assertThat(request)
+			.succeedsWithin(1, TimeUnit.SECONDS)
+			.satisfies(
+				hints ->
+				{
+					assertThat(hints).anyMatch(h -> h.getKind() == InlayHintKind.Parameter && h.getLabel().getLeft().equals("#OPT"));
+				}
+			);
+	}
+
+	@Test
+	void parameterInlayHintsShouldHaveAHintForEachParameterSkippedWithPerOperand()
+	{
+		createOrSaveFile("LIBONE", "CALLED.NSN", """
+			DEFINE DATA PARAMETER
+			1 #OPT (A10) OPTIONAL
+			1 #OPT2 (A10) OPTIONAL
+			END-DEFINE
+			END
+			""");
+		var module = createOrSaveFile("LIBONE", "SUB.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+
+			CALLNAT 'CALLED' 2X
+			END
+			""");
+
+		var request = getContext().documentService().inlayHint(new InlayHintParams(module, LspUtil.newRange(0, 0, 8, 0)));
+		assertThat(request)
+			.succeedsWithin(1, TimeUnit.SECONDS)
+			.satisfies(
+				hints ->
+				{
+					assertThat(hints).anyMatch(h -> h.getKind() == InlayHintKind.Parameter && h.getLabel().getLeft().equals("#OPT"));
+					assertThat(hints).anyMatch(h -> h.getKind() == InlayHintKind.Parameter && h.getLabel().getLeft().equals("#OPT2"));
+				}
+			);
+	}
+
 	private static LspTestContext testContext;
 
 	@BeforeAll
