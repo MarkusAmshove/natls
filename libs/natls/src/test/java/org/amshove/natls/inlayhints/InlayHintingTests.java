@@ -216,10 +216,37 @@ class InlayHintingTests extends LanguageServerTest
 		assertThat(request)
 			.succeedsWithin(1, TimeUnit.SECONDS)
 			.satisfies(
-				hints ->
-				{
-					assertThat(hints).anyMatch(h -> h.getKind() == InlayHintKind.Parameter && h.getLabel().getLeft().equals("#OPT"));
-				}
+				hints -> assertThat(hints).anyMatch(h -> h.getKind() == InlayHintKind.Parameter && h.getLabel().getLeft().equals("#OPT"))
+			);
+	}
+
+	@Test
+	void parameterInlayHintsShouldNotBeProvidedForSkippedParameterWhenConfigurationIsDisabled()
+	{
+		createOrSaveFile("LIBONE", "CALLED.NSN", """
+			DEFINE DATA PARAMETER
+			1 #NONOPT (A10) BY VALUE
+			1 #OPT (A10) OPTIONAL
+			END-DEFINE
+			END
+			""");
+		var module = createOrSaveFile("LIBONE", "SUB.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+
+			CALLNAT 'CALLED' 'Test' 1X
+			END
+			""");
+
+		var newConfig = LSConfiguration.createDefault();
+		newConfig.getInlayhints().setShowSkippedParameter(false);
+		configureLSConfig(newConfig);
+
+		var request = getContext().documentService().inlayHint(new InlayHintParams(module, LspUtil.newRange(0, 0, 8, 0)));
+		assertThat(request)
+			.succeedsWithin(1, TimeUnit.SECONDS)
+			.satisfies(
+				hints -> assertThat(hints).noneMatch(h -> h.getKind() == InlayHintKind.Parameter && h.getLabel().getLeft().equals("#OPT"))
 			);
 	}
 

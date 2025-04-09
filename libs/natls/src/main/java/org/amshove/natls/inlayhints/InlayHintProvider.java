@@ -1,7 +1,8 @@
 package org.amshove.natls.inlayhints;
 
+import org.amshove.natls.config.IConfigChangedSubscriber;
+import org.amshove.natls.config.LSConfiguration;
 import org.amshove.natls.languageserver.LspUtil;
-import org.amshove.natls.languageserver.NaturalLanguageService;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.output.IOutputNewLineNode;
@@ -12,8 +13,15 @@ import org.eclipse.lsp4j.Range;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InlayHintProvider
+public class InlayHintProvider implements IConfigChangedSubscriber
 {
+	private LSConfiguration config;
+
+	public InlayHintProvider(LSConfiguration config)
+	{
+		this.config = config;
+	}
+
 	public List<InlayHint> provideInlayHints(INaturalModule module, Range range)
 	{
 		var hints = new ArrayList<InlayHint>();
@@ -52,7 +60,7 @@ public class InlayHintProvider
 				addFileNameInlayHintToInternalPerform(internalPerform, hints);
 			}
 
-			if (n instanceof IModuleReferencingNode moduleReferencingNode)
+			if (n instanceof IModuleReferencingNode moduleReferencingNode && config.getInlayhints().isShowSkippedParameter())
 			{
 				addInlayHintsToParameter(moduleReferencingNode, hints);
 			}
@@ -89,8 +97,7 @@ public class InlayHintProvider
 
 	private void addTypeHintToAssignment(IAssignmentStatementNode assignment, ArrayList<InlayHint> hints)
 	{
-		// TODO: No singleton?
-		if (!NaturalLanguageService.getConfig().getInlayhints().isShowAssignmentTargetType())
+		if (!config.getInlayhints().isShowAssignmentTargetType())
 		{
 			return;
 		}
@@ -171,7 +178,7 @@ public class InlayHintProvider
 		{
 			return;
 		}
-		// first hind needs special treatment before new lines are parsed as operands on input statements
+		// first hint needs special treatment before new lines are parsed as operands on input statements
 		var firstLineFirstOperand = input.operands().first();
 		var firstLineOperand = new InlayHint();
 		firstLineOperand.setPosition(LspUtil.toPosition(firstLineFirstOperand.position()));
@@ -210,5 +217,11 @@ public class InlayHintProvider
 				lastWasNewLine = true;
 			}
 		}
+	}
+
+	@Override
+	public void configChanged(LSConfiguration newConfig)
+	{
+		config = newConfig;
 	}
 }
