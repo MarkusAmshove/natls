@@ -13,6 +13,13 @@ class SkipOperandNode extends BaseSyntaxNode implements ISkipOperandNode
 		return skipToken;
 	}
 
+	@Override
+	public int skipAmount()
+	{
+		var skipPart = skipToken.source().toLowerCase().replace("x", "");
+		return Integer.parseInt(skipPart);
+	}
+
 	void setSkipToken(SyntaxToken skipToken)
 	{
 		this.skipToken = skipToken;

@@ -633,7 +633,7 @@ abstract class AbstractParser<T>
 	{
 		var skip = new SkipOperandNode();
 		node.addNode(skip);
-		consumeMandatory(skip, SyntaxKind.OPERAND_SKIP);
+		skip.setSkipToken(consumeMandatory(skip, SyntaxKind.OPERAND_SKIP));
 		return skip;
 	}
 

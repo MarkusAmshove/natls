@@ -77,7 +77,7 @@ public class NaturalLanguageService implements LanguageClientAware
 	private boolean initialized;
 	private Path workspaceRoot;
 
-	private final InlayHintProvider inlayHintProvider = new InlayHintProvider();
+	private InlayHintProvider inlayHintProvider;
 	private HoverProvider hoverProvider;
 	private final RenameSymbolAction renameComputer = new RenameSymbolAction();
 	private final RenameFileHandler renameFileHandler = new RenameFileHandler();
@@ -122,9 +122,13 @@ public class NaturalLanguageService implements LanguageClientAware
 		hoverProvider = new HoverProvider();
 		completionProvider = new CompletionProvider(new SnippetEngine(languageServerProject), hoverProvider);
 		callHierarchyProvider = new CallHierarchyProvider(languageServerProject);
-		codeLensService = new CodeLensService(getConfig());
+
+		var initialConfig = getConfig();
+		codeLensService = new CodeLensService(initialConfig);
+		inlayHintProvider = new InlayHintProvider(initialConfig);
 
 		configChangedSubscribers.add(codeLensService);
+		configChangedSubscribers.add(inlayHintProvider);
 	}
 
 	public void loadEditorConfig(Path path)
