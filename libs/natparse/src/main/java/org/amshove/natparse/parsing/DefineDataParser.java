@@ -173,7 +173,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 					var currentRedefineNode = currentRedefine(variable);
 					if (currentRedefineNode != null)
 					{
-						while (mightBeFillerBytes(peek(1), peek(2)))
+						while (mightBeFillerAndItsBytes(peek(1), peek(2)))
 						{
 							parseRedefineFiller(currentRedefineNode);
 						}
@@ -480,9 +480,14 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		}
 	}
 
-	private boolean mightBeFillerBytes(SyntaxToken fillerToken, SyntaxToken maybeFillerBytes)
+	private boolean mightBeFillerAndItsBytes(SyntaxToken fillerToken, SyntaxToken maybeFillerBytes)
 	{
 		if (fillerToken == null || maybeFillerBytes == null)
+		{
+			return false;
+		}
+
+		if (fillerToken.kind() != SyntaxKind.FILLER)
 		{
 			return false;
 		}
