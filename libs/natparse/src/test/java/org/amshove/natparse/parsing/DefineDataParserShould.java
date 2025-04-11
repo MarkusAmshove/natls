@@ -1012,6 +1012,24 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 	}
 
 	@Test
+	void notMistakeFillersOfFollowingRedefinesAsFillersOfItsOwn()
+	{
+		var defineData = assertParsesWithoutDiagnostics("""
+			DEFINE DATA
+			LOCAL
+			1 #ASTRING (A100)
+			1 REDEFINE #ASTRING
+				2 #SUBSTR (A10)
+				2 FILLER 50X
+			END-DEFINE
+			INPUT 50X 'A'
+			""");
+
+		var redefine = assertNodeType(defineData.variables().get(1), IRedefinitionNode.class);
+		assertThat(redefine.fillerBytes()).isEqualTo(50); // not 100 from FILLER 50X + INPUT 50X
+	}
+
+	@Test
 	void parseFillerInRedefinesInViews()
 	{
 		assertParsesWithoutDiagnostics("""
