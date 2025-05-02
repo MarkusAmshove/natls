@@ -11,7 +11,7 @@ class LongLiteralAnalyzerShould extends AbstractAnalyzerTest
 	}
 
 	@Test
-	void reportDiagnosticIfLongLine()
+	void reportDiagnosticIfLongLineAndLowercase()
 	{
 		configureEditorConfig("""
 			[*]
@@ -29,7 +29,7 @@ class LongLiteralAnalyzerShould extends AbstractAnalyzerTest
 	}
 
 	@Test
-	void reportNoDiagnosticIfNoLongLine()
+	void reportNoDiagnosticIfShortLine()
 	{
 		configureEditorConfig("""
 			[*]
@@ -40,7 +40,25 @@ class LongLiteralAnalyzerShould extends AbstractAnalyzerTest
             DEFINE DATA LOCAL
             1 #VAR (A20)
             END-DEFINE
-			#VAR := 'Short'
+			#VAR := 'Yes'
+            END
+            """;
+		testDiagnostics(source, expectNoDiagnosticOfType(LongLiteralAnalyzer.LONG_LITERAL_DETECTED));
+	}
+
+	@Test
+	void reportNoDiagnosticIfLongLineAndUppercase()
+	{
+		configureEditorConfig("""
+			[*]
+			natls.style.discourage_long_literals=true
+			""");
+
+		var source = """
+            DEFINE DATA LOCAL
+            1 #VAR (A20)
+            END-DEFINE
+			#VAR := 'ABCDEFGHIJKLM'
             END
             """;
 		testDiagnostics(source, expectNoDiagnosticOfType(LongLiteralAnalyzer.LONG_LITERAL_DETECTED));

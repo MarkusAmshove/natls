@@ -57,7 +57,8 @@ public class LongLiteralAnalyzer extends AbstractAnalyzer
 
 		var literal = (ILiteralNode) node;
 		boolean hasLowercase = literal.token().source().matches(".*\\p{Ll}.*");
-		if (literal.token().source().length() >= 5 && hasLowercase)
+		// literal.token().source() includes the enclosing quotes
+		if (literal.token().source().length() >= 7 && hasLowercase)
 		{
 			context.report(LONG_LITERAL_DETECTED.createDiagnostic(node));
 		}
