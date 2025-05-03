@@ -14,6 +14,7 @@ The following configurations can be set in a `.editorconfig` file to configure p
 | `natls.style.discourage_hiddenworkfiles`      | `true`, `false` | [`NL033`](../tools/ruletranslator/src/main/resources/rules/NL033)|
 | `natls.style.mark_mainframelongline`          | `true`, `false` | [`NL034`](../tools/ruletranslator/src/main/resources/rules/NL034)|
 | `natls.style.discourage_hidden_dbms`          | `true`, `false` | [`NL035`](../tools/ruletranslator/src/main/resources/rules/NL035)|
+| `natls.style.discourage_long_literals`        | `true`, `false` | [`NL038`](../tools/ruletranslator/src/main/resources/rules/NL038)|
 
 # Example
 
