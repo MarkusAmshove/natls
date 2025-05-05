@@ -29,7 +29,7 @@ public class LongLiteralAnalyzer extends AbstractAnalyzer
 	@Override
 	public void initialize(ILinterContext context)
 	{
-		context.registerNodeAnalyzer(ILiteralNode.class, this::analyzeDefineDataIndependent);
+		context.registerNodeAnalyzer(ILiteralNode.class, this::analyzeLongLiteral);
 	}
 
 	@Override
@@ -38,7 +38,7 @@ public class LongLiteralAnalyzer extends AbstractAnalyzer
 		isLongLiteralAnalyserOff = !context.getConfiguration(context.getModule().file(), "natls.style.discourage_long_literals", OPTION_FALSE).equalsIgnoreCase(OPTION_TRUE);
 	}
 
-	private void analyzeDefineDataIndependent(ISyntaxNode node, IAnalyzeContext context)
+	private void analyzeLongLiteral(ISyntaxNode node, IAnalyzeContext context)
 	{
 		if (isLongLiteralAnalyserOff)
 		{
