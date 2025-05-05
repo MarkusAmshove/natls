@@ -42,6 +42,7 @@ public class NaturalParser
 		naturalModule.addDiagnostics(tokens.diagnostics());
 		var topLevelNodes = new ArrayList<ISyntaxNode>();
 		naturalModule.setComments(tokens.comments());
+		naturalModule.setTokens(tokens.allTokens());
 
 		if (tokens.sourceHeader() != null && tokens.sourceHeader().isReportingMode())
 		{

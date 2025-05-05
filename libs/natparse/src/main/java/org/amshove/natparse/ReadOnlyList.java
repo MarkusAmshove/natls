@@ -15,28 +15,27 @@ public class ReadOnlyList<T> implements Iterable<T>
 	@SuppressWarnings("rawtypes")
 	private static final ReadOnlyList EMPTY = ReadOnlyList.from(Collections.emptyList());
 
-	private final ArrayList<T> collection;
+	private final List<T> collection;
 
-	private ReadOnlyList(Collection<T> collection)
+	private ReadOnlyList(List<T> collection, boolean copy)
 	{
-		this.collection = new ArrayList<>(collection);
+		if (copy)
+		{
+			this.collection = new ArrayList<>(collection);
+		}
+		else
+		{
+			this.collection = collection;
+		}
 	}
 
-	/**
-	 * Does NOT create a defensive copy.
-	 */
-	private ReadOnlyList(ArrayList<T> collection)
-	{
-		this.collection = collection;
-	}
-
-	public static <T> ReadOnlyList<T> from(Collection<T> collection)
+	public static <T> ReadOnlyList<T> from(List<T> collection)
 	{
 		if (collection == null)
 		{
 			return empty();
 		}
-		return new ReadOnlyList<>(collection);
+		return new ReadOnlyList<>(collection, true);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -92,7 +91,7 @@ public class ReadOnlyList<T> implements Iterable<T>
 		{
 			newList.add(collection.get(i));
 		}
-		return new ReadOnlyList<>(newList);
+		return new ReadOnlyList<>(newList, false);
 	}
 
 	@Override
@@ -154,6 +153,11 @@ public class ReadOnlyList<T> implements Iterable<T>
 	public int indexOf(T element)
 	{
 		return collection.indexOf(element);
+	}
+
+	public ReadOnlyList<T> subList(int fromIndex, int toIndex)
+	{
+		return new ReadOnlyList<>(collection.subList(fromIndex, toIndex), false);
 	}
 
 	@Override

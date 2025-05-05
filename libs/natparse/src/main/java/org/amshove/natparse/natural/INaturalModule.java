@@ -21,6 +21,8 @@ public interface INaturalModule
 
 	ReadOnlyList<IModuleReferencingNode> callers();
 
+	ReadOnlyList<SyntaxToken> tokens();
+
 	ReadOnlyList<SyntaxToken> comments();
 
 	boolean isTestCase();
