@@ -40,39 +40,17 @@ class LongLiteralAnalyzerShould extends AbstractAnalyzerTest
 	@ParameterizedTest
 	@ValueSource(strings =
 	{
-		"Yes",
-		"æøå",
-		"äöüß",
-	})
-	void reportNoDiagnosticIfShortLine(String literal)
-	{
-		configureEditorConfig("""
-			[*]
-			natls.style.discourage_long_literals=true
-			""");
-
-		var source = """
-            DEFINE DATA LOCAL
-            1 #VAR (A20)
-            END-DEFINE
-			#VAR := '%s'
-            END
-            """.formatted(literal);
-
-		testDiagnostics(source, expectNoDiagnosticOfType(LongLiteralAnalyzer.LONG_LITERAL_DETECTED));
-	}
-
-	@ParameterizedTest
-	@ValueSource(strings =
-	{
 		"DEFINE WORK FILE 1",
 		"ABCDEFGHIJKLM",
 		"ÆØÅÄÖÜ:",
 		"STOP",
 		"SPECIAL CHARS:!#\"¤(%=(=?\\/<>))",
-		"Y/N"
+		"Y/N",
+		"Yes",
+		"æøå",
+		"äöüß"
 	})
-	void reportNoDiagnosticIfLineIsUppercase(String literal)
+	void reportNoDiagnosticIfUppercaseOrShortLine(String literal)
 	{
 		configureEditorConfig("""
 			[*]
