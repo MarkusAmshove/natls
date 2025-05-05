@@ -156,6 +156,11 @@ public class ReadOnlyList<T> implements Iterable<T>
 		return collection.indexOf(element);
 	}
 
+	public ReadOnlyList<T> subList(int fromIndex, int toIndex)
+	{
+		return ReadOnlyList.from(collection.subList(fromIndex, toIndex));
+	}
+
 	@Override
 	public String toString()
 	{

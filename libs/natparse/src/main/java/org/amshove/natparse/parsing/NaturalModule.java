@@ -26,6 +26,7 @@ public class NaturalModule
 	private IStatementListNode body;
 	private ISyntaxTree tree;
 	private ReadOnlyList<SyntaxToken> comments;
+	private ReadOnlyList<SyntaxToken> tokens;
 	private NaturalHeader sourceHeader;
 	private IDataType returnType;
 	private SyntaxToken functionName;
@@ -66,6 +67,12 @@ public class NaturalModule
 	public ReadOnlyList<IModuleReferencingNode> callers()
 	{
 		return ReadOnlyList.from(callers);
+	}
+
+	@Override
+	public ReadOnlyList<SyntaxToken> tokens()
+	{
+		return tokens;
 	}
 
 	@Override
@@ -132,6 +139,11 @@ public class NaturalModule
 	public void addCaller(IModuleReferencingNode caller)
 	{
 		callers.add(caller);
+	}
+
+	void setTokens(ReadOnlyList<SyntaxToken> tokens)
+	{
+		this.tokens = tokens;
 	}
 
 	void setSyntaxTree(ISyntaxTree tree)
