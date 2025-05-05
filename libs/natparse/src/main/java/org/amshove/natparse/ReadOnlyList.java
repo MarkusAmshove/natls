@@ -157,7 +157,7 @@ public class ReadOnlyList<T> implements Iterable<T>
 
 	public ReadOnlyList<T> subList(int fromIndex, int toIndex)
 	{
-		return new ReadOnlyList<T>(collection.subList(fromIndex, toIndex), false);
+		return new ReadOnlyList<>(collection.subList(fromIndex, toIndex), false);
 	}
 
 	@Override
