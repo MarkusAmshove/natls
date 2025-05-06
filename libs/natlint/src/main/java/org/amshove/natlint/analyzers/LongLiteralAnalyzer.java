@@ -9,6 +9,8 @@ import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.ILiteralNode;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 public class LongLiteralAnalyzer extends AbstractAnalyzer
 {
@@ -17,6 +19,8 @@ public class LongLiteralAnalyzer extends AbstractAnalyzer
 		"A long literal containing lowercase detected.",
 		DiagnosticSeverity.WARNING
 	);
+
+	private static final Pattern PATTERN_LOWERCASE = Pattern.compile(".*\\p{Ll}.*");
 
 	private boolean isLongLiteralAnalyserOff;
 
@@ -29,7 +33,7 @@ public class LongLiteralAnalyzer extends AbstractAnalyzer
 	@Override
 	public void initialize(ILinterContext context)
 	{
-		context.registerNodeAnalyzer(ILiteralNode.class, this::analyzeDefineDataIndependent);
+		context.registerNodeAnalyzer(ILiteralNode.class, this::analyzeLongLiteral);
 	}
 
 	@Override
@@ -38,7 +42,7 @@ public class LongLiteralAnalyzer extends AbstractAnalyzer
 		isLongLiteralAnalyserOff = !context.getConfiguration(context.getModule().file(), "natls.style.discourage_long_literals", OPTION_FALSE).equalsIgnoreCase(OPTION_TRUE);
 	}
 
-	private void analyzeDefineDataIndependent(ISyntaxNode node, IAnalyzeContext context)
+	private void analyzeLongLiteral(ISyntaxNode node, IAnalyzeContext context)
 	{
 		if (isLongLiteralAnalyserOff)
 		{
@@ -56,11 +60,14 @@ public class LongLiteralAnalyzer extends AbstractAnalyzer
 		}
 
 		var literal = (ILiteralNode) node;
-		boolean hasLowercase = literal.token().source().matches(".*\\p{Ll}.*");
 		// literal.token().source() includes the enclosing quotes
-		if (literal.token().source().length() >= 7 && hasLowercase)
+		if (literal.token().source().length() >= 7)
 		{
-			context.report(LONG_LITERAL_DETECTED.createDiagnostic(node));
+			Matcher matches = PATTERN_LOWERCASE.matcher(literal.token().source());
+			if (matches.matches())
+			{
+				context.report(LONG_LITERAL_DETECTED.createDiagnostic(node));
+			}
 		}
 	}
 }
