@@ -25,6 +25,8 @@ categories:
     labels:
       - 'infrastructure🧰'
       - 'dependencies⏫'
+exclude-labels:
+  - 'skip-changelog'
 template: |
   ## What's Changed
 
