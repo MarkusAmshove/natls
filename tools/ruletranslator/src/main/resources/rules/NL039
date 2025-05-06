@@ -1,6 +1,6 @@
 name: A long literal containing lowercase was detected
 priority: MAJOR
-tags: bad-practice
+tags: bad-practice, convention
 type: CODE_SMELL
 description:
 Code involving lowercase characters is not allowed.
