@@ -90,7 +90,7 @@ jobs:
 
   release-maven-central:
     name: Release to Maven Central
-    if: github.event_name == 'push' #&& contains(github.ref, 'refs/tags/')
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
 
     steps:
