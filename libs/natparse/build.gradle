@@ -1,5 +1,5 @@
 plugins {
-    id 'maven-publish'
+    id 'com.vanniktech.maven.publish'
 }
 
 dependencies {
@@ -11,38 +11,32 @@ dependencies {
     testImplementation project(':testhelpers')
 }
 
-java {
-    withJavadocJar()
-    withSourcesJar()
-}
+import com.vanniktech.maven.publish.SonatypeHost
+mavenPublishing {
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    signAllPublications()
 
-publishing {
-    publications {
-        mavenNatparse(MavenPublication) {
-            from components.java
-            pom {
-                name = project.name
-                url = 'https://github.com/MarkusAmshove/natls'
-                description = 'Parser for Software AGs Natural language'
-                scm {
-                    connection = 'scm:git:https://github.com/MarkusAmshove/natls.git'
-                    developerConnection = 'scm:git:git@github.com:MarkusAmshove/natls.git'
-                    url = 'https://github.com/MarkusAmshove/natls'
-                }
+    pom {
+        name = project.name
+        url = 'https://github.com/MarkusAmshove/natls'
+        description = 'Parser for Software AGs Natural language'
+        scm {
+            connection = 'scm:git:https://github.com/MarkusAmshove/natls.git'
+            developerConnection = 'scm:git:git@github.com:MarkusAmshove/natls.git'
+            url = 'https://github.com/MarkusAmshove/natls'
+        }
 
-                licenses {
-                    license {
-                        name = 'MIT'
-                        url = 'https://github.com/MarkusAmshove/natls/blob/main/LICENSE'
-                    }
-                }
+        licenses {
+            license {
+                name = 'MIT'
+                url = 'https://github.com/MarkusAmshove/natls/blob/main/LICENSE'
+            }
+        }
 
-                developers {
-                    developer {
-                        id = 'markusamshove'
-                        name = 'Markus Amshove'
-                    }
-                }
+        developers {
+            developer {
+                id = 'markusamshove'
+                name = 'Markus Amshove'
             }
         }
     }
@@ -52,7 +46,7 @@ signing {
     def signingKey = findProperty("signingKey")
     def signingPassword = findProperty("signingPassword")
     useInMemoryPgpKeys(signingKey, signingPassword)
-    sign publishing.publications.mavenNatparse
+    sign publishing.publications
 }
 
 tasks.named('test') {
