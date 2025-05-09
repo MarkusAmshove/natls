@@ -38,8 +38,11 @@ tasks.register('fatJar', Jar) {
 
 import com.vanniktech.maven.publish.SonatypeHost
 mavenPublishing {
+    coordinates(project.group, 'natlint', rootProject.version)
+
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
+
     pom {
         name = project.name
             description = 'Static code analysis for Software AGs Natural language'
