@@ -24,7 +24,7 @@ public class TokenList implements Iterable<SyntaxToken>
 		return new TokenList(filePath, tokenList, diagnostics, comments, sourceHeader);
 	}
 
-	private final List<SyntaxToken> tokens;
+	private final ReadOnlyList<SyntaxToken> tokens;
 	private final List<LexerDiagnostic> diagnostics;
 	private final List<SyntaxToken> comments;
 	private final Path filePath;
@@ -33,7 +33,7 @@ public class TokenList implements Iterable<SyntaxToken>
 
 	TokenList(Path filePath, List<SyntaxToken> tokens)
 	{
-		this.tokens = tokens;
+		this.tokens = ReadOnlyList.from(tokens);
 		diagnostics = List.of();
 		comments = List.of();
 		this.filePath = filePath;
@@ -41,7 +41,7 @@ public class TokenList implements Iterable<SyntaxToken>
 
 	TokenList(Path filePath, List<SyntaxToken> tokens, List<LexerDiagnostic> diagnostics, List<SyntaxToken> comments, NaturalHeader sourceHeader)
 	{
-		this.tokens = tokens;
+		this.tokens = ReadOnlyList.from(tokens);
 		this.diagnostics = diagnostics;
 		this.comments = comments;
 		this.filePath = filePath;
@@ -51,17 +51,6 @@ public class TokenList implements Iterable<SyntaxToken>
 	public ReadOnlyList<IDiagnostic> diagnostics()
 	{
 		return ReadOnlyList.from(diagnostics.stream().map(d -> (IDiagnostic) d).toList()); // TODO: Perf
-	}
-
-	// TODO: ReadOnlyList
-	public List<SyntaxToken> tokensUntilNext(SyntaxKind kind)
-	{
-		var startOffset = currentOffset;
-		if (!advanceUntil(kind))
-		{
-			return List.of();
-		}
-		return List.copyOf(tokens.subList(startOffset, currentOffset));
 	}
 
 	public Path filePath()
@@ -156,10 +145,9 @@ public class TokenList implements Iterable<SyntaxToken>
 		return tokens.size();
 	}
 
-	// TODO: ReadOnlyList
-	List<SyntaxToken> allTokens()
+	public ReadOnlyList<SyntaxToken> allTokens()
 	{
-		return List.copyOf(tokens);
+		return tokens;
 	}
 
 	public boolean advanceAfterNext(SyntaxKind kind)
@@ -235,7 +223,7 @@ public class TokenList implements Iterable<SyntaxToken>
 	 */
 	public ReadOnlyList<SyntaxToken> subrange(int start, int end)
 	{
-		return ReadOnlyList.from(tokens.subList(start, end + 1));
+		return tokens.subList(start, end + 1);
 	}
 
 	public Stream<SyntaxToken> stream()

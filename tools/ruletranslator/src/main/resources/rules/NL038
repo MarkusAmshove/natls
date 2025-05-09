@@ -1,0 +1,8 @@
+name: A long literal containing lowercase was detected
+priority: MINOR
+tags: bad-practice
+type: CODE_SMELL
+description:
+Consider store long literals (usually used for text presented for output) in a file/table instead of being hardcoded.
+
+This behavior can be configured using the ``natls.style.discourage_long_literals`` option in the [analyzer configuration](/docs/analyzer-config.md)
