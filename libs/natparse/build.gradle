@@ -13,7 +13,7 @@ dependencies {
 
 import com.vanniktech.maven.publish.SonatypeHost
 mavenPublishing {
-    coordinates(project.group, 'natparse', rootProject.version)
+    coordinates(project.group, 'natparse', project.version)
 
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
