@@ -1,0 +1,6 @@
+name: Redefinition variable is unused
+priority: MINOR
+tags: unused
+type: CODE_SMELL
+description:
+This rule is raised when there is a variable inside a redefinition that is not used.
