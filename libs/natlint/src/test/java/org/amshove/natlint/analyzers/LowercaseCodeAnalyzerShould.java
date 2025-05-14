@@ -15,7 +15,7 @@ class LowercaseCodeAnalyzerShould extends AbstractAnalyzerTest
 	{
 		configureEditorConfig("""
 			[*]
-			natls.style.disallow_lowercase_code=true
+			natls.style.discourage_lowercase_code=true
 			""");
 
 		var source = """
@@ -29,7 +29,7 @@ class LowercaseCodeAnalyzerShould extends AbstractAnalyzerTest
             END-IF
             END
             """;
-		testDiagnostics(source, expectDiagnostic(5, LowercaseCodeAnalyzer.LOWERCASE_CODE_IS_NOT_ALLOWED));
+		testDiagnostics(source, expectDiagnostic(5, LowercaseCodeAnalyzer.LOWERCASE_CODE_IS_DISCOURAGED));
 	}
 
 	@Test
@@ -37,7 +37,7 @@ class LowercaseCodeAnalyzerShould extends AbstractAnalyzerTest
 	{
 		configureEditorConfig("""
 			[*]
-			natls.style.disallow_lowercase_code=true
+			natls.style.discourage_lowercase_code=true
 			""");
 
 		var source = """
@@ -47,7 +47,7 @@ class LowercaseCodeAnalyzerShould extends AbstractAnalyzerTest
             #HEX := H'FeFe'
             END
             """;
-		testDiagnostics(source, expectDiagnostic(3, LowercaseCodeAnalyzer.LOWERCASE_CODE_IS_NOT_ALLOWED));
+		testDiagnostics(source, expectDiagnostic(3, LowercaseCodeAnalyzer.LOWERCASE_CODE_IS_DISCOURAGED));
 	}
 
 	@Test
@@ -55,7 +55,7 @@ class LowercaseCodeAnalyzerShould extends AbstractAnalyzerTest
 	{
 		configureEditorConfig("""
 			[*]
-			natls.style.disallow_lowercase_code=true
+			natls.style.discourage_lowercase_code=true
 			""");
 
 		var source = """
@@ -69,6 +69,6 @@ class LowercaseCodeAnalyzerShould extends AbstractAnalyzerTest
             END-IF
             END
             """;
-		testDiagnostics(source, expectNoDiagnosticOfType(LowercaseCodeAnalyzer.LOWERCASE_CODE_IS_NOT_ALLOWED));
+		testDiagnostics(source, expectNoDiagnosticOfType(LowercaseCodeAnalyzer.LOWERCASE_CODE_IS_DISCOURAGED));
 	}
 }

@@ -15,10 +15,10 @@ import org.amshove.natparse.natural.project.NaturalFileType;
 
 public class LowercaseCodeAnalyzer extends AbstractAnalyzer
 {
-	public static final DiagnosticDescription LOWERCASE_CODE_IS_NOT_ALLOWED = DiagnosticDescription.create(
+	public static final DiagnosticDescription LOWERCASE_CODE_IS_DISCOURAGED = DiagnosticDescription.create(
 		"NL039",
-		"Code in lower/mixed case is not allowed",
-		DiagnosticSeverity.ERROR
+		"Code in lower/mixed case is discouraged",
+		DiagnosticSeverity.INFO
 	);
 
 	private static final Pattern PATTERN_LOWERCASE = Pattern.compile(".*\\p{Ll}.*");
@@ -27,7 +27,7 @@ public class LowercaseCodeAnalyzer extends AbstractAnalyzer
 	@Override
 	public ReadOnlyList<DiagnosticDescription> getDiagnosticDescriptions()
 	{
-		return ReadOnlyList.of(LOWERCASE_CODE_IS_NOT_ALLOWED);
+		return ReadOnlyList.of(LOWERCASE_CODE_IS_DISCOURAGED);
 	}
 
 	@Override
@@ -39,7 +39,7 @@ public class LowercaseCodeAnalyzer extends AbstractAnalyzer
 	@Override
 	public void beforeAnalyzing(IAnalyzeContext context)
 	{
-		isLowercaseCodeOff = !context.getConfiguration(context.getModule().file(), "natls.style.disallow_lowercase_code", OPTION_FALSE).equalsIgnoreCase(OPTION_TRUE);
+		isLowercaseCodeOff = !context.getConfiguration(context.getModule().file(), "natls.style.discourage_lowercase_code", OPTION_FALSE).equalsIgnoreCase(OPTION_TRUE);
 	}
 
 	private void analyzeModule(INaturalModule module, IAnalyzeContext context)
@@ -64,7 +64,7 @@ public class LowercaseCodeAnalyzer extends AbstractAnalyzer
 			Matcher matches = PATTERN_LOWERCASE.matcher(token.source());
 			if (matches.matches())
 			{
-				context.report(LOWERCASE_CODE_IS_NOT_ALLOWED.createDiagnostic(token));
+				context.report(LOWERCASE_CODE_IS_DISCOURAGED.createDiagnostic(token));
 				return;
 			}
 		}
