@@ -15,6 +15,7 @@ The following configurations can be set in a `.editorconfig` file to configure p
 | `natls.style.mark_mainframelongline`          | `true`, `false` | [`NL034`](../tools/ruletranslator/src/main/resources/rules/NL034)|
 | `natls.style.discourage_hidden_dbms`          | `true`, `false` | [`NL035`](../tools/ruletranslator/src/main/resources/rules/NL035)|
 | `natls.style.discourage_long_literals`        | `true`, `false` | [`NL038`](../tools/ruletranslator/src/main/resources/rules/NL038)|
+| `natls.style.discourage_lowercase_code`       | `true`, `false` | [`NL038`](../tools/ruletranslator/src/main/resources/rules/NL039)|
 
 # Example
 
