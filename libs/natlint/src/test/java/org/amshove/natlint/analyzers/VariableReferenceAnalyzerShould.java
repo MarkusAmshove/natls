@@ -106,9 +106,9 @@ class VariableReferenceAnalyzerShould extends AbstractAnalyzerTest
                1 redefine #var
                2 #var2 (a20)
                end-define
-               
+
                write #var2
-               
+
                end
             """,
 			expectNoDiagnosticOfType(VariableReferenceAnalyzer.UNUSED_VARIABLE)
@@ -130,7 +130,7 @@ class VariableReferenceAnalyzerShould extends AbstractAnalyzerTest
                write #var2
                end
             """,
-			expectNoDiagnosticOfType(VariableReferenceAnalyzer.UNUSED_VARIABLE)
+			expectNoDiagnosticOfType(VariableReferenceAnalyzer.UNUSED_REDEFINE_VARIABLE)
 		);
 	}
 
@@ -150,7 +150,7 @@ class VariableReferenceAnalyzerShould extends AbstractAnalyzerTest
                write #var2
                end
             """,
-			expectDiagnostic(6, VariableReferenceAnalyzer.UNUSED_VARIABLE)
+			expectDiagnostic(6, VariableReferenceAnalyzer.UNUSED_REDEFINE_VARIABLE)
 		);
 	}
 
