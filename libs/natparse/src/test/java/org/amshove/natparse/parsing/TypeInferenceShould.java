@@ -134,10 +134,10 @@ class TypeInferenceShould
 	private IModuleProvider createModuleProvider()
 	{
 		var provider = mock(IModuleProvider.class);
-		var lReturnModule = new NaturalModule(new NaturalFile("LRETURN", Path.of("LRETURN.NS7"), NaturalFileType.FUNCTION));
+		var lReturnModule = new Function(new NaturalFile("LRETURN", Path.of("LRETURN.NS7"), NaturalFileType.FUNCTION));
 		lReturnModule.setReturnType(new DataType(DataFormat.LOGIC, 0));
 		when(provider.findNaturalModule("LRETURN", NaturalFileType.FUNCTION)).thenReturn(lReturnModule);
-		var iReturnModule = new NaturalModule(new NaturalFile("IRETURN", Path.of("IRETURN.NS7"), NaturalFileType.FUNCTION));
+		var iReturnModule = new Function(new NaturalFile("IRETURN", Path.of("IRETURN.NS7"), NaturalFileType.FUNCTION));
 		iReturnModule.setReturnType(new DataType(DataFormat.INTEGER, 4));
 		when(provider.findNaturalModule("IRETURN", NaturalFileType.FUNCTION)).thenReturn(iReturnModule);
 		return provider;

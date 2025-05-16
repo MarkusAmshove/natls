@@ -14,9 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+// TODO: Package private
 public class NaturalModule
-	// TODO: Clean up once new subclasses happen. Remove public then
-	implements IExternalSubroutine, IGlobalDataArea, ILocalDataArea, IParameterDataArea, IProgram, ISubprogram, IFunction
 {
 	private final NaturalFile file;
 	private IDefineData defineData;
@@ -41,7 +40,6 @@ public class NaturalModule
 		sourceHeader = header;
 	}
 
-	@Override
 	public String name()
 	{
 		if (functionName != null)
@@ -51,44 +49,37 @@ public class NaturalModule
 		return file.getReferableName();
 	}
 
-	@Override
 	public NaturalFile file()
 	{
 		return file;
 	}
 
-	@Override
 	public ReadOnlyList<IDiagnostic> diagnostics()
 	{
 		return ReadOnlyList.from(diagnostics);
 	}
 
-	@Override
 	public ReadOnlyList<IModuleReferencingNode> callers()
 	{
 		return ReadOnlyList.from(callers);
 	}
 
-	@Override
 	public ReadOnlyList<SyntaxToken> tokens()
 	{
 		return tokens;
 	}
 
-	@Override
 	public boolean isTestCase()
 	{
 		return file.getFiletype() == NaturalFileType.SUBPROGRAM &&
 			(file.getReferableName().startsWith("TC") || file.getReferableName().startsWith("TS"));
 	}
 
-	@Override
 	public ISyntaxTree syntaxTree()
 	{
 		return tree;
 	}
 
-	@Override
 	public IDefineData defineData()
 	{
 		return defineData;
@@ -100,25 +91,11 @@ public class NaturalModule
 		this.defineData = defineData;
 	}
 
-	void addDiagnostic(IDiagnostic diagnostic)
+	void addDiagnostics(List<IDiagnostic> diagnostics)
 	{
-		this.diagnostics.add(diagnostic);
+		this.diagnostics.addAll(diagnostics);
 	}
 
-	void addDiagnostics(ReadOnlyList<IDiagnostic> diagnostics)
-	{
-		for (var diagnostic : diagnostics)
-		{
-			addDiagnostic(diagnostic);
-		}
-	}
-
-	void addReference(IModuleReferencingNode referencingNode)
-	{
-		callers.add(referencingNode);
-	}
-
-	@Override
 	public IStatementListNode body()
 	{
 		return body;
@@ -129,13 +106,11 @@ public class NaturalModule
 		this.body = body;
 	}
 
-	@Override
 	public void removeCaller(IModuleReferencingNode callerNode)
 	{
 		callers.remove(callerNode);
 	}
 
-	@Override
 	public void addCaller(IModuleReferencingNode caller)
 	{
 		callers.add(caller);
@@ -190,7 +165,6 @@ public class NaturalModule
 			.collect(Collectors.joining(System.lineSeparator()));
 	}
 
-	@Override
 	public String extractLineComment(int line)
 	{
 		if (comments == null)
@@ -205,20 +179,17 @@ public class NaturalModule
 			.orElse("");
 	}
 
-	@Override
 	public NaturalHeader header()
 	{
 		return sourceHeader;
 	}
 
-	@Override
 	public NaturalProgrammingMode programmingMode()
 	{
 		return sourceHeader != null ? sourceHeader.getProgrammingMode() : NaturalProgrammingMode.UNKNOWN;
 	}
 
 	@Nullable
-	@Override
 	public IDataType returnType()
 	{
 		return returnType;
@@ -235,7 +206,6 @@ public class NaturalModule
 	}
 
 	@Nullable
-	@Override
 	public SyntaxToken functionName()
 	{
 		return functionName;

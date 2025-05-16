@@ -54,7 +54,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	@Test
 	void parseFunctionCallsAsUnaryCondition()
 	{
-		var calledFunction = new NaturalModule(null);
+		var calledFunction = new Function(null);
 		moduleProvider.addModule("ISSTH", calledFunction);
 
 		var criteria = assertParsesCriteria("ISSTH(<'1', '2'>)", IUnaryLogicalCriteriaNode.class);
@@ -65,7 +65,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	@Test
 	void parseMultipleFunctionCallsOverMultipleLinesInNegatedGroupedCriteriaWithoutDiagnostics()
 	{
-		var calledFunction = new NaturalModule(null);
+		var calledFunction = new Function(null);
 		moduleProvider.addModule("ISSTH", calledFunction);
 		assertParsesCriteria("""
 			  NOT (ISSTH(<#VAR3.VAR4(#I)>)
@@ -80,7 +80,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	@Test
 	void parseFunctionCallsInRelationalCriteria()
 	{
-		var calledFunction = new NaturalModule(null);
+		var calledFunction = new Function(null);
 		moduleProvider.addModule("ISSTH", calledFunction);
 
 		var criteria = assertParsesCriteria("ISSTH(<'1', '2'>) = 'A'", IRelationalCriteriaNode.class);
@@ -656,7 +656,7 @@ class ConditionalParsingTests extends AbstractParserTest<IStatementListNode>
 	@Test
 	void parseFunctionCallsWithEmptyParameter()
 	{
-		var calledFunction = new NaturalModule(null);
+		var calledFunction = new Function(null);
 		moduleProvider.addModule("ISSTH", calledFunction);
 
 		var negated = assertParsesCriteria("NOT ISSTH(<>)", INegatedConditionalCriteria.class);

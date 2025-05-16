@@ -1,6 +1,6 @@
 package org.amshove.natparse.parsing;
 
-import org.amshove.natparse.natural.ISubprogram;
+import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.testhelpers.ProjectName;
 import org.junit.jupiter.api.Test;
@@ -15,7 +15,8 @@ class ReferencedModuleTypeValidationShould extends ParserIntegrationTest
 		assertRaised(
 			"SUBLDA",
 			"INVALID_FILE_TYPE should have been raised, because a LDA is used for PARAMETER USING",
-			project
+			project,
+			ISubprogram.class
 		);
 	}
 
@@ -25,7 +26,8 @@ class ReferencedModuleTypeValidationShould extends ParserIntegrationTest
 		assertRaised(
 			"SUBGDA",
 			"INVALID_FILE_TYPE should have been raised, because a GDA is used for PARAMETER USING",
-			project
+			project,
+			ISubprogram.class
 		);
 	}
 
@@ -35,7 +37,8 @@ class ReferencedModuleTypeValidationShould extends ParserIntegrationTest
 		assertNotRaised(
 			"SUBPDA",
 			"INVALID_FILE_TYPE should not have been raised, because a PDA is used for PARAMETER USING",
-			project
+			project,
+			ISubprogram.class
 		);
 	}
 
@@ -45,7 +48,8 @@ class ReferencedModuleTypeValidationShould extends ParserIntegrationTest
 		assertRaised(
 			"LUSEGDA",
 			"INVALID_FILE_TYPE should have been raised, because a GDA is used for LOCAL USING",
-			project
+			project,
+			ISubprogram.class
 		);
 	}
 
@@ -55,7 +59,8 @@ class ReferencedModuleTypeValidationShould extends ParserIntegrationTest
 		assertNotRaised(
 			"LUSELDA",
 			"INVALID_FILE_TYPE should not have been raised, because a LDA is used for LOCAL USING",
-			project
+			project,
+			ISubprogram.class
 		);
 	}
 
@@ -65,7 +70,8 @@ class ReferencedModuleTypeValidationShould extends ParserIntegrationTest
 		assertNotRaised(
 			"LUSEPDA",
 			"INVALID_FILE_TYPE should not have been raised, because a PDA is used for LOCAL USING",
-			project
+			project,
+			ISubprogram.class
 		);
 	}
 
@@ -75,7 +81,8 @@ class ReferencedModuleTypeValidationShould extends ParserIntegrationTest
 		assertRaised(
 			"INCLSUB",
 			"INVALID_FILE_TYPE should have been raised, because a Subprogram is used for INCLUDE",
-			project
+			project,
+			ISubprogram.class
 		);
 	}
 
@@ -85,7 +92,8 @@ class ReferencedModuleTypeValidationShould extends ParserIntegrationTest
 		assertNotRaised(
 			"INCLCC",
 			"INVALID_FILE_TYPE should not have been raised, because a Copycode is used for INCLUDE",
-			project
+			project,
+			ISubprogram.class
 		);
 	}
 
@@ -95,7 +103,8 @@ class ReferencedModuleTypeValidationShould extends ParserIntegrationTest
 		assertRaised(
 			"CALLPROG",
 			"INVALID_FILE_TYPE should have been raised, because a Program is called by CALLNAT",
-			project
+			project,
+			ISubprogram.class
 		);
 	}
 
@@ -105,7 +114,8 @@ class ReferencedModuleTypeValidationShould extends ParserIntegrationTest
 		assertNotRaised(
 			"CALLSUB",
 			"INVALID_FILE_TYPE should not have been raised, because a Subprogram is called by CALLNAT",
-			project
+			project,
+			ISubprogram.class
 		);
 	}
 
@@ -115,7 +125,8 @@ class ReferencedModuleTypeValidationShould extends ParserIntegrationTest
 		assertRaised(
 			"FETCHSUB",
 			"INVALID_FILE_TYPE should have been raised, because a Subprogram is called by FETCH",
-			project
+			project,
+			IProgram.class
 		);
 	}
 
@@ -125,21 +136,22 @@ class ReferencedModuleTypeValidationShould extends ParserIntegrationTest
 		assertNotRaised(
 			"FETCHPRG",
 			"INVALID_FILE_TYPE should not have been raised, because a Program is called by FETCH",
-			project
+			project,
+			IProgram.class
 		);
 	}
 
-	private void assertNotRaised(String moduleName, String reason, NaturalProject project)
+	private void assertNotRaised(String moduleName, String reason, NaturalProject project, Class<? extends INaturalModule> typeOfCallingModule)
 	{
-		var module = assertFileParsesAs(project.findModule("ALIB", moduleName), ISubprogram.class);
+		var module = assertFileParsesAs(project.findModule("ALIB", moduleName), typeOfCallingModule);
 		assertThat(module.diagnostics())
 			.as(reason)
 			.noneMatch(d -> d.id().equals(ParserError.INVALID_MODULE_TYPE.id()));
 	}
 
-	private void assertRaised(String moduleName, String reason, NaturalProject project)
+	private void assertRaised(String moduleName, String reason, NaturalProject project, Class<? extends INaturalModule> typeOfCallingModule)
 	{
-		var module = assertFileParsesAs(project.findModule("ALIB", moduleName), ISubprogram.class);
+		var module = assertFileParsesAs(project.findModule("ALIB", moduleName), typeOfCallingModule);
 		assertThat(module.diagnostics())
 			.as(reason)
 			.anyMatch(d -> d.id().equals(ParserError.INVALID_MODULE_TYPE.id()));

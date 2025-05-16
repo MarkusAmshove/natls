@@ -353,7 +353,7 @@ class OperandParsingTests extends AbstractOperandParsingTest
 	@Test
 	void parseFunctionsAsAbsParameter()
 	{
-		moduleProvider.addModule("FUNC", new NaturalModule(null));
+		moduleProvider.addModule("FUNC", new Function(null));
 		var operand = parseOperand("ABS(FUNC(<'A', 5>))");
 		var abs = assertNodeType(operand, IMathFunctionOperandNode.class);
 		var functionAsParameter = assertNodeType(abs.parameter(), IFunctionCallNode.class);

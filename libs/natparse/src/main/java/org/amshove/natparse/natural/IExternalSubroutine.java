@@ -1,6 +1,4 @@
 package org.amshove.natparse.natural;
 
-public interface IExternalSubroutine extends INaturalModule
-{
-	IDefineData defineData();
-}
+public non-sealed interface IExternalSubroutine extends INaturalModule, IModuleWithBody, IHasDefineData
+{}

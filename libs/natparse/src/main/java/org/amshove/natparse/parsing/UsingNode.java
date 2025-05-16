@@ -99,12 +99,12 @@ class UsingNode extends BaseSyntaxNode implements IUsingNode
 		return ReadOnlyList.empty();
 	}
 
-	void setReferencingModule(NaturalModule module)
+	void setReferencingModule(INaturalModule module)
 	{
 		referencingModule = module;
 		if (referencingModule != null)
 		{
-			module.addReference(this);
+			module.addCaller(this);
 		}
 	}
 }

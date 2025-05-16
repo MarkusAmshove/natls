@@ -540,7 +540,7 @@ abstract class AbstractParser<T>
 		node.setReferencingToken(token);
 		node.addNode(functionName);
 		var module = sideloadModule(token.symbolName(), functionName.token(), NaturalFileType.FUNCTION);
-		node.setReferencedModule((NaturalModule) module);
+		node.setReferencedModule(module);
 		externalModuleReferences.add(node);
 
 		consumeMandatory(node, SyntaxKind.LPAREN);

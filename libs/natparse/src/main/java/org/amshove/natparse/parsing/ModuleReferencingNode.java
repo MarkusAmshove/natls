@@ -43,12 +43,12 @@ class ModuleReferencingNode extends StatementNode implements IModuleReferencingN
 		providedParameter.add(parameter);
 	}
 
-	void setReferencedModule(NaturalModule module)
+	void setReferencedModule(INaturalModule module)
 	{
 		this.referencedModule = module;
 		if (module != null)
 		{
-			module.addReference(this);
+			module.addCaller(this);
 		}
 	}
 }
