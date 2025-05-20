@@ -14,8 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-// TODO: Package private
-public class NaturalModule
+class NaturalModule
 {
 	private final NaturalFile file;
 	private IDefineData defineData;
