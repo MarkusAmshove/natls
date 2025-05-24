@@ -5,7 +5,6 @@ import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFile;
-import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.natural.project.NaturalHeader;
 import org.amshove.natparse.natural.project.NaturalProgrammingMode;
 
@@ -16,7 +15,7 @@ import java.util.stream.Collectors;
 
 class NaturalModule
 {
-	private final NaturalFile file;
+	protected final NaturalFile file;
 	private IDefineData defineData;
 	private final List<IDiagnostic> diagnostics = new ArrayList<>();
 	private final List<IModuleReferencingNode> callers = new ArrayList<>();
@@ -66,12 +65,6 @@ class NaturalModule
 	public ReadOnlyList<SyntaxToken> tokens()
 	{
 		return tokens;
-	}
-
-	public boolean isTestCase()
-	{
-		return file.getFiletype() == NaturalFileType.SUBPROGRAM &&
-			(file.getReferableName().startsWith("TC") || file.getReferableName().startsWith("TS"));
 	}
 
 	public ISyntaxTree syntaxTree()

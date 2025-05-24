@@ -25,9 +25,6 @@ public sealed interface INaturalModule permits ISubprogram,IProgram,IExternalSub
 
 	ReadOnlyList<SyntaxToken> comments();
 
-	// TODO: Does not belong here
-	boolean isTestCase();
-
 	String moduleDocumentation();
 
 	String extractLineComment(int line);
@@ -39,4 +36,12 @@ public sealed interface INaturalModule permits ISubprogram,IProgram,IExternalSub
 	void removeCaller(IModuleReferencingNode node);
 
 	void addCaller(IModuleReferencingNode caller);
+
+	/**
+	 * Wether this module is a NatUnit test case.
+	 */
+	default boolean isTestCase()
+	{
+		return false;
+	}
 }

@@ -10,4 +10,9 @@ class Subprogram extends NaturalModule implements ISubprogram
 		super(file);
 	}
 
+	@Override
+	public boolean isTestCase()
+	{
+		return (file.getReferableName().startsWith("TC") || file.getReferableName().startsWith("TS"));
+	}
 }
