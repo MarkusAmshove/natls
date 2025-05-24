@@ -1,6 +1,4 @@
 package org.amshove.natparse.natural;
 
-public interface IGlobalDataArea extends INaturalModule
-{
-	IDefineData defineData();
-}
+public non-sealed interface IGlobalDataArea extends INaturalModule, IHasDefineData
+{}

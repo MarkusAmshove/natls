@@ -7,7 +7,6 @@ import org.amshove.natparse.lexing.TokenList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
-import org.amshove.natparse.natural.project.NaturalProgrammingMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,30 +35,27 @@ public class NaturalParser
 		return parseModule(file, moduleProviderToUse, tokens);
 	}
 
-	private NaturalModule parseModule(NaturalFile file, IModuleProvider moduleProvider, TokenList tokens)
+	private INaturalModule parseModule(NaturalFile file, IModuleProvider moduleProvider, TokenList tokens)
 	{
-		var naturalModule = new NaturalModule(file);
-		naturalModule.addDiagnostics(tokens.diagnostics());
+		var moduleBuilder = new NaturalModuleBuilder(file)
+			.addDiagnostics(tokens.diagnostics())
+			.setComments(tokens.comments())
+			.setTokens(tokens.allTokens());
 		var topLevelNodes = new ArrayList<ISyntaxNode>();
-		naturalModule.setComments(tokens.comments());
-		naturalModule.setTokens(tokens.allTokens());
 
-		if (tokens.sourceHeader() != null && tokens.sourceHeader().isReportingMode())
+		var sourceHeader = tokens.sourceHeader();
+		moduleBuilder.setHeader(sourceHeader);
+		if (sourceHeader != null && sourceHeader.isReportingMode())
 		{
-			naturalModule.addDiagnostic(ParserErrors.unsupportedProgrammingMode(tokens.sourceHeader().getProgrammingMode(), file.getPath()));
-		}
-		naturalModule.setHeader(tokens.sourceHeader());
-
-		if (naturalModule.programmingMode() == NaturalProgrammingMode.REPORTING)
-		{
+			moduleBuilder.addDiagnostic(ParserErrors.unsupportedProgrammingMode(sourceHeader.getProgrammingMode(), file.getPath()));
 			// REPORTING mode is not supported. If we can't deduce the mode, assume STRUCTURED.
-			return naturalModule;
+			return moduleBuilder.build();
 		}
 
 		VariableNode functionReturnVariable = null;
 		if (file.getFiletype() == NaturalFileType.FUNCTION) // skip over DEFINE FUNCTION
 		{
-			functionReturnVariable = consumeDefineFunction(tokens, naturalModule);
+			functionReturnVariable = consumeDefineFunction(tokens, moduleBuilder);
 		}
 
 		// Try to advance to DEFINE DATA.
@@ -67,32 +63,31 @@ public class NaturalParser
 		// This was introduced to temporarily skip over INCLUDE and OPTION before DEFINE DATA
 		if (advanceToDefineData(tokens))
 		{
-			topLevelNodes.add(parseDefineData(tokens, moduleProvider, naturalModule));
-			if (file.getFiletype() == NaturalFileType.FUNCTION && naturalModule.defineData() != null && functionReturnVariable != null)
+			topLevelNodes.add(parseDefineData(tokens, moduleProvider, moduleBuilder));
+			if (file.getFiletype() == NaturalFileType.FUNCTION && moduleBuilder.getDefineData() != null && functionReturnVariable != null)
 			{
-				var defineData = (DefineDataNode) naturalModule.defineData();
+				var defineData = (DefineDataNode) moduleBuilder.getDefineData();
 				defineData.addVariable(functionReturnVariable);
-				naturalModule.addReferencableNodes(List.of(functionReturnVariable));
+				moduleBuilder.addReferencableNodes(List.of(functionReturnVariable));
 			}
 		}
 
 		if (file.getFiletype().canHaveBody())
 		{
-			var bodyParseResult = parseBody(tokens, moduleProvider, naturalModule);
+			var bodyParseResult = parseBody(tokens, moduleProvider, moduleBuilder);
 			topLevelNodes.add(bodyParseResult.body());
-
-			if (file.getFiletype() != NaturalFileType.COPYCODE)
+			if (moduleBuilder.fileType() != NaturalFileType.COPYCODE)
 			{
 				// Copycodes will be analyzed in context of their including module.
 				// Analyzing them doesn't make sense, because we can't check parameter
 				// types etc.
-				ExternalParameterCheck.performParameterCheck(naturalModule, bodyParseResult.moduleRefs());
+				ExternalParameterCheck.performParameterCheck(moduleBuilder, bodyParseResult.moduleRefs());
 			}
 		}
 
-		naturalModule.setSyntaxTree(SyntaxTree.create(ReadOnlyList.from(topLevelNodes)));
+		moduleBuilder.setSyntaxTree(SyntaxTree.create(ReadOnlyList.from(topLevelNodes)));
 
-		return naturalModule;
+		return moduleBuilder.build();
 	}
 
 	private boolean advanceToDefineData(TokenList tokens)
@@ -113,7 +108,7 @@ public class NaturalParser
 		return false;
 	}
 
-	private VariableNode consumeDefineFunction(TokenList tokens, NaturalModule naturalModule)
+	private VariableNode consumeDefineFunction(TokenList tokens, NaturalModuleBuilder moduleBuilder)
 	{
 		VariableNode functionReturnVariable = null;
 		while (!tokens.isAtEnd())
@@ -126,7 +121,7 @@ public class NaturalParser
 			if (tokens.peek(1).kind() == SyntaxKind.RETURNS)
 			{
 				var functionName = tokens.advance();
-				naturalModule.setFunctionName(functionName);
+				moduleBuilder.setFunctionName(functionName);
 				functionReturnVariable = new VariableNode();
 				functionReturnVariable.setLevel(1);
 				functionReturnVariable.setScope(VariableScope.LOCAL);
@@ -171,7 +166,7 @@ public class NaturalParser
 					{
 						type = DataType.ofDynamicLength(type.format());
 					}
-					naturalModule.setReturnType(type);
+					moduleBuilder.setReturnType(type);
 					typedReturnVariable.setType(new VariableType(type));
 					functionReturnVariable = typedReturnVariable;
 				}
@@ -185,74 +180,75 @@ public class NaturalParser
 		return functionReturnVariable;
 	}
 
-	private IDefineData parseDefineData(TokenList tokens, IModuleProvider moduleProvider, NaturalModule naturalModule)
+	private IDefineData parseDefineData(TokenList tokens, IModuleProvider moduleProvider, NaturalModuleBuilder moduleBuilder)
 	{
 
 		var defineDataParser = new DefineDataParser(moduleProvider);
 		var result = defineDataParser.parse(tokens);
-		naturalModule.addDiagnostics(result.diagnostics());
+		moduleBuilder.addDiagnostics(result.diagnostics());
 		var defineData = result.result();
 		if (defineData != null)
 		{
-			naturalModule.setDefineData(defineData);
-			naturalModule.addReferencableNodes(defineData.variables().stream().map(n -> (IReferencableNode) n).toList());
+			moduleBuilder.setDefineData(defineData);
+			moduleBuilder.addReferencableNodes(defineData.variables().stream().map(n -> (IReferencableNode) n).toList());
 		}
 
 		return defineData;
 	}
 
-	private BodyParseResult parseBody(TokenList tokens, IModuleProvider moduleProvider, NaturalModule naturalModule)
+	private BodyParseResult parseBody(TokenList tokens, IModuleProvider moduleProvider, NaturalModuleBuilder moduleBuilder)
 	{
 		var statementParser = new StatementListParser(moduleProvider);
 		var result = statementParser.parse(tokens);
-		naturalModule.addReferencableNodes(statementParser.getReferencableNodes());
-		addRelevantParserDiagnostics(naturalModule, result);
-		naturalModule.setBody(result.result());
-		resolveVariableReferences(statementParser, naturalModule);
+		moduleBuilder.addReferencableNodes(statementParser.getReferencableNodes());
+		addRelevantParserDiagnostics(moduleBuilder, result);
+		moduleBuilder.setBody(result.result());
+		resolveVariableReferences(statementParser, moduleBuilder);
 
-		if (naturalModule.defineData() != null)
+		if (moduleBuilder.getDefineData() != null)
 		{
 			var typer = new TypeChecker();
-			for (var diagnostic : typer.check(naturalModule.defineData()))
+			for (var diagnostic : typer.check(moduleBuilder.getDefineData()))
 			{
-				naturalModule.addDiagnostic(diagnostic);
+				moduleBuilder.addDiagnostic(diagnostic);
 			}
 		}
 
-		if (naturalModule.body() != null && naturalModule.file().getFiletype() != NaturalFileType.COPYCODE)
+		var theBody = moduleBuilder.body();
+		if (theBody != null && moduleBuilder.fileType() != NaturalFileType.COPYCODE)
 		{
 			var endStatementFound = false;
-			for (var statement : naturalModule.body().statements())
+			for (var statement : theBody.statements())
 			{
 				if (endStatementFound)
 				{
-					reportNoSourceCodeAfterEndStatementAllowed(naturalModule, statement);
+					reportNoSourceCodeAfterEndStatementAllowed(moduleBuilder, statement);
 					break;
 				}
 				endStatementFound = statement instanceof IEndNode;
 			}
-			if (!endStatementFound && naturalModule.body().statements().hasItems())
+			if (!endStatementFound && theBody.statements().hasItems())
 			{
-				reportEndStatementMissing(naturalModule, naturalModule.body().statements().last());
+				reportEndStatementMissing(moduleBuilder, theBody.statements().last());
 			}
 
 			var typer = new TypeChecker();
-			for (var diagnostic : typer.check(naturalModule.body()))
+			for (var diagnostic : typer.check(theBody))
 			{
-				naturalModule.addDiagnostic(diagnostic);
+				moduleBuilder.addDiagnostic(diagnostic);
 			}
 		}
 
 		return new BodyParseResult(result.result(), statementParser.moduleReferencingNodes());
 	}
 
-	private void addRelevantParserDiagnostics(NaturalModule naturalModule, ParseResult<IStatementListNode> result)
+	private void addRelevantParserDiagnostics(NaturalModuleBuilder moduleBuilder, ParseResult<IStatementListNode> result)
 	{
 		for (var diagnostic : result.diagnostics())
 		{
 			if (diagnostic.id().equals(ParserError.UNRESOLVED_MODULE.id()))
 			{
-				if (naturalModule.isTestCase() && diagnostic.message().contains("module TEARDOWN") || diagnostic.message().contains("module SETUP"))
+				if (moduleBuilder.isTestCase() && diagnostic.message().contains("module TEARDOWN") || diagnostic.message().contains("module SETUP"))
 				{
 					// Skip these unresolved subroutines.
 					// These are special cases for NatUnit, because it doesn't force you to implement them.
@@ -261,7 +257,7 @@ public class NaturalParser
 				}
 			}
 
-			if (naturalModule.file().getFiletype() == NaturalFileType.COPYCODE)
+			if (moduleBuilder.fileType() == NaturalFileType.COPYCODE)
 			{
 				if (ParserError.isUnresolvedError(diagnostic.id()))
 				{
@@ -272,17 +268,17 @@ public class NaturalParser
 				}
 			}
 
-			naturalModule.addDiagnostic(diagnostic);
+			moduleBuilder.addDiagnostic(diagnostic);
 		}
 	}
 
-	private void resolveVariableReferences(StatementListParser statementParser, NaturalModule module)
+	private void resolveVariableReferences(StatementListParser statementParser, NaturalModuleBuilder moduleBuilder)
 	{
 		// This could actually be done in the StatementListParser when encountering
 		// a possible reference. But that would need changes in the architecture, since
 		// it does not know about declared variables.
 
-		var defineData = module.defineData();
+		var defineData = moduleBuilder.getDefineData();
 		if (defineData == null)
 		{
 			return;
@@ -305,46 +301,47 @@ public class NaturalParser
 				continue;
 			}
 
-			if (tryFindAndReference(unresolvedReference.token().symbolName(), unresolvedReference, defineData, module))
+			if (tryFindAndReference(unresolvedReference.token().symbolName(), unresolvedReference, defineData, moduleBuilder))
 			{
 				continue;
 			}
 
 			if (unresolvedReference.token().symbolName().startsWith("+")
-				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(1), unresolvedReference, defineData, module))
+				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(1), unresolvedReference, defineData, moduleBuilder))
 			{
 				// TODO(hack, expressions): This should be handled when parsing expressions.
 				continue;
 			}
 
 			if (unresolvedReference.token().symbolName().startsWith("C*")
-				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(2), unresolvedReference, defineData, module))
+				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(2), unresolvedReference, defineData, moduleBuilder))
 			{
 				continue;
 			}
 
 			if (unresolvedReference.token().symbolName().startsWith("T*")
-				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(2), unresolvedReference, defineData, module))
+				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(2), unresolvedReference, defineData, moduleBuilder))
 			{
 				// TODO(hack, write-statement): This will be obsolete when the WRITE statement is parsed
 				continue;
 			}
 
 			if (unresolvedReference.token().symbolName().startsWith("P*")
-				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(2), unresolvedReference, defineData, module))
+				&& tryFindAndReference(unresolvedReference.token().symbolName().substring(2), unresolvedReference, defineData, moduleBuilder))
 			{
 				// TODO(hack, write-statement): This will be obsolete when the WRITE statement is parsed
 				continue;
 			}
 
-			if (module.file().getFiletype() == NaturalFileType.FUNCTION && unresolvedReference.referencingToken().symbolName().equals(module.name()))
+			if (moduleBuilder.file().getFiletype() == NaturalFileType.FUNCTION
+				&& unresolvedReference.referencingToken().symbolName().equals(moduleBuilder.name()))
 			{
 				continue;
 			}
 
 			if (unresolvedReference.token().kind() == SyntaxKind.IDENTIFIER)
 			{
-				reportUnresolvedReference(module, unresolvedReference);
+				reportUnresolvedReference(moduleBuilder, unresolvedReference);
 			}
 		}
 
@@ -360,45 +357,45 @@ public class NaturalParser
 					adabasIndexAccess.diagnosticPosition()
 				);
 
-				if (!diagnostic.filePath().equals(module.file().getPath()))
+				if (!diagnostic.filePath().equals(moduleBuilder.file().getPath()))
 				{
 					diagnostic = diagnostic.relocate(unresolvedReference.diagnosticPosition());
 				}
-				module.addDiagnostic(diagnostic);
+				moduleBuilder.addDiagnostic(diagnostic);
 			}
 			else
 			{
-				if (!tryFindAndReference(unresolvedReference.token().symbolName(), unresolvedReference, defineData, module))
+				if (!tryFindAndReference(unresolvedReference.token().symbolName(), unresolvedReference, defineData, moduleBuilder))
 				{
-					reportUnresolvedReference(module, unresolvedReference);
+					reportUnresolvedReference(moduleBuilder, unresolvedReference);
 				}
 			}
 		}
 	}
 
-	private void reportUnresolvedReference(NaturalModule module, ISymbolReferenceNode unresolvedReference)
+	private void reportUnresolvedReference(NaturalModuleBuilder moduleBuilder, ISymbolReferenceNode unresolvedReference)
 	{
 		var diagnostic = ParserErrors.unresolvedReference(unresolvedReference);
-		if (!diagnostic.filePath().equals(module.file().getPath()))
+		if (!diagnostic.filePath().equals(moduleBuilder.file().getPath()))
 		{
 			diagnostic = diagnostic.relocate(unresolvedReference.diagnosticPosition());
 		}
-		module.addDiagnostic(diagnostic);
+		moduleBuilder.addDiagnostic(diagnostic);
 	}
 
-	private void reportNoSourceCodeAfterEndStatementAllowed(NaturalModule module, IStatementNode statement)
+	private void reportNoSourceCodeAfterEndStatementAllowed(NaturalModuleBuilder moduleBuilder, IStatementNode statement)
 	{
 		var diagnostic = ParserErrors.noSourceCodeAllowedAfterEnd(statement);
-		module.addDiagnostic(diagnostic);
+		moduleBuilder.addDiagnostic(diagnostic);
 	}
 
-	private void reportEndStatementMissing(NaturalModule module, IStatementNode statement)
+	private void reportEndStatementMissing(NaturalModuleBuilder moduleBuilder, IStatementNode statement)
 	{
 		var diagnostic = ParserErrors.endStatementMissing(statement);
-		module.addDiagnostic(diagnostic);
+		moduleBuilder.addDiagnostic(diagnostic);
 	}
 
-	private boolean tryFindAndReference(String symbolName, ISymbolReferenceNode referenceNode, IDefineData defineData, NaturalModule module)
+	private boolean tryFindAndReference(String symbolName, ISymbolReferenceNode referenceNode, IDefineData defineData, NaturalModuleBuilder moduleBuilder)
 	{
 		var foundVariables = ((DefineDataNode) defineData).findVariablesWithName(symbolName);
 
@@ -420,7 +417,7 @@ public class NaturalParser
 				return true;
 			}
 
-			module.addDiagnostic(ParserErrors.ambiguousSymbolReference(referenceNode, possibleQualifications.toString()));
+			moduleBuilder.addDiagnostic(ParserErrors.ambiguousSymbolReference(referenceNode, possibleQualifications.toString()));
 		}
 
 		if (!foundVariables.isEmpty())

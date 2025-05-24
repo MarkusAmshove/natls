@@ -1,6 +1,5 @@
 package org.amshove.natparse.lexing;
 
-import org.amshove.natparse.IDiagnostic;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;

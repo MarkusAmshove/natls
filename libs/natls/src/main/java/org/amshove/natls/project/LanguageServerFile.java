@@ -18,7 +18,7 @@ import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.natural.project.NaturalProgrammingMode;
 import org.amshove.natparse.parsing.DefineDataParser;
 import org.amshove.natparse.parsing.IModuleProvider;
-import org.amshove.natparse.parsing.NaturalModule;
+import org.amshove.natparse.parsing.NaturalModuleBuilder;
 import org.amshove.natparse.parsing.NaturalParser;
 import org.amshove.natparse.parsing.ddm.DdmParser;
 import org.eclipse.lsp4j.Diagnostic;
@@ -368,10 +368,10 @@ public class LanguageServerFile implements IModuleProvider
 			tokens = lexer.lex(source, file.getPath());
 			var defineDataParser = new DefineDataParser(this);
 			var definedata = defineDataParser.parse(tokens);
-			var module = new NaturalModule(file);
-			module.setDefineData(definedata.result());
-			module.setComments(tokens.comments());
-			this.module = module;
+			var moduleBuilder = new NaturalModuleBuilder(file);
+			moduleBuilder.setDefineData(definedata.result());
+			moduleBuilder.setComments(tokens.comments());
+			this.module = moduleBuilder.build();
 		}
 		catch (Exception e)
 		{

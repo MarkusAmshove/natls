@@ -1,7 +1,7 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.Lexer;
-import org.amshove.natparse.natural.INaturalModule;
+import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
 import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
@@ -62,9 +62,9 @@ class DefaultModuleProvider implements IModuleProvider
 			var source = Files.readString(foundFile.getPath());
 			var tokens = new Lexer().lex(source, foundFile.getPath());
 			var result = new DefineDataParser(this).parse(tokens);
-			var module = new NaturalModule(foundFile);
-			module.setDefineData(result.result());
-			return module;
+			var builder = new NaturalModuleBuilder(foundFile);
+			builder.setDefineData(result.result());
+			return builder.build();
 		}
 		catch (Exception e)
 		{

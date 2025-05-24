@@ -2994,7 +2994,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			{
 				callnat.setReferencingToken(previousToken());
 				var referencedModule = sideloadModule(callnat.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token(), NaturalFileType.SUBPROGRAM);
-				callnat.setReferencedModule((NaturalModule) referencedModule);
+				callnat.setReferencedModule(referencedModule);
 				if (referencedModule != null
 					&& referencedModule.file() != null && referencedModule.file().getFiletype() != null
 					&& referencedModule.file().getFiletype() != NaturalFileType.SUBPROGRAM)
@@ -3046,7 +3046,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		var referencedModule = sideloadModule(referencingToken.symbolName(), previousTokenNode().token(), NaturalFileType.COPYCODE);
-		include.setReferencedModule((NaturalModule) referencedModule);
+		include.setReferencedModule(referencedModule);
 
 		if (referencedModule != null && currentModuleCallStack.add(referencingToken.symbolName()))
 		{
@@ -3159,7 +3159,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				);
 			}
 
-			fetch.setReferencedModule((NaturalModule) referencedModule);
+			fetch.setReferencedModule(referencedModule);
 		}
 		else
 		{

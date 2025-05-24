@@ -301,7 +301,7 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		var defineDataModule = sideloadDefineData(identifierTokenNode);
 		if (defineDataModule != null)
 		{
-			using.setReferencingModule((NaturalModule) defineDataModule);
+			using.setReferencingModule((INaturalModule) defineDataModule);
 			for (var diagnostic : ((NaturalModule) defineDataModule).diagnostics())
 			{
 				if (diagnostic instanceof ParserDiagnostic pd)

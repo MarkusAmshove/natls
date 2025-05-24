@@ -10,7 +10,7 @@ import java.util.List;
 
 public class ExternalParameterCheck
 {
-	public static void performParameterCheck(NaturalModule naturalModule,
+	public static void performParameterCheck(NaturalModuleBuilder moduleBuilder,
 		List<IModuleReferencingNode> moduleRefs)
 	{
 		moduleRefs.forEach(node -> {
@@ -39,7 +39,7 @@ public class ExternalParameterCheck
 			{
 				if (numberOfPassedParameter > 0)
 				{
-					naturalModule.addDiagnostic(ParserErrors.parameterCountMismatch(node, numberOfPassedParameter, 0));
+					moduleBuilder.addDiagnostic(ParserErrors.parameterCountMismatch(node, numberOfPassedParameter, 0));
 				}
 				return;
 			}
@@ -61,7 +61,7 @@ public class ExternalParameterCheck
 
 				if (passedParameter != null && expectedParameter == null)
 				{
-					naturalModule.addDiagnostic(
+					moduleBuilder.addDiagnostic(
 						ParserErrors.trailingParameter(
 							passedParameters.get(i).usagePosition(),
 							passedParameter.usagePosition(), i + 1, expectedParameters.size()
@@ -73,7 +73,7 @@ public class ExternalParameterCheck
 				var expectedParameterIsOptional = expectedParameter.findDescendantToken(SyntaxKind.OPTIONAL) != null;
 				if (passedParameter == null && !expectedParameterIsOptional)
 				{
-					naturalModule.addDiagnostic(ParserErrors.missingParameter(moduleRef, expectedParameter));
+					moduleBuilder.addDiagnostic(ParserErrors.missingParameter(moduleRef, expectedParameter));
 					return;
 				}
 
@@ -93,14 +93,14 @@ public class ExternalParameterCheck
 				{
 					if (operand instanceof ISkipOperandNode skipOperand)
 					{
-						naturalModule.addDiagnostic(ParserErrors.cantSkipParameter(skipOperand, expectedParameter));
+						moduleBuilder.addDiagnostic(ParserErrors.cantSkipParameter(skipOperand, expectedParameter));
 						return;
 					}
 
 					if (operand instanceof ILiteralNode literal)
 					{
 						typeCheckParameter(
-							naturalModule, passedParameter,
+							moduleBuilder, passedParameter,
 							literal.reInferType(expectedParameter.type()), expectedParameter
 						);
 						continue;
@@ -112,12 +112,12 @@ public class ExternalParameterCheck
 						continue;
 					}
 
-					typeCheckParameter(naturalModule, passedParameter, passedType.get(), expectedParameter);
+					typeCheckParameter(moduleBuilder, passedParameter, passedType.get(), expectedParameter);
 				}
 				else
 				{
 					typeCheckParameter(
-						naturalModule, passedParameter,
+						moduleBuilder, passedParameter,
 						((ProvidedVariable) passedParameter).variable().type(), expectedParameter
 					);
 				}
@@ -126,7 +126,7 @@ public class ExternalParameterCheck
 	}
 
 	private static void typeCheckParameter(
-		NaturalModule module, ProvidedParameter providedParameter,
+		NaturalModuleBuilder moduleBuilder, ProvidedParameter providedParameter,
 		IDataType passedType, ITypedVariableNode receiver
 	)
 	{
@@ -136,7 +136,7 @@ public class ExternalParameterCheck
 
 		if (!receiverType.fitsInto(passedType) && expectedParameterIsByReference)
 		{
-			module.addDiagnostic(
+			moduleBuilder.addDiagnostic(
 				ParserErrors.parameterTypeMismatch(
 					providedParameter.usagePosition(),
 					providedParameter.declarationPosition(), passedType, receiver
@@ -147,7 +147,7 @@ public class ExternalParameterCheck
 
 		if (!passedType.fitsInto(receiverType) && expectedParameterIsByReference)
 		{
-			module.addDiagnostic(
+			moduleBuilder.addDiagnostic(
 				ParserErrors.parameterTypeMismatch(
 					providedParameter.usagePosition(),
 					providedParameter.declarationPosition(), passedType, receiver
@@ -155,11 +155,11 @@ public class ExternalParameterCheck
 			);
 		}
 
-		checkArrayDimensions(module, providedParameter, receiver);
+		checkArrayDimensions(moduleBuilder, providedParameter, receiver);
 	}
 
 	private static void checkArrayDimensions(
-		NaturalModule module,
+		NaturalModuleBuilder moduleBuilder,
 		ProvidedParameter providedParameter,
 		ITypedVariableNode receiver
 	)
@@ -169,7 +169,7 @@ public class ExternalParameterCheck
 			// When not this variable itself is passed as parameter, but the group that contains it
 			// then we don't have to check for the access to the array (e.g. #ARR(*)) but the declaration on both sides
 			// in the DEFINE DATA.
-			checkArrayDeclarationDimensions(module, providedParameter, receiver);
+			checkArrayDeclarationDimensions(moduleBuilder, providedParameter, receiver);
 			return;
 		}
 
@@ -182,7 +182,7 @@ public class ExternalParameterCheck
 		// Fewer dimensions passed than expected
 		if (numberOfPassedDimensions == 0 && numberOfExpectedDimensions > 0)
 		{
-			module.addDiagnostic(
+			moduleBuilder.addDiagnostic(
 				ParserErrors.passedParameterNotArray(
 					providedParameter.usagePosition(), numberOfExpectedDimensions, numberOfPassedDimensions, receiver,
 					providedParameter.declarationPosition()
@@ -201,7 +201,7 @@ public class ExternalParameterCheck
 			// More dimensions passed than expected
 			if (i > numberOfExpectedDimensions - 1)
 			{
-				module.addDiagnostic(
+				moduleBuilder.addDiagnostic(
 					ParserErrors.passedParameterNotArray(
 						providedParameter.usagePosition(), numberOfExpectedDimensions, numberOfPassedDimensions,
 						receiver,
@@ -237,7 +237,7 @@ public class ExternalParameterCheck
 
 				if (declaredDimension.lowerBound() != expectedDimension.lowerBound() || declaredDimension.upperBound() != expectedDimension.upperBound())
 				{
-					module.addDiagnostic(
+					moduleBuilder.addDiagnostic(
 						ParserErrors.parameterDimensionLengthMismatch(
 							providedParameter.usagePosition(),
 							i + 1,
@@ -253,7 +253,7 @@ public class ExternalParameterCheck
 	}
 
 	private static void checkArrayDeclarationDimensions(
-		NaturalModule module, ProvidedParameter providedParameter,
+		NaturalModuleBuilder moduleBuilder, ProvidedParameter providedParameter,
 		ITypedVariableNode receiver
 	)
 	{
@@ -271,7 +271,7 @@ public class ExternalParameterCheck
 		// Fewer dimensions passed than expected
 		if (numberOfPassedDimensions != numberOfExpectedDimensions)
 		{
-			module.addDiagnostic(
+			moduleBuilder.addDiagnostic(
 				ParserErrors.passedParameterNotArray(
 					providedParameter.usagePosition(), numberOfExpectedDimensions, numberOfPassedDimensions, receiver,
 					providedParameter.declarationPosition()
@@ -295,7 +295,7 @@ public class ExternalParameterCheck
 
 			if (providedDimension.lowerBound() != expectedDimension.lowerBound() || providedDimension.upperBound() != expectedDimension.upperBound())
 			{
-				module.addDiagnostic(
+				moduleBuilder.addDiagnostic(
 					ParserErrors.parameterDimensionLengthMismatch(
 						providedParameter.usagePosition(),
 						i + 1,

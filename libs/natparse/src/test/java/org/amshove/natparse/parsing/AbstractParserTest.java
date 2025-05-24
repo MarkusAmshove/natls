@@ -131,26 +131,19 @@ public abstract class AbstractParserTest<NodeType>
 		return node;
 	}
 
-	protected NaturalModule newEmptyLda()
+	protected LocalDataArea newEmptyLda()
 	{
 		var file = new NaturalFile("MYLDA", Path.of(""), NaturalFileType.LDA);
-		var module = new NaturalModule(file);
+		var module = new LocalDataArea(file);
 		module.setDefineData(new DefineDataNode());
 		return module;
 	}
 
-	protected NaturalModule newEmptySubprogram()
+	protected Subprogram newEmptySubprogram()
 	{
 		var file = new NaturalFile("SUBPROG", Path.of(""), NaturalFileType.SUBPROGRAM);
-		var module = new NaturalModule(file);
+		var module = new Subprogram(file);
 		module.setDefineData(new DefineDataNode());
-		return module;
-	}
-
-	protected NaturalModule newEmptyCopyCode()
-	{
-		var file = new NaturalFile("THECC", Path.of(""), NaturalFileType.COPYCODE);
-		var module = new NaturalModule(file);
 		return module;
 	}
 

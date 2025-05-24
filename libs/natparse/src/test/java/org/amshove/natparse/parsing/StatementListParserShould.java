@@ -52,7 +52,7 @@ class StatementListParserShould extends StatementParseTest
 	@Test
 	void addBidirectionalReferencesForCallnats()
 	{
-		var calledSubprogram = new NaturalModule(null);
+		var calledSubprogram = new Subprogram(null);
 		moduleProvider.addModule("A-MODULE", calledSubprogram);
 
 		var callnat = assertParsesSingleStatement("CALLNAT 'A-MODULE'", ICallnatNode.class);
@@ -63,7 +63,7 @@ class StatementListParserShould extends StatementParseTest
 	@Test
 	void allowTrailingSpacesInModuleNamesThatAreInStrings()
 	{
-		var calledSubprogram = new NaturalModule(null);
+		var calledSubprogram = new Subprogram(null);
 		moduleProvider.addModule("A-MODULE", calledSubprogram);
 
 		var callnat = assertParsesSingleStatement("CALLNAT 'A-MODULE ' ", ICallnatNode.class);
@@ -74,7 +74,7 @@ class StatementListParserShould extends StatementParseTest
 	@Test
 	void findCalledSubprogramsWhenSourceContainsLowerCaseCharacters()
 	{
-		var calledSubprogram = new NaturalModule(null);
+		var calledSubprogram = new Subprogram(null);
 		moduleProvider.addModule("A-MODULE", calledSubprogram);
 
 		var callnat = assertParsesSingleStatement("CALLNAT 'A-module'", ICallnatNode.class);
@@ -85,7 +85,7 @@ class StatementListParserShould extends StatementParseTest
 	@Test
 	void parseParameterForCallnats()
 	{
-		var calledSubprogram = new NaturalModule(null);
+		var calledSubprogram = new Subprogram(null);
 		moduleProvider.addModule("A-MODULE", calledSubprogram);
 
 		var callnat = assertParsesSingleStatement("CALLNAT 'A-module' #VAR 10 'String' TRUE 1X", ICallnatNode.class);
@@ -100,7 +100,7 @@ class StatementListParserShould extends StatementParseTest
 	@Test
 	void parseSkipOperandParameter()
 	{
-		var calledSubprogram = new NaturalModule(null);
+		var calledSubprogram = new Subprogram(null);
 		moduleProvider.addModule("A-MODULE", calledSubprogram);
 
 		var callnat = assertParsesSingleStatement("CALLNAT 'A-module' 1X 2X", ICallnatNode.class);
@@ -115,7 +115,7 @@ class StatementListParserShould extends StatementParseTest
 	@Test
 	void parseParameterForCallnatsWithAttributeDefinition()
 	{
-		var calledSubprogram = new NaturalModule(null);
+		var calledSubprogram = new Subprogram(null);
 		moduleProvider.addModule("A-MODULE", calledSubprogram);
 
 		var callnat = assertParsesSingleStatement("CALLNAT 'A-module' #VAR (AD=O) #VAR2 (AD=M) #VAR3 (AD=A)", ICallnatNode.class);
@@ -134,7 +134,7 @@ class StatementListParserShould extends StatementParseTest
 	@Test
 	void parseCallnatWithUsing()
 	{
-		var calledSubprogram = new NaturalModule(null);
+		var calledSubprogram = new Subprogram(null);
 		moduleProvider.addModule("A-MODULE", calledSubprogram);
 
 		var callnat = assertParsesSingleStatement("CALLNAT 'A-module' USING #VAR", ICallnatNode.class);
@@ -158,7 +158,7 @@ class StatementListParserShould extends StatementParseTest
 	void distinguishBetweenCallnatParameterAndVariableAssignment(String nextLine)
 	{
 
-		var calledSubprogram = new NaturalModule(null);
+		var calledSubprogram = new Subprogram(null);
 		moduleProvider.addModule("A-MODULE", calledSubprogram);
 
 		var statements = assertParsesWithoutDiagnostics("""
@@ -268,7 +268,7 @@ class StatementListParserShould extends StatementParseTest
 	})
 	void resolveExternalModulesForAFetchStatement(String fetchSource)
 	{
-		var program = new NaturalModule(null);
+		var program = new Program(null);
 		moduleProvider.addModule("PROG", program);
 
 		var fetch = assertParsesSingleStatement("FETCH %s 'PROG'".formatted(fetchSource), IFetchNode.class);
@@ -430,7 +430,7 @@ class StatementListParserShould extends StatementParseTest
 	@Test
 	void parseExternalPerformCalls()
 	{
-		var calledSubroutine = new NaturalModule(null);
+		var calledSubroutine = new ExternalSubroutine(null);
 		moduleProvider.addModule("EXTERNAL-SUB", calledSubroutine);
 
 		var perform = assertParsesSingleStatement("PERFORM EXTERNAL-SUB", IExternalPerformNode.class);
@@ -441,7 +441,7 @@ class StatementListParserShould extends StatementParseTest
 	@Test
 	void parseExternalPerformCallsAndNotMistakeNegativeNumbersAsStringConcat()
 	{
-		var calledSubroutine = new NaturalModule(null);
+		var calledSubroutine = new ExternalSubroutine(null);
 		moduleProvider.addModule("EXTERNAL-SUB", calledSubroutine);
 
 		var perform = assertParsesSingleStatement("PERFORM EXTERNAL-SUB 'String literal' -1", IExternalPerformNode.class);
@@ -455,7 +455,7 @@ class StatementListParserShould extends StatementParseTest
 	@Test
 	void parseAndResolveExternalPerformCallsWithParameter()
 	{
-		var calledSubroutine = new NaturalModule(null);
+		var calledSubroutine = new ExternalSubroutine(null);
 		moduleProvider.addModule("EXTERNAL-SUB", calledSubroutine);
 
 		var perform = assertParsesSingleStatement("PERFORM EXTERNAL-SUB PDA1 'Literal' 5 #VAR", IExternalPerformNode.class);
@@ -472,7 +472,7 @@ class StatementListParserShould extends StatementParseTest
 	void distinguishBetweenPerformParameterAndVariableAssignment()
 	{
 
-		var calledSubroutine = new NaturalModule(null);
+		var calledSubroutine = new ExternalSubroutine(null);
 		moduleProvider.addModule("A-MODULE", calledSubroutine);
 
 		var statements = assertParsesWithoutDiagnostics("""
@@ -489,7 +489,7 @@ class StatementListParserShould extends StatementParseTest
 	@Test
 	void parseAFunctionCallWithoutParameter()
 	{
-		var calledFunction = new NaturalModule(null);
+		var calledFunction = new Function(null);
 		moduleProvider.addModule("ISSTH", calledFunction);
 
 		var call = assertParsesSingleStatement("ISSTH(<>)", IFunctionCallNode.class);
@@ -500,7 +500,7 @@ class StatementListParserShould extends StatementParseTest
 	@Test
 	void parseAFunctionCallWithParameter()
 	{
-		var calledFunction = new NaturalModule(null);
+		var calledFunction = new Function(null);
 		moduleProvider.addModule("ISSTH", calledFunction);
 
 		var call = assertParsesSingleStatement("ISSTH(<5>)", IFunctionCallNode.class);
@@ -514,7 +514,7 @@ class StatementListParserShould extends StatementParseTest
 	@Test
 	void reportADiagnosticForFunctionCallsWithTrailingCommas()
 	{
-		var calledFunction = new NaturalModule(null);
+		var calledFunction = new Function(null);
 		moduleProvider.addModule("ISSTH", calledFunction);
 
 		assertDiagnostic("ISSTH(<5,>)", ParserError.TRAILING_TOKEN);

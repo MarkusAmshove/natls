@@ -4,7 +4,6 @@ import org.amshove.natls.testlifecycle.EmptyProjectTest;
 import org.amshove.natparse.IPosition;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.*;
-import org.amshove.natparse.parsing.NaturalModule;
 import org.junit.jupiter.api.Test;
 
 import java.io.UncheckedIOException;
@@ -29,7 +28,7 @@ class SourceExtractorShould extends EmptyProjectTest
    			""");
 		var file = getContext().languageService().findNaturalFile("LIBONE", "SUB");
 		var module = file.module();
-		var varReference = ((IAssignmentStatementNode) ((NaturalModule) module).body().statements().first()).target();
+		var varReference = ((IAssignmentStatementNode) ((ISubprogram) module).body().statements().first()).target();
 		assertThat(SourceExtractor.extractSource(varReference))
 			.isEqualTo("#VAR");
 	}

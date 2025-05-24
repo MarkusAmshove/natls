@@ -1,6 +1,4 @@
 package org.amshove.natparse.natural;
 
-public interface IParameterDataArea extends INaturalModule
-{
-	IDefineData defineData();
-}
+public non-sealed interface IParameterDataArea extends INaturalModule, IHasDefineData
+{}
