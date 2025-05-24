@@ -11,7 +11,6 @@ import org.amshove.natparse.natural.project.NaturalHeader;
 import java.util.ArrayList;
 import java.util.List;
 
-// TODO(cleanup): Re-iterate over the getters?
 public class NaturalModuleBuilder
 {
 	private final List<IDiagnostic> diagnostics = new ArrayList<>();
@@ -35,18 +34,16 @@ public class NaturalModuleBuilder
 	{
 		var theModule = create();
 
-		theModule.addDiagnostics(diagnostics);
+		theModule.setHeader(sourceHeader);
 		theModule.setDefineData(defineData);
 		theModule.setComments(comments);
 		theModule.setTokens(tokens);
-		theModule.setHeader(sourceHeader);
 		theModule.setBody(body);
 		theModule.setSyntaxTree(syntaxTree);
 		theModule.addReferencableNodes(referencableNodes);
-
-		// TODO(cleanup): Only for Functions
 		theModule.setFunctionName(functionName);
 		theModule.setReturnType(returnType);
+		theModule.addDiagnostics(diagnostics);
 
 		return (INaturalModule) theModule;
 	}
