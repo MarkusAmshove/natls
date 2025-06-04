@@ -34,8 +34,6 @@ public class SplitCsvDiagnosticSink implements IDiagnosticSink
 			currentDiagnosticCount++;
 			try
 			{
-				System.out.print("\r             ");
-				System.out.print("\r" + currentFileCount);
 				currentSink.write("%s;%s;%s;%s;%d;%d;%d%n".formatted(projectRootDirectoryPath.relativize(filePath), diagnostic.id(), diagnostic.severity(), diagnostic.message(), diagnostic.line(), diagnostic.offsetInLine(), diagnostic.length()));
 			}
 			catch (IOException e)
