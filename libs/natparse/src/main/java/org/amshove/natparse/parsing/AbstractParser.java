@@ -12,6 +12,7 @@ import org.amshove.natparse.natural.project.NaturalFileType;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -307,9 +308,12 @@ abstract class AbstractParser<T>
 		return attributeList;
 	}
 
+	private static final Set<SyntaxKind> ASTERISK_INPUT_ATTRIBUTES = Set.of(SyntaxKind.IN_ATTRIBUTE, SyntaxKind.OUT_ATTRIBUTE, SyntaxKind.OUTIN_ATTRIBUTE);
+
 	private IAttributeNode parseAttribute() throws ParseError
 	{
 		var attributeToken = tokens.advance();
+
 		if (attributeToken.source().endsWith("="))
 		{
 			var operandAttribute = new OperandAttributeNode(attributeToken);
@@ -329,6 +333,11 @@ abstract class AbstractParser<T>
 			if (implicitConversionKind != null)
 			{
 				return new ValueAttributeNode(implicitConversionKind, attributeToken);
+			}
+
+			if (ASTERISK_INPUT_ATTRIBUTES.contains(attributeToken.kind()))
+			{
+				return new ConstantAttributeNode(attributeToken);
 			}
 
 			return new ValueAttributeNode(attributeToken);

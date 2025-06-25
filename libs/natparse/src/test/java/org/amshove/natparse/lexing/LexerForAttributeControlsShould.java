@@ -55,7 +55,10 @@ class LexerForAttributeControlsShould extends AbstractLexerTest
 			SyntaxKind.TC,
 			SyntaxKind.TCU,
 			SyntaxKind.UC,
-			SyntaxKind.ZP
+			SyntaxKind.ZP,
+			SyntaxKind.OUTIN_ATTRIBUTE,
+			SyntaxKind.IN_ATTRIBUTE,
+			SyntaxKind.OUT_ATTRIBUTE
 		);
 
 		var shouldBeAttributes = attributes.stream()

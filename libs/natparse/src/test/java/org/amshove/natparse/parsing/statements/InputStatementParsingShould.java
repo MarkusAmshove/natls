@@ -175,6 +175,23 @@ class InputStatementParsingShould extends StatementParseTest
 	}
 
 	@ParameterizedTest
+	@CsvSource(value =
+	{
+		"*OUT,OUT_ATTRIBUTE", "*IN,IN_ATTRIBUTE", "*OUTIN,OUTIN_ATTRIBUTE"
+	})
+	void consumeInOutOperandAttributes(String attribute, String syntaxKindName)
+	{
+		var expectedKind = SyntaxKind.valueOf(syntaxKindName);
+
+		var input = assertParsesSingleStatement("INPUT #VAR %s".formatted(attribute), IInputStatementNode.class);
+		var inputOperand = assertNodeType(input.operands().first(), IOutputOperandNode.class);
+		assertIsVariableReference(inputOperand.operand(), "#VAR");
+		assertThat(inputOperand.attributeNode()).as("Attribute List for operand should not be null").isNotNull();
+		var valueAttribute = assertNodeType(inputOperand.attributeNode().attributes().first(), IConstantAttributeNode.class);
+		assertThat(valueAttribute.kind()).isEqualTo(expectedKind);
+	}
+
+	@ParameterizedTest
 	@CsvSource(
 		{
 			"B,AD",

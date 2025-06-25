@@ -831,7 +831,10 @@ public enum SyntaxKind
 			this == TC ||
 			this == TCU ||
 			this == UC ||
-			this == ZP;
+			this == ZP ||
+			this == IN_ATTRIBUTE ||
+			this == OUT_ATTRIBUTE ||
+			this == OUTIN_ATTRIBUTE;
 	}
 
 	public boolean closesStatement()
