@@ -745,7 +745,10 @@ public enum SyntaxKind
 	XML(true, false, false),
 	YEAR(true, false, false),
 	ZD(true, false, false),
-	ZP(true, false, false);
+	ZP(true, false, false),
+	OUT_ATTRIBUTE(false, false, false),
+	IN_ATTRIBUTE(false, false, false),
+	OUTIN_ATTRIBUTE(false, false, false);
 
 	private final boolean canBeIdentifier;
 	private final boolean isSystemVariable;

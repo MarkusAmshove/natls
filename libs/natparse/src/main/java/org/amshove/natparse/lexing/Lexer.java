@@ -867,6 +867,21 @@ public class Lexer
 			createAndAdd(SyntaxKind.BROWSER_IO);
 			return;
 		}
+		if (scanner.advanceIfIgnoreCase("OUTIN"))
+		{
+			createAndAdd(SyntaxKind.OUTIN_ATTRIBUTE);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("OUT"))
+		{
+			createAndAdd(SyntaxKind.OUT_ATTRIBUTE);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("IN"))
+		{
+			createAndAdd(SyntaxKind.IN_ATTRIBUTE);
+			return;
+		}
 		scanner.rollbackCurrentLexeme();
 		createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
 	}
