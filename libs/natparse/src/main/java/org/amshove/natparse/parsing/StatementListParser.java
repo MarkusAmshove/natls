@@ -2418,7 +2418,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			inputOperand = repetitionOperand;
 		}
 
-		if (peekKind(SyntaxKind.LPAREN))
+		if (peekKind(SyntaxKind.LPAREN) || isAttributeList())
 		{
 			var elementAttributes = consumeAttributeList(inputOperand);
 			inputOperand.setAttributes(elementAttributes);
@@ -4920,7 +4920,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	{
 		return switch (kind)
 		{
-			case AD, AL, CD, CV, DF, DL, DY, EM, EMU, FL, HE, IP, IS, NL, PM, SB, SG, ZP -> true;
+			case AD, AL, CD, CV, DF, DL, DY, EM, EMU, FL, HE, IP, IS, NL, PM, SB, SG, ZP, IN_ATTRIBUTE, OUT_ATTRIBUTE, OUTIN_ATTRIBUTE -> true;
 			default -> false;
 		};
 	}

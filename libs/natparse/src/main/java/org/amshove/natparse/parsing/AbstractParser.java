@@ -285,26 +285,36 @@ abstract class AbstractParser<T>
 
 	protected boolean isAttributeList()
 	{
-		return peekKind(SyntaxKind.LPAREN) && peek(1).kind().isAttribute();
+		var currentKind = peekKind();
+		return (currentKind == SyntaxKind.LPAREN && peek(1).kind().isAttribute())
+			|| ASTERISK_INPUT_ATTRIBUTES.contains(currentKind);
 	}
 
 	protected IAttributeListNode consumeAttributeList(BaseSyntaxNode node) throws ParseError
 	{
 		var attributeList = new AttributeListNode();
 		node.addNode(attributeList);
-		consumeMandatory(attributeList, SyntaxKind.LPAREN);
-		while (!isAtEnd() && peek().kind() != SyntaxKind.RPAREN && peek().kind() != SyntaxKind.END_DEFINE)
+
+		if (ASTERISK_INPUT_ATTRIBUTES.contains(peekKind()))
 		{
-			if (peek().source().length() == 3 && !peek().source().endsWith("="))
-			{
-				addImplicitAttributes(attributeList);
-			}
-			else
-			{
-				attributeList.addAttribute(parseAttribute());
-			}
+			attributeList.addAttribute(parseAttribute());
 		}
-		consumeMandatory(attributeList, SyntaxKind.RPAREN);
+
+		if (consumeOptionally(attributeList, SyntaxKind.LPAREN))
+		{
+			while (!isAtEnd() && peek().kind() != SyntaxKind.RPAREN && peek().kind() != SyntaxKind.END_DEFINE)
+			{
+				if (peek().source().length() == 3 && !peek().source().endsWith("="))
+				{
+					addImplicitAttributes(attributeList);
+				}
+				else
+				{
+					attributeList.addAttribute(parseAttribute());
+				}
+			}
+			consumeMandatory(attributeList, SyntaxKind.RPAREN);
+		}
 		return attributeList;
 	}
 
