@@ -45,6 +45,12 @@ public class InputOperandElement extends InputResponseElement
 
 	private void addAttribute(IOutputOperandNode operand, IAttributeNode attributeNode)
 	{
+		if (attributeNode instanceof IConstantAttributeNode constantAttributeNode)
+		{
+			inferConstantAttributes(constantAttributeNode);
+			return;
+		}
+
 		if (!(attributeNode instanceof IValueAttributeNode valueAttributeNode))
 		{
 			return;
@@ -68,6 +74,21 @@ public class InputOperandElement extends InputResponseElement
 
 		this.attributes.removeIf(a -> a.getKind().equalsIgnoreCase(attributeNode.kind().name()));
 		this.attributes.add(new InputAttributeElement(attributeNode.kind().name(), valueAttributeNode.value()));
+	}
+
+	/**
+	 * Converts *OUT, *OUTIN and *IN to their equivalent AD value
+	 */
+	private void inferConstantAttributes(IConstantAttributeNode constantAttributeNode)
+	{
+		switch (constantAttributeNode.kind())
+		{
+			case OUT_ATTRIBUTE -> attributes.add(new InputAttributeElement(SyntaxKind.AD.name(), "O"));
+			case OUTIN_ATTRIBUTE -> attributes.add(new InputAttributeElement(SyntaxKind.AD.name(), "M"));
+			case IN_ATTRIBUTE -> attributes.add(new InputAttributeElement(SyntaxKind.AD.name(), "A"));
+			default ->
+			{}
+		}
 	}
 
 	private boolean includesNumericSign(ReadOnlyList<IAttributeNode> attributes)

@@ -284,32 +284,45 @@ abstract class AbstractParser<T>
 
 	protected boolean isAttributeList()
 	{
-		return peekKind(SyntaxKind.LPAREN) && peek(1).kind().isAttribute();
+		var currentKind = peekKind();
+		return (currentKind == SyntaxKind.LPAREN && peek(1).kind().isAttribute())
+			|| ASTERISK_INPUT_ATTRIBUTES.contains(currentKind);
 	}
 
 	protected IAttributeListNode consumeAttributeList(BaseSyntaxNode node) throws ParseError
 	{
 		var attributeList = new AttributeListNode();
 		node.addNode(attributeList);
-		consumeMandatory(attributeList, SyntaxKind.LPAREN);
-		while (!isAtEnd() && peek().kind() != SyntaxKind.RPAREN && peek().kind() != SyntaxKind.END_DEFINE)
+
+		if (ASTERISK_INPUT_ATTRIBUTES.contains(peekKind()))
 		{
-			if (peek().source().length() == 3 && !peek().source().endsWith("="))
-			{
-				addImplicitAttributes(attributeList);
-			}
-			else
-			{
-				attributeList.addAttribute(parseAttribute());
-			}
+			attributeList.addAttribute(parseAttribute());
 		}
-		consumeMandatory(attributeList, SyntaxKind.RPAREN);
+
+		if (consumeOptionally(attributeList, SyntaxKind.LPAREN))
+		{
+			while (!isAtEnd() && peek().kind() != SyntaxKind.RPAREN && peek().kind() != SyntaxKind.END_DEFINE)
+			{
+				if (peek().source().length() == 3 && !peek().source().endsWith("="))
+				{
+					addImplicitAttributes(attributeList);
+				}
+				else
+				{
+					attributeList.addAttribute(parseAttribute());
+				}
+			}
+			consumeMandatory(attributeList, SyntaxKind.RPAREN);
+		}
 		return attributeList;
 	}
+
+	private static final Set<SyntaxKind> ASTERISK_INPUT_ATTRIBUTES = Set.of(SyntaxKind.IN_ATTRIBUTE, SyntaxKind.OUT_ATTRIBUTE, SyntaxKind.OUTIN_ATTRIBUTE);
 
 	private IAttributeNode parseAttribute() throws ParseError
 	{
 		var attributeToken = tokens.advance();
+
 		if (attributeToken.source().endsWith("="))
 		{
 			var operandAttribute = new OperandAttributeNode(attributeToken);
@@ -329,6 +342,11 @@ abstract class AbstractParser<T>
 			if (implicitConversionKind != null)
 			{
 				return new ValueAttributeNode(implicitConversionKind, attributeToken);
+			}
+
+			if (ASTERISK_INPUT_ATTRIBUTES.contains(attributeToken.kind()))
+			{
+				return new ConstantAttributeNode(attributeToken);
 			}
 
 			return new ValueAttributeNode(attributeToken);
@@ -1426,18 +1444,6 @@ abstract class AbstractParser<T>
 	protected void relocateDiagnosticPosition(IPosition relocatedDiagnosticPosition)
 	{
 		this.relocatedDiagnosticPosition = relocatedDiagnosticPosition;
-	}
-
-	protected boolean peekAnyMandatoryOrAdvance(List<SyntaxKind> acceptedKinds)
-	{
-		if (peekAny(acceptedKinds))
-		{
-			return true;
-		}
-
-		report(ParserErrors.unexpectedToken(acceptedKinds, tokens));
-		tokens.advance();
-		return false;
 	}
 
 	protected boolean peekKindInLine(SyntaxKind kind)

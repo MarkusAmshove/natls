@@ -502,4 +502,21 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 		assertTokens("*SUBROUTINE", token(SyntaxKind.SV_SUBROUTINE, "*SUBROUTINE"));
 	}
 
+	@Test
+	void lexOutAttribute()
+	{
+		assertTokens("*OUT", token(SyntaxKind.OUT_ATTRIBUTE, "*OUT"));
+	}
+
+	@Test
+	void lexInAttribute()
+	{
+		assertTokens("*IN", token(SyntaxKind.IN_ATTRIBUTE, "*IN"));
+	}
+
+	@Test
+	void lexOutInAttribute()
+	{
+		assertTokens("*OUTIN", token(SyntaxKind.OUTIN_ATTRIBUTE, "*OUTIN"));
+	}
 }

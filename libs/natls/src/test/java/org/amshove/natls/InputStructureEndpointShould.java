@@ -3,6 +3,8 @@ package org.amshove.natls;
 import org.amshove.natls.languageserver.inputstructure.*;
 import org.amshove.natls.testlifecycle.EmptyProjectTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -149,6 +151,24 @@ class InputStructureEndpointShould extends EmptyProjectTest
             """, 0);
 
 		assertHasOperand(structure, "Hi", withAttribute("AD", "I"));
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"*OUT,O", "*OUTIN,M", "*IN,A"
+		}
+	)
+	void inferAsteriskAttributesToTheirEqualADValue(String attribute, String expectedValue)
+	{
+		var structure = callEndpoint("""
+               DEFINE DATA PARAMETER
+               END-DEFINE
+               INPUT 'Hi' %s
+               END
+            """.formatted(attribute), 0);
+
+		assertHasOperand(structure, "Hi", withAttribute("AD", expectedValue));
 	}
 
 	@Test
