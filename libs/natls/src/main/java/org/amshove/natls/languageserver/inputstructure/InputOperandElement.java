@@ -86,6 +86,8 @@ public class InputOperandElement extends InputResponseElement
 			case OUT_ATTRIBUTE -> attributes.add(new InputAttributeElement(SyntaxKind.AD.name(), "O"));
 			case OUTIN_ATTRIBUTE -> attributes.add(new InputAttributeElement(SyntaxKind.AD.name(), "M"));
 			case IN_ATTRIBUTE -> attributes.add(new InputAttributeElement(SyntaxKind.AD.name(), "A"));
+			default ->
+			{}
 		}
 	}
 

@@ -12,7 +12,6 @@ import org.amshove.natparse.natural.project.NaturalFileType;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -1445,18 +1444,6 @@ abstract class AbstractParser<T>
 	protected void relocateDiagnosticPosition(IPosition relocatedDiagnosticPosition)
 	{
 		this.relocatedDiagnosticPosition = relocatedDiagnosticPosition;
-	}
-
-	protected boolean peekAnyMandatoryOrAdvance(List<SyntaxKind> acceptedKinds)
-	{
-		if (peekAny(acceptedKinds))
-		{
-			return true;
-		}
-
-		report(ParserErrors.unexpectedToken(acceptedKinds, tokens));
-		tokens.advance();
-		return false;
 	}
 
 	protected boolean peekKindInLine(SyntaxKind kind)
