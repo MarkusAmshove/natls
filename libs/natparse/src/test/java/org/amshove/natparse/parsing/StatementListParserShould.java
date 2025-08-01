@@ -4201,4 +4201,10 @@ class StatementListParserShould extends StatementParseTest
 	{
 		assertParsesSingleStatement("STOP", IStopNode.class);
 	}
+
+	@Test
+	void parseCommit()
+	{
+		assertParsesSingleStatement("COMMIT", ICommitNode.class);
+	}
 }

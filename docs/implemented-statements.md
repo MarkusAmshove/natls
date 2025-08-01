@@ -5,9 +5,9 @@ This document tracks the implementation status of Natural statements.
 Legend:
 
 
-:x: - not implemented (32)
+:x: - not implemented (31)
 
-:white_check_mark: - implemented or reporting (84)
+:white_check_mark: - implemented or reporting (85)
 
 | Statement | Status             |
 | --- |--------------------|
@@ -30,7 +30,7 @@ Legend:
 | CLOSE PC FILE | :white_check_mark: |
 | CLOSE PRINTER | :white_check_mark: |
 | CLOSE WORK FILE | :white_check_mark: |
-| COMMIT (SQL) | :x:                |
+| COMMIT (SQL) | :white_check_mark:                |
 | COMPRESS | :white_check_mark: |
 | COMPOSE | :white_check_mark: |
 | COMPUTE | :white_check_mark: |
