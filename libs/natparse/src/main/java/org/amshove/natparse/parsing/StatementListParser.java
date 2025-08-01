@@ -156,6 +156,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(callnat);
 						externalModuleReferences.add(callnat);
 						break;
+					case COMMIT:
+						statementList.addStatement(commit());
+						break;
 					case COMPRESS:
 						statementList.addStatement(compress());
 						break;
@@ -501,6 +504,13 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode commit() throws ParseError
+	{
+		var commit = new CommitNode();
+		consumeMandatory(commit, SyntaxKind.COMMIT);
+		return commit;
 	}
 
 	private StatementNode options() throws ParseError
