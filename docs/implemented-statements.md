@@ -5,12 +5,9 @@ This document tracks the implementation status of Natural statements.
 Legend:
 
 
-:x: - not implemented (46)
+:x: - not implemented (39)
 
-:white_check_mark: - implemented or reporting (57)
-
-partial - partially implemented to prevent false positives (14)
-
+:white_check_mark: - implemented or reporting (77)
 
 | Statement | Status             |
 | --- |--------------------|
@@ -42,14 +39,14 @@ partial - partially implemented to prevent false positives (14)
 | DECIDE ON | :white_check_mark: |
 | DEFINE CLASS | :x:                |
 | DEFINE DATA | :white_check_mark: |
-| DEFINE FUNCTION | partial            |
+| DEFINE FUNCTION | :white_check_mark:            |
 | DEFINE PRINTER | :white_check_mark: |
-| DEFINE PROTOTYPE | partial            |
+| DEFINE PROTOTYPE | :white_check_mark:            |
 | DEFINE SUBROUTINE | :white_check_mark: |
 | DEFINE WINDOW | :white_check_mark: |
 | DEFINE WORK FILE | :white_check_mark: |
 | DELETE | :x:                |
-| DELETE (SQL) | partial            |
+| DELETE (SQL) | :white_check_mark:            |
 | DISPLAY | :white_check_mark: |
 | DIVIDE | :white_check_mark: |
 | DOWNLOAD PC FILE | :white_check_mark: |
@@ -62,17 +59,17 @@ partial - partially implemented to prevent false positives (14)
 | FETCH | :white_check_mark: |
 | FIND | :white_check_mark: |
 | FOR | :white_check_mark: |
-| FORMAT | partial            |
+| FORMAT | :white_check_mark:            |
 | GET | :white_check_mark: |
 | GET SAME | :white_check_mark: |
 | GET TRANSACTION DATA | :white_check_mark: |
-| HISTOGRAM | :partial:          |
+| HISTOGRAM | ::white_check_mark::          |
 | IF | :white_check_mark: |
 | IF SELECTION | :white_check_mark: |
 | IGNORE | :white_check_mark: |
 | INCLUDE | :white_check_mark: |
-| INPUT | partial            |
-| INSERT (SQL) | partial            |
+| INPUT | :white_check_mark:            |
+| INSERT (SQL) | :white_check_mark:            |
 | INTERFACE | :x:                |
 | LIMIT | :white_check_mark: |
 | METHOD | :x:                |
@@ -81,17 +78,17 @@ partial - partially implemented to prevent false positives (14)
 | NEWPAGE | :white_check_mark: |
 | ON ERROR | :white_check_mark: |
 | OPEN CONVERSATION | :x:                |
-| OPTIONS | :partial:          |
+| OPTIONS | ::white_check_mark::          |
 | PARSE XML | :x:                |
 | PARSE JSON | :x:                |
 | PASSW | :x:                |
 | PERFORM | :white_check_mark: |
 | PERFORM BREAK PROCESSING | :white_check_mark: |
-| PRINT | partial            |
+| PRINT | :white_check_mark:            |
 | PROCESS | :x:                |
 | PROCESS COMMAND | :x:                |
 | PROCESS PAGE | :x:                |
-| PROCESS SQL (SQL) | partial            |
+| PROCESS SQL (SQL) | :white_check_mark:            |
 | PROPERTY | :x:                |
 | READ | :x:                |
 | READ RESULT SET (SQL) | :x:                |
@@ -107,7 +104,7 @@ partial - partially implemented to prevent false positives (14)
 | RETRY | :x:                |
 | ROLLBACK (SQL) | :x:                |
 | RUN | :x:                |
-| SELECT (SQL) | partial            |
+| SELECT (SQL) | :white_check_mark:            |
 | SEND METHOD | :x:                |
 | SEPARATE | :white_check_mark: |
 | SET CONTROL | :x:                |
@@ -124,12 +121,12 @@ partial - partially implemented to prevent false positives (14)
 | SUSPEND IDENTICAL SUPPRESS | :x:                |
 | TERMINATE | :white_check_mark: |
 | UPDATE | :x:                |
-| UPDATE (SQL) | partial            |
+| UPDATE (SQL) | :white_check_mark:            |
 | UPDATELOB | :x:                |
 | UPLOAD PC FILE | :x:                |
-| WRITE | partial            |
-| WRITE TITLE | :x:                |
-| WRITE TRAILER | :x:                |
+| WRITE | white_check_mark            |
+| WRITE TITLE | :white_check_mark:                |
+| WRITE TRAILER | :white_check_mark:                |
 | WRITE WORK FILE | :white_check_mark: |
 
 ## Reporting mode only statements
