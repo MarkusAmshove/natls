@@ -5,9 +5,9 @@ This document tracks the implementation status of Natural statements.
 Legend:
 
 
-:x: - not implemented (39)
+:x: - not implemented (32)
 
-:white_check_mark: - implemented or reporting (77)
+:white_check_mark: - implemented or reporting (84)
 
 | Statement | Status             |
 | --- |--------------------|
@@ -21,9 +21,9 @@ Legend:
 | AT TOP OF PAGE | :white_check_mark: |
 | BACKOUT TRANSACTION | :white_check_mark: |
 | BEFORE BREAK PROCESSING | :white_check_mark: |
-| CALL | :x:                |
-| CALL FILE | :x:                |
-| CALL LOOP | :x:                |
+| CALL | :white_check_mark:                |
+| CALL FILE | :white_check_mark:                |
+| CALL LOOP | :white_check_mark:                |
 | CALLDBPROC (SQL) | :x:                |
 | CALLNAT | :white_check_mark: |
 | CLOSE CONVERSATION | :x:                |
@@ -45,7 +45,7 @@ Legend:
 | DEFINE SUBROUTINE | :white_check_mark: |
 | DEFINE WINDOW | :white_check_mark: |
 | DEFINE WORK FILE | :white_check_mark: |
-| DELETE | :x:                |
+| DELETE | :white_check_mark:                |
 | DELETE (SQL) | :white_check_mark:            |
 | DISPLAY | :white_check_mark: |
 | DIVIDE | :white_check_mark: |
@@ -90,9 +90,9 @@ Legend:
 | PROCESS PAGE | :x:                |
 | PROCESS SQL (SQL) | :white_check_mark:            |
 | PROPERTY | :x:                |
-| READ | :x:                |
+| READ | :white_check_mark:                |
 | READ RESULT SET (SQL) | :x:                |
-| READ WORK FILE | :x:                |
+| READ WORK FILE | :white_check_mark:                |
 | READLOB | :x:                |
 | REDUCE | :white_check_mark: |
 | REINPUT | :x:                |
@@ -120,7 +120,7 @@ Legend:
 | SUBTRACT | :white_check_mark: |
 | SUSPEND IDENTICAL SUPPRESS | :x:                |
 | TERMINATE | :white_check_mark: |
-| UPDATE | :x:                |
+| UPDATE | :white_check_mark:                |
 | UPDATE (SQL) | :white_check_mark:            |
 | UPDATELOB | :x:                |
 | UPLOAD PC FILE | :x:                |
