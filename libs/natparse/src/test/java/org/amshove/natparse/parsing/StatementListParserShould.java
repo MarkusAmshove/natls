@@ -4231,4 +4231,10 @@ class StatementListParserShould extends StatementParseTest
 		var passw = assertParsesSingleStatement("PASSW=#VAR", IPasswNode.class);
 		assertIsVariableReference(passw.password(), "#VAR");
 	}
+
+	@Test
+	void parseRollback()
+	{
+		assertParsesSingleStatement("ROLLBACK", IRollbackNode.class);
+	}
 }

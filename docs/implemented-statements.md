@@ -5,9 +5,9 @@ This document tracks the implementation status of Natural statements.
 Legend:
 
 
-:x: - not implemented (29)
+:x: - not implemented (28)
 
-:white_check_mark: - implemented or reporting (88)
+:white_check_mark: - implemented or reporting (89)
 
 | Statement | Status             |
 | --- |--------------------|
@@ -102,7 +102,7 @@ Legend:
 | RESET | :white_check_mark: |
 | RESIZE | :white_check_mark: |
 | RETRY | :x:                |
-| ROLLBACK (SQL) | :x:                |
+| ROLLBACK (SQL) | :white_check_mark:                |
 | RUN | :x:                |
 | SELECT (SQL) | :white_check_mark:            |
 | SEND METHOD | :x:                |

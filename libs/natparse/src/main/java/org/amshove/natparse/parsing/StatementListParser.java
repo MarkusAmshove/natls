@@ -137,6 +137,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case BACKOUT:
 						statementList.addStatement(backout());
 						break;
+					case ROLLBACK:
+						statementList.addStatement(rollbackStatement());
+						break;
 					case BEFORE:
 						statementList.addStatement(beforeBreak());
 						break;
@@ -515,6 +518,13 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode rollbackStatement() throws ParseError
+	{
+		var rollback = new RollbackNode();
+		consumeMandatory(rollback, SyntaxKind.ROLLBACK);
+		return rollback;
 	}
 
 	private StatementNode passw() throws ParseError
