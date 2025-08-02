@@ -421,6 +421,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case END_ALL, SORT:
 						statementList.addStatement(sortStatement());
 						break;
+					case SETTIME:
+						statementList.addStatement(setTime());
+						break;
 					case ON:
 						if (peekKind(1, SyntaxKind.ERROR))
 						{
@@ -441,6 +444,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						if (peekKind(1, SyntaxKind.KEY))
 						{
 							statementList.addStatement(setKey());
+							break;
+						}
+						if (peekKind(1, SyntaxKind.TIME))
+						{
+							statementList.addStatement(setTime());
 							break;
 						}
 						if (peekKind(1, SyntaxKind.WINDOW))
@@ -677,6 +685,18 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		closeWork.setNumber(number);
 
 		return closeWork;
+	}
+
+	private StatementNode setTime() throws ParseError
+	{
+		var setTime = new SetTimeNode();
+		if (!consumeOptionally(setTime, SyntaxKind.SETTIME))
+		{
+			consumeMandatory(setTime, SyntaxKind.SET);
+			consumeMandatory(setTime, SyntaxKind.TIME);
+		}
+
+		return setTime;
 	}
 
 	private StatementNode backout() throws ParseError

@@ -110,7 +110,7 @@ Legend:
 | SET CONTROL | :x:                |
 | SET GLOBALS | :x:                |
 | SET KEY | :white_check_mark: |
-| SET TIME | :x:                |
+| SET TIME | :white_check_mark:                |
 | SET WINDOW | :white_check_mark: |
 | SKIP | :white_check_mark: |
 | SORT | :x:                |

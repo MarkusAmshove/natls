@@ -4207,4 +4207,14 @@ class StatementListParserShould extends StatementParseTest
 	{
 		assertParsesSingleStatement("COMMIT", ICommitNode.class);
 	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"SETTIME", "SET TIME"
+	})
+	void parseSetTime(String source)
+	{
+		assertParsesSingleStatement(source, ISetTimeNode.class);
+	}
 }
