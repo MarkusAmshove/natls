@@ -4217,4 +4217,18 @@ class StatementListParserShould extends StatementParseTest
 	{
 		assertParsesSingleStatement(source, ISetTimeNode.class);
 	}
+
+	@Test
+	void parsePasswWithConstants()
+	{
+		var passw = assertParsesSingleStatement("PASSW='abc'", IPasswNode.class);
+		assertLiteral(passw.password(), SyntaxKind.STRING_LITERAL, "'abc'");
+	}
+
+	@Test
+	void parsePasswWithReferences()
+	{
+		var passw = assertParsesSingleStatement("PASSW=#VAR", IPasswNode.class);
+		assertIsVariableReference(passw.password(), "#VAR");
+	}
 }
