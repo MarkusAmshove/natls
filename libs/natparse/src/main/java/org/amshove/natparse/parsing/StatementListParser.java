@@ -424,6 +424,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case SETTIME:
 						statementList.addStatement(setTime());
 						break;
+					case PASSW:
+						statementList.addStatement(passw());
+						break;
 					case ON:
 						if (peekKind(1, SyntaxKind.ERROR))
 						{
@@ -512,6 +515,15 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode passw() throws ParseError
+	{
+		var passw = new PasswNode();
+		consumeMandatory(passw, SyntaxKind.PASSW);
+		consumeMandatory(passw, SyntaxKind.EQUALS_SIGN);
+		passw.setPassword(consumeOperandNode(passw));
+		return passw;
 	}
 
 	private StatementNode commit() throws ParseError
