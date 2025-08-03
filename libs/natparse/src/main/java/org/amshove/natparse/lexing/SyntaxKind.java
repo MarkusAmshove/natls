@@ -118,6 +118,7 @@ public enum SyntaxKind
 	SV_GROUP(false, true, false),
 	USER_NAME(false, true, false),
 	SV_USER(false, true, false),
+	SV_CONVID(false, true, false),
 	COUNTER(false, true, true),
 	COM(false, true, false),
 	DEVICE(false, true, false),

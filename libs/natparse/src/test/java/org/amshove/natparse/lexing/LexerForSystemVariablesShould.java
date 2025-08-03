@@ -519,4 +519,10 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 	{
 		assertTokens("*OUTIN", token(SyntaxKind.OUTIN_ATTRIBUTE, "*OUTIN"));
 	}
+
+	@Test
+	void lexConvId()
+	{
+		assertTokens("*CONVID", token(SyntaxKind.SV_CONVID, "*CONVID"));
+	}
 }

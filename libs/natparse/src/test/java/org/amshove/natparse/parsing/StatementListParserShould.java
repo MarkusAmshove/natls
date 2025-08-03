@@ -4237,4 +4237,28 @@ class StatementListParserShould extends StatementParseTest
 	{
 		assertParsesSingleStatement("ROLLBACK", IRollbackNode.class);
 	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"", "SUBPROGRAM", "SUBPROGRAMS"
+	})
+	void parseOpenConversation(String syntax)
+	{
+		var open = assertParsesSingleStatement("OPEN CONVERSATION USING %s 'ABC' #VAR #ARR(*)".formatted(syntax), IOpenConversationNode.class);
+
+		assertLiteral(open.subprograms().first(), SyntaxKind.STRING_LITERAL, "'ABC'");
+		assertIsVariableReference(open.subprograms().get(1), "#VAR");
+		assertIsVariableReference(open.subprograms().last(), "#ARR");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"ALL", "*CONVID", "#VAR", "#VAR1 #VAR2"
+	})
+	void parseCloseConversation(String syntax)
+	{
+		assertParsesSingleStatement("CLOSE CONVERSATION %s".formatted(syntax), ICloseConversationNode.class);
+	}
 }
