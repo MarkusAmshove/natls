@@ -401,7 +401,12 @@ public class BuiltInFunctionTable
 				Returns the level number of the current program, dialog, ... which is currently active.
 
 				Level 1 is the main program.
-				""", NUMERIC, 2)
+				""", NUMERIC, 2),
+			modifiableVariable(SyntaxKind.SV_CONVID, """
+				Contains the ID of the current RPC conversion. Automatically set by OPEN CONVERSATION.
+				
+				*CONVID can be modified to switch between multiple open conversations.
+				""", INTEGER, 4)
 		);
 	}
 

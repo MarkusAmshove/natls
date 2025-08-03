@@ -187,6 +187,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 							case PRINTER -> statementList.addStatement(closePrinter());
 							case WORK -> statementList.addStatement(closeWork());
 							case PC -> statementList.addStatement(closePc());
+							case CONVERSATION -> statementList.addStatement(closeConversation());
 							default -> statementList.addStatement(consumeFallback());
 						}
 						break;
@@ -541,6 +542,23 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		open.setSubprograms(ReadOnlyList.from(conversationSubprograms));
 
 		return open;
+	}
+
+	private StatementNode closeConversation() throws ParseError
+	{
+		var close = new CloseConversationNode();
+		consumeMandatory(close, SyntaxKind.CLOSE);
+		consumeMandatory(close, SyntaxKind.CONVERSATION);
+
+		if (!consumeEitherOptionally(close, SyntaxKind.ALL, SyntaxKind.SV_CONVID))
+		{
+			while (!isAtEnd() && isOperand() && !isStatementStart())
+			{
+				consumeOperandNode(close);
+			}
+		}
+
+		return close;
 	}
 
 	private StatementNode rollbackStatement() throws ParseError

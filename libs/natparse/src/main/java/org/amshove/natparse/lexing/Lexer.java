@@ -882,6 +882,11 @@ public class Lexer
 			createAndAdd(SyntaxKind.IN_ATTRIBUTE);
 			return;
 		}
+		if (scanner.advanceIfIgnoreCase("CONVID"))
+		{
+			createAndAdd(SyntaxKind.SV_CONVID);
+			return;
+		}
 		scanner.rollbackCurrentLexeme();
 		createAndAddCurrentSingleToken(SyntaxKind.ASTERISK);
 	}

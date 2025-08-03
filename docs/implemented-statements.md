@@ -5,9 +5,9 @@ This document tracks the implementation status of Natural statements.
 Legend:
 
 
-:x: - not implemented (27)
+:x: - not implemented (26)
 
-:white_check_mark: - implemented or reporting (90)
+:white_check_mark: - implemented or reporting (91)
 
 | Statement | Status             |
 | --- |--------------------|
@@ -26,7 +26,7 @@ Legend:
 | CALL LOOP | :white_check_mark:                |
 | CALLDBPROC (SQL) | :x:                |
 | CALLNAT | :white_check_mark: |
-| CLOSE CONVERSATION | :x:                |
+| CLOSE CONVERSATION | :white_check_mark:                |
 | CLOSE PC FILE | :white_check_mark: |
 | CLOSE PRINTER | :white_check_mark: |
 | CLOSE WORK FILE | :white_check_mark: |
