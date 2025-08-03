@@ -194,6 +194,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case EJECT:
 						statementList.addStatement(eject());
 						break;
+					case RELEASE:
+						statementList.addStatement(release());
+						break;
 					case SKIP:
 						statementList.addStatement(skip());
 						break;
@@ -523,6 +526,21 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode release() throws ParseError
+	{
+		var release = new ReleaseNode();
+		consumeMandatory(release, SyntaxKind.RELEASE);
+		if (!consumeEitherOptionally(release, SyntaxKind.STACK, SyntaxKind.VARIABLES))
+		{
+			consumeAnyMandatory(release, List.of(SyntaxKind.SET, SyntaxKind.SETS));
+			while (!isAtEnd() && !isStatementStart() && isOperand())
+			{
+				consumeOperandNode(release);
+			}
+		}
+		return release;
 	}
 
 	private StatementNode openConversation() throws ParseError

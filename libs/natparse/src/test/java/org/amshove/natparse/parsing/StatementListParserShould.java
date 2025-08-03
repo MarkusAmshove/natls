@@ -4261,4 +4261,14 @@ class StatementListParserShould extends StatementParseTest
 	{
 		assertParsesSingleStatement("CLOSE CONVERSATION %s".formatted(syntax), ICloseConversationNode.class);
 	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"STACK", "VARIABLES", "SET 'ABC'", "SET #VAR", "SETS 'ABC' 'DEF'"
+	})
+	void parseRelease(String syntax)
+	{
+		assertParsesSingleStatement("RELEASE %s".formatted(syntax), IReleaseNode.class);
+	}
 }
