@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.Lexer;
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
@@ -403,6 +404,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case INCDIR:
 						statementList.addStatement(incdir());
 						break;
+					case OPEN:
+						statementList.addStatement(openConversation());
+						break;
 					case DECIDE:
 						if (peekKind(1, SyntaxKind.FOR))
 						{
@@ -518,6 +522,25 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode openConversation() throws ParseError
+	{
+		var open = new OpenConversationNode();
+
+		consumeMandatory(open, SyntaxKind.OPEN);
+		consumeMandatory(open, SyntaxKind.CONVERSATION);
+		consumeMandatory(open, SyntaxKind.USING);
+		consumeEitherOptionally(open, SyntaxKind.SUBPROGRAM, SyntaxKind.SUBPROGRAMS);
+
+		var conversationSubprograms = new ArrayList<IOperandNode>();
+		while (!isAtEnd() && isOperand())
+		{
+			conversationSubprograms.add(consumeOperandNode(open));
+		}
+		open.setSubprograms(ReadOnlyList.from(conversationSubprograms));
+
+		return open;
 	}
 
 	private StatementNode rollbackStatement() throws ParseError
