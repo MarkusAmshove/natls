@@ -5,9 +5,9 @@ This document tracks the implementation status of Natural statements.
 Legend:
 
 
-:x: - not implemented (26)
+:x: - not implemented (25)
 
-:white_check_mark: - implemented or reporting (91)
+:white_check_mark: - implemented or reporting (92)
 
 | Statement | Status             |
 | --- |--------------------|
@@ -96,7 +96,7 @@ Legend:
 | READLOB | :x:                |
 | REDUCE | :white_check_mark: |
 | REINPUT | :x:                |
-| RELEASE | :x:                |
+| RELEASE | :white_check_mark:                |
 | REPEAT | :white_check_mark: |
 | REQUEST DOCUMENT | :x:                |
 | RESET | :white_check_mark: |
