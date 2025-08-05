@@ -548,12 +548,12 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			run.setReferencingToken(ref.referencingToken());
 		}
 		else
-			if (consumeOptionally(run, SyntaxKind.STRING_LITERAL))
-			{
-				run.setReferencingToken(previousToken());
-				var referencedModule = sideloadModule(run.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token(), null);
-				run.setReference(referencedModule);
-			}
+		{
+			consumeMandatory(run, SyntaxKind.STRING_LITERAL);
+			run.setReferencingToken(previousToken());
+			var referencedModule = sideloadModule(run.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token(), null);
+			run.setReference(referencedModule);
+		}
 
 		while (!isAtEnd() && !isStatementStart() && isModuleParameter())
 		{

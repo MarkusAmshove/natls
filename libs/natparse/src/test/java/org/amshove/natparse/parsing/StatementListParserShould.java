@@ -4297,4 +4297,10 @@ class StatementListParserShould extends StatementParseTest
 		var run = assertParsesSingleStatement("RUN #MODULE #VAR1 #VAR2", IRunStatementNode.class);
 		assertThat(run.providedParameter()).hasSize(2);
 	}
+
+	@Test
+	void raiseADiagnosticIfRunIsNotCallingAStringOrVariable()
+	{
+		assertDiagnostic("RUN 1", ParserError.UNEXPECTED_TOKEN);
+	}
 }
