@@ -4271,4 +4271,36 @@ class StatementListParserShould extends StatementParseTest
 	{
 		assertParsesSingleStatement("RELEASE %s".formatted(syntax), IReleaseNode.class);
 	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"", "REPEAT"
+	})
+	void parseASimpleRun()
+	{
+		ignoreModuleProvider();
+		var run = assertParsesSingleStatement("RUN 'ABC'", IRunStatementNode.class);
+		assertThat(run.referencingToken().kind()).isEqualTo(SyntaxKind.STRING_LITERAL);
+		assertThat(run.referencingToken().stringValue()).isEqualTo("ABC");
+	}
+
+	@Test
+	void parseARunWithVariableAsModule()
+	{
+		assertParsesSingleStatement("RUN #MODULE", IRunStatementNode.class);
+	}
+
+	@Test
+	void parseRunWithParameter()
+	{
+		var run = assertParsesSingleStatement("RUN #MODULE #VAR1 #VAR2", IRunStatementNode.class);
+		assertThat(run.providedParameter()).hasSize(2);
+	}
+
+	@Test
+	void raiseADiagnosticIfRunIsNotCallingAStringOrVariable()
+	{
+		assertDiagnostic("RUN 1", ParserError.UNEXPECTED_TOKEN);
+	}
 }
