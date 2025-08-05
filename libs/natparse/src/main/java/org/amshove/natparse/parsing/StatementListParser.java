@@ -262,6 +262,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case EXAMINE:
 						statementList.addStatement(examine());
 						break;
+					case RUN:
+						statementList.addStatement(runStatement());
+						break;
 					case SEPARATE:
 						statementList.addStatement(separate());
 						break;
@@ -526,6 +529,43 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode runStatement() throws ParseError
+	{
+		var run = new RunStatementNode();
+		consumeMandatory(run, SyntaxKind.RUN);
+		consumeOptionally(run, SyntaxKind.REPEAT);
+
+		if (!isStringLiteralOrIdentifier())
+		{
+			report(ParserErrors.unexpectedToken(List.of(SyntaxKind.STRING_LITERAL, SyntaxKind.IDENTIFIER), tokens));
+		}
+
+		if (peekKind(SyntaxKind.IDENTIFIER))
+		{
+			var ref = consumeVariableReferenceNode(run);
+			run.setReferencingToken(ref.referencingToken());
+		}
+		else
+			if (consumeOptionally(run, SyntaxKind.STRING_LITERAL))
+			{
+				run.setReferencingToken(previousToken());
+				var referencedModule = sideloadModule(run.referencingToken().stringValue().toUpperCase().trim(), previousTokenNode().token(), null);
+				run.setReference(referencedModule);
+			}
+
+		while (!isAtEnd() && !isStatementStart() && isModuleParameter())
+		{
+			var operand = consumeModuleParameter(run);
+			run.addParameter(operand);
+			if (peekKind(SyntaxKind.LPAREN) && peekKind(1, SyntaxKind.AD))
+			{
+				consumeAttributeDefinition((BaseSyntaxNode) operand);
+			}
+		}
+
+		return run;
 	}
 
 	private StatementNode release() throws ParseError
