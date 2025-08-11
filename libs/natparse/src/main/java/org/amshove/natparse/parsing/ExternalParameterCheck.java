@@ -20,6 +20,13 @@ public class ExternalParameterCheck
 				return;
 			}
 
+			if (node instanceof IFetchNode)
+			{
+				// Can't check required parameter for FETCH, because called programs
+				// don't specify parameter.
+				return;
+			}
+
 			if (node instanceof IIncludeNode || node instanceof IUsingNode)
 			{
 				// USINGs have no parameter and INCLUDE validation is done in StatementListParser

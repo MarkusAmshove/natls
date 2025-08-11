@@ -3161,15 +3161,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		consumeOptionally(callnat, SyntaxKind.USING);
 
-		while (!isAtEnd() && !isStatementStart() && isModuleParameter())
-		{
-			var operand = consumeModuleParameter(callnat);
-			callnat.addParameter(operand);
-			if (peekKind(SyntaxKind.LPAREN) && peekKind(1, SyntaxKind.AD))
-			{
-				consumeAttributeDefinition((BaseSyntaxNode) operand);
-			}
-		}
+		consumeAndAddModuleCallParameter(callnat);
 
 		return callnat;
 	}
@@ -3317,6 +3309,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			var ref = consumeVariableReferenceNode(fetch);
 			fetch.setReferencingToken(ref.referencingToken());
 		}
+
+		consumeAndAddModuleCallParameter(fetch);
 
 		return fetch;
 	}
@@ -4947,6 +4941,19 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		unresolvedSymbols.removeAll(resolvedReferences);
+	}
+
+	private void consumeAndAddModuleCallParameter(ModuleReferencingNode node) throws ParseError
+	{
+		while (!isAtEnd() && !isStatementStart() && isModuleParameter())
+		{
+			var operand = consumeModuleParameter(node);
+			node.addParameter(operand);
+			if (peekKind(SyntaxKind.LPAREN) && peekKind(1, SyntaxKind.AD))
+			{
+				consumeAttributeDefinition((BaseSyntaxNode) operand);
+			}
+		}
 	}
 
 	@SuppressWarnings(
