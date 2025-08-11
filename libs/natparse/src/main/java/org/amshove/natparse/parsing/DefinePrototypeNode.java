@@ -5,7 +5,8 @@ import org.amshove.natparse.natural.IDefinePrototypeNode;
 import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.IVariableReferenceNode;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 class DefinePrototypeNode extends StatementNode implements IDefinePrototypeNode
 {

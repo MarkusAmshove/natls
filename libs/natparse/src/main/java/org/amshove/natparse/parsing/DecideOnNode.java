@@ -5,8 +5,8 @@ import org.amshove.natparse.natural.IDecideOnBranchNode;
 import org.amshove.natparse.natural.IDecideOnNode;
 import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.IStatementListNode;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 

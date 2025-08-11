@@ -1,7 +1,6 @@
 package org.amshove.natparse.lexing;
 
 import org.amshove.natparse.IPosition;
-import org.checkerframework.dataflow.qual.Pure;
 
 import java.nio.file.Path;
 import java.util.Optional;
@@ -160,7 +159,6 @@ public class SyntaxToken implements IPosition
 		this.filePath = filePath;
 	}
 
-	@Pure
 	public SyntaxToken withKind(SyntaxKind newKind)
 	{
 		var newToken = new SyntaxToken(
@@ -179,7 +177,6 @@ public class SyntaxToken implements IPosition
 		return newToken;
 	}
 
-	@Pure
 	public SyntaxToken combine(SyntaxToken other, SyntaxKind kind)
 	{
 		return new SyntaxToken(

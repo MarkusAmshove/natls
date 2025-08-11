@@ -3,10 +3,9 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.IAttributeListNode;
 import org.amshove.natparse.natural.IAttributeNode;
-import org.amshove.natparse.natural.output.IOutputOperandNode;
 import org.amshove.natparse.natural.IOperandNode;
-
-import javax.annotation.Nullable;
+import org.amshove.natparse.natural.output.IOutputOperandNode;
+import org.jspecify.annotations.Nullable;
 
 class OutputOperandNode extends BaseSyntaxNode implements IOutputOperandNode
 {

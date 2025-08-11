@@ -6,8 +6,8 @@ import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
+import org.jspecify.annotations.NonNull;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +25,7 @@ class VariableNode extends BaseSyntaxNode implements IVariableNode
 	private String qualifiedName; // Gets computed on first demand
 
 	@Override
-	@Nonnull
+	@NonNull
 	public ReadOnlyList<ISymbolReferenceNode> references()
 	{
 		return ReadOnlyList.from(references); // TODO: Perf

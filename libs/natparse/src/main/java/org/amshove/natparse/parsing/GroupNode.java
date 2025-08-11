@@ -7,7 +7,9 @@ import org.amshove.natparse.natural.IGroupNode;
 import org.amshove.natparse.natural.IVariableNode;
 import org.amshove.natparse.natural.VariableScope;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 

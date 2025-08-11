@@ -1,12 +1,11 @@
 package org.amshove.natparse.natural;
 
 import org.amshove.natparse.ReadOnlyList;
-
-import javax.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 public interface IReferencableNode extends ISymbolNode
 {
-	@Nonnull
+	@NonNull
 	ReadOnlyList<ISymbolReferenceNode> references();
 
 	void removeReference(ISymbolReferenceNode node);

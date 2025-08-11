@@ -7,7 +7,7 @@ dependencies {
 
     testImplementation project(':testhelpers')
     testImplementation libraries.slf4j_nop
-    testImplementation 'org.awaitility:awaitility:4.2.0'
+    testImplementation libraries.awaitility
 }
 
 tasks.register('fatJar', Jar) {

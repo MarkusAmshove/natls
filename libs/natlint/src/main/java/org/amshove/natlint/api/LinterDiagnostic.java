@@ -1,7 +1,6 @@
 package org.amshove.natlint.api;
 
 import org.amshove.natparse.*;
-import org.checkerframework.dataflow.qual.Pure;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -105,7 +104,6 @@ public class LinterDiagnostic implements IDiagnostic
 			'}';
 	}
 
-	@Pure
 	public LinterDiagnostic withSeverity(DiagnosticSeverity newSeverity)
 	{
 		return new LinterDiagnostic(

@@ -13,7 +13,7 @@ public class NodeClassesArchitectureTests
 	void allNodeClassesShouldBePackagePrivate()
 	{
 		var classes = new ClassFileImporter().importPackagesOf(BaseSyntaxNode.class);
-		var rule = classes().that().areAssignableTo(ISyntaxTree.class).should().bePackagePrivate();
+		var rule = classes().that().areAssignableTo(ISyntaxTree.class).and().areNotInterfaces().should().bePackagePrivate();
 		rule.check(classes);
 	}
 
@@ -21,7 +21,7 @@ public class NodeClassesArchitectureTests
 	void allNodeClassesShouldExtendBaseSyntaxNode()
 	{
 		var classes = new ClassFileImporter().importPackagesOf(BaseSyntaxNode.class);
-		var rule = classes().that().areAssignableTo(ISyntaxNode.class).should().beAssignableTo(BaseSyntaxNode.class);
+		var rule = classes().that().areAssignableTo(ISyntaxNode.class).and().areNotInterfaces().should().beAssignableTo(BaseSyntaxNode.class);
 		rule.check(classes);
 	}
 }
