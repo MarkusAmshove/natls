@@ -6,11 +6,7 @@ import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.conditionals.IConditionNode;
 import org.amshove.natparse.natural.conditionals.IIfBreakCriteriaNode;
 import org.amshove.natparse.natural.conditionals.IRelationalCriteriaNode;
-import org.amshove.natparse.natural.output.IOutputNewLineNode;
-import org.amshove.natparse.natural.output.IOutputOperandNode;
-import org.amshove.natparse.natural.output.IOutputPositioningNode;
-import org.amshove.natparse.natural.output.ISpaceElementNode;
-import org.amshove.natparse.natural.output.ITabulatorElementNode;
+import org.amshove.natparse.natural.output.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -273,6 +269,18 @@ class StatementListParserShould extends StatementParseTest
 
 		var fetch = assertParsesSingleStatement("FETCH %s 'PROG'".formatted(fetchSource), IFetchNode.class);
 		assertThat(fetch.reference()).isEqualTo(program);
+	}
+
+	@Test
+	void parseFetchWithParameter()
+	{
+		ignoreModuleProvider();
+
+		var fetch = assertParsesSingleStatement("FETCH 'PROG' #MYVAR 'ABC' 123", IFetchNode.class);
+		var parameter = fetch.providedParameter();
+		assertIsVariableReference(parameter.first(), "#MYVAR");
+		assertLiteral(parameter.get(1), SyntaxKind.STRING_LITERAL, "'ABC'");
+		assertLiteral(parameter.last(), SyntaxKind.NUMBER_LITERAL, "123");
 	}
 
 	@Test

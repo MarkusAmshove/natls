@@ -133,6 +133,22 @@ class UnreachableCodeAnalyzerShould extends AbstractAnalyzerTest
 	}
 
 	@Test
+	void notRaiseADiagnosticOnFetchParameter()
+	{
+		allowParserError(ParserError.UNRESOLVED_MODULE.id());
+		testDiagnostics(
+			"""
+			DEFINE DATA LOCAL
+			1 #MYVAR (A10)
+			END-DEFINE
+			FETCH 'MODULE' #MYVAR
+			END
+			""",
+			expectNoDiagnosticOfType(UnreachableCodeAnalyzer.UNREACHABLE_CODE)
+		);
+	}
+
+	@Test
 	void notRaiseADiagnosticForStatementsAfterFetchReturn()
 	{
 		allowParserError(ParserError.UNRESOLVED_MODULE.id());
