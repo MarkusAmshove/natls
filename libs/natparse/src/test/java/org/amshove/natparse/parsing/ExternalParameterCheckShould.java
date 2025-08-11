@@ -817,6 +817,27 @@ class ExternalParameterCheckShould
 		assertNoDiagnostic();
 	}
 
+	@Test
+	void notCheckParameterForFetchStatements()
+	{
+		parse("CALLED.NSP", """
+			DEFINE DATA LOCAL
+			1 #PARM (A10)
+			END-DEFINE
+			INPUT #PARM
+			END
+			""");
+
+		parse("CALLER.NSN", """
+			DEFINE DATA LOCAL
+			END-DEFINE
+			FETCH 'CALLED' 'ASD'
+			END
+			""");
+
+		assertNoDiagnostic();
+	}
+
 	private void assertNoDiagnostic()
 	{
 		var messages = lastParsedModule.diagnostics().stream().map(IDiagnostic::message).toList();
