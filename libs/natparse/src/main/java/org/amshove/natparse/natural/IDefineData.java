@@ -2,8 +2,7 @@ package org.amshove.natparse.natural;
 
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.ddm.IDdmField;
-
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface IDefineData extends ISyntaxNode
 {

@@ -1,6 +1,6 @@
 package org.amshove.natparse.natural;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface IResizeDynamicNode extends IMutateVariables
 {

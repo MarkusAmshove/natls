@@ -2,8 +2,7 @@ package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.natural.ITrimFunctionNode;
-
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 class TrimFunctionNode extends SystemFunctionNode implements ITrimFunctionNode
 {

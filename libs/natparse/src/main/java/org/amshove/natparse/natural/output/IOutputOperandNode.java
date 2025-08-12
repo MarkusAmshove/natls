@@ -4,8 +4,7 @@ import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.IAttributeListNode;
 import org.amshove.natparse.natural.IAttributeNode;
 import org.amshove.natparse.natural.IOperandNode;
-
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface IOutputOperandNode extends IOutputElementNode
 {

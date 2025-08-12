@@ -3,8 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.natural.IIfStatementNode;
 import org.amshove.natparse.natural.IStatementListNode;
 import org.amshove.natparse.natural.conditionals.IConditionNode;
-
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 class IfStatementNode extends StatementWithBodyNode implements IIfStatementNode
 {

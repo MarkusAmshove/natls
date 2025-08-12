@@ -3,8 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.natural.INaturalModule;
 import org.amshove.natparse.natural.ddm.IDataDefinitionModule;
 import org.amshove.natparse.natural.project.NaturalFileType;
-
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface IModuleProvider
 {

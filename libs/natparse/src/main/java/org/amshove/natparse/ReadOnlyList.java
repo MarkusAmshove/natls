@@ -1,6 +1,7 @@
 package org.amshove.natparse;
 
-import javax.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
+
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -95,7 +96,7 @@ public class ReadOnlyList<T> implements Iterable<T>
 	}
 
 	@Override
-	public @Nonnull Iterator<T> iterator()
+	public @NonNull Iterator<T> iterator()
 	{
 		return collection.iterator();
 	}

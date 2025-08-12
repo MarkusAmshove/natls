@@ -36,11 +36,10 @@ tasks.register('fatJar', Jar) {
     with jar
 }
 
-import com.vanniktech.maven.publish.SonatypeHost
 mavenPublishing {
     coordinates(project.group, 'natlint', project.version)
 
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    publishToMavenCentral()
     signAllPublications()
 
     pom {

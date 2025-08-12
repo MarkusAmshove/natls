@@ -1,8 +1,8 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.lexing.SyntaxKind;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 

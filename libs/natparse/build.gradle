@@ -11,11 +11,10 @@ dependencies {
     testImplementation project(':testhelpers')
 }
 
-import com.vanniktech.maven.publish.SonatypeHost
 mavenPublishing {
     coordinates(project.group, 'natparse', project.version)
 
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    publishToMavenCentral()
     signAllPublications()
 
     pom {

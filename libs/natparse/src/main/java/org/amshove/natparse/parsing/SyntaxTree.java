@@ -5,8 +5,8 @@ import org.amshove.natparse.natural.IStatementVisitor;
 import org.amshove.natparse.natural.ISyntaxNode;
 import org.amshove.natparse.natural.ISyntaxNodeVisitor;
 import org.amshove.natparse.natural.ISyntaxTree;
+import org.jspecify.annotations.NonNull;
 
-import javax.annotation.Nonnull;
 import java.util.*;
 
 final class SyntaxTree implements ISyntaxTree
@@ -50,7 +50,7 @@ final class SyntaxTree implements ISyntaxTree
 	}
 
 	@Override
-	@Nonnull
+	@NonNull
 	public Iterator<ISyntaxNode> iterator()
 	{
 		return descendants.iterator();
@@ -78,11 +78,5 @@ final class SyntaxTree implements ISyntaxTree
 	{
 		return "SyntaxTree[" +
 			"descendants=" + descendants + ']';
-	}
-
-	protected void replace(ISyntaxNode oldNode, ISyntaxNode newNode)
-	{
-		var oldIndex = descendants.indexOf(oldNode);
-		descendants.set(oldIndex, newNode);
 	}
 }

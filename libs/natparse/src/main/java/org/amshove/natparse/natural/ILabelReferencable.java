@@ -1,8 +1,7 @@
 package org.amshove.natparse.natural;
 
 import org.amshove.natparse.lexing.SyntaxToken;
-
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 // TODO(labels): Use this interface for statements that can be labeled
 

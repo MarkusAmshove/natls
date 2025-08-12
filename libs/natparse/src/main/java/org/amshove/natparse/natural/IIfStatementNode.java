@@ -1,8 +1,7 @@
 package org.amshove.natparse.natural;
 
 import org.amshove.natparse.natural.conditionals.IConditionNode;
-
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface IIfStatementNode extends IStatementWithBodyNode
 {

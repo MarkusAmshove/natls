@@ -2,8 +2,8 @@ package org.amshove.natparse.natural;
 
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.lexing.SyntaxKind;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.stream.Stream;
 
 public interface ISyntaxTree extends Iterable<ISyntaxNode>

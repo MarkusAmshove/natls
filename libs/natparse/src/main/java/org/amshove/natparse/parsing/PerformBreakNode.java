@@ -3,8 +3,7 @@ package org.amshove.natparse.parsing;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.IBreakOfNode;
 import org.amshove.natparse.natural.IPerformBreakNode;
-
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 class PerformBreakNode extends StatementNode implements IPerformBreakNode
 {
