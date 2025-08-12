@@ -4,8 +4,6 @@ import org.amshove.natparse.NodeUtil;
 import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.ddm.IDdmField;
-
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;

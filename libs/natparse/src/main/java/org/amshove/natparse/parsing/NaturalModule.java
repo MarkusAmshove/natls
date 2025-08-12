@@ -8,7 +8,6 @@ import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalHeader;
 import org.amshove.natparse.natural.project.NaturalProgrammingMode;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
