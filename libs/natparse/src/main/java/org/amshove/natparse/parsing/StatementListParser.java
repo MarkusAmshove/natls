@@ -5037,7 +5037,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		return switch (tokenAhead.kind())
 		{
-			case FIND, STORE, READ, GET, HISTOGRAM, SETTIME, SET, REPEAT, PARSE -> null;
+			case FIND, STORE, READ, GET, HISTOGRAM, SETTIME, SET, REPEAT, FOR, PARSE -> null;
 			default ->
 			{
 				var errorNode = new SyntheticTokenStatementNode();
