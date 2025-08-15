@@ -4227,6 +4227,20 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void parseLabelsAsPartOfStatements()
+	{
+		var setTime = assertParsesSingleStatement("TIME. SET TIME", ISetTimeNode.class);
+		assertThat(setTime.labelIdentifier().symbolName()).isEqualTo("TIME.");
+		assertThat(((ITokenNode) setTime.descendants().first()).token().kind()).isEqualTo(SyntaxKind.LABEL_IDENTIFIER);
+	}
+
+	@Test
+	void raiseADiagnosticIfAStatementHasALabelThatDoesNotSupportLabels()
+	{
+		assertDiagnostic("MYLABEL. #A := #B", ParserError.STATEMENT_LABEL_MISPLACED);
+	}
+
+	@Test
 	void parsePasswWithConstants()
 	{
 		var passw = assertParsesSingleStatement("PASSW='abc'", IPasswNode.class);
