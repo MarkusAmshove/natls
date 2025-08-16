@@ -1393,7 +1393,7 @@ class StatementListParserShould extends StatementParseTest
 	void parseGetStatements(String statement)
 	{
 		var get = assertParsesSingleStatement("GET %s".formatted(statement), IGetNode.class);
-		assertThat(get.viewReference().token().symbolName()).isEqualTo("THE-VIEW");
+		assertThat(get.view().token().symbolName()).isEqualTo("THE-VIEW");
 	}
 
 	@ParameterizedTest
@@ -1425,7 +1425,7 @@ class StatementListParserShould extends StatementParseTest
 	void parseGetStatementsWithLabel(String statement)
 	{
 		var get = assertParsesSingleStatement("GET %s".formatted(statement), IGetNode.class);
-		assertThat(get.viewReference().token().symbolName()).isEqualTo("THE-VIEW");
+		assertThat(get.view().token().symbolName()).isEqualTo("THE-VIEW");
 	}
 
 	@Test

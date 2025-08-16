@@ -2873,6 +2873,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private StatementNode repeatLoop() throws ParseError
 	{
 		var loopNode = new RepeatLoopNode();
+		addLabelIdentifierIfPresent(loopNode);
 		var opening = consumeMandatory(loopNode, SyntaxKind.REPEAT);
 		if (consumeEitherOptionally(loopNode, SyntaxKind.UNTIL, SyntaxKind.WHILE))
 		{
@@ -2897,6 +2898,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private StatementNode forLoop() throws ParseError
 	{
 		var loopNode = new ForLoopNode();
+		addLabelIdentifierIfPresent(loopNode);
 
 		var opening = consumeMandatory(loopNode, SyntaxKind.FOR);
 		loopNode.setLoopControl(consumeVariableReferenceNode(loopNode));
@@ -4116,6 +4118,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private StatementNode histogram() throws ParseError
 	{
 		var histogram = new HistogramNode();
+		addLabelIdentifierIfPresent(histogram);
 		var opening = consumeMandatory(histogram, SyntaxKind.HISTOGRAM);
 		consumeDbmsStart(histogram);
 		histogram.setView(consumeVariableReferenceNode(histogram));
@@ -4404,6 +4407,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private ReadNode readStatement() throws ParseError
 	{
 		var read = new ReadNode();
+		addLabelIdentifierIfPresent(read);
 
 		var opening = consumeAnyMandatory(read, List.of(SyntaxKind.READ, SyntaxKind.BROWSE));
 		consumeDbmsStart(read);
@@ -4637,6 +4641,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private GetNode getStatement() throws ParseError
 	{
 		var get = new GetNode();
+		addLabelIdentifierIfPresent(get);
 		consumeMandatory(get, SyntaxKind.GET);
 		consumeOptionally(get, SyntaxKind.IN);
 		consumeOptionally(get, SyntaxKind.FILE);
