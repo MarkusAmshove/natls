@@ -4311,4 +4311,60 @@ class StatementListParserShould extends StatementParseTest
 	{
 		assertDiagnostic("RUN 1", ParserError.UNEXPECTED_TOKEN);
 	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"RECORD", "RECORD IN", "IN", "RECORD IN FILE", "IN FILE", "FILE", "RECORD FILE"
+	})
+	void parseStoreStatements(String permutation)
+	{
+		assertParsesSingleStatement("STORE %s MY-VIEW".formatted(permutation), IStoreStatementNode.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"PASSWORD='secure'", "PASSWORD=#VAR"
+	})
+	void parseStoreStatementsWithPassword(String permutation)
+	{
+		var store = assertParsesSingleStatement("STORE MY-VIEW %s".formatted(permutation), IStoreStatementNode.class);
+		assertThat(store.password()).isNotNull();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"CIPHER=5", "CIPHER=#VAR"
+	})
+	void parseStoreStatementsWithCipher(String permutation)
+	{
+		var store = assertParsesSingleStatement("STORE MY-VIEW %s".formatted(permutation), IStoreStatementNode.class);
+		assertThat(store.cipher()).isNotNull();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"USING NUMBER #VAR", "GIVING NUMBER #VAR", "NUMBER #VAR"
+	})
+	void parseStoreWithOptionalUsingNumberClauses(String permutation)
+	{
+		assertParsesSingleStatement("STORE MY-VIEW %s".formatted(permutation), IStoreStatementNode.class);
+	}
+
+	@Test
+	void parseTheViewNameInStoreStatement()
+	{
+		var store = assertParsesSingleStatement("STORE MY-VIEW", IStoreStatementNode.class);
+		assertThat(store.view().referencingToken().symbolName()).isEqualTo("MY-VIEW");
+	}
+
+	@Test
+	void parseTheViewNameInStoreStatementWithLabelReference()
+	{
+		var store = assertParsesSingleStatement("STORE MY-VIEW (READ1.)", IStoreStatementNode.class);
+		assertThat(store.view().referencingToken().symbolName()).isEqualTo("MY-VIEW");
+	}
 }
