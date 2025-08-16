@@ -92,10 +92,16 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 				switch (tokens.peek().kind())
 				{
-					case ACCEPT:
-						statementList.addStatement(acceptOrReject());
+					case LABEL_IDENTIFIER:
+						var errorNode = validateLabelIdentifierPlacement();
+						if (errorNode != null)
+						{
+							statementList.addStatement(errorNode);
+						}
+
+						tokens.advance();
 						break;
-					case REJECT:
+					case ACCEPT, REJECT:
 						statementList.addStatement(acceptOrReject());
 						break;
 					case ADD:
@@ -537,6 +543,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private StatementNode store() throws ParseError
 	{
 		var store = new StoreStatementNode();
+		addLabelIdentifierIfPresent(store);
 		consumeMandatory(store, SyntaxKind.STORE);
 		consumeOptionally(store, SyntaxKind.RECORD);
 		consumeOptionally(store, SyntaxKind.IN);
@@ -853,6 +860,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private StatementNode setTime() throws ParseError
 	{
 		var setTime = new SetTimeNode();
+		addLabelIdentifierIfPresent(setTime);
 		if (!consumeOptionally(setTime, SyntaxKind.SETTIME))
 		{
 			consumeMandatory(setTime, SyntaxKind.SET);
@@ -860,6 +868,20 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return setTime;
+	}
+
+	private void addLabelIdentifierIfPresent(ILabelIdentifierSettable statement)
+	{
+		var previousToken = previousToken();
+		if (previousToken == null || previousToken.kind() != SyntaxKind.LABEL_IDENTIFIER)
+		{
+			return;
+		}
+
+		var tokenNode = new TokenNode(previousToken);
+		((BaseSyntaxNode) statement).addNode(tokenNode);
+
+		statement.setLabelIdentifier(previousToken);
 	}
 
 	private StatementNode backout() throws ParseError
@@ -2894,6 +2916,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private StatementNode repeatLoop() throws ParseError
 	{
 		var loopNode = new RepeatLoopNode();
+		addLabelIdentifierIfPresent(loopNode);
 		var opening = consumeMandatory(loopNode, SyntaxKind.REPEAT);
 		if (consumeEitherOptionally(loopNode, SyntaxKind.UNTIL, SyntaxKind.WHILE))
 		{
@@ -2918,6 +2941,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private StatementNode forLoop() throws ParseError
 	{
 		var loopNode = new ForLoopNode();
+		addLabelIdentifierIfPresent(loopNode);
 
 		var opening = consumeMandatory(loopNode, SyntaxKind.FOR);
 		loopNode.setLoopControl(consumeVariableReferenceNode(loopNode));
@@ -4137,6 +4161,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private StatementNode histogram() throws ParseError
 	{
 		var histogram = new HistogramNode();
+		addLabelIdentifierIfPresent(histogram);
 		var opening = consumeMandatory(histogram, SyntaxKind.HISTOGRAM);
 		consumeDbmsStart(histogram);
 		histogram.setView(consumeVariableReferenceNode(histogram));
@@ -4213,6 +4238,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private FindNode find() throws ParseError
 	{
 		var find = new FindNode();
+		addLabelIdentifierIfPresent(find);
 
 		var opening = consumeMandatory(find, SyntaxKind.FIND);
 		var hasNoBody = consumeOptionally(find, SyntaxKind.FIRST) || consumeOptionally(find, SyntaxKind.KW_NUMBER) || consumeOptionally(find, SyntaxKind.UNIQUE);
@@ -4424,6 +4450,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private ReadNode readStatement() throws ParseError
 	{
 		var read = new ReadNode();
+		addLabelIdentifierIfPresent(read);
 
 		var opening = consumeAnyMandatory(read, List.of(SyntaxKind.READ, SyntaxKind.BROWSE));
 		consumeDbmsStart(read);
@@ -4657,6 +4684,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private GetNode getStatement() throws ParseError
 	{
 		var get = new GetNode();
+		addLabelIdentifierIfPresent(get);
 		consumeMandatory(get, SyntaxKind.GET);
 		consumeOptionally(get, SyntaxKind.IN);
 		consumeOptionally(get, SyntaxKind.FILE);
@@ -5044,6 +5072,28 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			case ELSE, VALUE, VALUES, WHEN, NONE -> true; // branching
 			case END_IF, END_ALL, END_BEFORE, END_BREAK, END_BROWSE, END_CLASS, END_DECIDE, END_ENDDATA, END_ENDFILE, END_ENDPAGE, END_ERROR, END_FILE, END_FIND, END_FOR, END_FUNCTION, END_HISTOGRAM, END_INTERFACE, END_LOOP, END_METHOD, END_NOREC, END_PARAMETERS, END_PARSE, END_PROCESS, END_PROPERTY, END_PROTOTYPE, END_READ, END_REPEAT, END_RESULT, END_SELECT, END_SORT, END_START, END_SUBROUTINE, END_TOPPAGE, END_WORK -> true;
 			default -> false;
+		};
+	}
+
+	private SyntheticTokenStatementNode validateLabelIdentifierPlacement() throws ParseError
+	{
+		var tokenAhead = peek(1);
+		if (tokenAhead == null)
+		{
+			return null;
+		}
+
+		return switch (tokenAhead.kind())
+		{
+			case FIND, STORE, READ, GET, HISTOGRAM, SETTIME, SET, REPEAT, FOR, PARSE -> null;
+			default ->
+			{
+				var errorNode = new SyntheticTokenStatementNode();
+				var tokenNode = new TokenNode(peek());
+				report(ParserErrors.misplacedStatementLabel(tokenNode.position()));
+				errorNode.addNode(tokenNode);
+				yield errorNode;
+			}
 		};
 	}
 

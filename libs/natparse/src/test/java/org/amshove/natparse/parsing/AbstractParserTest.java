@@ -131,6 +131,13 @@ public abstract class AbstractParserTest<NodeType>
 		return node;
 	}
 
+	protected void assertHasStatementLabel(ILabelReferencable statement, String labelName)
+	{
+		assertThat(statement.labelIdentifier()).as("Statement should have a label").isNotNull();
+		assertThat(statement.labelIdentifier().kind()).as("Label identifier should be a LABEL_IDENTIFIER token").isEqualTo(SyntaxKind.LABEL_IDENTIFIER);
+		assertThat(statement.labelIdentifier().symbolName()).as("Label name should match").isEqualTo(labelName);
+	}
+
 	protected LocalDataArea newEmptyLda()
 	{
 		var file = new NaturalFile("MYLDA", Path.of(""), NaturalFileType.LDA);

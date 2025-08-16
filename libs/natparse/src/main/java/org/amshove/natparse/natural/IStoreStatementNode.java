@@ -2,7 +2,7 @@ package org.amshove.natparse.natural;
 
 import org.jspecify.annotations.Nullable;
 
-public interface IStoreStatementNode extends IStatementNode, IAdabasAccessStatementNode
+public interface IStoreStatementNode extends IStatementNode, IAdabasAccessStatementNode, ILabelReferencable
 {
 	@Nullable
 	IOperandNode password();

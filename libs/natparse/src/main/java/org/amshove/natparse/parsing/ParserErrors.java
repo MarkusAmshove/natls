@@ -877,4 +877,13 @@ class ParserErrors
 		);
 		return diagnostic;
 	}
+
+	public static IDiagnostic misplacedStatementLabel(IPosition position)
+	{
+		return ParserDiagnostic.create(
+			"Statement Label not allowed here",
+			position,
+			ParserError.STATEMENT_LABEL_MISPLACED
+		);
+	}
 }

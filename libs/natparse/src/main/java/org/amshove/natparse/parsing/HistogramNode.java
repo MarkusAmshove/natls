@@ -4,12 +4,14 @@ import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.IHistogramNode;
 import org.amshove.natparse.natural.IVariableReferenceNode;
 import org.amshove.natparse.natural.conditionals.IConditionNode;
+import org.jspecify.annotations.Nullable;
 
-class HistogramNode extends StatementWithBodyNode implements IHistogramNode
+class HistogramNode extends StatementWithBodyNode implements IHistogramNode, ILabelIdentifierSettable
 {
 	private IVariableReferenceNode view;
 	private SyntaxToken descriptor;
 	private IConditionNode condition;
+	private SyntaxToken labelIdentifier;
 
 	@Override
 	public IVariableReferenceNode view()
@@ -43,6 +45,18 @@ class HistogramNode extends StatementWithBodyNode implements IHistogramNode
 	{
 		addNode(condition);
 		this.condition = condition;
+	}
+
+	@Override
+	public @Nullable SyntaxToken labelIdentifier()
+	{
+		return labelIdentifier;
+	}
+
+	@Override
+	public void setLabelIdentifier(SyntaxToken labelIdentifier)
+	{
+		this.labelIdentifier = labelIdentifier;
 	}
 
 }
