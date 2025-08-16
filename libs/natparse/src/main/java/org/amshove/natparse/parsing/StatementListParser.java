@@ -543,6 +543,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private StatementNode store() throws ParseError
 	{
 		var store = new StoreStatementNode();
+		addLabelIdentifierIfPresent(store);
 		consumeMandatory(store, SyntaxKind.STORE);
 		consumeOptionally(store, SyntaxKind.RECORD);
 		consumeOptionally(store, SyntaxKind.IN);

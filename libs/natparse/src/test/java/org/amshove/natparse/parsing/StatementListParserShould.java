@@ -857,6 +857,18 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void parseAMinimalForLoopWithLabel()
+	{
+		var forLoopNode = assertParsesSingleStatement("""
+			LOOPI. FOR #I 1 10
+			    IGNORE
+			END-FOR
+			""", IForLoopNode.class);
+
+		assertHasStatementLabel(forLoopNode, "LOOPI.");
+	}
+
+	@Test
 	void raiseADiagnosticIfAForLoopHasNoBody()
 	{
 		assertDiagnostic("""
@@ -1097,6 +1109,18 @@ class StatementListParserShould extends StatementParseTest
 	}
 
 	@Test
+	void parseFindWithLabel()
+	{
+		var findStatement = assertParsesSingleStatement("""
+			F1. FIND THE-VIEW WITH THE-DESCRIPTOR = 'Asd'
+			    IGNORE
+			END-FIND
+			""", IFindNode.class);
+
+		assertHasStatementLabel(findStatement, "F1.");
+	}
+
+	@Test
 	void parseFindWithSetName()
 	{
 		var findStatement = assertParsesSingleStatement("""
@@ -1201,6 +1225,18 @@ class StatementListParserShould extends StatementParseTest
 		assertThat(read.readSequence().isPhysicalSequence()).isTrue();
 		assertThat(read.readSequence().isIsnSequence()).isFalse();
 		assertThat(read.readSequence().isLogicalSequence()).isFalse();
+	}
+
+	@Test
+	void parseReadWithStatementLabel()
+	{
+		var read = assertParsesSingleStatement("""
+			R1. READ THE-VIEW
+			IGNORE
+			END-READ
+			""", IReadNode.class);
+
+		assertHasStatementLabel(read, "R1.");
 	}
 
 	@ParameterizedTest
@@ -1394,6 +1430,13 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var get = assertParsesSingleStatement("GET %s".formatted(statement), IGetNode.class);
 		assertThat(get.view().token().symbolName()).isEqualTo("THE-VIEW");
+	}
+
+	@Test
+	void parseGetStatementWithLabelDeclaration()
+	{
+		var get = assertParsesSingleStatement("G1. GET THE-VIEW *ISN", IGetNode.class);
+		assertHasStatementLabel(get, "G1.");
 	}
 
 	@ParameterizedTest
@@ -2688,6 +2731,16 @@ class StatementListParserShould extends StatementParseTest
 			END-HISTOGRAM""", IHistogramNode.class);
 		assertThat(histogram.view().token().symbolName()).isEqualTo("THE-VIEW");
 		assertThat(histogram.descriptor().symbolName()).isEqualTo("THE-DESC");
+	}
+
+	@Test
+	void parseAHistogramWithLabel()
+	{
+		var histogram = assertParsesSingleStatement("""
+			H1. HISTOGRAM THE-VIEW PASSWORD='password' THE-DESC STARTING FROM 'M'
+			IGNORE
+			END-HISTOGRAM""", IHistogramNode.class);
+		assertHasStatementLabel(histogram, "H1.");
 	}
 
 	@Test
@@ -4230,8 +4283,7 @@ class StatementListParserShould extends StatementParseTest
 	void parseLabelsAsPartOfStatements()
 	{
 		var setTime = assertParsesSingleStatement("TIME. SET TIME", ISetTimeNode.class);
-		assertThat(setTime.labelIdentifier().symbolName()).isEqualTo("TIME.");
-		assertThat(((ITokenNode) setTime.descendants().first()).token().kind()).isEqualTo(SyntaxKind.LABEL_IDENTIFIER);
+		assertHasStatementLabel(setTime, "TIME.");
 	}
 
 	@Test
@@ -4356,6 +4408,13 @@ class StatementListParserShould extends StatementParseTest
 	{
 		var store = assertParsesSingleStatement("STORE MY-VIEW %s".formatted(permutation), IStoreStatementNode.class);
 		assertThat(store.cipher()).isNotNull();
+	}
+
+	@Test
+	void parseStoreStatementWithLabel()
+	{
+		var store = assertParsesSingleStatement("S1. STORE MY-VIEW", IStoreStatementNode.class);
+		assertHasStatementLabel(store, "S1.");
 	}
 
 	@ParameterizedTest
