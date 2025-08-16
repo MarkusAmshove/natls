@@ -1,5 +1,6 @@
 plugins {
 	id 'java-library'
+    id 'jvm-test-suite'
 	id 'org.sonarqube' version '6.2.0.5505'
 	id 'com.diffplug.spotless' version '6.2.0'
     id 'signing'
@@ -84,14 +85,27 @@ subprojects {
 		testImplementation('org.junit.jupiter:junit-jupiter')
 	}
 
-	test {
-		useJUnitPlatform()
-		testLogging {
-			events "skipped", "failed"
-			testLogging.showStandardStreams = true
-			testLogging.exceptionFormat = 'full'
-		}
-	}
+    testing {
+        suites {
+            test {
+                useJUnitJupiter()
+            }
+
+            configureEach {
+                targets {
+                    all {
+                        testTask.configure {
+                            testLogging {
+                                events "skipped", "failed"
+                                showStandardStreams = true
+                                exceptionFormat = 'full'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
 	jacocoTestReport {
 		reports {

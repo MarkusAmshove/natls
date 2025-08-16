@@ -7,6 +7,7 @@ import org.sonar.api.server.rule.RulesDefinitionXmlLoader;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
+@SuppressWarnings("deprecation")
 public class NaturalRuleRepository implements RulesDefinition
 {
 	public static final String REPOSITORY = "natural-rule-repository";
