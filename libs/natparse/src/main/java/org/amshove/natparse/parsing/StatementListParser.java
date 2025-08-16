@@ -244,6 +244,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					case STOP:
 						statementList.addStatement(stop());
 						break;
+					case STORE:
+						statementList.addStatement(store());
+						break;
 					case INCLUDE:
 						statementList.addStatement(include());
 						break;
@@ -535,6 +538,45 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		}
 
 		return statementList;
+	}
+
+	private StatementNode store() throws ParseError
+	{
+		var store = new StoreStatementNode();
+		consumeMandatory(store, SyntaxKind.STORE);
+		consumeOptionally(store, SyntaxKind.RECORD);
+		consumeOptionally(store, SyntaxKind.IN);
+		consumeOptionally(store, SyntaxKind.FILE);
+
+		var viewReference = consumeVariableReferenceNode(store);
+		store.setViewReference(viewReference);
+
+		if (consumeOptionally(store, SyntaxKind.PASSWORD))
+		{
+			consumeMandatory(store, SyntaxKind.EQUALS_SIGN);
+			var password = consumeOperandNode(store);
+			store.setPassword(password);
+		}
+
+		if (consumeOptionally(store, SyntaxKind.CIPHER))
+		{
+			consumeMandatory(store, SyntaxKind.EQUALS_SIGN);
+			var cipher = consumeOperandNode(store);
+			store.setCipher(cipher);
+		}
+
+		if (consumeEitherOptionally(store, SyntaxKind.USING, SyntaxKind.GIVING))
+		{
+			consumeMandatory(store, SyntaxKind.KW_NUMBER);
+			consumeOperandNode(store);
+		}
+		else
+			if (consumeOptionally(store, SyntaxKind.KW_NUMBER))
+			{
+				consumeOperandNode(store);
+			}
+
+		return store;
 	}
 
 	private StatementNode runStatement() throws ParseError

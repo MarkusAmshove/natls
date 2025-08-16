@@ -66,6 +66,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("deprecation")
 public class NaturalLanguageService implements LanguageClientAware
 {
 	private static final Logger log = Logger.getAnonymousLogger();
