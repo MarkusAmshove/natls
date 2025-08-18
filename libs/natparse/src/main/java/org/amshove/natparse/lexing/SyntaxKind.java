@@ -668,7 +668,7 @@ public enum SyntaxKind
 	SECOND(true, false, false),
 	SELECTION(true, false, false),
 	SENSITIVE(true, false, false),
-	SEPARATE(true, false, false),
+	SEPARATE(false, false, false),
 	SEQUENCE(true, false, false),
 	SERVER(true, false, false),
 	SETS(true, false, false),
