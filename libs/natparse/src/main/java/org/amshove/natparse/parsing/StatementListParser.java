@@ -249,6 +249,9 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(fetch);
 						externalModuleReferences.add(fetch);
 						break;
+					case PARSE:
+						statementList.addStatement(parseXml());
+						break;
 					case MULTIPLY:
 						statementList.addStatement(multiply());
 						break;
@@ -2653,6 +2656,45 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		consumeMandatory(limit, SyntaxKind.LIMIT);
 		limit.setLimit(consumeNonConcatLiteralNode(limit, SyntaxKind.NUMBER_LITERAL));
 		return limit;
+	}
+
+	private StatementNode parseXml() throws ParseError
+	{
+		var parseXml = new ParseXmlStatementNode();
+
+		consumeMandatory(parseXml, SyntaxKind.PARSE);
+		consumeMandatory(parseXml, SyntaxKind.XML);
+
+		parseXml.setXmlDocument(consumeOperandNode(parseXml));
+
+		consumeOptionally(parseXml, SyntaxKind.INTO);
+		if (consumeOptionally(parseXml, SyntaxKind.PATH))
+		{
+			parseXml.setXmlElementPath(consumeOperandNode(parseXml));
+		}
+
+		if (consumeOptionally(parseXml, SyntaxKind.NAME))
+		{
+			parseXml.setXmlElementName(consumeOperandNode(parseXml));
+		}
+
+		if (consumeOptionally(parseXml, SyntaxKind.VALUE))
+		{
+			parseXml.setXmlElementValue(consumeOperandNode(parseXml));
+		}
+
+		consumeOptionally(parseXml, SyntaxKind.NORMALIZE);
+		if (consumeOptionally(parseXml, SyntaxKind.NAMESPACE))
+		{
+			parseXml.setXmlNamespace(consumeOperandNode(parseXml));
+			consumeMandatory(parseXml, SyntaxKind.PREFIX);
+			parseXml.setXmlPrefix(consumeOperandNode(parseXml));
+		}
+
+		parseXml.setBody(statementList(SyntaxKind.END_PARSE));
+		consumeMandatory(parseXml, SyntaxKind.END_PARSE);
+
+		return parseXml;
 	}
 
 	private StatementNode defineWindow() throws ParseError
