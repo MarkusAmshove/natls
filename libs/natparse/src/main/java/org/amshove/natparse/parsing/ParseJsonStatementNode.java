@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.IParseJsonStatementNode;
 
@@ -60,6 +61,12 @@ class ParseJsonStatementNode extends StatementWithBodyNode implements IParseJson
 	public IOperandNode subcode()
 	{
 		return subcode;
+	}
+
+	@Override
+	public ReadOnlyList<IOperandNode> mutations()
+	{
+		return ReadOnlyList.ofExcludingNull(jsonDocument, codePage, jsonPath, jsonPathSeparator, jsonAttributeName, jsonAttributeValue, giving, subcode);
 	}
 
 	void setJsonDocument(IOperandNode jsonDocument)
