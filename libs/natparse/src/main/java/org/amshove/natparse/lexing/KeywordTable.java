@@ -303,6 +303,7 @@ public class KeywordTable
 			case "is" -> SyntaxKind.IS;
 			case "isn" -> SyntaxKind.KW_ISN;
 			case "join" -> SyntaxKind.JOIN;
+			case "json" -> SyntaxKind.JSON;
 			case "just" -> SyntaxKind.JUST;
 			case "justified" -> SyntaxKind.JUSTIFIED;
 			case "kd" -> SyntaxKind.KD;
@@ -508,6 +509,7 @@ public class KeywordTable
 			case "send" -> SyntaxKind.SEND;
 			case "sensitive" -> SyntaxKind.SENSITIVE;
 			case "separate" -> SyntaxKind.SEPARATE;
+			case "separator" -> SyntaxKind.SEPARATOR;
 			case "sequence" -> SyntaxKind.SEQUENCE;
 			case "server" -> SyntaxKind.SERVER;
 			case "set" -> SyntaxKind.SET;
@@ -544,6 +546,7 @@ public class KeywordTable
 			case "step" -> SyntaxKind.STEP;
 			case "stop" -> SyntaxKind.STOP;
 			case "store" -> SyntaxKind.STORE;
+			case "subcode" -> SyntaxKind.SUBCODE;
 			case "subprogram" -> SyntaxKind.SUBPROGRAM;
 			case "subprograms" -> SyntaxKind.SUBPROGRAMS;
 			case "subroutine" -> SyntaxKind.SUBROUTINE;

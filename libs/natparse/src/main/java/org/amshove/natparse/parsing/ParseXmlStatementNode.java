@@ -1,5 +1,6 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.ReadOnlyList;
 import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.IParseXmlStatementNode;
 
@@ -46,6 +47,12 @@ class ParseXmlStatementNode extends StatementWithBodyNode implements IParseXmlSt
 	public IOperandNode xmlPrefix()
 	{
 		return xmlPrefix;
+	}
+
+	@Override
+	public ReadOnlyList<IOperandNode> mutations()
+	{
+		return ReadOnlyList.ofExcludingNull(xmlDocument, xmlElementPath, xmlElementName, xmlElementValue, xmlNamespace, xmlPrefix);
 	}
 
 	void setXmlDocument(IOperandNode xmlDocument)

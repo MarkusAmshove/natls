@@ -5,9 +5,9 @@ This document tracks the implementation status of Natural statements.
 Legend:
 
 
-:x: - not implemented (23)
+:x: - not implemented (22)
 
-:white_check_mark: - implemented or reporting (94)
+:white_check_mark: - implemented or reporting (95)
 
 | Statement | Status               |
 | --- |----------------------|
@@ -79,8 +79,8 @@ Legend:
 | ON ERROR | :white_check_mark:   |
 | OPEN CONVERSATION | :white_check_mark:   |
 | OPTIONS | :white_check_mark:   |
-| PARSE XML | :white_check_mark:       |
-| PARSE JSON | :x:                  |
+| PARSE XML | :white_check_mark:   |
+| PARSE JSON | :white_check_mark:   |
 | PASSW | :white_check_mark:   |
 | PERFORM | :white_check_mark:   |
 | PERFORM BREAK PROCESSING | :white_check_mark:   |
