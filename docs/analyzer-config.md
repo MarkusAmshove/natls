@@ -16,6 +16,7 @@ The following configurations can be set in a `.editorconfig` file to configure p
 | `natls.style.discourage_hidden_dbms`          | `true`, `false` | [`NL035`](../tools/ruletranslator/src/main/resources/rules/NL035)|
 | `natls.style.discourage_long_literals`        | `true`, `false` | [`NL038`](../tools/ruletranslator/src/main/resources/rules/NL038)|
 | `natls.style.discourage_lowercase_code`       | `true`, `false` | [`NL039`](../tools/ruletranslator/src/main/resources/rules/NL039)|
+| `natls.style.in_out_groups`                   | `true`, `false` | [`NL041`](../tools/ruletranslator/src/main/resources/rules/NL041)|
 
 # Example
 

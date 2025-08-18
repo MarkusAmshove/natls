@@ -27,6 +27,11 @@ public non-sealed interface IVariableNode extends IReferencableNode, IParameterD
 		return dimensions != null && !dimensions.isEmpty();
 	}
 
+	default boolean isGroup()
+	{
+		return this instanceof IGroupNode;
+	}
+
 	/**
 	 * Returns a list of all parent groups in descending (by level) order.
 	 **/
