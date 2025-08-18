@@ -59,9 +59,8 @@ public class PdaStructureAnalyzer extends AbstractAnalyzer
 		}
 
 		var pdaName = context.getModule().file().getOriginalName();
-		var levelOneVariables = defineData.defineData().variables().stream().filter(v -> v.level() == 1).count();
 
-		if (levelOneVariables > 1)
+		if (defineData.defineData().variables().stream().filter(v -> v.level() == 1).count() > 1)
 		{
 			context.report(
 				PDA_STRUCTURE_DIAGNOSTIC.createFormattedDiagnostic(
@@ -77,7 +76,6 @@ public class PdaStructureAnalyzer extends AbstractAnalyzer
 		{
 			if (variable.level() == 1 && !variable.name().equalsIgnoreCase(pdaName))
 			{
-				System.out.println("Level 1 variable name mismatch: " + variable.name() + " vs " + pdaName);
 				context.report(
 					PDA_STRUCTURE_DIAGNOSTIC.createFormattedDiagnostic(
 						variable.diagnosticPosition(), "Level 1 group name should match the PDA name"
@@ -85,40 +83,34 @@ public class PdaStructureAnalyzer extends AbstractAnalyzer
 				);
 			}
 
-			if (variable.level() == 2)
+			if (variable.level() == 2 && (!variable.isGroup() || variable.isArray()))
 			{
-				if (!variable.isGroup() || variable.isArray())
-				{
-					context.report(
-						PDA_STRUCTURE_DIAGNOSTIC.createFormattedDiagnostic(
-							variable.diagnosticPosition(),
-							"Level 2 must be a group, and not an array group"
-						)
-					);
-				}
-				else
-				{
-					if (!variable.name().toUpperCase().startsWith(pdaName.toUpperCase()))
-					{
-						context.report(
-							PDA_STRUCTURE_DIAGNOSTIC.createFormattedDiagnostic(
-								variable.diagnosticPosition(),
-								"Level 2 group name should start with PDA name: " + pdaName
-							)
-						);
-					}
-				}
+				context.report(
+					PDA_STRUCTURE_DIAGNOSTIC.createFormattedDiagnostic(
+						variable.diagnosticPosition(),
+						"Level 2 must be a group, and not an array group"
+					)
+				);
+			}
+
+			if (variable.level() == 2 && !variable.name().toUpperCase().startsWith(pdaName.toUpperCase()))
+			{
+				context.report(
+					PDA_STRUCTURE_DIAGNOSTIC.createFormattedDiagnostic(
+						variable.diagnosticPosition(),
+						"Level 2 group name should start with PDA name: " + pdaName
+					)
+				);
 			}
 
 			var hasSuffix = ALLOWED_GROUP_SUFFIXES.stream().anyMatch(suffix -> variable.name().endsWith(suffix));
-			if (variable.level() == 2 && variable.isGroup() && !hasSuffix)
+			if (variable.level() == 2 && !hasSuffix)
 			{
 				context.report(
 					PDA_STRUCTURE_DIAGNOSTIC.createFormattedDiagnostic(
 						variable.diagnosticPosition(), "Level 2 groups should have one of these suffixes: " + String.join(", ", ALLOWED_GROUP_SUFFIXES)
 					)
 				);
-				continue;
 			}
 		}
 	}

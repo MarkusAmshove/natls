@@ -1,7 +1,6 @@
 package org.amshove.natlint.analyzers;
 
 import org.amshove.natlint.linter.AbstractAnalyzerTest;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -56,7 +55,7 @@ class PdaStructureAnalyzerShould extends AbstractAnalyzerTest
 		);
 	}
 
-	@Disabled
+	@Test
 	void raiseADiagnosticIfLevel2NameMismatch()
 	{
 		configureEditorConfig("""
@@ -72,7 +71,7 @@ class PdaStructureAnalyzerShould extends AbstractAnalyzerTest
 			3 #VAR1 (A20)
 			END-DEFINE
 			""",
-			expectDiagnostic(2, PdaStructureAnalyzer.PDA_STRUCTURE_DIAGNOSTIC, "Level 2 group name should have one of these suffixes: -OUT, -IN, -INOUT")
+			expectDiagnostic(2, PdaStructureAnalyzer.PDA_STRUCTURE_DIAGNOSTIC, "Level 2 group name should start with PDA name: PDANAME")
 		);
 	}
 
