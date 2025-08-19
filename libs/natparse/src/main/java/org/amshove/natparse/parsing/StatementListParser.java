@@ -255,6 +255,16 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 						statementList.addStatement(fetch);
 						externalModuleReferences.add(fetch);
 						break;
+					case PARSE:
+						if (peekKind(1, SyntaxKind.XML))
+						{
+							statementList.addStatement(parseXml());
+						}
+						else
+						{
+							statementList.addStatement(parseJson());
+						}
+						break;
 					case MULTIPLY:
 						statementList.addStatement(multiply());
 						break;
@@ -2677,6 +2687,98 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return limit;
 	}
 
+	private StatementNode parseXml() throws ParseError
+	{
+		var parseXml = new ParseXmlStatementNode();
+
+		consumeMandatory(parseXml, SyntaxKind.PARSE);
+		consumeMandatory(parseXml, SyntaxKind.XML);
+
+		parseXml.setXmlDocument(consumeOperandNode(parseXml));
+
+		consumeOptionally(parseXml, SyntaxKind.INTO);
+		if (consumeOptionally(parseXml, SyntaxKind.PATH))
+		{
+			parseXml.setXmlElementPath(consumeOperandNode(parseXml));
+		}
+
+		if (consumeOptionally(parseXml, SyntaxKind.NAME))
+		{
+			parseXml.setXmlElementName(consumeOperandNode(parseXml));
+		}
+
+		if (consumeOptionally(parseXml, SyntaxKind.VALUE))
+		{
+			parseXml.setXmlElementValue(consumeOperandNode(parseXml));
+		}
+
+		consumeOptionally(parseXml, SyntaxKind.NORMALIZE);
+		if (consumeOptionally(parseXml, SyntaxKind.NAMESPACE))
+		{
+			parseXml.setXmlNamespace(consumeOperandNode(parseXml));
+			consumeMandatory(parseXml, SyntaxKind.PREFIX);
+			parseXml.setXmlPrefix(consumeOperandNode(parseXml));
+		}
+
+		parseXml.setBody(statementList(SyntaxKind.END_PARSE));
+		consumeMandatory(parseXml, SyntaxKind.END_PARSE);
+
+		return parseXml;
+	}
+
+	private StatementNode parseJson() throws ParseError
+	{
+		var json = new ParseJsonStatementNode();
+		consumeMandatory(json, SyntaxKind.PARSE);
+		consumeMandatory(json, SyntaxKind.JSON);
+		json.setJsonDocument(consumeOperandNode(json));
+
+		if (consumeOptionally(json, SyntaxKind.ENCODED))
+		{
+			consumeOptionally(json, SyntaxKind.IN);
+			consumeMandatory(json, SyntaxKind.CODEPAGE);
+			json.setCodePage(consumeOperandNode(json));
+		}
+
+		if (consumeOptionally(json, SyntaxKind.INTO))
+		{
+			if (consumeOptionally(json, SyntaxKind.PATH))
+			{
+				json.setJsonPath(consumeOperandNode(json));
+			}
+
+			if (consumeOptionally(json, SyntaxKind.WITH))
+			{
+				consumeMandatory(json, SyntaxKind.SEPARATOR);
+				json.setJsonPathSeparator(consumeOperandNode(json));
+			}
+
+			if (consumeOptionally(json, SyntaxKind.NAME))
+			{
+				json.setJsonAttributeName(consumeOperandNode(json));
+			}
+
+			if (consumeOptionally(json, SyntaxKind.VALUE))
+			{
+				json.setJsonAttributeValue(consumeOperandNode(json));
+			}
+		}
+
+		if (consumeOptionally(json, SyntaxKind.GIVING))
+		{
+			json.setGiving(consumeOperandNode(json));
+			if (consumeOptionally(json, SyntaxKind.SUBCODE))
+			{
+				json.setSubcode(consumeOperandNode(json));
+			}
+		}
+
+		json.setBody(statementList(SyntaxKind.END_PARSE));
+		consumeMandatory(json, SyntaxKind.END_PARSE);
+
+		return json;
+	}
+
 	private StatementNode defineWindow() throws ParseError
 	{
 		var window = new DefineWindowNode();
@@ -5049,7 +5151,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 			case ACCEPT, ADD, ASSIGN, BEFORE, BACKOUT, CALL, CALLNAT, CLOSE, COMMIT, COMPOSE, COMPRESS, COMPUTE, DECIDE, DEFINE, DELETE, DISPLAY, DIVIDE, DO, DOEND, DOWNLOAD, EJECT, END, ESCAPE, EXAMINE, EXPAND, FETCH, FIND, FOR, FORMAT, GET, HISTOGRAM, IF, IGNORE, INCLUDE, INPUT, INSERT, INTERFACE, LOOP, METHOD, MOVE, MULTIPLY, NEWPAGE, OBTAIN, OPTIONS, PASSW, PERFORM, PRINT, PROCESS, PROPERTY, READ, REDEFINE, REDUCE, REINPUT, REJECT, RELEASE, REPEAT, RESET, RESIZE, RETRY, ROLLBACK, RUN, SELECT, SEPARATE, SET, SKIP, SORT, STACK, STOP, STORE, SUBTRACT, TERMINATE, UPDATE, WRITE, INCDIR, RULEVAR -> true;
 			case ON -> peekKind(1, SyntaxKind.ERROR);
 			case OPEN -> peekKind(1, SyntaxKind.CONVERSATION);
-			case PARSE -> peekKind(1, SyntaxKind.XML);
+			case PARSE -> peekKind(1, SyntaxKind.XML) || peekKind(1, SyntaxKind.JSON);
 			case REQUEST -> peekKind(1, SyntaxKind.DOCUMENT);
 			case SEND -> peekKind(1, SyntaxKind.METHOD);
 			case LIMIT -> peekKind(1, SyntaxKind.NUMBER_LITERAL);
