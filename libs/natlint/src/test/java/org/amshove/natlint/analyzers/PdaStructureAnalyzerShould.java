@@ -3,6 +3,7 @@ package org.amshove.natlint.analyzers;
 import org.amshove.natlint.linter.AbstractAnalyzerTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class PdaStructureAnalyzerShould extends AbstractAnalyzerTest
@@ -32,6 +33,29 @@ class PdaStructureAnalyzerShould extends AbstractAnalyzerTest
 			END-DEFINE
 			""",
 			expectDiagnostic(0, PdaStructureAnalyzer.PDA_STRUCTURE_DIAGNOSTIC, "PDAs should only have one Level 1 group")
+		);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"(A10)", "(L)", "(P3)"
+	})
+	void raiseADiagnosticIfLevel1NotAGroupAndNotAnArrayGroup(String suffix)
+	{
+		configureEditorConfig("""
+			[*]
+			natls.style.in_out_groups=true
+			""");
+
+		testDiagnostics(
+			"PDANAME.NSA", """
+   			DEFINE DATA PARAMETER
+   			1 PDANAME %s
+     		2 PDANAME-IN
+        	3 #VAR (A1)
+   			END-DEFINE
+			""".formatted(suffix), expectDiagnostic(1, PdaStructureAnalyzer.PDA_STRUCTURE_DIAGNOSTIC, "Level 1 must be a group, and not an array group")
 		);
 	}
 
@@ -80,7 +104,7 @@ class PdaStructureAnalyzerShould extends AbstractAnalyzerTest
 	{
 		"(1:10)", "(20)", "(A10)", "(L)", "(P3/1:10, 2:20)"
 	})
-	void raiseADiagnosticIfNotAGroupButNotAnArrayGroup(String suffix)
+	void raiseADiagnosticIfLevel2NotAGroupAndNotAnArrayGroup(String suffix)
 	{
 		configureEditorConfig("""
 			[*]
@@ -141,6 +165,36 @@ class PdaStructureAnalyzerShould extends AbstractAnalyzerTest
         	3 #VAR (A1)
    			END-DEFINE
    			""".formatted(suffix), expectNoDiagnosticOfType(PdaStructureAnalyzer.PDA_STRUCTURE_DIAGNOSTIC)
+		);
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+		{
+			"-IN, -OUT",
+			"-IN, -INOUT",
+			"-OUT, -IN",
+			"-OUT, -INOUT",
+			"-OUT, -IN",
+		}
+	)
+	void raiseNoDiagnosticForTwoValidStructures(String suffix1, String suffix2)
+	{
+		configureEditorConfig("""
+			[*]
+			natls.style.in_out_groups=true
+			""");
+
+		testDiagnostics(
+			"PDANAME.NSA", """
+   			DEFINE DATA PARAMETER
+   			1 PDANAME
+     		2 PDANAME%s
+        	3 #VAR1 (A1)
+     		2 PDANAME%s
+        	3 #VAR2 (A1)
+			END-DEFINE
+   			""".formatted(suffix1, suffix2), expectNoDiagnosticOfType(PdaStructureAnalyzer.PDA_STRUCTURE_DIAGNOSTIC)
 		);
 	}
 }

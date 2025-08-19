@@ -83,12 +83,13 @@ public class PdaStructureAnalyzer extends AbstractAnalyzer
 				);
 			}
 
-			if (variable.level() == 2 && (!variable.isGroup() || variable.isArray()))
+			System.out.println("Analyzing variable: " + variable.name() + " at level " + variable.level() + "isGroup: " + variable.isGroup() + " isArray: " + variable.isArray());
+			if (variable.level() < 3 && (!variable.isGroup() || variable.isArray()))
 			{
 				context.report(
 					PDA_STRUCTURE_DIAGNOSTIC.createFormattedDiagnostic(
 						variable.diagnosticPosition(),
-						"Level 2 must be a group, and not an array group"
+						"Level %d must be a group, and not an array group".formatted(variable.level())
 					)
 				);
 			}
