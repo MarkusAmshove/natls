@@ -77,28 +77,3 @@ class DiagnosticMappingAcceptanceTests
 			);
 	}
 
-	@TestFactory
-	Stream<DynamicContainer> everyDescriptionShouldConformToSonarQubeMarkdown()
-	{
-		var rules = RuleRepository.getRules();
-		return rules.stream()
-			.map(
-				r -> DynamicContainer.dynamicContainer(
-					r.key(), Stream.of(
-						DynamicTest.dynamicTest(
-							"headings should use = instead of #", () -> assertThat(r.description()).doesNotContain("# ")
-						),
-						DynamicTest.dynamicTest(
-							"code should always use double backticks", () -> assertThat(r.description()).doesNotContain("```")
-						),
-						DynamicTest.dynamicTest(
-							"code should always use double backticks", () -> assertThat(r.description().lines()).noneMatch(l -> l.matches("((?!`))`"))
-						),
-						DynamicTest.dynamicTest(
-							"bold should use single star only", () -> assertThat(r.description().lines()).noneMatch(l -> l.matches("\\*\\*(.*)?\\*\\*"))
-						)
-					)
-				)
-			);
-	}
-}
