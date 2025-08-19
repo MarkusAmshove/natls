@@ -3,6 +3,6 @@ priority: BLOCKER
 tags: compile-time
 type: BUG
 description:
-A ``COMPRESS`` statement can not specify both ``LEAVING NO`` and ``WITH DELIMITERS``.
+A `COMPRESS` statement can not specify both `LEAVING NO` and `WITH DELIMITERS`.
 
-``WITH DELIMITERS`` already implies ``LEAVING NO``.
+`WITH DELIMITERS` already implies `LEAVING NO`.

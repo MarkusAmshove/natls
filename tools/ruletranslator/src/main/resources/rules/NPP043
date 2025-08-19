@@ -5,4 +5,4 @@ type: BUG
 description:
 Statements where this diagnostic appears can't have an empty body.
 
-Add ``IGNORE`` as a single statement to the body or remove the statement.
+Add `IGNORE` as a single statement to the body or remove the statement.

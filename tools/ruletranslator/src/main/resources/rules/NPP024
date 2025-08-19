@@ -3,12 +3,12 @@ priority: BLOCKER
 tags: natparse-internal,compile-time
 type: BUG
 description:
-A redefinition can't contain a variable with ``DYNAMIC`` length.
+A redefinition can't contain a variable with `DYNAMIC` length.
 
-== Invalid
+## Invalid
 
-``
+```natural
 1 #VAR (A50)
 1 REDEFINE #VAR
 2 #REST (A) DYNAMIC /* DYNAMIC not allowed here
-``
+```

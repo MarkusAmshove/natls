@@ -3,5 +3,5 @@ priority: MAJOR
 tags: pitfall,confusing
 type: BUG
 description:
-The result of this test is ignored by NatUnit, because it is not placed within the ``TEST`` subroutine.
-The outcome of this test will always be ``SKIPPED``.
+The result of this test is ignored by NatUnit, because it is not placed within the `TEST` subroutine.
+The outcome of this test will always be `SKIPPED`.

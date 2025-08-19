@@ -3,4 +3,4 @@ priority: BLOCKER
 tags: compile-time
 type: BUG
 description:
-Extended relational expression only works with ``=``, ``EQ``, ``EQUAL`` and ``EQUAL TO``
+Extended relational expression only works with `=`, `EQ`, `EQUAL` and `EQUAL TO`

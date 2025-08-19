@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 public record SonarRule(String key, String name, String description, String priority, List<String> tags, String type)
 {
 
-	public String toXml()
+	public String toSonarRuleXml()
 	{
 		var tagsXml = tags.stream().map(t -> "<tag>%s</tag>".formatted(t)).collect(Collectors.joining("\n"));
 		return """
@@ -27,5 +27,22 @@ public record SonarRule(String key, String name, String description, String prio
 			tagsXml,
 			type
 		);
+	}
+
+	public String toDiagnosticDoc()
+	{
+		return """
+			---
+			id: %s
+			type: %s
+			priority: %s
+			tags:
+			%s
+			---
+			
+			### %s
+			
+			%s
+			""".formatted(key, type, priority, tags.stream().map(t -> "- " + t).collect(Collectors.joining("\n")), name, description);
 	}
 }

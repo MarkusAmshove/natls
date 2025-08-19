@@ -3,4 +3,4 @@ priority: BLOCKER
 tags: natparse-internal,compile-time
 type: BUG
 description:
-This statement expects to be ended, e.g. by ``END-IF``, ``END-SUBROUTINE``, etc.
+This statement expects to be ended, e.g. by `END-IF`, `END-SUBROUTINE`, etc.

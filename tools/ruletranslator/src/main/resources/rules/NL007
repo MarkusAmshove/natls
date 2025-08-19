@@ -3,16 +3,16 @@ priority: CRITICAL
 tags: convention, pitfall
 type: BUG
 description:
-NatUnit recognizes tests only with ``EQ``.
+NatUnit recognizes tests only with `EQ`.
 
-== Invalid
+## Invalid
 
-``
+```natural
 IF NUTESTP.TEST = 'My fancy test'
-``
+```
 
-== Valid
+## Valid
 
-``
+```
 IF NUTESTP.TEST EQ 'My fancy test'
-``
+```

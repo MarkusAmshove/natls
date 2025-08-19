@@ -5,4 +5,4 @@ type: BUG
 description:
 The module that has been referenced here has an invalid type.
 
-This is raised e.g. when ``PARAMETER USING`` a LDA etc.
+This is raised e.g. when `PARAMETER USING` a LDA etc.

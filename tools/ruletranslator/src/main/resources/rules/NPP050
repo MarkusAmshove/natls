@@ -7,6 +7,6 @@ The given variable scope is not valid for the file type.
 
 Inside a data area only scopes matching the file type are allowed:
 
-- ``LOCAL``for LDAs
-- ``PARAMETER``for PDAs
-- ``GLOBAL``for GDAs
+- `LOCAL` for LDAs
+- `PARAMETER` for PDAs
+- `GLOBAL` for GDAs

@@ -3,7 +3,7 @@ priority: MINOR
 tags: bad-practice, confusing
 type: CODE_SMELL
 description:
-A function is referred to its name from ``DEFINE FUNCTION``, which technically allows its referable name to be different than the file name.
+A function is referred to its name from `DEFINE FUNCTION`, which technically allows its referable name to be different than the file name.
 
 However, this might lead to confusion when searching for functions.
 

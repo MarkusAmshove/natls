@@ -13,5 +13,8 @@ application {
 }
 
 run {
-    args = ["${project(':natqube').sourceSets.main.resources.srcDirs[0]}/rules.xml"]
+    args = [
+            "${project(':natqube').sourceSets.main.resources.srcDirs[0]}/rules.xml",
+            "${project.layout.buildDirectory.get()}/diagnostics/"
+    ]
 }

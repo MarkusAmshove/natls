@@ -3,4 +3,4 @@ priority: MAJOR
 tags: pitfall,confusing
 type: CODE_SMELL
 description:
-This condition always evaluates to ``true``.
+This condition always evaluates to `true`.

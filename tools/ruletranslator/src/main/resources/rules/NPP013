@@ -5,17 +5,17 @@ type: BUG
 description:
 Natural does not allow groups to be empty.
 
-== Invalid
+## Invalid
 
-``
+```natural
 LOCAL
 1 #GROUP
-``
+```
 
-== Valid
+## Valid
 
-``
+```natural
 LOCAL
 1 #GROUP
 2 #VAR (A10)
-``
+```
