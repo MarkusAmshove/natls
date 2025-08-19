@@ -1,10 +1,12 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.ReadOnlyList;
+import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.IParseXmlStatementNode;
+import org.jspecify.annotations.Nullable;
 
-class ParseXmlStatementNode extends StatementWithBodyNode implements IParseXmlStatementNode
+class ParseXmlStatementNode extends StatementWithBodyNode implements IParseXmlStatementNode, ILabelIdentifierSettable
 {
 	private IOperandNode xmlDocument;
 	private IOperandNode xmlElementPath;
@@ -12,6 +14,7 @@ class ParseXmlStatementNode extends StatementWithBodyNode implements IParseXmlSt
 	private IOperandNode xmlElementValue;
 	private IOperandNode xmlNamespace;
 	private IOperandNode xmlPrefix;
+	private SyntaxToken labelIdentifier;
 
 	@Override
 	public IOperandNode xmlDocument()
@@ -55,6 +58,12 @@ class ParseXmlStatementNode extends StatementWithBodyNode implements IParseXmlSt
 		return ReadOnlyList.ofExcludingNull(xmlDocument, xmlElementPath, xmlElementName, xmlElementValue, xmlNamespace, xmlPrefix);
 	}
 
+	@Override
+	public @Nullable SyntaxToken labelIdentifier()
+	{
+		return labelIdentifier;
+	}
+
 	void setXmlDocument(IOperandNode xmlDocument)
 	{
 		this.xmlDocument = xmlDocument;
@@ -83,5 +92,11 @@ class ParseXmlStatementNode extends StatementWithBodyNode implements IParseXmlSt
 	void setXmlPrefix(IOperandNode xmlPrefix)
 	{
 		this.xmlPrefix = xmlPrefix;
+	}
+
+	@Override
+	public void setLabelIdentifier(SyntaxToken labelIdentifier)
+	{
+		this.labelIdentifier = labelIdentifier;
 	}
 }

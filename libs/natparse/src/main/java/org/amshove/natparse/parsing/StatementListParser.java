@@ -2690,6 +2690,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private StatementNode parseXml() throws ParseError
 	{
 		var parseXml = new ParseXmlStatementNode();
+		addLabelIdentifierIfPresent(parseXml);
 
 		consumeMandatory(parseXml, SyntaxKind.PARSE);
 		consumeMandatory(parseXml, SyntaxKind.XML);
@@ -2729,6 +2730,8 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private StatementNode parseJson() throws ParseError
 	{
 		var json = new ParseJsonStatementNode();
+		addLabelIdentifierIfPresent(json);
+
 		consumeMandatory(json, SyntaxKind.PARSE);
 		consumeMandatory(json, SyntaxKind.JSON);
 		json.setJsonDocument(consumeOperandNode(json));
