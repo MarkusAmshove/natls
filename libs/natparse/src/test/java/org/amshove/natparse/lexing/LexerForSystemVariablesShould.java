@@ -181,13 +181,37 @@ class LexerForSystemVariablesShould extends AbstractLexerTest
 	@Test
 	void lexParseCol()
 	{
-		assertTokens("*PARSE-COL", token(SyntaxKind.PARSE_COL, "*PARSE-COL"));
+		assertTokens("*PARSE-COL", token(SyntaxKind.SV_PARSE_COL, "*PARSE-COL"));
 	}
 
 	@Test
 	void lexParseRow()
 	{
-		assertTokens("*PARSE-ROW", token(SyntaxKind.PARSE_ROW, "*PARSE-ROW"));
+		assertTokens("*PARSE-ROW", token(SyntaxKind.SV_PARSE_ROW, "*PARSE-ROW"));
+	}
+
+	@Test
+	void lexParseLevel()
+	{
+		assertTokens("*PARSE-LEVEL", token(SyntaxKind.SV_PARSE_LEVEL, "*PARSE-LEVEL"));
+	}
+
+	@Test
+	void lexParseType()
+	{
+		assertTokens("*PARSE-TYPE", token(SyntaxKind.SV_PARSE_TYPE, "*PARSE-TYPE"));
+	}
+
+	@Test
+	void lexParseIndex()
+	{
+		assertTokens("*PARSE-INDEX", token(SyntaxKind.SV_PARSE_INDEX, "*PARSE-INDEX"));
+	}
+
+	@Test
+	void lexParseNamespace()
+	{
+		assertTokens("*PARSE-NAMESPACE", token(SyntaxKind.SV_PARSE_NAMESPACE, "*PARSE-NAMESPACE"));
 	}
 
 	@Test

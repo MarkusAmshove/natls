@@ -719,12 +719,32 @@ public class Lexer
 		}
 		if (scanner.advanceIfIgnoreCase("PARSE-COL"))
 		{
-			createAndAdd(SyntaxKind.PARSE_COL);
+			createAndAdd(SyntaxKind.SV_PARSE_COL);
 			return;
 		}
 		if (scanner.advanceIfIgnoreCase("PARSE-ROW"))
 		{
-			createAndAdd(SyntaxKind.PARSE_ROW);
+			createAndAdd(SyntaxKind.SV_PARSE_ROW);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("PARSE-LEVEL"))
+		{
+			createAndAdd(SyntaxKind.SV_PARSE_LEVEL);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("PARSE-TYPE"))
+		{
+			createAndAdd(SyntaxKind.SV_PARSE_TYPE);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("PARSE-INDEX"))
+		{
+			createAndAdd(SyntaxKind.SV_PARSE_INDEX);
+			return;
+		}
+		if (scanner.advanceIfIgnoreCase("PARSE-NAMESPACE"))
+		{
+			createAndAdd(SyntaxKind.SV_PARSE_NAMESPACE);
 			return;
 		}
 		if (scanner.advanceIfIgnoreCase("INIT-USER"))
