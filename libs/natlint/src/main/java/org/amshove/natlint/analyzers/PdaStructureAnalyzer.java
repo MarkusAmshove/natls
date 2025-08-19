@@ -83,7 +83,6 @@ public class PdaStructureAnalyzer extends AbstractAnalyzer
 				);
 			}
 
-			System.out.println("Analyzing variable: " + variable.name() + " at level " + variable.level() + "isGroup: " + variable.isGroup() + " isArray: " + variable.isArray());
 			if (variable.level() < 3 && (!variable.isGroup() || variable.isArray()))
 			{
 				context.report(
