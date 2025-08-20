@@ -1,0 +1,15 @@
+* >Natural Source Header 000000
+* :Mode S
+* :LineIncrement 10
+* <Natural Source Header
+DEFINE DATA LOCAL
+1 #I (I4)
+END-DEFINE
+
+INCLUDE FORLBL
+
+F1. FOR #I := 1 TO 10
+IGNORE
+END-FOR
+
+END

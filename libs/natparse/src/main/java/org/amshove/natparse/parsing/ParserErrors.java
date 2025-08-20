@@ -877,4 +877,22 @@ class ParserErrors
 		);
 		return diagnostic;
 	}
+
+	public static IDiagnostic misplacedStatementLabel(IPosition position)
+	{
+		return ParserDiagnostic.create(
+			"Statement Label not allowed here",
+			position,
+			ParserError.STATEMENT_LABEL_MISPLACED
+		);
+	}
+
+	public static IDiagnostic duplicatedStatementLabel(IPosition position, String label)
+	{
+		return ParserDiagnostic.create(
+			"Statement label %s is duplicated".formatted(label),
+			position,
+			ParserError.DUPLICATED_STATEMENT_LABEL
+		);
+	}
 }

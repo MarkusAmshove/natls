@@ -22,6 +22,18 @@ class ParseXmlStatementParsingShould extends StatementParseTest
 		assertThat(statement.body().statements()).hasSize(1);
 	}
 
+	@Test
+	void allowParseXmlToHaveAStatementLabel()
+	{
+		var statement = assertParsesSingleStatement("""
+			X1. PARSE XML #XML
+			    IGNORE
+			END-PARSE
+			""", IParseXmlStatementNode.class);
+
+		assertHasStatementLabel(statement, "X1.");
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{

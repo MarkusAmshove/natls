@@ -1,10 +1,12 @@
 package org.amshove.natparse.parsing;
 
 import org.amshove.natparse.ReadOnlyList;
+import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.IOperandNode;
 import org.amshove.natparse.natural.IParseJsonStatementNode;
+import org.jspecify.annotations.Nullable;
 
-class ParseJsonStatementNode extends StatementWithBodyNode implements IParseJsonStatementNode
+class ParseJsonStatementNode extends StatementWithBodyNode implements IParseJsonStatementNode, ILabelIdentifierSettable
 {
 	private IOperandNode jsonDocument;
 	private IOperandNode codePage;
@@ -14,6 +16,7 @@ class ParseJsonStatementNode extends StatementWithBodyNode implements IParseJson
 	private IOperandNode jsonAttributeValue;
 	private IOperandNode giving;
 	private IOperandNode subcode;
+	private SyntaxToken labelIdentifier;
 
 	@Override
 	public IOperandNode jsonDocument()
@@ -69,6 +72,12 @@ class ParseJsonStatementNode extends StatementWithBodyNode implements IParseJson
 		return ReadOnlyList.ofExcludingNull(jsonDocument, codePage, jsonPath, jsonPathSeparator, jsonAttributeName, jsonAttributeValue, giving, subcode);
 	}
 
+	@Override
+	public @Nullable SyntaxToken labelIdentifier()
+	{
+		return labelIdentifier;
+	}
+
 	void setJsonDocument(IOperandNode jsonDocument)
 	{
 		this.jsonDocument = jsonDocument;
@@ -107,5 +116,11 @@ class ParseJsonStatementNode extends StatementWithBodyNode implements IParseJson
 	void setSubcode(IOperandNode subcode)
 	{
 		this.subcode = subcode;
+	}
+
+	@Override
+	public void setLabelIdentifier(SyntaxToken labelIdentifier)
+	{
+		this.labelIdentifier = labelIdentifier;
 	}
 }

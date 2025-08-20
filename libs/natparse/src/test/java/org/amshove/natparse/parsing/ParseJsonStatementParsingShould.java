@@ -19,6 +19,18 @@ class ParseJsonStatementParsingShould extends StatementParseTest
 		assertIsVariableReference(json.jsonDocument(), "#JSON");
 	}
 
+	@Test
+	void allowParseJsonToHaveAStatementLabel()
+	{
+		var json = assertParsesSingleStatement("""
+			J1. PARSE JSON #JSON
+				IGNORE
+			END-PARSE
+			""", IParseJsonStatementNode.class);
+
+		assertHasStatementLabel(json, "J1.");
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings =
 	{

@@ -2,7 +2,7 @@ package org.amshove.natparse.natural;
 
 import org.jspecify.annotations.Nullable;
 
-public interface IParseXmlStatementNode extends IStatementWithBodyNode, IMutateVariables
+public interface IParseXmlStatementNode extends IStatementWithBodyNode, IMutateVariables, ILabelReferencable
 {
 	IOperandNode xmlDocument();
 
