@@ -191,7 +191,7 @@ public class AnsiDiagnosticSink implements IDiagnosticSink
 
 	private String dimmed(String text)
 	{
-		return (char)27 + "[2m" + text + ANSI_RESET;
+		return (char) 27 + "[2m" + text + ANSI_RESET;
 	}
 
 	private String pathWithLineInformation(IPosition position)
