@@ -3,4 +3,4 @@ priority: BLOCKER
 tags: natparse-internal,compile-time,runtime-error
 type: BUG
 description:
-data area or module does not seem to exist.
+External module or data area does not seem to exist or is not reachable from current library.

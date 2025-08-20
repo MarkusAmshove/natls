@@ -3,4 +3,4 @@ priority: MINOR
 tags: unused
 type: CODE_SMELL
 description:
-This rule is raised when there is a `USING` for a data area whose variables are not used.
+This rule is raised when a `USING` is declared but none of its variables are used.
