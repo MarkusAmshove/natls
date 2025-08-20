@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+import org.amshove.natparse.DiagnosticSeverity;
+
 public record DiagnosticRule(String id, String name, String description, String priority, List<String> tags, String type)
 {
 	public String toSonarRuleXml()
@@ -33,16 +35,59 @@ public record DiagnosticRule(String id, String name, String description, String 
 	{
 		var builder = new StringBuilder();
 		builder.append("---").append("\n");
-		builder.append("title: ").append(id).append("\n");
+		builder.append("title: \"").append(id).append(": ").append(name).append("\"\n");
 		builder.append("type: ").append(type.toLowerCase(Locale.ROOT)).append("\n");
 		builder.append("priority: ").append(priority.toLowerCase(Locale.ROOT)).append("\n");
 		builder.append("tags:").append("\n");
 		tags.stream().map("- %s \n"::formatted).forEach(builder::append);
 		builder.append("---").append("\n");
 		builder.append("\n");
-		builder.append("### ").append(id.toUpperCase(Locale.ROOT)).append(": ").append(name).append("\n");
+		builder.append(hextraBadge("type: " + type.toLowerCase(Locale.ROOT).replace("_", "-"), "info"));
+		builder.append(hextraPriorityBadge());
+		builder.append("\n\n");
+		builder.append(
+			tags.stream().map(t -> hextraBadge("#" + t, "", "/tags/" + t.toLowerCase(Locale.ROOT)))
+				.collect(Collectors.joining("\n"))
+		);
+		builder.append("\n");
+		builder.append("---").append("\n");
+		builder.append("\n");
+		builder.append("## Description").append("\n");
 		builder.append(description);
 
 		return builder.toString();
+	}
+
+	private String hextraPriorityBadge()
+	{
+		return hextraBadge("priority: " + priority.toLowerCase(Locale.ROOT), hextraPriorityType());
+	}
+
+	private String hextraBadge(String content, String type)
+	{
+		return hextraBadge(content, type, null);
+	}
+
+	private String hextraBadge(String content, String type, String url)
+	{
+		var badge = "{{< badge content=\"" + content + "\" type=\"" + type + "\"";
+		if (url != null)
+		{
+			badge += " link=\"" + url + "\"";
+		}
+		badge += " >}}\n";
+		return badge;
+	}
+
+	private String hextraPriorityType()
+	{
+		return switch (priority.toLowerCase(Locale.ROOT))
+		{
+			case "blocker" -> "error";
+			case "critical" -> "error";
+			case "major" -> "warning";
+			case "minor" -> "info";
+			default -> throw new RuntimeException("No priority mapping for: " + priority);
+		};
 	}
 }

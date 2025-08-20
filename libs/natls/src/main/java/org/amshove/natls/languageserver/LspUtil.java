@@ -18,6 +18,7 @@ import java.util.Locale;
 public class LspUtil
 {
 	private static final String DIAGNOSTIC_DESCRIPTION_ROOT_URL = "https://nat-ls.github.io/diagnostics/";
+
 	private LspUtil()
 	{}
 
