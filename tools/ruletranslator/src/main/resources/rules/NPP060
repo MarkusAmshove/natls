@@ -7,7 +7,7 @@ A statement label has to be unique within a module.
 
 This leads to a compile error:
 
-``
+```natural
 F1. FOR #I := 1 TO 10
     IGNORE
 END-FOR
@@ -15,11 +15,11 @@ END-FOR
 F1. FOR #I := 1 TO 10
     IGNORE
 END-FOR
-``
+```
 
 To fix this, you'd have to change one label.
 
-``
+```natural
 F1. FOR #I := 1 TO 10
     IGNORE
 END-FOR
@@ -28,4 +28,4 @@ END-FOR
 F2. FOR #I := 1 TO 10
     IGNORE
 END-FOR
-``
+```
