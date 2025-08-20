@@ -3396,6 +3396,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 				var nestedParser = new StatementListParser(moduleProvider);
 				nestedParser.currentModuleCallStack.addAll(this.currentModuleCallStack);
+				nestedParser.declaredStatementLabels.addAll(this.declaredStatementLabels);
 				nestedParser.relocateDiagnosticPosition(
 					shouldRelocateDiagnostics()
 						? relocatedDiagnosticPosition
@@ -3413,7 +3414,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				}
 
 				externalModuleReferences.addAll(nestedParser.externalModuleReferences);
-				declaredStatementLabels.addAll(nestedParser.declaredStatementLabels);
+				this.declaredStatementLabels.addAll(nestedParser.declaredStatementLabels);
 
 				unresolvedSymbols.addAll(nestedParser.unresolvedSymbols);
 				referencableNodes.addAll(nestedParser.referencableNodes);

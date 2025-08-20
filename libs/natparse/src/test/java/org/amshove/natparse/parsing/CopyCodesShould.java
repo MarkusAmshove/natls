@@ -5,6 +5,8 @@ import org.amshove.natparse.natural.output.IOutputOperandNode;
 import org.amshove.natparse.natural.project.NaturalProject;
 import org.amshove.testhelpers.ProjectName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
@@ -123,6 +125,18 @@ class CopyCodesShould extends ParserIntegrationTest
 	{
 		var subprogram = assertFileParsesAs(project.findModule("LIBONE", "ENDSUB"), ISubprogram.class);
 		assertThat(subprogram.diagnostics()).isNotEmpty();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings =
+	{
+		"LABELN", "LABELN2"
+	})
+	void carryOverStatementLabel(String moduleName, @ProjectName("copycodetests") NaturalProject project)
+	{
+		// LABELN has its INCLUDE before its own declared label
+		var subprogram = assertFileParsesAs(project.findModule("LIBONE", moduleName), ISubprogram.class);
+		assertThat(subprogram.diagnostics()).anyMatch(d -> d.id().equals(ParserError.DUPLICATED_STATEMENT_LABEL.id()));
 	}
 
 }
