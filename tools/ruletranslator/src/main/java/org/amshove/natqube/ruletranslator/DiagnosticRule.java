@@ -33,7 +33,7 @@ public record DiagnosticRule(String id, String name, String description, String 
 	{
 		var builder = new StringBuilder();
 		builder.append("---").append("\n");
-		builder.append("id: ").append(id).append("\n");
+		builder.append("title: ").append(id).append("\n");
 		builder.append("type: ").append(type.toLowerCase(Locale.ROOT)).append("\n");
 		builder.append("priority: ").append(priority.toLowerCase(Locale.ROOT)).append("\n");
 		builder.append("tags:").append("\n");
