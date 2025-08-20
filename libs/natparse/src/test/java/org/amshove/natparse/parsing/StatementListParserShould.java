@@ -4440,4 +4440,24 @@ class StatementListParserShould extends StatementParseTest
 		var store = assertParsesSingleStatement("STORE MY-VIEW (READ1.)", IStoreStatementNode.class);
 		assertThat(store.view().referencingToken().symbolName()).isEqualTo("MY-VIEW");
 	}
+
+	@Test
+	void raiseADiagnosticIfAStatementLabelIsDuplicated()
+	{
+		assertDiagnostic("""
+			DEFINE DATA LOCAL
+			1 #I (I4)
+			END-DEFINE
+			
+			F1. FOR #I := 1 TO 10
+			IGNORE
+			END-FOR
+			
+			F1. FOR #I := 1 TO 10
+			IGNORE
+			END-FOR
+			
+			END
+			""", ParserError.DUPLICATED_STATEMENT_LABEL);
+	}
 }

@@ -27,6 +27,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	private List<IReferencableNode> referencableNodes;
 
 	private final Set<String> currentModuleCallStack = new HashSet<>();
+	private final Set<String> declaredStatementLabels = new HashSet<>();
 
 	public List<IReferencableNode> getReferencableNodes()
 	{
@@ -892,6 +893,10 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		((BaseSyntaxNode) statement).addNode(tokenNode);
 
 		statement.setLabelIdentifier(previousToken);
+		if (!declaredStatementLabels.add(previousToken.source()))
+		{
+			report(ParserErrors.duplicatedStatementLabel(previousToken.diagnosticPosition(), previousToken.source()));
+		}
 	}
 
 	private StatementNode backout() throws ParseError
@@ -3408,6 +3413,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 				}
 
 				externalModuleReferences.addAll(nestedParser.externalModuleReferences);
+				declaredStatementLabels.addAll(nestedParser.declaredStatementLabels);
 
 				unresolvedSymbols.addAll(nestedParser.unresolvedSymbols);
 				referencableNodes.addAll(nestedParser.referencableNodes);
