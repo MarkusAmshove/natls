@@ -1,0 +1,8 @@
+name: Statement Label misplaced
+priority: BLOCKER
+tags: compile-time
+type: BUG
+description:
+A statement label (`MYLABEL.`) can not be placed here.
+
+Only statements causing a processing loop can be marked with a label.

@@ -2,7 +2,7 @@ package org.amshove.natparse.natural;
 
 import org.jspecify.annotations.Nullable;
 
-public interface IParseJsonStatementNode extends IStatementWithBodyNode, IMutateVariables
+public interface IParseJsonStatementNode extends IStatementWithBodyNode, IMutateVariables, ILabelReferencable
 {
 	IOperandNode jsonDocument();
 

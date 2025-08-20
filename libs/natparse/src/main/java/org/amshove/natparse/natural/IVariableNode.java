@@ -21,6 +21,11 @@ public non-sealed interface IVariableNode extends IReferencableNode, IParameterD
 
 	boolean isInView();
 
+	default boolean isGroup()
+	{
+		return this instanceof IGroupNode;
+	}
+
 	default boolean isArray()
 	{
 		var dimensions = dimensions();
