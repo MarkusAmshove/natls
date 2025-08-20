@@ -23,7 +23,7 @@ public class App
 		for (var rule : rules)
 		{
 			sonarRulesXml.append(rule.toSonarRuleXml()).append("\n");
-			Files.writeString(websiteDiagnosticFolder.resolve(rule.key() + ".md"), rule.toDiagnosticDoc(), StandardCharsets.UTF_8);
+			Files.writeString(websiteDiagnosticFolder.resolve(rule.id() + ".md"), rule.toWebsiteDocumentation(), StandardCharsets.UTF_8);
 		}
 
 		sonarRulesXml.append("\n</rules>");

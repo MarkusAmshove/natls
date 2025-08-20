@@ -50,7 +50,7 @@ class DiagnosticMappingAcceptanceTests
 		return rules.stream()
 			.map(
 				r -> DynamicContainer.dynamicContainer(
-					r.key(), Stream.of(
+					r.id(), Stream.of(
 						DynamicTest.dynamicTest(
 							"name should be filled", () -> assertThat(r.name()).isNotBlank()
 						),
