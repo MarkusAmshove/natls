@@ -13,11 +13,9 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Locale;
 
 public class LspUtil
 {
-	private static final String DIAGNOSTIC_DESCRIPTION_ROOT_URL = "https://nat-ls.github.io/diagnostics/";
 
 	private LspUtil()
 	{}
@@ -73,11 +71,7 @@ public class LspUtil
 			}
 		}
 
-		lspDiagnostic.setCodeDescription(
-			new DiagnosticCodeDescription(
-				DIAGNOSTIC_DESCRIPTION_ROOT_URL + diagnostic.id().toLowerCase(Locale.ROOT)
-			)
-		);
+		lspDiagnostic.setCodeDescription(new DiagnosticCodeDescription(diagnostic.descriptionUrl()));
 
 		lspDiagnostic.setData(positions);
 		return lspDiagnostic;
