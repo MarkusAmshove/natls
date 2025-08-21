@@ -74,9 +74,13 @@ public class DefinitionFinder
 	private List<Location> findStatementLabelDefinition(String labelName, LanguageServerFile file)
 	{
 
-		var foundDeclarations = new ArrayList<Location>();
+		if (!(file.module()instanceof IModuleWithBody withBody))
+		{
+			return List.of();
+		}
 
-		((IModuleWithBody) file.module()).body().acceptStatementVisitor(s ->
+		var foundDeclarations = new ArrayList<Location>();
+		withBody.acceptStatementVisitor(s ->
 		{
 			if (!(s instanceof ILabelReferencable referencable))
 			{
