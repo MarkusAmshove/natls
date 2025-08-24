@@ -15,6 +15,7 @@ import org.amshove.natls.codelens.CodeLensService;
 import org.amshove.natls.completion.CompletionProvider;
 import org.amshove.natls.config.IConfigChangedSubscriber;
 import org.amshove.natls.config.LSConfiguration;
+import org.amshove.natls.definition.DefinitionFinder;
 import org.amshove.natls.documentsymbol.DocumentSymbolProvider;
 import org.amshove.natls.folding.FoldingVisitor;
 import org.amshove.natls.hover.HoverContext;
@@ -86,6 +87,7 @@ public class NaturalLanguageService implements LanguageClientAware
 
 	private static LSConfiguration config = LSConfiguration.createDefault();
 	private final ReferenceFinder referenceFinder = new ReferenceFinder();
+	private final DefinitionFinder definitionFinder = new DefinitionFinder();
 	private final SignatureHelpProvider signatureHelp = new SignatureHelpProvider();
 	private CallHierarchyProvider callHierarchyProvider;
 	private CompletionProvider completionProvider;
@@ -248,40 +250,7 @@ public class NaturalLanguageService implements LanguageClientAware
 		var fileUri = params.getTextDocument().getUri();
 		var filePath = LspUtil.uriToPath(fileUri);
 		var file = findNaturalFile(filePath);
-		var position = params.getPosition();
-
-		var node = NodeUtil.findTokenNodeAtPosition(filePath, position.getLine(), position.getCharacter(), file.module().syntaxTree());
-		if (node == null)
-		{
-			return List.of();
-		}
-
-		if (node instanceof IVariableReferenceNode variableReferenceNode)
-		{
-			return List.of(LspUtil.toLocation(variableReferenceNode.reference()));
-		}
-
-		if (node.parent()instanceof ISymbolReferenceNode symbolReferenceNode)
-		{
-			return List.of(LspUtil.toLocation(symbolReferenceNode.reference()));
-		}
-
-		if (node.parent()instanceof IModuleReferencingNode moduleReferencingNode)
-		{
-			return List.of(LspUtil.toLocation(moduleReferencingNode.reference()));
-		}
-
-		if (node.token() != null && node.token().kind().opensStatementWithCloseKeyword())
-		{
-			return List.of(LspUtil.toLocation(node.parent().descendants().last()));
-		}
-
-		if (node.token() != null && node.token().kind().closesStatement())
-		{
-			return List.of(LspUtil.toLocation(node.parent().descendants().first()));
-		}
-
-		return List.of();
+		return definitionFinder.findDefinition(params, file);
 	}
 
 	public CompletableFuture<List<? extends Location>> findReferences(ReferenceParams params)

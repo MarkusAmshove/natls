@@ -6,6 +6,8 @@ import org.amshove.natls.project.LanguageServerFile;
 import org.amshove.natls.project.ModuleReferenceCache;
 import org.amshove.natls.project.ParseStrategy;
 import org.amshove.natparse.NodeUtil;
+import org.amshove.natparse.lexing.SyntaxKind;
+import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.*;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.eclipse.lsp4j.Location;
@@ -57,6 +59,11 @@ public class ReferenceFinder
 			);
 		}
 
+		if (tokenNode != null && tokenNode.token()instanceof SyntaxToken token && token.kind() == SyntaxKind.LABEL_IDENTIFIER)
+		{
+			references.addAll(findStatementLabelReferences(token.symbolName(), file.module().syntaxTree()));
+		}
+
 		var filetype = file.getType();
 		if (references.isEmpty() && filetype == NaturalFileType.COPYCODE)
 		{
@@ -92,6 +99,23 @@ public class ReferenceFinder
 		}
 
 		return references;
+	}
+
+	private List<Location> findStatementLabelReferences(String labelName, ISyntaxTree syntaxTree)
+	{
+		var locations = new ArrayList<Location>();
+
+		syntaxTree.acceptNodeVisitor(node ->
+		{
+			if (node instanceof ITokenNode tokenNode
+				&& tokenNode.token().kind() == SyntaxKind.LABEL_IDENTIFIER
+				&& tokenNode.token().symbolName().equals(labelName))
+			{
+				locations.add(LspUtil.toLocation(tokenNode.token()));
+			}
+		});
+
+		return locations;
 	}
 
 	private List<Location> resolveReferences(ReferenceParams params, IReferencableNode referencableNode)

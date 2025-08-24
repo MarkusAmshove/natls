@@ -203,4 +203,9 @@ class NaturalModule
 	{
 		return functionName;
 	}
+
+	public void acceptStatementVisitor(IStatementVisitor visitor)
+	{
+		body.acceptStatementVisitor(visitor);
+	}
 }

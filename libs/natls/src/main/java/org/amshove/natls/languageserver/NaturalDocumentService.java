@@ -10,7 +10,6 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.amshove.natls.SafeWrap.wrapSafe;
 
-@SuppressWarnings("deprecation")
 public class NaturalDocumentService implements TextDocumentService
 {
 	private NaturalLanguageService languageService;
@@ -32,7 +31,7 @@ public class NaturalDocumentService implements TextDocumentService
 		DefinitionParams params
 	)
 	{
-		return wrapSafe(() -> CompletableFuture.supplyAsync(() -> Either.forLeft(languageService.gotoDefinition(params))));
+		return wrapSafe(() -> CompletableFuture.completedFuture(Either.forLeft(languageService.gotoDefinition(params))));
 	}
 
 	@Override
@@ -55,7 +54,7 @@ public class NaturalDocumentService implements TextDocumentService
 			throw new RuntimeException("We currently support only full file sync");
 		}
 
-		var change = params.getContentChanges().get(0);
+		var change = params.getContentChanges().getFirst();
 		wrapSafe(() -> languageService.fileChanged(LspUtil.uriToPath(params.getTextDocument().getUri()), change.getText()));
 	}
 

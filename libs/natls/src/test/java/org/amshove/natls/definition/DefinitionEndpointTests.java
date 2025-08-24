@@ -303,6 +303,28 @@ class DefinitionEndpointTests extends LanguageServerTest
 	}
 
 	@Test
+	void definitionsShouldFindTheDefinitionFromAStatementLabelReference()
+	{
+		assertSingleDefinitionInSameModule(
+			"""
+				DEFINE DATA LOCAL
+				1 #I (I4)
+				END-DEFINE
+				PERFORM SUBR1
+				DEFINE SUBROUTINE SUBR1
+				F1. FOR #I := 1 TO 10
+				PERFORM SUBR2
+				END-FOR
+				END-SUBROUTINE
+				DEFINE SUBROUTINE SUBR2
+				ESCAPE BOTTOM (F${}$1.)
+				END-SUBROUTINE
+				""",
+			5, 0
+		);
+	}
+
+	@Test
 	void definitionShouldNotBreakAfterOrEquals()
 	{
 		assertSingleDefinitionInSameModule(
