@@ -1,5 +1,6 @@
 ---
 title: Language Server Configuration
+weight: 2
 ---
 
 The following configurations can be set in the language client to change behavior of the language server.

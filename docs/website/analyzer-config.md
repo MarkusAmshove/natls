@@ -1,8 +1,29 @@
 ---
 title: "Configuring Analyzers"
+weight: 1
 ---
 
-# Configuration
+## Severity
+
+The code analysis of `natlint` (and therefore `natqube` and `natls`) can be configured through an `.editorconfig` ([editorconfig.org](https://editorconfig.org/)) file.
+
+This makes it possible to configure the severity of diagnostics and pass analyzer specific settings.
+
+Example:
+
+```editorconfig
+[*]
+natls.NL002.severity = none
+```
+
+The severity can be one of:
+
+- `none`: Disables the diagnostic
+- `info`
+- `warn`
+- `error`
+
+## Analyzer configuration
 
 The following configurations can be set in an `.editorconfig` file to configure preferences for analyzers. Note, that **all** configurations are set to `false` by default, so you have to turn them on individually according to the below table.
 
