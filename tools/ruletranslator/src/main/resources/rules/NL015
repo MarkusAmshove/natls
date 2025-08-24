@@ -8,4 +8,24 @@ The variable that this `COMPRESS` is compressing into is used as a file path for
 The `COMRESS` does not specify `LEAVING NO SPACE`, which can result in the file path containing spaces where
 they are not expected (e.g. a leading space in the file name).
 
-Add `LEAVING NO SPACE`.
+## Problem
+
+```natural
+#FILENAME := 'file.txt'
+COMPRESS '$HOME/folder/' #FILENAME INTO #FILEPATH
+DEFINE WORK FILE 1 #FILEPATH
+```
+
+The resulting file path will contain a space: `$HOME/folder/ file.txt`.
+
+## Solution
+
+Add `LEAVING NO SPACE`:
+
+```natural
+#FILENAME := 'file.txt'
+COMPRESS '$HOME/folder/' #FILENAME INTO #FILEPATH LEAVING NO SPACE
+DEFINE WORK FILE 1 #FILEPATH
+```
+
+The resulting file path will contain a space: `$HOME/folder/file.txt`.
