@@ -1,5 +1,6 @@
 ---
 title: "Configuring Analyzers"
+slug: analyzer-config
 weight: 1
 ---
 

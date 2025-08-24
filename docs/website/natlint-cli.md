@@ -1,5 +1,6 @@
 ---
 title: "NatLint CLI"
+slug: natlint-cli
 weight: 3
 ---
 

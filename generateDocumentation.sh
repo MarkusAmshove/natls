@@ -13,7 +13,11 @@ set -u
 docs_directory="$1/content/docs"
 diagnostics_directory="$1/content/diagnostics"
 
+find "$docs_directory" -type f -name "__*.md"  -delete
+for f in ./docs/website/*.md; do
+  cp -v "$f" "$docs_directory/__$(basename "${f}")"
+done
+
 ./gradlew :ruletranslator:run
-cp ./docs/website/*.md "$docs_directory"
 find "$diagnostics_directory" -type f -name "N*.md" ! -name "_index.md" -delete
 cp ./tools/ruletranslator/build/diagnostics/* "$diagnostics_directory"

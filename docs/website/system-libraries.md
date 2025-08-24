@@ -1,5 +1,6 @@
 ---
 title: "System Libraries"
+slug: system-libraries
 weight: 5
 ---
 

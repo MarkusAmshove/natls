@@ -1,5 +1,6 @@
 ---
 title: Language Server Configuration
+slug: lsp-config
 weight: 2
 ---
 

@@ -1,5 +1,6 @@
 ---
 title: "SonarQube Integration"
+slug: natqube
 weight: 4
 ---
 
