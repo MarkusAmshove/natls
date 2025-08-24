@@ -19,11 +19,9 @@ The language server supports, but isn't limited to:
 - Outline
 - Code Snippets
 - Signature Help for modules
-- [and many more](docs/lsp-features.md)
+- [and many more](https://nat-ls.github.io/docs/lsp-features/)
 
 ## Project state/limitations
-
-The current state of the project is considered as early development.
 
 The language server can be used for driving daily development in Natural, but it does have some limitations:
 

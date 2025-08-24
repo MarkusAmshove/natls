@@ -1,6 +1,10 @@
+---
+title: "Configuring Analyzers"
+---
+
 # Configuration
 
-The following configurations can be set in a `.editorconfig` file to configure preferences for analyzers. Note, that **all** configurations are set to false by default, so you have to turn them on individually according to the below table.
+The following configurations can be set in an `.editorconfig` file to configure preferences for analyzers. Note, that **all** configurations are set to `false` by default, so you have to turn them on individually according to the below table.
 
 | Property                                      | Possible values | Description |
 |-----------------------------------------------| --- | --- |
@@ -19,6 +23,8 @@ The following configurations can be set in a `.editorconfig` file to configure p
 | `natls.style.in_out_groups`                   | `true`, `false` | [`NL041`](../tools/ruletranslator/src/main/resources/rules/NL041)|
 
 # Example
+
+This `.editorconfig` file configures all comparisons tu use the `sign` style, except for copy codes, which should use the `short` style.
 
 ```editorconfig
 [*]
