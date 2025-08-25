@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 
 public class AnsiDiagnosticSink implements IDiagnosticSink
 {
+	private static final String ANSI_RESET = (char) 27 + "[0m";
+
 	private static final Map<DiagnosticSeverity, String> SEVERITY_COLOR_MAP = Map.of(
 		DiagnosticSeverity.ERROR, "31",
 		DiagnosticSeverity.WARNING, "33",
@@ -55,6 +57,12 @@ public class AnsiDiagnosticSink implements IDiagnosticSink
 					System.out.println(indented(readDiagnosticSourceLine(diagnostic, additionalDiagnosticInfo.position())));
 					System.out.println(indented(squiggle(additionalDiagnosticInfo.position(), diagnostic.severity())));
 					System.out.println(indented(message(diagnostic, additionalDiagnosticInfo.position(), additionalDiagnosticInfo.message(), true)));
+				}
+
+				if (diagnostic.descriptionUrl() != null)
+				{
+					System.out.println();
+					System.out.println(indented(dimmed("For more information, see: " + diagnostic.descriptionUrl())));
 				}
 
 				System.out.println();
@@ -157,13 +165,13 @@ public class AnsiDiagnosticSink implements IDiagnosticSink
 
 			if (i == position.offsetInLine() + position.length())
 			{
-				coloredLine.append((char) 27 + "[0m");
+				coloredLine.append(ANSI_RESET);
 			}
 
 			coloredLine.append(line.charAt(i));
 		}
 
-		coloredLine.append((char) 27 + "[0m");
+		coloredLine.append(ANSI_RESET);
 		return coloredLine.toString();
 	}
 
@@ -177,8 +185,13 @@ public class AnsiDiagnosticSink implements IDiagnosticSink
 	{
 		var coloredMessage = (char) 27 + "[" + SEVERITY_COLOR_MAP.get(severity) + "m";
 		coloredMessage += message;
-		coloredMessage += (char) 27 + "[0m";
+		coloredMessage += ANSI_RESET;
 		return coloredMessage;
+	}
+
+	private String dimmed(String text)
+	{
+		return (char) 27 + "[2m" + text + ANSI_RESET;
 	}
 
 	private String pathWithLineInformation(IPosition position)

@@ -3,9 +3,9 @@ priority: MAJOR
 tags: pitfall, confusing, suspicious
 type: BUG
 description:
-The variable that this ``COMPRESS`` is compressing into is used as a file path for a ``DEFINE WORK FILE``.
+The variable that this `COMPRESS` is compressing into is used as a file path for a `DEFINE WORK FILE`.
 
-The ``COMRESS`` does not specify ``LEAVING NO SPACE``, which can result in the file path containing spaces where
+The `COMPRESS` does not specify `LEAVING NO SPACE`, which can result in the file path containing spaces where
 they are not expected (e.g. a leading space in the file name).
 
-Add ``LEAVING NO SPACE``.
+Add `LEAVING NO SPACE`.

@@ -19,7 +19,11 @@ class DiagnosticMappingAcceptanceTests
 	private static final List<String> VALID_PRIORITIES = List.of("BLOCKER", "CRITICAL", "MAJOR", "MINOR");
 
 	// https://docs.sonarqube.org/latest/user-guide/built-in-rule-tags/
-	private static final List<String> VALID_TAGS = List.of("natparse-internal", "performance", "brain-overload", "bad-practice", "cert", "clumsy", "confusing", "convention", "cwe", "design", "lock-in", "owasp", "pitfall", "sans-top25", "suspicious", "unpredictable", "unused", "user-experience", "compile-time", "runtime-error");
+	private static final List<String> VALID_TAGS = List.of(
+		"natparse-internal", "performance", "brain-overload", "bad-practice", "cert", "clumsy", "confusing",
+		"convention", "cwe", "design", "lock-in", "owasp", "pitfall", "sans-top25", "suspicious", "unpredictable",
+		"unused", "user-experience", "compile-time", "runtime-error"
+	);
 	private static final List<String> VALID_TYPES = List.of("CODE_SMELL", "BUG", "VULNERABILITY", "SECURITY_HOTSPOT");
 
 	@TestFactory
@@ -47,7 +51,7 @@ class DiagnosticMappingAcceptanceTests
 		return rules.stream()
 			.map(
 				r -> DynamicContainer.dynamicContainer(
-					r.key(), Stream.of(
+					r.id(), Stream.of(
 						DynamicTest.dynamicTest(
 							"name should be filled", () -> assertThat(r.name()).isNotBlank()
 						),
@@ -71,31 +75,6 @@ class DiagnosticMappingAcceptanceTests
 						),
 						DynamicTest.dynamicTest(
 							"description should be filled", () -> assertThat(r.description()).isNotBlank()
-						)
-					)
-				)
-			);
-	}
-
-	@TestFactory
-	Stream<DynamicContainer> everyDescriptionShouldConformToSonarQubeMarkdown()
-	{
-		var rules = RuleRepository.getRules();
-		return rules.stream()
-			.map(
-				r -> DynamicContainer.dynamicContainer(
-					r.key(), Stream.of(
-						DynamicTest.dynamicTest(
-							"headings should use = instead of #", () -> assertThat(r.description()).doesNotContain("# ")
-						),
-						DynamicTest.dynamicTest(
-							"code should always use double backticks", () -> assertThat(r.description()).doesNotContain("```")
-						),
-						DynamicTest.dynamicTest(
-							"code should always use double backticks", () -> assertThat(r.description().lines()).noneMatch(l -> l.matches("((?!`))`"))
-						),
-						DynamicTest.dynamicTest(
-							"bold should use single star only", () -> assertThat(r.description().lines()).noneMatch(l -> l.matches("\\*\\*(.*)?\\*\\*"))
 						)
 					)
 				)

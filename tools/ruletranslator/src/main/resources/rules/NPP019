@@ -3,4 +3,4 @@ priority: BLOCKER
 tags: natparse-internal,compile-time
 type: BUG
 description:
-``OPTIONAL`` is only allowed in ``PARAMETER`` scope.
+`OPTIONAL` is only allowed in `PARAMETER` scope.

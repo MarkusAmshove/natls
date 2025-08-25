@@ -5,8 +5,8 @@ type: BUG
 description:
 If a variable already has a fixed length, it can not also be dynamic.
 
-== Invalid
+## Invalid
 
-``
+```natural
 1 #VAR (A10) DYNAMIC
-``
+```

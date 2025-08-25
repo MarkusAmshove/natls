@@ -1,4 +1,8 @@
-# Language Server Configuration
+---
+title: Language Server Configuration
+slug: lsp-config
+weight: 2
+---
 
 The following configurations can be set in the language client to change behavior of the language server.
 

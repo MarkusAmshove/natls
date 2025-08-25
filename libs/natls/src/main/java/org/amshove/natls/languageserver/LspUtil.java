@@ -16,6 +16,7 @@ import java.util.ArrayList;
 
 public class LspUtil
 {
+
 	private LspUtil()
 	{}
 
@@ -69,6 +70,8 @@ public class LspUtil
 				related.add(new DiagnosticRelatedInformation(toLocation(info.position()), info.message()));
 			}
 		}
+
+		lspDiagnostic.setCodeDescription(new DiagnosticCodeDescription(diagnostic.descriptionUrl()));
 
 		lspDiagnostic.setData(positions);
 		return lspDiagnostic;

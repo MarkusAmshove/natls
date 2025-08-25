@@ -24,7 +24,7 @@ public class CsvDiagnosticSink implements IDiagnosticSink
 			}
 
 			this.sink = Files.asCharSink(filePath.toFile(), StandardCharsets.UTF_8, FileWriteMode.APPEND);
-			sink.write("FilePath;Id;Severity;Message;Line;OffsetInLine;Length%n".formatted());
+			sink.write("FilePath;Id;Severity;Message;Line;OffsetInLine;Length;DescriptionURL%n".formatted());
 		}
 		catch (IOException e)
 		{
@@ -41,7 +41,7 @@ public class CsvDiagnosticSink implements IDiagnosticSink
 			{
 				System.out.print("\r             ");
 				System.out.print("\r" + currentFileCount);
-				sink.write("%s;%s;%s;%s;%d;%d;%d%n".formatted(filePath, diagnostic.id(), diagnostic.severity(), diagnostic.message(), diagnostic.line(), diagnostic.offsetInLine(), diagnostic.length()));
+				sink.write("%s;%s;%s;%s;%d;%d;%d;%s%n".formatted(filePath, diagnostic.id(), diagnostic.severity(), diagnostic.message(), diagnostic.line(), diagnostic.offsetInLine(), diagnostic.length(), diagnostic.descriptionUrl()));
 			}
 			catch (IOException e)
 			{

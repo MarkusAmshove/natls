@@ -3,4 +3,4 @@ priority: BLOCKER
 tags: natparse-internal,compile-time
 type: BUG
 description:
-``BY VALUE`` is only allowed in ``PARAMETER`` scope.
+`BY VALUE` is only allowed in `PARAMETER` scope.

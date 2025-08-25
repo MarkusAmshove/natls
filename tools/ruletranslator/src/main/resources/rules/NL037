@@ -3,4 +3,4 @@ priority: MAJOR
 tags: pitfall,confusing
 type: CODE_SMELL
 description:
-A prototype definition for a function is declared but never used and can be savely removed.
+A prototype definition for a function is declared but never used and can be safely removed.

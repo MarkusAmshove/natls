@@ -3,4 +3,4 @@ priority: BLOCKER
 tags: compile-time
 type: BUG
 description:
-``MASK`` and ``SCAN`` can only be used with direct equality operators ``=``, ``<>``, ``EQ``, ``NE``.
+`MASK` and `SCAN` can only be used with direct equality operators `=`, `<>`, `EQ`, `NE`.

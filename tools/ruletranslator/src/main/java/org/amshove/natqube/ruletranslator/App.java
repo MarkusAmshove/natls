@@ -3,23 +3,39 @@ package org.amshove.natqube.ruletranslator;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.stream.Collectors;
 
 public class App
 {
 	public static void main(String[] args) throws IOException
 	{
-		System.out.println("Exporting rules to %s".formatted(args[0]));
-		var targetPath = Paths.get(args[0]);
-		var parentPath = targetPath.getParent();
-		if (!parentPath.toFile().exists())
+		var sonarRulePath = Paths.get(args[0]);
+		var websiteDiagnosticFolder = Paths.get(args[1]);
+
+		ensureFolderExists(sonarRulePath.getParent());
+		ensureFolderExists(websiteDiagnosticFolder);
+
+		var rules = RuleRepository.getRules();
+		var sonarRulesXml = new StringBuilder();
+		sonarRulesXml.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<rules>\n");
+
+		for (var rule : rules)
 		{
-			parentPath.toFile().mkdirs();
+			sonarRulesXml.append(rule.toSonarRuleXml()).append("\n");
+			Files.writeString(websiteDiagnosticFolder.resolve(rule.id() + ".md"), rule.toWebsiteDocumentation(), StandardCharsets.UTF_8);
 		}
-		var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<rules>\n";
-		xml += RuleRepository.getRules().stream().map(SonarRule::toXml).collect(Collectors.joining("\n"));
-		xml += "\n</rules>";
-		Files.writeString(Paths.get(args[0]), xml, StandardCharsets.UTF_8);
+
+		sonarRulesXml.append("\n</rules>");
+
+		Files.writeString(sonarRulePath, sonarRulesXml.toString(), StandardCharsets.UTF_8);
+	}
+
+	private static void ensureFolderExists(Path path)
+	{
+		if (!path.toFile().exists())
+		{
+			var ignored = path.toFile().mkdirs();
+		}
 	}
 }

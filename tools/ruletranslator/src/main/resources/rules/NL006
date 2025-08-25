@@ -5,26 +5,26 @@ type: CODE_SMELL
 description:
 Operators can be specified multiple ways. Having consistent code guidelines for those cases is a good idea.
 
-This behavior can be configured using the ``natls.style.comparisons`` option in the [analyzer configuration](/docs/analyzer-config.md)
+This behavior can be configured using the `natls.style.comparisons` option in the [analyzer configuration](/docs/analyzer-config.md)
 
-Use the following table to decide which operator to use with the preferred operator configuration set as ``signs``
+Use the following table to decide which operator to use with the preferred operator configuration set as `signs`
 
 | Discouraged operator | Preferred operator |
 | --- | --- |
-| ``GT`` | `>`` |
-| ``LT`` | `<`` |
-| ``EQ`` | `=`` |
-| ``NE`` | `<>`` |
-| ``GE`` | `>=`` |
-| ``LE`` | `<=`` |
+| `GT` | `>` |
+| `LT` | `<` |
+| `EQ` | `=` |
+| `NE` | `<>` |
+| `GE` | `>=` |
+| `LE` | `<=` |
 
 For preferred operator configuration set as ``short``, the table look like this:
 
 | Discouraged operator | Preferred operator |
 | --- | --- |
-| `>`` | ``GT`` |
-| `<`` | ``LT`` |
-| `=`` | ``EQ`` |
-| `<>`` | ``NE`` |
-| `>=`` | ``GE`` |
-| `<=`` | ``LE`` |
+| `>` | `GT` |
+| `<` | `LT` |
+| `=` | `EQ` |
+| `<>` | `NE` |
+| `>=` | `GE` |
+| `<=` | `LE` |

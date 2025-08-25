@@ -5,20 +5,20 @@ type: BUG
 description:
 This is raised when an INCLUDE includes a copycode which also includes copycodes and the module chain contains a copycode that is already included.
 
-== Non-compliant
+## Non-compliant
 
-=== Subprogram
+### Subprogram
 
-``
+```natural
 DEFINE DATA LOCAL
 END-DEFINE
 
 INCLUDE CYCLE
 END
-``
+```
 
-=== Copycode CYCLE
+### Copycode CYCLE
 
-``
+```natural
 INCLUDE CYCLE
-``
+```

@@ -3,16 +3,25 @@ priority: MAJOR
 tags: bad-practice, pitfall
 type: CODE_SMELL
 description:
-Imaging a PDA named PDANAME, the data structure is expected to be as follows:
-1 PDANAME (only 1 level 1)
-  2 PDANAME-IN (groups for input, output and optionally input/output)
+Imaging a PDA named `PDANAME`, the data structure is expected to be as follows:
+
+```natural
+1 PDANAME /* (only 1 level 1)
+  2 PDANAME-IN /* (groups for input, output and optionally input/output)
     3 ....
   2 PDANAME-OUT
     3 ....
-Optionally PDANAME-INOUT can be a group too - it can even be standalone, if all your parameters are input/output (rare).
-A PDA structure should follow these rules in order to be able to access each area individually through RESET and MOVE BY NAME statements, and to mention the fewest parameters in CALLNAT's/PERFORM's, which improves readability.
+```
+
+Optionally `PDANAME-INOUT` can be a group too - it can even be standalone, if all your parameters are input/output (rare).
+
+A PDA structure should follow these rules in order to be able to access each area individually through `RESET` and `MOVE BY NAME` statements, and to mention the fewest parameters in `CALLNAT`'s/`PERFORM`'s, which improves readability.
+
+```natural
 CALLNAT 'SUBPGM' USING PDANAME
 PERFORM EXTERNAL-SUBROUTINE-NAME PDANAME
+```
+
 If you have array groups, these are only possible at level > 2.
 
-This behavior can be configured using the ``natls.style.in_out_groups`` option in the [analyzer configuration](/docs/analyzer-config.md)
+This behavior can be configured using the `natls.style.in_out_groups` option in the [analyzer configuration](/docs/analyzer-config.md)

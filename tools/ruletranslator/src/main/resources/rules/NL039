@@ -5,4 +5,4 @@ type: CODE_SMELL
 description:
 Code involving lower/mixed case characters is discouraged, because it involves special options to be enabled to work on the Mainframe.
 
-This behavior can be configured using the ``natls.style.discourage_lowercase_code`` option in the [analyzer configuration](/docs/analyzer-config.md)
+This behavior can be configured using the `natls.style.discourage_lowercase_code` option in the [analyzer configuration](/docs/analyzer-config.md)

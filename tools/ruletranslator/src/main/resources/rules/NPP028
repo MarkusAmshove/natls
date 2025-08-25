@@ -3,4 +3,4 @@ priority: BLOCKER
 tags: natparse-internal,compile-time
 type: BUG
 description:
-This data area has already been imported via ``USING``.
+This data area has already been imported via `USING`.

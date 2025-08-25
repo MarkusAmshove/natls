@@ -5,9 +5,9 @@ type: CODE_SMELL
 description:
 The value of this literal is truncated at runtime. This will raise unexpected results.
 
-== Non compliant
+## Non compliant
 
-``
+```natural
 DEFINE DATA LOCAL
 1 #VAR (A1)
 END-DEFINE
@@ -15,11 +15,11 @@ END-DEFINE
 #VAR := 'Hi'
 WRITE #VAR
 END
-``
+```
 
-== Compliant
+## Compliant
 
-``
+```natural
 DEFINE DATA LOCAL
 1 #VAR (A1)
 END-DEFINE
@@ -27,4 +27,4 @@ END-DEFINE
 #VAR := 'H'
 WRITE #VAR
 END
-``
+```

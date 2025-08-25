@@ -5,19 +5,19 @@ type: BUG
 description:
 Natural does not allow independent variables to be groups.
 
-== Invalid
+## Invalid
 
-``
+```natural
 INDEPENDENT
 1 +GROUP
 2 +VAR (A10)
 2 +ANOTHER-VAR (A10)
-``
+```
 
-== Valid
+## Valid
 
-``
+```natural
 INDEPENDENT
 1 +VAR (A10)
 1 +ANOTHER-VAR (A10)
-``
+```

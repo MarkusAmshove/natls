@@ -1,16 +1,21 @@
+---
+title: "System Libraries"
+slug: system-libraries
+weight: 5
+---
+
 Natural provides (sub)programs and data areas that are known to the runtime, but not included in your sources (e.g. user
  exits, RPC stuff etc.).
 
-natls does not know about these modules, because they're not part of your source repository.
+NatLS does not know about these modules, because they're not part of your source repository.
 
 To resolve this issue, you can create a folder called `include` in your root directory, next to your
 `Natural-Libraries`. Inside that folder you can create folders for libraries that were not part of your repository.
 
 ## Example
 
-
 Lets say you have the libraries `LIBONE` and `LIBTWO` and `LIBONE` wants to use RPC features.
-You repository will look like this:
+Your repository will look like this:
 
 ```
 .natural

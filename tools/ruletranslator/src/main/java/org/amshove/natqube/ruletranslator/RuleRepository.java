@@ -9,7 +9,7 @@ public class RuleRepository
 	private RuleRepository()
 	{}
 
-	private static final Map<String, SonarRule> rules = new HashMap<>();
+	private static final Map<String, DiagnosticRule> rules = new HashMap<>();
 
 	static
 	{
@@ -68,12 +68,12 @@ public class RuleRepository
 		return split.length > 1 ? split[1].trim() : "";
 	}
 
-	public static Collection<SonarRule> getRules()
+	public static Collection<DiagnosticRule> getRules()
 	{
 		return rules.values();
 	}
 
-	public static Map<String, SonarRule> getRuleMappings()
+	public static Map<String, DiagnosticRule> getRuleMappings()
 	{
 		return rules;
 	}
@@ -87,9 +87,9 @@ public class RuleRepository
 		String type;
 		StringBuilder description = new StringBuilder();
 
-		SonarRule build()
+		DiagnosticRule build()
 		{
-			return new SonarRule(
+			return new DiagnosticRule(
 				key,
 				name,
 				description.toString(),

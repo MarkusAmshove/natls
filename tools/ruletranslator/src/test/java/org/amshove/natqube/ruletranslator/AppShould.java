@@ -18,10 +18,13 @@ class AppShould
 	{
 		System.setOut(new PrintStream(new ByteArrayOutputStream())); // ignore stdout
 		var file = directory.resolve("rules.xml");
+		var markdownDirectory = directory.resolve("website");
 		App.main(new String[]
 		{
-			file.toString()
+			file.toString(),
+			markdownDirectory.toString()
 		});
 		assertThat(Files.readString(file)).isNotBlank();
+		assertThat(Files.list(markdownDirectory).toList().size()).isGreaterThan(0);
 	}
 }
