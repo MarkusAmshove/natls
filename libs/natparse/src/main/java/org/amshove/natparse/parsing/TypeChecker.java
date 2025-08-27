@@ -96,7 +96,7 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		for (var operand : compress.operands())
 		{
 			var operandType = inferDataType(operand);
-			if (operandType.format() == DataFormat.LOGIC || operandType.format() == DataFormat.CONTROL)
+			if (operandType.format() == DataFormat.CONTROL)
 			{
 				report(ParserErrors.typeMismatch("COMPRESS operand can't be of type %s".formatted(operandType.format().identifier()), operand), operand);
 			}

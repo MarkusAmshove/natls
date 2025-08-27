@@ -15,7 +15,7 @@ COMPRESS #NUM #UNI INTO #UNI
 COMPRESS #ALPHA INTO #NUM /* !{D:ERROR:NPP037} target needs to be A, U or B
 
 COMPRESS #CTRL INTO #ALPHA /* !{D:ERROR:NPP037} (C) can't be used as operand
-COMPRESS #LOGIC INTO #ALPHA /* !{D:ERROR:NPP037} (L) can't be used as operand
+COMPRESS #LOGIC INTO #ALPHA /* {D:ERROR:NPP037} (L) can be used as operand
 
 
 END
