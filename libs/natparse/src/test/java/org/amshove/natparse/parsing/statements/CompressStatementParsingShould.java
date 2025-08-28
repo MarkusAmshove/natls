@@ -191,7 +191,7 @@ class CompressStatementParsingShould extends StatementParseTest
 	@Test
 	void parseCompressWithOperandParameterDF()
 	{
-		var compress = assertParsesSingleStatement("""
+		assertParsesSingleStatement("""
 			COMPRESS *DATX(DF=L) TO #VAR
 			""", ICompressStatementNode.class);
 	}

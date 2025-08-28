@@ -44,6 +44,33 @@ class InlayHintingTests extends LanguageServerTest
 	}
 
 	@Test
+	void endStatementsOfStatementsWithLabelShouldShowTheLabel()
+	{
+		var td = createOrSaveFile("LIBONE", "MYMODULE.NSN", """
+			DEFINE DATA
+			LOCAL 1 #I (I4)
+			END-DEFINE
+
+			F1. FOR #I := 1 TO 10
+				IGNORE
+			END-FOR
+			END
+			""");
+
+		var request = getContext().documentService().inlayHint(new InlayHintParams(td, LspUtil.newRange(0, 0, 5, 0)));
+		assertThat(request)
+			.succeedsWithin(1, TimeUnit.SECONDS)
+			.satisfies(
+				hints -> assertThat(hints).hasSize(1),
+				hints -> assertThat(hints.getFirst().getKind()).isEqualTo(InlayHintKind.Type),
+				hints -> assertThat(hints.getFirst().getLabel().getLeft()).isEqualTo("F1."),
+				hints -> assertThat(hints.getFirst().getPaddingLeft()).isTrue(),
+				hints -> assertThat(hints.getFirst().getPosition().getLine()).isEqualTo(6),
+				hints -> assertThat(hints.getFirst().getPosition().getCharacter()).isEqualTo(7)
+			);
+	}
+
+	@Test
 	void inlayHintsShouldBeAddedToPerformsThatCallALocalSubroutineThatIsNotDeclaredInTheSameFile()
 	{
 		createOrSaveFile("LIBONE", "CCODE.NSC", """
