@@ -64,9 +64,34 @@ public class InlayHintProvider implements IConfigChangedSubscriber
 			{
 				addInlayHintsToParameter(moduleReferencingNode, hints);
 			}
+
+			if (n instanceof ILabelReferencable labelReferencable)
+			{
+				addInlayHintsToStatementLabel(labelReferencable, hints);
+			}
 		});
 
 		return hints;
+	}
+
+	private static void addInlayHintsToStatementLabel(ILabelReferencable labelReferencable, ArrayList<InlayHint> hints)
+	{
+		var label = labelReferencable.labelIdentifier();
+		if (label == null)
+		{
+			return;
+		}
+
+		if (labelReferencable instanceof IStatementWithBodyNode statement)
+		{
+			var endKeyword = statement.descendants().last();
+			var hint = new InlayHint();
+			hint.setPosition(LspUtil.toPositionAfter(endKeyword.position()));
+			hint.setLabel(label.source());
+			hint.setKind(InlayHintKind.Type);
+			hint.setPaddingLeft(true);
+			hints.add(hint);
+		}
 	}
 
 	private static void addFileNameInlayHintToInternalPerform(IInternalPerformNode internalPerform, ArrayList<InlayHint> hints)
