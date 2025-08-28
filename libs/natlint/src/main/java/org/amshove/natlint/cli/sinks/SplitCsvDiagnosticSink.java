@@ -1,15 +1,15 @@
 package org.amshove.natlint.cli.sinks;
 
+import com.google.common.io.CharSink;
+import com.google.common.io.FileWriteMode;
+import com.google.common.io.Files;
+import org.amshove.natparse.IDiagnostic;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
-
-import com.google.common.io.CharSink;
-import com.google.common.io.FileWriteMode;
-import com.google.common.io.Files;
-import org.amshove.natparse.IDiagnostic;
 
 public class SplitCsvDiagnosticSink implements IDiagnosticSink
 {
@@ -34,7 +34,7 @@ public class SplitCsvDiagnosticSink implements IDiagnosticSink
 			currentDiagnosticCount++;
 			try
 			{
-				currentSink.write("%s;%s;%s;%s;%d;%d;%d%n".formatted(projectRootDirectoryPath.relativize(filePath), diagnostic.id(), diagnostic.severity(), diagnostic.message(), diagnostic.line(), diagnostic.offsetInLine(), diagnostic.length()));
+				currentSink.write("%s;%s;%s;%s;%d;%d;%d;%s%n".formatted(projectRootDirectoryPath.relativize(filePath), diagnostic.id(), diagnostic.severity(), diagnostic.message(), diagnostic.line(), diagnostic.offsetInLine(), diagnostic.length(), diagnostic.descriptionUrl()));
 			}
 			catch (IOException e)
 			{
@@ -62,7 +62,7 @@ public class SplitCsvDiagnosticSink implements IDiagnosticSink
 				Files.createParentDirs(diagnosticFile);
 
 				currentSink = Files.asCharSink(diagnosticFile, StandardCharsets.UTF_8, FileWriteMode.APPEND);
-				currentSink.write("file;ruleId;severity;message;line;offset;length%n".formatted());
+				currentSink.write("file;ruleId;severity;message;line;offset;length;descriptionUrl%n".formatted());
 			}
 			catch (IOException e)
 			{
