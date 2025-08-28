@@ -112,7 +112,9 @@ public class DefineDataParser extends AbstractParser<IDefineData>
 		{
 			return;
 		}
-		if (groupNode.variables().isEmpty())
+
+		var hasFillerBytes = groupNode instanceof IRedefinitionNode redefine && redefine.fillerBytes() > 0;
+		if (groupNode.variables().isEmpty() && !hasFillerBytes)
 		{
 			report(ParserErrors.emptyGroupVariable(groupNode));
 		}

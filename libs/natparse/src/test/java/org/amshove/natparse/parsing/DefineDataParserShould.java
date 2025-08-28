@@ -2541,6 +2541,29 @@ class DefineDataParserShould extends AbstractParserTest<IDefineData>
 		);
 	}
 
+	@Test
+	void raiseADiagnosticForEmptyGroups()
+	{
+		assertDiagnostic("""
+			DEFINE DATA LOCAL
+			1 #GRP
+			END-DEFINE
+			""", ParserError.GROUP_CANNOT_BE_EMPTY);
+	}
+
+	@Test
+	void notConsiderARedefineAsEmptyGroupWhenItContainsOnlyFiller()
+	{
+		// https://github.com/markusamshove/natls/issues/384
+		assertParsesWithoutDiagnostics("""
+			DEFINE DATA LOCAL
+			1 AAA (A10)
+			1 REDEFINE AAA
+			2 FILLER 10X
+			END-DEFINE
+			""");
+	}
+
 	@TestFactory
 	Stream<DynamicTest> notRaiseADiagnosticForScopesInNonDataAreas()
 	{
