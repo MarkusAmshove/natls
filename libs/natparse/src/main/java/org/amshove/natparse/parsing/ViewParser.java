@@ -4,6 +4,7 @@ import org.amshove.natparse.lexing.SyntaxKind;
 import org.amshove.natparse.lexing.SyntaxToken;
 import org.amshove.natparse.natural.DataFormat;
 import org.amshove.natparse.natural.IArrayDimension;
+import org.amshove.natparse.natural.IRedefinitionNode;
 import org.amshove.natparse.natural.ITokenNode;
 import org.amshove.natparse.natural.ddm.FieldType;
 import org.amshove.natparse.natural.ddm.IGroupField;
@@ -241,7 +242,8 @@ class ViewParser extends AbstractParser<ViewNode>
 			group.addVariable(nestedVariable);
 		}
 
-		if (group.variables().isEmpty())
+		var hasFillerBytes = group instanceof IRedefinitionNode redefine && redefine.fillerBytes() > 0;
+		if (group.variables().isEmpty() && !hasFillerBytes)
 		{
 			report(ParserErrors.emptyGroupVariable(group));
 		}
