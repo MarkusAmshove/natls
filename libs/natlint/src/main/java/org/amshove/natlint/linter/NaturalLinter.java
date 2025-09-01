@@ -30,14 +30,17 @@ public class NaturalLinter
 		for (var descendant : syntaxTree.descendants())
 		{
 			linterContext.analyze(descendant, analyzeContext);
+			var hasDescended = false;
 			if (!(descendant instanceof ITokenNode)) // perf: TokenNodes don't have descendants
 			{
+				hasDescended = true;
 				analyze(descendant, analyzeContext, linterContext);
 			}
 
-			if (descendant instanceof IGroupNode)
+			if (descendant instanceof IGroupNode // But groups do have descendants :-)
+				&& !hasDescended)
 			{
-				analyze(descendant, analyzeContext, linterContext); // But groups do have descendants :-)
+				analyze(descendant, analyzeContext, linterContext);
 			}
 		}
 	}

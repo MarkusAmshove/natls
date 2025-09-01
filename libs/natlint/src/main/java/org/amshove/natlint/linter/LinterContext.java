@@ -42,7 +42,9 @@ public enum LinterContext implements ILinterContext
 			catch (Exception e)
 			{
 				throw new RuntimeException(
-					"Analyzer %s can not be instantiated. Does it have a parameterless constructor?".formatted(analyzerClass.getName()),
+					"Analyzer %s can not be instantiated. Does it have a parameterless constructor?".formatted(
+						analyzerClass.getName()
+					),
 					e
 				);
 			}

@@ -13,6 +13,7 @@ import org.amshove.natparse.natural.project.NaturalFile;
 import org.amshove.natparse.natural.project.NaturalFileType;
 import org.amshove.natparse.parsing.NaturalParser;
 import org.amshove.testhelpers.IntegrationTest;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -84,7 +85,7 @@ public abstract class AbstractAnalyzerTest
 		assertAll(
 			"Expected and unexpected diagnostics",
 			() -> assertAll(
-				"Expected Diagostics",
+				"Expected Diagnostics",
 				Arrays.stream(diagnosticAssertions)
 					.map(e -> e.checkAssertion(diagnostics.toList()))
 			),
@@ -194,6 +195,11 @@ public abstract class AbstractAnalyzerTest
 		return new ExpectedNoDiagnosticOfType(description);
 	}
 
+	protected DiagnosticAssertion expectSingleDiagnosticOfTypeInLine(int line, DiagnosticDescription description)
+	{
+		return new ExpectedDiagnosticCountInLine(1, line, description);
+	}
+
 	protected sealed interface DiagnosticAssertion
 	{
 		int line();
@@ -219,6 +225,7 @@ public abstract class AbstractAnalyzerTest
 		}
 
 		@Override
+		@NonNull
 		public String toString()
 		{
 			return "ExpectedDiagnostic{" +
@@ -245,6 +252,7 @@ public abstract class AbstractAnalyzerTest
 		}
 
 		@Override
+		@NonNull
 		public String toString()
 		{
 			return "ExpectedDiagnosticWithMessage{line=" + line + ", description=" + description.getId() + ", expectedMessage=" + expectedMessage + "}";
@@ -262,6 +270,7 @@ public abstract class AbstractAnalyzerTest
 		}
 
 		@Override
+		@NonNull
 		public String toString()
 		{
 			return "ExpectedNoDiagnostic{" +
@@ -288,11 +297,36 @@ public abstract class AbstractAnalyzerTest
 		}
 
 		@Override
+		@NonNull
 		public String toString()
 		{
 			return "ExpectedNoDiagnosticOfType{" +
 				"description=" + description.getId() +
 				'}';
+		}
+	}
+
+	protected record ExpectedDiagnosticCountInLine(int count, int line, DiagnosticDescription description)
+		implements DiagnosticAssertion
+	{
+
+		@Override
+		public int line()
+		{
+			return line;
+		}
+
+		@Override
+		public Executable checkAssertion(List<LinterDiagnostic> actualDiagnostics)
+		{
+			return () ->
+			{
+				var diagnosticsOfType = actualDiagnostics.stream().filter(d -> d.id().equals(description.getId()) && d.line() == line).toList();
+				assertThat(diagnosticsOfType)
+					.as("Expected Diagnostic with id <%s> to have count <%d>, but was <%d>".formatted(description.getId(), count, diagnosticsOfType.size()))
+					.hasSize(count);
+			};
+
 		}
 	}
 }
