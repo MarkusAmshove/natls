@@ -133,23 +133,24 @@ public class NatlintSensor implements Sensor
 		}
 	}
 
-	// file;ruleId;severity;message;line;offset;length
-	private static int FILE_PATH_INDEX = 0;
-	private static int RULE_ID_INDEX = 1;
-	private static int MESSAGE_INDEX = 3;
-	private static int LINE_INDEX = 4;
-	private static int OFFSET_INDEX = 5;
-	private static int LENGTH_INDEX = 6;
+	// file;ruleId;severity;message;line;offset;length;url
+	private static final int FILE_PATH_INDEX = 0;
+	private static final int RULE_ID_INDEX = 1;
+	private static final int MESSAGE_INDEX = 3;
+	private static final int LINE_INDEX = 4;
+	private static final int OFFSET_INDEX = 5;
+	private static final int LENGTH_INDEX = 6;
 
-	private static Map<String, List<CsvDiagnostic>> readDiagnostics(InputFile diagnosticFile)
+	private Map<String, List<CsvDiagnostic>> readDiagnostics(InputFile diagnosticFile)
 	{
 		try
 		{
 			return diagnosticFile.contents().lines().skip(1).map(l ->
 			{
 				var split = l.split(";");
-				if (split.length != 7)
+				if (split.length < 7)
 				{
+					LOGGER.error("Diagnostic file {} does not have the expected number of columns. It has {}", diagnosticFile.filename(), split.length);
 					return null;
 				}
 				var relativePath = split[FILE_PATH_INDEX];
