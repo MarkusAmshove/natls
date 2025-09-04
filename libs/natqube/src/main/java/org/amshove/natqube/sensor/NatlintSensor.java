@@ -150,7 +150,7 @@ public class NatlintSensor implements Sensor
 				var split = l.split(";");
 				if (split.length < 7)
 				{
-					LOGGER.error("Diagnostic file {} does not have the expected number of columns. It has {}", diagnosticFile.filename(), split.length);
+					LOGGER.error("Diagnostic line <{}> in file <{}> does not have the expected number of columns. It has {}", l, diagnosticFile.filename(), split.length);
 					return null;
 				}
 				var relativePath = split[FILE_PATH_INDEX];
