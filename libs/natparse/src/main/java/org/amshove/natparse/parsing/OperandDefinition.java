@@ -1,5 +1,7 @@
 package org.amshove.natparse.parsing;
 
+import org.amshove.natparse.natural.DataFormat;
+
 /// This enum corresponds to the "Operand Definition Table"
 /// from the Natural documentation.
 /// These are used for typechecking operands in statements.
@@ -59,4 +61,23 @@ public enum OperandDefinition
 		FORMAT_ATTRIBUTE_CONTROL,
 		FORMAT_HANDLE_OF_OBJECT
 	};
+
+	static OperandDefinition forDataFormat(DataFormat format)
+	{
+		return switch (format)
+		{
+			case ALPHANUMERIC -> FORMAT_ALPHANUMERIC_ASCII;
+			case BINARY -> FORMAT_BINARY;
+			case CONTROL -> FORMAT_ATTRIBUTE_CONTROL;
+			case DATE -> FORMAT_DATE;
+			case FLOAT -> FORMAT_FLOATING;
+			case INTEGER -> FORMAT_INTEGER;
+			case LOGIC -> FORMAT_LOGICAL;
+			case NUMERIC -> FORMAT_NUMERIC_UNPACKED;
+			case PACKED -> FORMAT_NUMERIC_PACKED;
+			case TIME -> FORMAT_TIME;
+			case UNICODE -> FORMAT_ALPHANUMERIC_UNICODE;
+			case NONE -> null;
+		};
+	}
 }
