@@ -19,12 +19,15 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.regex.Pattern;
 
+import static org.amshove.natparse.parsing.OperandDefinition.*;
+
 public class StatementListParser extends AbstractParser<IStatementListNode>
 {
 	private static final Pattern SETKEY_PATTERN = Pattern.compile("(ENTR|CLR|PA[1-3]|PF([1-9]|[0-1][\\d]|2[0-4]))\\b");
 	private static final List<SyntaxKind> TO_INTO = List.of(SyntaxKind.INTO, SyntaxKind.TO);
 
 	private List<IReferencableNode> referencableNodes;
+	private final Map<IOperandNode, EnumSet<OperandDefinition>> operandCheckQueue = new HashMap<>(); // TODO: from nested parsers
 
 	private final Set<String> currentModuleCallStack = new HashSet<>();
 	private final Set<String> declaredStatementLabels = new HashSet<>();
@@ -32,6 +35,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 	public List<IReferencableNode> getReferencableNodes()
 	{
 		return referencableNodes;
+	}
+
+	public Map<IOperandNode, EnumSet<OperandDefinition>> operandCheckQueue()
+	{
+		return operandCheckQueue;
 	}
 
 	public StatementListParser(IModuleProvider moduleProvider)
@@ -1095,6 +1103,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		consumeAnyMandatory(compress, TO_INTO); // TO not documented but okay
 		compress.setIntoTarget(consumeSubstringOrOperand(compress));
+		enqueueOperandCheck(compress.intoTarget(), EnumSet.of(STRUCTURE_SCALAR, FORMAT_ALPHANUMERIC_ASCII, FORMAT_ALPHANUMERIC_UNICODE, FORMAT_BINARY, REFERENCING_BY_LABEL_PERMITTED, DYNAMIC_DEFINITION_PERMITTED));
 
 		var consumedLeaving = consumeOptionally(compress, SyntaxKind.LEAVING);
 		if (consumedLeaving)
@@ -2540,6 +2549,11 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 		return write;
 	}
 
+	private void enqueueOperandCheck(IOperandNode operand, EnumSet<OperandDefinition> rules)
+	{
+		operandCheckQueue.put(operand, rules);
+	}
+
 	private static final Set<SyntaxKind> OPTIONAL_DISPLAY_FLAGS = Set.of(SyntaxKind.NOTITLE, SyntaxKind.NOTIT, SyntaxKind.NOHDR, SyntaxKind.AND, SyntaxKind.GIVE, SyntaxKind.SYSTEM, SyntaxKind.FUNCTIONS);
 	private static final Set<SyntaxKind> DISPLAY_OUTPUT_FORMATS = Set.of(SyntaxKind.VERT, SyntaxKind.VERTICALLY, SyntaxKind.HORIZ, SyntaxKind.HORIZONTALLY, SyntaxKind.AS, SyntaxKind.CAPT, SyntaxKind.CAPTIONED);
 
@@ -3055,6 +3069,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 
 		var opening = consumeMandatory(loopNode, SyntaxKind.FOR);
 		loopNode.setLoopControl(consumeVariableReferenceNode(loopNode));
+		enqueueOperandCheck(loopNode.loopControl(), EnumSet.of(STRUCTURE_SCALAR, FORMAT_NUMERIC_UNPACKED, FORMAT_NUMERIC_PACKED, FORMAT_INTEGER, FORMAT_FLOATING, REFERENCING_BY_LABEL_PERMITTED, DYNAMIC_DEFINITION_PERMITTED));
 		consumeAnyOptionally(loopNode, List.of(SyntaxKind.COLON_EQUALS_SIGN, SyntaxKind.EQUALS_SIGN, SyntaxKind.EQ, SyntaxKind.FROM));
 		consumeArithmeticExpression(loopNode);
 		consumeAnyOptionally(loopNode, List.of(SyntaxKind.TO, SyntaxKind.THRU)); // According to the documentation, either TO or THRU is mandatory. However, FOR #I 1 10 also just works :)
