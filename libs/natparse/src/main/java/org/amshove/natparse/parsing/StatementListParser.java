@@ -1140,6 +1140,7 @@ public class StatementListParser extends AbstractParser<IStatementListNode>
 					}
 				}
 				compress.setDelimiter(delimiter);
+				enqueueOperandCheck(delimiter, EnumSet.of(STRUCTURE_CONSTANT, STRUCTURE_SCALAR, FORMAT_ALPHANUMERIC_ASCII, FORMAT_ALPHANUMERIC_UNICODE, FORMAT_BINARY, REFERENCING_BY_LABEL_PERMITTED, DYNAMIC_DEFINITION_NOT_PERMITTED));
 			}
 			compress.setLeavingSpace(false);
 			compress.setWithDelimiters(true);

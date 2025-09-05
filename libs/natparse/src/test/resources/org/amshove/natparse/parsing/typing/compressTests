@@ -21,5 +21,8 @@ COMPRESS
     INTO
     SUBSTRING(#NUM, 1) /* !{D:ERROR:NPP037} As the target, numeric is not allowed
 
+COMPRESS #ALPHA #UNI INTO #ALPHA WITH DELIMITER ','
+
+COMPRESS #ALPHA #UNI INTO #ALPHA WITH DELIMITER 5 /* !{D:ERROR:NPP037} Delimiter must be A, U or B
 
 END
