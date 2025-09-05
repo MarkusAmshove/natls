@@ -82,38 +82,6 @@ final class TypeChecker implements ISyntaxNodeVisitor
 		if (statement instanceof IDecideOnNode decideOn)
 		{
 			checkDecideOnBranches(decideOn);
-			return;
-		}
-
-		if (statement instanceof ICompressStatementNode compress)
-		{
-			checkCompress(compress);
-		}
-	}
-
-	private void checkCompress(ICompressStatementNode compress)
-	{
-		for (var operand : compress.operands())
-		{
-			var operandType = inferDataType(operand);
-			if (operandType.format() == DataFormat.CONTROL)
-			{
-				report(ParserErrors.typeMismatch("COMPRESS operand can't be of type %s".formatted(operandType.format().identifier()), operand), operand);
-			}
-		}
-
-		var targetType = inferDataType(compress.intoTarget());
-		if (targetType.format() != DataFormat.ALPHANUMERIC
-			&& targetType.format() != DataFormat.BINARY
-			&& targetType.format() != DataFormat.UNICODE)
-		{
-			report(
-				ParserErrors.typeMismatch(
-					"COMPRESS target needs to have type A, B or U but got %s".formatted(targetType.toShortString()),
-					compress.intoTarget()
-				),
-				compress.intoTarget()
-			);
 		}
 	}
 

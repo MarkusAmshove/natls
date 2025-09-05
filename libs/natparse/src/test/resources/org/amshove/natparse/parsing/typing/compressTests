@@ -16,4 +16,13 @@ COMPRESS #ALPHA INTO #NUM /* !{D:ERROR:NPP037} target needs to be A, U or B
 
 COMPRESS #CTRL INTO #ALPHA /* !{D:ERROR:NPP037} (C) can't be used as operand
 
+COMPRESS
+    SUBSTRING(#NUM, 1) /* As a compress source numeric is fine
+    INTO
+    SUBSTRING(#NUM, 1) /* !{D:ERROR:NPP037} As the target, numeric is not allowed
+
+COMPRESS #ALPHA #UNI INTO #ALPHA WITH DELIMITER ','
+
+COMPRESS #ALPHA #UNI INTO #ALPHA WITH DELIMITER 5 /* !{D:ERROR:NPP037} Delimiter must be A, U or B
+
 END
